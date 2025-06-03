@@ -155,7 +155,7 @@ Our prompts leverage:
 - **init-prism** - AI-powered project generation
 - **agent-master** - MCP server coordination across AI tools
 - **bsv-mcp** - Blockchain functionality exposure
-- **BigBlocks/bitcoin-auth-ui** - Bitcoin component library
+- **BigBlocks** - Bitcoin component library
 - **gib** - Git + blockchain version control
 
 ---
