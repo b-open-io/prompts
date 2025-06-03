@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Prompt Template Schema",
+  "description": "Standard schema for prompt templates in the BSV ecosystem",
+  "type": "object",
+  "required": ["name", "version", "description", "category", "content"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique identifier for the prompt"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the prompt"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of what the prompt does"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "bigblocks",
+        "development",
+        "blockchain",
+        "analytics",
+        "infrastructure",
+        "server",
+        "cross-project"
+      ],
+      "description": "Primary category of the prompt"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Additional tags for searching and filtering"
+    },
+    "author": {
+      "type": "string",
+      "description": "Author of the prompt"
+    },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required tools (e.g., Claude Code, git worktrees)"
+        },
+        "environment": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required environment variables"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required dependencies or other prompts"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "llm_provider": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["claude", "openai", "any"]
+          }
+        },
+        "estimated_tokens": {
+          "type": "integer",
+          "description": "Estimated token usage"
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["simple", "moderate", "complex", "advanced"]
+        },
+        "time_estimate": {
+          "type": "string",
+          "description": "Estimated time to complete"
+        }
+      }
+    },
+    "content": {
+      "type": "string",
+      "description": "The actual prompt content in markdown format"
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "input": {
+            "type": "string"
+          },
+          "expected_output": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "related_prompts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of related prompts"
+    }
+  }
+}

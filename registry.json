@@ -1,0 +1,66 @@
+{
+  "$schema": "./prompt-schema.json",
+  "version": "1.0.0",
+  "name": "BSV Ecosystem Prompts Registry",
+  "description": "Central registry of all prompts in the BSV development ecosystem",
+  "categories": {
+    "bigblocks": {
+      "name": "BigBlocks",
+      "description": "Bitcoin UI component management and ecosystem automation",
+      "icon": "🎨"
+    },
+    "development": {
+      "name": "Development Workflows",
+      "description": "Code management, dependency updates, and development automation",
+      "icon": "🚀"
+    },
+    "blockchain": {
+      "name": "Blockchain Operations",
+      "description": "BSV network monitoring, wallet operations, and blockchain automation",
+      "icon": "⛓️"
+    },
+    "analytics": {
+      "name": "Analytics & Reporting",
+      "description": "Productivity analytics, metrics, and reporting automation",
+      "icon": "📊"
+    },
+    "infrastructure": {
+      "name": "Infrastructure & DevOps",
+      "description": "Deployment, CI/CD, and infrastructure management",
+      "icon": "🔧"
+    },
+    "server": {
+      "name": "Server Management",
+      "description": "Server health, monitoring, and maintenance automation",
+      "icon": "🏥"
+    },
+    "cross-project": {
+      "name": "Cross-Project Operations",
+      "description": "Multi-repository coordination and synchronization",
+      "icon": "🔄"
+    }
+  },
+  "prompts": [
+    {
+      "id": "bigblocks/component-ecosystem-manager",
+      "name": "BigBlocks Component Ecosystem Manager",
+      "version": "1.0.0",
+      "description": "Orchestrate 96 Bitcoin UI components across your entire development ecosystem",
+      "category": "bigblocks",
+      "tags": ["components", "ui", "automation", "framework-agnostic", "themes"],
+      "complexity": "advanced",
+      "path": "bigblocks/component-ecosystem-manager.md",
+      "metadata": {
+        "llm_provider": ["claude"],
+        "estimated_tokens": 15000,
+        "time_estimate": "30-60 minutes"
+      }
+    }
+  ],
+  "statistics": {
+    "total_prompts": 1,
+    "categories_count": 7,
+    "last_updated": "2024-01-26",
+    "contributors": 1
+  }
+}
