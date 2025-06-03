@@ -44,16 +44,17 @@
     {
       "id": "bigblocks/component-ecosystem-manager",
       "name": "BigBlocks Component Ecosystem Manager",
-      "version": "1.0.0",
-      "description": "Orchestrate 96 Bitcoin UI components across your entire development ecosystem",
+      "version": "1.1.0",
+      "description": "Orchestrate 96 Bitcoin UI components with full blockchain integration across your ecosystem",
       "category": "bigblocks",
-      "tags": ["components", "ui", "automation", "framework-agnostic", "themes"],
+      "tags": ["components", "ui", "automation", "framework-agnostic", "themes", "blockchain", "social"],
       "complexity": "advanced",
       "path": "bigblocks/component-ecosystem-manager.md",
       "metadata": {
         "llm_provider": ["claude"],
         "estimated_tokens": 15000,
-        "time_estimate": "30-60 minutes"
+        "time_estimate": "30-60 minutes",
+        "bigblocks_version": "0.0.12"
       }
     }
   ],

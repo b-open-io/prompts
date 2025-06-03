@@ -1,6 +1,25 @@
+---
+name: "BigBlocks Component Ecosystem Manager"
+version: "1.1.0"
+description: "Orchestrate 96 Bitcoin UI components with full blockchain integration across your ecosystem"
+category: "bigblocks"
+tags: ["components", "ui", "automation", "framework-agnostic", "themes", "blockchain", "social"]
+author: "BSV Development Team"
+requirements:
+  tools: ["Claude Code", "git worktrees", "npm/bun"]
+  environment: ["GITHUB_TOKEN", "NPM_REGISTRY_ACCESS", "BMAP_API_URL"]
+  dependencies: ["cross-project/dependency-update"]
+metadata:
+  llm_provider: ["claude"]
+  complexity: "advanced"
+  estimated_tokens: 15000
+  time_estimate: "30-60 minutes"
+  bigblocks_version: "0.0.12"
+---
+
 # BigBlocks Component Ecosystem Manager
 
-**The Ultimate Automation for Managing 96 Bitcoin UI Components Across Your Entire Development Ecosystem**
+**The Ultimate Automation for Managing 96 Bitcoin UI Components with Full Blockchain Integration**
 
 ## 🎯 Mission
 
@@ -43,6 +62,14 @@ Orchestrate the complete BigBlocks ecosystem - 96 components, CLI tools, registr
 - Identify redundant component imports across projects
 - Generate performance reports with optimization recommendations
 - Track component performance metrics over time
+
+### 7. **NEW: Full Blockchain Integration Management (v0.0.12)**
+- Orchestrate real Bitcoin blockchain functionality across all social components
+- Manage bmap-api-types integration and API connections
+- Test blockchain transaction flows (likes, posts, follows, friend requests)
+- Monitor and validate Bitcoin transaction callbacks across components
+- Coordinate blockchain data fetching with useFetchLikes and social hooks
+- Ensure proper Bitcoin authentication and signing workflows
 
 ## 🧠 Advanced Implementation Pattern
 
@@ -202,6 +229,40 @@ error_recovery:
       - preserve_all_debugging_information
       - suggest_process_improvements_for_future
 ```
+
+## 📦 BigBlocks v0.0.12 CLI Integration
+
+### Installation Commands
+```bash
+# Install BigBlocks package
+npm install bigblocks
+
+# Use CLI for component installation
+npx bigblocks add PostCard
+npx bigblocks add FriendsDialog
+npx bigblocks add CodeBlock
+
+# Check version and available components
+npx bigblocks --version
+npx bigblocks list
+```
+
+### New Blockchain Integration Features
+```bash
+# Components with real Bitcoin functionality:
+npx bigblocks add PostCard       # Auto-fetches like data with useFetchLikes
+npx bigblocks add FriendsDialog  # Real friend actions with API integration
+npx bigblocks add SocialProfile  # Complete transaction objects in callbacks
+npx bigblocks add LikeButton     # Real blockchain likes/follows
+```
+
+### Social Hooks Available
+- `useFetchLikes` - Real Bitcoin like data
+- `useFetchPosts` - Blockchain post data
+- `useFetchFriends` - Real friend connections
+- `useSocialActions` - Bitcoin transaction callbacks
+- `useAuth` - Bitcoin authentication workflows
+- `useBmapApi` - Direct bmap-api-types integration
 
 ## 🛠️ Technical Implementation
 
