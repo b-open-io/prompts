@@ -152,11 +152,34 @@ claude mcp add prompts "cat ~/code/prompts/{category}/{prompt}.md"
 
 Our prompts leverage:
 - **Claude Code SDK** - Autonomous iteration and build verification
-- **init-prism** - AI-powered project generation
+- **init-prism** - AI-powered project generation with access to this prompts repository
 - **agent-master** - MCP server coordination across AI tools
 - **bsv-mcp** - Blockchain functionality exposure
 - **BigBlocks** - Bitcoin component library
 - **gib** - Git + blockchain version control
+
+## 🔄 InitPRISM Recursive Integration
+
+**POWERFUL**: InitPRISM now has access to this prompts repository, enabling:
+
+### Self-Referential Project Generation
+- **Prompt-Aware Projects**: New projects generated with knowledge of existing automation
+- **Built-in Maintenance**: Projects include references to relevant maintenance prompts
+- **Ecosystem Consistency**: Automatic integration of BigBlocks, testing, and deployment patterns
+
+### Meta-Automation Examples
+```bash
+# InitPRISM can now generate projects that:
+# 1. Include BigBlocks components with ecosystem manager automation
+# 2. Set up cross-project dependency update workflows
+# 3. Configure analytics and reporting from day one
+# 4. Integrate blockchain operations with proper monitoring
+```
+
+### Prompt Evolution
+- **Meta-Prompts**: Prompts that generate other prompts for specific use cases
+- **Composable Workflows**: Chain multiple prompts for complex automation scenarios
+- **Template Enhancement**: Project templates that reference specific prompts for ongoing tasks
 
 ---
 

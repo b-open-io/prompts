@@ -62,7 +62,36 @@ This repository builds on our monorepo containing:
 ## Tools Integration
 
 - **Claude Code SDK**: For programmatic Claude interactions
-- **init-prism**: Project generation and scaffolding
+- **init-prism**: Project generation and scaffolding with access to this prompts repository
 - **agent-master**: MCP server coordination
 - **bsv-mcp**: Blockchain functionality exposure
 - **gib**: Git + blockchain version control
+
+## InitPRISM Integration
+
+**POWERFUL RECURSIVE CAPABILITY**: InitPRISM now has access to this prompts repository, creating advanced automation possibilities:
+
+### Self-Referential Prompting
+- **Project Generation**: InitPRISM can reference existing prompts when generating new projects
+- **Prompt Composition**: Combine multiple prompts for complex workflows
+- **Template Enhancement**: Use prompts as templates for project-specific automation
+
+### Advanced Workflows
+```bash
+# InitPRISM can now do things like:
+# 1. Generate a new project
+# 2. Reference cross-project/dependency-update.md to set up automated maintenance
+# 3. Apply bigblocks/component-ecosystem-manager.md for UI consistency
+# 4. Use analytics prompts for built-in reporting
+```
+
+### Prompt Evolution
+- **Meta-Prompts**: Create prompts that generate other prompts
+- **Ecosystem Awareness**: New projects can inherit best practices from existing prompts
+- **Automated Integration**: Projects generated with awareness of our automation patterns
+
+### Best Practices for InitPRISM Integration
+1. **Reference Relevant Prompts**: When generating projects, consider which prompts apply
+2. **Document Prompt Usage**: Include instructions on which prompts to use for maintenance
+3. **Create Prompt Chains**: Design workflows that leverage multiple prompts sequentially
+4. **Build Prompt-Aware Templates**: Templates that reference specific prompts for common tasks
