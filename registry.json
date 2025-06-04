@@ -134,10 +134,42 @@
         "time_estimate": "60-90 minutes",
         "bigblocks_version": "0.0.12"
       }
+    },
+    {
+      "id": "bigblocks/performance-optimization-suite",
+      "name": "BigBlocks Performance Optimization Suite",
+      "version": "1.0.0",
+      "description": "Advanced performance optimization and bundle analysis for BigBlocks components with intelligent recommendations",
+      "category": "bigblocks",
+      "tags": ["performance", "optimization", "bundle-analysis", "monitoring", "components", "efficiency"],
+      "complexity": "advanced",
+      "path": "bigblocks/performance-optimization-suite.md",
+      "metadata": {
+        "llm_provider": ["claude"],
+        "estimated_tokens": 17000,
+        "time_estimate": "60-120 minutes",
+        "bigblocks_version": "0.0.12"
+      }
+    },
+    {
+      "id": "bigblocks/theme-management-sync",
+      "name": "BigBlocks Theme Management and Design System Synchronization",
+      "version": "1.0.0",
+      "description": "Advanced theme management and design system synchronization across BigBlocks ecosystem",
+      "category": "bigblocks",
+      "tags": ["themes", "design-system", "synchronization", "consistency", "components", "styling"],
+      "complexity": "advanced",
+      "path": "bigblocks/theme-management-sync.md",
+      "metadata": {
+        "llm_provider": ["claude"],
+        "estimated_tokens": 14000,
+        "time_estimate": "45-75 minutes",
+        "bigblocks_version": "0.0.12"
+      }
     }
   ],
   "statistics": {
-    "total_prompts": 6,
+    "total_prompts": 8,
     "categories_count": 7,
     "last_updated": "2025-01-06",
     "contributors": 1
