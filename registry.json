@@ -166,10 +166,42 @@
         "time_estimate": "45-75 minutes",
         "bigblocks_version": "0.0.12"
       }
+    },
+    {
+      "id": "development/llms-txt-generator",
+      "name": "LLMs.txt Generator for AI-Optimized Documentation",
+      "version": "1.0.0",
+      "description": "Generate AI-friendly documentation files that help LLMs understand and work with codebases, APIs, and component libraries",
+      "category": "development",
+      "tags": ["documentation", "ai-optimization", "llms", "api-docs", "bigblocks", "rest-api"],
+      "complexity": "intermediate",
+      "path": "development/llms-txt-generator.md",
+      "metadata": {
+        "llm_provider": ["claude"],
+        "estimated_tokens": 10000,
+        "time_estimate": "15-30 minutes",
+        "output_format": "llms.txt"
+      }
+    },
+    {
+      "id": "bigblocks/llms-txt-bigblocks",
+      "name": "BigBlocks LLMs.txt Generator",
+      "version": "1.0.0",
+      "description": "Generate comprehensive LLMs.txt documentation for the BigBlocks component library to enhance AI assistant understanding",
+      "category": "bigblocks",
+      "tags": ["documentation", "ai-optimization", "components", "bigblocks", "llms"],
+      "complexity": "intermediate",
+      "path": "bigblocks/llms-txt-bigblocks.md",
+      "metadata": {
+        "llm_provider": ["claude"],
+        "estimated_tokens": 8000,
+        "time_estimate": "20-30 minutes",
+        "bigblocks_version": "latest"
+      }
     }
   ],
   "statistics": {
-    "total_prompts": 8,
+    "total_prompts": 10,
     "categories_count": 7,
     "last_updated": "2025-01-06",
     "contributors": 1

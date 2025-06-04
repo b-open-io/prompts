@@ -44,12 +44,19 @@ detect_bigblocks_ecosystem_state() {
     check_version_features() {
         local version=$1
         
-        # v0.0.15+ features - Modular imports
+        # v0.0.15+ features - Production ready with full Vite compatibility
         if [[ "$version" > "0.0.14" ]]; then
-            echo "✅ Modular framework adapter imports"
-            echo "✅ Vite build hanging issue resolved"
+            echo "✅ Modular framework adapter imports (bigblocks/nextjs, bigblocks/express, bigblocks/astro)"
+            echo "✅ Vite build hanging issue completely resolved"
+            echo "✅ Type 42 Master Keys support"
+            echo "✅ BAP Profile Sync integration"
+            echo "✅ Transaction Fetcher functionality"
+            echo "✅ Zero TypeScript compilation errors"
+            echo "✅ 36% reduction in 'any' types"
+            echo "✅ Production-ready code quality"
             echo "⚠️  Breaking: Framework adapters now use separate entry points"
             export HAS_MODULAR_IMPORTS=true
+            export HAS_PRODUCTION_QUALITY=true
         fi
         
         # v0.0.14 features
@@ -76,10 +83,11 @@ detect_bigblocks_ecosystem_state() {
     
     check_version_features "$current_version"
     
-    # Auto-update recommendation
+    # Auto-update recommendation with init-prism integration
     if [[ "$installed_version" != "$current_version" && "$installed_version" != "not installed" ]]; then
         echo "⚠️ Update available: $installed_version → $current_version"
         echo "Run: npm update bigblocks"
+        echo "💡 Or generate new project: npm install -g init-prism@latest && init-prism create my-app --bigblocks"
     fi
 }
 
@@ -119,12 +127,12 @@ check_new_features_from_changelog() {
 - Migrate components between frameworks when projects change
 - Verify framework-specific optimizations and bundle sizes
 
-#### Adaptive Import Detection
+#### Adaptive Import Detection & Init-Prism Integration
 ```typescript
 // Automatically detect and use correct import pattern
 const getFrameworkAdapter = (framework: string, version: string) => {
   if (version >= '0.0.15') {
-    // v0.0.15+ uses modular imports
+    // v0.0.15+ uses modular imports - PRODUCTION READY
     switch (framework) {
       case 'nextjs':
         return `import { createNextJSBigBlocks } from 'bigblocks/nextjs'`;
@@ -139,6 +147,19 @@ const getFrameworkAdapter = (framework: string, version: string) => {
     // Pre-v0.0.15 uses main entry point
     return `import { createNextJSBigBlocks, createExpressBigBlocks, createAstroBigBlocks } from 'bigblocks'`;
   }
+};
+
+// Auto-generate project with init-prism
+const generateProjectWithBigBlocks = (framework: string, features: string[]) => {
+  const commands = [
+    'npm install -g init-prism@latest',
+    `init-prism create ${framework}-app --bigblocks --vite-compatible`,
+    'cd ${framework}-app',
+    'npm install bigblocks@latest',
+    ...features.map(feature => `npx bigblocks add ${feature}`)
+  ];
+  
+  return commands.join(' && ');
 };
 ```
 
@@ -327,12 +348,16 @@ error_recovery:
       - suggest_process_improvements_for_future
 ```
 
-## 📦 BigBlocks v0.0.12 CLI Integration
+## 📦 BigBlocks Latest CLI Integration with Init-Prism v0.0.23
 
 ### Installation Commands
 ```bash
-# Install BigBlocks package
-npm install bigblocks
+# Install latest BigBlocks package
+npm install bigblocks@latest
+
+# Or generate new project with init-prism (RECOMMENDED)
+npm install -g init-prism@latest
+init-prism create my-project --bigblocks --vite-compatible
 
 # Use CLI for component installation
 npx bigblocks add PostCard
@@ -344,13 +369,17 @@ npx bigblocks --version
 npx bigblocks list
 ```
 
-### New Blockchain Integration Features
+### Production-Ready v0.0.15+ Features
 ```bash
-# Components with real Bitcoin functionality:
-npx bigblocks add PostCard       # Auto-fetches like data with useFetchLikes
-npx bigblocks add FriendsDialog  # Real friend actions with API integration
-npx bigblocks add SocialProfile  # Complete transaction objects in callbacks
-npx bigblocks add LikeButton     # Real blockchain likes/follows
+# Components with Type 42 Master Keys and full Bitcoin functionality:
+npx bigblocks add PostCard       # Type 42 keys + useFetchLikes with real data
+npx bigblocks add FriendsDialog  # BAP Profile Sync + real friend actions
+npx bigblocks add SocialProfile  # Transaction Fetcher + complete tx objects
+npx bigblocks add LikeButton     # Production-ready blockchain likes/follows
+
+# Framework-specific adapters (v0.0.15+)
+npx bigblocks add WalletConnect --framework=nextjs
+npx bigblocks add TransactionHistory --framework=astro
 ```
 
 ### Social Hooks Available

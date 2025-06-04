@@ -159,25 +159,27 @@ generated_structure:
     - "health-monitoring.sh → references blockchain health prompt"
     - "component-sync.sh → references BigBlocks ecosystem manager"
     - "dependency-updates.sh → references cross-project automation"
+    - "generate-llms-txt.sh → auto-generates AI documentation"
   - "scripts/"
     - "setup-automation.sh → configures all inherited prompts"
     - "run-health-checks.sh → executes monitoring workflows"
   - "docs/"
     - "AUTOMATION.md → documents all inherited prompt capabilities"
     - "MAINTENANCE.md → step-by-step prompt usage guide"
+  - "llms.txt → AI-optimized documentation (auto-generated)"
 
 bigblocks_integration:
   components:
-    - "WalletConnect → with blockchain transaction monitoring"
-    - "TransactionHistory → with real BSV data"
-    - "IdentityProfile → with BAP integration"
-    - "PaymentFlow → with ordinals support"
+    - "WalletConnect → with Type 42 Master Keys and transaction monitoring"
+    - "TransactionHistory → with BAP Profile Sync and real BSV data"
+    - "IdentityProfile → with Transaction Fetcher integration"
+    - "PaymentFlow → with ordinals support and Vite compatibility"
   
   cli_setup:
-    - "npx bigblocks add WalletConnect"
-    - "npx bigblocks add TransactionHistory" 
-    - "npx bigblocks add IdentityProfile"
-    - "automated theme synchronization"
+    - "npm install -g init-prism@latest"
+    - "init-prism create bsv-app --bigblocks --vite-compatible"
+    - "npx bigblocks add WalletConnect TransactionHistory IdentityProfile"
+    - "automated framework adapter detection and setup"
 ```
 
 ### Social Media Platform
@@ -251,10 +253,19 @@ api_features:
 # to maintain component synchronization across the project
 
 echo "🎨 Syncing BigBlocks components using ecosystem automation..."
+echo "✅ Using init-prism v0.0.23 with BigBlocks latest (Vite compatible)"
+echo "🚀 Zero TypeScript errors, 96+ enterprise Bitcoin components"
+
+# Auto-detect framework and use appropriate adapter
+framework=$(detect_framework)
+echo "Detected framework: $framework"
+
 claude -p ~/code/prompts/bigblocks/component-ecosystem-manager.md \
   --project-root="$(pwd)" \
   --target-version="latest" \
-  --framework="$(detect_framework)"
+  --framework="$framework" \
+  --vite-compatible \
+  --type-safety-enabled
 ```
 
 ### 2. Meta-Prompt Generation
@@ -298,17 +309,20 @@ automation_chains:
 
 ## 📊 Success Metrics & Recursive Value
 
-### Immediate Value
+### Immediate Value (v0.0.23 + BigBlocks Latest)
 - **Time to Automation**: Projects generated with automation from day one
-- **Component Integration**: BigBlocks components working immediately
-- **Blockchain Connectivity**: Real BSV functionality without manual setup
+- **Component Integration**: 96+ BigBlocks components working immediately with zero TypeScript errors
+- **Blockchain Connectivity**: Real BSV functionality with Type 42 Master Keys and BAP Profile Sync
 - **Monitoring Coverage**: Health checks and alerts configured automatically
+- **Production Quality**: 36% reduction in 'any' types, comprehensive documentation
+- **Vite Compatibility**: Full Astro/Vite support without build hanging issues
 
 ### Compound Value
 - **Automation Multiplication**: Each project adds to ecosystem automation
 - **Pattern Evolution**: Better templates generated based on successful patterns
 - **Cross-Project Synergy**: Projects coordinate and enhance each other
 - **Meta-Evolution**: System generates better automation over time
+- **Quality Compounding**: Zero TypeScript errors multiply across all generated projects
 
 ### Ecosystem Metrics
 - **Projects Generated**: Track InitPRISM projects using prompt inheritance
