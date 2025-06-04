@@ -85,6 +85,44 @@ export default {
 }
 EOF
     fi
+    
+    # Handle v0.0.15+ modular imports
+    local version=$(npm list bigblocks --depth=0 | grep bigblocks | awk '{print $2}')
+    if [[ "$version" > "0.0.14" ]]; then
+        echo "🔄 Detected v0.0.15+ - Migrating to modular imports..."
+        migrate_to_modular_imports
+    fi
+}
+
+# Automatically migrate imports to v0.0.15+ pattern
+migrate_to_modular_imports() {
+    echo "  📦 Updating imports to modular pattern..."
+    
+    # Find and update framework adapter imports
+    find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | while read file; do
+        # Detect old import pattern
+        if grep -q "import.*{.*createNextJSBigBlocks.*}.*from ['\"']bigblocks['\"']" "$file"; then
+            echo "    Updating $file for Next.js modular import..."
+            sed -i.bak "s/from ['\"']bigblocks['\"']/from 'bigblocks\/nextjs'/g" "$file"
+        fi
+        
+        # Update Express imports
+        if grep -q "import.*{.*createExpressBigBlocks.*}.*from ['\"']bigblocks['\"']" "$file"; then
+            echo "    Updating $file for Express modular import..."
+            sed -i.bak "s/from ['\"']bigblocks['\"']/from 'bigblocks\/express'/g" "$file"
+        fi
+        
+        # Update Astro imports
+        if grep -q "import.*{.*createAstroBigBlocks.*}.*from ['\"']bigblocks['\"']" "$file"; then
+            echo "    Updating $file for Astro modular import..."
+            sed -i.bak "s/from ['\"']bigblocks['\"']/from 'bigblocks\/astro'/g" "$file"
+        fi
+    done
+    
+    # Clean up backup files
+    find . -name "*.bak" -delete
+    
+    echo "  ✅ Import migration complete"
 }
 ```
 

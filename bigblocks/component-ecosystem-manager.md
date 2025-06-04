@@ -44,7 +44,15 @@ detect_bigblocks_ecosystem_state() {
     check_version_features() {
         local version=$1
         
-        # v0.0.14+ features
+        # v0.0.15+ features - Modular imports
+        if [[ "$version" > "0.0.14" ]]; then
+            echo "✅ Modular framework adapter imports"
+            echo "✅ Vite build hanging issue resolved"
+            echo "⚠️  Breaking: Framework adapters now use separate entry points"
+            export HAS_MODULAR_IMPORTS=true
+        fi
+        
+        # v0.0.14 features
         if [[ "$version" > "0.0.13" ]]; then
             echo "✅ Astro/Vite compatibility fixes available"
             echo "✅ ESM module resolution fixed"
@@ -60,7 +68,7 @@ detect_bigblocks_ecosystem_state() {
         fi
         
         # Future version detection
-        if [[ "$version" > "0.0.14" ]]; then
+        if [[ "$version" > "0.0.15" ]]; then
             echo "🆕 New features detected - checking changelog..."
             check_new_features_from_changelog
         fi
@@ -110,6 +118,29 @@ check_new_features_from_changelog() {
 - Test components across all supported frameworks
 - Migrate components between frameworks when projects change
 - Verify framework-specific optimizations and bundle sizes
+
+#### Adaptive Import Detection
+```typescript
+// Automatically detect and use correct import pattern
+const getFrameworkAdapter = (framework: string, version: string) => {
+  if (version >= '0.0.15') {
+    // v0.0.15+ uses modular imports
+    switch (framework) {
+      case 'nextjs':
+        return `import { createNextJSBigBlocks } from 'bigblocks/nextjs'`;
+      case 'express':
+        return `import { createExpressBigBlocks } from 'bigblocks/express'`;
+      case 'astro':
+        return `import { createAstroBigBlocks } from 'bigblocks/astro'`;
+      default:
+        return `import { BigBlocks } from 'bigblocks'`;
+    }
+  } else {
+    // Pre-v0.0.15 uses main entry point
+    return `import { createNextJSBigBlocks, createExpressBigBlocks, createAstroBigBlocks } from 'bigblocks'`;
+  }
+};
+```
 
 ### 4. **Advanced Theme & Design System Management**
 - Deploy theme updates across all projects
