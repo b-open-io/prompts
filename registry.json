@@ -42,6 +42,52 @@
   },
   "prompts": [
     {
+      "id": "development/initprism-meta-prompt-generator",
+      "name": "InitPRISM Meta-Prompt Generator",
+      "version": "1.0.0",
+      "description": "Revolutionary recursive project generation with prompt-aware templates and automation inheritance",
+      "category": "development",
+      "tags": ["initprism", "recursive", "meta-automation", "project-generation", "templates", "bigblocks"],
+      "complexity": "advanced",
+      "path": "development/initprism-meta-prompt-generator.md",
+      "metadata": {
+        "llm_provider": ["claude"],
+        "estimated_tokens": 20000,
+        "time_estimate": "45-90 minutes",
+        "recursive_capability": true
+      }
+    },
+    {
+      "id": "server/system-health-audit",
+      "name": "System Health Audit",
+      "version": "1.0.0",
+      "description": "Comprehensive infrastructure health monitoring with intelligent alerting and automated remediation",
+      "category": "server",
+      "tags": ["monitoring", "health-checks", "infrastructure", "automation", "performance", "security"],
+      "complexity": "advanced",
+      "path": "server/system-health-audit.md",
+      "metadata": {
+        "llm_provider": ["claude"],
+        "estimated_tokens": 18000,
+        "time_estimate": "30-75 minutes"
+      }
+    },
+    {
+      "id": "development/cross-project-dependency-update",
+      "name": "Cross-Project Dependency Update",
+      "version": "1.0.0",
+      "description": "Intelligent dependency updates across entire BSV ecosystem with automated testing and coordination",
+      "category": "development",
+      "tags": ["dependencies", "automation", "security", "coordination", "testing", "monorepo"],
+      "complexity": "advanced",
+      "path": "development/cross-project-dependency-update.md",
+      "metadata": {
+        "llm_provider": ["claude"],
+        "estimated_tokens": 17000,
+        "time_estimate": "60-120 minutes"
+      }
+    },
+    {
       "id": "bigblocks/component-ecosystem-manager",
       "name": "BigBlocks Component Ecosystem Manager",
       "version": "1.1.0",
@@ -59,9 +105,9 @@
     }
   ],
   "statistics": {
-    "total_prompts": 1,
+    "total_prompts": 4,
     "categories_count": 7,
-    "last_updated": "2024-01-26",
+    "last_updated": "2025-01-06",
     "contributors": 1
   }
 }
