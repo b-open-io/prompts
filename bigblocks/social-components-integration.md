@@ -14,7 +14,8 @@ metadata:
   complexity: "advanced"
   estimated_tokens: 16000
   time_estimate: "45-90 minutes"
-  bigblocks_version: "0.0.12"
+  bigblocks_version: ">=0.0.12"
+  adaptive_architecture: true
 ---
 
 # BigBlocks Social Components Integration
@@ -23,7 +24,61 @@ metadata:
 
 ## 🎯 Mission
 
-Implement and orchestrate BigBlocks v0.0.12 social components with real Bitcoin blockchain functionality. Transform any application into a Bitcoin-native social platform with likes, posts, follows, friend requests, and complete transaction workflows using actual BSV blockchain data.
+Implement and orchestrate BigBlocks social components with real Bitcoin blockchain functionality. Transform any application into a Bitcoin-native social platform with likes, posts, follows, friend requests, and complete transaction workflows using actual BSV blockchain data.
+
+## 🔄 Adaptive Architecture Detection
+
+Before implementing, this prompt automatically detects and adapts to:
+
+### Version Detection
+```bash
+# Detect current BigBlocks version
+BIGBLOCKS_VERSION=$(npm list bigblocks --depth=0 | grep bigblocks | awk '{print $2}')
+echo "Detected BigBlocks version: $BIGBLOCKS_VERSION"
+
+# Detect BMAP API architecture
+check_bmap_architecture() {
+    # Test if /ingest endpoint returns bsocial overlay format
+    local response=$(curl -s -X POST "$BMAP_API_URL/ingest" -d '{"test":true}')
+    
+    if echo "$response" | grep -q "sigmaidentity"; then
+        echo "DETECTED: New bsocial overlay architecture (read-only BMAP)"
+        export BMAP_ARCHITECTURE="bsocial-overlay"
+    else
+        echo "DETECTED: Legacy monolithic BMAP architecture"
+        export BMAP_ARCHITECTURE="monolithic"
+    fi
+}
+
+# Detect available APIs and features
+detect_api_capabilities() {
+    # Check for new MessageMeta support
+    if curl -s "$BMAP_API_URL/messages" | grep -q "meta"; then
+        export SUPPORTS_MESSAGE_META=true
+    fi
+    
+    # Check for Type 42 identity support
+    if npm list bitcoin-backup | grep -q "0.0.[2-9]"; then
+        export SUPPORTS_TYPE_42=true
+    fi
+}
+```
+
+### Architecture Adaptation
+The implementation automatically adjusts based on detected architecture:
+
+```typescript
+// Adaptive transaction submission
+const submitTransaction = async (tx: Transaction) => {
+  if (BMAP_ARCHITECTURE === 'bsocial-overlay') {
+    // New architecture: BMAP forwards to bsocial
+    return submitViaBsocialOverlay(tx);
+  } else {
+    // Legacy: Direct BMAP submission
+    return submitDirectToBmap(tx);
+  }
+};
+```
 
 ## 🚀 Revolutionary Social Blockchain Capabilities
 

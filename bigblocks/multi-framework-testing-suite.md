@@ -14,7 +14,8 @@ metadata:
   complexity: "advanced"
   estimated_tokens: 15000
   time_estimate: "60-90 minutes"
-  bigblocks_version: "0.0.12"
+  bigblocks_version: ">=0.0.12"
+  framework_compatibility_aware: true
 ---
 
 # Multi-Framework BigBlocks Testing Suite
@@ -23,7 +24,69 @@ metadata:
 
 ## 🎯 Mission
 
-Ensure BigBlocks v0.0.12 components work flawlessly across all supported frameworks (React, Next.js, Express, Astro) with comprehensive testing coverage for UI functionality, blockchain integration, social features, and performance across different environments.
+Ensure BigBlocks components work flawlessly across all supported frameworks (React, Next.js, Express, Astro) with comprehensive testing coverage for UI functionality, blockchain integration, social features, and performance across different environments.
+
+## 🔍 Automatic Compatibility Detection
+
+This testing suite automatically detects and handles framework-specific issues:
+
+```bash
+# Detect BigBlocks version and known issues
+detect_compatibility_issues() {
+    local version=$(npm list bigblocks --depth=0 | grep bigblocks | awk '{print $2}')
+    echo "Testing BigBlocks $version"
+    
+    # Check for known compatibility fixes
+    if [[ "$version" < "0.0.14" ]]; then
+        echo "⚠️ WARNING: Pre-0.0.14 detected - Astro/Vite issues expected"
+        echo "Known issues:"
+        echo "- ESM module resolution for bmap-api-types"
+        echo "- Missing SSR guards for browser APIs"
+        export NEEDS_ASTRO_WORKAROUNDS=true
+    fi
+    
+    # Detect framework-specific module systems
+    detect_module_system() {
+        if [[ -f "vite.config.ts" || -f "vite.config.js" ]]; then
+            echo "Vite-based framework detected (Astro/SvelteKit)"
+            export MODULE_SYSTEM="vite"
+            
+            # Check for ESM compatibility
+            if ! grep -q '"type": "module"' package.json; then
+                echo "⚠️ ESM compatibility issue detected"
+            fi
+        elif [[ -f "next.config.js" || -f "next.config.mjs" ]]; then
+            echo "Next.js framework detected"
+            export MODULE_SYSTEM="webpack"
+        else
+            echo "Standard bundler detected"
+            export MODULE_SYSTEM="standard"
+        fi
+    }
+    
+    detect_module_system
+}
+
+# Apply automatic fixes for known issues
+apply_compatibility_fixes() {
+    if [[ "$NEEDS_ASTRO_WORKAROUNDS" == "true" ]]; then
+        echo "Applying Astro/Vite compatibility workarounds..."
+        
+        # Add vite config optimizations
+        cat >> vite.config.ts <<EOF
+// BigBlocks compatibility fixes
+export default {
+  optimizeDeps: {
+    include: ['bigblocks', 'bmap-api-types']
+  },
+  ssr: {
+    noExternal: ['bigblocks']
+  }
+}
+EOF
+    fi
+}
+```
 
 ## 🧪 Comprehensive Testing Framework
 

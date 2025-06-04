@@ -14,7 +14,8 @@ metadata:
   complexity: "advanced"
   estimated_tokens: 15000
   time_estimate: "30-60 minutes"
-  bigblocks_version: "0.0.12"
+  bigblocks_version: "dynamic"
+  auto_update_aware: true
 ---
 
 # BigBlocks Component Ecosystem Manager
@@ -24,6 +25,71 @@ metadata:
 ## 🎯 Mission
 
 Orchestrate the complete BigBlocks ecosystem - 96 components, CLI tools, registry systems, themes, and framework integrations - across all projects in the monorepo. This prompt implements advanced multi-turn automation, worktree isolation, and intelligent component management.
+
+## 🔄 Dynamic Version & Feature Detection
+
+```bash
+# Automatically detect and adapt to BigBlocks changes
+detect_bigblocks_ecosystem_state() {
+    echo "🔍 Detecting BigBlocks ecosystem state..."
+    
+    # Get current version
+    local current_version=$(npm view bigblocks version)
+    local installed_version=$(npm list bigblocks --depth=0 2>/dev/null | grep bigblocks | awk '{print $2}' || echo "not installed")
+    
+    echo "Latest BigBlocks: v$current_version"
+    echo "Installed: $installed_version"
+    
+    # Check for new features based on version
+    check_version_features() {
+        local version=$1
+        
+        # v0.0.14+ features
+        if [[ "$version" > "0.0.13" ]]; then
+            echo "✅ Astro/Vite compatibility fixes available"
+            echo "✅ ESM module resolution fixed"
+            echo "✅ SSR guards implemented"
+            export HAS_VITE_FIXES=true
+        fi
+        
+        # v0.0.13 features
+        if [[ "$version" > "0.0.12" ]]; then
+            echo "✅ Enhanced social components"
+            echo "✅ Improved TypeScript types"
+            export HAS_ENHANCED_SOCIAL=true
+        fi
+        
+        # Future version detection
+        if [[ "$version" > "0.0.14" ]]; then
+            echo "🆕 New features detected - checking changelog..."
+            check_new_features_from_changelog
+        fi
+    }
+    
+    check_version_features "$current_version"
+    
+    # Auto-update recommendation
+    if [[ "$installed_version" != "$current_version" && "$installed_version" != "not installed" ]]; then
+        echo "⚠️ Update available: $installed_version → $current_version"
+        echo "Run: npm update bigblocks"
+    fi
+}
+
+# Check for breaking changes or new patterns
+check_new_features_from_changelog() {
+    # Fetch recent npm info
+    local changelog=$(npm view bigblocks readme 2>/dev/null | grep -A 20 "Changelog\|What's New" || echo "")
+    
+    # Look for patterns indicating new features
+    if echo "$changelog" | grep -qi "breaking change"; then
+        echo "⚠️ Breaking changes detected - review needed"
+    fi
+    
+    if echo "$changelog" | grep -qi "new component"; then
+        echo "🆕 New components available"
+    fi
+}
+```
 
 ## 🚀 Core Capabilities
 
