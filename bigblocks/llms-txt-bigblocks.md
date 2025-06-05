@@ -90,7 +90,8 @@ BigBlocks is a production-ready React component library featuring 96+ enterprise
 
 Repository: https://github.com/BitcoinSchema/BigBlocks
 NPM: https://www.npmjs.com/package/bigblocks
-Version: latest (check with `npm view bigblocks version`)
+Version: v0.0.16+ (latest with framework adapter fixes)
+Features: TypeScript compilation fixes, enhanced ESM resolution, removed postinstall hacks
 
 ## KEY CONCEPTS
 

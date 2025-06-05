@@ -44,6 +44,16 @@ detect_bigblocks_ecosystem_state() {
     check_version_features() {
         local version=$1
         
+        # v0.0.16+ features - Framework adapter fixes and export improvements
+        if [[ "$version" > "0.0.15" ]]; then
+            echo "✅ Framework adapter export path fixes"
+            echo "✅ TypeScript compilation issues resolved"
+            echo "✅ Removed postinstall hack script"
+            echo "✅ Documentation consistency improvements"
+            echo "✅ Enhanced ESM module resolution"
+            export HAS_ADAPTER_FIXES=true
+        fi
+        
         # v0.0.15+ features - Production ready with full Vite compatibility
         if [[ "$version" > "0.0.14" ]]; then
             echo "✅ Modular framework adapter imports (bigblocks/nextjs, bigblocks/express, bigblocks/astro)"

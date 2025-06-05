@@ -260,10 +260,26 @@
         "estimated_tokens": 10000,
         "time_estimate": "60-90 minutes"
       }
+    },
+    {
+      "id": "development/fumadocs-integration-guide",
+      "name": "Fumadocs Complete Integration Guide",
+      "version": "1.0.0",
+      "description": "Complete, tested setup guide for Fumadocs latest version with BigBlocks and Next.js 15",
+      "category": "development",
+      "tags": ["fumadocs", "documentation", "mdx", "nextjs", "bigblocks", "setup"],
+      "complexity": "critical",
+      "path": "development/fumadocs-integration-guide.md",
+      "metadata": {
+        "llm_provider": ["claude"],
+        "estimated_tokens": 8000,
+        "time_estimate": "30-45 minutes",
+        "tested_status": "working"
+      }
     }
   ],
   "statistics": {
-    "total_prompts": 14,
+    "total_prompts": 15,
     "categories_count": 7,
     "last_updated": "2025-01-06",
     "contributors": 1
