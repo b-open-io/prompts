@@ -14,7 +14,25 @@ This repository contains reusable prompts that combine Claude Code capabilities,
 
 ## 🚀 Quick Start
 
-Each prompt is designed to be self-contained and executable. Browse the collection, copy the prompt you need, and customize for your specific use case.
+### Using Claude Code Slash Commands
+
+1. **Initialize User Commands** (first time only):
+   ```bash
+   # In Claude Code, run:
+   /init-prompts
+   ```
+
+2. **Access Design Resources**:
+   ```bash
+   # Use the design command for UI/UX resources
+   /design
+   /design shadcn
+   /design tailwind
+   ```
+
+### Using Prompts Directly
+
+Each prompt is designed to be self-contained and executable:
 
 ```bash
 # Example usage with Claude Code
@@ -34,13 +52,19 @@ prompts/
 ├── prompt-schema.json     # JSON schema for prompt structure
 ├── .gitignore            # Git ignore configuration
 │
+├── .claude/              # Claude Code configuration
+│   ├── commands/         # Project-level slash commands
+│   └── settings.local.json
+│
+├── user/                 # User-level Claude commands
+│   └── .claude/
+│       └── commands/     # Commands to copy to ~/.claude/commands
+│
 ├── bigblocks/            # BigBlocks component management
+├── design/               # UI/UX design tools and frameworks
 ├── development/          # Development workflow automation  
-├── blockchain/           # BSV-specific operations
-├── analytics/            # Reporting and metrics
 ├── infrastructure/       # DevOps and deployment
-├── server/               # Server maintenance and monitoring
-└── cross-project/        # Multi-repository operations
+└── server/               # Server maintenance and monitoring
 ```
 
 ## 📋 Prompt Format
@@ -82,12 +106,10 @@ Clear statement of what this prompt accomplishes...
 ### By Category
 Browse prompts organized by their primary function:
 - `bigblocks/` - Bitcoin UI component management
+- `design/` - UI/UX frameworks, design tools, and resources
 - `development/` - Code and dependency management
-- `blockchain/` - BSV network operations
-- `analytics/` - Metrics and reporting
 - `infrastructure/` - DevOps automation
 - `server/` - System administration
-- `cross-project/` - Multi-repo coordination
 
 ### Using the Registry
 The `registry.json` file contains metadata for all prompts:

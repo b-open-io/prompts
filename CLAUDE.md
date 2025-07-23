@@ -9,6 +9,7 @@ This is a collection of powerful, task-specific prompts designed to leverage our
 ## Purpose
 
 Create reusable, powerful prompts for:
+- **Design & UI Development**: Component libraries, frameworks, design tools
 - Server maintenance and monitoring
 - Project generation and scaffolding
 - Report generation and analytics
@@ -27,25 +28,32 @@ This repository builds on our monorepo containing:
 
 ## Prompt Categories
 
-### 1. Project Management
+### 1. Design & UI Development
+- Component library setup (shadcn/ui, BigBlocks)
+- CSS framework configuration (Tailwind CSS)
+- Documentation frameworks (Fumadocs)
+- Design inspiration and research tools
+- AI-powered component generation (21st.dev Magic)
+
+### 2. Project Management
 - Cross-project dependency updates
 - Version synchronization
 - Release coordination
 - Security audits
 
-### 2. Development Workflows
+### 3. Development Workflows
 - Project scaffolding with init-prism
 - Component extraction and reuse
 - API endpoint generation
 - Testing automation
 
-### 3. Blockchain Operations
+### 4. Blockchain Operations
 - Transaction monitoring
 - Ordinals management
 - Token operations
 - Identity management
 
-### 4. Infrastructure
+### 5. Infrastructure
 - Server health checks
 - Performance monitoring
 - Backup verification
@@ -61,11 +69,23 @@ This repository builds on our monorepo containing:
 
 ## Tools Integration
 
-- **Claude Code SDK**: For programmatic Claude interactions
+### Active Tools We Use
+- **Claude Code SDK**: For programmatic Claude interactions with slash commands
 - **init-prism**: Project generation and scaffolding with access to this prompts repository
-- **agent-master**: MCP server coordination
-- **bsv-mcp**: Blockchain functionality exposure
-- **gib**: Git + blockchain version control
+- **21st.dev Magic MCP**: AI-powered component generation
+- **shadcn/ui**: Modern React component library with CLI
+- **Fumadocs**: Documentation framework with AI integration and CLI
+- **Tailwind CSS**: Utility-first CSS framework with CLI
+- **Next.js**: React framework for production applications with CLI
+- **Vercel CLI**: Deployment platform for frontend applications
+- **Railway CLI**: Backend deployment and database hosting
+- **Cloudflare CLI (Wrangler)**: CDN, DNS, and edge services
+
+### Our Projects (Referenced in Prompts)
+- **BigBlocks**: Bitcoin component library
+- **agent-master**: MCP server coordination (WIP)
+- **bsv-mcp**: Blockchain functionality exposure (WIP)  
+- **gib**: Git + blockchain version control (WIP)
 
 ## InitPRISM Integration
 
