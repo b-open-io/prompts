@@ -34,6 +34,18 @@ Modern documentation framework with MDX support, AI integration, and beautiful t
 
 Curated collection of design galleries including Mobbin, Screens Design, FFFuel for effects, and favicon generation tools.
 
+## Code Quality & Formatting
+
+### Ultracite
+@/Users/satchmo/code/prompts/design/ultracite.md
+
+Zero-config preset for Biome that provides instant code formatting and linting for JavaScript/TypeScript projects.
+
+### Biome
+@/Users/satchmo/code/prompts/design/biome.md
+
+Fast formatter and linter written in Rust that replaces ESLint and Prettier with a single tool.
+
 ## AI-Powered Tools
 
 ### 21st.dev Magic MCP
@@ -49,6 +61,8 @@ AI component generation tool that creates UI components from natural language de
 /design tailwind
 /design fumadocs
 /design inspiration
+/design ultracite
+/design biome
 /design ai-components
 ```
 
