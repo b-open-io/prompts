@@ -59,6 +59,55 @@ Configure in your `globals.css`:
 }
 ```
 
+#### Visual Theme Editor - tweakcn
+**URL**: https://tweakcn.com
+
+tweakcn is a powerful visual theme editor for Tailwind CSS & shadcn/ui:
+- **Visual Customization**: Edit themes visually without touching code
+- **Beautiful Presets**: Start with pre-designed themes
+- **Advanced Controls**: Fine-tune every aspect of your UI
+- **Export Ready**: Copy generated CSS variables directly
+
+**Features**:
+- Real-time preview of all shadcn/ui components
+- Color picker with accessibility checks
+- Radius, spacing, and typography controls
+- Dark mode support
+- Export themes as CSS or JSON
+
+**Recommended Workflow**:
+
+1. **Clear existing custom styles** (before applying tweakcn theme):
+   ```bash
+   # Reset your globals.css to default shadcn/ui theme
+   npx shadcn@latest init -y
+   ```
+
+2. **Use tweakcn to create your theme**:
+   - Visit [tweakcn.com](https://tweakcn.com)
+   - Choose a preset or start from scratch
+   - Customize colors, radius, and other properties
+   - Preview changes on live components
+
+3. **Export and apply the theme**:
+   - Click "Copy" to get the CSS variables
+   - Replace the `:root` and `.dark` variables in your `globals.css`
+   - Keep the generated theme for consistency
+
+4. **Install shadcn/ui components with your theme**:
+   ```bash
+   # Components will now use your custom theme
+   npx shadcn@latest add button card dialog
+   ```
+
+**Pro Tips**:
+- Always clear custom styles before applying a new theme
+- Save your tweakcn theme URL for future edits
+- Test dark mode thoroughly after applying themes
+- Export as JSON for version control
+
+This tool solves the "all shadcn sites look the same" problem by making customization accessible and visual.
+
 #### Theme Toggle Implementation
 ```tsx
 // Using next-themes
