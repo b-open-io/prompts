@@ -200,68 +200,6 @@
       }
     },
     {
-      "id": "development/nipsey-task-generator",
-      "name": "Nipsey Idle-Time Task Generator",
-      "version": "1.0.0",
-      "description": "Generate intelligent, safe, and valuable tasks for Nipsey to work on during idle time",
-      "category": "development",
-      "tags": ["nipsey", "automation", "ai-tasks", "idle-time", "productivity", "autonomous-coding"],
-      "complexity": "advanced",
-      "path": "development/nipsey-task-generator.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 15000,
-        "time_estimate": "continuous",
-        "safety_level": "maximum"
-      }
-    },
-    {
-      "id": "development/nipsey-safety-monitor",
-      "name": "Nipsey Safety Monitor & Guardian",
-      "version": "1.0.0",
-      "description": "Real-time safety monitoring and intervention system for Nipsey's autonomous operations",
-      "category": "development",
-      "tags": ["nipsey", "safety", "monitoring", "security", "autonomous-coding", "guardrails"],
-      "complexity": "critical",
-      "path": "development/nipsey-safety-monitor.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 14000,
-        "time_estimate": "continuous",
-        "safety_level": "maximum"
-      }
-    },
-    {
-      "id": "development/nipsey-progress-tracker",
-      "name": "Nipsey Progress Tracker & Reporting System",
-      "version": "1.0.0",
-      "description": "Comprehensive progress tracking, reporting, and communication system for Nipsey's autonomous work",
-      "category": "development",
-      "tags": ["nipsey", "progress-tracking", "reporting", "analytics", "communication", "visualization"],
-      "complexity": "medium",
-      "path": "development/nipsey-progress-tracker.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 13000,
-        "time_estimate": "continuous"
-      }
-    },
-    {
-      "id": "infrastructure/nipsey-integration-guide",
-      "name": "Nipsey Complete Integration Guide",
-      "version": "1.0.0",
-      "description": "Step-by-step guide to integrate all Nipsey components into a working autonomous AI coding system",
-      "category": "infrastructure",
-      "tags": ["nipsey", "integration", "setup", "configuration", "deployment", "ai-automation"],
-      "complexity": "intermediate",
-      "path": "infrastructure/nipsey-integration-guide.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 10000,
-        "time_estimate": "60-90 minutes"
-      }
-    },
-    {
       "id": "development/fumadocs-integration-guide",
       "name": "Fumadocs Complete Integration Guide",
       "version": "1.0.0",
@@ -279,7 +217,7 @@
     }
   ],
   "statistics": {
-    "total_prompts": 15,
+    "total_prompts": 11,
     "categories_count": 7,
     "last_updated": "2025-01-06",
     "contributors": 1

@@ -13,6 +13,11 @@ Each response must include:
 
 ```json
 {
+  "Product Overview": {
+    "Project Title": "",
+    "Version Number": "",
+    "Product Summary": ""
+  },
   "Problem Definition": {
     "Core Problem": "",
     "User Pain Points": "",
@@ -24,11 +29,6 @@ Each response must include:
     "Resource Constraints": "",
     "Fixed vs Variable Scope": "",
     "Success Criteria": ""
-  },
-  "Product Overview": {
-    "Project Title": "",
-    "Version Number": "",
-    "Solution Summary": ""
   },
   "Goals": {
     "Business Goals": "",
@@ -83,8 +83,8 @@ Each response must include:
 **Instructions:**
 
 1. **Initiate the Conversation:**  
-   Begin by asking for details under the "prd_instructions" and "Problem Definition" sections. For example:  
-   *"What are the specific instructions for creating the PRD for your project? Also, what is the core problem you're trying to solve? What specific pain points are users experiencing with the current solution?"*
+   Begin by asking for details under the "prd_instructions" and "Product Overview" sections. For example:  
+   *"What are the specific instructions for creating the PRD for your project? Also, what is the title of your project, its current version, and a brief summary of the project and its purpose?"*
 
 2. **Update the Slot Map:**  
    After each user response, update the slot map with the provided information and display it in your response.
@@ -92,9 +92,9 @@ Each response must include:
 3. **Follow-Up Questions:**  
    Continue asking targeted follow-up questions for each section in the following order:
    - **PRD Instructions** (i.e. the content between `<prd_instructions>` and `</prd_instructions>`)
+   - **Product Overview** (Project Title, Version Number, Product Summary)
    - **Problem Definition** (Core Problem, User Pain Points, Current Solution Gaps, Why This Matters Now)
    - **Appetite & Constraints** (Time Budget, Resource Constraints, Fixed vs Variable Scope, Success Criteria)
-   - **Product Overview** (Project Title, Version Number, Solution Summary)
    - **Goals** (Business Goals, User Goals, Non-Goals)
    - **Boundaries & No-Gos** (Out of Bounds, Explicit Exclusions, Future Considerations)
    - **Rabbit Holes & Risks** (Technical Unknowns, Complexity Areas, Mitigation Strategies, Dependencies)
@@ -178,42 +178,41 @@ Follow these steps to create the PRD:
 
 # PRD: {project_title}
 
-## 1. Problem definition
-### 1.1 Core problem
-   - Clear statement of the fundamental problem being solved
-   - Why existing solutions fall short
-### 1.2 User pain points
-   - Specific frustrations and obstacles users face
-   - Concrete examples and scenarios
-### 1.3 Current solution gaps
-   - What's missing in the current approach
-   - Why workarounds are insufficient
-### 1.4 Why this matters now
-   - Urgency and timing considerations
-   - Business or market drivers
-
-## 2. Appetite & constraints
-### 2.1 Time budget
-   - Fixed time allocation (e.g., "6 weeks", "2 week small batch")
-   - Not an estimate, but a constraint
-### 2.2 Resource constraints
-   - Team size and composition limits
-   - Budget or technology constraints
-### 2.3 Fixed vs variable scope
-   - What must be delivered vs what can be adjusted
-   - Trade-off priorities
-### 2.4 Success criteria
-   - Definition of "good enough" for this appetite
-   - Minimum viable solution
-
-## 3. Product overview
-### 3.1 Document title and version
+## 1. Product overview
+### 1.1 Document title and version
    - Bullet list with title and version number as different items. Use same title as {project_title}. Example:
    - PRD: {project_title}
    - Version: {version_number}
-### 3.2 Solution summary
-   - High-level approach to solving the problem
-   - Key innovation or differentiation
+### 1.2 Product summary
+   - Overview of the project broken down into 2-3 short paragraphs.
+
+## 2. Problem definition
+### 2.1 Core problem
+   - Clear statement of the fundamental problem being solved
+   - Why existing solutions fall short
+### 2.2 User pain points
+   - Specific frustrations and obstacles users face
+   - Concrete examples and scenarios
+### 2.3 Current solution gaps
+   - What's missing in the current approach
+   - Why workarounds are insufficient
+### 2.4 Why this matters now
+   - Urgency and timing considerations
+   - Business or market drivers
+
+## 3. Appetite & constraints
+### 3.1 Time budget
+   - Fixed time allocation (e.g., "6 weeks", "2 week small batch")
+   - Not an estimate, but a constraint
+### 3.2 Resource constraints
+   - Team size and composition limits
+   - Budget or technology constraints
+### 3.3 Fixed vs variable scope
+   - What must be delivered vs what can be adjusted
+   - Trade-off priorities
+### 3.4 Success criteria
+   - Definition of "good enough" for this appetite
+   - Minimum viable solution
 
 ## 4. Goals
 ### 4.1 Business goals
