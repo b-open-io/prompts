@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(ls:*), Bash(diff:*), Bash(cat:*), Bash(find:*), Bash(git:*), Bash(cp:*), Read, Write, Edit, Grep
+allowed-tools: Bash(ls:*), Bash(diff:*), Bash(cat:*), Bash(find:*), Bash(git:*), Bash(cp:*), Bash(comm:*), Bash(xargs:*), Bash(basename:*), Bash(sort:*), Bash(sed:*), Bash(test:*), Bash(echo:*), Read, Write, Edit, Grep
 description: Sync and update user commands between local and prompts repo
 argument-hint: [--full-report] [--contribute] [--pull] [--push] [--help]
 ---
