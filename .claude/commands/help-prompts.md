@@ -1,23 +1,10 @@
 ---
-allowed-tools: Bash(ls:*), Bash(wc:*), Bash(echo:*), Bash(test:*), Read, Grep
+allowed-tools: Read, Grep
 description: Comprehensive help and status for prompts system
 argument-hint: [--status] [--guide] [--compare]
 ---
 
 # Prompts System Help & Status
-
-## Current Status Overview
-
-### Local Claude Commands
-!`ls ~/.claude/commands/*.md 2>/dev/null | wc -l`
-!`ls ~/.claude/commands/*.md 2>/dev/null`
-
-### Repository User Commands  
-!`ls user/.claude/commands/*.md 2>/dev/null | wc -l`
-!`ls user/.claude/commands/*.md 2>/dev/null`
-
-### Project Commands (This Repo)
-!`ls .claude/commands/*.md 2>/dev/null`
 
 ## Your Task
 
@@ -25,16 +12,16 @@ Provide comprehensive help based on `$ARGUMENTS`:
 
 ### Default (no arguments)
 Show:
-1. **System Overview**: Explain the prompts repository structure
-2. **Available Commands**: List all project commands with descriptions
+1. **System Overview**: Explain the prompts repository structure from CLAUDE.md
+2. **Available Commands**: Use Grep to find all .md files in .claude/commands/ and user/.claude/commands/
 3. **Quick Start**: Basic usage of init-prompts and sync-prompts
-4. **Status Summary**: Brief overview of local vs repo commands
+4. **Status Summary**: Guide user to manually check their ~/.claude/commands directory
 
 ### --status
 Provide detailed status by:
-1. List all local commands vs repo commands
-2. Compare file existence between local and repo
-3. Note which commands exist in only one location
+1. Use Grep and Read tools to check command files
+2. List available commands in this repository
+3. Guide user to check their ~/.claude/commands directory manually
 4. Suggest running /init-prompts or /sync-prompts as needed
 
 ### --guide
@@ -127,9 +114,9 @@ Use $ARGUMENTS to access user input.
 
 ### --compare
 Simple comparison between local and repo commands:
-1. Show which commands exist in both locations
-2. Use simple file existence checks
-3. Recommend sync actions based on findings
+1. Use Grep to list commands available in the repository
+2. Guide user to compare with their ~/.claude/commands directory manually
+3. Recommend sync actions based on general findings
 
 ## Summary and Recommendations
 
@@ -147,4 +134,4 @@ Based on the analysis, provide:
 - `/update-prompt` - Update an existing command
 
 Remember: This help system can be included by other commands using:
-@$WORKING_DIR/.claude/commands/help-prompts.md
+@.claude/commands/help-prompts.md
