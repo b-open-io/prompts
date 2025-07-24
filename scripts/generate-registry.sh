@@ -57,7 +57,12 @@ EOF
 total=$(find . -type f -name "*.md" \( -path "./development/*" -o -path "./design/*" -o -path "./infrastructure/*" -o -path "./blockchain/*" -o -path "./analytics/*" -o -path "./cross-project/*" \) ! -name "README.md" | wc -l | tr -d ' ')
 
 # Count categories with content
-categories=$(find . -type d \( -name "development" -o -name "design" -o -name "infrastructure" -o -name "blockchain" -o -name "analytics" -o -name "cross-project" \) -exec test -e {}/*.md \; -print | wc -l | tr -d ' ')
+categories=0
+for dir in development design infrastructure blockchain analytics cross-project; do
+  if [ -d "$dir" ] && ls "$dir"/*.md 2>/dev/null | grep -v README.md > /dev/null; then
+    categories=$((categories + 1))
+  fi
+done
 
 # Update date
 today=$(date +%Y-%m-%d)
@@ -74,3 +79,6 @@ echo "✅ Registry generated!"
 echo "📊 Total prompts: $total"
 echo "📁 Categories: $categories"
 echo "📅 Date: $today"
+
+# Ensure newline at end of file
+echo >> registry.json

@@ -9,6 +9,11 @@
       "description": "Code management, dependency updates, and development automation",
       "icon": "🚀"
     },
+    "design": {
+      "name": "Design & UI Development",
+      "description": "Component libraries, frameworks, design tools",
+      "icon": "🎨"
+    },
     "blockchain": {
       "name": "Blockchain Operations",
       "description": "BSV network monitoring, wallet operations, and blockchain automation",
@@ -24,55 +29,18 @@
       "description": "Deployment, CI/CD, and infrastructure management",
       "icon": "🔧"
     },
-    "server": {
-      "name": "Server Management",
-      "description": "Server health, monitoring, and maintenance automation",
-      "icon": "🏥"
-    },
     "cross-project": {
       "name": "Cross-Project Operations",
       "description": "Multi-repository coordination and synchronization",
       "icon": "🔄"
     }
   },
-  "prompts": [
-    {
-      "id": "development/initprism-meta-prompt-generator",
-      "name": "InitPRISM Meta-Prompt Generator",
-      "version": "1.0.0",
-      "description": "Revolutionary recursive project generation with prompt-aware templates and automation inheritance",
-      "category": "development",
-      "tags": ["initprism", "recursive", "meta-automation", "project-generation", "templates"],
-      "complexity": "advanced",
-      "path": "development/initprism-meta-prompt-generator.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 20000,
-        "time_estimate": "45-90 minutes",
-        "recursive_capability": true
-      }
-    },
-    {
-      "id": "development/fumadocs-integration-guide",
-      "name": "Fumadocs Complete Integration Guide",
-      "version": "1.0.0",
-      "description": "Complete, tested setup guide for Fumadocs latest version with Next.js 15",
-      "category": "development",
-      "tags": ["fumadocs", "documentation", "mdx", "nextjs", "setup"],
-      "complexity": "critical",
-      "path": "development/fumadocs-integration-guide.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 8000,
-        "time_estimate": "30-45 minutes",
-        "tested_status": "working"
-      }
-    }
-  ],
+  "prompts": [],
   "statistics": {
-    "total_prompts": 2,
-    "categories_count": 6,
-    "last_updated": "2025-01-24",
-    "contributors": 1
+    "total_prompts": 11,
+    "categories_count": 2,
+    "last_updated": "2025-07-24",
+    "generated": true
   }
 }
+
