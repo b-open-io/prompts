@@ -1,35 +1,9 @@
 ---
-allowed-tools: Bash(ps:*), Bash(kill:*), Bash(exec:*), Bash(echo:*), Bash(claude:*), Bash(test:*), Bash(pwd:*), Bash(sleep:*), Bash(bash:*), Bash(grep:*)
+allowed-tools: Bash(ps:*), Bash(kill:*), Bash(echo:*), Bash(claude:*), Bash(pwd:*), Bash(sleep:*), Bash(sh:*)
 description: Restart Claude Code to apply MCP changes or troubleshoot issues
-argument-hint: [--force] [--no-resume]
+argument-hint: [--force] [--no-resume] [--help]
 ---
 
-## Help Check
-!`echo "$ARGUMENTS" | grep -q -- "--help" && echo "HELP_REQUESTED" || echo "CONTINUE"`
-
-$IF_HELP_REQUESTED:
-**restart-claude** - Restart Claude Code to apply MCP changes or troubleshoot issues
-
-**Usage:** `/restart-claude [--force] [--no-resume]`
-
-**Description:**
-Restarts the current Claude Code session, useful after installing MCP servers or when troubleshooting. Automatically resumes the conversation unless --no-resume is specified.
-
-**Options:**
-- `--force`      : Force restart even if other sessions detected
-- `--no-resume`  : Don't resume conversation after restart
-- `--help`       : Show this help message
-
-**Examples:**
-- `/restart-claude`              : Restart and resume conversation
-- `/restart-claude --no-resume`  : Fresh start without resuming
-
-**Use Cases:**
-- After installing MCP servers (to load them)
-- When Claude Code becomes unresponsive
-- To apply configuration changes
-
-$STOP_EXECUTION_IF_HELP
 
 ## Current Session Info
 !`echo "PID: $$"`
@@ -37,7 +11,9 @@ $STOP_EXECUTION_IF_HELP
 
 ## Your Task
 
-Restart Claude Code with these considerations:
+If the arguments contain "--help", show the help documentation and stop.
+
+Otherwise, restart Claude Code with these considerations:
 
 ### 1. Important Warnings
 
@@ -66,13 +42,13 @@ The restart strategy depends on options:
 **Default (with resume):**
 ```bash
 # This will kill current session and start new one with conversation resume
-exec bash -c 'kill $$ && sleep 1 && claude -c'
+sh -c 'kill $$ && sleep 1 && claude -c'
 ```
 
 **Without resume:**
 ```bash
 # This will kill current session and start fresh
-exec bash -c 'kill $$ && sleep 1 && claude'
+sh -c 'kill $$ && sleep 1 && claude'
 ```
 
 ### 5. What Happens

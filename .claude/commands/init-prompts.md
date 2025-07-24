@@ -4,29 +4,6 @@ description: Initialize new user-level Claude commands (won't overwrite existing
 argument-hint: [--list-only] [--help]
 ---
 
-## Help Check
-!`echo "$ARGUMENTS" | grep -q -- "--help" && echo "HELP_REQUESTED" || echo "CONTINUE"`
-
-$IF_HELP_REQUESTED:
-**init-prompts** - Initialize new user-level Claude commands
-
-**Usage:** `/init-prompts [--list-only]`
-
-**Description:**
-Copies NEW commands from the prompts repository to your local ~/.claude/commands/ directory. This command will NEVER overwrite existing files.
-
-**Options:**
-- `--list-only` : Preview what would be copied without actually copying
-- `--help`      : Show this help message
-
-**Examples:**
-- `/init-prompts`           : Copy all new commands
-- `/init-prompts --list-only` : See what would be copied
-
-**Note:** Use `/sync-prompts` to update existing commands.
-
-$STOP_EXECUTION_IF_HELP
-
 ## Context
 
 - Project commands directory: !`ls -la $WORKING_DIR/user/.claude/commands/ 2>/dev/null || echo "No user commands found in repo"`
@@ -36,7 +13,9 @@ $STOP_EXECUTION_IF_HELP
 
 ## Your Task
 
-Initialize NEW user commands by copying ONLY non-existing commands from this repository's `user/.claude/commands/` to `~/.claude/commands/`.
+If the arguments contain "--help", show the help documentation and stop.
+
+Otherwise, initialize NEW user commands by copying ONLY non-existing commands from this repository's `user/.claude/commands/` to `~/.claude/commands/`.
 
 **IMPORTANT**: This command will NOT overwrite any existing files. Use `/sync-prompts` to update existing commands.
 

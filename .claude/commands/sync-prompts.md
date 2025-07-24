@@ -10,34 +10,6 @@ This command compares and synchronizes your local `~/.claude/commands/` with the
 
 **Note**: Use `/init-prompts` first to copy new commands. This command handles updates and synchronization of existing commands.
 
-## Help Check
-!`echo "$ARGUMENTS" | grep -q -- "--help" && echo "HELP_REQUESTED" || echo "CONTINUE"`
-
-$IF_HELP_REQUESTED:
-**sync-prompts** - Sync and update user commands between local and prompts repo
-
-**Usage:** `/sync-prompts [OPTIONS]`
-
-**Description:**
-Compares and synchronizes your local ~/.claude/commands/ with the prompts repository. Handles updates, merging, and contributions of existing commands.
-
-**Options:**
-- `--full-report` : Show detailed diffs for all differing files
-- `--contribute`  : Focus on contribution workflow
-- `--pull`        : Update local commands from repo (with confirmation)
-- `--push`        : Copy local commands to repo for contribution
-- `--help`        : Show this help message
-
-**Examples:**
-- `/sync-prompts`              : Show sync status
-- `/sync-prompts --full-report` : See detailed differences
-- `/sync-prompts --pull`        : Update from repo
-- `/sync-prompts --contribute`  : Share your improvements
-
-**Note:** Use `/init-prompts` first to copy new commands.
-
-$STOP_EXECUTION_IF_HELP
-
 ## Current Git Status
 !`cd $WORKING_DIR && git status --porcelain`
 
@@ -62,7 +34,9 @@ $STOP_EXECUTION_IF_HELP
 
 ## Your Task
 
-Based on the analysis above, provide a comprehensive sync report:
+If the arguments contain "--help", show the help documentation and stop.
+
+Otherwise, based on the analysis above, provide a comprehensive sync report:
 
 1. **Analyze Differences**
    - For commands in both locations, check if they differ using `diff`
