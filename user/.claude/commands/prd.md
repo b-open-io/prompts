@@ -13,15 +13,38 @@ Each response must include:
 
 ```json
 {
+  "Problem Definition": {
+    "Core Problem": "",
+    "User Pain Points": "",
+    "Current Solution Gaps": "",
+    "Why This Matters Now": ""
+  },
+  "Appetite & Constraints": {
+    "Time Budget": "",
+    "Resource Constraints": "",
+    "Fixed vs Variable Scope": "",
+    "Success Criteria": ""
+  },
   "Product Overview": {
     "Project Title": "",
     "Version Number": "",
-    "Project Summary": ""
+    "Solution Summary": ""
   },
   "Goals": {
     "Business Goals": "",
     "User Goals": "",
     "Non-Goals": ""
+  },
+  "Boundaries & No-Gos": {
+    "Out of Bounds": "",
+    "Explicit Exclusions": "",
+    "Future Considerations": ""
+  },
+  "Rabbit Holes & Risks": {
+    "Technical Unknowns": "",
+    "Complexity Areas": "",
+    "Mitigation Strategies": "",
+    "Dependencies": ""
   },
   "User Personas": {
     "Key User Types": "",
@@ -45,12 +68,13 @@ Each response must include:
     "Integration Points": "",
     "Data Storage & Privacy": "",
     "Scalability & Performance": "",
-    "Potential Challenges": ""
+    "Implementation Approach": ""
   },
   "Milestones & Sequencing": {
-    "Project Estimate": "",
-    "Team Size & Composition": "",
-    "Suggested Phases": ""
+    "Betting Strategy": "",
+    "Phases & Cycles": "",
+    "Team Composition": "",
+    "Cool-down Activities": ""
   },
   "User Stories": ""
 }
@@ -59,8 +83,8 @@ Each response must include:
 **Instructions:**
 
 1. **Initiate the Conversation:**  
-   Begin by asking for details under the "prd_instructions" and "Product Overview" sections. For example:  
-   *"What are the specific instructions for creating the PRD for your project? Also, what is the title of your project, its current version, and a brief summary of the project and its purpose?"*
+   Begin by asking for details under the "prd_instructions" and "Problem Definition" sections. For example:  
+   *"What are the specific instructions for creating the PRD for your project? Also, what is the core problem you're trying to solve? What specific pain points are users experiencing with the current solution?"*
 
 2. **Update the Slot Map:**  
    After each user response, update the slot map with the provided information and display it in your response.
@@ -68,15 +92,19 @@ Each response must include:
 3. **Follow-Up Questions:**  
    Continue asking targeted follow-up questions for each section in the following order:
    - **PRD Instructions** (i.e. the content between `<prd_instructions>` and `</prd_instructions>`)
-   - **Product Overview** (Project Title, Version Number, Product Summary)
+   - **Problem Definition** (Core Problem, User Pain Points, Current Solution Gaps, Why This Matters Now)
+   - **Appetite & Constraints** (Time Budget, Resource Constraints, Fixed vs Variable Scope, Success Criteria)
+   - **Product Overview** (Project Title, Version Number, Solution Summary)
    - **Goals** (Business Goals, User Goals, Non-Goals)
+   - **Boundaries & No-Gos** (Out of Bounds, Explicit Exclusions, Future Considerations)
+   - **Rabbit Holes & Risks** (Technical Unknowns, Complexity Areas, Mitigation Strategies, Dependencies)
    - **User Personas** (Key User Types, Basic Persona Details, Role-Based Access)
    - **Functional Requirements**
    - **User Experience** (Entry Points & First-time User Flow, Core Experience, Advanced Features & Edge Cases, UI/UX Highlights)
    - **Narrative**
    - **Success Metrics** (User-Centric Metrics, Business Metrics, Technical Metrics)
-   - **Technical Considerations** (Integration Points, Data Storage & Privacy, Scalability & Performance, Potential Challenges)
-   - **Milestones & Sequencing** (Project Estimate, Team Size & Composition, Suggested Phases)
+   - **Technical Considerations** (Integration Points, Data Storage & Privacy, Scalability & Performance, Implementation Approach)
+   - **Milestones & Sequencing** (Betting Strategy, Phases & Cycles, Team Composition, Cool-down Activities)
    - **User Stories**
 
 4. **Confirmation and Completeness:**  
@@ -150,36 +178,90 @@ Follow these steps to create the PRD:
 
 # PRD: {project_title}
 
-## 1. Product overview
-### 1.1 Document title and version
+## 1. Problem definition
+### 1.1 Core problem
+   - Clear statement of the fundamental problem being solved
+   - Why existing solutions fall short
+### 1.2 User pain points
+   - Specific frustrations and obstacles users face
+   - Concrete examples and scenarios
+### 1.3 Current solution gaps
+   - What's missing in the current approach
+   - Why workarounds are insufficient
+### 1.4 Why this matters now
+   - Urgency and timing considerations
+   - Business or market drivers
+
+## 2. Appetite & constraints
+### 2.1 Time budget
+   - Fixed time allocation (e.g., "6 weeks", "2 week small batch")
+   - Not an estimate, but a constraint
+### 2.2 Resource constraints
+   - Team size and composition limits
+   - Budget or technology constraints
+### 2.3 Fixed vs variable scope
+   - What must be delivered vs what can be adjusted
+   - Trade-off priorities
+### 2.4 Success criteria
+   - Definition of "good enough" for this appetite
+   - Minimum viable solution
+
+## 3. Product overview
+### 3.1 Document title and version
    - Bullet list with title and version number as different items. Use same title as {project_title}. Example:
    - PRD: {project_title}
    - Version: {version_number}
-   - 
-### 1.2 Product summary
-   - Overview of the project broken down into 2-3 short paragraphs.
+### 3.2 Solution summary
+   - High-level approach to solving the problem
+   - Key innovation or differentiation
 
-## 2. Goals
-### 2.1 Business goals
+## 4. Goals
+### 4.1 Business goals
    - Bullet list of business goals.
-### 2.2 User goals
+### 4.2 User goals
    - Bullet list of user goals.
-### 2.3 Non-goals
+### 4.3 Non-goals
    - Bullet list of non-goals that we don't want to achieve.
-## 3. User personas
-### 3.1 Key user types
+
+## 5. Boundaries & no-gos
+### 5.1 Out of bounds
+   - Features or functionality explicitly excluded from scope
+   - Areas we won't explore in this cycle
+### 5.2 Explicit exclusions
+   - Specific things users might expect but won't get
+   - Clear communication of limitations
+### 5.3 Future considerations
+   - What might come later but not now
+   - Intentional deferrals
+
+## 6. Rabbit holes & risks
+### 6.1 Technical unknowns
+   - Areas of technical uncertainty
+   - Integration questions or dependencies
+### 6.2 Complexity areas
+   - Parts that could balloon in scope
+   - Features that need careful boundaries
+### 6.3 Mitigation strategies
+   - How to avoid or manage each risk
+   - Fallback options if issues arise
+### 6.4 Dependencies
+   - External systems or teams required
+   - Timing dependencies
+
+## 7. User personas
+### 7.1 Key user types
    - Bullet list of key user types.
-### 3.2 Basic persona details
+### 7.2 Basic persona details
    - Bullet list of basic persona details based on the key user types in the following format:
    - **{persona_name}**: {persona_description}
    - Example:
    - **Guests**: Casual visitors interested in reading public blog posts.
-### 3.3 Role-based access
+### 7.3 Role-based access
       - Briefly describe each user role (e.g., Admin, Registered User, Guest) and the main features/permissions available to that role in the following format:
       - **{role_name}**: {role_description}
       - Example:
       - **Guests**: Can view public blog posts and search for content.
-## 4. Functional requirements
+## 8. Functional requirements
    - Bullet list of the functional requirements with priority in brackets in the following format:
    - **{feature_name}** (Priority: {priority_level})
      - List of requirements for the feature.
@@ -187,70 +269,69 @@ Follow these steps to create the PRD:
    - **Search the site**: (Priority: High)
      - Allow users to search for content by keyword.
      - Allow users to filter content by category.
-## 5. User experience
-### 5.1. Entry points & first-time user flow
+## 9. User experience
+### 9.1. Entry points & first-time user flow
    - Bullet list of entry points and first-time user flow.
-### 5.2. Core experience
+### 9.2. Core experience
    - Step by step bullet list of the core experience in the following format:
    - **{step_1}**: {explanation_of_step_1}
      - {how_to_make_it_a_good_first_experience}
    - Example:
    - **Browse posts:**: Guests and registered users navigate to the homepage to read public blog posts.
      - The homepage loads quickly and displays a list of posts with titles, short descriptions, and publication dates.
-### 5.3. Advanced features & edge cases
+### 9.3. Advanced features & edge cases
    - Bullet list of advanced features and edge cases.
-### 5.4. UI/UX highlights
+### 9.4. UI/UX highlights
    - Bullet list of UI/UX highlights.
-## 6. Narrative
+## 10. Narrative
 Describe the narrative of the project from the perspective of the user. For example: "{name} is a {role} who wants to {goal} because {reason}. {He/She} finds {project} and {reason_it_works_for_them}." Explain the users journey and the benefit they get from the end result. Limit the narrative to 1 paragraph only.
-## 7. Success metrics
-### 7.1. User-centric metrics
+## 11. Success metrics
+### 11.1. User-centric metrics
    - Bullet list of user-centric metrics.
-### 7.2. Business metrics
+### 11.2. Business metrics
    - Bullet list of business metrics.
-### 7.3. Technical metrics
+### 11.3. Technical metrics
    - Bullet list of technical metrics.
-## 8. Technical considerations
-### 8.1. Integration points
+## 12. Technical considerations
+### 12.1. Integration points
    - Bullet list of integration points.
-### 8.2. Data storage & privacy
+### 12.2. Data storage & privacy
    - Bullet list of data storage and privacy considerations.
-### 8.3. Scalability & performance
+### 12.3. Scalability & performance
    - Bullet list of scalability and performance considerations.
-### 8.4. Potential challenges
+### 12.4. Implementation approach
    - Bullet list of potential challenges.
-## 9. Milestones & sequencing
-### 9.1. Project estimate
-   - Bullet list of project estimate. i.e. "Medium: 2-4 weeks", eg:
-   - {Small|Medium|Large}: {time_estimate}
-### 9.2. Team size & composition
-   - Bullet list of team size and composition. eg:
-   - Medium Team: 1-3 total people
-     - Product manager, 1-2 engineers, 1 designer, 1 QA specialist
-### 9.3. Suggested phases
-   - Bullet list of suggested phases in the following format:
-   - **{Phase 1}**: {description_of_phase_1} ({time_estimate})
-     - {key_deliverables}
-   - **{Phase 2}**: {description_of_phase_2} ({time_estimate})
-     - {key_deliverables}
-   - Example:
-   - **Phase 1:**: Develop core blogging functionality and user authentication (2 weeks)
-     - Key deliverables: Landing page, blog post creation, public content viewing, user registration, login features.
-## 10. User stories
+## 13. Milestones & sequencing
+### 13.1. Betting strategy
+   - Appetite and bet size (e.g., "6-week bet", "2-week small batch")
+   - Why this is worth the investment now
+   - What we're betting on vs what we're not
+### 13.2. Phases & cycles
+   - Development cycles and cool-down periods
+   - Key milestones within the cycle
+   - Integration and deployment strategy
+### 13.3. Team composition
+   - Required roles and expertise
+   - Team structure (integrated or specialized)
+   - Decision-making and autonomy level
+### 13.4. Cool-down activities
+   - Technical debt to address
+   - Research for next cycle
+   - Documentation and knowledge sharing
+## 14. User stories
 Create a h3 and bullet list for each of the user stories in the following example format:
-### 10.{x}. {user_story_title}
+### 14.{x}. {user_story_title}
    - **ID**: {user_story_id}
    - **Description**: {user_story_description}
    - **Acceptance criteria**: {user_story_acceptance_criteria}
    - Example:
-### 10.1. View public blog posts
+### 14.1. View public blog posts
    - **ID**: US-001
    - **Description**: As a guest, I want to view public blog posts so that I can read them.
    - **Acceptance criteria**:
      - The public blog posts are displayed on the homepage.
      - The posts are sorted by publication date in descending order.
-     - The posts are displayed with a title, short description, and publication date.
-     - 
+     - The posts are displayed with a title, short description, and publication date. 
 </prd_outline>
 
 <user_story>
