@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(claude:*), Bash(which:*), Bash(bunx:*), Bash(echo:*)
+allowed-tools: Bash(claude *), Bash(which *), Bash(bunx *), Bash(grep *)
 description: Install Playwright MCP server for browser automation and testing
 argument-hint: [--user] [--check-only]
 ---
@@ -31,7 +31,7 @@ Then stop.
 Otherwise, proceed with the installation:
 
 ## Prerequisites Check
-!`which bun >/dev/null 2>&1 && echo "BUN_INSTALLED" || echo "BUN_NOT_FOUND"`
+!`which bun || echo "BUN_NOT_FOUND"`
 
 ## Current MCP Configuration
 !`claude mcp list 2>/dev/null | grep -A2 "playwright" || echo "Playwright MCP not currently installed"`
@@ -42,7 +42,7 @@ Install the Playwright MCP server following these steps:
 
 ### 1. Check Prerequisites
 
-If bun check shows "BUN_NOT_FOUND":
+If the bun check output shows "BUN_NOT_FOUND":
 - Inform user that bun is required
 - Provide installation instructions:
   ```bash

@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(claude:*), Bash(open:*), Bash(echo:*), Bash(test:*), WebFetch
+allowed-tools: Bash(claude *), Bash(open *), Bash(echo *), Bash(grep *)
 description: Install 21st.dev Magic MCP server for AI component generation
 argument-hint: [--user] [--check-only]
 ---
@@ -31,19 +31,18 @@ Then stop.
 
 Otherwise, proceed with the installation:
 
-## API Key Check
-!`[ -n "$MAGIC_MCP_API_KEY" ] && echo "API_KEY_FOUND" || echo "API_KEY_MISSING"`
-
-## Current MCP Configuration
-!`claude mcp list 2>/dev/null | grep -A2 "magic_mcp" || echo "Magic MCP not currently installed"`
-
 ## Your Task
 
 Install the 21st.dev Magic MCP server following these steps:
 
 ### 1. Check API Key Availability
 
-If API key check shows "API_KEY_MISSING":
+!`echo "${MAGIC_MCP_API_KEY:-(not set)}"`
+
+### Current MCP Configuration
+!`claude mcp list 2>/dev/null | grep -A2 "magic_mcp" || echo "Magic MCP not currently installed"`
+
+If the API key shows "(not set)":
 - Inform user that MAGIC_MCP_API_KEY environment variable is required
 - Provide instructions:
   ```bash

@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Edit, Bash(find:*), Bash(ls:*), Bash(pwd:*), Grep
+allowed-tools: Read, Write, Edit, Bash(find *), Bash(ls *), Bash(pwd *), Grep
 description: Update an existing Claude Code slash command
 argument-hint: <command-name|path> [--add-help] [--update-tools] [--optimize]
 ---

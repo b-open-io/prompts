@@ -1,6 +1,6 @@
 ---
 version: 1.1.0
-allowed-tools: Bash(find:*), Bash(echo:*), Bash(grep:*), Bash(tree:*), Bash(du:*), Bash(ls:*), Bash(head:*), Bash(stat:*), Glob
+allowed-tools: Bash(find *), Bash(echo *), Bash(grep *), Bash(tree *), Bash(du *), Bash(ls *), Bash(head *), Bash(stat *), Glob
 description: Fast file/content search optimized for large code repositories
 argument-hint: <pattern> [path] [--content] [--tree] [--recent <days>] [--type <ext>] [--max-size <MB>]
 ---
