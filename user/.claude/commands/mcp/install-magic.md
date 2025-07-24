@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(claude *), Bash(open *), Bash(echo *), Bash(grep *)
+allowed-tools: Bash
 description: Install 21st.dev Magic MCP server for AI component generation
 argument-hint: [--user] [--check-only]
 ---
@@ -37,7 +37,7 @@ Install the 21st.dev Magic MCP server following these steps:
 
 ### 1. Check API Key Availability
 
-!`echo "${MAGIC_MCP_API_KEY:-(not set)}"`
+!`source ~/.zshrc 2>/dev/null || source ~/.bashrc 2>/dev/null || true; echo "${MAGIC_MCP_API_KEY:-(not set)}"`
 
 ### Current MCP Configuration
 !`claude mcp list 2>/dev/null | grep -A2 "magic_mcp" || echo "Magic MCP not currently installed"`
@@ -64,12 +64,13 @@ Check `$ARGUMENTS` for flags:
 
 ### 3. Install Magic MCP
 
-Execute the installation command with the actual API key:
+Execute the installation command with the discovered API key:
 
 ```bash
+# Use the API_KEY variable we stored earlier
 claude mcp add-json magic_mcp '{
   "command": "npx",
-  "args": ["-y", "@21st-dev/magic@latest", "API_KEY=\"'$MAGIC_MCP_API_KEY'\""]
+  "args": ["-y", "@21st-dev/magic@latest", "API_KEY=\"'"$API_KEY"'\""]
 }'
 ```
 
