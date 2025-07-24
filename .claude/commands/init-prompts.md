@@ -1,8 +1,31 @@
 ---
 allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(find:*), Read
 description: Initialize new user-level Claude commands (won't overwrite existing)
-argument-hint: [--list-only]
+argument-hint: [--list-only] [--help]
 ---
+
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**init-prompts** - Initialize new user-level Claude commands
+
+**Usage:** `/init-prompts [--list-only]`
+
+**Description:**
+Copies NEW commands from the prompts repository to your local ~/.claude/commands/ directory. This command will NEVER overwrite existing files.
+
+**Options:**
+- `--list-only` : Preview what would be copied without actually copying
+- `--help`      : Show this help message
+
+**Examples:**
+- `/init-prompts`           : Copy all new commands
+- `/init-prompts --list-only` : See what would be copied
+
+**Note:** Use `/sync-prompts` to update existing commands.
+
+$STOP_EXECUTION_IF_HELP
 
 ## Context
 

@@ -1,3 +1,44 @@
+---
+allowed-tools: Read, Write, Edit, Bash
+description: Create comprehensive PRDs combining Shape Up, Amazon Working Backwards, and traditional approaches
+argument-hint: <project-description> - Brief description of your project
+---
+
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**prd-enhanced** - Create comprehensive PRDs combining Shape Up, Amazon Working Backwards, and traditional approaches
+
+**Usage:** `/prd-enhanced <project-description>`
+
+**Description:**
+Interactive PRD creation that combines the best of Shape Up methodology, Amazon's Working Backwards approach, and traditional PRD practices. Uses a conversational slot-filling process to gather all necessary information.
+
+**Arguments:**
+- `<project-description>` : Brief description of your project
+- `--help`                : Show this help message
+
+**Examples:**
+- `/prd-enhanced "AI-powered code review tool"`
+- `/prd-enhanced "Mobile app for habit tracking"`
+
+**Features:**
+- Shape Up: Appetite setting, rabbit hole identification
+- Working Backwards: Press release, customer quotes, FAQs
+- Traditional: User stories, metrics, technical specs
+- Interactive slot-filling conversation
+- Comprehensive 12-section PRD output
+
+**Process:**
+1. Problem exploration with Five Whys
+2. Appetite and constraints definition
+3. Solution shaping (fat marker sketches)
+4. Success metrics and kill criteria
+5. Final PRD generation saved as PRD.md
+
+$STOP_EXECUTION_IF_HELP
+
 **System-Prompt for Facilitating Chat-Based PRD Creation**
 
 You are a senior product manager expert in Shape Up methodology, Amazon's Working Backwards approach, and traditional PRD creation. Your task is to guide a conversation that creates a comprehensive PRD by combining the best practices from all three approaches. Use a slot-filling process where you ask targeted follow-up questions, update a structured slot map with each user response, and finally generate the final PRD.

@@ -1,3 +1,37 @@
+---
+allowed-tools: Read, Write, Edit, Bash
+description: Enhance existing Claude commands with better bash execution and file references
+argument-hint: <command-file-path> - Path to the command file to enhance
+---
+
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**enhance** - Enhance existing Claude commands with better bash execution and file references
+
+**Usage:** `/enhance <command-file-path>`
+
+**Description:**
+Analyze and enhance existing Claude slash commands by adding real-time bash execution, dynamic file references, improved argument handling, and context optimization. Makes commands more powerful and efficient.
+
+**Arguments:**
+- `<command-file-path>` : Path to the command file to enhance
+- `--help`              : Show this help message
+
+**Examples:**
+- `/enhance commands/my-command.md` : Enhance a specific command
+- `/enhance ./custom-cmd.md`        : Enhance a local command file
+
+**Features:**
+- Real-time command execution with `!` prefix
+- Dynamic file references with `@` prefix
+- Better argument validation
+- Context optimization
+- Error handling improvements
+
+$STOP_EXECUTION_IF_HELP
+
 # Enhance Command
 
 You are an expert in Claude Code slash commands with deep knowledge of best practices for creating powerful, efficient commands that leverage:

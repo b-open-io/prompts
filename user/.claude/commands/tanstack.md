@@ -4,6 +4,42 @@ allowed-tools: Read, Edit, MultiEdit, Write, Grep, Glob, WebFetch
 argument-hint: [pattern] | setup | mutations | infinite | optimistic
 ---
 
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**tanstack** - TanStack Query patterns for data fetching and state management
+
+**Usage:** `/tanstack [pattern]`
+
+**Description:**
+Comprehensive TanStack Query (formerly React Query) patterns for Next.js App Router. Covers setup, queries, mutations, infinite scrolling, optimistic updates, and advanced caching strategies.
+
+**Arguments:**
+- `setup`      : Provider and configuration setup
+- `mutations`  : Mutation patterns with error handling
+- `infinite`   : Infinite scrolling implementation
+- `optimistic` : Optimistic update strategies
+- `<pattern>`  : Search for specific patterns
+- `--help`     : Show this help message
+
+**Examples:**
+- `/tanstack`           : Overview of TanStack Query
+- `/tanstack setup`     : Initial setup with App Router
+- `/tanstack mutations` : Mutation patterns and best practices
+- `/tanstack infinite`  : Infinite query implementation
+
+**Features:**
+- App Router integration
+- Query client setup
+- Basic and dependent queries
+- Mutations with optimistic updates
+- Infinite queries
+- Prefetching strategies
+- Background refetching
+
+$STOP_EXECUTION_IF_HELP
+
 # TanStack Query Patterns
 
 $ARGUMENTS

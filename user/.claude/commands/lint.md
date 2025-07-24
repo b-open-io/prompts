@@ -4,6 +4,38 @@ description: Set up and achieve 100% clean linting with Ultracite/Biome
 argument-hint: [setup|clean|check] - Initialize linting or clean up existing issues
 ---
 
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**lint** - Set up and achieve 100% clean linting with Ultracite/Biome
+
+**Usage:** `/lint [action]`
+
+**Description:**
+Set up Ultracite (powered by Biome) for zero-config linting and formatting. Achieve 100% clean code without using `any` types or disabling rules. Includes setup instructions, common fixes, and best practices.
+
+**Arguments:**
+- `setup`  : Initialize Ultracite in your project
+- `clean`  : Guide to fix all linting issues
+- `check`  : Check current linting status
+- `--help` : Show this help message
+
+**Examples:**
+- `/lint`       : Overview and quick reference
+- `/lint setup` : Initialize Ultracite configuration
+- `/lint clean` : Step-by-step guide to achieve 100% clean code
+- `/lint check` : Run linting checks and see current status
+
+**Key Features:**
+- No `any` types allowed
+- No rule exceptions
+- Auto-fix capabilities
+- TypeScript strict mode
+- Pre-commit hooks
+
+$STOP_EXECUTION_IF_HELP
+
 # Achieving 100% Clean Linting with Ultracite
 
 This guide helps you set up Ultracite (powered by Biome) and achieve 100% clean linting without using `any` types or special rule configurations.

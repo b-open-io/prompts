@@ -4,6 +4,30 @@ description: AI-powered design tools and component generation resources
 argument-hint: [tool] - e.g., magic, v0, galileo, framer
 ---
 
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**ai-inspiration** - AI-powered design tools and component generation resources
+
+**Usage:** `/ai-inspiration [tool]`
+
+**Description:**
+Access information about AI design tools for generating UI components and designs. Includes comparisons and workflows for tools like 21st.dev Magic, v0, Galileo AI, and Framer.
+
+**Arguments:**
+- `magic`   : Focus on 21st.dev Magic MCP
+- `v0`      : Focus on Vercel's v0
+- `galileo` : Focus on Galileo AI
+- `framer`  : Focus on Framer AI
+- `--help`  : Show this help message
+
+**Examples:**
+- `/ai-inspiration`       : Overview of all AI design tools
+- `/ai-inspiration magic` : Deep dive into 21st.dev Magic
+
+$STOP_EXECUTION_IF_HELP
+
 # AI Design & Component Generation Tools
 
 Leverage AI to accelerate your design and development workflow with these powerful tools.

@@ -4,6 +4,32 @@ description: Access BSV SDK documentation and code examples
 argument-hint: [topic] - e.g., keys, transactions, scripts, wallet, auth
 ---
 
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**bsv** - Access BSV SDK documentation and code examples
+
+**Usage:** `/bsv [topic]`
+
+**Description:**
+Access comprehensive documentation and code examples for the @bsv/sdk TypeScript library. Get quick access to common BSV development patterns, key management, transaction construction, and more.
+
+**Arguments:**
+- `keys`         : Private/public key management
+- `transactions` : Transaction construction and handling
+- `scripts`      : Script templates and operations
+- `wallet`       : BRC-100 wallet integration
+- `auth`         : Authentication and certificates
+- `--help`       : Show this help message
+
+**Examples:**
+- `/bsv`              : Overview of BSV SDK features
+- `/bsv keys`         : Key generation and management
+- `/bsv transactions` : Building and signing transactions
+
+$STOP_EXECUTION_IF_HELP
+
 # BSV TypeScript SDK Documentation
 
 Access comprehensive documentation for the @bsv/sdk library.

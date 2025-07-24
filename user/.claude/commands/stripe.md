@@ -4,6 +4,40 @@ allowed-tools: Bash, Read, Edit, MultiEdit, Write, Grep, Glob, Task
 argument-hint: [search-term] | setup | test | webhook
 ---
 
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**stripe** - General Stripe integration patterns and setup
+
+**Usage:** `/stripe [topic]`
+
+**Description:**
+Comprehensive Stripe integration guide with code examples for Next.js App Router. Includes payment processing, webhooks, testing strategies, and common patterns.
+
+**Arguments:**
+- `setup`   : Initial Stripe SDK setup and configuration
+- `test`    : Testing with test cards and webhook CLI
+- `webhook` : Webhook handler implementation
+- `<term>`  : Search for specific Stripe patterns
+- `--help`  : Show this help message
+
+**Examples:**
+- `/stripe`         : Overview of Stripe integration
+- `/stripe setup`   : SDK installation and environment setup
+- `/stripe webhook` : Webhook endpoint implementation
+- `/stripe checkout`: Checkout session examples
+
+**Features:**
+- Server-side API routes
+- Client-side components
+- Checkout sessions
+- Payment intents
+- Webhook handling
+- Testing strategies
+
+$STOP_EXECUTION_IF_HELP
+
 # Stripe Integration Guide
 
 $ARGUMENTS

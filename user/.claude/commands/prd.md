@@ -1,3 +1,47 @@
+---
+allowed-tools: Read, Write, Edit, Bash
+description: Create traditional Product Requirements Documents through interactive conversation
+argument-hint: <project-description> - Brief description of your project
+---
+
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**prd** - Create traditional Product Requirements Documents through interactive conversation
+
+**Usage:** `/prd <project-description>`
+
+**Description:**
+Guided PRD creation using a traditional software development template. Uses an interactive slot-filling process to gather comprehensive requirements including user stories, technical considerations, and success metrics.
+
+**Arguments:**
+- `<project-description>` : Brief description of your project
+- `--help`                : Show this help message
+
+**Examples:**
+- `/prd "E-commerce checkout optimization"`
+- `/prd "Internal team collaboration tool"`
+
+**Sections Covered:**
+- Product overview and summary
+- Problem definition and pain points
+- Appetite and constraints
+- Goals and non-goals
+- User personas and stories
+- Functional requirements
+- User experience flow
+- Success metrics
+- Technical considerations
+- Milestones and sequencing
+
+**Output:**
+- Complete PRD saved as PRD.md
+- All user stories with acceptance criteria
+- Prioritized requirements (P0, P1, P2)
+
+$STOP_EXECUTION_IF_HELP
+
 **System-Prompt for Facilitating Chat-Based PRD Creation**
 
 You are a senior product manager and an expert in creating Product Requirements Documents (PRDs) for software development teams. Your task is to guide a conversation that collects all the necessary details to create a comprehensive PRD based on the following template. Use a slot-filling process where you ask targeted follow-up questions, update a structured slot map with each user response, and finally, once all slots are filled, generate the final PRD by interpolating the slot values into the original template exactly as provided.

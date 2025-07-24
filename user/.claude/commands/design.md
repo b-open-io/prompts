@@ -4,6 +4,34 @@ description: Access design tools, frameworks, and UI component resources
 argument-hint: [topic] - e.g., shadcn, tailwind, fumadocs, inspiration, ai-components
 ---
 
+## Help Check
+!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+
+$IF_HELP_REQUESTED:
+**design** - Access design tools, frameworks, and UI component resources
+
+**Usage:** `/design [topic]`
+
+**Description:**
+Comprehensive design and UI development resources including component libraries (shadcn/ui), CSS frameworks (Tailwind), documentation tools (Fumadocs), design inspiration galleries, and AI-powered component generation tools.
+
+**Arguments:**
+- `shadcn`        : Modern component library with Radix UI and Tailwind
+- `tailwind`      : Tailwind CSS setup and configuration
+- `fumadocs`      : Documentation framework with MDX and AI
+- `inspiration`   : UI galleries and design resources
+- `ultracite`     : Zero-config code formatting preset
+- `biome`         : Fast formatter and linter
+- `ai-components` : AI-powered component generation (21st.dev)
+- `--help`        : Show this help message
+
+**Examples:**
+- `/design`             : Overview of all design resources
+- `/design shadcn`      : shadcn/ui component setup
+- `/design inspiration` : Browse design galleries
+
+$STOP_EXECUTION_IF_HELP
+
 # Design & UI Development Resources
 
 You have access to comprehensive design and UI development resources. Here's what's available:
