@@ -82,7 +82,8 @@ prompts/
 │       ├── init-prompts.md    # Initialize user commands
 │       ├── sync-prompts.md    # Sync user commands
 │       ├── version-check.md   # Check command versions
-│       └── update-registry.md # Auto-generate registry
+│       ├── update-registry.md # Auto-generate registry
+│       └── publish.md         # Prepare for publishing
 │
 ├── user/                 # User-level Claude commands
 │   └── .claude/
