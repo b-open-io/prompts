@@ -9,7 +9,7 @@ cat > registry.json << 'EOF'
 {
   "$schema": "./prompt-schema.json",
   "version": "1.0.0",
-  "name": "BSV Ecosystem Prompts Registry",
+  "name": "OPL Prompts Registry",
   "description": "Central registry of all prompts in the BSV development ecosystem",
   "categories": {
     "development": {
