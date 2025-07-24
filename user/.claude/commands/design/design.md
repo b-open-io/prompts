@@ -4,10 +4,9 @@ description: Access design tools, frameworks, and UI component resources
 argument-hint: [topic] - e.g., shadcn, tailwind, fumadocs, inspiration, ai-components
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **design** - Access design tools, frameworks, and UI component resources
 
 **Usage:** `/design [topic]`
@@ -30,7 +29,9 @@ Comprehensive design and UI development resources including component libraries 
 - `/design shadcn`      : shadcn/ui component setup
 - `/design inspiration` : Browse design galleries
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, provide design resources and guidance:
 
 # Design & UI Development Resources
 

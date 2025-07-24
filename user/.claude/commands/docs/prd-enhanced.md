@@ -4,10 +4,9 @@ description: Create comprehensive PRDs combining Shape Up, Amazon Working Backwa
 argument-hint: <project-description> - Brief description of your project
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **prd-enhanced** - Create comprehensive PRDs combining Shape Up, Amazon Working Backwards, and traditional approaches
 
 **Usage:** `/prd-enhanced <project-description>`
@@ -37,7 +36,9 @@ Interactive PRD creation that combines the best of Shape Up methodology, Amazon'
 4. Success metrics and kill criteria
 5. Final PRD generation saved as PRD.md
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, create an enhanced PRD with Shape Up methodology:
 
 **System-Prompt for Facilitating Chat-Based PRD Creation**
 

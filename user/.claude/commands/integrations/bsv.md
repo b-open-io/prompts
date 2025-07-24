@@ -4,10 +4,9 @@ description: Access BSV SDK documentation and code examples
 argument-hint: [topic] - e.g., keys, transactions, scripts, wallet, auth
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **bsv** - Access BSV SDK documentation and code examples
 
 **Usage:** `/bsv [topic]`
@@ -28,7 +27,9 @@ Access comprehensive documentation and code examples for the @bsv/sdk TypeScript
 - `/bsv keys`         : Key generation and management
 - `/bsv transactions` : Building and signing transactions
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, provide BSV SDK guidance:
 
 # BSV TypeScript SDK Documentation
 

@@ -4,10 +4,9 @@ allowed-tools: Read, Edit, MultiEdit, Write, Grep, Glob, WebFetch
 argument-hint: [pattern] | setup | mutations | infinite | optimistic
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **tanstack** - TanStack Query patterns for data fetching and state management
 
 **Usage:** `/tanstack [pattern]`
@@ -38,7 +37,9 @@ Comprehensive TanStack Query (formerly React Query) patterns for Next.js App Rou
 - Prefetching strategies
 - Background refetching
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, provide TanStack Query implementation:
 
 # TanStack Query Patterns
 

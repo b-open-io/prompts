@@ -4,10 +4,9 @@ description: Install 21st.dev Magic MCP server for AI component generation
 argument-hint: [--user] [--check-only]
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **mcp-install-magic** - Install 21st.dev Magic MCP server for AI component generation
 
 **Usage:** `/mcp-install-magic [--user] [--check-only]`
@@ -28,7 +27,9 @@ Installs the 21st.dev Magic MCP server to enable AI-powered component generation
 1. Set environment variable: `export MAGIC_MCP_API_KEY="your-api-key"`
 2. Get API key from: https://21st.dev/magic/onboarding
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, proceed with the installation:
 
 ## API Key Check
 !`[ -n "$MAGIC_MCP_API_KEY" ] && echo "API_KEY_FOUND" || echo "API_KEY_MISSING"`

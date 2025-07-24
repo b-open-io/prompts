@@ -4,10 +4,9 @@ description: Create traditional Product Requirements Documents through interacti
 argument-hint: <project-description> - Brief description of your project
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **prd** - Create traditional Product Requirements Documents through interactive conversation
 
 **Usage:** `/prd <project-description>`
@@ -40,7 +39,9 @@ Guided PRD creation using a traditional software development template. Uses an i
 - All user stories with acceptance criteria
 - Prioritized requirements (P0, P1, P2)
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, create a PRD based on the arguments:
 
 **System-Prompt for Facilitating Chat-Based PRD Creation**
 

@@ -4,10 +4,9 @@ description: Enhance existing Claude commands with better bash execution and fil
 argument-hint: <command-file-path> - Path to the command file to enhance
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **enhance** - Enhance existing Claude commands with better bash execution and file references
 
 **Usage:** `/enhance <command-file-path>`
@@ -30,7 +29,9 @@ Analyze and enhance existing Claude slash commands by adding real-time bash exec
 - Context optimization
 - Error handling improvements
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, enhance the specified command:
 
 # Enhance Command
 

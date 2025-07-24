@@ -4,10 +4,9 @@ allowed-tools: Bash, Read, Edit, MultiEdit, Write, Grep, Glob, Task
 argument-hint: [search-term] | setup | test | webhook
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **stripe** - General Stripe integration patterns and setup
 
 **Usage:** `/stripe [topic]`
@@ -36,7 +35,9 @@ Comprehensive Stripe integration guide with code examples for Next.js App Router
 - Webhook handling
 - Testing strategies
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, provide Stripe integration guidance:
 
 # Stripe Integration Guide
 

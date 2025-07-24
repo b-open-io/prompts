@@ -4,10 +4,9 @@ description: AI-powered design tools and component generation resources
 argument-hint: [tool] - e.g., magic, v0, galileo, framer
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **ai-inspiration** - AI-powered design tools and component generation resources
 
 **Usage:** `/ai-inspiration [tool]`
@@ -26,7 +25,9 @@ Access information about AI design tools for generating UI components and design
 - `/ai-inspiration`       : Overview of all AI design tools
 - `/ai-inspiration magic` : Deep dive into 21st.dev Magic
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, provide AI design inspiration based on the arguments:
 
 # AI Design & Component Generation Tools
 

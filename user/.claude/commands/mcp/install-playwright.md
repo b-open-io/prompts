@@ -4,10 +4,9 @@ description: Install Playwright MCP server for browser automation and testing
 argument-hint: [--user] [--check-only]
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **mcp-install-playwright** - Install Playwright MCP server for browser automation and testing
 
 **Usage:** `/mcp-install-playwright [--user] [--check-only]`
@@ -27,7 +26,9 @@ Installs the Playwright MCP server to enable browser automation, web scraping, a
 **Prerequisites:**
 - Bun must be installed (https://bun.sh)
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, proceed with the installation:
 
 ## Prerequisites Check
 !`which bun >/dev/null 2>&1 && echo "BUN_INSTALLED" || echo "BUN_NOT_FOUND"`

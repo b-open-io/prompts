@@ -4,10 +4,9 @@ description: Update an existing Claude Code slash command
 argument-hint: <command-name|path> [--add-help] [--update-tools] [--optimize]
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **update-prompt** - Update an existing Claude Code slash command
 
 **Usage:** `/update-prompt <command-name|path> [OPTIONS]`
@@ -29,7 +28,9 @@ Updates an existing slash command to follow best practices, add missing features
 
 **Note:** Will search both project and user command directories if path not specified.
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, update the specified command:
 
 ## Context
 
@@ -72,12 +73,13 @@ Read the existing command file and check for:
 #### --add-help
 Add or update help section:
 ```markdown
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 [Generate appropriate help content based on command]
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, update the specified command:
 ```
 
 #### --update-tools
