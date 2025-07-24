@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(ls:*), Bash(find:*), Bash(diff:*), Bash(wc:*), Bash(stat:*), Bash(echo:*), Bash(test:*), Bash(comm:*), Bash(sort:*), Bash(basename:*), Bash(xargs:*), Read, Grep
+allowed-tools: Bash(ls:*), Bash(wc:*), Bash(echo:*), Bash(test:*), Read, Grep
 description: Comprehensive help and status for prompts system
 argument-hint: [--status] [--guide] [--compare]
 ---
@@ -9,20 +9,15 @@ argument-hint: [--status] [--guide] [--compare]
 ## Current Status Overview
 
 ### Local Claude Commands
-!`ls -1 ~/.claude/commands/*.md 2>/dev/null | wc -l | xargs echo "Total local commands:"`
-!`ls -1 ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort | sed 's/^/  - /'`
+!`ls ~/.claude/commands/*.md 2>/dev/null | wc -l`
+!`ls ~/.claude/commands/*.md 2>/dev/null`
 
 ### Repository User Commands  
-!`ls -1 $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | wc -l | xargs echo "Total repo commands:"`
-!`ls -1 $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort | sed 's/^/  - /'`
+!`ls user/.claude/commands/*.md 2>/dev/null | wc -l`
+!`ls user/.claude/commands/*.md 2>/dev/null`
 
 ### Project Commands (This Repo)
-!`ls -1 $WORKING_DIR/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort | sed 's/^/  - /'`
-
-### Quick Status Check
-!`echo "Commands only in local:" && comm -23 <(ls ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) | sed 's/^/  📤 /'`
-!`echo "Commands only in repo:" && comm -13 <(ls ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) | sed 's/^/  📥 /'`
-!`echo "Commands in both (may differ):" && comm -12 <(ls ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) | sed 's/^/  🔄 /'`
+!`ls .claude/commands/*.md 2>/dev/null`
 
 ## Your Task
 
@@ -36,10 +31,11 @@ Show:
 4. **Status Summary**: Brief overview of local vs repo commands
 
 ### --status
-Provide detailed status:
-1. **Comparison Report**: Which commands differ between local and repo
-2. **Version Analysis**: For differing files, show which is newer (using file timestamps)
-3. **Recommendations**: What actions to take (init new, sync existing, contribute local)
+Provide detailed status by:
+1. List all local commands vs repo commands
+2. Compare file existence between local and repo
+3. Note which commands exist in only one location
+4. Suggest running /init-prompts or /sync-prompts as needed
 
 ### --guide
 Show comprehensive guide for creating prompts:
@@ -130,11 +126,10 @@ Use $ARGUMENTS to access user input.
 ```
 
 ### --compare
-For each command that exists in both locations:
-1. Show if files are identical or different
-2. If different, indicate which is newer
-3. Show size difference
-4. Optionally show actual diff if requested
+Simple comparison between local and repo commands:
+1. Show which commands exist in both locations
+2. Use simple file existence checks
+3. Recommend sync actions based on findings
 
 ## Summary and Recommendations
 
