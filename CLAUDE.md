@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working with the prompts reposit
 
 ## Repository Overview
 
-This is a collection of powerful, task-specific prompts designed to leverage our entire BSV blockchain development ecosystem. The prompts combine Claude Code capabilities, init-prism project generation, and our extensive toolchain to automate complex workflows.
+This is the OPL Prompts Registry - a collection of powerful, task-specific prompts designed to leverage our entire BSV blockchain development ecosystem. The prompts combine Claude Code capabilities, init-prism project generation, and our extensive toolchain to automate complex workflows.
 
 ## Purpose
 
@@ -81,9 +81,17 @@ This repository builds on our monorepo containing:
 
 ### Our Projects (Referenced in Prompts)
 - **BigBlocks**: Bitcoin component library
+- **Sigma Identity**: OAuth 2.0 authentication system (auth.sigmaidentity.com)
 - **agent-master**: MCP server coordination (WIP)
 - **bsv-mcp**: Blockchain functionality exposure (WIP)  
 - **gib**: Git + blockchain version control (WIP)
+
+## Command Versioning
+
+All commands now include version tracking:
+- Version in frontmatter (e.g., `version: 1.0.0`)
+- Use `/version-check` to check for updates
+- Auto-generated registry tracks all versions
 
 ## InitPRISM Integration
 
@@ -98,9 +106,9 @@ This repository builds on our monorepo containing:
 ```bash
 # InitPRISM can now do things like:
 # 1. Generate a new project
-# 2. Reference cross-project/dependency-update.md to set up automated maintenance
-# 3. Apply bigblocks/component-ecosystem-manager.md for UI consistency
-# 4. Use analytics prompts for built-in reporting
+# 2. Reference development prompts for automated workflows
+# 3. Apply design prompts for UI consistency
+# 4. Use infrastructure prompts for deployment automation
 ```
 
 ### Prompt Evolution

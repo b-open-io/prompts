@@ -1,4 +1,4 @@
-# Prompts Repository
+# OPL Prompts Registry
 
 A collection of powerful, task-specific prompts for automating complex workflows in our BSV blockchain development ecosystem.
 
@@ -45,6 +45,15 @@ This repository contains reusable prompts that combine Claude Code capabilities,
    /ai-inspiration   # AI design tools
    ```
 
+5. **Check for Updates**:
+   ```bash
+   # Check version of specific command
+   /version-check auth
+   
+   # Check all command versions
+   /version-check --all
+   ```
+
 ### Using Prompts Directly
 
 Each prompt is designed to be self-contained and executable:
@@ -71,15 +80,19 @@ prompts/
 │   └── commands/         # Project-level slash commands
 │       ├── help-prompts.md    # Comprehensive help system
 │       ├── init-prompts.md    # Initialize user commands
-│       └── sync-prompts.md    # Sync user commands
+│       ├── sync-prompts.md    # Sync user commands
+│       ├── version-check.md   # Check command versions
+│       └── update-registry.md # Auto-generate registry
 │
 ├── user/                 # User-level Claude commands
 │   └── .claude/
 │       └── commands/     # Commands to copy to ~/.claude/commands
 │           ├── ai-inspiration.md     # AI design tools
+│           ├── auth.md               # OAuth & Sigma Identity auth
 │           ├── bsv.md                # BSV SDK docs
 │           ├── create-prompt.md      # Create new commands
 │           ├── design.md             # Design resources
+│           ├── enhance.md            # Enhance existing commands
 │           ├── lint.md               # Linting tools
 │           ├── mcp-install-magic.md  # Install Magic MCP
 │           ├── mcp-install-playwright.md  # Install Playwright MCP
@@ -102,7 +115,9 @@ prompts/
 │   ├── bsv-sdk.md
 │   ├── fumadocs-integration-guide.md
 │   └── initprism-meta-prompt-generator.md
-└── infrastructure/       # DevOps and deployment
+├── infrastructure/       # DevOps and deployment
+└── scripts/              # Utility scripts
+    └── generate-registry.sh  # Auto-generate registry.json
 ```
 
 ## Prompt Format
@@ -183,15 +198,17 @@ claude mcp add prompts "cat ~/code/prompts/{category}/{prompt}.md"
 
 ## Statistics
 
-- **Total Prompts**: 3
-- **Categories**: 6
-- **Contributors**: 1
+The registry is auto-generated to maintain accuracy:
+- Run `./scripts/generate-registry.sh` to update counts
+- Check `registry.json` for current statistics
+- As of last update: 11 prompts across 2 active categories
 
 ## Ecosystem Integration
 
 Our prompts leverage:
 - **Claude Code SDK** - Autonomous iteration and build verification
 - **init-prism** - AI-powered project generation with access to this prompts repository
+- **Sigma Identity** - Primary OAuth 2.0 authentication (auth.sigmaidentity.com)
 - **agent-master** - MCP server coordination across AI tools
 - **bsv-mcp** - Blockchain functionality exposure
 - **BigBlocks** - Bitcoin component library
@@ -228,7 +245,7 @@ When adding new prompts:
 Use the template structure with proper frontmatter and sections.
 
 ### 2. Update the Registry
-Add your prompt to `registry.json` with complete metadata.
+Run `./scripts/generate-registry.sh` to auto-generate the registry with your new prompt.
 
 ### 3. Test Thoroughly
 Ensure the prompt works as expected before committing.
