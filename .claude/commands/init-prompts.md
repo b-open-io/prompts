@@ -13,7 +13,31 @@ argument-hint: [--list-only] [--help]
 
 ## Your Task
 
-If the arguments contain "--help", show the help documentation and stop.
+If the arguments contain "--help", show this help:
+
+```
+init-prompts - Initialize new user-level Claude commands
+
+Usage: /init-prompts [--list-only] [--help]
+
+Description:
+Copies NEW commands from the prompts repository to your local ~/.claude/commands/ directory.
+This command will NEVER overwrite existing files.
+
+Options:
+  --list-only  Preview what would be copied without actually copying
+  --help       Show this help message
+
+Examples:
+  /init-prompts             Copy all new commands
+  /init-prompts --list-only  See what would be copied
+
+Note: Use /sync-prompts to update existing commands.
+
+For more help: /help-prompts
+```
+
+Then stop.
 
 Otherwise, initialize NEW user commands by copying ONLY non-existing commands from this repository's `user/.claude/commands/` to `~/.claude/commands/`.
 

@@ -34,7 +34,36 @@ This command compares and synchronizes your local `~/.claude/commands/` with the
 
 ## Your Task
 
-If the arguments contain "--help", show the help documentation and stop.
+If the arguments contain "--help", show this help:
+
+```
+sync-prompts - Sync and update user commands between local and prompts repo
+
+Usage: /sync-prompts [OPTIONS]
+
+Description:
+Compares and synchronizes your local ~/.claude/commands/ with the prompts repository.
+Handles updates, merging, and contributions of existing commands.
+
+Options:
+  --full-report  Show detailed diffs for all differing files
+  --contribute   Focus on contribution workflow
+  --pull         Update local commands from repo (with confirmation)
+  --push         Copy local commands to repo for contribution
+  --help         Show this help message
+
+Examples:
+  /sync-prompts               Show sync status
+  /sync-prompts --full-report  See detailed differences
+  /sync-prompts --pull         Update from repo
+  /sync-prompts --contribute   Share your improvements
+
+Note: Use /init-prompts first to copy new commands.
+
+For more help: /help-prompts
+```
+
+Then stop.
 
 Otherwise, based on the analysis above, provide a comprehensive sync report:
 

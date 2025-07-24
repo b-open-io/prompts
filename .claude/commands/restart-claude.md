@@ -11,7 +11,31 @@ argument-hint: [--force] [--no-resume] [--help]
 
 ## Your Task
 
-If the arguments contain "--help", show the help documentation and stop.
+If the arguments contain "--help", show this help:
+
+```
+restart-claude - Restart Claude Code to apply MCP changes or troubleshoot issues
+
+Usage: /restart-claude [--force] [--no-resume] [--help]
+
+Options:
+  --force      Force restart even if other sessions detected
+  --no-resume  Don't resume conversation after restart
+  --help       Show this help message
+
+Examples:
+  /restart-claude              Restart and resume conversation
+  /restart-claude --no-resume  Fresh start without resuming
+
+Use Cases:
+  - After installing MCP servers (to load them)
+  - When Claude Code becomes unresponsive
+  - To apply configuration changes
+
+For more help: /help-prompts
+```
+
+Then stop.
 
 Otherwise, restart Claude Code with these considerations:
 
