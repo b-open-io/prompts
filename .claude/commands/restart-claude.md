@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(ps:*), Bash(kill:*), Bash(exec:*), Bash(echo:*), Bash(claude:*)
+allowed-tools: Bash(ps:*), Bash(kill:*), Bash(exec:*), Bash(echo:*), Bash(claude:*), Bash(test:*), Bash(pwd:*), Bash(sleep:*), Bash(bash:*)
 description: Restart Claude Code to apply MCP changes or troubleshoot issues
 argument-hint: [--force] [--no-resume]
 ---
