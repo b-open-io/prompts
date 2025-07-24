@@ -1,0 +1,93 @@
+---
+allowed-tools: Bash(ls:*), Bash(diff:*), Bash(cat:*), Bash(find:*), Bash(git:*), Read, Write, Edit, Grep
+description: Sync user commands between local ~/.claude/commands and prompts repo
+argument-hint: [--full-report] [--contribute]
+---
+
+# Sync User Commands
+
+This command compares your local `~/.claude/commands/` with the prompts repository's `user/.claude/commands/` to help you stay in sync and contribute improvements back to the community.
+
+## Current Git Status
+!`cd $WORKING_DIR && git status --porcelain`
+
+## Step 1: Analyze Local vs Repository Commands
+
+### Local Commands (Your System)
+!`ls -la ~/.claude/commands/ | grep -E '\.md$' | awk '{print $NF}' | sort`
+
+### Repository Commands (Upstream)
+!`ls -la $WORKING_DIR/user/.claude/commands/ | grep -E '\.md$' | awk '{print $NF}' | sort`
+
+## Step 2: Find Differences
+
+### Commands Only in Local (Not in Repo)
+!`comm -23 <(ls ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) | sed 's/^/- /'`
+
+### Commands Only in Repo (Not in Local)
+!`comm -13 <(ls ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) | sed 's/^/- /'`
+
+### Commands in Both (Check for Updates)
+!`comm -12 <(ls ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort)`
+
+## Your Task
+
+Based on the analysis above, provide a comprehensive sync report:
+
+1. **Analyze Differences**
+   - For commands in both locations, check if they differ using `diff`
+   - Identify which version is newer or more comprehensive
+   - Note any local customizations that should be preserved
+
+2. **Create Sync Report**
+   Present a clear report showing:
+   - 📤 **Local commands to contribute**: Commands you have that the repo doesn't
+   - 📥 **Repo commands to pull**: Commands the repo has that you don't
+   - 🔄 **Commands with differences**: Which version is better/newer
+   - ✅ **Commands in sync**: No action needed
+
+3. **Ask User for Actions**
+   After showing the report, ask which commands they want to:
+   - Copy from repo to local (update their system)
+   - Contribute from local to repo (share with community)
+   - Skip (keep different versions)
+
+4. **Contribution Workflow**
+   If user wants to contribute:
+   - Suggest creating a feature branch
+   - Copy selected commands to `user/.claude/commands/`
+   - Provide clear commit message
+   - Offer to create a pull request with:
+     - Description of new/updated commands
+     - Why they're useful
+     - Any dependencies or requirements
+
+5. **Implementation**
+   - Use `cp` to copy files as directed
+   - Use `git` commands for contribution workflow
+   - Show progress for each action
+   - Confirm successful sync
+
+## Arguments
+
+- `$ARGUMENTS` (if "--full-report"): Show full diff for all differing files
+- `$ARGUMENTS` (if "--contribute"): Focus on contribution workflow
+
+## Example Workflow
+
+```bash
+# Check sync status
+/sync
+
+# See full differences
+/sync --full-report
+
+# Focus on contributing
+/sync --contribute
+```
+
+Remember to:
+- Preserve user customizations when appropriate
+- Explain benefits of each command when contributing
+- Test commands work correctly after sync
+- Follow repository contribution guidelines
