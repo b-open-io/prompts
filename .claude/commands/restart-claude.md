@@ -33,7 +33,7 @@ $STOP_EXECUTION_IF_HELP
 
 ## Current Session Info
 !`echo "PID: $$"`
-!`echo "Working Directory: $(pwd)"`
+!`pwd`
 
 ## Your Task
 
