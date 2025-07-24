@@ -85,10 +85,17 @@ After installation:
   ```
   Magic MCP installed successfully! 
   
-  Try these commands:
+  ⚠️  IMPORTANT: You need to restart Claude Code for MCP changes to take effect.
+  
+  Run: /restart-claude
+  
+  After restart, try these commands:
   - /ui Create a modern pricing table
   - /ui Design a dashboard sidebar
   - /ui Build a multi-step form wizard
+  
+  Or use the MCP command directly:
+  - /mcp__magic_mcp__generate Create a pricing component
   ```
 
 ### 5. Handle Errors

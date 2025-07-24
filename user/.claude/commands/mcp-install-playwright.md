@@ -99,7 +99,11 @@ Provide helpful information:
 ```
 Playwright MCP installed successfully! 
 
-Available capabilities:
+⚠️  IMPORTANT: You need to restart Claude Code for MCP changes to take effect.
+
+Run: /restart-claude
+
+After restart, available capabilities:
 - Browser automation
 - Web scraping
 - Screenshot capture
@@ -111,6 +115,11 @@ Example uses:
 - "Navigate to a website and extract data"
 - "Fill out and submit a form"
 - "Test user interactions"
+
+MCP commands available after restart:
+- /mcp__playwright__screenshot <url>
+- /mcp__playwright__navigate <url>
+- /mcp__playwright__click <selector>
 
 Note: Playwright will download browser binaries on first use.
 ```
