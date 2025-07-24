@@ -4,11 +4,6 @@
   "name": "BSV Ecosystem Prompts Registry",
   "description": "Central registry of all prompts in the BSV development ecosystem",
   "categories": {
-    "bigblocks": {
-      "name": "BigBlocks",
-      "description": "Bitcoin UI component management and ecosystem automation",
-      "icon": "🎨"
-    },
     "development": {
       "name": "Development Workflows",
       "description": "Code management, dependency updates, and development automation",
@@ -47,7 +42,7 @@
       "version": "1.0.0",
       "description": "Revolutionary recursive project generation with prompt-aware templates and automation inheritance",
       "category": "development",
-      "tags": ["initprism", "recursive", "meta-automation", "project-generation", "templates", "bigblocks"],
+      "tags": ["initprism", "recursive", "meta-automation", "project-generation", "templates"],
       "complexity": "advanced",
       "path": "development/initprism-meta-prompt-generator.md",
       "metadata": {
@@ -73,92 +68,12 @@
       }
     },
     {
-      "id": "bigblocks/component-ecosystem-manager",
-      "name": "BigBlocks Component Ecosystem Manager",
-      "version": "1.1.0",
-      "description": "Orchestrate 96 Bitcoin UI components with full blockchain integration across your ecosystem",
-      "category": "bigblocks",
-      "tags": ["components", "ui", "automation", "framework-agnostic", "themes", "blockchain", "social"],
-      "complexity": "advanced",
-      "path": "bigblocks/component-ecosystem-manager.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 15000,
-        "time_estimate": "30-60 minutes",
-        "bigblocks_version": "0.0.12"
-      }
-    },
-    {
-      "id": "bigblocks/social-components-integration",
-      "name": "BigBlocks Social Components Integration",
-      "version": "1.0.0",
-      "description": "Master real Bitcoin blockchain social interactions with production-ready components and workflows",
-      "category": "bigblocks",
-      "tags": ["social", "blockchain", "bitcoin", "components", "bmap-api", "transactions", "real-data"],
-      "complexity": "advanced",
-      "path": "bigblocks/social-components-integration.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 16000,
-        "time_estimate": "45-90 minutes",
-        "bigblocks_version": "0.0.12"
-      }
-    },
-    {
-      "id": "bigblocks/multi-framework-testing-suite",
-      "name": "Multi-Framework BigBlocks Testing Suite",
-      "version": "1.0.0",
-      "description": "Comprehensive testing automation for BigBlocks components across React, Next.js, Express, and Astro",
-      "category": "bigblocks",
-      "tags": ["testing", "framework-agnostic", "components", "automation", "quality-assurance", "ci-cd"],
-      "complexity": "advanced",
-      "path": "bigblocks/multi-framework-testing-suite.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 15000,
-        "time_estimate": "60-90 minutes",
-        "bigblocks_version": "0.0.12"
-      }
-    },
-    {
-      "id": "bigblocks/performance-optimization-suite",
-      "name": "BigBlocks Performance Optimization Suite",
-      "version": "1.0.0",
-      "description": "Advanced performance optimization and bundle analysis for BigBlocks components with intelligent recommendations",
-      "category": "bigblocks",
-      "tags": ["performance", "optimization", "bundle-analysis", "monitoring", "components", "efficiency"],
-      "complexity": "advanced",
-      "path": "bigblocks/performance-optimization-suite.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 17000,
-        "time_estimate": "60-120 minutes",
-        "bigblocks_version": "0.0.12"
-      }
-    },
-    {
-      "id": "bigblocks/theme-management-sync",
-      "name": "BigBlocks Theme Management and Design System Synchronization",
-      "version": "1.0.0",
-      "description": "Advanced theme management and design system synchronization across BigBlocks ecosystem",
-      "category": "bigblocks",
-      "tags": ["themes", "design-system", "synchronization", "consistency", "components", "styling"],
-      "complexity": "advanced",
-      "path": "bigblocks/theme-management-sync.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 14000,
-        "time_estimate": "45-75 minutes",
-        "bigblocks_version": "0.0.12"
-      }
-    },
-    {
       "id": "development/fumadocs-integration-guide",
       "name": "Fumadocs Complete Integration Guide",
       "version": "1.0.0",
-      "description": "Complete, tested setup guide for Fumadocs latest version with BigBlocks and Next.js 15",
+      "description": "Complete, tested setup guide for Fumadocs latest version with Next.js 15",
       "category": "development",
-      "tags": ["fumadocs", "documentation", "mdx", "nextjs", "bigblocks", "setup"],
+      "tags": ["fumadocs", "documentation", "mdx", "nextjs", "setup"],
       "complexity": "critical",
       "path": "development/fumadocs-integration-guide.md",
       "metadata": {
@@ -170,8 +85,8 @@
     }
   ],
   "statistics": {
-    "total_prompts": 8,
-    "categories_count": 7,
+    "total_prompts": 3,
+    "categories_count": 6,
     "last_updated": "2025-01-06",
     "contributors": 1
   }
