@@ -242,6 +242,3 @@ List all required tools, environment variables, and dependencies.
 ### 5. Include Examples
 Provide clear usage examples and expected outcomes.
 
----
-
-Built for the BSV development ecosystem
