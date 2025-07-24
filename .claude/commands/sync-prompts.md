@@ -1,12 +1,14 @@
 ---
-allowed-tools: Bash(ls:*), Bash(diff:*), Bash(cat:*), Bash(find:*), Bash(git:*), Read, Write, Edit, Grep
-description: Sync user commands between local ~/.claude/commands and prompts repo
-argument-hint: [--full-report] [--contribute]
+allowed-tools: Bash(ls:*), Bash(diff:*), Bash(cat:*), Bash(find:*), Bash(git:*), Bash(cp:*), Read, Write, Edit, Grep
+description: Sync and update user commands between local and prompts repo
+argument-hint: [--full-report] [--contribute] [--pull] [--push]
 ---
 
-# Sync User Commands
+# Sync User Commands with Prompts Repository
 
-This command compares your local `~/.claude/commands/` with the prompts repository's `user/.claude/commands/` to help you stay in sync and contribute improvements back to the community.
+This command compares and synchronizes your local `~/.claude/commands/` with the prompts repository's `user/.claude/commands/`. It can update existing commands, pull new versions from the repo, and help you contribute improvements back to the community.
+
+**Note**: Use `/init-prompts` first to copy new commands. This command handles updates and synchronization of existing commands.
 
 ## Current Git Status
 !`cd $WORKING_DIR && git status --porcelain`
@@ -70,20 +72,28 @@ Based on the analysis above, provide a comprehensive sync report:
 
 ## Arguments
 
-- `$ARGUMENTS` (if "--full-report"): Show full diff for all differing files
-- `$ARGUMENTS` (if "--contribute"): Focus on contribution workflow
+- `--full-report`: Show full diff for all differing files
+- `--contribute`: Focus on contribution workflow for sharing commands
+- `--pull`: Update local commands from repo (with confirmation)
+- `--push`: Copy local commands to repo for contribution
 
 ## Example Workflow
 
 ```bash
 # Check sync status
-/sync
+/sync-prompts
 
 # See full differences
-/sync --full-report
+/sync-prompts --full-report
+
+# Pull updates from repo to local
+/sync-prompts --pull
+
+# Push local changes to repo
+/sync-prompts --push
 
 # Focus on contributing
-/sync --contribute
+/sync-prompts --contribute
 ```
 
 Remember to:

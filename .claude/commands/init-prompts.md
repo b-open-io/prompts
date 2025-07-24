@@ -1,71 +1,64 @@
 ---
-allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(find:*), Bash(cat:*), Bash(diff:*), Read, Write, Edit
-description: Initialize user-level Claude commands from this repository
-argument-hint: [--enhance] [--backup]
+allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(find:*), Read
+description: Initialize new user-level Claude commands (won't overwrite existing)
+argument-hint: [--list-only]
 ---
 
 ## Context
 
-- Project commands directory: !`ls -la /Users/satchmo/code/prompts/user/.claude/commands/ 2>/dev/null || echo "No user commands found in repo"`
+- Project commands directory: !`ls -la $WORKING_DIR/user/.claude/commands/ 2>/dev/null || echo "No user commands found in repo"`
 - User's Claude commands: !`ls -la ~/.claude/commands/ 2>/dev/null || echo "User commands directory does not exist"`
-- Existing conflicts: !`find /Users/satchmo/code/prompts/user/.claude/commands -name "*.md" -exec basename {} \; 2>/dev/null | while read f; do [ -f ~/.claude/commands/"$f" ] && echo "CONFLICT: $f"; done || echo "No conflicts found"`
+- Existing files (will skip): !`find $WORKING_DIR/user/.claude/commands -name "*.md" -exec basename {} \; 2>/dev/null | while read f; do [ -f ~/.claude/commands/"$f" ] && echo "- $f (exists)"; done`
+- New files to copy: !`find $WORKING_DIR/user/.claude/commands -name "*.md" -exec basename {} \; 2>/dev/null | while read f; do [ ! -f ~/.claude/commands/"$f" ] && echo "- $f (new)"; done`
 
 ## Your Task
 
-Initialize the user's Claude Code commands by copying commands from this repository's `user/.claude/commands/` to the user's home directory `~/.claude/commands/`.
+Initialize NEW user commands by copying ONLY non-existing commands from this repository's `user/.claude/commands/` to `~/.claude/commands/`.
+
+**IMPORTANT**: This command will NOT overwrite any existing files. Use `/sync-prompts` to update existing commands.
 
 ### Process:
 
 1. **Create user directory if needed**:
    - Check if `~/.claude/commands/` exists
-   - Create it if missing
+   - Create it if missing with proper permissions
 
-2. **Identify all commands to copy**:
+2. **Copy ONLY new commands**:
    - List all `.md` files in `user/.claude/commands/`
-   - Check for existing files with same names in user directory
+   - Skip any that already exist in user's directory
+   - Copy only new commands
 
-3. **Handle each file**:
-   - **No conflict**: Copy directly
-   - **Conflict exists**: 
-     - If `--enhance` flag: Read both files, merge intelligently keeping best of both
-     - If `--backup` flag: Create `.backup` of original before copying
-     - Otherwise: Ask user how to proceed for each conflict
+3. **Report results**:
+   - List newly copied commands
+   - List skipped commands (already exist)
+   - If any were skipped, remind user to use `/sync-prompts` for updates
 
-4. **Enhancement strategy** (when --enhance is used):
-   - Merge frontmatter (combine allowed-tools, keep longer description)
-   - Combine command content intelligently
-   - Preserve any user customizations
-   - Ask for clarification if merge is ambiguous
-
-5. **Report results**:
-   - List successfully copied commands
-   - List enhanced commands
-   - List skipped commands
-   - Provide usage examples
+### Arguments:
+- `--list-only`: Just show what would be copied without doing it
 
 ### Example Usage:
 ```bash
-# Basic copy (prompts on conflicts)
+# Initialize new commands only
 /init-prompts
 
-# Auto-enhance conflicts
-/init-prompts --enhance
-
-# Backup existing before copy
-/init-prompts --backup
-
-# Both options
-/init-prompts --enhance --backup
+# Preview what would be copied
+/init-prompts --list-only
 ```
 
 ### Success Message Template:
 ```
-✅ Initialized Claude commands:
-- Copied: [list]
-- Enhanced: [list]
-- Skipped: [list]
+✅ Initialized new Claude commands:
+- Copied: [list of new commands]
+- Skipped (already exist): [list]
 
-Try these commands:
-- /design - Access design tools and resources
-- /[other commands]
+$IF_SKIPPED:
+📝 To update existing commands, use: /sync-prompts
+
+Try your new commands:
+- /[new command names]
 ```
+
+### Important Notes:
+- This command is safe - it will NEVER overwrite your existing commands
+- Local customizations are always preserved
+- Use `/sync-prompts` to update or merge changes from upstream
