@@ -39,45 +39,45 @@ You have access to comprehensive design and UI development resources. Here's wha
 ## Component Libraries & Frameworks
 
 ### shadcn/ui
-@/Users/satchmo/code/prompts/design/shadcn.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/shadcn.md
 
 Modern component library with copy-paste components built on Radix UI and Tailwind CSS.
 
 ### Tailwind CSS with Next.js
-@/Users/satchmo/code/prompts/design/tailwind-nextjs.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/tailwind-nextjs.md
 
 Complete setup guide for Tailwind CSS in Next.js projects.
 
 ## Documentation Frameworks
 
 ### Fumadocs
-@/Users/satchmo/code/prompts/design/fumadocs.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/fumadocs.md
 
 Modern documentation framework with MDX support, AI integration, and beautiful themes.
 
 ## Design Inspiration & Tools
 
 ### UI Inspiration Resources
-@/Users/satchmo/code/prompts/design/ui-inspiration.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/ui-inspiration.md
 
 Curated collection of design galleries including Mobbin, Screens Design, FFFuel for effects, and favicon generation tools.
 
 ## Code Quality & Formatting
 
 ### Ultracite
-@/Users/satchmo/code/prompts/design/ultracite.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/ultracite.md
 
 Zero-config preset for Biome that provides instant code formatting and linting for JavaScript/TypeScript projects.
 
 ### Biome
-@/Users/satchmo/code/prompts/design/biome.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/biome.md
 
 Fast formatter and linter written in Rust that replaces ESLint and Prettier with a single tool.
 
 ## AI-Powered Tools
 
 ### 21st.dev Magic MCP
-@/Users/satchmo/code/prompts/design/21st-dev-magic.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/21st-dev-magic.md
 
 AI component generation tool that creates UI components from natural language descriptions.
 

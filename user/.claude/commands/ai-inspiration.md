@@ -35,7 +35,7 @@ Leverage AI to accelerate your design and development workflow with these powerf
 ## Primary AI Design Tools
 
 ### 21st.dev Magic MCP
-@/Users/satchmo/code/prompts/design/21st-dev-magic.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/21st-dev-magic.md
 
 **The most integrated AI design tool** - Generate UI components directly in your IDE using natural language. Works with Cursor, Windsurf, and VSCode through MCP (Model Context Protocol).
 

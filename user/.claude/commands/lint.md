@@ -43,10 +43,10 @@ This guide helps you set up Ultracite (powered by Biome) and achieve 100% clean 
 ## Quick Reference
 
 ### Ultracite Documentation
-@/Users/satchmo/code/prompts/design/ultracite.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/ultracite.md
 
 ### Biome Documentation
-@/Users/satchmo/code/prompts/design/biome.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/design/biome.md
 
 ## Setup Instructions
 

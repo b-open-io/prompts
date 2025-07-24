@@ -10,7 +10,7 @@ npm install @bsv/sdk
 
 ## Complete Documentation
 The BSV SDK maintains comprehensive documentation in their llms.txt file:
-- **Full Cookbook**: [~/code/ts-sdk/llms.txt](file:///Users/satchmo/code/ts-sdk/llms.txt)
+- **Full Cookbook**: `~/code/ts-sdk/llms.txt`
 - **GitHub**: https://github.com/bitcoin-sv/ts-sdk
 
 ## Core Features
@@ -123,7 +123,7 @@ Support for various token protocols built on BSV, including fungible and non-fun
 Integration with BSV data protocols for on-chain data storage and retrieval.
 
 ## Resources
-- [Full Documentation](file:///Users/satchmo/code/ts-sdk/llms.txt)
+- Full Documentation: `~/code/ts-sdk/llms.txt`
 - [API Reference](https://docs.bsvblockchain.org/sdk)
 - [Example Applications](https://github.com/bitcoin-sv/ts-sdk/tree/master/examples)
 - [BRC Standards](https://brc.dev)
