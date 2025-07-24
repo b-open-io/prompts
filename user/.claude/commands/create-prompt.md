@@ -1,13 +1,12 @@
 ---
-allowed-tools: Read, Write, Edit, Bash(mkdir:*), Bash(ls:*), Bash(pwd:*)
+allowed-tools: Read, Write, Edit, Bash(mkdir:*), Bash(ls:*)
 description: Create a new Claude Code slash command following best practices
 argument-hint: <command-name> [--project | --user] [--namespace <path>]
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain '--help', show this help:
 **create-prompt** - Create a new Claude Code slash command following best practices
 
 **Usage:** `/create-prompt <command-name> [--project | --user] [--namespace <path>]`
@@ -27,13 +26,10 @@ Creates a new slash command file with proper structure, frontmatter, and help se
 - `/create-prompt lint --user`               : Create /lint in user directory
 - `/create-prompt component --namespace ui`  : Create /ui:component
 
-$STOP_EXECUTION_IF_HELP
 
-## Context
+Then stop.
 
-- Current directory: !`pwd`
-- Project commands: !`ls -la .claude/commands 2>/dev/null || echo "No project commands directory"`
-- User commands: !`ls -la ~/.claude/commands 2>/dev/null || echo "No user commands directory"`
+Otherwise, create a new Claude Code slash command.
 
 ## Your Task
 
@@ -60,32 +56,30 @@ description: [Brief one-line description]
 argument-hint: [Optional arguments the command accepts]
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
-**command-name** - [Brief description]
+If the arguments contain '--help', show this help:
 
-**Usage:** `/command-name [arguments]`
+```
+command-name - [Brief description]
 
-**Description:**
+Usage: /command-name [arguments]
+
+Description:
 [Detailed description of what the command does]
 
-**Arguments:**
-- `arg1`   : [Description]
-- `--help` : Show this help message
+Arguments:
+  arg1    [Description]
+  --help  Show this help message
 
-**Examples:**
-- `/command-name`        : [Basic usage]
-- `/command-name arg1`   : [With argument]
+Examples:
+  /command-name         [Basic usage]
+  /command-name arg1    [With argument]
+```
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
 
-## Context
-[Add bash commands with ! prefix to gather context]
-[Keep output minimal and focused]
-
-## Your Task
+Otherwise:
 [Clear instructions for what the command should do]
 [Use @ for file includes and $ARGUMENTS for user input]
 ```
@@ -94,26 +88,27 @@ $STOP_EXECUTION_IF_HELP
 
 #### Frontmatter Standards
 - **allowed-tools**: Only include tools actually needed
-  - Use specific bash commands: `Bash(git status:*), Bash(ls:*)`
+  - Use specific bash commands: `Bash(ls:*), Bash(mkdir:*)`
   - Common tools: `Read, Write, Edit, Grep, Glob`
+  - AVOID: Complex bash syntax, pipes, [[]] constructs
 - **description**: Concise, action-oriented (shown in /help)
 - **argument-hint**: Clear syntax hints for arguments
 
 #### Help Section Standards
-- Always include help check immediately after frontmatter
+- Simple help check: "If the arguments contain '--help', show this help:"
 - Use consistent formatting across all commands
 - Include usage, description, arguments, and examples
-- Early exit with `$STOP_EXECUTION_IF_HELP`
+- Always end help with "Then stop."
 
 #### Context Window Optimization
-- Use refined bash commands that produce minimal output
-- Avoid long scripts or creating temporary files
-- Use pipes and filters to extract only needed information
-- Examples of good context gathering:
-  ```bash
-  !`ls -1 *.md | head -10`              # List first 10 markdown files
-  !`git status --porcelain | wc -l`     # Count of changed files
-  !`find . -name "*.ts" -type f | grep -v node_modules | wc -l`  # Count TS files
+- AVOID bash command executions in command files (!`command`)
+- Use Read, Grep, and Glob tools instead of bash
+- If bash is absolutely necessary, use only simple commands
+- Examples of what to AVOID:
+  ```
+  !`ls -1 *.md | head -10`              # Pipes cause permission errors
+  !`git status --porcelain | wc -l`     # Complex syntax fails
+  !`[[ "$VAR" == *"text"* ]]`           # [[ ]] syntax requires extra permissions
   ```
 
 #### File References
