@@ -2,7 +2,7 @@
 
 A collection of powerful, task-specific prompts for automating complex workflows in our BSV blockchain development ecosystem.
 
-## 🎯 Purpose
+## Purpose
 
 This repository contains reusable prompts that combine Claude Code capabilities, init-prism project generation, and our extensive toolchain to automate:
 
@@ -12,22 +12,36 @@ This repository contains reusable prompts that combine Claude Code capabilities,
 - **Development Workflows** - Project scaffolding, testing automation, deployment
 - **Blockchain Operations** - Transaction monitoring, identity management, ordinals handling
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Using Claude Code Slash Commands
 
-1. **Initialize User Commands** (first time only):
+1. **Check System Status**:
    ```bash
-   # In Claude Code, run:
+   # See overview of commands and status
+   /help-prompts
+   /help-prompts --status
+   ```
+
+2. **Initialize User Commands** (first time only):
+   ```bash
+   # Copy new commands from repo to local
    /init-prompts
    ```
 
-2. **Access Design Resources**:
+3. **Sync Existing Commands**:
    ```bash
-   # Use the design command for UI/UX resources
-   /design
-   /design shadcn
-   /design tailwind
+   # Update and manage existing commands
+   /sync-prompts
+   ```
+
+4. **Access Commands**:
+   ```bash
+   # Use any initialized command
+   /design           # UI/UX resources
+   /lint             # Code quality tools
+   /bsv              # BSV SDK documentation
+   /ai-inspiration   # AI design tools
    ```
 
 ### Using Prompts Directly
@@ -36,13 +50,13 @@ Each prompt is designed to be self-contained and executable:
 
 ```bash
 # Example usage with Claude Code
-claude -p prompts/bigblocks/component-ecosystem-manager.md
+claude -p prompts/development/initprism-meta-prompt-generator.md
 
 # Or copy content for use in other AI tools
-cat prompts/development/cross-project-dependency-update.md
+cat prompts/server/system-health-audit.md
 ```
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 prompts/
@@ -53,21 +67,47 @@ prompts/
 ├── .gitignore            # Git ignore configuration
 │
 ├── .claude/              # Claude Code configuration
-│   ├── commands/         # Project-level slash commands
-│   └── settings.local.json
+│   └── commands/         # Project-level slash commands
+│       ├── help-prompts.md    # Comprehensive help system
+│       ├── init-prompts.md    # Initialize user commands
+│       ├── restart-claude.md  # Restart Claude Code
+│       └── sync-prompts.md    # Sync user commands
 │
 ├── user/                 # User-level Claude commands
 │   └── .claude/
 │       └── commands/     # Commands to copy to ~/.claude/commands
+│           ├── ai-inspiration.md     # AI design tools
+│           ├── bsv.md                # BSV SDK docs
+│           ├── create-prompt.md      # Create new commands
+│           ├── design.md             # Design resources
+│           ├── lint.md               # Linting tools
+│           ├── mcp-install-magic.md  # Install Magic MCP
+│           ├── mcp-install-playwright.md  # Install Playwright MCP
+│           ├── prd.md                # Product requirements
+│           ├── prd-enhanced.md       # Enhanced PRD
+│           ├── stripe.md             # Stripe integration
+│           ├── tanstack.md           # TanStack Query
+│           └── update-prompt.md      # Update commands
 │
-├── bigblocks/            # BigBlocks component management
 ├── design/               # UI/UX design tools and frameworks
-├── development/          # Development workflow automation  
+│   ├── 21st-dev-magic.md
+│   ├── biome.md
+│   ├── fumadocs.md
+│   ├── shadcn.md
+│   ├── tailwind-nextjs.md
+│   ├── ui-inspiration.md
+│   └── ultracite.md
+├── development/          # Development workflow automation
+│   ├── 1sat-ordinals.md
+│   ├── bsv-sdk.md
+│   ├── fumadocs-integration-guide.md
+│   └── initprism-meta-prompt-generator.md
 ├── infrastructure/       # DevOps and deployment
 └── server/               # Server maintenance and monitoring
+    └── system-health-audit.md
 ```
 
-## 📋 Prompt Format
+## Prompt Format
 
 All prompts follow a standardized format with YAML frontmatter for metadata and markdown content:
 
@@ -101,11 +141,10 @@ Clear statement of what this prompt accomplishes...
 [Rest of prompt content...]
 ```
 
-## 🔍 Finding Prompts
+## Finding Prompts
 
 ### By Category
 Browse prompts organized by their primary function:
-- `bigblocks/` - Bitcoin UI component management
 - `design/` - UI/UX frameworks, design tools, and resources
 - `development/` - Code and dependency management
 - `infrastructure/` - DevOps automation
@@ -122,26 +161,7 @@ cat registry.json | jq '.prompts[] | select(.tags[] | contains("components"))'
 cat registry.json | jq '.prompts[] | select(.category == "development")'
 ```
 
-## 🛠️ Contributing
-
-When adding new prompts:
-
-### 1. Follow the Standard Format
-Use the template structure with proper frontmatter and sections.
-
-### 2. Update the Registry
-Add your prompt to `registry.json` with complete metadata.
-
-### 3. Test Thoroughly
-Ensure the prompt works as expected before committing.
-
-### 4. Document Requirements
-List all required tools, environment variables, and dependencies.
-
-### 5. Include Examples
-Provide clear usage examples and expected outcomes.
-
-## 🔄 Interoperability
+## Interoperability
 
 This repository follows emerging standards for prompt organization:
 
@@ -151,7 +171,7 @@ This repository follows emerging standards for prompt organization:
 - **Registry System**: Central index for discovery and search
 - **Category Taxonomy**: Consistent categorization across prompts
 
-## 🤝 Integration
+## Integration
 
 ### With Claude Code
 ```bash
@@ -164,13 +184,13 @@ claude mcp add prompts "cat ~/code/prompts/{category}/{prompt}.md"
 - Convert to tool-specific formats as needed
 - Use the schema for validation
 
-## 📊 Statistics
+## Statistics
 
-- **Total Prompts**: 1 (and growing!)
-- **Categories**: 7
+- **Total Prompts**: 3
+- **Categories**: 6
 - **Contributors**: 1
 
-## 🔗 Ecosystem Integration
+## Ecosystem Integration
 
 Our prompts leverage:
 - **Claude Code SDK** - Autonomous iteration and build verification
@@ -180,7 +200,7 @@ Our prompts leverage:
 - **BigBlocks** - Bitcoin component library
 - **gib** - Git + blockchain version control
 
-## 🔄 InitPRISM Recursive Integration
+## InitPRISM Recursive Integration
 
 **POWERFUL**: InitPRISM now has access to this prompts repository, enabling:
 
@@ -203,6 +223,25 @@ Our prompts leverage:
 - **Composable Workflows**: Chain multiple prompts for complex automation scenarios
 - **Template Enhancement**: Project templates that reference specific prompts for ongoing tasks
 
+## Contributing
+
+When adding new prompts:
+
+### 1. Follow the Standard Format
+Use the template structure with proper frontmatter and sections.
+
+### 2. Update the Registry
+Add your prompt to `registry.json` with complete metadata.
+
+### 3. Test Thoroughly
+Ensure the prompt works as expected before committing.
+
+### 4. Document Requirements
+List all required tools, environment variables, and dependencies.
+
+### 5. Include Examples
+Provide clear usage examples and expected outcomes.
+
 ---
 
-Built for the BSV development ecosystem • [Contributing Guidelines](./CONTRIBUTING.md)
+Built for the BSV development ecosystem
