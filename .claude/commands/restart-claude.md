@@ -8,7 +8,6 @@ argument-hint: [--force] [--no-resume] [--help]
 ## Current Session Info
 !`echo "Shell PID: $$"`
 !`echo "Claude PID: $PPID"`
-!`ps -p $PPID -o comm= | xargs echo "Parent process:"`
 !`pwd`
 
 ## Your Task
