@@ -4,10 +4,9 @@ description: Set up and achieve 100% clean linting with Ultracite/Biome
 argument-hint: [setup|clean|check] - Initialize linting or clean up existing issues
 ---
 
-## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+## Your Task
 
-$IF_HELP_REQUESTED:
+If the arguments contain "--help", show this help:
 **lint** - Set up and achieve 100% clean linting with Ultracite/Biome
 
 **Usage:** `/lint [action]`
@@ -34,7 +33,9 @@ Set up Ultracite (powered by Biome) for zero-config linting and formatting. Achi
 - TypeScript strict mode
 - Pre-commit hooks
 
-$STOP_EXECUTION_IF_HELP
+Then stop.
+
+Otherwise, continue with the linting guide:
 
 # Achieving 100% Clean Linting with Ultracite
 
@@ -103,8 +104,9 @@ Update `tsconfig.json`:
 # See all current issues
 npx ultracite lint
 
-# Get a count of issues
-npx ultracite lint | grep -c "error"
+# For a summary, check the exit code instead
+# (ultracite returns non-zero if there are errors)
+npx ultracite lint && echo "✅ No linting errors!" || echo "❌ Linting errors found"
 ```
 
 #### 2. Auto-fix What's Possible
@@ -226,13 +228,15 @@ If you have many issues, fix them progressively:
 npx ultracite format
 
 # Then fix one type of issue at a time
-# Example: Fix all equality checks
-npx ultracite lint | grep "eqeqeq"
-# Fix those files
+# Example: Look for specific types of issues
+npx ultracite lint
+# Review the output for patterns like:
+# - "eqeqeq" errors (use === instead of ==)
+# - "noExplicitAny" errors (add proper types)
+# Fix those files systematically
 
-# Then move to the next issue type
-npx ultracite lint | grep "noExplicitAny"
-# Fix those files
+# Check progress after each round of fixes
+npx ultracite lint
 ```
 
 ### 6. Verification
