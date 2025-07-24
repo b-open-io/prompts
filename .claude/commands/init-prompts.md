@@ -1,11 +1,11 @@
 ---
-allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(find:*), Bash(test:*), Bash(echo:*), Bash(basename:*), Bash(while:*), Bash(read:*), Read
+allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(find:*), Bash(test:*), Bash(echo:*), Bash(basename:*), Bash(while:*), Bash(read:*), Bash(grep:*), Read
 description: Initialize new user-level Claude commands (won't overwrite existing)
 argument-hint: [--list-only] [--help]
 ---
 
 ## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+!`echo "$ARGUMENTS" | grep -q -- "--help" && echo "HELP_REQUESTED" || echo "CONTINUE"`
 
 $IF_HELP_REQUESTED:
 **init-prompts** - Initialize new user-level Claude commands

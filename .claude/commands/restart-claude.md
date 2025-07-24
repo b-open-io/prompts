@@ -1,11 +1,11 @@
 ---
-allowed-tools: Bash(ps:*), Bash(kill:*), Bash(exec:*), Bash(echo:*), Bash(claude:*), Bash(test:*), Bash(pwd:*), Bash(sleep:*), Bash(bash:*)
+allowed-tools: Bash(ps:*), Bash(kill:*), Bash(exec:*), Bash(echo:*), Bash(claude:*), Bash(test:*), Bash(pwd:*), Bash(sleep:*), Bash(bash:*), Bash(grep:*)
 description: Restart Claude Code to apply MCP changes or troubleshoot issues
 argument-hint: [--force] [--no-resume]
 ---
 
 ## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+!`echo "$ARGUMENTS" | grep -q -- "--help" && echo "HELP_REQUESTED" || echo "CONTINUE"`
 
 $IF_HELP_REQUESTED:
 **restart-claude** - Restart Claude Code to apply MCP changes or troubleshoot issues

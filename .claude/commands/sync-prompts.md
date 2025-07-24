@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(ls:*), Bash(diff:*), Bash(cat:*), Bash(find:*), Bash(git:*), Bash(cp:*), Bash(comm:*), Bash(xargs:*), Bash(basename:*), Bash(sort:*), Bash(sed:*), Bash(test:*), Bash(echo:*), Read, Write, Edit, Grep
+allowed-tools: Bash(ls:*), Bash(diff:*), Bash(cat:*), Bash(find:*), Bash(git:*), Bash(cp:*), Bash(comm:*), Bash(xargs:*), Bash(basename:*), Bash(sort:*), Bash(sed:*), Bash(test:*), Bash(echo:*), Bash(grep:*), Read, Write, Edit, Grep
 description: Sync and update user commands between local and prompts repo
 argument-hint: [--full-report] [--contribute] [--pull] [--push] [--help]
 ---
@@ -11,7 +11,7 @@ This command compares and synchronizes your local `~/.claude/commands/` with the
 **Note**: Use `/init-prompts` first to copy new commands. This command handles updates and synchronization of existing commands.
 
 ## Help Check
-!`[[ "$ARGUMENTS" == *"--help"* ]] && echo "HELP_REQUESTED" || echo "CONTINUE"`
+!`echo "$ARGUMENTS" | grep -q -- "--help" && echo "HELP_REQUESTED" || echo "CONTINUE"`
 
 $IF_HELP_REQUESTED:
 **sync-prompts** - Sync and update user commands between local and prompts repo
