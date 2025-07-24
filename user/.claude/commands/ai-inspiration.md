@@ -13,12 +13,12 @@ $IF_HELP_REQUESTED:
 **Usage:** `/ai-inspiration [tool]`
 
 **Description:**
-Access information about AI design tools for generating UI components and designs. Includes comparisons and workflows for tools like 21st.dev Magic, v0, Galileo AI, and Framer.
+Access information about AI design tools for generating UI components and designs. Includes comparisons and workflows for tools like 21st.dev Magic, v0, Google Stitch, and Framer.
 
 **Arguments:**
 - `magic`   : Focus on 21st.dev Magic MCP
 - `v0`      : Focus on Vercel's v0
-- `galileo` : Focus on Galileo AI
+- `stitch`  : Focus on Google Stitch
 - `framer`  : Focus on Framer AI
 - `--help`  : Show this help message
 
@@ -54,15 +54,15 @@ Quick start:
 - shadcn/ui integration
 - Multiple variations per prompt
 
-### Galileo AI
-**URL**: https://www.usegalileo.ai  
-**Purpose**: AI-driven UI/UX design with Figma export  
+### Google Stitch (formerly Galileo AI)
+**URL**: https://stitch.withgoogle.com  
+**Purpose**: Google's AI design tool (acquired Galileo)  
 **Features**:
 - Complete app design generation
 - High-fidelity mockups
 - Design system aware
 - Mobile and web layouts
-- Figma plugin integration
+- Google integration
 
 ### Framer AI
 **URL**: https://www.framer.com  
@@ -113,7 +113,7 @@ See `/design inspiration` for detailed traditional resources.
 **Alternative**: v0.dev (web-based, shadcn/ui ready)
 
 ### For Complete Designs
-**Best**: Galileo AI (Figma export)  
+**Best**: Google Stitch (Google's design tool)  
 **Alternative**: Framer AI (live website)
 
 ### For Inspiration
@@ -169,7 +169,7 @@ See `/design inspiration` for detailed traditional resources.
 ## Resources
 - [21st.dev Magic Setup](https://console.21st.dev)
 - [v0.dev](https://v0.dev)
-- [Galileo AI](https://www.usegalileo.ai)
+- [Google Stitch](https://stitch.withgoogle.com)
 - [Framer](https://www.framer.com)
 - [AI Design Patterns](https://github.com/ai-design-patterns)
 
