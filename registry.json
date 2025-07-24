@@ -53,21 +53,6 @@
       }
     },
     {
-      "id": "server/system-health-audit",
-      "name": "System Health Audit",
-      "version": "1.0.0",
-      "description": "Comprehensive infrastructure health monitoring with intelligent alerting and automated remediation",
-      "category": "server",
-      "tags": ["monitoring", "health-checks", "infrastructure", "automation", "performance", "security"],
-      "complexity": "advanced",
-      "path": "server/system-health-audit.md",
-      "metadata": {
-        "llm_provider": ["claude"],
-        "estimated_tokens": 18000,
-        "time_estimate": "30-75 minutes"
-      }
-    },
-    {
       "id": "development/fumadocs-integration-guide",
       "name": "Fumadocs Complete Integration Guide",
       "version": "1.0.0",
@@ -85,9 +70,9 @@
     }
   ],
   "statistics": {
-    "total_prompts": 3,
+    "total_prompts": 2,
     "categories_count": 6,
-    "last_updated": "2025-01-06",
+    "last_updated": "2025-01-24",
     "contributors": 1
   }
 }

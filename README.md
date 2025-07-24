@@ -6,7 +6,6 @@ A collection of powerful, task-specific prompts for automating complex workflows
 
 This repository contains reusable prompts that combine Claude Code capabilities, init-prism project generation, and our extensive toolchain to automate:
 
-- **Server Maintenance** - Health checks, performance monitoring, log analysis
 - **Project Operations** - Cross-project updates, dependency management, release coordination  
 - **Report Generation** - Analytics, metrics, security audits
 - **Development Workflows** - Project scaffolding, testing automation, deployment
@@ -55,7 +54,7 @@ Each prompt is designed to be self-contained and executable:
 claude -p prompts/development/initprism-meta-prompt-generator.md
 
 # Or copy content for use in other AI tools
-cat prompts/server/system-health-audit.md
+cat prompts/development/fumadocs-integration-guide.md
 ```
 
 ## Repository Structure
@@ -103,9 +102,7 @@ prompts/
 │   ├── bsv-sdk.md
 │   ├── fumadocs-integration-guide.md
 │   └── initprism-meta-prompt-generator.md
-├── infrastructure/       # DevOps and deployment
-└── server/               # Server maintenance and monitoring
-    └── system-health-audit.md
+└── infrastructure/       # DevOps and deployment
 ```
 
 ## Prompt Format
@@ -149,7 +146,6 @@ Browse prompts organized by their primary function:
 - `design/` - UI/UX frameworks, design tools, and resources
 - `development/` - Code and dependency management
 - `infrastructure/` - DevOps automation
-- `server/` - System administration
 
 ### Using the Registry
 The `registry.json` file contains metadata for all prompts:

@@ -10,7 +10,6 @@ This is a collection of powerful, task-specific prompts designed to leverage our
 
 Create reusable, powerful prompts for:
 - **Design & UI Development**: Component libraries, frameworks, design tools
-- Server maintenance and monitoring
 - Project generation and scaffolding
 - Report generation and analytics
 - Cross-project operations
@@ -54,7 +53,6 @@ This repository builds on our monorepo containing:
 - Identity management
 
 ### 5. Infrastructure
-- Server health checks
 - Performance monitoring
 - Backup verification
 - Configuration management
