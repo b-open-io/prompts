@@ -87,7 +87,9 @@ After installation:
   
   ⚠️  IMPORTANT: You need to restart Claude Code for MCP changes to take effect.
   
-  Run: /restart-claude
+  To restart:
+  1. Press Ctrl+C to exit Claude Code
+  2. Run 'claude -c' to resume conversation
   
   After restart, try these commands:
   - /ui Create a modern pricing table

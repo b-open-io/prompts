@@ -72,7 +72,6 @@ prompts/
 │   └── commands/         # Project-level slash commands
 │       ├── help-prompts.md    # Comprehensive help system
 │       ├── init-prompts.md    # Initialize user commands
-│       ├── restart-claude.md  # Restart Claude Code
 │       └── sync-prompts.md    # Sync user commands
 │
 ├── user/                 # User-level Claude commands

@@ -58,11 +58,10 @@ This copies user-level commands from the repository to your system.
 
 ### 5. Restart Claude Code (if needed)
 
-After installing commands or MCP servers, restart Claude Code:
+After installing MCP servers, restart Claude Code:
 
-```
-/restart-claude
-```
+1. Press Ctrl+C to exit
+2. Run `claude -c` to resume
 
 ## Using Commands
 
@@ -129,9 +128,8 @@ Then install:
 
 After installing any MCP server, restart Claude Code:
 
-```
-/restart-claude
-```
+1. Press Ctrl+C to exit
+2. Run `claude -c` to resume
 
 ## Troubleshooting
 
@@ -140,7 +138,7 @@ After installing any MCP server, restart Claude Code:
 1. Make sure you're in the prompts directory
 2. Try `/help-prompts --status` to check installation
 3. Run `/sync-prompts` to update commands
-4. Restart Claude Code with `/restart-claude`
+4. Restart Claude Code manually: Press Ctrl+C then run `claude -c`
 
 ### Permission Errors
 
