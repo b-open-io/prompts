@@ -1,15 +1,8 @@
 ---
-allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(find:*), Bash(test:*), Bash(echo:*), Bash(basename:*), Bash(while:*), Bash(read:*), Bash(grep:*), Read
+allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(test:*), Bash(echo:*), Read, Glob
 description: Initialize new user-level Claude commands (won't overwrite existing)
 argument-hint: [--list-only] [--help]
 ---
-
-## Context
-
-- Project commands directory: !`ls -la $WORKING_DIR/user/.claude/commands/ 2>/dev/null || echo "No user commands found in repo"`
-- User's Claude commands: !`ls -la ~/.claude/commands/ 2>/dev/null || echo "User commands directory does not exist"`
-- Existing files (will skip): !`find $WORKING_DIR/user/.claude/commands -name "*.md" -exec basename {} \; 2>/dev/null | while read f; do [ -f ~/.claude/commands/"$f" ] && echo "- $f (exists)"; done`
-- New files to copy: !`find $WORKING_DIR/user/.claude/commands -name "*.md" -exec basename {} \; 2>/dev/null | while read f; do [ ! -f ~/.claude/commands/"$f" ] && echo "- $f (new)"; done`
 
 ## Your Task
 
@@ -46,18 +39,17 @@ Otherwise, initialize NEW user commands by copying ONLY non-existing commands fr
 ### Process:
 
 1. **Create user directory if needed**:
-   - Check if `~/.claude/commands/` exists
-   - Create it if missing with proper permissions
+   - Use Bash to create ~/.claude/commands/ if it doesn't exist
 
-2. **Copy ONLY new commands**:
-   - List all `.md` files in `user/.claude/commands/`
-   - Skip any that already exist in user's directory
-   - Copy only new commands
+2. **Find and copy new commands**:
+   - Use Glob to find all .md files in user/.claude/commands/
+   - Use Bash test to check if each file exists in ~/.claude/commands/
+   - Copy only files that don't already exist
 
 3. **Report results**:
    - List newly copied commands
-   - List skipped commands (already exist)
-   - If any were skipped, remind user to use `/sync-prompts` for updates
+   - List skipped commands (if any already exist)
+   - Remind user about /sync-prompts for updates if needed
 
 ### Arguments:
 - `--list-only`: Just show what would be copied without doing it

@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(ls:*), Bash(diff:*), Bash(cat:*), Bash(find:*), Bash(git:*), Bash(cp:*), Bash(comm:*), Bash(xargs:*), Bash(basename:*), Bash(sort:*), Bash(sed:*), Bash(test:*), Bash(echo:*), Bash(grep:*), Read, Write, Edit, Grep
+allowed-tools: Bash(diff:*), Bash(git:*), Bash(cp:*), Bash(test:*), Bash(echo:*), Read, Write, Edit, Grep, Glob
 description: Sync and update user commands between local and prompts repo
 argument-hint: [--full-report] [--contribute] [--pull] [--push] [--help]
 ---
@@ -9,28 +9,6 @@ argument-hint: [--full-report] [--contribute] [--pull] [--push] [--help]
 This command compares and synchronizes your local `~/.claude/commands/` with the prompts repository's `user/.claude/commands/`. It can update existing commands, pull new versions from the repo, and help you contribute improvements back to the community.
 
 **Note**: Use `/init-prompts` first to copy new commands. This command handles updates and synchronization of existing commands.
-
-## Current Git Status
-!`cd $WORKING_DIR && git status --porcelain`
-
-## Step 1: Analyze Local vs Repository Commands
-
-### Local Commands (Your System)
-!`ls -la ~/.claude/commands/ | grep -E '\.md$' | awk '{print $NF}' | sort`
-
-### Repository Commands (Upstream)
-!`ls -la $WORKING_DIR/user/.claude/commands/ | grep -E '\.md$' | awk '{print $NF}' | sort`
-
-## Step 2: Find Differences
-
-### Commands Only in Local (Not in Repo)
-!`comm -23 <(ls ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) | sed 's/^/- /'`
-
-### Commands Only in Repo (Not in Local)
-!`comm -13 <(ls ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) | sed 's/^/- /'`
-
-### Commands in Both (Check for Updates)
-!`comm -12 <(ls ~/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort) <(ls $WORKING_DIR/user/.claude/commands/*.md 2>/dev/null | xargs -n1 basename | sort)`
 
 ## Your Task
 
@@ -65,39 +43,34 @@ For more help: /help-prompts
 
 Then stop.
 
-Otherwise, based on the analysis above, provide a comprehensive sync report:
+Otherwise, provide a comprehensive sync report:
 
-1. **Analyze Differences**
-   - For commands in both locations, check if they differ using `diff`
-   - Identify which version is newer or more comprehensive
-   - Note any local customizations that should be preserved
+1. **Find Files to Compare**
+   - Use Glob to find all .md files in user/.claude/commands/
+   - Use Glob to find all .md files in ~/.claude/commands/
+   - Use Bash test to check which files exist in both locations
 
-2. **Create Sync Report**
+2. **Analyze Differences**
+   - Use Bash diff to compare files that exist in both locations
+   - Use Read tool to examine file contents when needed
+   - Identify files that exist only in one location
+
+3. **Create Sync Report**
    Present a clear report showing:
    - 📤 **Local commands to contribute**: Commands you have that the repo doesn't
-   - 📥 **Repo commands to pull**: Commands the repo has that you don't
-   - 🔄 **Commands with differences**: Which version is better/newer
-   - ✅ **Commands in sync**: No action needed
+   - 📥 **Repo commands to pull**: Commands the repo has that you don't  
+   - 🔄 **Commands with differences**: Files that differ between locations
+   - ✅ **Commands in sync**: Files that are identical
 
-3. **Ask User for Actions**
+4. **Ask User for Actions**
    After showing the report, ask which commands they want to:
    - Copy from repo to local (update their system)
    - Contribute from local to repo (share with community)
    - Skip (keep different versions)
 
-4. **Contribution Workflow**
-   If user wants to contribute:
-   - Suggest creating a feature branch
-   - Copy selected commands to `user/.claude/commands/`
-   - Provide clear commit message
-   - Offer to create a pull request with:
-     - Description of new/updated commands
-     - Why they're useful
-     - Any dependencies or requirements
-
 5. **Implementation**
-   - Use `cp` to copy files as directed
-   - Use `git` commands for contribution workflow
+   - Use Bash cp to copy files as directed
+   - Use Bash git commands for contribution workflow
    - Show progress for each action
    - Confirm successful sync
 
