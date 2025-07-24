@@ -1,7 +1,7 @@
 ---
-allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(test:*), Bash(echo:*), Read, Glob
+allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(test:*), Bash(echo:*), Bash(wc:*), Read, Glob, Grep
 description: Initialize new user-level Claude commands (won't overwrite existing)
-argument-hint: [--list-only] [--help]
+argument-hint: [--list-only] [--describe] [--help]
 ---
 
 ## Your Task
@@ -11,7 +11,7 @@ If the arguments contain "--help", show this help:
 ```
 init-prompts - Initialize new user-level Claude commands
 
-Usage: /init-prompts [--list-only] [--help]
+Usage: /init-prompts [--list-only] [--describe] [--help]
 
 Description:
 Copies NEW commands from the prompts repository to your local ~/.claude/commands/ directory.
@@ -19,11 +19,17 @@ This command will NEVER overwrite existing files.
 
 Options:
   --list-only  Preview what would be copied without actually copying
+  --describe   Show detailed descriptions of each command
   --help       Show this help message
 
 Examples:
-  /init-prompts             Copy all new commands
+  /init-prompts              Copy all new commands
   /init-prompts --list-only  See what would be copied
+  /init-prompts --describe   See what each command does
+
+⚠️  IMPORTANT: After copying commands, you must restart Claude Code:
+   1. Press Ctrl+C to exit
+   2. Run 'claude -c' to resume
 
 Note: Use /sync-prompts to update existing commands.
 
@@ -38,21 +44,34 @@ Otherwise, initialize NEW user commands by copying ONLY non-existing commands fr
 
 ### Process:
 
-1. **Create user directory if needed**:
-   - Use Bash to create ~/.claude/commands/ if it doesn't exist
+1. **Initial Summary**:
+   - Count total available commands in repo
+   - Count existing local commands
+   - Show how many new commands can be installed
 
-2. **Find and copy new commands**:
+2. **Create user directory if needed**:
+   - Use Bash to create ~/.claude/commands/ if it doesn't exist
+   - Verify directory was created successfully
+
+3. **Find and analyze commands**:
    - Use Glob to find all .md files in user/.claude/commands/
    - Use Bash test to check if each file exists in ~/.claude/commands/
-   - Copy only files that don't already exist
+   - For --describe option: Use Grep to extract descriptions from frontmatter
 
-3. **Report results**:
-   - List newly copied commands
+4. **Copy new commands** (unless --list-only):
+   - Copy only files that don't already exist
+   - Verify each file was copied successfully
+   - Track success/failure counts
+
+5. **Report results**:
+   - List newly copied commands with brief descriptions
    - List skipped commands (if any already exist)
+   - Show restart instructions prominently
    - Remind user about /sync-prompts for updates if needed
 
 ### Arguments:
 - `--list-only`: Just show what would be copied without doing it
+- `--describe`: Show detailed descriptions of each command
 
 ### Example Usage:
 ```bash
@@ -65,15 +84,30 @@ Otherwise, initialize NEW user commands by copying ONLY non-existing commands fr
 
 ### Success Message Template:
 ```
-✅ Initialized new Claude commands:
-- Copied: [list of new commands]
-- Skipped (already exist): [list]
+📊 Command Summary:
+- Available in repo: [total count]
+- Already installed: [existing count]
+- New to install: [new count]
 
-$IF_SKIPPED:
+✅ Initialized new Claude commands:
+[For each copied command, show]:
+- /command-name - Brief description
+
+⏭️  Skipped (already exist): 
+[List of skipped commands]
+
+[If any commands were skipped, also show:]
 📝 To update existing commands, use: /sync-prompts
 
-Try your new commands:
-- /[new command names]
+After restart, try your new commands:
+- /command-name - What it does
+- /command-name --help - See detailed help
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  RESTART REQUIRED - Commands won't work until you:
+   1. Press Ctrl+C to exit Claude Code
+   2. Run 'claude -c' to resume your conversation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ### Important Notes:

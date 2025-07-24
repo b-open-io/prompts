@@ -105,3 +105,14 @@ Remember to:
 - Explain benefits of each command when contributing
 - Test commands work correctly after sync
 - Follow repository contribution guidelines
+
+### Important Note About Changes
+When you sync or update commands, show this reminder at the END of your output:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  RESTART REQUIRED - Updated commands won't work until you:
+   1. Press Ctrl+C to exit Claude Code
+   2. Run 'claude -c' to resume your conversation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
