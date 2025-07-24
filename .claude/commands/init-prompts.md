@@ -54,17 +54,20 @@ Otherwise, initialize NEW user commands by copying ONLY non-existing commands fr
    - Verify directory was created successfully
 
 3. **Find and analyze commands**:
-   - Use Glob to find all .md files in user/.claude/commands/
-   - Use Bash test to check if each file exists in ~/.claude/commands/
+   - Use Glob to find all .md files in user/.claude/commands/ including subdirectories
+   - Preserve namespace structure (e.g., utils/find.md, dev/lint.md)
+   - Use Bash test to check if each file exists in ~/.claude/commands/ with full path
    - For --describe option: Use Grep to extract descriptions from frontmatter
 
 4. **Copy new commands** (unless --list-only):
+   - Create namespace directories as needed (mkdir -p)
    - Copy only files that don't already exist
+   - Preserve directory structure (e.g., copy user/.claude/commands/dev/lint.md to ~/.claude/commands/dev/lint.md)
    - Verify each file was copied successfully
    - Track success/failure counts
 
 5. **Report results**:
-   - List newly copied commands with brief descriptions
+   - List newly copied commands with namespace prefixes (e.g., /dev:lint, /utils:find)
    - List skipped commands (if any already exist)
    - Show restart instructions prominently
    - Remind user about /sync-prompts for updates if needed

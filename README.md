@@ -38,11 +38,12 @@ This repository contains reusable prompts that combine Claude Code capabilities,
 
 4. **Access Commands**:
    ```bash
-   # Use any initialized command
-   /design           # UI/UX resources
-   /lint             # Code quality tools
-   /bsv              # BSV SDK documentation
-   /ai-inspiration   # AI design tools
+   # Use namespaced commands
+   /utils:find yours ~/code     # Fast file search
+   /dev:lint                    # Code quality tools
+   /integrations:bsv            # BSV SDK documentation
+   /design:ai-inspiration       # AI design tools
+   /docs:prd                    # Product requirements
    ```
 
 5. **Check for Updates**:
@@ -88,20 +89,27 @@ prompts/
 ├── user/                 # User-level Claude commands
 │   └── .claude/
 │       └── commands/     # Commands to copy to ~/.claude/commands
-│           ├── ai-inspiration.md     # AI design tools
-│           ├── auth.md               # OAuth & Sigma Identity auth
-│           ├── bsv.md                # BSV SDK docs
-│           ├── create-prompt.md      # Create new commands
-│           ├── design.md             # Design resources
-│           ├── enhance.md            # Enhance existing commands
-│           ├── lint.md               # Linting tools
-│           ├── mcp-install-magic.md  # Install Magic MCP
-│           ├── mcp-install-playwright.md  # Install Playwright MCP
-│           ├── prd.md                # Product requirements
-│           ├── prd-enhanced.md       # Enhanced PRD
-│           ├── stripe.md             # Stripe integration
-│           ├── tanstack.md           # TanStack Query
-│           └── update-prompt.md      # Update commands
+│           ├── utils/
+│           │   └── find.md           # Fast file/content search
+│           ├── dev/
+│           │   ├── lint.md           # Linting tools
+│           │   ├── enhance.md        # Enhance commands
+│           │   ├── create-prompt.md  # Create new commands
+│           │   └── update-prompt.md  # Update commands
+│           ├── design/
+│           │   ├── design.md         # Design resources
+│           │   └── ai-inspiration.md # AI design tools
+│           ├── docs/
+│           │   ├── prd.md            # Product requirements
+│           │   └── prd-enhanced.md   # Enhanced PRD
+│           ├── integrations/
+│           │   ├── stripe.md         # Stripe integration
+│           │   ├── auth.md           # OAuth & Sigma Identity
+│           │   ├── tanstack.md       # TanStack Query
+│           │   └── bsv.md            # BSV SDK docs
+│           └── mcp/
+│               ├── install-magic.md  # Install Magic MCP
+│               └── install-playwright.md # Install Playwright MCP
 │
 ├── design/               # UI/UX design tools and frameworks
 │   ├── 21st-dev-magic.md

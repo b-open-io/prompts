@@ -101,14 +101,18 @@ Otherwise:
 - Always end help with "Then stop."
 
 #### Context Window Optimization
-- AVOID bash command executions in command files (!`command`)
-- Use Read, Grep, and Glob tools instead of bash
-- If bash is absolutely necessary, use only simple commands
-- Examples of what to AVOID:
+- Bash command executions are POWERFUL - use them wisely!
+- Format: !` followed by your command and closing backtick
+- Must declare permissions in allowed-tools frontmatter
+- Examples of permission requirements:
   ```
-  !`ls -1 *.md | head -10`              # Pipes cause permission errors
-  !`git status --porcelain | wc -l`     # Complex syntax fails
-  !`[[ "$VAR" == *"text"* ]]`           # [[ ]] syntax requires extra permissions
+  # Simple commands work with basic permissions:
+  Bash(ls:*), Bash(echo:*), Bash(pwd:*)
+  
+  # Pipes and complex syntax need more:
+  Bash(ls:*), Bash(head:*), Bash(wc:*), Bash(grep:*)
+  
+  # Always test your bash commands work properly!
   ```
 
 #### File References
