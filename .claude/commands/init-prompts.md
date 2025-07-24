@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(find:*), Read
+allowed-tools: Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(find:*), Bash(test:*), Bash(echo:*), Bash(basename:*), Bash(while:*), Bash(read:*), Read
 description: Initialize new user-level Claude commands (won't overwrite existing)
 argument-hint: [--list-only] [--help]
 ---
