@@ -17,26 +17,19 @@ This repository contains reusable prompts that combine Claude Code capabilities,
 
 ### Using Claude Code Slash Commands
 
-1. **Check System Status**:
-   ```bash
-   # See overview of commands and status
-   /help-prompts
-   /help-prompts --status
-   ```
-
-2. **Initialize User Commands** (first time only):
+1. **Initialize User Commands** (first time only):
    ```bash
    # Copy new commands from repo to local
    /init-prompts
    ```
 
-3. **Sync Existing Commands**:
+2. **Sync Existing Commands**:
    ```bash
    # Update and manage existing commands
    /sync-prompts
    ```
 
-4. **Access Commands**:
+3. **Access Commands**:
    ```bash
    # Use namespaced commands
    /utils:find yours ~/code     # Fast file search
@@ -46,7 +39,7 @@ This repository contains reusable prompts that combine Claude Code capabilities,
    /docs:prd                    # Product requirements
    ```
 
-5. **Check for Updates**:
+4. **Check for Updates**:
    ```bash
    # Check version of specific command
    /version-check auth
