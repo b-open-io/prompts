@@ -1,12 +1,14 @@
 ---
-allowed-tools: Bash(ps:*), Bash(kill:*), Bash(echo:*), Bash(claude:*), Bash(pwd:*), Bash(sleep:*), Bash(sh:*)
+allowed-tools: Bash(ps:*), Bash(kill:*), Bash(echo:*), Bash(claude:*), Bash(pwd:*), Bash(sleep:*), Bash(sh:*), Bash(xargs:*)
 description: Restart Claude Code to apply MCP changes or troubleshoot issues
 argument-hint: [--force] [--no-resume] [--help]
 ---
 
 
 ## Current Session Info
-!`echo "PID: $$"`
+!`echo "Shell PID: $$"`
+!`echo "Claude PID: $PPID"`
+!`ps -p $PPID -o comm= | xargs echo "Parent process:"`
 !`pwd`
 
 ## Your Task
@@ -65,15 +67,17 @@ The restart strategy depends on options:
 
 **Default (with resume):**
 ```bash
-# This will kill current session and start new one with conversation resume
-sh -c 'kill $$ && sleep 1 && claude -c'
+# Kill the parent Claude process and restart
+kill $PPID && claude -c &
 ```
 
 **Without resume:**
 ```bash
-# This will kill current session and start fresh
-sh -c 'kill $$ && sleep 1 && claude'
+# Kill the parent Claude process and start fresh
+kill $PPID && claude &
 ```
+
+**Note**: The restart happens by killing the parent process (Claude Code itself), not the shell subprocess.
 
 ### 5. What Happens
 

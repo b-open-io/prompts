@@ -14,6 +14,8 @@ This repository contains reusable prompts that combine Claude Code capabilities,
 
 ## Quick Start
 
+**New to Claude Code?** See our [Quick Start Guide](QUICKSTART.md) for step-by-step setup instructions.
+
 ### Using Claude Code Slash Commands
 
 1. **Check System Status**:
