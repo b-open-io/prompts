@@ -15,7 +15,7 @@ Usage: /sync-agents [OPTIONS]
 
 Description:
 Compare and synchronize agents between your local ~/.claude/agents/
-and the prompts repository .claude/agents/. Helps you get updates
+and the prompts repository user/.claude/agents/. Helps you get updates
 and contribute improvements back to the community.
 
 Options:
@@ -37,19 +37,19 @@ Then stop.
 Otherwise, synchronize agents:
 
 ### 1. Find Agents to Compare
-!`find .claude/agents -name "*.md" -type f 2>/dev/null | sort`
+!`find user/.claude/agents -name "*.md" -type f 2>/dev/null | sort`
 !`find ~/.claude/agents -name "*.md" -type f 2>/dev/null | sort`
 
 ### 2. Analyze Differences
 
 Compare the lists and use diff to find:
 - 📤 **Local agents to contribute**: Agents only in ~/.claude/agents/
-- 📥 **Repo agents to pull**: Agents only in .claude/agents/
+- 📥 **Repo agents to pull**: Agents only in user/.claude/agents/
 - 🔄 **Agents with differences**: Exist in both but differ
 - ✅ **Agents in sync**: Identical in both locations
 
 For agents that exist in both locations, check if they differ:
-!`diff -q ~/.claude/agents/[agent-name].md .claude/agents/[agent-name].md`
+!`diff -q ~/.claude/agents/[agent-name].md user/.claude/agents/[agent-name].md`
 
 ### 3. Process Based on Arguments
 
@@ -76,8 +76,8 @@ If `--push`:
 - Remind to commit and push changes:
   ```
   📝 Next steps to share your agents:
-  1. Review changes: git diff .claude/agents/
-  2. Commit: git add .claude/agents/ && git commit -m "Update agents"
+  1. Review changes: git diff user/.claude/agents/
+  2. Commit: git add user/.claude/agents/ && git commit -m "Update agents"
   3. Push: git push
   ```
 

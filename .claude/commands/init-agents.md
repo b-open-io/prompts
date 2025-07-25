@@ -14,7 +14,7 @@ init-agents - Initialize or update agents from prompts repository to local
 Usage: /init-agents [OPTIONS]
 
 Description:
-Copies agents from the prompts repository (.claude/agents/) to your 
+Copies agents from the prompts repository (user/.claude/agents/) to your 
 local user agents directory (~/.claude/agents/). This makes the
 specialized agents available across all your projects.
 
@@ -37,11 +37,11 @@ Then stop.
 Otherwise, initialize agents from the repository:
 
 ### 1. Check Directories
-- Verify `.claude/agents/` exists and contains agents
+- Verify `user/.claude/agents/` exists and contains agents
 - Create `~/.claude/agents/` if it doesn't exist
 
 ### 2. Find Available Agents
-!`find .claude/agents -name "*.md" -type f | sort`
+!`find user/.claude/agents -name "*.md" -type f | sort`
 
 ### 3. Process Based on Arguments
 
