@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Edit, Bash(mkdir *), Bash(ls *)
+allowed-tools: Read, Write, Edit, Bash(mkdir:*), Bash(ls:*)
 description: Create a new Claude Code slash command following best practices
 argument-hint: <command-name> [--project | --user] [--namespace <path>]
 ---
@@ -111,7 +111,7 @@ Otherwise:
 
 #### Frontmatter Standards
 - **allowed-tools**: Only include tools actually needed
-  - Use specific bash commands: `Bash(ls *), Bash(mkdir *)`
+  - Use specific bash commands: `Bash(ls:*), Bash(mkdir:*)`
   - Common tools: `Read, Write, Edit, Grep, Glob`
   - AVOID: Complex bash syntax, pipes, [[]] constructs
 - **description**: Concise, action-oriented (shown in /help)
@@ -127,14 +127,14 @@ Otherwise:
 - Bash command executions are POWERFUL - use them wisely!
 - Format: !` followed by your command and closing backtick
 - Must declare permissions in allowed-tools frontmatter
-- **CRITICAL**: Use correct permission syntax: `Bash(command *)` NOT `Bash(command:*)`
+- **CRITICAL**: Use correct permission syntax: `Bash(command:*)` for commands with arguments, `Bash(command)` for exact commands only
 - Examples of permission requirements:
   ```
   # Simple commands work with basic permissions:
-  Bash(ls *), Bash(echo *), Bash(pwd *)
+  Bash(ls:*), Bash(echo:*), Bash(pwd)
   
   # Pipes and complex syntax need more:
-  Bash(ls *), Bash(head *), Bash(wc *), Bash(grep *)
+  Bash(ls:*), Bash(head:*), Bash(wc:*), Bash(grep:*)
   
   # Always test your bash commands work properly!
   ```

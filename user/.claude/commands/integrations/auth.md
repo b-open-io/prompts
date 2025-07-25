@@ -1,7 +1,7 @@
 ---
 version: 1.1.0
 description: OAuth 2.0 and Sigma Identity authentication patterns
-allowed-tools: Read, Edit, MultiEdit, Write, Grep, Glob, WebFetch, Bash(curl *), Bash(git *)
+allowed-tools: Read, Edit, MultiEdit, Write, Grep, Glob, WebFetch, Bash(curl:*), Bash(git:*)
 argument-hint: [provider] | setup | session | middleware | check-update
 ---
 

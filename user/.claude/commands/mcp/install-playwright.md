@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(claude *), Bash(which *), Bash(bunx *), Bash(grep *)
+allowed-tools: Bash
 description: Install Playwright MCP server for browser automation and testing
 argument-hint: [--user] [--check-only]
 ---
