@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with the prompts repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
 ## Repository Overview
 
@@ -158,3 +158,64 @@ All commands now include version tracking:
 2. **Document Prompt Usage**: Include instructions on which prompts to use for maintenance
 3. **Create Prompt Chains**: Design workflows that leverage multiple prompts sequentially
 4. **Build Prompt-Aware Templates**: Templates that reference specific prompts for common tasks
+
+## Common Commands
+
+### Registry Management
+```bash
+# Update the prompt registry after adding/modifying prompts
+./scripts/generate-registry.sh
+
+# View registry statistics
+cat registry.json | jq '.statistics'
+
+# Search prompts by tag
+cat registry.json | jq '.prompts[] | select(.tags[] | contains("blockchain"))'
+```
+
+### Repository Maintenance Commands
+- `/init-prompts` - Initialize user commands from this repository
+- `/sync-prompts` - Synchronize commands between repository and user directory
+- `/init-agents` - Install specialized agents to user directory
+- `/sync-agents` - Update agents between repository and local
+- `/init-hooks` - Install automation hooks
+- `/sync-hooks` - Update hook definitions
+- `/version-check` - Check command versions and updates
+- `/update-registry` - Auto-generate registry.json
+- `/publish` - Prepare repository for publishing
+
+## Prompt Creation Guidelines
+
+When creating new prompts or commands:
+1. **Metadata First**: Always include complete YAML frontmatter with version, description, and tags
+2. **Self-Contained**: Each prompt should work independently without external dependencies
+3. **Clear Mission**: Start with a clear mission statement of what the prompt accomplishes
+4. **Structured Format**: Follow the established sections (Mission, Core Capabilities, etc.)
+5. **Practical Examples**: Include real-world usage examples
+
+## Directory Architecture
+
+### Content Organization
+- **Prompts** go in category directories (design/, development/, infrastructure/)
+- **User commands** go in `user/.claude/commands/` with namespace subdirectories
+- **Repository commands** go in `.claude/commands/` (maintenance only)
+- **Agents** go in `user/.claude/agents/` for distribution
+- **Hooks** go in `user/.claude/hooks/` for automation
+
+### Namespace Convention for Commands
+Commands use namespaces to avoid conflicts:
+- `utils:` - General utilities (find, search)
+- `dev:` - Development tools (lint, enhance)
+- `design:` - Design and UI tools
+- `docs:` - Documentation generation
+- `integrations:` - Third-party integrations
+- `mcp:` - Model Context Protocol servers
+
+## Testing Prompts
+
+Before committing new prompts:
+1. Test with Claude Code directly
+2. Verify all required tools are specified
+3. Check that examples produce expected output
+4. Run through the prompt end-to-end
+5. Update registry with `./scripts/generate-registry.sh`
