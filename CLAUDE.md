@@ -123,12 +123,9 @@ Our specialized agents use a consistent color scheme for easy identification:
 - **bsv-mcp**: Blockchain functionality exposure (WIP)  
 - **gib**: Git + blockchain version control (WIP)
 
-## Command Versioning
+## Command Management
 
-All commands now include version tracking:
-- Version in frontmatter (e.g., `version: 1.0.0`)
-- Use `/version-check` to check for updates
-- Auto-generated registry tracks all versions
+Commands in this repository are organized under the OPL namespace and can be installed to your local Claude Code configuration using the repository management commands.
 
 ## InitPRISM Integration
 
@@ -161,16 +158,15 @@ All commands now include version tracking:
 
 ## Common Commands
 
-### Registry Management
+### Finding Prompts
 ```bash
-# Update the prompt registry after adding/modifying prompts
-./scripts/generate-registry.sh
+# Browse prompt directories
+ls -la design/
+ls -la development/
+ls -la infrastructure/
 
-# View registry statistics
-cat registry.json | jq '.statistics'
-
-# Search prompts by tag
-cat registry.json | jq '.prompts[] | select(.tags[] | contains("blockchain"))'
+# Search for specific content
+grep -r "shadcn" design/
 ```
 
 ### Repository Maintenance Commands
@@ -193,10 +189,8 @@ When working in this prompts repository, you have access to these management com
 - `/opl:hooks:init` - Install automation hooks to `~/.claude/hooks/`
 - `/opl:hooks:sync` - Update hook definitions between repo and local
 
-#### Registry Management
-- `/opl:registry:version` - Check command versions and find updates
-- `/opl:registry:update` - Auto-generate registry.json after adding/modifying prompts
-- `/opl:registry:publish` - Prepare repository for publishing (final checks)
+#### Repository Help
+- `/opl:prompts:help` - Get comprehensive help for repository management
 
 **Important**: These commands are only available when working in the prompts repository itself. They help maintain and distribute the OPL command ecosystem.
 
@@ -238,4 +232,3 @@ Before committing new prompts:
 2. Verify all required tools are specified
 3. Check that examples produce expected output
 4. Run through the prompt end-to-end
-5. Update registry with `./scripts/generate-registry.sh`

@@ -1,20 +1,6 @@
 ---
-name: "Fumadocs Development Setup"
-version: "1.0.0"
+title: "Fumadocs Development Setup"
 description: "Complete technical guide for setup, configuration, and integration of Fumadocs documentation framework"
-category: "development"
-tags: ["fumadocs", "documentation", "mdx", "nextjs", "setup", "configuration"]
-author: "BSV Development Team"
-requirements:
-  tools: ["Next.js 15", "Bun", "TypeScript", "Node.js 18+"]
-  environment: ["macOS", "Linux", "Windows"]
-  dependencies: ["fumadocs-ui", "fumadocs-core", "fumadocs-mdx"]
-metadata:
-  llm_provider: ["claude"]
-  complexity: "intermediate"
-  estimated_tokens: 6000
-  time_estimate: "30-45 minutes"
-  tested_status: "working"
 ---
 
 # Fumadocs Development Setup

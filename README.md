@@ -30,9 +30,7 @@ These commands are available when working in the prompts repository:
 | `/opl:agents:sync` | Sync agents between repo and local | Update agents |
 | `/opl:hooks:init` | Install automation hooks | Copy hooks to ~/.claude/hooks |
 | `/opl:hooks:sync` | Sync hooks between repo and local | Update hooks |
-| `/opl:registry:version` | Check command versions | Find outdated commands |
-| `/opl:registry:update` | Update registry.json | After adding/modifying prompts |
-| `/opl:registry:publish` | Prepare for publishing | Final checks before release |
+| `/opl:prompts:help` | Repository help | Get overview and guidance |
 
 #### Quick Start Setup
 
@@ -59,8 +57,8 @@ These commands are available when working in the prompts repository:
    # Update agents
    /opl:agents:sync
    
-   # Check for outdated versions
-   /opl:registry:version
+   # Check repository help
+   /opl:prompts:help
    ```
 
 4. **Access Installed Commands**:
@@ -76,13 +74,10 @@ These commands are available when working in the prompts repository:
    # Format: /organization:category:command [arguments]
    ```
 
-5. **Check for Updates**:
+5. **Get Help**:
    ```bash
-   # Check versions of your installed commands
-   /opl:registry:version
-   
-   # Check specific command version
-   /opl:registry:version opl:integrations:auth
+   # Get help with repository management
+   /opl:prompts:help
    ```
 
 ### Using Prompts Directly
@@ -107,8 +102,6 @@ cat prompts/development/fumadocs-integration-guide.md
 prompts/
 ├── README.md              # This file
 ├── CLAUDE.md              # Claude Code integration guidance
-├── registry.json          # Central prompt registry with metadata
-├── prompt-schema.json     # JSON schema for prompt structure
 ├── .gitignore            # Git ignore configuration
 │
 ├── .claude/              # REPOSITORY-SPECIFIC Claude Code configuration
@@ -124,10 +117,8 @@ prompts/
 │           ├── hooks/
 │           │   ├── init.md    # Install automation hooks
 │           │   └── sync.md    # Update hook definitions
-│           └── registry/
-│               ├── version.md # Check command versions
-│               ├── update.md  # Auto-generate registry.json
-│               └── publish.md # Prepare for publishing
+│           └── prompts/
+│               └── help.md    # Help for repository management
 │
 ├── user/                 # DISTRIBUTABLE content for end users
 │   └── .claude/
@@ -183,73 +174,42 @@ prompts/
 │   ├── bsv-sdk.md
 │   ├── fumadocs-integration-guide.md
 │   └── initprism-meta-prompt-generator.md
-├── infrastructure/       # DevOps and deployment
-└── scripts/              # Utility scripts
-    └── generate-registry.sh  # Auto-generate registry.json
+└── infrastructure/       # DevOps and deployment
 ```
 
 ## Prompt Format
 
-All prompts follow a standardized format with YAML frontmatter for metadata and markdown content:
+Prompts use simple YAML frontmatter followed by markdown content:
 
 ```markdown
 ---
-name: "Prompt Name"
-version: "1.0.0"
+title: "Your Prompt Title"
 description: "Brief description of what the prompt does"
-category: "development"
-tags: ["automation", "testing", "ci-cd"]
-author: "Your Name"
-requirements:
-  tools: ["Claude Code", "git worktrees"]
-  environment: ["GITHUB_TOKEN", "BSV_NETWORK"]
-metadata:
-  llm_provider: ["claude", "openai"]
-  complexity: "advanced"
-  estimated_tokens: 5000
-  time_estimate: "15-30 minutes"
 ---
 
-# Prompt Title
+# Your Prompt Title
 
-## Mission
-Clear statement of what this prompt accomplishes...
-
-## Core Capabilities
-1. **Capability One**: Description...
-2. **Capability Two**: Description...
-
-[Rest of prompt content...]
+Content of your prompt...
 ```
+
+That's it! Just a title and description to help users understand what the prompt does.
 
 ## Finding Prompts
 
-### By Category
 Browse prompts organized by their primary function:
 - `design/` - UI/UX frameworks, design tools, and resources
-- `development/` - Code and dependency management
+- `development/` - Code and dependency management  
 - `infrastructure/` - DevOps automation
 
-### Using the Registry
-The `registry.json` file contains metadata for all prompts:
-
-```bash
-# Search registry with jq
-cat registry.json | jq '.prompts[] | select(.tags[] | contains("components"))'
-
-# List all prompts in a category
-cat registry.json | jq '.prompts[] | select(.category == "development")'
-```
+Each directory contains markdown files with prompts for specific tasks.
 
 ## Interoperability
 
-This repository follows emerging standards for prompt organization:
+This repository uses simple, standard formats:
 
-- **YAML Frontmatter**: Metadata in standard YAML format
-- **JSON Schema**: Structured validation for prompt metadata
+- **YAML Frontmatter**: Simple title and description
 - **Markdown Content**: Human-readable prompt content
-- **Registry System**: Central index for discovery and search
-- **Category Taxonomy**: Consistent categorization across prompts
+- **Directory Organization**: Prompts grouped by function
 
 ## Integration
 
@@ -264,12 +224,12 @@ claude mcp add prompts "cat ~/code/prompts/{category}/{prompt}.md"
 - Convert to tool-specific formats as needed
 - Use the schema for validation
 
-## Statistics
+## Current Content
 
-The registry is auto-generated to maintain accuracy:
-- Run `./scripts/generate-registry.sh` to update counts
-- Check `registry.json` for current statistics
-- As of last update: 11 prompts across 2 active categories
+The repository contains prompts across multiple categories:
+- Design & UI tools
+- Development workflows
+- Infrastructure automation
 
 ## Ecosystem Integration
 
