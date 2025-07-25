@@ -86,4 +86,7 @@ or you can request them explicitly:
 For more agent management options, see:
   /sync-agents - Sync and update agents
   /agents - Interactive agent management
+
+**Important:** You must exit Claude Code and resume your session
+before the /agents command will work with the newly installed agents.
 ```
