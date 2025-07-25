@@ -67,13 +67,18 @@ This repository builds on our monorepo containing:
 - **When to use**: Only place files here if they are specifically for maintaining/developing the prompts repository
 
 ### `user/.claude/` Directory (For Distribution)
-- **Purpose**: Contains commands and agents to be distributed to end users
+- **Purpose**: Contains commands, agents, and hooks to be distributed to end users
 - **Example**: `user/.claude/commands/mcp/install-magic.md` - users will copy this to their `~/.claude/`
-- **When to use**: Place ALL commands/agents here that users should have access to across their projects
+- **When to use**: Place ALL commands/agents/hooks here that users should have access to across their projects
+- **Contents**: 
+  - `commands/` - Slash commands for user tasks
+  - `agents/` - Specialized AI sub-agents
+  - `hooks/` - Automation hooks for workflow enhancement
 
 ### Common Mistakes to Avoid
 - ❌ NEVER put general-purpose agents in `.claude/agents/` 
 - ❌ NEVER put user commands in `.claude/commands/`
+- ❌ NEVER put shareable hooks in `.claude/hooks/`
 - ✅ ALWAYS put distributable content in `user/.claude/`
 - ✅ ONLY put repo maintenance tools in `.claude/`
 

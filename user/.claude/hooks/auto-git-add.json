@@ -1,0 +1,20 @@
+{
+  "name": "Auto Git Add",
+  "description": "Automatically stages files after Claude writes or edits them, keeping your git status up to date",
+  "version": "1.0.0",
+  "note": "Only stages files, does not commit. You maintain control over commit messages and timing.",
+  "hook": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git add -A",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

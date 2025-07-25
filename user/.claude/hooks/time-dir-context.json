@@ -1,0 +1,18 @@
+{
+  "name": "Time & Directory Context",
+  "description": "Adds timestamp, working directory, and git branch to every prompt for better context awareness",
+  "version": "1.0.0",
+  "example_output": "📍 Context: 2025-01-24 14:32:15 | /Users/you/project | Branch: main",
+  "hook": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"📍 Context: $(date '+%Y-%m-%d %H:%M:%S') | $(pwd) | Branch: $(git branch --show-current 2>/dev/null || echo 'not a git repo')\""
+          }
+        ]
+      }
+    ]
+  }
+}

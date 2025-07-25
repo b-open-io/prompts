@@ -23,13 +23,22 @@ This repository contains reusable prompts that combine Claude Code capabilities,
    /init-prompts
    ```
 
-2. **Sync Existing Commands**:
+2. **Initialize Agents & Hooks**:
+   ```bash
+   # Install specialized AI agents
+   /init-agents
+   
+   # Install automation hooks
+   /init-hooks
+   ```
+
+3. **Sync Existing Commands**:
    ```bash
    # Update and manage existing commands
    /sync-prompts
    ```
 
-3. **Access Commands**:
+4. **Access Commands**:
    ```bash
    # Use namespaced commands
    /utils:find yours ~/code     # Fast file search
@@ -39,7 +48,7 @@ This repository contains reusable prompts that combine Claude Code capabilities,
    /docs:prd                    # Product requirements
    ```
 
-4. **Check for Updates**:
+5. **Check for Updates**:
    ```bash
    # Check version of specific command
    /version-check auth
@@ -81,6 +90,8 @@ prompts/
 │       ├── sync-prompts.md    # Sync user commands with repo
 │       ├── init-agents.md     # Initialize agents from repo
 │       ├── sync-agents.md     # Sync agents with repo
+│       ├── init-hooks.md      # Install automation hooks
+│       ├── sync-hooks.md      # Update hook definitions
 │       ├── version-check.md   # Check command versions
 │       ├── update-registry.md # Auto-generate registry
 │       └── publish.md         # Prepare for publishing
@@ -109,15 +120,21 @@ prompts/
 │           └── mcp/
 │               ├── install-magic.md  # Install Magic MCP
 │               └── install-playwright.md # Install Playwright MCP
-│       └── agents/       # Specialized AI agents
-│           ├── prompt-engineer.md    # Claude Code command expert
-│           ├── design-specialist.md  # UI/UX and components
-│           ├── integration-expert.md # API and auth specialist
-│           ├── mcp-specialist.md     # MCP server management
-│           ├── bitcoin-specialist.md # BSV blockchain expert
-│           ├── code-auditor.md       # Security and quality
-│           ├── documentation-writer.md # Technical docs
-│           └── research-specialist.md  # Information gathering
+│       ├── agents/       # Specialized AI agents
+│       │   ├── prompt-engineer.md    # Claude Code command expert
+│       │   ├── design-specialist.md  # UI/UX and components
+│       │   ├── integration-expert.md # API and auth specialist
+│       │   ├── mcp-specialist.md     # MCP server management
+│       │   ├── bitcoin-specialist.md # BSV blockchain expert
+│       │   ├── code-auditor.md       # Security and quality
+│       │   ├── documentation-writer.md # Technical docs
+│       │   └── research-specialist.md  # Information gathering
+│       └── hooks/        # Claude Code automation hooks
+│           ├── time-dir-context.json      # Add context to every prompt
+│           ├── auto-git-add.json          # Auto-stage file changes
+│           ├── uncommitted-reminder.json  # Remind about uncommitted changes
+│           ├── protect-env-files.json     # Protect sensitive files
+│           └── auto-test-on-save.json     # Run tests automatically
 │
 ├── design/               # UI/UX design tools and frameworks
 │   ├── 21st-dev-magic.md
