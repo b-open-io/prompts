@@ -90,6 +90,18 @@ This repository builds on our monorepo containing:
 - Test prompts thoroughly before committing
 - Keep prompts focused on specific, repeatable tasks
 
+## Agent Color Scheme
+
+Our specialized agents use a consistent color scheme for easy identification:
+- 🔵 **Blue** - prompt-engineer (command creation)
+- 🟣 **Purple** - design-specialist (UI/UX)
+- 🟢 **Green** - integration-expert (APIs)
+- 🟠 **Orange** - mcp-specialist (MCP servers)
+- 🟡 **Yellow** - bitcoin-specialist (BSV)
+- 🔴 **Red** - code-auditor (security)
+- 🔷 **Cyan** - documentation-writer (docs)
+- 🩷 **Pink** - research-specialist (info gathering)
+
 ## Tools Integration
 
 ### Active Tools We Use
