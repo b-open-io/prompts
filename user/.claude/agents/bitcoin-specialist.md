@@ -1,6 +1,6 @@
 ---
 name: bitcoin-specialist
-description: Builds BSV transactions, implements schemas, and manages blockchain operations.
+description: Builds BSV transactions, implements on-chain schemas, and manages blockchain operations. Expert with @bsv/sdk, js-1sat-ord, Bitcoin Schema, and token standards like 1Sat Ordinals.
 tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep
 color: yellow
 ---
