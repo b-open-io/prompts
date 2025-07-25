@@ -57,6 +57,26 @@ This repository builds on our monorepo containing:
 - Backup verification
 - Configuration management
 
+## Directory Structure and Usage
+
+**CRITICAL**: Understand the difference between repository-specific and distributable content:
+
+### `.claude/` Directory (Repository-Specific)
+- **Purpose**: Contains commands and settings ONLY for working on the prompts repository itself
+- **Example**: `.claude/commands/init-agents.md` - helps manage agents within this repo
+- **When to use**: Only place files here if they are specifically for maintaining/developing the prompts repository
+
+### `user/.claude/` Directory (For Distribution)
+- **Purpose**: Contains commands and agents to be distributed to end users
+- **Example**: `user/.claude/commands/mcp/install-magic.md` - users will copy this to their `~/.claude/`
+- **When to use**: Place ALL commands/agents here that users should have access to across their projects
+
+### Common Mistakes to Avoid
+- ❌ NEVER put general-purpose agents in `.claude/agents/` 
+- ❌ NEVER put user commands in `.claude/commands/`
+- ✅ ALWAYS put distributable content in `user/.claude/`
+- ✅ ONLY put repo maintenance tools in `.claude/`
+
 ## Development Notes
 
 - Each prompt should be self-contained and executable

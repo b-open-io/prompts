@@ -62,6 +62,10 @@ cat prompts/development/fumadocs-integration-guide.md
 
 ## Repository Structure
 
+**IMPORTANT**: This repository has two distinct directories:
+- `.claude/` - Commands for managing THIS repository only
+- `user/.claude/` - Content to be distributed to end users
+
 ```
 prompts/
 ├── README.md              # This file
@@ -70,20 +74,22 @@ prompts/
 ├── prompt-schema.json     # JSON schema for prompt structure
 ├── .gitignore            # Git ignore configuration
 │
-├── .claude/              # Claude Code configuration
-│   └── commands/         # Project-level slash commands
-│       ├── help-prompts.md    # Comprehensive help system
-│       ├── init-prompts.md    # Initialize user commands
-│       ├── sync-prompts.md    # Sync user commands
+├── .claude/              # REPOSITORY-SPECIFIC Claude Code configuration
+│   └── commands/         # Commands ONLY for managing this prompts repo
+│       ├── help-prompts.md    # Help for prompts repo management
+│       ├── init-prompts.md    # Initialize user commands from repo
+│       ├── sync-prompts.md    # Sync user commands with repo
+│       ├── init-agents.md     # Initialize agents from repo
+│       ├── sync-agents.md     # Sync agents with repo
 │       ├── version-check.md   # Check command versions
 │       ├── update-registry.md # Auto-generate registry
 │       └── publish.md         # Prepare for publishing
 │
-├── user/                 # User-level Claude commands
+├── user/                 # DISTRIBUTABLE content for end users
 │   └── .claude/
-│       └── commands/     # Commands to copy to ~/.claude/commands
-│           ├── utils/
-│           │   └── find.md           # Fast file/content search
+│       ├── commands/     # Commands users copy to ~/.claude/commands
+│       │   ├── utils/
+│       │   │   └── find.md           # Fast file/content search
 │           ├── dev/
 │           │   ├── lint.md           # Linting tools
 │           │   ├── enhance.md        # Enhance commands
@@ -103,6 +109,15 @@ prompts/
 │           └── mcp/
 │               ├── install-magic.md  # Install Magic MCP
 │               └── install-playwright.md # Install Playwright MCP
+│       └── agents/       # Specialized AI agents
+│           ├── prompt-engineer.md    # Claude Code command expert
+│           ├── design-specialist.md  # UI/UX and components
+│           ├── integration-expert.md # API and auth specialist
+│           ├── mcp-specialist.md     # MCP server management
+│           ├── bitcoin-specialist.md # BSV blockchain expert
+│           ├── code-auditor.md       # Security and quality
+│           ├── documentation-writer.md # Technical docs
+│           └── research-specialist.md  # Information gathering
 │
 ├── design/               # UI/UX design tools and frameworks
 │   ├── 21st-dev-magic.md
