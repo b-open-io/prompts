@@ -17,44 +17,72 @@ This repository contains reusable prompts that combine Claude Code capabilities,
 
 ### Using Claude Code Slash Commands
 
+#### Repository Management Commands (Available in this repo)
+
+These commands are available when working in the prompts repository:
+
+| Command | Purpose | Usage |
+|---------|---------|-------|
+| `/opl:prompts:help` | Show help for prompts repository | Get overview of available commands |
+| `/opl:prompts:init` | Initialize user commands from repo | First-time setup |
+| `/opl:prompts:sync` | Sync commands between repo and local | Update existing commands |
+| `/opl:agents:init` | Install specialized AI agents | Copy agents to ~/.claude/agents |
+| `/opl:agents:sync` | Sync agents between repo and local | Update agents |
+| `/opl:hooks:init` | Install automation hooks | Copy hooks to ~/.claude/hooks |
+| `/opl:hooks:sync` | Sync hooks between repo and local | Update hooks |
+| `/opl:registry:version` | Check command versions | Find outdated commands |
+| `/opl:registry:update` | Update registry.json | After adding/modifying prompts |
+| `/opl:registry:publish` | Prepare for publishing | Final checks before release |
+
+#### Quick Start Setup
+
 1. **Initialize User Commands** (first time only):
    ```bash
-   # Copy new commands from repo to local
-   /init-prompts
+   # Copy all OPL commands from repo to your local ~/.claude/commands/
+   /opl:prompts:init
    ```
 
 2. **Initialize Agents & Hooks**:
    ```bash
    # Install specialized AI agents
-   /init-agents
+   /opl:agents:init
    
    # Install automation hooks
-   /init-hooks
+   /opl:hooks:init
    ```
 
-3. **Sync Existing Commands**:
+3. **Keep Everything Updated**:
    ```bash
-   # Update and manage existing commands
-   /sync-prompts
+   # Sync commands with latest from repo
+   /opl:prompts:sync
+   
+   # Update agents
+   /opl:agents:sync
+   
+   # Check for outdated versions
+   /opl:registry:version
    ```
 
-4. **Access Commands**:
+4. **Access Installed Commands**:
    ```bash
-   # Use namespaced commands
-   /utils:find yours ~/code     # Fast file search
-   /dev:lint                    # Code quality tools
-   /integrations:bsv            # BSV SDK documentation
-   /design:ai-inspiration       # AI design tools
-   /docs:prd                    # Product requirements
+   # Commands use organization:category:command format
+   /opl:utils:find yours ~/code     # Fast file search
+   /opl:dev:lint                    # Code quality tools
+   /opl:integrations:bsv            # BSV SDK documentation
+   /opl:design:ai-inspiration       # AI design tools
+   /opl:docs:prd                    # Product requirements
+   /opl:mcp:install-magic           # MCP server installation
+   
+   # Format: /organization:category:command [arguments]
    ```
 
 5. **Check for Updates**:
    ```bash
-   # Check version of specific command
-   /version-check auth
+   # Check versions of your installed commands
+   /opl:registry:version
    
-   # Check all command versions
-   /version-check --all
+   # Check specific command version
+   /opl:registry:version opl:integrations:auth
    ```
 
 ### Using Prompts Directly
@@ -85,41 +113,47 @@ prompts/
 │
 ├── .claude/              # REPOSITORY-SPECIFIC Claude Code configuration
 │   └── commands/         # Commands ONLY for managing this prompts repo
-│       ├── help-prompts.md    # Help for prompts repo management
-│       ├── init-prompts.md    # Initialize user commands from repo
-│       ├── sync-prompts.md    # Sync user commands with repo
-│       ├── init-agents.md     # Initialize agents from repo
-│       ├── sync-agents.md     # Sync agents with repo
-│       ├── init-hooks.md      # Install automation hooks
-│       ├── sync-hooks.md      # Update hook definitions
-│       ├── version-check.md   # Check command versions
-│       ├── update-registry.md # Auto-generate registry
-│       └── publish.md         # Prepare for publishing
+│       └── opl/          # Repository management commands
+│           ├── prompts/
+│           │   ├── help.md    # Help for prompts repo management
+│           │   ├── init.md    # Initialize user commands from repo
+│           │   └── sync.md    # Sync user commands with repo
+│           ├── agents/
+│           │   ├── init.md    # Install agents to ~/.claude/agents
+│           │   └── sync.md    # Sync agents with repo
+│           ├── hooks/
+│           │   ├── init.md    # Install automation hooks
+│           │   └── sync.md    # Update hook definitions
+│           └── registry/
+│               ├── version.md # Check command versions
+│               ├── update.md  # Auto-generate registry.json
+│               └── publish.md # Prepare for publishing
 │
 ├── user/                 # DISTRIBUTABLE content for end users
 │   └── .claude/
 │       ├── commands/     # Commands users copy to ~/.claude/commands
-│       │   ├── utils/
-│       │   │   └── find.md           # Fast file/content search
-│           ├── dev/
-│           │   ├── lint.md           # Linting tools
-│           │   ├── enhance.md        # Enhance commands
-│           │   ├── create-prompt.md  # Create new commands
-│           │   └── update-prompt.md  # Update commands
-│           ├── design/
-│           │   ├── design.md         # Design resources
-│           │   └── ai-inspiration.md # AI design tools
-│           ├── docs/
-│           │   ├── prd.md            # Product requirements
-│           │   └── prd-enhanced.md   # Enhanced PRD
-│           ├── integrations/
-│           │   ├── stripe.md         # Stripe integration
-│           │   ├── auth.md           # OAuth & Sigma Identity
-│           │   ├── tanstack.md       # TanStack Query
-│           │   └── bsv.md            # BSV SDK docs
-│           └── mcp/
-│               ├── install-magic.md  # Install Magic MCP
-│               └── install-playwright.md # Install Playwright MCP
+│       │   └── opl/      # OPL organization namespace
+│       │       ├── utils/
+│       │       │   └── find.md           # Fast file/content search
+│       │       ├── dev/
+│       │       │   ├── lint.md           # Linting tools
+│       │       │   ├── enhance.md        # Enhance commands
+│       │       │   ├── create-prompt.md  # Create new commands
+│       │       │   └── update-prompt.md  # Update commands
+│       │       ├── design/
+│       │       │   ├── design.md         # Design resources
+│       │       │   └── ai-inspiration.md # AI design tools
+│       │       ├── docs/
+│       │       │   ├── prd.md            # Product requirements
+│       │       │   └── prd-enhanced.md   # Enhanced PRD
+│       │       ├── integrations/
+│       │       │   ├── stripe.md         # Stripe integration
+│       │       │   ├── auth.md           # OAuth & Sigma Identity
+│       │       │   ├── tanstack.md       # TanStack Query
+│       │       │   └── bsv.md            # BSV SDK docs
+│       │       └── mcp/
+│       │           ├── install-magic.md  # Install Magic MCP
+│       │           └── install-playwright.md # Install Playwright MCP
 │       ├── agents/       # Specialized AI agents
 │       │   ├── prompt-engineer.md    # Claude Code command expert
 │       │   ├── design-specialist.md  # UI/UX and components

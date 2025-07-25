@@ -68,10 +68,10 @@ This repository builds on our monorepo containing:
 
 ### `user/.claude/` Directory (For Distribution)
 - **Purpose**: Contains commands, agents, and hooks to be distributed to end users
-- **Example**: `user/.claude/commands/mcp/install-magic.md` - users will copy this to their `~/.claude/`
+- **Example**: `user/.claude/commands/opl/mcp/install-magic.md` - users will copy this to their `~/.claude/`
 - **When to use**: Place ALL commands/agents/hooks here that users should have access to across their projects
 - **Contents**: 
-  - `commands/` - Slash commands for user tasks
+  - `commands/opl/` - OPL organization commands with category subdirectories
   - `agents/` - Specialized AI sub-agents
   - `hooks/` - Automation hooks for workflow enhancement
 
@@ -174,15 +174,31 @@ cat registry.json | jq '.prompts[] | select(.tags[] | contains("blockchain"))'
 ```
 
 ### Repository Maintenance Commands
-- `/init-prompts` - Initialize user commands from this repository
-- `/sync-prompts` - Synchronize commands between repository and user directory
-- `/init-agents` - Install specialized agents to user directory
-- `/sync-agents` - Update agents between repository and local
-- `/init-hooks` - Install automation hooks
-- `/sync-hooks` - Update hook definitions
-- `/version-check` - Check command versions and updates
-- `/update-registry` - Auto-generate registry.json
-- `/publish` - Prepare repository for publishing
+
+When working in this prompts repository, you have access to these management commands:
+
+#### Prompts Management
+- `/opl:prompts:help` - Show comprehensive help for repository management
+- `/opl:prompts:init` - Initialize user commands (copy from `user/.claude/commands/opl/` to `~/.claude/commands/opl/`)
+- `/opl:prompts:sync` - Synchronize commands between repository and user directory (pull/push/status)
+
+#### Agents Management  
+- `/opl:agents:init` - Install specialized agents to `~/.claude/agents/`
+  - First time setup copies all agents
+  - Use `--list` to preview, `--force` to overwrite
+- `/opl:agents:sync` - Update agents between repository and local
+  - Check status, pull updates, or contribute improvements back
+
+#### Hooks Management
+- `/opl:hooks:init` - Install automation hooks to `~/.claude/hooks/`
+- `/opl:hooks:sync` - Update hook definitions between repo and local
+
+#### Registry Management
+- `/opl:registry:version` - Check command versions and find updates
+- `/opl:registry:update` - Auto-generate registry.json after adding/modifying prompts
+- `/opl:registry:publish` - Prepare repository for publishing (final checks)
+
+**Important**: These commands are only available when working in the prompts repository itself. They help maintain and distribute the OPL command ecosystem.
 
 ## Prompt Creation Guidelines
 
@@ -197,19 +213,23 @@ When creating new prompts or commands:
 
 ### Content Organization
 - **Prompts** go in category directories (design/, development/, infrastructure/)
-- **User commands** go in `user/.claude/commands/` with namespace subdirectories
+- **User commands** go in `user/.claude/commands/opl/` with category subdirectories
 - **Repository commands** go in `.claude/commands/` (maintenance only)
 - **Agents** go in `user/.claude/agents/` for distribution
 - **Hooks** go in `user/.claude/hooks/` for automation
 
 ### Namespace Convention for Commands
-Commands use namespaces to avoid conflicts:
-- `utils:` - General utilities (find, search)
-- `dev:` - Development tools (lint, enhance)
-- `design:` - Design and UI tools
-- `docs:` - Documentation generation
-- `integrations:` - Third-party integrations
-- `mcp:` - Model Context Protocol servers
+Commands use a three-part namespace to avoid conflicts:
+- **Format**: `/organization:category:command`
+- **Example**: `/opl:utils:find` or `/opl:dev:lint`
+
+OPL command categories:
+- `opl:utils:` - General utilities (find, search)
+- `opl:dev:` - Development tools (lint, enhance)
+- `opl:design:` - Design and UI tools
+- `opl:docs:` - Documentation generation
+- `opl:integrations:` - Third-party integrations
+- `opl:mcp:` - Model Context Protocol servers
 
 ## Testing Prompts
 
