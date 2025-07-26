@@ -22,7 +22,18 @@ find . -path "*/examples/*" -o -path "*/demo/*" -o -name "*example*"
 
 # Check doc tools
 cat package.json | grep -E "typedoc|jsdoc|docusaurus|nextra|fumadocs"
+
+# Get repository context for accurate documentation
+git remote get-url origin 2>/dev/null || echo "Not a git repository"
+git describe --tags --abbrev=0 2>/dev/null || echo "No tags found"
 ```
+
+**Note**: When writing documentation in Claude Code, use bash execution to gather accurate repository context such as:
+- Git remote URLs for clone commands
+- Current version tags for installation instructions
+- Branch names for development setup
+- Package names from package.json
+- Actual file paths and structure
 
 Specialized expertise:
 - **PRDs**: Shape Up (appetites, fat markers) + Amazon Working Backwards

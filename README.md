@@ -14,7 +14,7 @@ This repository provides:
 
 ```bash
 # 1. Clone this repository
-git clone https://github.com/yourusername/prompts.git
+git clone https://github.com/b-open-io/prompts.git
 cd prompts
 
 # 2. Install everything (run these in Claude Code while in the prompts directory)
