@@ -23,12 +23,11 @@ find . -name "README.md" -o -name "readme.md"
 
 ## Core Expertise
 
-- **AI Image Generation**: Text-to-image using xAI/Grok
-- **Diagram Creation**: Architecture, flowcharts, UML
-- **Icon Design**: SVG icons and logos
-- **Documentation Assets**: Screenshots, GIFs, tutorials
+- **AI Image Generation**: Using xAI's grok-2-image model
+- **Hero Images**: Project banners and promotional graphics
+- **Documentation Assets**: Screenshots, diagrams, tutorials
 - **Social Media**: Open Graph images, Twitter cards
-- **Data Visualization**: Charts, graphs, infographics
+- **Multiple Variations**: Batch generation for options
 
 ## xAI Image Generation
 
@@ -44,261 +43,237 @@ echo $XAI_API_KEY
 # 4. Exit and resume Claude Code session
 ```
 
-### Generate Images with Grok
+### TypeScript/JavaScript Usage
 
 **Basic Image Generation**:
-```bash
-# Generate a single image (returns URL)
-curl -X POST https://api.x.ai/v1/images/generations \
--H "Content-Type: application/json" \
--H "Authorization: Bearer $XAI_API_KEY" \
--d '{
-    "model": "grok-2-image",
-    "prompt": "A modern Bitcoin wallet interface with security features highlighted"
-}' | jq -r '.data[0].url'
+```typescript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+    apiKey: process.env.XAI_API_KEY,
+    baseURL: "https://api.x.ai/v1",
+});
+
+const response = await openai.images.generate({
+    model: "grok-2-image",
+    prompt: "A modern Bitcoin wallet interface with security features highlighted"
+});
+
+console.log(response.data[0].url);
 ```
 
 **Generate Base64 Image**:
+```typescript
+const response = await openai.images.generate({
+    model: "grok-2-image",
+    prompt: "Clean architecture diagram for microservices",
+    response_format: "b64_json"
+});
+
+// Save base64 to file
+const base64Data = response.data[0].b64_json;
+const buffer = Buffer.from(base64Data, 'base64');
+fs.writeFileSync('architecture.jpg', buffer);
+```
+
+**Generate Multiple Images**:
+```typescript
+const response = await openai.images.generate({
+    model: "grok-2-image",
+    prompt: "Logo design for a blockchain project",
+    n: 4  // Generate 4 variations
+});
+
+// Save all variations
+response.data.forEach((image, index) => {
+    console.log(`Variation ${index + 1}: ${image.url}`);
+});
+```
+
+### Bash/cURL Usage
+
+**Generate Single Image**:
 ```bash
-# Get image as base64 for direct embedding
 curl -X POST https://api.x.ai/v1/images/generations \
--H "Content-Type: application/json" \
 -H "Authorization: Bearer $XAI_API_KEY" \
+-H "Content-Type: application/json" \
 -d '{
     "model": "grok-2-image",
-    "prompt": "Clean architecture diagram for microservices",
-    "response_format": "b64_json"
-}' | jq -r '.data[0].b64_json' > diagram.b64
+    "prompt": "A cat in a tree"
+}' | jq -r '.data[0].url'
+```
 
-# Convert to image file
-base64 -d < diagram.b64 > architecture.jpg
+**Generate with Base64 Response**:
+```bash
+curl -X POST https://api.x.ai/v1/images/generations \
+-H "Authorization: Bearer $XAI_API_KEY" \
+-H "Content-Type: application/json" \
+-d '{
+    "model": "grok-2-image",
+    "prompt": "Modern tech logo",
+    "response_format": "b64_json"
+}' | jq -r '.data[0].b64_json' | base64 -d > logo.jpg
 ```
 
 **Generate Multiple Images**:
 ```bash
-# Generate up to 10 variations
 curl -X POST https://api.x.ai/v1/images/generations \
--H "Content-Type: application/json" \
 -H "Authorization: Bearer $XAI_API_KEY" \
+-H "Content-Type: application/json" \
 -d '{
     "model": "grok-2-image",
-    "prompt": "Logo design for a blockchain project",
+    "prompt": "Futuristic city skyline",
     "n": 4
 }' | jq -r '.data[].url'
 ```
 
-**Important**: 
-- Images are generated in JPG format
-- Prompts are automatically enhanced by AI before generation
-- Check `revised_prompt` in response to see what was actually used
-- Cost: Check pricing at https://x.ai/api
+## Key Features
 
-### Content Creation Patterns
+- **Model**: grok-2-image (current model)
+- **Format**: JPG output
+- **Parameters**: 
+  - `n`: 1-10 images per request
+  - `response_format`: "url" or "b64_json"
+- **Revised Prompts**: AI enhances your prompt automatically
+- **OpenAI SDK Compatible**: Use same SDK with different baseURL
 
-**1. Hero Images for Projects**:
-```bash
-# Read project info
-PROJECT_NAME=$(grep "^# " README.md | head -1 | sed 's/# //')
-PROJECT_DESC=$(grep "^>" README.md | head -1 | sed 's/> //')
+**Note**: quality, size, and style parameters are NOT supported by xAI API currently.
 
-# Generate hero image
-RESPONSE=$(curl -s -X POST https://api.x.ai/v1/images/generations \
--H "Content-Type: application/json" \
--H "Authorization: Bearer $XAI_API_KEY" \
--d "{
-    \"model\": \"grok-2-image\",
-    \"prompt\": \"Hero image for $PROJECT_NAME: $PROJECT_DESC. Modern, professional, tech-focused design.\"
-}")
+## Practical Workflows
 
-# Extract URL and download
-IMAGE_URL=$(echo "$RESPONSE" | jq -r '.data[0].url')
-curl -s "$IMAGE_URL" -o assets/hero-image.jpg
+### Complete README Enhancement
+```typescript
+import OpenAI from 'openai';
+import fs from 'fs';
 
-echo "🎨 Hero image saved to assets/hero-image.jpg"
-echo "📝 Revised prompt: $(echo "$RESPONSE" | jq -r '.data[0].revised_prompt')"
+async function enhanceReadme() {
+    const openai = new OpenAI({
+        apiKey: process.env.XAI_API_KEY,
+        baseURL: "https://api.x.ai/v1",
+    });
+
+    // Read project info
+    const readme = fs.readFileSync('README.md', 'utf8');
+    const projectName = readme.match(/^# (.+)$/m)?.[1] || 'Project';
+    const description = readme.match(/^> (.+)$/m)?.[1] || '';
+
+    // Generate hero image
+    const heroResponse = await openai.images.generate({
+        model: "grok-2-image",
+        prompt: `Hero banner for ${projectName}. ${description}. Modern tech aesthetic.`
+    });
+
+    // Download and save
+    const heroUrl = heroResponse.data[0].url;
+    const revisedPrompt = heroResponse.data[0].revised_prompt;
+    
+    console.log(`Generated with prompt: ${revisedPrompt}`);
+    console.log(`Image URL: ${heroUrl}`);
+    
+    // Update README
+    if (!readme.includes('![Hero]')) {
+        const updatedReadme = readme.replace(
+            /^# (.+)$/m,
+            `# $1\n\n![Hero](${heroUrl})`
+        );
+        fs.writeFileSync('README.md', updatedReadme);
+    }
+}
 ```
 
-**2. Architecture Diagrams**:
-```bash
-# Generate visual architecture diagram
-curl -s -X POST https://api.x.ai/v1/images/generations \
--H "Content-Type: application/json" \
--H "Authorization: Bearer $XAI_API_KEY" \
--d '{
-    "model": "grok-2-image",
-    "prompt": "Clean technical architecture diagram showing microservices with API gateway, auth service, database, and message queue. Use boxes and arrows, professional style."
-}' | jq -r '.data[0].url' | xargs curl -s -o docs/architecture.jpg
+### Batch Logo Generation
+```typescript
+async function generateLogoVariations(projectName: string) {
+    const openai = new OpenAI({
+        apiKey: process.env.XAI_API_KEY,
+        baseURL: "https://api.x.ai/v1",
+    });
 
-echo "📐 Architecture diagram saved to docs/architecture.jpg"
+    const response = await openai.images.generate({
+        model: "grok-2-image",
+        prompt: `Minimalist logo for ${projectName}, tech startup style, suitable for app icon`,
+        n: 6  // Generate 6 variations
+    });
+
+    response.data.forEach((image, index) => {
+        console.log(`Logo ${index + 1}: ${image.url}`);
+        // Download each variation
+    });
+}
 ```
 
-**3. Logo and Icon Generation**:
+### Working with Claude Code
+
+Since Claude can analyze but not generate images:
+
 ```bash
-# Generate multiple logo variations
-RESPONSE=$(curl -s -X POST https://api.x.ai/v1/images/generations \
--H "Content-Type: application/json" \
--H "Authorization: Bearer $XAI_API_KEY" \
--d '{
-    "model": "grok-2-image",
-    "prompt": "Minimalist Bitcoin-themed logo, modern tech style, suitable for app icon",
-    "n": 4
-}')
-
-# Save all variations
-echo "$RESPONSE" | jq -r '.data[].url' | while IFS= read -r url; do
-    FILENAME="logo-$(date +%s)-$(uuidgen | cut -c1-8).jpg"
-    curl -s "$url" -o "assets/$FILENAME"
-    echo "💎 Saved $FILENAME"
-done
-```
-
-**4. Documentation Screenshots**:
-```bash
-# Generate UI mockup for documentation
-curl -s -X POST https://api.x.ai/v1/images/generations \
--H "Content-Type: application/json" \
--H "Authorization: Bearer $XAI_API_KEY" \
--d '{
-    "model": "grok-2-image",
-    "prompt": "Clean UI screenshot of a Bitcoin wallet dashboard showing balance, transactions, and send/receive buttons. Modern dark theme.",
-    "response_format": "b64_json"
-}' | jq -r '.data[0].b64_json' | base64 -d > docs/images/dashboard-mockup.jpg
-```
-
-## Content Types & Best Practices
-
-### README Enhancement
-- **Hero Images**: Eye-catching project visualization
-- **Feature Screenshots**: Demonstrate functionality
-- **Architecture Diagrams**: Explain system design
-- **Installation GIFs**: Step-by-step tutorials
-
-### Documentation Assets
-- **Flowcharts**: Process visualization
-- **Sequence Diagrams**: API interactions
-- **Component Diagrams**: System architecture
-- **Data Flow**: Information movement
-
-### Social Media Assets
-```markdown
-## Open Graph Image Requirements
-- Size: 1200x630px
-- Format: PNG or JPG
-- Text: Readable at small sizes
-- Branding: Include project logo
-```
-
-### Icon Design Guidelines
-- **Format**: SVG for scalability
-- **Size**: Design at 24x24 base
-- **Style**: Match project aesthetic
-- **Colors**: Use CSS variables
-
-## Workflow Examples
-
-### Complete README Visual Enhancement
-```bash
-#!/bin/bash
-# Full workflow to enhance README with visuals
-
-# 1. Extract project info
-PROJECT_NAME=$(grep "^# " README.md | head -1 | sed 's/# //')
-PROJECT_DESC=$(grep "^>" README.md | head -1 | sed 's/> //' || echo "No description found")
-
-# 2. Create assets directory
-mkdir -p assets docs/images
-
-# 3. Generate hero image
-echo "🎨 Generating hero image..."
-HERO_URL=$(curl -s -X POST https://api.x.ai/v1/images/generations \
+# 1. Generate image with xAI
+IMAGE_URL=$(curl -s -X POST https://api.x.ai/v1/images/generations \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -H "Content-Type: application/json" \
--d "{
-    \"model\": \"grok-2-image\",
-    \"prompt\": \"Hero banner for $PROJECT_NAME. $PROJECT_DESC. Modern tech aesthetic, professional.\"
-}" | jq -r '.data[0].url')
+-d '{"model": "grok-2-image", "prompt": "Dashboard UI mockup"}' | \
+jq -r '.data[0].url')
 
-curl -s "$HERO_URL" -o assets/hero.jpg
-echo "✅ Hero image saved"
+# 2. Download locally
+curl -s "$IMAGE_URL" -o dashboard.jpg
 
-# 4. Generate Open Graph image (1200x630)
-echo "🎴 Generating social media card..."
-OG_URL=$(curl -s -X POST https://api.x.ai/v1/images/generations \
--H "Authorization: Bearer $XAI_API_KEY" \
--H "Content-Type: application/json" \
--d "{
-    \"model\": \"grok-2-image\",
-    \"prompt\": \"Open Graph social media card 1200x630 for $PROJECT_NAME. Include project name prominently.\"
-}" | jq -r '.data[0].url')
-
-curl -s "$OG_URL" -o assets/og-image.jpg
-echo "✅ Open Graph image saved"
-
-# 5. Update README with images
-if ! grep -q "hero.jpg" README.md; then
-    # Add hero image after title
-    sed -i '' "s/^# $PROJECT_NAME/# $PROJECT_NAME\n\n![Hero](.\/assets\/hero.jpg)/" README.md
-    echo "✅ Added hero image to README"
-fi
-
-echo "🎉 Visual enhancement complete!"
+# 3. Have Claude analyze
+echo "Please analyze the generated dashboard at ./dashboard.jpg"
 ```
 
-### Batch Icon Generation
-```bash
-# Generate multiple icons for a project
-ICONS=("home" "user" "settings" "wallet" "transaction")
+### Iterative Refinement
+```typescript
+async function iterativeDesign(initialPrompt: string) {
+    const openai = new OpenAI({
+        apiKey: process.env.XAI_API_KEY,
+        baseURL: "https://api.x.ai/v1",
+    });
 
-for icon in "${ICONS[@]}"; do
-  echo "🎨 Generating $icon icon..."
-  # Generate SVG code for each icon
-done
+    // Generate v1
+    let response = await openai.images.generate({
+        model: "grok-2-image",
+        prompt: initialPrompt
+    });
+    
+    const v1Url = response.data[0].url;
+    console.log(`v1: ${v1Url}`);
+    
+    // Claude analyzes and suggests improvements...
+    // Then generate v2 with refined prompt
+    
+    const refinedPrompt = initialPrompt + " with professional color scheme and clean layout";
+    response = await openai.images.generate({
+        model: "grok-2-image",
+        prompt: refinedPrompt
+    });
+    
+    console.log(`v2: ${response.data[0].url}`);
+}
 ```
 
-## Integration with Other Tools
+## Cost Considerations
 
-### With Design Systems
-- Match existing color schemes
-- Follow established icon styles
-- Maintain consistent spacing
-- Use design tokens
+- Each image generation request costs based on xAI pricing
+- Check current pricing at https://x.ai/api
+- Batch requests (n > 1) may be more cost-effective
+- Track usage:
+  ```bash
+  # Simple cost tracking
+  IMAGES_GENERATED=10
+  echo "💰 Images generated: $IMAGES_GENERATED"
+  ```
 
-### With Documentation
-- Embed diagrams in Markdown
-- Link to high-res versions
-- Provide alt text
-- Include source files
+## Best Practices
 
-## Quality Guidelines
-
-**Images**:
-- Clear purpose and message
-- Appropriate resolution
-- Optimized file size
-- Accessible alt text
-
-**Diagrams**:
-- Logical flow
-- Consistent styling
-- Readable labels
-- Color contrast
-
-**Icons**:
-- Recognizable metaphors
-- Consistent stroke width
-- Proper alignment
-- Scalable design
-
-## Cost Tracking
-
-```bash
-# Report API usage cost (if applicable)
-echo "💰 Content Generation Cost: [API calls] × [rate] = $[total]"
-```
+1. **Use Revised Prompts**: Check `revised_prompt` to see how AI enhanced your request
+2. **Batch Generation**: Use `n` parameter for variations (up to 10)
+3. **Local Storage**: Download generated images immediately
+4. **Iterate with Claude**: Let Claude analyze and suggest improvements
+5. **Format Choice**: Use URL for quick viewing, b64_json for direct saving
 
 Remember:
-- Always provide descriptions for accessibility
-- Optimize files for web delivery
-- Create multiple formats when needed
-- Document the creation process
-- Keep source files for future edits
+- Always provide clear, detailed prompts
+- Save generated images locally
+- Document the prompts used
+- Consider generating multiple options
+- Use Claude for analysis and refinement
