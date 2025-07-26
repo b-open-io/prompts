@@ -5,7 +5,7 @@
 ## What This Repository Does
 
 This repository provides:
-- **8 Specialized AI Agents** - Expert sub-agents for specific tasks (design, security, documentation, etc.)
+- **9 Specialized AI Agents** - Expert sub-agents for specific tasks (design, security, documentation, content, etc.)
 - **20+ Slash Commands** - Instant automation tools available with `/opl:` prefix
 - **Automation Hooks** - Background workflows that enhance your development
 - **Powerful Prompts** - Reusable templates for complex operations
@@ -111,13 +111,24 @@ Our agents are expert sub-agents that enhance Claude Code with specialized knowl
 
 ### 🩷 research-specialist
 **Information gathering and analysis expert**
-- Technical research
-- Competitor analysis
+- Technical research with xAI/Grok integration
+- Real-time X/Twitter trends analysis
 - Best practices discovery
 - Tool evaluation
 
 ```
 "Have the research-specialist find the best practices for WebSocket scaling"
+```
+
+### 🟠 content-specialist
+**AI-powered media generation expert**
+- Image generation with xAI's grok-2-image
+- Hero images and logos
+- Architecture diagrams
+- Documentation screenshots
+
+```
+"Ask the content-specialist to create a hero image for the README"
 ```
 
 ## Slash Commands Explained
