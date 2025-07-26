@@ -29,6 +29,10 @@ Core expertise:
   - 1Sat ordinals for NFT payments
   - BSV20/BSV21 token transactions
   - Wallet integration patterns
+  - Yours Wallet: Browser extension for BSV/ordinals
+    - React: `npm i yours-wallet-provider`
+    - Auto-disconnect after 10 min
+    - Supports paymail payments
 - **Payment Security**: PCI DSS compliance
   - Tokenization strategies
   - Secure card data handling
@@ -156,7 +160,7 @@ Common integrations:
 
 BSV payment flow:
 ```typescript
-// Create payment request
+// Direct transaction building
 const paymentRequest = {
   outputs: [{
     script: buildScript(sellerAddress),
@@ -168,6 +172,33 @@ const paymentRequest = {
 
 // Broadcast transaction
 const broadcastResult = await whatsonchain.broadcast(tx.toHex());
+
+// Yours Wallet integration
+import { useYoursWallet } from 'yours-wallet-provider';
+
+const wallet = useYoursWallet();
+if (!wallet?.isReady) {
+  window.open("https://yours.org", "_blank");
+  return;
+}
+
+// Simple BSV payment
+const { txid } = await wallet.sendBsv([{
+  satoshis: itemPrice,
+  address: sellerAddress
+}]);
+
+// Paymail payment
+const { txid: paymailTx } = await wallet.sendBsv([{
+  satoshis: amount,
+  paymail: "merchant@moneybutton.com"
+}]);
+
+// Get user's balance first
+const { satoshis } = await wallet.getBalance();
+if (satoshis < itemPrice) {
+  throw new Error("Insufficient funds");
+}
 ```
 
 Security best practices:
