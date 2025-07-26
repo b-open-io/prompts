@@ -239,11 +239,84 @@ if (!isValid) {
 
 **Token Format**: `pubkey|scheme|timestamp|requestPath|signature`
 
+### Wallet Backup & Recovery (bitcoin-backup)
+
+**Encrypt Wallet Backup**:
+```typescript
+import { encryptBackup, type BapMasterBackup, type WifBackup, type OneSatBackup } from 'bitcoin-backup'
+
+// Type 42 backup (recommended)
+const type42Backup: BapMasterBackup = {
+  ids: 'encrypted-bap-data',
+  rootPk: privateKey.toWif(),
+  label: 'Main Wallet'
+}
+
+// Simple WIF backup
+const wifBackup: WifBackup = { 
+  wif: privateKey.toWif() 
+}
+
+// 1Sat Ordinals backup
+const oneSatBackup: OneSatBackup = {
+  ordPk: ordinalKey.toWif(),
+  payPk: paymentKey.toWif(),
+  identityPk: identityKey.toWif()
+}
+
+// Encrypt with strong passphrase
+const encrypted = await encryptBackup(type42Backup, 'strong-passphrase-here')
+// Returns base64 encrypted string
+```
+
+**Decrypt Wallet Backup**:
+```typescript
+import { decryptBackup } from 'bitcoin-backup'
+
+try {
+  const decrypted = await decryptBackup(encrypted, 'strong-passphrase-here')
+  // Auto-detects backup type
+  
+  if ('rootPk' in decrypted) {
+    // Type 42 format
+    const privateKey = PrivateKey.fromWif(decrypted.rootPk)
+  } else if ('xprv' in decrypted) {
+    // Legacy BIP32 format
+    // Handle xprv/mnemonic
+  } else if ('wif' in decrypted) {
+    // Simple WIF backup
+    const privateKey = PrivateKey.fromWif(decrypted.wif)
+  }
+} catch (error) {
+  console.error('Invalid passphrase or corrupted backup')
+}
+```
+
+**CLI Tool (bbackup)**:
+```bash
+# Encrypt wallet file
+npx bbackup enc wallet.json -p "passphrase" -o wallet.bep
+
+# Decrypt backup
+npx bbackup dec wallet.bep -p "passphrase" -o wallet.json
+
+# Upgrade legacy backup to 600k iterations
+npx bbackup upg old-wallet.bep -p "passphrase" -o secure-wallet.bep
+```
+
+**Security Features**:
+- AES-256-GCM encryption
+- PBKDF2 with 600,000 iterations (default)
+- Unique salt/IV per encryption
+- Legacy support (100k iterations)
+- Minimum 8 character passphrase
+
 ### Best Practices
 
 **Key Management**:
 - ALWAYS use separate keys for payments and ordinals
-- Use Shamir secret sharing for backup (@bsv/sdk)
+- Use bitcoin-backup for secure key storage
+- Type 42 format recommended over legacy BIP32
 - Never expose private keys in client code
 
 **Transaction Safety**:
