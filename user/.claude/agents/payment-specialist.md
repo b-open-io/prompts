@@ -16,9 +16,15 @@ Core expertise:
   - Test mode for safe development
   - Payment intents, subscriptions, webhooks
   - Test cards: 4242424242424242 (success), 4000000000000002 (decline)
-  - Stripe CLI for webhook testing
   - Strong Customer Authentication (SCA)
   - No bulk updates - one object per request
+- **Stripe CLI**: Essential development tool
+  - Install: `brew install stripe/stripe-cli/stripe` (macOS)
+  - Windows: `scoop install stripe` | Linux: apt/yum packages
+  - Docker: `docker run --rm -it stripe/stripe-cli`
+  - Browser login: `stripe login` (recommended)
+  - Test webhooks: `stripe listen --forward-to localhost:3000/webhook`
+  - Real-time logs: `stripe logs tail --filter-request-status failed`
 - **Crypto Payments**: BSV, Bitcoin, stablecoins
   - 1Sat ordinals for NFT payments
   - BSV20/BSV21 token transactions
@@ -69,6 +75,63 @@ switch (event.type) {
     await notifyFailure(event.data.object);
     break;
 }
+```
+
+Stripe CLI workflows:
+```bash
+# Development setup (4 terminal workflow)
+# Terminal 1: Run your app
+# Terminal 2: Webhook forwarding
+stripe listen --forward-to localhost:3000/webhook
+# Save the whsec_ key to .env as STRIPE_WEBHOOK_SECRET
+
+# Terminal 3: Real-time logs
+stripe logs tail --filter-request-status failed
+
+# Terminal 4: Trigger test events
+stripe trigger payment_intent.succeeded
+stripe trigger checkout.session.completed
+
+# Advanced triggering with overrides
+stripe trigger customer.created \
+  --override customer:name="Test User" \
+  --override customer:"address[country]"=US
+
+# Add metadata to events
+stripe trigger payment_intent.created \
+  --override payment_intent:metadata.order_id="12345" \
+  --override payment_intent:metadata.user_id="user_789"
+
+# API operations
+stripe products create \
+  --name="Premium Plan" \
+  --description="Monthly subscription"
+
+stripe prices create \
+  --product=prod_xxx \
+  --unit-amount=2999 \
+  --currency=usd \
+  --recurring[interval]=month
+
+# Filter specific webhook events
+stripe listen \
+  --events payment_intent.created,checkout.session.completed \
+  --forward-to localhost:3000/webhook
+
+# Use custom fixtures for complex flows
+echo '{
+  "_meta": { "template_version": 0 },
+  "fixtures": [{
+    "name": "subscription_flow",
+    "path": "/v1/subscriptions",
+    "method": "post",
+    "params": {
+      "customer": "cus_{{.customer.id}}",
+      "items": [{"price": "price_{{.price.id}}"}]
+    }
+  }]
+}' > subscription_flow.json
+stripe fixtures subscription_flow.json
 ```
 
 Implementation checklist:
@@ -133,3 +196,35 @@ Testing strategy:
 - Validate refund flows
 - Account-specific API versions
 - Development quickstart guide available
+
+CLI testing tips:
+```bash
+# Test different card scenarios
+stripe payment_methods attach pm_card_visa \
+  --customer=cus_xxx
+
+# Common test triggers
+stripe trigger payment_intent.succeeded
+stripe trigger payment_intent.payment_failed
+stripe trigger charge.refunded
+stripe trigger customer.subscription.created
+stripe trigger invoice.payment_succeeded
+
+# Debug webhook issues
+stripe listen --print-json  # See full event JSON
+stripe events resend evt_xxx # Resend specific event
+stripe logs tail --filter-http-method POST
+stripe logs tail --filter-request-path /v1/charges
+
+# Environment management
+stripe config --list
+stripe config --switch-project project_name
+stripe login --api-key sk_test_xxx  # CI/CD usage
+
+# Best practices
+# 1. Always save whsec_ from stripe listen output
+# 2. Run multiple terminals for full visibility
+# 3. Use --override for edge case testing
+# 4. Filter logs to reduce noise
+# 5. Create fixtures for complex multi-step flows
+```
