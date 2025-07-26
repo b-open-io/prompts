@@ -63,8 +63,9 @@ This repository builds on our monorepo containing:
 
 ### `.claude/` Directory (Repository-Specific)
 - **Purpose**: Contains commands and settings ONLY for working on the prompts repository itself
-- **Example**: `.claude/commands/init-agents.md` - helps manage agents within this repo
+- **Example**: `.claude/commands/opl/agents/sync.md` - syncs agents within this repo
 - **When to use**: Only place files here if they are specifically for maintaining/developing the prompts repository
+- **IMPORTANT**: These commands ONLY work when you're in the prompts repository directory
 
 ### `user/.claude/` Directory (For Distribution)
 - **Purpose**: Contains commands, agents, and hooks to be distributed to end users
@@ -76,11 +77,13 @@ This repository builds on our monorepo containing:
   - `hooks/` - Automation hooks for workflow enhancement
 
 ### Common Mistakes to Avoid
+- ❌ NEVER copy `.claude/` commands to user's `~/.claude/` directory
 - ❌ NEVER put general-purpose agents in `.claude/agents/` 
 - ❌ NEVER put user commands in `.claude/commands/`
 - ❌ NEVER put shareable hooks in `.claude/hooks/`
 - ✅ ALWAYS put distributable content in `user/.claude/`
 - ✅ ONLY put repo maintenance tools in `.claude/`
+- ✅ ONLY copy from `user/.claude/` to `~/.claude/`
 
 ## Development Notes
 

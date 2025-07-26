@@ -775,3 +775,20 @@ When commands require a restart of Claude Code:
 ```
 
 This ensures users see important restart requirements immediately, even after lengthy command outputs.
+
+## Working in the Prompts Repository
+
+When working specifically in the prompts repository (github.com/b-open-io/prompts):
+
+### Directory Structure:
+- **`.claude/`** - Repository maintenance commands (sync, init, etc.)
+  - These commands ONLY work within the prompts repository
+  - NEVER copy these to user's `~/.claude/` directory
+- **`user/.claude/`** - Commands intended for distribution
+  - These are what users should copy to their `~/.claude/`
+  - All user-facing commands go here
+
+### Key Rule:
+Only copy from `user/.claude/` → `~/.claude/`, never from `.claude/` → `~/.claude/`
+
+The `.claude/` commands are repository utilities that help manage the prompts repository itself and won't function in other projects.
