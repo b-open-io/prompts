@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(find:*), Bash(diff:*), Bash(cp:*), Bash(ls:*), Read, Write, Grep
+allowed-tools: Bash(find:*), Bash(diff:*), Bash(cp:*), Bash(ls:*), Bash(sort:*), Read, Write, Grep
 description: Sync agents between local and prompts repository
 argument-hint: [--status] [--pull] [--push] [--help]
 ---
@@ -39,8 +39,9 @@ Otherwise, synchronize agents:
 
 ### 1. Quick Analysis
 First, do a quick comparison to determine if there are any differences:
-!`find user/.claude/agents -name "*.md" -type f 2>/dev/null | sort > /tmp/repo_agents.txt`
-!`find ~/.claude/agents -name "*.md" -type f 2>/dev/null | sort > /tmp/local_agents.txt`
+- Use Bash to find all agent files in the repository: `find user/.claude/agents -name "*.md" -type f | sort`
+- Use Bash to find all agent files locally: `find ~/.claude/agents -name "*.md" -type f | sort`
+- Compare the lists to identify differences
 
 ### 2. Process Based on Arguments
 
