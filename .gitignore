@@ -1,5 +1,6 @@
 # Internal notes and development
 /internal/
+/tmp/internal/
 
 # Development environment
 .env
