@@ -89,6 +89,7 @@ This repository builds on our monorepo containing:
 - Document required permissions and dependencies
 - Test prompts thoroughly before committing
 - Keep prompts focused on specific, repeatable tasks
+- **Analyze tasks and reorganize for sub-agent parallelization** - Break complex operations into parallel sub-tasks that can be executed by multiple specialized agents simultaneously
 
 ## Agent Color Scheme
 
@@ -232,6 +233,30 @@ Before committing new prompts:
 2. Verify all required tools are specified
 3. Check that examples produce expected output
 4. Run through the prompt end-to-end
+
+## Task Parallelization Strategy
+
+**Always analyze tasks and reorganize for sub-agent parallelization.** When facing complex operations:
+
+1. **Decompose the Task**: Break down into independent sub-tasks
+2. **Identify Specialists**: Match sub-tasks to specialized agents
+3. **Execute in Parallel**: Launch multiple agents simultaneously
+4. **Coordinate Results**: Merge outputs into cohesive solution
+
+### Example Parallelization Pattern
+```
+Complex Task: "Create a new payment integration with documentation"
+
+Parallel Execution:
+├── payment-specialist: Implement Stripe integration
+├── auth-specialist: Add API authentication
+├── documentation-writer: Create integration guide
+└── code-auditor: Security review
+
+Result: All tasks complete simultaneously, reducing time by 75%
+```
+
+this is a simple example, in reality you want to be as detailed as possible as each subagent may not have some key information in context. Be desriptive with your tasks intended for agents.
 
 ## Working with Specialized Agents
 

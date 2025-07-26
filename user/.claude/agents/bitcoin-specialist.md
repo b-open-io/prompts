@@ -70,16 +70,18 @@ import type { Utxo, NftUtxo, TokenUtxo } from 'js-1sat-ord'
 - WhatsOnChain: `https://api.whatsonchain.com/v1/bsv/main`
 - 1Sat API: `https://ordinals.gorillapool.io/api/`
 - bsocial: `https://api.sigmaidentity.com/`
+- Sigma auth: `https://auth.sigmaidentity.com`
 - Yours Wallet: Browser extension (no API endpoint)
 
 BSV Schemas (see BitcoinSchema.org for specifications):
 - MAP (Magic Attribute Protocol) - for metadata
 - B:// protocol - for data storage
-- AIP (Author Identity Protocol) - for identity
-- SIGMA protocol - Identity and authentication
 - 1Sat Ordinals protocol - Tokens/NFTs (see 1satordinals.com, use js-1sat-ord npm)
+- AIP (Author Identity Protocol) - for identity
 - BAP (Bitcoin Attestation Protocol) - Identity overlay
-- bsocial actions - Social interactions (post, message, etc.)
+- SIGMA protocol - Similar to AIP but for 1sat ordinals to give inherant replay protection
+- SIGMA identity - sigmaidentity.com broad term encompassing AIP, BAP, SIGMA signing, protocol as a wholistic identity system
+- bsocial actions - Social interactions most clearly designated by MAP type (post, message, etc.)
 
 ### Transaction Building Patterns
 
