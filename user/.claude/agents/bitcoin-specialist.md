@@ -339,7 +339,7 @@ GET /
 
 **Transaction Ingestion**:
 ```bash
-POST /ingest
+POST /api/v1/ingest
 # Body: Raw transaction bytes
 # Processes through BAP and BSocial topics
 ```
@@ -347,43 +347,43 @@ POST /ingest
 **Search & Discovery**:
 ```bash
 # Autocomplete (identities + posts)
-GET /autofill?q=search-term
+GET /api/v1/autofill?q=search-term
 
 # Identity search
-GET /identity/search?q=search-term&limit=20&offset=0
+GET /api/v1/identity/search?q=search-term&limit=20&offset=0
 
 # Post search  
-GET /post/search?q=search-term&limit=20&offset=0
+GET /api/v1/post/search?q=search-term&limit=20&offset=0
 ```
 
 **Identity Operations**:
 ```bash
 # Validate identity at specific block/timestamp
-POST /identity/validByAddress
+POST /api/v1/identity/validByAddress
 # Body: {"address": "...", "block": 123456, "timestamp": 1612137600}
 
 # Get identity by ID key
-POST /identity/get
+POST /api/v1/identity/get
 # Body: {"idKey": "..."}
 
 # Get specific field (like image) for person
-GET /person/:field/:bapId
+GET /api/v1/person/:field/:bapId
 ```
 
 **Profile Management**:
 ```bash
 # Get paginated profiles
-GET /profile?offset=0&limit=20
+GET /api/v1/profile?offset=0&limit=20
 
 # Get specific profile
-GET /profile/:bapId
+GET /api/v1/profile/:bapId
 ```
 
 **Real-time Updates**:
 ```bash
 # Server-Sent Events for live updates
-GET /subscribe/:topics
-# Example: /subscribe/tm_bap,tm_bsocial
+GET /api/v1/subscribe/:topics
+# Example: /api/v1/subscribe/tm_bap,tm_bsocial
 ```
 
 #### Response Format:
@@ -399,11 +399,11 @@ All endpoints return JSON with:
 #### Integration Examples:
 ```javascript
 // Search for identities
-const response = await fetch('https://api.sigmaidentity.com/identity/search?q=alice&limit=10')
+const response = await fetch('https://api.sigmaidentity.com/api/v1/identity/search?q=alice&limit=10')
 const { result } = await response.json()
 
 // Validate identity at specific time
-const validationResponse = await fetch('https://api.sigmaidentity.com/identity/validByAddress', {
+const validationResponse = await fetch('https://api.sigmaidentity.com/api/v1/identity/validByAddress', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -414,7 +414,7 @@ const validationResponse = await fetch('https://api.sigmaidentity.com/identity/v
 })
 
 // Subscribe to real-time updates
-const eventSource = new EventSource('https://api.sigmaidentity.com/subscribe/tm_bap,tm_bsocial')
+const eventSource = new EventSource('https://api.sigmaidentity.com/api/v1/subscribe/tm_bap,tm_bsocial')
 eventSource.onmessage = (event) => {
   const data = JSON.parse(event.data)
   console.log('New BSocial/BAP activity:', data)
@@ -424,15 +424,15 @@ eventSource.onmessage = (event) => {
 **BSocial Integration**:
 ```typescript
 // Fetch social posts
-const postsResponse = await fetch('https://api.sigmaidentity.com/post/search?q=bitcoin&limit=50')
+const postsResponse = await fetch('https://api.sigmaidentity.com/api/v1/post/search?q=bitcoin&limit=50')
 const { result: posts } = await postsResponse.json()
 
 // Get user profile with social data
-const profileResponse = await fetch('https://api.sigmaidentity.com/profile/1234567890abcdef')
+const profileResponse = await fetch('https://api.sigmaidentity.com/api/v1/profile/1234567890abcdef')
 const { result: profile } = await profileResponse.json()
 
 // Real-time social feed
-const socialFeed = new EventSource('https://api.sigmaidentity.com/subscribe/tm_bsocial')
+const socialFeed = new EventSource('https://api.sigmaidentity.com/api/v1/subscribe/tm_bsocial')
 socialFeed.onmessage = (event) => {
   const socialData = JSON.parse(event.data)
   // Handle new posts, likes, follows, etc.
@@ -442,7 +442,7 @@ socialFeed.onmessage = (event) => {
 **BAP Identity Integration**:
 ```typescript
 // Validate identity for authentication
-const identityCheck = await fetch('https://api.sigmaidentity.com/identity/validByAddress', {
+const identityCheck = await fetch('https://api.sigmaidentity.com/api/v1/identity/validByAddress', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -453,7 +453,7 @@ const identityCheck = await fetch('https://api.sigmaidentity.com/identity/validB
 })
 
 // Get full identity data
-const identityResponse = await fetch('https://api.sigmaidentity.com/identity/get', {
+const identityResponse = await fetch('https://api.sigmaidentity.com/api/v1/identity/get', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -474,7 +474,7 @@ const tx = await createBSocialPost({
 const txid = await tx.broadcast()
 
 // Notify Sigma Identity API for indexing
-const ingestResponse = await fetch('https://api.sigmaidentity.com/ingest', {
+const ingestResponse = await fetch('https://api.sigmaidentity.com/api/v1/ingest', {
   method: 'POST',
   headers: { 'Content-Type': 'application/octet-stream' },
   body: tx.toBuffer()
