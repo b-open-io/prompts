@@ -58,6 +58,143 @@ Design tools integration:
 - Fumadocs for documentation
 - Next.js for framework
 
+## Hono Client Components
+
+### Overview
+- **hono/jsx/dom**: Client-side components that work in the browser
+- **Performance**: Only 2.8KB with Brotli (vs 47.8KB for React)
+- **React Compatible**: Same hooks and patterns as React
+- **Modern Alternative**: Avoid CDN imports, use proper component systems
+
+### Basic Setup
+```typescript
+import { useState } from 'hono/jsx'
+import { render } from 'hono/jsx/dom'
+
+function Counter() {
+  const [count, setCount] = useState(0)
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  )
+}
+
+const root = document.getElementById('root')
+render(<Counter />, root)
+```
+
+### Configuration
+**TypeScript (tsconfig.json)**:
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx/dom"
+  }
+}
+```
+
+**Vite (vite.config.ts)**:
+```typescript
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  esbuild: {
+    jsxImportSource: 'hono/jsx/dom',
+  },
+})
+```
+
+### React-Compatible Hooks
+All standard React hooks are supported:
+- `useState()`, `useEffect()`, `useRef()`, `useCallback()`
+- `useMemo()`, `useReducer()`, `useLayoutEffect()`
+- `useTransition()`, `useDeferredValue()`, `startTransition()`
+- `memo()`, `forwardRef()`, `useImperativeHandle()`
+- `useFormStatus()`, `useActionState()`, `useOptimistic()`
+
+### View Transitions API
+**Simple Transitions**:
+```typescript
+import { useState, startViewTransition } from 'hono/jsx'
+
+function App() {
+  const [showLarge, setShowLarge] = useState(false)
+  
+  return (
+    <button
+      onClick={() =>
+        startViewTransition(() =>
+          setShowLarge(state => !state)
+        )
+      }
+    >
+      Animate!
+    </button>
+  )
+}
+```
+
+**Advanced Animations with CSS**:
+```typescript
+import { viewTransition } from 'hono/jsx/dom/css'
+import { css, keyframes } from 'hono/css'
+
+const rotate = keyframes`
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+`
+
+const [transitionClass] = useState(() =>
+  viewTransition(css`
+    ::view-transition-old() {
+      animation-name: ${rotate};
+    }
+    ::view-transition-new() {
+      animation-name: ${rotate};
+    }
+  `)
+)
+```
+
+**useViewTransition Hook**:
+```typescript
+const [isUpdating, startViewTransition] = useViewTransition()
+
+// Use isUpdating to show loading states during transitions
+```
+
+### Integration with Hono/CSS
+```typescript
+import { css, Style } from 'hono/css'
+
+function StyledComponent() {
+  return (
+    <>
+      <Style />
+      <div className={css`
+        background: blue;
+        color: white;
+        padding: 1rem;
+      `}>
+        Styled with hono/css
+      </div>
+    </>
+  )
+}
+```
+
+### Best Practices
+1. **Prefer hono/jsx/dom** over CDN imports
+2. **Use proper bundling** with Vite or similar
+3. **Leverage View Transitions** for smooth animations
+4. **Combine with hono/css** for styling
+5. **Take advantage of small bundle size** for better performance
+
+This provides a modern, React-compatible alternative with significantly smaller bundle sizes.
+
 ### Component Creation Workflow
 
 **1. Research Phase** (Always do this first):
