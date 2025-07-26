@@ -1,114 +1,124 @@
 ---
 allowed-tools: Bash(diff:*), Bash(git:*), Bash(cp:*), Bash(test:*), Bash(echo:*), Read, Write, Edit, Grep, Glob
 description: Sync and update user commands between local and prompts repo
-argument-hint: [--full-report] [--contribute] [--pull] [--push] [--help]
+argument-hint: [--status] [--pull] [--push] [--help]
 ---
 
 # Sync User Commands with Prompts Repository
 
 This command compares and synchronizes your local `~/.claude/commands/` with the prompts repository's `user/.claude/commands/`. It can update existing commands, pull new versions from the repo, and help you contribute improvements back to the community.
 
-**Note**: Use `/init-prompts` first to copy new commands. This command handles updates and synchronization of existing commands.
+**Note**: Use `/opl:prompts:init` first to copy new commands. This command handles updates and synchronization of existing commands.
 
 ## Your Task
 
 If the arguments contain "--help", show this help:
 
 ```
-sync-prompts - Sync and update user commands between local and prompts repo
+opl:prompts:sync - Sync and update user commands between local and prompts repo
 
-Usage: /sync-prompts [OPTIONS]
+Usage: /opl:prompts:sync [OPTIONS]
 
 Description:
 Compares and synchronizes your local ~/.claude/commands/ with the prompts repository.
 Handles updates, merging, and contributions of existing commands.
 
 Options:
-  --full-report  Show detailed diffs for all differing files
-  --contribute   Focus on contribution workflow
-  --pull         Update local commands from repo (with confirmation)
-  --push         Copy local commands to repo for contribution
-  --help         Show this help message
+  --status  Show detailed sync status report
+  --pull    Pull latest from repository (no prompt)
+  --push    Push local to repository (no prompt)
+  --help    Show this help message
 
 Examples:
-  /sync-prompts               Show sync status
-  /sync-prompts --full-report  See detailed differences
-  /sync-prompts --pull         Update from repo
-  /sync-prompts --contribute   Share your improvements
+  /opl:prompts:sync           Show quick menu
+  /opl:prompts:sync --status  See detailed status
+  /opl:prompts:sync --pull    Update from repo
+  /opl:prompts:sync --push    Share your improvements
 
-Note: Use /init-prompts first to copy new commands.
+Note: Use /opl:prompts:init first to copy new commands.
 
-For more help: /help-prompts
+For more help: /opl:prompts:help
 ```
 
 Then stop.
 
-Otherwise, provide a comprehensive sync report:
+Otherwise, synchronize commands:
 
-1. **Find Files to Compare**
-   - Use Glob to find all .md files in user/.claude/commands/
-   - Use Glob to find all .md files in ~/.claude/commands/
-   - Use Bash test to check which files exist in both locations
+### 1. Quick Analysis
+First, get lists of commands in both locations:
+- Use Glob to find all .md files in user/.claude/commands/
+- Use Glob to find all .md files in ~/.claude/commands/
 
-2. **Analyze Differences**
-   - Use Bash diff to compare files that exist in both locations
-   - Use Read tool to examine file contents when needed
-   - Identify files that exist only in one location
+### 2. Process Based on Arguments
 
-3. **Create Sync Report**
-   Present a clear report showing:
-   - 📤 **Local commands to contribute**: Commands you have that the repo doesn't
-   - 📥 **Repo commands to pull**: Commands the repo has that you don't  
-   - 🔄 **Commands with differences**: Files that differ between locations
-   - ✅ **Commands in sync**: Files that are identical
+**If no arguments (default):**
+Show simple numbered menu:
+```
+Prompt Sync Options:
+1. Pull latest from repository (replace local)
+2. Push local to repository
+3. Review differences
 
-4. **Ask User for Actions**
-   After showing the report, ask which commands they want to:
-   - Copy from repo to local (update their system)
-   - Contribute from local to repo (share with community)
-   - Skip (keep different versions)
-
-5. **Implementation**
-   - Use Bash cp to copy files as directed
-   - Use Bash git commands for contribution workflow
-   - Show progress for each action
-   - Confirm successful sync
-
-## Arguments
-
-- `--full-report`: Show full diff for all differing files
-- `--contribute`: Focus on contribution workflow for sharing commands
-- `--pull`: Update local commands from repo (with confirmation)
-- `--push`: Copy local commands to repo for contribution
-
-## Example Workflow
-
-```bash
-# Check sync status
-/sync-prompts
-
-# See full differences
-/sync-prompts --full-report
-
-# Pull updates from repo to local
-/sync-prompts --pull
-
-# Push local changes to repo
-/sync-prompts --push
-
-# Focus on contributing
-/sync-prompts --contribute
+Choose an option (1-3):
 ```
 
-Remember to:
-- Preserve user customizations when appropriate
-- Explain benefits of each command when contributing
-- Test commands work correctly after sync
-- Follow repository contribution guidelines
+Wait for user input and execute the chosen action.
 
-### Important Note About Changes
-When you sync or update commands, show this reminder at the END of your output:
+**If `--status`:**
+Perform detailed analysis:
+- 📤 **Local commands to contribute**: Commands only in ~/.claude/commands/
+- 📥 **Repo commands to pull**: Commands only in user/.claude/commands/
+- 🔄 **Commands with differences**: Files that differ between locations
+- ✅ **Commands in sync**: Files that are identical
 
+Show counts and list command names in each category.
+
+**If `--pull`:**
+Immediately execute pull without prompts:
+- Copy all commands from repo to local (recursive with subdirectories)
+- Show summary of changes
+
+**If `--push`:**
+Immediately execute push without prompts:
+- Copy all commands from local to repo (recursive with subdirectories)
+- Show reminder to commit and push git changes
+
+**If option 3 (Review differences) is chosen:**
+Show a concise diff summary:
+- List commands that differ
+- Group by subdirectory
+- Show first few lines of differences for key files
+- Ask if user wants to see full diff for any specific command
+
+### 3. Execute Actions
+
+For Pull operations:
+```bash
+# Copy all commands from repo to local, preserving directory structure
+cp -rf user/.claude/commands/* ~/.claude/commands/
+```
+
+For Push operations:
+```bash
+# Copy all commands from local to repo, preserving directory structure
+cp -rf ~/.claude/commands/* user/.claude/commands/
+```
+
+For Review:
+Show organized diff output grouped by category/subdirectory.
+
+### 4. Final Summary
+
+Show results:
+```
+✅ Sync Complete:
+- Commands synced: X
+- Action taken: [Pull/Push/Review]
+
+[Any additional instructions based on action taken]
+```
+
+For Pull/Push operations, show this reminder at the END:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️  RESTART REQUIRED - Updated commands won't work until you:
@@ -116,3 +126,9 @@ When you sync or update commands, show this reminder at the END of your output:
    2. Run 'claude -c' to resume your conversation
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+### Important Notes
+- Default behavior is fast with simple menu
+- --pull and --push execute immediately without confirmation
+- --status provides detailed analysis for power users
+- Preserve directory structure when syncing

@@ -1,7 +1,7 @@
 ---
 allowed-tools: Bash(find:*), Bash(diff:*), Bash(cp:*), Bash(ls:*), Read, Write, Grep
 description: Sync agents between local and prompts repository
-argument-hint: [--pull] [--push] [--status]
+argument-hint: [--status] [--pull] [--push] [--help]
 ---
 
 ## Your Task
@@ -9,9 +9,9 @@ argument-hint: [--pull] [--push] [--status]
 If the arguments contain "--help", show this help:
 
 ```
-sync-agents - Synchronize agents between local and repository
+opl:agents:sync - Synchronize agents between local and repository
 
-Usage: /sync-agents [OPTIONS]
+Usage: /opl:agents:sync [OPTIONS]
 
 Description:
 Compare and synchronize agents between your local ~/.claude/agents/
@@ -19,93 +19,99 @@ and the prompts repository user/.claude/agents/. Helps you get updates
 and contribute improvements back to the community.
 
 Options:
-  --status  Show sync status (default)
-  --pull    Update local agents from repository
-  --push    Copy local agents to repository for contribution
+  --status  Show detailed sync status report
+  --pull    Pull latest from repository (no prompt)
+  --push    Push local to repository (no prompt)
   --help    Show this help message
 
 Examples:
-  /sync-agents           Check sync status
-  /sync-agents --pull    Get latest agent updates
-  /sync-agents --push    Contribute your improvements
+  /opl:agents:sync           Show quick menu
+  /opl:agents:sync --status  See detailed status
+  /opl:agents:sync --pull    Get latest agent updates
+  /opl:agents:sync --push    Contribute your improvements
 
-Note: Use /init-agents first if you haven't copied agents yet.
+Note: Use /opl:agents:init first if you haven't copied agents yet.
 ```
 
 Then stop.
 
 Otherwise, synchronize agents:
 
-### 1. Find Agents to Compare
-!`find user/.claude/agents -name "*.md" -type f 2>/dev/null | sort`
-!`find ~/.claude/agents -name "*.md" -type f 2>/dev/null | sort`
+### 1. Quick Analysis
+First, do a quick comparison to determine if there are any differences:
+!`find user/.claude/agents -name "*.md" -type f 2>/dev/null | sort > /tmp/repo_agents.txt`
+!`find ~/.claude/agents -name "*.md" -type f 2>/dev/null | sort > /tmp/local_agents.txt`
 
-### 2. Analyze Differences
+### 2. Process Based on Arguments
 
-Compare the lists and use diff to find:
+**If no arguments (default):**
+Show simple numbered menu:
+```
+Agent Sync Options:
+1. Pull latest from repository (replace local)
+2. Push local to repository
+3. Review differences
+
+Choose an option (1-3):
+```
+
+Wait for user input and execute the chosen action.
+
+**If `--status`:**
+Perform detailed analysis:
 - 📤 **Local agents to contribute**: Agents only in ~/.claude/agents/
 - 📥 **Repo agents to pull**: Agents only in user/.claude/agents/
 - 🔄 **Agents with differences**: Exist in both but differ
 - ✅ **Agents in sync**: Identical in both locations
 
-For agents that exist in both locations, check if they differ:
-!`diff -q ~/.claude/agents/[agent-name].md user/.claude/agents/[agent-name].md`
+Show counts and list agent names in each category.
 
-### 3. Process Based on Arguments
-
-If `--status` or no arguments:
-- Display the analysis from step 2
-- Show counts for each category
-- List agent names in each category
-- Suggest next actions
-
-If `--pull`:
-- Show what will be updated
-- Ask for confirmation (unless --force)
-- Copy agents from repo to local:
-  - New agents (not in local)
-  - Updated agents (different content)
+**If `--pull`:**
+Immediately execute pull without prompts:
+- Copy all agents from repo to local
 - Show summary of changes
 
-If `--push`:
-- Show what will be contributed
-- Ask for confirmation
-- Copy agents from local to repo:
-  - New agents (not in repo)
-  - Updated agents (you've improved)
-- Remind to commit and push changes:
-  ```
-  📝 Next steps to share your agents:
-  1. Review changes: git diff user/.claude/agents/
-  2. Commit: git add user/.claude/agents/ && git commit -m "Update agents"
-  3. Push: git push
-  ```
+**If `--push`:**
+Immediately execute push without prompts:
+- Copy all agents from local to repo
+- Show reminder to commit and push git changes
 
-### 4. Detailed Diff Option
+**If option 3 (Review differences) is chosen:**
+Show a concise diff summary:
+- List agents that differ
+- Show first few lines of differences for each
+- Ask if user wants to see full diff for any specific agent
 
-For agents with differences, offer to show detailed diff:
-```
-Agent 'bitcoin-specialist' has differences.
-Show detailed diff? (y/n)
+### 3. Execute Actions
+
+For Pull operations:
+```bash
+# Copy all agents from repo to local
+cp -f user/.claude/agents/*.md ~/.claude/agents/
 ```
 
-If yes, display the diff with context.
+For Push operations:
+```bash
+# Copy all agents from local to repo
+cp -f ~/.claude/agents/*.md user/.claude/agents/
+```
 
-### 5. Final Summary
+For Review:
+Show condensed diff output for agents that differ.
+
+### 4. Final Summary
 
 Show results:
 ```
-✅ Sync Summary:
-- Agents pulled: X
-- Agents pushed: Y
-- Agents skipped: Z
-- Total agents in sync: N
+✅ Sync Complete:
+- Agents synced: X
+- Action taken: [Pull/Push/Review]
 
 [Any additional instructions based on action taken]
 ```
 
 ### Important Notes
-- Never overwrite without confirmation
-- Preserve local customizations when pulling
-- Check for syntax errors in agent files
-- Validate YAML frontmatter
+- Default behavior is fast with simple menu
+- --pull and --push execute immediately without confirmation
+- --status provides detailed analysis for power users
+- Validate YAML frontmatter in agent files
