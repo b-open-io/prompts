@@ -97,34 +97,122 @@ echo $XAI_API_KEY
 - General programming concepts
 - Tasks that WebSearch handles well
 
-#### Grok API Usage Pattern
+#### Grok API Usage Pattern with Live Search
+
+**Basic usage with real-time data:**
 ```bash
-curl -s https://api.x.ai/v1/chat/completions \
+curl https://api.x.ai/v1/chat/completions \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -d '{
     "messages": [
       {
         "role": "system",
-        "content": "You are researching current developer trends and tools. Be concise and cite sources when possible."
+        "content": "You are Grok, a chatbot inspired by the Hitchhikers Guide to the Galaxy."
       },
       {
         "role": "user",
         "content": "[RESEARCH QUERY]"
       }
     ],
-    "model": "grok-beta",
+    "model": "grok-4-latest",
+    "search_parameters": {},
     "stream": false,
     "temperature": 0
   }' | jq -r '.choices[0].message.content'
 ```
 
+**Advanced search_parameters options:**
+
+1. **Mode Control** (when to search):
+   - `"mode": "auto"` (default) - Model decides whether to search
+   - `"mode": "on"` - Always search
+   - `"mode": "off"` - Never search
+
+2. **Data Sources** (where to search):
+   - `"web"` - Website search
+   - `"x"` - X/Twitter posts
+   - `"news"` - News sources
+   - `"rss"` - RSS feeds
+
+3. **Common Parameters**:
+   - `"return_citations": true` - Include source URLs (default: true)
+   - `"max_search_results": 20` - Limit sources (default: 20)
+   - `"from_date": "YYYY-MM-DD"` - Start date for results
+   - `"to_date": "YYYY-MM-DD"` - End date for results
+
+**Example: X/Twitter trending topics with filters:**
+```bash
+curl https://api.x.ai/v1/chat/completions \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer $XAI_API_KEY" \
+-d '{
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is currently trending on X? Include viral posts and major discussions."
+      }
+    ],
+    "model": "grok-4-latest",
+    "search_parameters": {
+      "mode": "on",
+      "sources": [
+        {
+          "type": "x",
+          "post_favorite_count": 1000,
+          "post_view_count": 10000
+        }
+      ],
+      "max_search_results": 30,
+      "return_citations": true
+    },
+    "stream": false,
+    "temperature": 0
+  }' | jq -r '.choices[0].message.content'
+```
+
+**Source-specific parameters:**
+
+**Web & News**:
+- `"country": "US"` - ISO alpha-2 country code
+- `"excluded_websites": ["site1.com", "site2.com"]` - Max 5 sites
+- `"allowed_websites": ["site1.com"]` - Max 5 sites (web only)
+- `"safe_search": false` - Disable safe search
+
+**X/Twitter**:
+- `"included_x_handles": ["handle1", "handle2"]` - Max 10 handles
+- `"excluded_x_handles": ["handle1"]` - Max 10 handles
+- `"post_favorite_count": 1000` - Min favorites filter
+- `"post_view_count": 10000` - Min views filter
+
+**RSS**:
+- `"links": ["https://example.com/feed.xml"]` - RSS feed URL
+
+**Note**: Live Search costs $0.025 per source used. Check `response.usage.num_sources_used` for billing.
+
 #### Research Workflow with Grok
 1. Check if query needs real-time data
 2. Verify XAI_API_KEY is set
 3. Craft focused query for Grok
-4. Cross-reference with traditional sources
-5. Synthesize findings with timestamps
+4. Extract cost information from response
+5. Cross-reference with traditional sources
+6. Synthesize findings with timestamps and cost
+
+**IMPORTANT: Always report research costs:**
+```bash
+# Save response to extract both content and usage
+RESPONSE=$(curl -s https://api.x.ai/v1/chat/completions ... )
+
+# Extract sources used and calculate cost
+SOURCES_USED=$(echo "$RESPONSE" | jq -r '.usage.num_sources_used // 0')
+COST=$(echo "scale=3; $SOURCES_USED * 0.025" | bc)
+
+# Report cost to user
+echo "🔍 xAI Research Cost: $SOURCES_USED sources × \$0.025 = \$$COST"
+
+# Then show the actual content
+echo "$RESPONSE" | jq -r '.choices[0].message.content'
+```
 
 ### Combined Tool Workflow
 ```

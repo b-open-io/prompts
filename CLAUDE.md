@@ -232,3 +232,34 @@ Before committing new prompts:
 2. Verify all required tools are specified
 3. Check that examples produce expected output
 4. Run through the prompt end-to-end
+
+## Working with Specialized Agents
+
+When developing in this prompts repository, leverage our specialized agents to enhance your workflow:
+
+### 🔵 Use the prompt-engineer agent for:
+- Creating new slash commands in `user/.claude/commands/`
+- Editing existing command files
+- Developing prompt templates
+- Ensuring proper YAML frontmatter format
+- Validating command structure and permissions
+
+**Example usage:**
+```
+"Use the prompt-engineer agent to create a new command for..."
+"Have the prompt-engineer update the metadata in this command..."
+```
+
+### Other agents for repository work:
+- 🔷 **documentation-writer** - For updating README files and documentation
+- 🔴 **code-auditor** - For reviewing prompt security and best practices
+- 🩷 **research-specialist** - For gathering information about tools and integrations
+
+### Agent Usage Best Practice
+When editing files in this repository, especially command and prompt files, explicitly request the appropriate agent:
+```
+"Use the prompt-engineer agent to edit the install-magic.md command"
+"Have the documentation-writer update the agent descriptions"
+```
+
+This ensures that commands follow our established patterns and maintain consistency across the OPL ecosystem.
