@@ -5,7 +5,7 @@
 ## What This Repository Does
 
 This repository provides:
-- **9 Specialized AI Agents** - Expert sub-agents for specific tasks (design, security, documentation, content, etc.)
+- **11 Specialized AI Agents** - Expert sub-agents for specific tasks (design, security, documentation, content, payments, auth, etc.)
 - **20+ Slash Commands** - Instant automation tools available with `/opl:` prefix
 - **Automation Hooks** - Background workflows that enhance your development
 - **Powerful Prompts** - Reusable templates for complex operations
@@ -55,14 +55,14 @@ Our agents are expert sub-agents that enhance Claude Code with specialized knowl
 ```
 
 ### 🟢 integration-expert
-**API and authentication specialist**
-- OAuth 2.0 and Sigma Identity integration
-- REST/GraphQL API design
+**API and third-party service specialist**
+- REST API design and integration
 - Webhook implementation
-- Third-party service integration
+- Third-party service connections
+- Error handling and retry logic
 
 ```
-"Ask the integration-expert to implement Stripe checkout with proper error handling"
+"Ask the integration-expert to implement a Slack notification webhook"
 ```
 
 ### 🟠 mcp-specialist
@@ -129,6 +129,28 @@ Our agents are expert sub-agents that enhance Claude Code with specialized knowl
 
 ```
 "Ask the content-specialist to create a hero image for the README"
+```
+
+### 💚 payment-specialist
+**Payment processing and financial operations expert**
+- Stripe integration and webhooks
+- BSV and crypto payments
+- Subscription management
+- PCI compliance and security
+
+```
+"Have the payment-specialist implement a subscription billing system with Stripe"
+```
+
+### 🔵 auth-specialist
+**Authentication and identity management expert**
+- OAuth 2.0 and OIDC implementation
+- JWT and session management
+- Passwordless authentication
+- Multi-factor authentication (MFA)
+
+```
+"Ask the auth-specialist to set up OAuth with GitHub and Google providers"
 ```
 
 ## Slash Commands Explained
