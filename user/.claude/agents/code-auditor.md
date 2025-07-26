@@ -54,6 +54,14 @@ Audit checklist:
    - Logging and monitoring
    - Configuration management
 
+5. Import patterns
+   - All imports at top of file (no inline dynamic imports)
+   - Avoid: const { parseAuthToken } = await import('bitcoin-auth');
+   - Prefer: import { parseAuthToken } from 'bitcoin-auth';
+   - Group imports logically (external, internal, types)
+   - No circular dependencies
+   - Explicit imports over barrel exports when possible
+
 Report format:
 - 🔴 Critical: Security vulnerabilities or breaking issues
 - 🟡 Warning: Should fix before production
@@ -126,6 +134,9 @@ grep -r "query.*\+.*\|query.*\${" --include="*.js" --include="*.ts"
 
 # XSS vulnerabilities
 grep -r "innerHTML\|dangerouslySetInnerHTML" --include="*.jsx" --include="*.tsx"
+
+# Inline dynamic imports (code smell)
+grep -r "await import(" --include="*.js" --include="*.ts" --include="*.jsx" --include="*.tsx"
 ```
 
 **Authentication/Authorization**:
