@@ -757,3 +757,21 @@ Analyze @$ARGUMENTS for common code issues.
 - ✓ Output format clearly specified
 - ✓ Edge cases considered
 - ✓ Chain of thought for complex logic
+
+## Best Practices
+
+### Restart Notices
+When commands require a restart of Claude Code:
+- Always place restart notices at the END of command outputs
+- Use prominent formatting (box borders with ━━━)
+- Make it immediately visible after long responses
+- Example format:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  RESTART REQUIRED - Updated commands won't work until you:
+   1. Press Ctrl+C to exit Claude Code
+   2. Run 'claude -c' to resume your conversation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+This ensures users see important restart requirements immediately, even after lengthy command outputs.
