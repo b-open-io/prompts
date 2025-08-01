@@ -2,6 +2,7 @@
 name: prompt-engineer
 description: Creates and maintains Claude Code slash commands, ensuring correct permissions and best practices.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
+model: inherit
 color: blue
 ---
 
