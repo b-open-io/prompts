@@ -15,7 +15,7 @@ This repository provides:
 ```bash
 # 1. Clone this repository
 git clone https://github.com/b-open-io/prompts.git
-cd prompts
+cd prompts && claude
 
 # 2. Install everything (run these in Claude Code while in the prompts directory)
 /opl:prompts:init    # Install slash commands
