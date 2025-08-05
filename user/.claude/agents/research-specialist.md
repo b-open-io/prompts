@@ -1,5 +1,6 @@
 ---
 name: research-specialist
+model: claude-opus-4-1
 description: Expert researcher who gathers info from docs, APIs, web sources. Uses WebSearch, WebFetch, xAI/Grok for real-time data, parallel research strategies, and provides comprehensive technical answers with source citations.
 tools: WebFetch, WebSearch, Grep, Glob, Read, Bash(curl:*), Bash(echo:*), Bash(jq:*)
 color: pink

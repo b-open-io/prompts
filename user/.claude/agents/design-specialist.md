@@ -51,6 +51,124 @@ For new components:
 - Test across browsers
 - Consider animation/transitions
 
+## Dark Mode Implementation (Critical)
+
+**ALWAYS implement dark mode that respects system preferences**:
+
+### shadcn/ui Dark Mode Setup
+
+1. **Install next-themes**:
+```bash
+npm install next-themes
+```
+
+2. **Create theme provider** (components/theme-provider.tsx):
+```tsx
+"use client"
+
+import * as React from "react"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+
+export function ThemeProvider({
+  children,
+  ...props
+}: React.ComponentProps<typeof NextThemesProvider>) {
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+}
+```
+
+3. **Wrap root layout** (app/layout.tsx):
+```tsx
+import { ThemeProvider } from "@/components/theme-provider"
+
+export default function RootLayout({ children }: RootLayoutProps) {
+  return (
+    <>
+      <html lang="en" suppressHydrationWarning>
+        <head />
+        <body>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </body>
+      </html>
+    </>
+  )
+}
+```
+
+4. **Add mode toggle** (optional but recommended):
+```tsx
+import { Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
+import { Button } from "@/components/ui/button"
+
+export function ModeToggle() {
+  const { setTheme, theme } = useTheme()
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+    >
+      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span className="sr-only">Toggle theme</span>
+    </Button>
+  )
+}
+```
+
+### Dark Mode Requirements
+
+- **ALWAYS** set `defaultTheme="system"` to respect user preference
+- **ALWAYS** include `enableSystem` prop
+- **ALWAYS** add `suppressHydrationWarning` to html tag
+- **NEVER** default to only light or dark mode
+- **ALWAYS** use `attribute="class"` for Tailwind CSS compatibility
+
+### CSS Variables for Theming
+
+Ensure globals.css has proper dark mode variables:
+```css
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    /* ... other light theme variables */
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    /* ... other dark theme variables */
+  }
+}
+```
+
+### Component Dark Mode Patterns
+
+When creating components, always use theme-aware classes:
+```tsx
+// ✅ Good - respects dark mode
+<div className="bg-background text-foreground">
+  <h1 className="text-primary">Title</h1>
+  <p className="text-muted-foreground">Description</p>
+</div>
+
+// ❌ Bad - hardcoded colors
+<div className="bg-white text-black">
+  <h1 className="text-blue-600">Title</h1>
+  <p className="text-gray-600">Description</p>
+</div>
+```
+
 Design tools integration:
 - 21st.dev Magic MCP for AI-powered components
 - Tailwind CSS for utility-first styling

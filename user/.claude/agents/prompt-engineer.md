@@ -115,7 +115,7 @@ Your role is to create, fix, and optimize commands with correct Bash permissions
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "1"
   },
-  "model": "claude-3-5-sonnet-20241022",
+  "model": "claude-opus-4-1",
   "hooks": {
     "PreToolUse": {"Bash": "echo 'Running command...'"}
   }

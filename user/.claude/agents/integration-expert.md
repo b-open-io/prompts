@@ -1,5 +1,6 @@
 ---
 name: integration-expert
+model: claude-opus-4-1
 description: Implements API integrations, webhooks, and third-party service connections with proper error handling.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep
 color: green

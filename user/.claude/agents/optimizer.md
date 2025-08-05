@@ -1,5 +1,6 @@
 ---
 name: optimizer
+model: claude-opus-4-1
 description: Performance optimization specialist focused on CLI tools, profiling, bundle analysis, and runtime optimization. Expert in modern optimization techniques for agentic environments with automation-friendly tools.
 tools: Bash, Read, Grep, Glob, Write, Edit
 color: green
