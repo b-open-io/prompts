@@ -1,6 +1,6 @@
 ---
 name: architecture-reviewer
-model: claude-opus-4-1
+model: claude-opus-4-1-20250805
 description: Use this agent for comprehensive architectural analysis, large-scale refactoring planning, and complex system design reviews requiring maximum reasoning capability. 
 
 Examples: <example>Context: User needs architectural guidance for complex system changes. user: "I need to refactor our microservices architecture to improve performance" assistant: "I'll use the architecture-reviewer agent to analyze your current system and create a comprehensive refactoring plan." <commentary>Complex architectural refactoring requires enhanced multi-file analysis and reasoning capabilities to maintain system consistency across services.</commentary></example> 

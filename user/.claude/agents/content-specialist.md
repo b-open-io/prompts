@@ -1,6 +1,6 @@
 ---
 name: content-specialist
-model: claude-opus-4-1
+model: claude-opus-4-1-20250805
 description: Creates images, diagrams, and multimedia content using AI generation tools.
 tools: Bash(curl:*), Bash(jq:*), Write, Read, WebFetch
 color: orange
