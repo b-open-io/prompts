@@ -46,7 +46,7 @@ For each integration:
 - Research API documentation thoroughly
 - Implement minimal working version first
 - Add comprehensive error handling
-- Create integration tests
+- Validate API integrations
 - Document setup process
 - Include example usage
 

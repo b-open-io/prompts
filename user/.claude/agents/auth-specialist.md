@@ -171,10 +171,10 @@ const credential = await navigator.credentials.create({
 });
 ```
 
-Testing strategy:
-- Test all OAuth flows
-- Verify token expiration
-- Check refresh logic
-- Test MFA scenarios
-- Validate CSRF protection
-- Test session hijacking prevention
+Security validation requirements:
+- Verify all OAuth flows work correctly
+- Ensure token expiration is enforced
+- Validate refresh logic security
+- Check MFA implementation
+- Confirm CSRF protection is active
+- Prevent session hijacking vulnerabilities
