@@ -16,7 +16,7 @@ Core expertise:
   - Refresh token rotation
   - Scope management
 - **Sigma Identity**: auth.sigmaidentity.com
-  - BSV authentication: paymail, publicKey
+  - BSV authentication: publicKey
   - Organization-based access control
   - Payment authentication endpoints
   - MFA integration
