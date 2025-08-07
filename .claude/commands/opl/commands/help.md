@@ -1,10 +1,10 @@
 ---
 allowed-tools: Read, Grep
-description: Comprehensive help and status for prompts system
+description: Comprehensive help and status for commands system
 argument-hint: [--status] [--guide] [--compare]
 ---
 
-# Prompts System Help & Status
+# Commands System Help & Status
 
 ## Your Task
 
@@ -12,9 +12,9 @@ Provide comprehensive help based on `$ARGUMENTS`:
 
 ### Default (no arguments)
 Show:
-1. **System Overview**: Explain the prompts repository structure from CLAUDE.md
+1. **System Overview**: Explain the commands repository structure from CLAUDE.md
 2. **Available Commands**: Use Grep to find all .md files in .claude/commands/ and user/.claude/commands/
-3. **Quick Start**: Basic usage of init-prompts and sync-prompts
+3. **Quick Start**: Basic usage of /opl:commands:init and /opl:commands:sync
 4. **Status Summary**: Guide user to manually check their ~/.claude/commands directory
 
 ### --status
@@ -22,10 +22,10 @@ Provide detailed status by:
 1. Use Grep and Read tools to check command files
 2. List available commands in this repository
 3. Guide user to check their ~/.claude/commands directory manually
-4. Suggest running /init-prompts or /sync-prompts as needed
+4. Suggest running /opl:commands:init or /opl:commands:sync as needed
 
 ### --guide
-Show comprehensive guide for creating prompts:
+Show comprehensive guide for creating commands:
 
 ```markdown
 # Creating Claude Code Slash Commands
@@ -97,7 +97,7 @@ Use $ARGUMENTS to access user input.
 ### Information Commands  
 - Gather and display information
 - Read-only operations
-- Example: help-prompts, bsv
+- Example: /opl:commands:help, bsv
 
 ### Integration Commands
 - Install or configure external tools
@@ -121,17 +121,17 @@ Simple comparison between local and repo commands:
 ## Summary and Recommendations
 
 Based on the analysis, provide:
-1. **Next Steps**: What commands to run (init-prompts, sync-prompts, etc.)
+1. **Next Steps**: What commands to run (/opl:commands:init, /opl:commands:sync, etc.)
 2. **Contribution Opportunities**: Local commands worth sharing
 3. **Update Priorities**: Which commands need updating
 4. **System Health**: Overall status of prompts ecosystem
 
 ## Related Commands
 
-- `/init-prompts` - Copy new commands from repo to local
-- `/sync-prompts` - Synchronize existing commands
-- `/create-prompt` - Create a new slash command
-- `/update-prompt` - Update an existing command
+- `/opl:commands:init` - Copy new commands from repo to local
+- `/opl:commands:sync` - Synchronize existing commands
+- `/opl:commands:create` - Create a new slash command
+- `/opl:commands:update` - Update an existing command
 
 Remember: This help system can be included by other commands using:
-@.claude/commands/help-prompts.md
+@.claude/commands/opl/commands/help.md

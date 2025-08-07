@@ -4,17 +4,24 @@ This guide will help you get up and running with the prompts repository and Clau
 
 ## Prerequisites
 
-### 1. Install Node.js
+### 1. Install Bun (preferred)
 
-You need Node.js to get the `npm` command for installing Claude Code.
+We prefer Bun for speed and a consistent toolchain.
 
-**Download Node.js**: https://nodejs.org/en/download/current
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+Alternatively, Node.js also works if you prefer `npm`.
 
 ### 2. Install Claude Code
 
 Open a terminal (like iTerm on Mac) and run:
 
 ```bash
+# bun (preferred)
+bun add -g @anthropic-ai/claude-code
+# or npm
 npm install -g @anthropic-ai/claude-code
 ```
 
@@ -46,15 +53,20 @@ From inside the prompts folder, run:
 claude
 ```
 
-### 4. Initialize User Commands
+### 4. Install Agents, Commands, and Hooks
 
-Once Claude Code is running, use this slash command to install all user commands:
+Copy agents/commands/hooks from this repository into your user directory so they are available everywhere:
 
+```bash
+mkdir -p ~/.claude/agents
+cp -R user/.claude/agents/* ~/.claude/agents/
+
+mkdir -p ~/.claude/commands/opl
+cp -R user/.claude/commands/opl/* ~/.claude/commands/opl/
+
+mkdir -p ~/.claude/hooks
+cp -R user/.claude/hooks/* ~/.claude/hooks/
 ```
-/init-prompts
-```
-
-This copies user-level commands from the repository to your system.
 
 ### 5. Restart Claude Code (if needed)
 
@@ -65,38 +77,21 @@ After installing MCP servers, restart Claude Code:
 
 ## Using Commands
 
-### Check Available Commands
+### Check Available Agents & Commands
 
-To see what commands are available and their status:
+In Claude Code, agents in `~/.claude/agents/` and commands in `~/.claude/commands/opl/` are globally available.
 
-```
-/help-prompts
-```
+### Example: Use an Agent
 
-### Example: Product Requirements Document
+Ask explicitly for the agent you want, e.g.:
 
-Once initialized, you can use commands like:
+"Use the documentation-writer agent to create a README for this project"
 
-```
-/prd
-```
+### Slash Commands
 
-To provide additional context, add text after the command:
+This repo includes OPL slash commands (see `user/.claude/commands/opl/`). After copying, you can run `/opl:*` commands anywhere.
 
-```
-/prd read this image [Image 1] and pre-fill what you can
-```
-
-### Other Useful Commands
-
-- `/design` - Access UI/UX design resources
-- `/lint` - Set up code quality tools
-- `/bsv` - BSV SDK documentation
-- `/ai-inspiration` - AI design tools
-- `/create-prompt` - Create new slash commands
-- `/sync-prompts` - Update existing commands
-
-## Installing MCP Servers
+## Installing MCP Servers (optional)
 
 ### Magic MCP (AI Component Generation)
 
@@ -106,11 +101,7 @@ First, set your API key:
 export MAGIC_MCP_API_KEY="your-api-key"
 ```
 
-Then install:
-
-```
-/mcp-install-magic
-```
+Then install using the OPL MCP installer command set or follow Magic MCP docs. If you use our OPL commands, see their `/opl:mcp:install-magic`.
 
 ### Playwright MCP (Browser Automation)
 
@@ -120,11 +111,7 @@ Requires bun to be installed first:
 curl -fsSL https://bun.sh/install | bash
 ```
 
-Then install:
-
-```
-/mcp-install-playwright
-```
+Then install using the included OPL MCP commands or follow the Playwright docs. For Bun, see our Playwright guide in `development/testing/playwright-bun-compatibility-guide.md`.
 
 After installing any MCP server, restart Claude Code:
 
@@ -133,12 +120,11 @@ After installing any MCP server, restart Claude Code:
 
 ## Troubleshooting
 
-### Commands Not Working
+### Agents/Commands Not Showing
 
-1. Make sure you're in the prompts directory
-2. Try `/help-prompts --status` to check installation
-3. Run `/sync-prompts` to update commands
-4. Restart Claude Code manually: Press Ctrl+C then run `claude -c`
+1. Confirm files exist in `~/.claude/agents/` and `~/.claude/commands/opl/`
+2. Restart Claude Code: Press Ctrl+C then run `claude -c`
+3. Ensure agent `name:` fields and command slugs are unique
 
 ### Permission Errors
 
@@ -146,13 +132,12 @@ If you get bash permission errors, grant the requested permissions when prompted
 
 ### Can't Find Commands
 
-- Project commands are available when you're in the prompts directory
-- User commands are available everywhere after running `/init-prompts`
+- After copying, agents and commands from this repo are globally available in Claude Code.
 
 ## Next Steps
 
-- Explore available commands with `/help-prompts`
-- Create your own commands with `/create-prompt`
-- Contribute improvements back with `/sync-prompts --contribute`
+- Explore available agents and commands in `user/.claude/`
+- Create your own by copying and editing existing ones
+- Contribute improvements back via PR to this repo
 
 For more detailed information, see the [README](README.md).

@@ -1,13 +1,13 @@
 # OPL Prompts & AI Agents
 
-**Supercharge Claude Code with specialized AI agents and powerful slash commands** for BSV blockchain development, project automation, and workflow optimization.
+**Supercharge Claude Code with specialized AI agents and prompts** for BSV blockchain development, project automation, and workflow optimization.
 
 ## What This Repository Does
 
 This repository provides:
-- **11 Specialized AI Agents** - Expert sub-agents for specific tasks (design, security, documentation, content, payments, auth, etc.)
-- **20+ Slash Commands** - Instant automation tools available with `/opl:` prefix
-- **Automation Hooks** - Background workflows that enhance your development
+- **Specialized AI Agents** - Expert sub-agents for specific tasks (design, security, documentation, content, payments, auth, etc.)
+- **Slash Commands** - Instant automation tools under the OPL namespace
+- **Automation Hooks** - Background workflows to enhance development
 - **Powerful Prompts** - Reusable templates for complex operations
 
 ## Quick Start (30 seconds)
@@ -15,17 +15,24 @@ This repository provides:
 ```bash
 # 1. Clone this repository
 git clone https://github.com/b-open-io/prompts.git
-cd prompts && claude
+cd prompts
 
-# 2. Install everything (run these in Claude Code while in the prompts directory)
-/opl:prompts:init    # Install slash commands
-/opl:agents:init     # Install AI agents
-/opl:hooks:init      # Install automation hooks
+# 2. Install Claude Code CLI (choose one)
+# bun (preferred)
+bun add -g @anthropic-ai/claude-code
+# or npm
+npm install -g @anthropic-ai/claude-code
 
-# 3. Start using commands anywhere
-/opl:utils:find "bitcoin" ~/code    # Fast search
-/opl:dev:lint                       # Code quality
-/opl:docs:prd                       # Generate PRD
+# 3. Install agents, commands, and hooks (copy to your user directory)
+mkdir -p ~/.claude/agents
+cp -R user/.claude/agents/* ~/.claude/agents/
+mkdir -p ~/.claude/commands/opl
+cp -R user/.claude/commands/opl/* ~/.claude/commands/opl/
+mkdir -p ~/.claude/hooks
+cp -R user/.claude/hooks/* ~/.claude/hooks/
+
+# 4. Launch Claude Code in this repo
+claude
 ```
 
 ## Specialized AI Agents
@@ -153,57 +160,13 @@ Our agents are expert sub-agents that enhance Claude Code with specialized knowl
 "Ask the auth-specialist to set up OAuth with GitHub and Google providers"
 ```
 
-## Slash Commands Explained
+## Slash Commands
 
-Slash commands are instant automation tools available in Claude Code. They follow the format:
+Commands follow the format:
 ```
 /organization:category:command [arguments]
 ```
-
-### Available Command Categories
-
-#### 🔧 **Utils** (`/opl:utils:`)
-- `/opl:utils:find` - Lightning-fast file and content search
-
-#### 💻 **Development** (`/opl:dev:`)
-- `/opl:dev:lint` - Run Biome linting with auto-fix
-- `/opl:dev:enhance` - Improve code quality and patterns
-- `/opl:dev:create-prompt` - Create new slash commands
-- `/opl:dev:update-prompt` - Update existing commands
-
-#### 🎨 **Design** (`/opl:design:`)
-- `/opl:design:design` - Access design resources and tools
-- `/opl:design:ai-inspiration` - AI-powered design inspiration
-
-#### 📚 **Documentation** (`/opl:docs:`)
-- `/opl:docs:prd` - Generate product requirements (Shape Up format)
-- `/opl:docs:prd-enhanced` - Advanced PRD with betting tables
-
-#### 🔌 **Integrations** (`/opl:integrations:`)
-- `/opl:integrations:stripe` - Stripe payment integration
-- `/opl:integrations:auth` - OAuth & Sigma Identity setup
-- `/opl:integrations:tanstack` - TanStack Query patterns
-- `/opl:integrations:bsv` - BSV SDK documentation
-
-#### 🤖 **MCP** (`/opl:mcp:`)
-- `/opl:mcp:install-magic` - Install 21st.dev Magic for AI components
-- `/opl:mcp:install-playwright` - Install Playwright browser automation
-
-### Command Examples
-
-```bash
-# Search for Bitcoin-related files
-/opl:utils:find "bitcoin" ~/code
-
-# Generate a Shape Up style PRD
-/opl:docs:prd "AI-powered code review tool"
-
-# Set up Stripe payments
-/opl:integrations:stripe
-
-# Install AI component generation
-/opl:mcp:install-magic
-```
+Categories include `utils`, `dev`, `design`, `docs`, `integrations`, and `mcp`.
 
 ## Automation Hooks
 
@@ -219,16 +182,14 @@ Hooks run automatically to enhance your workflow:
 
 ```
 prompts/
-├── user/.claude/           # Content for distribution
-│   ├── commands/opl/       # Slash commands organized by category
+├── user/.claude/
 │   ├── agents/             # Specialized AI agents
-│   └── hooks/              # Automation hooks
-│
-├── .claude/commands/       # Repository management only
-│
-└── design/                 # Prompt templates by category
-    development/
-    infrastructure/
+│   ├── commands/opl/       # OPL slash commands (copy to ~/.claude/commands/opl)
+│   └── hooks/              # Automation hooks (copy to ~/.claude/hooks)
+├── design/                 # Prompt templates (design)
+├── development/            # Prompt templates (development)
+├── README.md
+└── QUICKSTART.md
 ```
 
 ## Key Features
@@ -262,15 +223,7 @@ Agents can be explicitly requested for specific tasks:
 
 ### Chaining Commands
 
-Commands can be combined for complex workflows:
-
-```bash
-# Find files, then lint them
-/opl:utils:find "*.tsx" src/ && /opl:dev:lint
-
-# Generate PRD, then create implementation plan
-/opl:docs:prd "Feature X" && /opl:dev:create-prompt "implement-feature-x"
-```
+If you use OPL commands, you can chain them for complex workflows. See that repository for details.
 
 ### Custom Workflows
 
@@ -309,15 +262,14 @@ init-prism create my-app --template bitcoin-auth
 ## Tips & Best Practices
 
 1. **Use agents for expertise** - They have specialized knowledge
-2. **Slash commands for speed** - Instant automation
+2. **Slash commands for speed**
 3. **Combine tools** - Agents + commands = powerful workflows
-4. **Keep updated** - Run `/opl:prompts:sync` regularly
+4. **Keep updated** - Pull latest from this repo to get new agents/prompts
 
 ## Need Help?
 
 - **New to Claude Code?** See our [Quick Start Guide](QUICKSTART.md)
-- **Repository help:** `/opl:prompts:help`
-- **Browse examples:** Check the `design/`, `development/`, and `infrastructure/` directories
+- **Browse examples:** Check the `design/` and `development/` directories
 
 ## Contributing
 

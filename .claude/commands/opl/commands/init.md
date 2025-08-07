@@ -9,12 +9,12 @@ argument-hint: [--list-only] [--describe] [--help]
 If the arguments contain "--help", show this help:
 
 ```
-init-prompts - Initialize new user-level Claude commands
+opl:commands:init - Initialize new user-level Claude commands
 
-Usage: /init-prompts [--list-only] [--describe] [--help]
+Usage: /opl:commands:init [--list-only] [--describe] [--help]
 
 Description:
-Copies NEW commands from the prompts repository to your local ~/.claude/commands/ directory.
+Copies NEW commands from the commands repository to your local ~/.claude/commands/ directory.
 This command will NEVER overwrite existing files.
 
 Options:
@@ -23,24 +23,24 @@ Options:
   --help       Show this help message
 
 Examples:
-  /init-prompts              Copy all new commands
-  /init-prompts --list-only  See what would be copied
-  /init-prompts --describe   See what each command does
+  /opl:commands:init              Copy all new commands
+  /opl:commands:init --list-only  See what would be copied
+  /opl:commands:init --describe   See what each command does
 
 ⚠️  IMPORTANT: After copying commands, you must restart Claude Code:
    1. Press Ctrl+C to exit
    2. Run 'claude -c' to resume
 
-Note: Use /sync-prompts to update existing commands.
+Note: Use /opl:commands:sync to update existing commands.
 
-For more help: /help-prompts
+For more help: /opl:commands:help
 ```
 
 Then stop.
 
 Otherwise, initialize NEW user commands by copying ONLY non-existing commands from this repository's `user/.claude/commands/` to `~/.claude/commands/`.
 
-**IMPORTANT**: This command will NOT overwrite any existing files. Use `/sync-prompts` to update existing commands.
+**IMPORTANT**: This command will NOT overwrite any existing files. Use `/opl:commands:sync` to update existing commands.
 
 ### Process:
 
@@ -70,7 +70,7 @@ Otherwise, initialize NEW user commands by copying ONLY non-existing commands fr
    - List newly copied commands with namespace prefixes (e.g., /dev:lint, /utils:find)
    - List skipped commands (if any already exist)
    - Show restart instructions prominently
-   - Remind user about /sync-prompts for updates if needed
+   - Remind user about /opl:commands:sync for updates if needed
 
 ### Arguments:
 - `--list-only`: Just show what would be copied without doing it
@@ -79,10 +79,10 @@ Otherwise, initialize NEW user commands by copying ONLY non-existing commands fr
 ### Example Usage:
 ```bash
 # Initialize new commands only
-/init-prompts
+/opl:commands:init
 
 # Preview what would be copied
-/init-prompts --list-only
+/opl:commands:init --list-only
 ```
 
 ### Success Message Template:
@@ -100,7 +100,7 @@ Otherwise, initialize NEW user commands by copying ONLY non-existing commands fr
 [List of skipped commands]
 
 [If any commands were skipped, also show:]
-📝 To update existing commands, use: /sync-prompts
+📝 To update existing commands, use: /opl:commands:sync
 
 After restart, try your new commands:
 - /command-name - What it does
@@ -116,4 +116,4 @@ After restart, try your new commands:
 ### Important Notes:
 - This command is safe - it will NEVER overwrite your existing commands
 - Local customizations are always preserved
-- Use `/sync-prompts` to update or merge changes from upstream
+- Use `/opl:commands:sync` to update or merge changes from upstream

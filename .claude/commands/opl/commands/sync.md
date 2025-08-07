@@ -4,23 +4,23 @@ description: Sync and update user commands between local and prompts repo
 argument-hint: [--status] [--pull] [--push] [--help]
 ---
 
-# Sync User Commands with Prompts Repository
+# Sync User Commands with Commands Repository
 
-This command compares and synchronizes your local `~/.claude/commands/` with the prompts repository's `user/.claude/commands/`. It can update existing commands, pull new versions from the repo, and help you contribute improvements back to the community.
+This command compares and synchronizes your local `~/.claude/commands/` with this repository's `user/.claude/commands/`. It can update existing commands, pull new versions from the repo, and help you contribute improvements back to the community.
 
-**Note**: Use `/opl:prompts:init` first to copy new commands. This command handles updates and synchronization of existing commands.
+**Note**: Use `/opl:commands:init` first to copy new commands. This command handles updates and synchronization of existing commands.
 
 ## Your Task
 
 If the arguments contain "--help", show this help:
 
 ```
-opl:prompts:sync - Sync and update user commands between local and prompts repo
+opl:commands:sync - Sync and update user commands between local and repo
 
-Usage: /opl:prompts:sync [OPTIONS]
+Usage: /opl:commands:sync [OPTIONS]
 
 Description:
-Compares and synchronizes your local ~/.claude/commands/ with the prompts repository.
+Compares and synchronizes your local ~/.claude/commands/ with this repository.
 Handles updates, merging, and contributions of existing commands.
 
 Options:
@@ -30,14 +30,14 @@ Options:
   --help    Show this help message
 
 Examples:
-  /opl:prompts:sync           Show quick menu
-  /opl:prompts:sync --status  See detailed status
-  /opl:prompts:sync --pull    Update from repo
-  /opl:prompts:sync --push    Share your improvements
+  /opl:commands:sync           Show quick menu
+  /opl:commands:sync --status  See detailed status
+  /opl:commands:sync --pull    Update from repo
+  /opl:commands:sync --push    Share your improvements
 
-Note: Use /opl:prompts:init first to copy new commands.
+Note: Use /opl:commands:init first to copy new commands.
 
-For more help: /opl:prompts:help
+For more help: /opl:commands:help
 ```
 
 Then stop.

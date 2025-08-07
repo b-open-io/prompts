@@ -167,7 +167,6 @@ Commands in this repository are organized under the OPL namespace and can be ins
 # Browse prompt directories
 ls -la design/
 ls -la development/
-ls -la infrastructure/
 
 # Search for specific content
 grep -r "shadcn" design/
@@ -177,10 +176,10 @@ grep -r "shadcn" design/
 
 When working in this prompts repository, you have access to these management commands:
 
-#### Prompts Management
-- `/opl:prompts:help` - Show comprehensive help for repository management
-- `/opl:prompts:init` - Initialize user commands (copy from `user/.claude/commands/opl/` to `~/.claude/commands/opl/`)
-- `/opl:prompts:sync` - Synchronize commands between repository and user directory (pull/push/status)
+#### Commands Management
+- `/opl:commands:help` - Show comprehensive help for repository management
+- `/opl:commands:init` - Initialize user commands (copy from `user/.claude/commands/opl/` to `~/.claude/commands/opl/`)
+- `/opl:commands:sync` - Synchronize commands between repository and user directory (pull/push/status)
 
 #### Agents Management  
 - `/opl:agents:init` - Install specialized agents to `~/.claude/agents/`
@@ -194,7 +193,7 @@ When working in this prompts repository, you have access to these management com
 - `/opl:hooks:sync` - Update hook definitions between repo and local
 
 #### Repository Help
-- `/opl:prompts:help` - Get comprehensive help for repository management
+- `/opl:commands:help` - Get comprehensive help for repository management
 
 **Important**: These commands are only available when working in the prompts repository itself. They help maintain and distribute the OPL command ecosystem.
 
