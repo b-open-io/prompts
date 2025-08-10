@@ -1,6 +1,6 @@
 ---
 name: prompt-engineer
-version: 2.1.0
+version: 2.2.0
 description: Creates and maintains Claude Code slash commands, ensuring correct permissions and best practices.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
 model: claude-opus-4-1-20250805
@@ -780,6 +780,45 @@ tools: Read, Write, Edit
 model: claude-opus-4-1-20250805
 color: blue
 ---
+```
+
+### Modular Prompt Architecture
+
+**Important**: Use shared prompt modules to avoid duplication and improve maintainability.
+
+#### Shared Prompt System
+Instead of duplicating common instructions across agents, use modular prompts:
+
+1. **Shared Modules Location**: `development/shared/`
+   - `agent-protocol.md` - Self-announcement standards
+   - `task-management.md` - TodoWrite usage patterns
+   - `self-improvement.md` - Contribution guidelines
+
+2. **Agent Initialization Pattern**:
+```markdown
+## Initialization
+On startup, load shared protocols:
+1. Read @development/shared/agent-protocol.md for announcement format
+2. Read @development/shared/task-management.md for TodoWrite patterns
+3. Read @development/shared/self-improvement.md for contribution guidelines
+```
+
+3. **Benefits**:
+   - **DRY Principle**: Don't Repeat Yourself
+   - **Consistency**: All agents follow same patterns
+   - **Maintainability**: Update once, affects all agents
+   - **Modularity**: Agents only load what they need
+
+4. **Implementation Example**:
+```markdown
+## Agent Initialization
+Load the following shared protocols:
+- For self-announcement: See development/shared/agent-protocol.md
+- For task tracking: See development/shared/task-management.md
+- For improvements: See development/shared/self-improvement.md
+
+Note: While agents cannot execute @ syntax, they should be instructed to:
+"First, read the shared protocol files from development/shared/ to understand standard operating procedures."
 ```
 
 ### Directory Management Best Practices
