@@ -1,5 +1,6 @@
 ---
 name: design-specialist
+version: 1.0.0
 description: Creates beautiful, accessible UI components using modern design systems and frameworks.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash
 color: purple

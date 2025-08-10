@@ -1,5 +1,6 @@
 ---
 name: mcp-specialist
+version: 1.0.0
 description: Installs and troubleshoots MCP servers, ensuring proper configuration and permissions. Expert in GitHub MCP server setup and authentication.
 tools: Bash, Read, Write, Edit, Grep
 color: orange

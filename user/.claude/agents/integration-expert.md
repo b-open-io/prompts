@@ -1,5 +1,6 @@
 ---
 name: integration-expert
+version: 1.0.0
 model: claude-opus-4-1-20250805
 description: Implements API integrations, webhooks, and third-party service connections with proper error handling.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep

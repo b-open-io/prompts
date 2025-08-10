@@ -1,5 +1,6 @@
 ---
 name: code-auditor
+version: 1.0.0
 model: claude-opus-4-1-20250805
 description: Senior security engineer performing comprehensive code audits. Identifies vulnerabilities, ensures quality, prevents breaches. Uses git diff, security patterns, xAI/Grok for complex reviews. Provides structured reports with severity levels and specific fixes.
 tools: Read, Grep, Glob, Bash, Git, Bash(curl:*), Bash(jq:*)

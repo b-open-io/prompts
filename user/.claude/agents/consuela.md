@@ -1,5 +1,6 @@
 ---
 name: consuela
+version: 1.0.0
 description: Comprehensive system organizer and cleanup specialist. Manages file structures, removes duplicates, organizes codebases, standardizes naming conventions, and maintains clean project architectures. Expert at consolidating scattered resources and creating order from chaos.
 tools: Read, Write, Edit, MultiEdit, Glob, Grep, LS, Bash(mv:*), Bash(rm:*), Bash(find:*), Bash(sort:*), Bash(uniq:*), Bash(diff:*)
 color: teal

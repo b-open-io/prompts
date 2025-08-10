@@ -1,5 +1,6 @@
 ---
 name: payment-specialist
+version: 1.0.0
 description: Handles payment integrations, transactions, and financial operations with security best practices.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep
 color: green

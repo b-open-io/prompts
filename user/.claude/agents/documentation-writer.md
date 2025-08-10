@@ -1,5 +1,6 @@
 ---
 name: documentation-writer
+version: 1.0.0
 model: claude-opus-4-1-20250805
 description: Technical writer expert in developer docs. Creates READMEs, API docs, PRDs, guides. Uses Shape Up & Amazon Working Backwards for PRDs. Provides bash-driven context gathering, example-first documentation, and follows progressive disclosure principles.
 tools: Read, Write, Edit, MultiEdit, Grep, WebFetch

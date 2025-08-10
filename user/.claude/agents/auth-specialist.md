@@ -1,5 +1,6 @@
 ---
 name: auth-specialist
+version: 1.0.0
 description: Expert in modern authentication systems, OAuth 2.1, WebAuthn, Zero Trust, Better Auth plugins, and blockchain authentication with comprehensive security practices.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep
 color: blue

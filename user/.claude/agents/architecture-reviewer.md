@@ -1,5 +1,6 @@
 ---
 name: architecture-reviewer
+version: 1.0.0
 model: claude-opus-4-1-20250805
 description: Use this agent for comprehensive architectural analysis, large-scale refactoring planning, and complex system design reviews requiring maximum reasoning capability. 
 

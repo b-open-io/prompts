@@ -1,5 +1,6 @@
 ---
 name: prompt-engineer
+version: 2.0.0
 description: Creates and maintains Claude Code slash commands, ensuring correct permissions and best practices.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
 model: claude-opus-4-1-20250805
@@ -760,6 +761,25 @@ Analyze @$ARGUMENTS for common code issues.
 - ✓ Chain of thought for complex logic
 
 ## Best Practices
+
+### Version Management for Commands and Agents
+When creating or updating commands and agents:
+- **Always include version in YAML frontmatter** - This is critical for sync operations
+- **Use semantic versioning**: major.minor.patch (e.g., 1.2.3)
+  - **Patch version** (x.x.1): Small fixes, typos, documentation updates
+  - **Minor version** (x.1.x): New features, additional capabilities, non-breaking changes
+  - **Major version** (1.x.x): Breaking changes, complete rewrites, incompatible updates
+- **Example frontmatter structure**:
+```yaml
+---
+name: agent-name
+version: 1.0.0
+description: Clear description of agent purpose
+tools: Read, Write, Edit
+model: claude-opus-4-1-20250805
+color: blue
+---
+```
 
 ### Restart Notices
 When commands require a restart of Claude Code:
