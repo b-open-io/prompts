@@ -37,183 +37,38 @@ claude
 
 ## Specialized AI Agents
 
-Our agents are expert sub-agents that enhance Claude Code with specialized knowledge:
+Our 21 expert agents enhance Claude Code with specialized knowledge. See [user/.claude/agents/](user/.claude/agents/) for full details.
 
-### 🔵 prompt-engineer
-**Expert in Claude Code commands and prompt development**
-- Creates and edits slash commands
-- Develops prompt templates
-- Ensures proper YAML frontmatter
-- Validates command structure
+### Development & Architecture
+- 🔵 [**prompt-engineer**](user/.claude/agents/prompt-engineer.md) - Claude Code commands and prompt development
+- 🏗️ [**architecture-reviewer**](user/.claude/agents/architecture-reviewer.md) - Large-scale system design and refactoring
+- 🔴 [**code-auditor**](user/.claude/agents/code-auditor.md) - Security vulnerabilities and code quality
+- 🚀 [**optimizer**](user/.claude/agents/optimizer.md) - Performance optimization and efficiency
+- 🧪 [**test-specialist**](user/.claude/agents/test-specialist.md) - Comprehensive testing strategies
+- 🧹 [**consolidator**](user/.claude/agents/consolidator.md) - System organization and cleanup
 
-```
-"Use the prompt-engineer agent to create a new slash command for deployment automation"
-```
+### Platform & Infrastructure  
+- 🟠 [**devops-specialist**](user/.claude/agents/devops-specialist.md) - Deployment automation and cloud infrastructure
+- 🟢 [**database-specialist**](user/.claude/agents/database-specialist.md) - Database design, optimization, and data modeling
+- 📱 [**mobile-specialist**](user/.claude/agents/mobile-specialist.md) - React Native, Swift, Kotlin, and Flutter development
+- 🔗 [**integration-expert**](user/.claude/agents/integration-expert.md) - API integration and third-party services
+- 🟠 [**mcp-specialist**](user/.claude/agents/mcp-specialist.md) - Model Context Protocol server development
 
-### 🟣 design-specialist  
-**UI/UX and component library expert**
-- Shadcn/ui and BigBlocks components
-- Tailwind CSS optimization
-- Design system architecture
-- Accessibility best practices
+### Specialized Domains
+- 🟡 [**bitcoin-specialist**](user/.claude/agents/bitcoin-specialist.md) - BSV blockchain and cryptography
+- 💚 [**payment-specialist**](user/.claude/agents/payment-specialist.md) - Payment processing and financial operations
+- 🔵 [**auth-specialist**](user/.claude/agents/auth-specialist.md) - Authentication and identity management
+- 🤖 [**agent-specialist**](user/.claude/agents/agent-specialist.md) - AI agent development and tool-calling
+- 📊 [**data-specialist**](user/.claude/agents/data-specialist.md) - Data processing, analytics, and ETL pipelines
+- ⚖️ [**legal-specialist**](user/.claude/agents/legal-specialist.md) - Legal compliance and privacy regulations
 
-```
-"Have the design-specialist help me set up a component library with shadcn/ui"
-```
+### Content & Communication
+- 🟣 [**design-specialist**](user/.claude/agents/design-specialist.md) - UI/UX design and component libraries
+- 🔷 [**documentation-writer**](user/.claude/agents/documentation-writer.md) - Technical documentation and guides
+- 🟠 [**content-specialist**](user/.claude/agents/content-specialist.md) - AI-powered media generation
+- 🩷 [**research-specialist**](user/.claude/agents/research-specialist.md) - Information gathering and analysis
 
-### 🟢 integration-expert
-**API and third-party service specialist**
-- REST API design and integration
-- Webhook implementation
-- Third-party service connections
-- Error handling and retry logic
-
-```
-"Ask the integration-expert to implement a Slack notification webhook"
-```
-
-### 🟠 mcp-specialist
-**Model Context Protocol server expert**
-- MCP server development and deployment
-- Tool registration and schema validation
-- Transport modes (stdio, HTTP/SSE)
-- Cross-tool compatibility
-
-```
-"Get the mcp-specialist to create a new MCP server for database operations"
-```
-
-### 🟡 bitcoin-specialist
-**BSV blockchain and cryptography expert**
-- Transaction building and broadcasting
-- Bitcoin script and opcodes
-- Ordinals and token protocols
-- Key management and signatures
-
-```
-"Have the bitcoin-specialist implement 1Sat Ordinals inscription logic"
-```
-
-### 🔴 code-auditor
-**Security and code quality specialist**
-- Security vulnerability detection
-- Performance optimization
-- Best practices enforcement
-- Dependency auditing
-
-```
-"Ask the code-auditor to review this authentication flow for security issues"
-```
-
-### 🔷 documentation-writer
-**Technical documentation expert**
-- README files with quickstarts
-- API documentation
-- Architecture diagrams
-- User guides
-
-```
-"Use the documentation-writer to create a comprehensive README for this project"
-```
-
-### 🩷 research-specialist
-**Information gathering and analysis expert**
-- Technical research with xAI/Grok integration
-- Real-time X/Twitter trends analysis
-- Best practices discovery
-- Tool evaluation
-
-```
-"Have the research-specialist find the best practices for WebSocket scaling"
-```
-
-### 🟠 content-specialist
-**AI-powered media generation expert**
-- Image generation with xAI's grok-2-image
-- Hero images and logos
-- Architecture diagrams
-- Documentation screenshots
-
-```
-"Ask the content-specialist to create a hero image for the README"
-```
-
-### 💚 payment-specialist
-**Payment processing and financial operations expert**
-- Stripe integration and webhooks
-- BSV and crypto payments
-- Subscription management
-- PCI compliance and security
-
-```
-"Have the payment-specialist implement a subscription billing system with Stripe"
-```
-
-### 🔵 auth-specialist
-**Authentication and identity management expert**
-- OAuth 2.0 and OIDC implementation
-- JWT and session management
-- Passwordless authentication
-- Multi-factor authentication (MFA)
-
-```
-"Ask the auth-specialist to set up OAuth with GitHub and Google providers"
-```
-
-### 🧪 test-specialist
-**Testing and quality assurance expert**
-- Unit, integration, and e2e testing
-- Test framework implementation
-- Coverage analysis and reporting
-- CI/CD test automation
-
-```
-"Have the test-specialist create a comprehensive test suite with Jest and Playwright"
-```
-
-### 🚀 optimizer
-**Performance and efficiency expert**
-- Bundle analysis and optimization
-- Runtime performance profiling
-- Memory usage optimization
-- Build process improvements
-
-```
-"Ask the optimizer to improve the application's load time and bundle size"
-```
-
-### 🤖 agent-specialist
-**AI agent development expert**
-- OpenAI/Vercel SDK integration
-- Tool-calling and routing systems
-- Memory and state management
-- Conversational AI interfaces
-
-```
-"Use the agent-specialist to build a customer service chatbot with tool calling"
-```
-
-### 🏗️ architecture-reviewer
-**Large-scale system design expert**
-- Comprehensive architectural analysis
-- Large-scale refactoring planning
-- System design reviews
-- Technical debt assessment
-
-```
-"Have the architecture-reviewer analyze this microservices architecture for scalability"
-```
-
-### 🧹 consuela
-**System organization and cleanup specialist**
-- File structure management
-- Duplicate removal and consolidation
-- Codebase organization
-- Clean architecture enforcement
-
-```
-"Ask consuela to organize and clean up this scattered codebase structure"
-```
+**Usage:** `"Use the [agent-name] to [specific task]"`
 
 ## Slash Commands
 
