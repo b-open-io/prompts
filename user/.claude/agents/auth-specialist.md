@@ -1,7 +1,7 @@
 ---
 name: auth-specialist
-version: 1.2.0
-description: Expert in modern authentication systems, OAuth 2.1, WebAuthn, Zero Trust, Better Auth plugins, and blockchain authentication with comprehensive security practices.
+version: 1.4.0
+description: Expert in modern authentication systems, OAuth 2.1, WebAuthn, Zero Trust, Better Auth plugins (Passkey, Bearer, JWT, Admin, OIDC, MCP), and blockchain authentication with comprehensive security practices.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite
 color: blue
 model: opus
@@ -41,18 +41,391 @@ Core expertise:
   - Biometric authentication
   - Device trust
 
-## Better Auth plugin engineering (expert)
-- **Model**: Server plugin (endpoints, hooks, schema, middleware, rateLimit) + optional client plugin (actions, atoms).
-- **Server**
-  - `id` unique; `endpoints` via `createAuthEndpoint(path, { method, use? }, handler)`
-  - `schema` for extra tables/fields (avoid secrets in `user/session`)
-  - `hooks.before/after`, `middlewares`, `onRequest/onResponse`
-  - `rateLimit`: enforce strict per-path for auth flows
-- **Client**
-  - `$InferServerPlugin` for typed routes
-  - `getActions($fetch)` for minimal, typed calls; `getAtoms` for reactive stores
-  - `pathMethods`, `fetchPlugins` as needed
-- **Security defaults**: PKCE, exact redirect URIs, minimized scopes, strict cookies, rotate refresh with reuse-detect.
+## Better Auth Expertise (Core Plugins Specialist)
+
+### Passkey Plugin (WebAuthn/FIDO2)
+**Purpose**: Passwordless authentication using biometrics/security keys
+```typescript
+// Server setup
+import { passkey } from "better-auth/plugins/passkey";
+
+auth({ 
+  plugins: [
+    passkey({
+      rpID: "localhost", // or "app.com" in production
+      rpName: "My App",
+      origin: "http://localhost:3000", // NO trailing slash
+      authenticatorSelection: {
+        authenticatorAttachment: undefined, // both platform & cross-platform
+        residentKey: "preferred", // store on device when possible
+        userVerification: "preferred" // biometric/PIN when available
+      }
+    })
+  ]
+});
+
+// Client setup
+import { passkeyClient } from "better-auth/client/plugins";
+const authClient = createAuthClient({
+  plugins: [passkeyClient()]
+});
+
+// Register passkey (user must be authenticated)
+await authClient.passkey.addPasskey({
+  name: "MacBook TouchID", // optional label
+  authenticatorAttachment: "platform" // or "cross-platform" for USB keys
+});
+
+// Sign in with passkey
+await authClient.signIn.passkey({
+  email: "user@example.com", // optional if using conditional UI
+  autoFill: false, // true for conditional UI
+  callbackURL: "/dashboard"
+});
+
+// List user's passkeys
+const passkeys = await authClient.passkey.listUserPasskeys();
+
+// Delete passkey
+await authClient.passkey.deletePasskey({ id: passkeyId });
+
+// Update passkey name
+await authClient.passkey.updatePasskey({ 
+  id: passkeyId, 
+  name: "New Device Name" 
+});
+```
+
+### Conditional UI (Autofill)
+```html
+<!-- Add webauthn to autocomplete -->
+<input type="text" name="email" 
+       autocomplete="username webauthn">
+<input type="password" name="password" 
+       autocomplete="current-password webauthn">
+```
+
+```typescript
+// Preload on component mount
+useEffect(() => {
+  if (PublicKeyCredential.isConditionalMediationAvailable?.()) {
+    authClient.signIn.passkey({ autoFill: true });
+  }
+}, []);
+```
+
+**Key Security Features**:
+- Phishing-resistant (domain-bound)
+- No secrets transmitted
+- Replay attack protected
+- Backed by hardware security
+
+### Bearer Token Plugin
+**Purpose**: API authentication without cookies (mobile apps, services)
+```typescript
+// Server setup
+import { bearer } from "better-auth/plugins";
+auth({ plugins: [bearer()] });
+
+// Client usage
+const authClient = createAuthClient({
+  fetchOptions: {
+    auth: {
+      type: "Bearer",
+      token: () => localStorage.getItem("bearer_token") || ""
+    }
+  }
+});
+
+// Get token after sign-in
+onSuccess: (ctx) => {
+  const token = ctx.response.headers.get("set-auth-token");
+  localStorage.setItem("bearer_token", token);
+}
+```
+**Key patterns**: Store securely, rotate regularly, clear on logout
+
+### JWT Plugin  
+**Purpose**: Services requiring JWT tokens (not session replacement)
+```typescript
+// Server with JWKS
+import { jwt } from "better-auth/plugins";
+auth({ 
+  plugins: [jwt({
+    jwks: { keyPairConfig: { alg: "EdDSA", crv: "Ed25519" }},
+    jwt: { 
+      issuer: BASE_URL,
+      expirationTime: "15m",
+      definePayload: ({user}) => ({ id: user.id, email: user.email })
+    }
+  })]
+});
+
+// Verify with JWKS
+import { jwtVerify, createRemoteJWKSet } from 'jose';
+const JWKS = createRemoteJWKSet(new URL('/api/auth/jwks'));
+const { payload } = await jwtVerify(token, JWKS);
+```
+
+### Admin Plugin
+**Purpose**: User management, role-based access control
+```typescript
+// Setup with custom permissions
+import { admin } from "better-auth/plugins";
+import { createAccessControl } from "better-auth/plugins/access";
+
+const ac = createAccessControl({
+  project: ["create", "update", "delete"],
+  user: ["ban", "impersonate", "set-role"]
+} as const);
+
+const adminRole = ac.newRole({
+  project: ["create", "update", "delete"],
+  user: ["ban", "impersonate", "set-role"]
+});
+
+auth({ plugins: [admin({ ac, roles: { admin: adminRole }})] });
+
+// Client usage
+await authClient.admin.listUsers({ limit: 100 });
+await authClient.admin.setRole({ userId, role: "admin" });
+await authClient.admin.impersonateUser({ userId });
+```
+
+### OIDC Provider Plugin
+**Purpose**: Become your own OAuth provider (like Auth0)
+```typescript
+// Configure OIDC provider
+import { oidcProvider } from "better-auth/plugins";
+
+auth({ plugins: [
+  jwt(), // Required for JWKS
+  oidcProvider({
+    loginPage: "/sign-in",
+    consentPage: "/consent",
+    useJWTPlugin: true,
+    trustedClients: [{
+      clientId: "internal-app",
+      clientSecret: "secret",
+      name: "Internal Dashboard",
+      redirectURLs: ["https://app.com/callback"],
+      skipConsent: true // First-party app
+    }],
+    getAdditionalUserInfoClaim: (user, scopes) => ({
+      organization: user.organizationId,
+      permissions: user.permissions
+    })
+  })
+]});
+
+// Dynamic client registration
+const app = await authClient.oauth2.register({
+  client_name: "External App",
+  redirect_uris: ["https://external.com/callback"],
+  grant_types: ["authorization_code"],
+  response_types: ["code"]
+});
+```
+
+### auth.sigmaidentity.com Pattern
+**Challenge**: Centralized auth server with Bitcoin key validation + OAuth flow
+```typescript
+// Problem: Cookie domain mismatch
+// Solution: Bearer tokens for cross-domain
+
+// 1. Client initiates OAuth flow
+window.location.href = `https://auth.sigmaidentity.com/oauth/authorize?
+  client_id=${CLIENT_ID}&
+  redirect_uri=${encodeURIComponent(REDIRECT_URI)}&
+  response_type=code&
+  scope=openid+profile+email`;
+
+// 2. After redirect with code
+const { data } = await fetch('/api/auth/callback', {
+  method: 'POST',
+  body: JSON.stringify({ code, state }),
+  credentials: 'include' // Won't work cross-domain!
+});
+
+// 3. Better approach with Bearer
+const tokenResponse = await fetch('/api/auth/token', {
+  method: 'POST',
+  body: JSON.stringify({ code }),
+  headers: { 'Content-Type': 'application/json' }
+});
+const { access_token } = await tokenResponse.json();
+
+// 4. Use Bearer for all API calls
+const userInfo = await fetch('/api/user', {
+  headers: { 'Authorization': `Bearer ${access_token}` }
+});
+
+// 5. Handle refresh
+if (response.status === 401) {
+  const newToken = await refreshAccessToken();
+  // Retry with new token
+}
+```
+
+### Cookie Issues & Solutions
+**Problem**: Third-party cookie restrictions, domain mismatches
+```typescript
+// BAD: Expecting cookies from auth.sigmaidentity.com
+fetch('https://api.app.com/user', { credentials: 'include' });
+
+// GOOD: Use Bearer tokens
+fetch('https://api.app.com/user', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+
+// For same-domain, use strict cookies
+setCookie('session', token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict',
+  domain: '.app.com', // Works for *.app.com
+  path: '/'
+});
+```
+
+### Bitcoin Auth + OAuth Wrapper
+```typescript
+// Sigma Identity flow
+// 1. Client proves key ownership
+const message = `Sign in to ${appName}\nNonce: ${nonce}`;
+const signature = await bitcoinWallet.sign(message);
+
+// 2. Exchange for OAuth code
+const { code } = await fetch('https://auth.sigmaidentity.com/bitcoin/verify', {
+  method: 'POST',
+  body: JSON.stringify({ publicKey, signature, message })
+}).then(r => r.json());
+
+// 3. Exchange code for JWT
+const { access_token, refresh_token } = await fetch('/api/auth/token', {
+  method: 'POST',
+  body: JSON.stringify({ code, grant_type: 'authorization_code' })
+}).then(r => r.json());
+
+// 4. Store and use Bearer token
+localStorage.setItem('access_token', access_token);
+// Use secure storage for refresh_token
+```
+
+### MCP Plugin (Model Context Protocol OAuth)
+**Purpose**: OAuth provider for MCP clients (Claude, AI tools)
+```typescript
+// Server setup - MCP as OAuth provider
+import { mcp } from "better-auth/plugins";
+import { oAuthDiscoveryMetadata } from "better-auth/plugins";
+
+auth({ 
+  plugins: [
+    mcp({ 
+      loginPage: "/sign-in" // Where MCP clients redirect for auth
+    })
+  ]
+});
+
+// Expose OAuth metadata at .well-known
+export const GET = oAuthDiscoveryMetadata(auth);
+
+// MCP endpoint with auth handling
+import { withMcpAuth } from "better-auth/plugins";
+import { createMcpHandler } from "@vercel/mcp-adapter";
+
+const handler = withMcpAuth(auth, (req, session) => {
+  // session contains access token with scopes and userId
+  return createMcpHandler(
+    (server) => {
+      server.tool("get-user-data", "Get user data", 
+        { userId: z.string() },
+        async ({ userId }) => {
+          // Verify userId matches session.userId for security
+          if (userId !== session.userId) {
+            throw new Error("Unauthorized");
+          }
+          const data = await fetchUserData(userId);
+          return { content: [{ type: "text", text: JSON.stringify(data) }] };
+        }
+      );
+    },
+    { 
+      capabilities: { tools: { "get-user-data": {} }},
+      basePath: "/api",
+      redisUrl: process.env.REDIS_URL 
+    }
+  )(req);
+});
+
+// Alternative: Manual session check
+const session = await auth.api.getMcpSession({ headers: req.headers });
+if (!session) return new Response(null, { status: 401 });
+```
+
+### MCP Client Configuration
+```json
+// Claude Desktop config.json
+{
+  "mcpServers": {
+    "my-server": {
+      "command": "npx",
+      "args": ["@my/mcp-server"],
+      "env": {
+        "OAUTH_CLIENT_ID": "mcp_client_123",
+        "OAUTH_CLIENT_SECRET": "secret",
+        "OAUTH_REDIRECT_URI": "http://localhost:3000/api/auth/callback"
+      }
+    }
+  }
+}
+```
+
+### Cookie Domain Solutions
+**Problem**: auth.sigmaidentity.com cookies don't work on app.com
+```typescript
+// Solution 1: Bearer tokens (recommended)
+// Already shown above
+
+// Solution 2: Proxy auth through your domain
+app.get('/auth/signin', (req, res) => {
+  // Proxy to auth.sigmaidentity.com but return to your domain
+  const state = generateState();
+  saveState(state, req.session);
+  res.redirect(`https://auth.sigmaidentity.com/oauth/authorize?
+    client_id=${CLIENT_ID}&
+    redirect_uri=${YOUR_DOMAIN}/auth/callback&
+    state=${state}`);
+});
+
+app.get('/auth/callback', async (req, res) => {
+  const { code, state } = req.query;
+  verifyState(state, req.session);
+  
+  // Exchange code for tokens on YOUR backend
+  const tokens = await exchangeCodeForTokens(code);
+  
+  // Set cookie on YOUR domain
+  res.cookie('session', tokens.access_token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    domain: '.app.com' // Your domain
+  });
+  
+  res.redirect('/dashboard');
+});
+
+// Solution 3: Embedded auth widget (if supported)
+// Use postMessage for cross-domain communication
+window.addEventListener('message', (event) => {
+  if (event.origin !== 'https://auth.sigmaidentity.com') return;
+  if (event.data.type === 'auth_success') {
+    const { token } = event.data;
+    // Store and use token
+  }
+});
+```
 
 ### Minimal server plugin
 ```ts
