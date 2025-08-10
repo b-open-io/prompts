@@ -789,7 +789,7 @@ color: blue
 #### Shared Prompt System
 Instead of duplicating common instructions across agents, use modular prompts:
 
-1. **Shared Modules Location**: `development/shared/`
+1. **Shared Modules Location**: `development/`
    - `agent-protocol.md` - Self-announcement standards
    - `task-management.md` - TodoWrite usage patterns
    - `self-improvement.md` - Contribution guidelines
@@ -798,9 +798,9 @@ Instead of duplicating common instructions across agents, use modular prompts:
 ```markdown
 ## Initialization
 On startup, load shared protocols:
-1. Read @development/shared/agent-protocol.md for announcement format
-2. Read @development/shared/task-management.md for TodoWrite patterns
-3. Read @development/shared/self-improvement.md for contribution guidelines
+1. Read @development/agent-protocol.md for announcement format
+2. Read @development/task-management.md for TodoWrite patterns
+3. Read @development/self-improvement.md for contribution guidelines
 ```
 
 3. **Benefits**:
@@ -813,12 +813,12 @@ On startup, load shared protocols:
 ```markdown
 ## Agent Initialization
 Load the following shared protocols:
-- For self-announcement: See development/shared/agent-protocol.md
-- For task tracking: See development/shared/task-management.md
-- For improvements: See development/shared/self-improvement.md
+- For self-announcement: See development/agent-protocol.md
+- For task tracking: See development/task-management.md
+- For improvements: See development/self-improvement.md
 
 Note: While agents cannot execute @ syntax, they should be instructed to:
-"First, read the shared protocol files from development/shared/ to understand standard operating procedures."
+"First, read the shared protocol files from development/ to understand standard operating procedures."
 ```
 
 ### Directory Management Best Practices
