@@ -1,6 +1,6 @@
 ---
 name: prompt-engineer
-version: 2.0.0
+version: 2.1.0
 description: Creates and maintains Claude Code slash commands, ensuring correct permissions and best practices.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
 model: claude-opus-4-1-20250805
@@ -769,6 +769,7 @@ When creating or updating commands and agents:
   - **Patch version** (x.x.1): Small fixes, typos, documentation updates
   - **Minor version** (x.1.x): New features, additional capabilities, non-breaking changes
   - **Major version** (1.x.x): Breaking changes, complete rewrites, incompatible updates
+- **Always bump versions when editing**: Even small changes should increment patch version
 - **Example frontmatter structure**:
 ```yaml
 ---
@@ -780,6 +781,51 @@ model: claude-opus-4-1-20250805
 color: blue
 ---
 ```
+
+### Directory Management Best Practices
+When creating directories, files, or managing the Claude configuration:
+
+**1. Check Before Creating** - Avoid redundant operations:
+```bash
+# Good: Check existence first
+[ ! -d "$HOME/.claude/commands/opl/category" ] && mkdir -p "$HOME/.claude/commands/opl/category"
+
+# Better: Silent idempotent creation (safe to run multiple times)
+mkdir -p "$HOME/.claude/commands/opl/category" 2>/dev/null || true
+```
+
+**2. Smart Directory Operations**:
+- Use `mkdir -p` which creates parent directories and doesn't error if directory exists
+- Always check if directories exist before assuming they need creation
+- Use `$HOME` instead of `~` in Bash commands for reliability
+
+**3. First-Time Setup Detection**:
+Since there's no separate init command, sync operations should handle initial setup:
+```bash
+# Detect and handle first-time setup
+if [ ! -d "$HOME/.claude/agents" ]; then
+    echo "🔧 First-time setup detected. Creating Claude directories..."
+    mkdir -p "$HOME/.claude/agents"
+    mkdir -p "$HOME/.claude/commands"
+    echo "✅ Claude directories created"
+fi
+```
+
+**4. Safe File Operations**:
+```bash
+# Ensure destination directory exists before copying
+mkdir -p "$(dirname "$destination")" && cp "$source" "$destination"
+
+# Check parent directory before writing files
+parent_dir="$(dirname "$file_path")"
+[ ! -d "$parent_dir" ] && mkdir -p "$parent_dir"
+```
+
+**5. Error Prevention**:
+- Always quote paths that might contain spaces: `"$HOME/.claude/agents"`
+- Test directory operations succeeded before proceeding
+- Use `|| true` to prevent script failures on benign errors
+- Provide clear feedback when creating new directories
 
 ### Restart Notices
 When commands require a restart of Claude Code:

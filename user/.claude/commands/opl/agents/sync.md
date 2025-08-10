@@ -1,5 +1,5 @@
 ---
-version: 2.0.0
+version: 2.1.0
 allowed-tools: Read, Write, Edit, Bash(find:*), Bash(diff:*), Bash(cp:*), Bash(ls:*), Bash(sort:*), Bash(stat:*), Bash(grep:*), Bash(sed:*), Bash(awk:*), Bash(head:*), Bash(tail:*), Bash(git:*), Grep, Glob
 description: Intelligent agent synchronization with version-aware conflict resolution
 argument-hint: [--auto|--repo|--local|--merge|--interactive|--help]
@@ -56,13 +56,26 @@ Then stop processing.
 
 ### Main Sync Logic:
 
-1. **Gather Information**
+1. **First-Time Setup Check**
+   Check if this is the first time running sync:
+   ```bash
+   # Ensure Claude directories exist
+   if [ ! -d "$HOME/.claude/agents" ]; then
+       echo "🔧 First-time setup detected. Creating Claude directories..."
+       mkdir -p "$HOME/.claude/agents"
+       mkdir -p "$HOME/.claude/commands"
+       echo "✅ Claude directories created"
+       echo ""
+   fi
+   ```
+
+2. **Gather Information**
    - Find all agents in repository: `find user/.claude/agents -name "*.md" -type f`
    - Find all agents in local: `find ~/.claude/agents -name "*.md" -type f`
    - For each agent, extract version from YAML frontmatter
    - If no version found, use file modification time
 
-2. **Version Extraction Function**
+3. **Version Extraction Function**
    Use bash to extract version from YAML frontmatter:
    ```bash
    # Extract version from agent file
@@ -73,13 +86,13 @@ Then stop processing.
    stat -f "%m" "$file" 2>/dev/null || stat -c "%Y" "$file" 2>/dev/null
    ```
 
-3. **Compare Versions**
+4. **Compare Versions**
    Use semantic versioning comparison:
    - Split version by dots (major.minor.patch)
    - Compare numerically: major first, then minor, then patch
    - If versions equal, compare file content with diff
 
-4. **Build Analysis Table**
+5. **Build Analysis Table**
    Create a comprehensive status table showing:
    ```
    Agent Sync Analysis:
@@ -94,7 +107,7 @@ Then stop processing.
    └─────────────────────┴──────────┴────────┴─────────┴──────────────┘
    ```
 
-5. **Handle Sync Strategy**
+6. **Handle Sync Strategy**
 
    **--auto (Auto-resolve to newest):**
    - Automatically choose newer version for each agent
@@ -146,14 +159,14 @@ Then stop processing.
      [L]ocal | [R]epo | [M]erge | [D]iff (full) | [S]kip: 
    ```
 
-6. **Execute Sync Operations**
+7. **Execute Sync Operations**
    Based on chosen strategy:
    - Copy files as needed
    - Track all changes made
    - Preserve file permissions
    - Validate YAML frontmatter after copy
 
-7. **Git Integration**
+8. **Git Integration**
    After push operations:
    ```bash
    # Stage changes if in git repository
@@ -163,7 +176,7 @@ Then stop processing.
    fi
    ```
 
-8. **Generate Summary Report**
+9. **Generate Summary Report**
    ```
    ✅ Sync Complete!
    
@@ -193,14 +206,14 @@ Then stop processing.
    Run: git commit -m "Sync agents: 5 pulled, 2 pushed, 1 merged"
    ```
 
-9. **Error Handling**
+10. **Error Handling**
    - Check if directories exist before operations
    - Validate YAML frontmatter format
    - Handle permission errors gracefully
    - Provide rollback information if sync fails
    - Create backup before destructive operations
 
-10. **Version Comparison Logic**
+11. **Version Comparison Logic**
     Implement proper semantic versioning comparison:
     - "2.0.0" > "1.9.9"
     - "1.10.0" > "1.9.0"
