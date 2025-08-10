@@ -17,23 +17,23 @@ This repository provides:
 git clone https://github.com/b-open-io/prompts.git
 cd prompts
 
-# 2. Install Claude Code CLI (choose one)
-# bun (preferred)
-bun add -g @anthropic-ai/claude-code
-# or npm
-npm install -g @anthropic-ai/claude-code
-
-# 3. Install agents, commands, and hooks (copy to your user directory)
-mkdir -p ~/.claude/agents
-cp -R user/.claude/agents/* ~/.claude/agents/
-mkdir -p ~/.claude/commands/opl
-cp -R user/.claude/commands/opl/* ~/.claude/commands/opl/
-mkdir -p ~/.claude/hooks
-cp -R user/.claude/hooks/* ~/.claude/hooks/
-
-# 4. Launch Claude Code in this repo
+# 2. Launch Claude Code in this repo
 claude
+
+# 3. Run the sync commands to install everything
+/opl:agents:sync
+/opl:commands:sync  
+/opl:hooks:sync
+
+# That's it! All agents, commands, and hooks are now installed.
 ```
+
+**Advanced sync options:**
+- Add `--auto` to auto-resolve to newest versions
+- Add `--repo` to pull all from repository  
+- Add `--local` to push all to repository
+- Add `--merge` to combine changes intelligently
+- Default is interactive mode for full control
 
 ## Specialized AI Agents
 
@@ -160,13 +160,95 @@ Our agents are expert sub-agents that enhance Claude Code with specialized knowl
 "Ask the auth-specialist to set up OAuth with GitHub and Google providers"
 ```
 
+### 🧪 test-specialist
+**Testing and quality assurance expert**
+- Unit, integration, and e2e testing
+- Test framework implementation
+- Coverage analysis and reporting
+- CI/CD test automation
+
+```
+"Have the test-specialist create a comprehensive test suite with Jest and Playwright"
+```
+
+### 🚀 optimizer
+**Performance and efficiency expert**
+- Bundle analysis and optimization
+- Runtime performance profiling
+- Memory usage optimization
+- Build process improvements
+
+```
+"Ask the optimizer to improve the application's load time and bundle size"
+```
+
+### 🤖 agent-specialist
+**AI agent development expert**
+- OpenAI/Vercel SDK integration
+- Tool-calling and routing systems
+- Memory and state management
+- Conversational AI interfaces
+
+```
+"Use the agent-specialist to build a customer service chatbot with tool calling"
+```
+
+### 🏗️ architecture-reviewer
+**Large-scale system design expert**
+- Comprehensive architectural analysis
+- Large-scale refactoring planning
+- System design reviews
+- Technical debt assessment
+
+```
+"Have the architecture-reviewer analyze this microservices architecture for scalability"
+```
+
+### 🧹 consuela
+**System organization and cleanup specialist**
+- File structure management
+- Duplicate removal and consolidation
+- Codebase organization
+- Clean architecture enforcement
+
+```
+"Ask consuela to organize and clean up this scattered codebase structure"
+```
+
 ## Slash Commands
 
-Commands follow the format:
-```
-/organization:category:command [arguments]
-```
-Categories include `utils`, `dev`, `design`, `docs`, `integrations`, and `mcp`.
+Commands follow the format `/opl:category:command [arguments]`:
+
+### 🛠️ Development (`dev`)
+- `/opl:dev:lint` - Run linting and fix code quality issues
+- `/opl:dev:enhance` - Improve code with AI assistance  
+- `/opl:dev:create-prompt` - Create new prompt templates
+- `/opl:dev:update-prompt` - Update existing prompts
+
+### 🎨 Design (`design`)
+- `/opl:design:design` - Get AI-powered design assistance
+- `/opl:design:ai-inspiration` - Generate design inspiration and concepts
+
+### 📚 Documentation (`docs`) 
+- `/opl:docs:prd` - Create Product Requirements Documents
+- `/opl:docs:prd-enhanced` - Enhanced PRD with detailed analysis
+- `/opl:docs:check` - Validate and improve documentation
+
+### 🔗 Integrations (`integrations`)
+- `/opl:integrations:auth` - Set up authentication systems
+- `/opl:integrations:auth-smoke` - Run authentication smoke tests
+- `/opl:integrations:stripe` - Integrate Stripe payments
+- `/opl:integrations:bsv` - Bitcoin SV blockchain integration
+- `/opl:integrations:tanstack` - TanStack Query integration
+
+### 🔌 MCP Servers (`mcp`)
+- `/opl:mcp:install-magic` - Install 21st.dev Magic MCP server
+- `/opl:mcp:install-playwright` - Install Playwright testing MCP server  
+- `/opl:mcp:install-github` - Install GitHub MCP server
+
+### 🔧 Utilities (`utils`)
+- `/opl:utils:find` - Advanced file and code search
+- `/opl:utils:context` - Generate contextual information
 
 ## Automation Hooks
 
@@ -243,20 +325,32 @@ init-prism create my-app --template bitcoin-auth
 # Set up integrations
 /opl:integrations:auth
 /opl:integrations:stripe
+/opl:integrations:bsv
 ```
 
 ### Code Quality
 ```bash
 # Audit and fix code
 /opl:dev:lint
-"Ask the code-auditor to review security"
+/opl:dev:enhance
+"Ask the code-auditor to review security vulnerabilities"
+"Have the test-specialist create comprehensive tests"
 ```
 
 ### Documentation
 ```bash
 # Generate comprehensive docs
 /opl:docs:prd "Project Name"
-"Have the documentation-writer create a README"
+/opl:docs:check
+"Have the documentation-writer create a comprehensive README"
+```
+
+### MCP Server Setup
+```bash
+# Install powerful MCP servers
+/opl:mcp:install-magic       # AI-powered component generation
+/opl:mcp:install-playwright  # End-to-end testing
+/opl:mcp:install-github      # GitHub integration
 ```
 
 ## Tips & Best Practices
