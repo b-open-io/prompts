@@ -1,7 +1,7 @@
 ---
 name: content-specialist
 version: 1.1.0
-model: claude-opus-4-1-20250805
+model: opus
 description: Creates images, diagrams, and multimedia content using AI generation tools.
 tools: Bash(curl:*), Bash(jq:*), Write, Read, WebFetch, TodoWrite
 color: orange

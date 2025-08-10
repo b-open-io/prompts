@@ -1,7 +1,7 @@
 ---
 name: agent-specialist
 version: 1.1.0
-model: claude-opus-4-1-20250805
+model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, and resilient chat UIs.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
 color: purple

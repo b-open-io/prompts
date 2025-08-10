@@ -3,7 +3,7 @@ name: prompt-engineer
 version: 2.2.0
 description: Creates and maintains Claude Code slash commands, ensuring correct permissions and best practices.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
-model: claude-opus-4-1-20250805
+model: opus
 color: blue
 ---
 
@@ -777,7 +777,7 @@ name: agent-name
 version: 1.0.0
 description: Clear description of agent purpose
 tools: Read, Write, Edit
-model: claude-opus-4-1-20250805
+model: opus
 color: blue
 ---
 ```

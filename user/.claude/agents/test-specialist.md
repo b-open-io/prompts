@@ -1,7 +1,7 @@
 ---
 name: test-specialist
 version: 1.1.0
-model: claude-opus-4-1-20250805
+model: opus
 description: Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, TodoWrite
 color: green

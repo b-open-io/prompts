@@ -1,7 +1,7 @@
 ---
 name: optimizer
 version: 1.1.0
-model: claude-opus-4-1-20250805
+model: opus
 description: Performance optimization specialist focused on CLI tools, profiling, bundle analysis, and runtime optimization. Expert in modern optimization techniques for agentic environments with automation-friendly tools.
 tools: Bash, Read, Grep, Glob, Write, Edit, TodoWrite
 color: green

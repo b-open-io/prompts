@@ -1,7 +1,7 @@
 ---
 name: integration-expert
 version: 1.1.0
-model: claude-opus-4-1-20250805
+model: opus
 description: Implements API integrations, webhooks, and third-party service connections with proper error handling.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite
 color: green

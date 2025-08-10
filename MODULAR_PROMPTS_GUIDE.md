@@ -96,7 +96,7 @@ name: your-agent-name
 version: 1.0.0
 description: Your agent description
 tools: Read, Write, Edit, MultiEdit, TodoWrite
-model: claude-opus-4-1-20250805
+model: opus
 ---
 
 ## Initialization Protocol
@@ -142,7 +142,7 @@ name: content-specialist
 version: 1.0.0
 description: Expert in content creation, copywriting, and documentation
 tools: Read, Write, Edit, MultiEdit, TodoWrite
-model: claude-opus-4-1-20250805
+model: opus
 ---
 
 ## Initialization Protocol
@@ -178,7 +178,7 @@ name: security-auditor
 version: 1.0.0
 description: Security audit and vulnerability assessment specialist
 tools: Read, Write, Edit, MultiEdit, Grep, TodoWrite
-model: claude-opus-4-1-20250805
+model: opus
 ---
 
 ## Initialization Protocol
@@ -596,7 +596,7 @@ version: 1.1.0
 description: Expert in information gathering, analysis, and documentation
 tools: Read, Write, Edit, WebFetch, Grep, TodoWrite
 color: pink
-model: claude-opus-4-1-20250805
+model: opus
 ---
 
 ## Initialization Protocol
@@ -692,7 +692,7 @@ version: 1.3.0
 description: API integrations, webhooks, and system connectivity specialist
 tools: Read, Write, Edit, MultiEdit, WebFetch, TodoWrite
 color: green
-model: claude-opus-4-1-20250805
+model: opus
 ---
 
 ## Initialization Protocol
