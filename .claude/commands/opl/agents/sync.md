@@ -1,5 +1,5 @@
 ---
-version: 2.1.0
+version: 2.1.1
 allowed-tools: Read, Write, Edit, Bash
 description: Intelligent bidirectional synchronization of OPL specialized agents with version management
 argument-hint: [--help|--auto|--repo|--local|--merge|--interactive]
@@ -11,13 +11,11 @@ Intelligent bidirectional synchronization between repository agents (`user/.clau
 
 ## 🚀 Quick Status (One-Liners)
 
-!`echo "📊 Quick Status: Repo=$(ls user/.claude/agents/*.md 2>/dev/null | wc -l) agents, Local=$(ls ~/.claude/agents/*.md 2>/dev/null | wc -l) agents, In-Sync=$(comm -12 <(ls user/.claude/agents/*.md 2>/dev/null | xargs -I{} basename {} | sort) <(ls ~/.claude/agents/*.md 2>/dev/null | xargs -I{} basename {} | sort) | wc -l)"`
+!`echo "📊 Repository: $(ls user/.claude/agents/*.md 2>/dev/null | wc -l) agents available"`
 
-!`echo "🔑 Permission Status: $(grep -q '~/.claude' .claude/settings.json 2>/dev/null && echo '✅ ~/.claude access configured' || echo '❌ Need ~/.claude access - run: ls ~/.claude/agents/')"`
+!`echo "🔑 Permission Status: $(grep -q '~/.claude' .claude/settings.json 2>/dev/null && echo '✅ ~/.claude access configured' || echo '⚠️ ~/.claude not in additionalDirectories - sync may require permission setup')"`
 
-!`echo "📈 Changes: New=$(comm -23 <(ls user/.claude/agents/*.md 2>/dev/null | xargs -I{} basename {} | sort) <(ls ~/.claude/agents/*.md 2>/dev/null | xargs -I{} basename {} | sort) | wc -l) in repo, $(comm -13 <(ls user/.claude/agents/*.md 2>/dev/null | xargs -I{} basename {} | sort) <(ls ~/.claude/agents/*.md 2>/dev/null | xargs -I{} basename {} | sort) | wc -l) in local"`
-
-!`echo "💡 Quick Action: $(ls user/.claude/agents/*.md 2>/dev/null | wc -l) != $(ls ~/.claude/agents/*.md 2>/dev/null | wc -l) && echo 'Run: /opl:agents:sync --auto' || echo 'All synced!'"`
+!`echo "💡 Quick Sync: Run '/opl:agents:sync --repo' to pull all agents from repository"`
 
 ## Quick Usage
 - `sync` - Interactive status overview and sync options
@@ -92,11 +90,8 @@ Current directory: !`pwd`
 
 ## For --auto or --repo: Pull All Agents from Repository to Local
 
-1. **First, add ~/.claude as working directory if needed:**
-   ```bash
-   ls ~/.claude/agents/
-   ```
-   (If this fails, Claude will prompt to add ~/.claude as working directory - approve it)
+1. **First, ensure ~/.claude access (skip if already configured):**
+   The cp command below will work if ~/.claude is accessible. If it fails with a permission error, you'll need to add ~/.claude to additionalDirectories in .claude/settings.json and restart Claude Code.
 
 2. **Copy all agents from repository to local:**
    ```bash
@@ -135,35 +130,20 @@ Current directory: !`pwd`
    find user/.claude/agents -name "*.md" -exec basename {} .md \; | sort
    ```
 
-2. **List local agents (requires ~/.claude access):**
+2. **Note about local agents:**
    ```bash
-   echo "Local agents:"
-   find ~/.claude/agents -name "*.md" -exec basename {} .md \; | sort
+   echo "Note: Local agent listing requires ~/.claude in additionalDirectories"
+   echo "To sync, simply run: cp user/.claude/agents/*.md ~/.claude/agents/"
    ```
 
-**Quick Version Check:**
-For detailed analysis with status indicators (🟢🔵🟡🔴⚪), run these manual commands:
-
+**Repository Version Summary:**
 ```bash
-# Check versions for each agent
-for agent in $(find user/.claude/agents -name "*.md" -exec basename {} .md \; | sort); do
-  repo_version=$(grep -m 1 "^version:" "user/.claude/agents/$agent.md" 2>/dev/null | sed 's/version: *//')
-  local_version=$(grep -m 1 "^version:" "$HOME/.claude/agents/$agent.md" 2>/dev/null | sed 's/version: *//')
-  
-  if [ ! -f "$HOME/.claude/agents/$agent.md" ]; then
-    echo "⚪ $agent: repo=$repo_version, local=missing → Pull to local"
-  elif [ ! -f "user/.claude/agents/$agent.md" ]; then
-    echo "⚪ $agent: repo=missing, local=$local_version → Push to repo"
-  elif [ "$repo_version" = "$local_version" ]; then
-    if cmp -s "user/.claude/agents/$agent.md" "$HOME/.claude/agents/$agent.md"; then
-      echo "🟢 $agent: versions match ($repo_version) → In sync"
-    else
-      echo "🔴 $agent: same version ($repo_version) but different content → Conflict"
-    fi
-  else
-    echo "🔵🟡 $agent: repo=$repo_version, local=$local_version → Version diff"
-  fi
-done
+echo "Repository Agent Versions:"
+for agent in user/.claude/agents/*.md; do
+  name=$(basename "$agent" .md)
+  version=$(grep -m 1 "^version:" "$agent" 2>/dev/null | sed 's/version: *//')
+  printf "  %-25s %s\n" "$name:" "$version"
+done | sort
 ```
 
 🎯 **Sync Options:**
@@ -174,40 +154,29 @@ done
 
 ## Default Status Analysis (No Arguments)
 
-**AGENT: Run these commands for detailed analysis:**
+**AGENT: Run these commands for repository analysis:**
 
-1. **Quick diff check:**
+1. **Repository agent overview:**
    ```bash
-   diff -q user/.claude/agents/ ~/.claude/agents/ 2>/dev/null | head -5
-   ```
-
-2. **Version comparison table:**
-   ```bash
-   echo "Agent Version Comparison:"
-   echo "========================"
+   echo "Repository Agent Status:"
+   echo "======================="
+   echo "Total agents: $(ls user/.claude/agents/*.md 2>/dev/null | wc -l)"
+   echo ""
+   echo "Agent versions:"
    for f in user/.claude/agents/*.md; do
      agent=$(basename "$f" .md)
-     repo_v=$(grep -m1 "^version:" "$f" | cut -d: -f2 | tr -d ' ')
-     local_v=$(grep -m1 "^version:" ~/.claude/agents/"$agent.md" 2>/dev/null | cut -d: -f2 | tr -d ' ')
-     [ -z "$local_v" ] && local_v="missing"
-     printf "%-25s repo:%-8s local:%-8s\n" "$agent" "$repo_v" "$local_v"
+     version=$(grep -m1 "^version:" "$f" | cut -d: -f2 | tr -d ' ')
+     printf "  %-25s %s\n" "$agent:" "$version"
    done | sort
    ```
 
-3. **Smart sync recommendation:**
+2. **Quick sync command:**
    ```bash
-   # Count differences
-   new_in_repo=$(comm -23 <(ls user/.claude/agents/*.md | xargs -I{} basename {} | sort) <(ls ~/.claude/agents/*.md 2>/dev/null | xargs -I{} basename {} | sort) | wc -l)
-   new_in_local=$(comm -13 <(ls user/.claude/agents/*.md | xargs -I{} basename {} | sort) <(ls ~/.claude/agents/*.md 2>/dev/null | xargs -I{} basename {} | sort) | wc -l)
-   
-   if [ "$new_in_repo" -gt 0 ] && [ "$new_in_local" -eq 0 ]; then
-     echo "💡 Recommendation: Run /opl:agents:sync --repo (pull $new_in_repo new agents)"
-   elif [ "$new_in_local" -gt 0 ] && [ "$new_in_repo" -eq 0 ]; then
-     echo "💡 Recommendation: Run /opl:agents:sync --local (push $new_in_local local agents)"
-   elif [ "$new_in_repo" -gt 0 ] || [ "$new_in_local" -gt 0 ]; then
-     echo "💡 Recommendation: Run /opl:agents:sync --auto (resolve conflicts)"
-   else
-     echo "✅ All agents appear to be in sync!"
-   fi
+   echo ""
+   echo "💡 To sync all agents to local ~/.claude:"
+   echo "   cp user/.claude/agents/*.md ~/.claude/agents/"
+   echo ""
+   echo "Note: If you get a permission error, add ~/.claude to additionalDirectories"
+   echo "in .claude/settings.json and restart Claude Code."
    ```
 
