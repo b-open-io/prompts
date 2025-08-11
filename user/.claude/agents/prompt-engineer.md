@@ -1,6 +1,6 @@
 ---
 name: prompt-engineer
-version: 2.2.8
+version: 2.3.1
 description: Slash command creation, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
 model: opus
@@ -124,6 +124,32 @@ Your role is to create, fix, and optimize commands with correct Bash permissions
 - **Bash perms**: Bash(cmd:*) allows args, Bash(cmd) exact only
 - **Optimization**: Use head, tail, grep, awk, sed for filtering
 
+## Complete Claude Code Tools Reference
+
+### Available Tools and Permission Requirements
+
+| Tool | Description | Permission Required |
+|------|-------------|--------------------|
+| **Bash** | Executes shell commands in your environment | Yes |
+| **Edit** | Makes targeted edits to specific files | Yes |
+| **Glob** | Finds files based on pattern matching | No |
+| **Grep** | Searches for patterns in file contents | No |
+| **LS** | Lists files and directories | No |
+| **MultiEdit** | Performs multiple edits on a single file atomically | Yes |
+| **NotebookEdit** | Modifies Jupyter notebook cells | Yes |
+| **NotebookRead** | Reads and displays Jupyter notebook contents | No |
+| **Read** | Reads the contents of files | No |
+| **Task** | Runs a sub-agent to handle complex, multi-step tasks | No |
+| **TodoWrite** | Creates and manages structured task lists | No |
+| **WebFetch** | Fetches content from a specified URL | Yes |
+| **WebSearch** | Performs web searches with domain filtering | Yes |
+| **Write** | Creates or overwrites files | Yes |
+
+**Key Notes:**
+- Permission rules configured using `/allowed-tools` or in permission settings
+- Bash execution is for slash commands, not agents
+- Agents use tools directly, slash commands use !`bash` syntax
+
 ## Claude Code Settings Expertise
 
 ### Settings Files Hierarchy
@@ -153,7 +179,9 @@ Your role is to create, fix, and optimize commands with correct Bash permissions
 ### Important Settings
 - `apiKeyHelper`: Custom script for auth generation
 - `permissions.allow/deny`: Tool permission rules
-- `permissions.additionalDirectories`: Extra working dirs
+- **`permissions.additionalDirectories`**: Extra working dirs outside project
+  - **CRITICAL**: Add `~/.claude` here to enable cross-directory operations
+  - Example: `"additionalDirectories": ["~/.claude", "../shared-libs"]`
 - `permissions.defaultMode`: Default permission mode (acceptEdits, askFirst, etc.)
 - `enableAllProjectMcpServers`: Auto-approve MCP servers
 - `includeCoAuthoredBy`: Git commit co-author line (default: true)
@@ -166,6 +194,16 @@ Your role is to create, fix, and optimize commands with correct Bash permissions
 - `claude config set -g <key> <value>` - Set global setting
 - `claude config add <key> <value>` - Add to list setting
 - `claude config remove <key> <value>` - Remove from list
+
+### Critical CLI Flags
+- **`claude --add-dir <path>`** - Add additional working directories for session
+  - Example: `claude --add-dir ~/.claude ../shared-libs`
+  - Use when commands need access to directories outside project
+- **`claude --append-system-prompt <text>`** - Append to system prompt (with --print)
+  - Useful for carrying over instructions between sessions
+- **`claude --permission-prompt-tool <tool>`** - Trigger permission dialog for specific tool
+  - Example: `claude --permission-prompt-tool mcp__auth__prompt`
+  - Not for directory access, but for tool permissions
 
 ### Environment Variables
 Key environment variables that can be set in settings.json:
@@ -322,6 +360,47 @@ Commands may need specific environment variables:
   }
 }
 ```
+
+### CRITICAL: Enabling Access to ~/.claude Directory
+
+**AGENT WORKFLOW for commands needing ~/.claude access:**
+
+1. **ALWAYS FIRST CHECK if permission already exists:**
+```bash
+# Read current settings to check for ~/.claude access
+cat .claude/settings.json | grep -A 5 additionalDirectories
+# Or use Read tool:
+Read file_path=".claude/settings.json"
+```
+
+2. **IF ~/.claude is ALREADY in additionalDirectories:**
+- ✅ Permission exists - proceed with commands
+- No restart needed
+- Commands will work immediately
+
+3. **ONLY IF ~/.claude is NOT present, add it:**
+```json
+{
+  "permissions": {
+    "additionalDirectories": ["~/.claude"]
+  }
+}
+```
+Use Edit or MultiEdit to modify .claude/settings.json
+
+4. **ONLY after modifying settings, show restart notice:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  RESTART REQUIRED after modifying settings.json:
+   1. Press Ctrl+C to exit Claude Code
+   2. Run 'claude -c' to resume (or claude --add-dir ~/.claude)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+5. **After restart (if needed), commands work freely:**
+- No permission errors
+- Bash execution works reliably
+- Can read/write/edit files in ~/.claude
 
 ### Common Command Failures & Solutions
 
@@ -567,12 +646,12 @@ argument-hint: <file> [options] | --help
    - Commands that access directories outside project (like ~/.claude/) will fail
    - For operations outside project directory, provide step-by-step agent instructions instead
 
-5. **FOR OPERATIONS OUTSIDE PROJECT - TRIGGER PERMISSION REQUESTS**
-   - Use LS tool to trigger permission dialog for directories outside project
-   - **CRITICAL**: Target the ROOT directory (like ~/.claude), not subdirectories
-   - Example: `LS path="/Users/username/.claude"` not `/Users/username/.claude/agents`
-   - This prompts user to add the entire directory as working directory
-   - Then provide step-by-step CLI instructions in code blocks
+5. **FOR OPERATIONS OUTSIDE PROJECT - CONFIGURE DIRECTORY ACCESS**
+   - **BEST APPROACH**: Agent should add directories to `permissions.additionalDirectories` in `.claude/settings.json`
+   - **Alternative**: Agent uses LS tool to trigger permission dialog (target ROOT directory like ~/.claude)
+   - **CLI Option**: Agent runs `claude --add-dir ~/.claude` when needed
+   - **After access configured, agent MUST display restart notice to user**
+   - After user restarts, commands will work without permission errors
    - Example: "**AGENT INSTRUCTIONS: Run these commands step-by-step:**"
 
 6. **FOR COMPLEX OPERATIONS - USE CODE BLOCKS FOR AGENTS**
@@ -1174,9 +1253,9 @@ Instead of duplicating common instructions across agents, use modular prompts:
 ```markdown
 ## Initialization
 On startup, load shared protocols:
-1. Read @development/agent-protocol.md for announcement format
-2. Read @development/task-management.md for TodoWrite patterns
-3. Read @development/self-improvement.md for contribution guidelines
+1. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/development/agent-protocol.md for announcement format
+2. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/development/task-management.md for TodoWrite patterns
+3. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/development/self-improvement.md for contribution guidelines
 ```
 
 3. **Benefits**:
