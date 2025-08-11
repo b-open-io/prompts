@@ -1,8 +1,8 @@
 ---
 name: integration-expert
-version: 1.1.0
+version: 1.2.0
 model: opus
-description: Implements API integrations, webhooks, and third-party service connections with proper error handling.
+description: Implements API integrations, webhooks, third-party service connections, and Payload CMS integrations with proper error handling.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite
 color: green
 ---
@@ -547,4 +547,1137 @@ app.use('*', (c, next) => {
   c.header('Referrer-Policy', 'strict-origin-when-cross-origin')
   return next()
 })
+
+## Payload CMS Integration
+
+Payload 3.0 is the first Next.js-native headless CMS that installs directly in your `/app` folder. It's TypeScript-first, generates REST/GraphQL/Local APIs automatically, supports Server Components, and offers fastest data access via Local API.
+
+### Quick Start Installation
+
+**Recommended: Template-based setup**
+```bash
+# Create new project with Payload template
+npx create-payload-app -t website my-project
+cd my-project
+npm run dev
+```
+
+**Manual installation in existing Next.js project**
+```bash
+# Core packages
+npm install payload @payloadcms/db-postgres @payloadcms/richtext-lexical
+
+# Database adapters (choose one)
+npm install @payloadcms/db-postgres    # PostgreSQL (recommended)
+npm install @payloadcms/db-mongodb     # MongoDB (dynamic schemas)
+
+# Optional packages
+npm install @payloadcms/plugin-cloud-storage  # S3/CloudFlare R2
+npm install @payloadcms/plugin-seo            # SEO fields
+npm install @payloadcms/plugin-redirects      # URL redirects
+```
+
+### Database Configuration
+
+**PostgreSQL Setup (Recommended)**
+```typescript
+// payload.config.ts
+import { postgresAdapter } from '@payloadcms/db-postgres'
+
+export default buildConfig({
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URI,
+    },
+  }),
+  // ... other config
+})
+```
+
+**Environment variables**
+```env
+DATABASE_URI=postgresql://user:password@localhost:5432/payload_db
+PAYLOAD_SECRET=your-secret-key-here
+```
+
+**Migration commands**
+```bash
+# Generate migration
+npx payload migrate:create
+
+# Run migrations
+npx payload migrate
+
+# Reset database (development only)
+npx payload migrate:reset
+```
+
+**MongoDB Setup (Dynamic Schemas)**
+```typescript
+import { mongooseAdapter } from '@payloadcms/db-mongodb'
+
+export default buildConfig({
+  db: mongooseAdapter({
+    url: process.env.DATABASE_URI,
+  }),
+})
+```
+
+### Next.js Integration
+
+**next.config.js configuration**
+```javascript
+import { withPayload } from '@payloadcms/next'
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Your Next.js config
+}
+
+export default withPayload(nextConfig)
+```
+
+**Server Components with Local API**
+```typescript
+// app/posts/page.tsx
+import { getPayloadHMR } from '@payloadcms/next/utilities'
+import config from '@payload-config'
+
+export default async function PostsPage() {
+  const payload = await getPayloadHMR({ config })
+  
+  const posts = await payload.find({
+    collection: 'posts',
+    limit: 10,
+    where: {
+      status: {
+        equals: 'published',
+      },
+    },
+  })
+
+  return (
+    <div>
+      {posts.docs.map((post) => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <p>{post.excerpt}</p>
+        </article>
+      ))}
+    </div>
+  )
+}
+```
+
+**Route Handlers with Local API**
+```typescript
+// app/api/posts/route.ts
+import { NextRequest } from 'next/server'
+import { getPayloadHMR } from '@payloadcms/next/utilities'
+import config from '@payload-config'
+
+export async function GET(request: NextRequest) {
+  const payload = await getPayloadHMR({ config })
+  
+  const posts = await payload.find({
+    collection: 'posts',
+    where: {
+      status: { equals: 'published' }
+    }
+  })
+  
+  return Response.json(posts)
+}
+```
+
+**Built-in Authentication**
+```typescript
+// Using cookies for auth state
+import { cookies } from 'next/headers'
+
+export async function getCurrentUser() {
+  const payload = await getPayloadHMR({ config })
+  const token = cookies().get('payload-token')?.value
+  
+  if (!token) return null
+  
+  try {
+    const user = await payload.verifyToken(token)
+    return user
+  } catch {
+    return null
+  }
+}
+```
+
+### Core Configuration Structure
+
+**Basic payload.config.ts**
+```typescript
+import { buildConfig } from 'payload/config'
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+
+export default buildConfig({
+  admin: {
+    user: 'users',
+    importMap: {
+      baseDir: path.resolve(import.meta.dirname),
+    },
+  },
+  collections: [
+    {
+      slug: 'posts',
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'content',
+          type: 'richText',
+          editor: lexicalEditor({}),
+        },
+        {
+          name: 'status',
+          type: 'select',
+          options: [
+            { label: 'Draft', value: 'draft' },
+            { label: 'Published', value: 'published' },
+          ],
+          defaultValue: 'draft',
+        },
+        {
+          name: 'publishedAt',
+          type: 'date',
+        },
+        {
+          name: 'author',
+          type: 'relationship',
+          relationTo: 'users',
+        },
+        {
+          name: 'featuredImage',
+          type: 'upload',
+          relationTo: 'media',
+        },
+        {
+          name: 'categories',
+          type: 'relationship',
+          relationTo: 'categories',
+          hasMany: true,
+        },
+        {
+          name: 'tags',
+          type: 'array',
+          fields: [
+            {
+              name: 'tag',
+              type: 'text',
+            },
+          ],
+        },
+      ],
+      access: {
+        read: () => true,
+        create: ({ req }) => !!req.user,
+        update: ({ req }) => !!req.user,
+        delete: ({ req }) => !!req.user,
+      },
+      hooks: {
+        beforeChange: [
+          ({ data, req }) => {
+            if (req.user && !data.author) {
+              data.author = req.user.id
+            }
+            return data
+          },
+        ],
+      },
+    },
+    {
+      slug: 'users',
+      auth: true,
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'role',
+          type: 'select',
+          options: ['admin', 'editor', 'author'],
+          defaultValue: 'author',
+        },
+      ],
+    },
+    {
+      slug: 'media',
+      upload: {
+        staticURL: '/media',
+        staticDir: 'media',
+        imageSizes: [
+          {
+            name: 'thumbnail',
+            width: 400,
+            height: 300,
+            position: 'centre',
+          },
+          {
+            name: 'card',
+            width: 768,
+            height: 1024,
+            position: 'centre',
+          },
+        ],
+        adminThumbnail: 'thumbnail',
+        mimeTypes: ['image/*'],
+      },
+      fields: [
+        {
+          name: 'alt',
+          type: 'text',
+        },
+      ],
+    },
+  ],
+  globals: [
+    {
+      slug: 'settings',
+      fields: [
+        {
+          name: 'siteName',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'siteDescription',
+          type: 'textarea',
+        },
+        {
+          name: 'logo',
+          type: 'upload',
+          relationTo: 'media',
+        },
+      ],
+    },
+  ],
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URI,
+    },
+  }),
+  editor: lexicalEditor({}),
+  secret: process.env.PAYLOAD_SECRET,
+  typescript: {
+    outputFile: path.resolve(import.meta.dirname, 'payload-types.ts'),
+  },
+})
+```
+
+### Field Types and Patterns
+
+**Core field types**
+```typescript
+// Text fields
+{
+  name: 'title',
+  type: 'text',
+  required: true,
+  maxLength: 100,
+  minLength: 5,
+  validate: (value) => {
+    if (value && value.includes('forbidden')) {
+      return 'Title cannot contain forbidden words'
+    }
+    return true
+  }
+}
+
+// Rich text with Lexical
+{
+  name: 'content',
+  type: 'richText',
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) => [
+      ...defaultFeatures,
+      HTMLConverterFeature(),
+      BlocksFeature({
+        blocks: [
+          {
+            slug: 'cta',
+            interfaceName: 'CallToActionBlock',
+            fields: [
+              {
+                name: 'title',
+                type: 'text',
+                required: true,
+              },
+              {
+                name: 'link',
+                type: 'text',
+                required: true,
+              },
+            ],
+          },
+        ],
+      }),
+    ],
+  }),
+}
+
+// Relationships
+{
+  name: 'relatedPosts',
+  type: 'relationship',
+  relationTo: 'posts',
+  hasMany: true,
+  maxDepth: 2,
+  filterOptions: ({ data }) => {
+    return {
+      id: {
+        not_equals: data?.id, // Exclude self
+      },
+    }
+  },
+}
+
+// File uploads
+{
+  name: 'document',
+  type: 'upload',
+  relationTo: 'files',
+  required: true,
+}
+
+// Arrays and nested objects
+{
+  name: 'gallery',
+  type: 'array',
+  minRows: 1,
+  maxRows: 10,
+  fields: [
+    {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      required: true,
+    },
+    {
+      name: 'caption',
+      type: 'text',
+    },
+  ],
+}
+
+// Blocks (flexible content)
+{
+  name: 'layout',
+  type: 'blocks',
+  blocks: [
+    {
+      slug: 'hero',
+      interfaceName: 'HeroBlock',
+      fields: [
+        {
+          name: 'heading',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'backgroundImage',
+          type: 'upload',
+          relationTo: 'media',
+        },
+      ],
+    },
+    {
+      slug: 'textBlock',
+      interfaceName: 'TextBlock',
+      fields: [
+        {
+          name: 'content',
+          type: 'richText',
+        },
+      ],
+    },
+  ],
+}
+```
+
+### Access Control Patterns
+
+**Role-based access control**
+```typescript
+{
+  slug: 'posts',
+  access: {
+    // Anyone can read published posts
+    read: ({ req }) => {
+      if (!req.user) {
+        return {
+          status: { equals: 'published' }
+        }
+      }
+      return true // Authenticated users can read all
+    },
+    
+    // Only authenticated users can create
+    create: ({ req }) => Boolean(req.user),
+    
+    // Users can only edit their own posts, admins can edit all
+    update: ({ req }) => {
+      if (req.user?.role === 'admin') return true
+      
+      return {
+        author: { equals: req.user?.id }
+      }
+    },
+    
+    // Only admins can delete
+    delete: ({ req }) => req.user?.role === 'admin',
+  },
+}
+```
+
+**Field-level access control**
+```typescript
+{
+  name: 'internalNotes',
+  type: 'textarea',
+  access: {
+    read: ({ req }) => req.user?.role === 'admin',
+    update: ({ req }) => req.user?.role === 'admin',
+  },
+}
+```
+
+### Hooks and Data Transformation
+
+**Collection hooks**
+```typescript
+{
+  slug: 'posts',
+  hooks: {
+    beforeValidate: [
+      ({ data, operation }) => {
+        if (operation === 'create') {
+          data.createdBy = req.user.id
+        }
+        return data
+      },
+    ],
+    beforeChange: [
+      ({ data, req, operation }) => {
+        // Auto-generate slug from title
+        if (data.title && !data.slug) {
+          data.slug = data.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+        }
+        
+        // Set publish date when status changes to published
+        if (data.status === 'published' && !data.publishedAt) {
+          data.publishedAt = new Date()
+        }
+        
+        return data
+      },
+    ],
+    afterChange: [
+      ({ doc, req, operation }) => {
+        // Send notifications, clear cache, etc.
+        if (operation === 'create' && doc.status === 'published') {
+          // Trigger webhook or notification
+          notifySubscribers(doc)
+        }
+      },
+    ],
+    beforeDelete: [
+      ({ req, id }) => {
+        // Prevent deletion of certain records
+        if (req.user?.role !== 'admin') {
+          throw new Error('Only admins can delete posts')
+        }
+      },
+    ],
+  },
+}
+```
+
+**Field hooks**
+```typescript
+{
+  name: 'slug',
+  type: 'text',
+  unique: true,
+  hooks: {
+    beforeChange: [
+      ({ value, data }) => {
+        if (!value && data.title) {
+          return slugify(data.title)
+        }
+        return value
+      },
+    ],
+  },
+}
+```
+
+### MCP Server Integration
+
+**PostgreSQL MCP for database queries**
+```json
+// .claude/settings.json
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-postgres"],
+      "env": {
+        "POSTGRES_CONNECTION_STRING": "postgresql://user:pass@localhost:5432/payload_db"
+      }
+    }
+  }
+}
+```
+
+**File system MCP for uploads**
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "/path/to/payload/media"],
+      "env": {}
+    }
+  }
+}
+```
+
+**Custom Payload CMS MCP server configuration**
+```typescript
+// mcp-payload-server.ts
+import { createPayloadMCP } from '@your-org/payload-mcp'
+
+export const payloadMCP = createPayloadMCP({
+  collections: ['posts', 'users', 'media'],
+  globals: ['settings'],
+  operations: ['find', 'create', 'update', 'delete'],
+  auth: {
+    apiKey: process.env.PAYLOAD_API_KEY,
+  },
+})
+```
+
+**MCP tools for Payload operations**
+```typescript
+// Use MCP to query Payload data
+const posts = await mcp.call('payload_find', {
+  collection: 'posts',
+  where: {
+    status: { equals: 'published' }
+  },
+  limit: 10
+})
+
+// Create new post via MCP
+const newPost = await mcp.call('payload_create', {
+  collection: 'posts',
+  data: {
+    title: 'New Post',
+    content: 'Post content...',
+    status: 'draft'
+  }
+})
+```
+
+### Common Integration Patterns
+
+**Authentication & Authorization**
+```typescript
+// Custom auth provider
+export const authConfig = {
+  collections: [
+    {
+      slug: 'users',
+      auth: {
+        loginWithUsername: false, // Use email only
+        verify: true, // Email verification
+        maxLoginAttempts: 5,
+        lockTime: 600000, // 10 minutes
+        cookies: {
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+        },
+        strategies: [
+          {
+            name: 'local-auth',
+            authenticate: async ({ email, password }) => {
+              // Custom authentication logic
+              const user = await validateUser(email, password)
+              return user
+            },
+          },
+        ],
+      },
+    },
+  ],
+}
+
+// JWT configuration
+{
+  jwt: {
+    secret: process.env.PAYLOAD_SECRET,
+    cookieName: 'payload-token',
+    cookieOptions: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'lax',
+      domain: process.env.COOKIE_DOMAIN,
+    },
+  },
+}
+```
+
+**Media handling with S3**
+```typescript
+import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
+import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3'
+
+export default buildConfig({
+  plugins: [
+    cloudStoragePlugin({
+      collections: {
+        media: {
+          adapter: s3Adapter({
+            config: {
+              credentials: {
+                accessKeyId: process.env.S3_ACCESS_KEY_ID,
+                secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+              },
+              region: process.env.S3_REGION,
+            },
+            bucket: process.env.S3_BUCKET,
+          }),
+        },
+      },
+    }),
+  ],
+})
+```
+
+**Localization setup**
+```typescript
+export default buildConfig({
+  localization: {
+    locales: ['en', 'es', 'fr'],
+    defaultLocale: 'en',
+    fallback: true,
+  },
+  collections: [
+    {
+      slug: 'posts',
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          localized: true, // This field supports multiple languages
+        },
+        {
+          name: 'content',
+          type: 'richText',
+          localized: true,
+        },
+        {
+          name: 'slug',
+          type: 'text',
+          localized: true,
+          unique: true,
+        },
+      ],
+    },
+  ],
+})
+
+// Query localized content
+const posts = await payload.find({
+  collection: 'posts',
+  locale: 'es', // Get Spanish content
+  fallbackLocale: 'en', // Fallback to English if Spanish not available
+})
+```
+
+**Custom components and fields**
+```typescript
+// Custom field component
+'use client'
+import React from 'react'
+import { useField } from 'payload/components/forms'
+
+export const ColorPicker: React.FC = () => {
+  const { value, setValue } = useField<string>({ path: 'color' })
+  
+  return (
+    <input
+      type="color"
+      value={value || '#000000'}
+      onChange={(e) => setValue(e.target.value)}
+    />
+  )
+}
+
+// Use in config
+{
+  name: 'color',
+  type: 'text',
+  admin: {
+    components: {
+      Field: ColorPicker,
+    },
+  },
+}
+```
+
+**Webhooks and real-time updates**
+```typescript
+export default buildConfig({
+  hooks: {
+    afterChange: [
+      ({ collection, doc, operation }) => {
+        // Send webhook
+        fetch('https://api.example.com/webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: `${collection}.${operation}`,
+            data: doc,
+            timestamp: new Date().toISOString(),
+          }),
+        })
+      },
+    ],
+  },
+  
+  // Built-in webhook endpoints
+  endpoints: [
+    {
+      path: '/webhook',
+      method: 'post',
+      handler: async (req, res) => {
+        const { event, data } = req.body
+        
+        // Process webhook
+        await processWebhookEvent(event, data)
+        
+        res.status(200).json({ received: true })
+      },
+    },
+  ],
+})
+```
+
+### Deployment Configuration
+
+**Vercel deployment (with limitations)**
+```json
+// vercel.json
+{
+  "functions": {
+    "app/api/**/*.js": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "DATABASE_URI": "@database-uri",
+    "PAYLOAD_SECRET": "@payload-secret"
+  }
+}
+```
+
+**Docker deployment (recommended for production)**
+```dockerfile
+# Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+RUN npm run build
+
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+**docker-compose.yml with PostgreSQL**
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URI=postgresql://postgres:password@postgres:5432/payload
+      - PAYLOAD_SECRET=${PAYLOAD_SECRET}
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=payload
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+```
+
+**Environment variables for production**
+```env
+# Database
+DATABASE_URI=postgresql://user:password@host:5432/database
+POSTGRES_URL=postgresql://user:password@host:5432/database
+
+# Payload
+PAYLOAD_SECRET=your-32-character-secret-key
+PAYLOAD_CONFIG_PATH=src/payload.config.ts
+
+# Next.js
+NEXT_PUBLIC_SERVER_URL=https://yourdomain.com
+NEXTAUTH_URL=https://yourdomain.com
+NEXTAUTH_SECRET=your-nextauth-secret
+
+# File uploads
+UPLOADTHING_SECRET=your-uploadthing-secret
+UPLOADTHING_APP_ID=your-app-id
+
+# S3 (if using cloud storage)
+S3_ACCESS_KEY_ID=your-access-key
+S3_SECRET_ACCESS_KEY=your-secret-key
+S3_REGION=us-east-1
+S3_BUCKET=your-bucket-name
+
+# Email (if using email features)
+RESEND_API_KEY=your-resend-key
+SMTP_HOST=smtp.resend.com
+SMTP_PORT=587
+SMTP_USER=resend
+SMTP_PASS=your-resend-key
+```
+
+### Database Choice: PostgreSQL vs MongoDB
+
+**Choose PostgreSQL when:**
+- You need strong consistency and ACID transactions
+- Complex relational data with foreign keys
+- Fixed schema with validation requirements
+- Advanced querying capabilities
+- Better performance for complex joins
+- Regulatory compliance requirements
+
+**Choose MongoDB when:**
+- Rapid prototyping with changing schemas
+- Document-based data structure
+- Horizontal scaling requirements
+- Flexible, nested data structures
+- Real-time applications
+- Content management with variable field structures
+
+**PostgreSQL setup commands**
+```bash
+# Install PostgreSQL locally (macOS)
+brew install postgresql
+brew services start postgresql
+
+# Create database
+createdb payload_cms
+
+# Connection string format
+DATABASE_URI=postgresql://username:password@localhost:5432/payload_cms
+```
+
+**MongoDB setup commands**
+```bash
+# Install MongoDB locally (macOS)
+brew install mongodb-community
+brew services start mongodb-community
+
+# Connection string format
+DATABASE_URI=mongodb://localhost:27017/payload_cms
+# Or MongoDB Atlas
+DATABASE_URI=mongodb+srv://user:pass@cluster.mongodb.net/payload_cms
+```
+
+### Troubleshooting Guide
+
+**TypeScript type generation**
+```bash
+# Generate types
+npx payload generate:types
+
+# Watch mode for development
+npx payload generate:types --watch
+
+# Custom output location
+npx payload generate:types --output-file ./src/types/payload.ts
+```
+
+**Common TypeScript issues**
+```typescript
+// Fix import path issues
+import type { Post, User } from '../payload-types'
+
+// Use generated types
+const createPost = async (postData: Partial<Post>): Promise<Post> => {
+  const payload = await getPayloadHMR({ config })
+  
+  const post = await payload.create({
+    collection: 'posts',
+    data: postData,
+  })
+  
+  return post
+}
+```
+
+**Database connection testing**
+```typescript
+// Test database connection
+import { getPayloadHMR } from '@payloadcms/next/utilities'
+
+export async function testConnection() {
+  try {
+    const payload = await getPayloadHMR({ config })
+    const health = await payload.db.connection.db?.admin().ping()
+    console.log('Database connected successfully:', health)
+  } catch (error) {
+    console.error('Database connection failed:', error)
+  }
+}
+```
+
+**Build errors and ESM/CommonJS issues**
+```javascript
+// next.config.js - Fix ESM issues
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: ['payload'],
+  },
+  webpack: (config) => {
+    config.externals = [...config.externals, 'payload']
+    return config
+  },
+}
+
+export default withPayload(nextConfig)
+```
+
+**Performance optimization**
+```typescript
+// Add database indexes
+export default buildConfig({
+  collections: [
+    {
+      slug: 'posts',
+      fields: [
+        {
+          name: 'slug',
+          type: 'text',
+          index: true, // Add database index
+          unique: true,
+        },
+        {
+          name: 'status',
+          type: 'select',
+          index: true, // Index frequently queried fields
+          options: ['draft', 'published'],
+        },
+      ],
+    },
+  ],
+})
+
+// Efficient querying with select and depth
+const posts = await payload.find({
+  collection: 'posts',
+  select: {
+    title: true,
+    slug: true,
+    publishedAt: true,
+  },
+  depth: 0, // Prevent relationship population
+  limit: 20,
+})
+
+// Use caching for expensive queries
+import { unstable_cache } from 'next/cache'
+
+const getCachedPosts = unstable_cache(
+  async () => {
+    const payload = await getPayloadHMR({ config })
+    return payload.find({
+      collection: 'posts',
+      where: { status: { equals: 'published' } },
+    })
+  },
+  ['published-posts'],
+  { revalidate: 3600 } // Cache for 1 hour
+)
+```
+
+**Cold boot optimization for Vercel**
+```typescript
+// Reduce cold boot time
+export const dynamic = 'force-dynamic' // Use sparingly
+export const revalidate = 0 // Disable static generation
+
+// Preload payload instance
+let cachedPayload: any = null
+
+export async function getPayload() {
+  if (cachedPayload) return cachedPayload
+  
+  cachedPayload = await getPayloadHMR({ config })
+  return cachedPayload
+}
+```
+
+**Memory usage optimization**
+```typescript
+// Limit memory usage for large collections
+const posts = await payload.find({
+  collection: 'posts',
+  limit: 100, // Don't load too many at once
+  select: {
+    // Only select needed fields
+    id: true,
+    title: true,
+    slug: true,
+  },
+  depth: 0, // Prevent deep relationship loading
+})
+
+// Use pagination instead of large queries
+const getPaginatedPosts = async (page = 1, limit = 10) => {
+  return payload.find({
+    collection: 'posts',
+    page,
+    limit,
+  })
+}
+```
+
+This comprehensive Payload CMS section provides everything needed to integrate and work with Payload CMS effectively, covering installation, configuration, common patterns, deployment, and troubleshooting.
 ```
