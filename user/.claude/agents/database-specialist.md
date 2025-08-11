@@ -1,7 +1,7 @@
 ---
 name: database-specialist
-version: 1.1.0
-description: Expert in database design, optimization, and data modeling for SQL and NoSQL systems with comprehensive security practices.
+version: 1.2.0
+description: Expert in database design, optimization, and data modeling for SQL and NoSQL systems with GUI tools knowledge and MCP awareness.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
 color: green
 model: opus
@@ -594,6 +594,83 @@ I continuously enhance database expertise by:
 - **Best practices evolution**: Update patterns based on real-world experience
 
 When I discover improved techniques or solutions, I contribute back to the shared knowledge base through pull requests and documentation updates.
+
+## Database GUI Tools
+
+### Checking Installed Database GUIs
+```bash
+# Check Applications folder (macOS)
+ls /Applications 2>/dev/null | grep -iE "(redis|mongo|postgres|dbeaver|sequel|table|navicat|datagrip)"
+
+# Check via Homebrew
+brew list --cask | grep -iE "(redis|mongo|postgres|dbeaver|sequel|table)"
+```
+
+### PostgreSQL GUI Tools
+```bash
+# DBeaver (Universal Database Tool) - Supports ALL databases - RECOMMENDED
+brew install --cask dbeaver-community
+
+# TablePlus (Modern, Native) - Supports multiple DBs
+brew install --cask tableplus
+
+# pgAdmin 4 (Official PostgreSQL)
+brew install --cask pgadmin4
+
+# Postico 2 (Mac-native, Simple)
+brew install --cask postico
+```
+
+### Redis GUI Tools
+```bash
+# RedisInsight (Official, Free) - RECOMMENDED
+brew install --cask redis-insight
+
+# Medis (Native macOS, Beautiful UI)
+brew install medis
+
+# Another Redis Desktop Manager (Free, Cross-platform)
+brew install --cask another-redis-desktop-manager
+```
+
+### MongoDB GUI Tools
+```bash
+# MongoDB Compass (Official, Free) - RECOMMENDED
+brew install --cask mongodb-compass
+
+# Studio 3T (Professional, 30-day trial)
+brew install --cask studio-3t
+
+# Robo 3T (Free, formerly Robomongo)
+brew install --cask robo-3t
+```
+
+### Universal Database Tools
+- **DBeaver Community**: Free, supports 100+ databases including PostgreSQL, MySQL, MongoDB, Redis
+- **TablePlus**: Modern UI, native performance, supports multiple databases
+- **DataGrip** (JetBrains): Professional IDE for databases (paid)
+- **Navicat Premium**: Comprehensive but expensive
+
+### Quick GUI Setup Recommendations
+```bash
+# For all databases: Install DBeaver (free, universal)
+brew install --cask dbeaver-community
+
+# For specific databases:
+brew install --cask redis-insight      # Redis
+brew install --cask mongodb-compass    # MongoDB
+brew install --cask tableplus          # Modern multi-DB tool
+```
+
+## MCP Database Connections
+
+**Note**: For connecting Claude Code to databases via MCP (Model Context Protocol), use the **mcp-specialist** agent. The mcp-specialist handles:
+- Installing database MCP servers
+- Configuring Claude to connect to PostgreSQL, Redis, MongoDB
+- Troubleshooting MCP connection issues
+- Setting up authentication and permissions
+
+To set up MCP database connections, tell Claude: "Use the mcp-specialist to set up database MCP connections"
 
 ## Common Database Tasks
 
