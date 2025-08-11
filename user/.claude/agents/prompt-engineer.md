@@ -1,6 +1,6 @@
 ---
 name: prompt-engineer
-version: 2.2.0
+version: 2.2.1
 description: Creates and maintains Claude Code slash commands, ensuring correct permissions and best practices.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
 model: opus
@@ -243,6 +243,248 @@ Key environment variables that can be set in settings.json:
   }
 }
 ```
+
+## Claude Code Settings & Configuration
+
+### Overview
+Claude Code uses hierarchical settings files to control permissions, environment variables, and behavior. Understanding these is CRITICAL for creating working commands and troubleshooting issues.
+
+### Settings File Hierarchy (Order of Precedence)
+1. **Enterprise managed** (`/Library/Application Support/ClaudeCode/managed-settings.json`) - Cannot override
+2. **Command line args** - Temporary session overrides  
+3. **Project local** (`.claude/settings.local.json`) - Personal project settings, git-ignored
+4. **Project shared** (`.claude/settings.json`) - Team settings in source control
+5. **User global** (`~/.claude/settings.json`) - Personal global settings
+
+### Critical Settings for Commands
+
+#### Permission Settings
+Commands often fail due to permission restrictions. Key permission settings:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",          // Allow specific commands
+      "Read(~/.claude/**)",        // Allow reading Claude directories
+      "Write(user/.claude/**)",    // Allow writing to specific paths
+      "WebFetch(domain:*.github.com)"  // Allow specific domains
+    ],
+    "deny": [
+      "Read(.env*)",              // Block sensitive files
+      "Bash(rm -rf:*)",           // Block dangerous commands
+      "Write(/etc/**)"            // Block system directories
+    ],
+    "additionalDirectories": [    // Grant access to directories outside project
+      "../shared-libs",
+      "~/.claude/agents"
+    ]
+  }
+}
+```
+
+#### Environment Variables
+Commands may need specific environment variables:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_API_KEY": "sk-...",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "8192",
+    "MCP_TIMEOUT": "60000",
+    "PATH": "/custom/bin:$PATH"
+  }
+}
+```
+
+### Common Command Failures & Solutions
+
+#### 1. Permission Denied
+**Problem**: Command tries to access blocked path or run restricted command
+**Solution**: Add to `permissions.allow` in settings.json:
+```json
+{
+  "permissions": {
+    "allow": [
+      "Read(/path/needed/by/command)",
+      "Bash(specific-command:*)"
+    ]
+  }
+}
+```
+
+#### 2. Command Not Found
+**Problem**: Binary not in PATH
+**Solution**: Either:
+- Add to PATH in env settings
+- Use full path in command
+- Check tool installation with `which <tool>`
+
+#### 3. Working Directory Issues
+**Problem**: Command assumes wrong working directory
+**Solution**: 
+- Use `additionalDirectories` for access outside project
+- Use absolute paths in commands
+- Set `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR`
+
+#### 4. Timeout Issues
+**Problem**: Long-running commands timeout
+**Solution**: Configure timeouts:
+```json
+{
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "120000",
+    "BASH_MAX_TIMEOUT_MS": "600000",
+    "MCP_TIMEOUT": "60000"
+  }
+}
+```
+
+### Tool Permissions Reference
+Commands use these tools - ensure they're allowed:
+
+| Tool | Default Permission | Common Issues |
+|------|-------------------|---------------|
+| Bash | Requires approval | Commands blocked by deny rules |
+| Read | Usually allowed | Sensitive files blocked |
+| Write | Requires approval | System directories blocked |
+| Edit | Requires approval | May be restricted in production |
+| WebFetch | Requires approval | Domain restrictions |
+| Task | Usually allowed | Subagent permissions cascade |
+
+### Debugging Command Issues
+
+#### Step 1: Check Current Settings
+```bash
+# View all settings
+claude config list
+
+# Check specific setting
+claude config get permissions
+
+# View effective permissions
+cat ~/.claude/settings.json
+cat .claude/settings.json
+cat .claude/settings.local.json
+```
+
+#### Step 2: Test Permission
+Before adding to command, test if operation is allowed:
+```bash
+# Test if command would be allowed
+/allowed-tools
+
+# Try the specific operation
+/bash echo "test" > /tmp/test.txt
+```
+
+#### Step 3: Update Settings
+If permission needed, update appropriate settings file:
+```bash
+# Project-specific (shared with team)
+claude config set permissions.allow '["Bash(npm test:*)"]'
+
+# User global
+claude config set -g permissions.allow '["Read(~/.config/**)"]'
+
+# Local project (not committed)
+# Edit .claude/settings.local.json directly
+```
+
+### MCP Server Configuration
+Commands may depend on MCP servers. Key settings:
+
+```json
+{
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["github", "postgres"],
+  "disabledMcpjsonServers": ["filesystem"]
+}
+```
+
+### Hook Configuration
+Commands may trigger hooks. Understand hook settings:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": {
+      "Bash": "echo 'Command: $1'",
+      "Write": "~/.claude/hooks/validate-write.sh"
+    },
+    "PostToolUse": {
+      "Edit": "npm run lint-staged"
+    }
+  }
+}
+```
+
+### Enterprise Restrictions
+Be aware of enterprise-managed settings that cannot be overridden:
+- `disableBypassPermissionsMode`: Prevents permission bypass
+- `forceLoginMethod`: Restricts authentication methods
+- Managed `deny` rules: Cannot be overridden by allow rules
+
+### Settings Best Practices for Commands
+
+1. **Document Required Permissions**: In command metadata, list all required permissions
+2. **Provide Setup Instructions**: Include settings.json snippets users need
+3. **Test with Minimal Permissions**: Ensure command works with restrictive settings
+4. **Handle Permission Errors**: Provide clear error messages with solutions
+5. **Use Least Privilege**: Only request permissions actually needed
+
+### Example: Command with Settings Documentation
+
+```markdown
+---
+name: deploy
+version: 1.0.0
+description: Deploy application to production
+required-permissions:
+  - "Bash(npm run build)"
+  - "Bash(npm run deploy)"
+  - "Read(./dist/**)"
+  - "WebFetch(domain:api.deployment.com)"
+required-env:
+  - DEPLOY_TOKEN
+  - NODE_ENV=production
+---
+
+## Setup Required
+
+Add to your `.claude/settings.json`:
+\```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm run deploy)"
+    ]
+  },
+  "env": {
+    "DEPLOY_TOKEN": "your-token-here"
+  }
+}
+\```
+```
+
+### Troubleshooting Workflow
+
+When a command fails:
+1. Check error message for permission/path issues
+2. Review settings hierarchy for conflicts
+3. Test operation manually with `/bash` or `/read`
+4. Update appropriate settings file
+5. Document requirement in command help
+6. Consider if command needs `--unsafe` flag for bypass mode
+
+### Version-Specific Settings
+Be aware that settings may vary by Claude Code version:
+- Check version with `claude --version`
+- Some settings only available in newer versions
+- Enterprise versions may have additional restrictions
+
+This knowledge is ESSENTIAL for creating reliable commands that work across different environments and configurations.
 
 Core responsibilities:
 1. Create slash commands with proper YAML frontmatter
