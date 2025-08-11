@@ -333,3 +333,5 @@ When editing files in this repository, especially command and prompt files, expl
 ```
 
 This ensures that commands follow our established patterns and maintain consistency across the OPL ecosystem.
+
+When you're done working make sure you edit the files in the prompts repo and THEN sync the local agents / hooks / commands / etc. not the other way around.
