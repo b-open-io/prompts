@@ -1,7 +1,7 @@
 ---
 name: mcp-specialist
-version: 3.0.0
-description: Installs and troubleshoots MCP servers with comprehensive package manager support, ensuring proper configuration and permissions. Expert in GitHub, Vercel, and Database MCP servers with auto-detection for npm/npx, bun/bunx, uv/uvx, pip/pip3.
+version: 3.1.0
+description: Installs and troubleshoots MCP servers with comprehensive diagnostic capabilities, package manager support, and step-by-step failure resolution. Expert in GitHub, Vercel, and Database MCP servers with auto-detection for npm/npx, bun/bunx, uv/uvx, pip/pip3.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite
 color: orange
 ---
@@ -1163,6 +1163,862 @@ claude mcp list 2>/dev/null | grep -E "postgres|redis|mongodb" || echo "  Run sc
 ```
 
 **Cross-Reference**: For an interactive installation experience with automatic package manager detection, use the `/opl:integrations:mcp-install` command which provides menus and guides you through MCP server setup.
+
+## MCP Server Diagnostics & Troubleshooting
+
+### Overview
+When MCP servers fail, systematic diagnosis is critical. This section provides comprehensive troubleshooting procedures to identify root causes and implement solutions step-by-step.
+
+### Initial Diagnostics
+
+#### Step 1: Check MCP Status
+```bash
+# Check all MCP servers
+claude mcp list
+
+# Identify failing servers (look for ✗ Failed or ❌)
+claude mcp list | grep -E "(✗|❌|Failed)"
+
+# Get detailed configuration
+cat ~/.claude/claude_desktop_config.json | jq '.mcpServers' 2>/dev/null || cat ~/.claude/claude_desktop_config.json
+```
+
+#### Step 2: Get Detailed Error Information
+```bash
+# Check Claude logs for MCP errors
+tail -50 ~/.claude/logs/claude.log 2>/dev/null | grep -i mcp
+
+# Check system logs for relevant errors
+tail -50 /var/log/system.log 2>/dev/null | grep -i claude
+
+# Enable debug mode for detailed output
+CLAUDE_DEBUG=1 claude mcp list
+```
+
+### Test MCP Commands Directly
+
+Before investigating Claude-specific issues, test the underlying commands to see actual error messages:
+
+#### PostgreSQL MCP Testing
+```bash
+# Test with npx
+echo "Testing PostgreSQL MCP with npx..."
+npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres 2>&1 | head -20
+
+# Test with bunx  
+echo "Testing PostgreSQL MCP with bunx..."
+bunx @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres 2>&1 | head -20
+
+# Test with custom connection string
+npx -y @modelcontextprotocol/server-postgres postgresql://user:pass@localhost:5432/dbname 2>&1 | head -20
+```
+
+#### MongoDB MCP Testing
+```bash
+# Test with npx
+echo "Testing MongoDB MCP with npx..."
+npx -y mongodb-mcp-server --connectionString mongodb://localhost:27017/test --readOnly 2>&1 | head -20
+
+# Test with bunx
+echo "Testing MongoDB MCP with bunx..."
+bunx mongodb-mcp-server --connectionString mongodb://localhost:27017/test --readOnly 2>&1 | head -20
+
+# Test with authentication
+bunx mongodb-mcp-server --connectionString mongodb://user:pass@localhost:27017/test --readOnly 2>&1 | head -20
+```
+
+#### Redis MCP Testing
+```bash
+# Test with uvx (preferred method)
+echo "Testing Redis MCP with uvx..."
+uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0 2>&1 | head -20
+
+# Test with different database
+uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/1 2>&1 | head -20
+
+# Test with authentication
+uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://:password@localhost:6379/0 2>&1 | head -20
+```
+
+### Validate Prerequisites Step-by-Step
+
+#### Step 1: Verify Package Managers
+```bash
+# Test bun/bunx availability and functionality
+echo "=== Testing bun/bunx ==="
+if which bunx &>/dev/null; then
+    echo "✅ bunx found at: $(which bunx)"
+    echo "Version: $(bunx --version 2>/dev/null || echo 'Version check failed')"
+    
+    # Test basic functionality
+    timeout 10s bunx cowsay "bun works" 2>&1 && echo "✅ bunx can execute packages" || echo "❌ bunx cannot execute packages"
+else
+    echo "❌ bunx not found"
+fi
+
+# Test npm/npx availability and functionality  
+echo -e "\n=== Testing npm/npx ==="
+if which npx &>/dev/null; then
+    echo "✅ npx found at: $(which npx)"
+    echo "Version: $(npx --version 2>/dev/null || echo 'Version check failed')"
+    
+    # Test basic functionality
+    timeout 10s npx -y cowsay "npm works" 2>&1 && echo "✅ npx can fetch packages" || echo "❌ npx cannot fetch packages"
+else
+    echo "❌ npx not found"
+fi
+
+# Test uv/uvx availability and functionality
+echo -e "\n=== Testing uv/uvx ==="
+if which uvx &>/dev/null; then
+    echo "✅ uvx found at: $(which uvx)"
+    echo "Version: $(uvx --version 2>/dev/null || echo 'Version check failed')"
+    
+    # Test basic functionality (skip if slow)
+    echo "ℹ️  uvx functional test skipped (use manually: uvx cowsay 'uv works')"
+else
+    echo "❌ uvx not found"
+    echo "  Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
+fi
+```
+
+#### Step 2: Test Network Connectivity
+```bash
+echo -e "\n=== Testing Network Connectivity ==="
+
+# Test npm registry
+curl -I --connect-timeout 5 https://registry.npmjs.org 2>&1 | head -5 && echo "✅ NPM registry accessible" || echo "❌ NPM registry unreachable"
+
+# Test PyPI
+curl -I --connect-timeout 5 https://pypi.org 2>&1 | head -5 && echo "✅ PyPI accessible" || echo "❌ PyPI unreachable"
+
+# Test GitHub (for git-based packages)
+curl -I --connect-timeout 5 https://github.com 2>&1 | head -5 && echo "✅ GitHub accessible" || echo "❌ GitHub unreachable"
+
+# Test DNS resolution
+nslookup registry.npmjs.org 2>&1 >/dev/null && echo "✅ DNS working" || echo "❌ DNS issues detected"
+```
+
+#### Step 3: Verify Database Services
+```bash
+echo -e "\n=== Testing Database Services ==="
+
+# PostgreSQL
+echo "Testing PostgreSQL..."
+if ps aux | grep postgres | grep -v grep >/dev/null; then
+    echo "✅ PostgreSQL process running"
+else
+    echo "❌ PostgreSQL not running"
+fi
+
+# Test PostgreSQL port
+if nc -zv localhost 5432 2>&1 | grep -q succeeded; then
+    echo "✅ PostgreSQL port 5432 accessible"
+else
+    echo "❌ Cannot connect to PostgreSQL port 5432"
+fi
+
+# Redis
+echo -e "\nTesting Redis..."
+if ps aux | grep redis-server | grep -v grep >/dev/null; then
+    echo "✅ Redis process running"
+else
+    echo "❌ Redis not running"
+fi
+
+# Test Redis port
+if nc -zv localhost 6379 2>&1 | grep -q succeeded; then
+    echo "✅ Redis port 6379 accessible"
+else  
+    echo "❌ Cannot connect to Redis port 6379"
+fi
+
+# MongoDB
+echo -e "\nTesting MongoDB..."
+if ps aux | grep mongod | grep -v grep >/dev/null; then
+    echo "✅ MongoDB process running"
+else
+    echo "❌ MongoDB not running"
+fi
+
+# Test MongoDB port
+if nc -zv localhost 27017 2>&1 | grep -q succeeded; then
+    echo "✅ MongoDB port 27017 accessible"
+else
+    echo "❌ Cannot connect to MongoDB port 27017"
+fi
+```
+
+#### Step 4: Test Database Client Connectivity
+```bash
+echo -e "\n=== Testing Database Client Connectivity ==="
+
+# PostgreSQL client test
+echo "Testing PostgreSQL client..."
+if which psql &>/dev/null; then
+    timeout 5s psql -h localhost -p 5432 -U postgres -c "SELECT 1" 2>&1 | head -3
+    if [ $? -eq 0 ]; then
+        echo "✅ PostgreSQL client connection successful"
+    else
+        echo "❌ PostgreSQL client test failed (check auth/perms)"
+    fi
+else
+    echo "⚠️  psql client not installed"
+fi
+
+# Redis client test
+echo -e "\nTesting Redis client..."
+if which redis-cli &>/dev/null; then
+    timeout 5s redis-cli -h localhost -p 6379 ping 2>&1
+    if [ $? -eq 0 ]; then
+        echo "✅ Redis client connection successful" 
+    else
+        echo "❌ Redis client test failed"
+    fi
+else
+    echo "⚠️  redis-cli client not installed"
+fi
+
+# MongoDB client test
+echo -e "\nTesting MongoDB client..."
+if which mongosh &>/dev/null; then
+    timeout 5s mongosh --host localhost:27017 --eval "db.runCommand('ping')" 2>&1 | head -3
+    if [ $? -eq 0 ]; then
+        echo "✅ MongoDB client connection successful"
+    else
+        echo "❌ MongoDB client test failed"
+    fi
+elif which mongo &>/dev/null; then
+    timeout 5s mongo --host localhost:27017 --eval "db.runCommand('ping')" 2>&1 | head -3
+    echo "⚠️  Using legacy mongo client (consider upgrading to mongosh)"
+else
+    echo "⚠️  MongoDB client not installed"
+fi
+```
+
+### Debug Connection Strings
+
+Test connection strings independently of MCP to verify database access:
+
+#### PostgreSQL Connection String Testing
+```bash
+echo "=== Testing PostgreSQL Connection Strings ==="
+
+# Basic connection
+echo "Testing basic connection..."
+psql "postgresql://localhost:5432/postgres" -c "SELECT version()" 2>&1 | head -5
+
+# With username
+echo -e "\nTesting with username..."
+psql "postgresql://postgres@localhost:5432/postgres" -c "SELECT current_user" 2>&1 | head -5
+
+# With username and password (prompt for password)
+echo -e "\nTesting with auth (will prompt for password)..."
+psql "postgresql://postgres:@localhost:5432/postgres" -c "SELECT current_database()" 2>&1 | head -5
+```
+
+#### MongoDB Connection String Testing
+```bash
+echo "=== Testing MongoDB Connection Strings ==="
+
+# Basic connection
+echo "Testing basic connection..."
+mongosh "mongodb://localhost:27017/test" --eval "db.runCommand('ping')" 2>&1 | head -5
+
+# With authentication database
+echo -e "\nTesting with auth database..."
+mongosh "mongodb://localhost:27017/test?authSource=admin" --eval "db.runCommand('ping')" 2>&1 | head -5
+
+# Test specific database
+echo -e "\nTesting specific database access..."
+mongosh "mongodb://localhost:27017/test" --eval "db.getName()" 2>&1 | head -5
+```
+
+#### Redis Connection String Testing
+```bash
+echo "=== Testing Redis Connection Strings ==="
+
+# Basic connection (Redis doesn't support URI testing directly)
+echo "Testing Redis connection..."
+redis-cli -h localhost -p 6379 ping 2>&1
+
+# Test specific database
+echo -e "\nTesting database selection..."
+redis-cli -h localhost -p 6379 -n 0 ping 2>&1
+
+# Test with password (if auth is enabled)
+echo -e "\nTesting with auth (skip if no auth)..."
+# redis-cli -h localhost -p 6379 -a yourpassword ping 2>&1
+echo "Skipped auth test (uncomment if Redis auth is enabled)"
+```
+
+### Common Failure Patterns & Solutions
+
+#### Pattern: "command not found"
+```bash
+echo "=== Diagnosing 'command not found' errors ==="
+
+# Check PATH environment
+echo "Current PATH:"
+echo $PATH | tr ':' '\n' | nl
+
+# Check for Node.js and npm
+echo -e "\nNode.js ecosystem:"
+which node 2>/dev/null && echo "✅ Node.js: $(node --version)" || echo "❌ Node.js not found"
+which npm 2>/dev/null && echo "✅ npm: $(npm --version)" || echo "❌ npm not found"  
+which npx 2>/dev/null && echo "✅ npx: $(npx --version)" || echo "❌ npx not found"
+
+# Check for Python
+echo -e "\nPython ecosystem:"
+which python3 2>/dev/null && echo "✅ Python3: $(python3 --version)" || echo "❌ Python3 not found"
+which pip3 2>/dev/null && echo "✅ pip3: $(pip3 --version)" || echo "❌ pip3 not found"
+
+# Solutions for missing tools
+echo -e "\n=== Solutions ==="
+if ! which node &>/dev/null; then
+    echo "📝 Install Node.js:"
+    echo "  - macOS: brew install node"  
+    echo "  - Linux: curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs"
+    echo "  - Via nvm: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash && nvm install node"
+fi
+
+if ! which bunx &>/dev/null; then
+    echo "📝 Install bun:"
+    echo "  curl -fsSL https://bun.sh/install | bash"
+    echo "  source ~/.bashrc || source ~/.zshrc"
+fi
+
+if ! which uvx &>/dev/null; then
+    echo "📝 Install uv:"
+    echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+    echo "  source ~/.bashrc || source ~/.zshrc"
+fi
+```
+
+#### Pattern: "ECONNREFUSED" or "Connection refused"
+```bash
+echo "=== Diagnosing Connection Refused Errors ==="
+
+# Check what's listening on database ports
+echo "Port usage analysis:"
+echo "PostgreSQL (5432):"
+lsof -i :5432 2>/dev/null || echo "  Nothing listening on port 5432"
+
+echo -e "\nRedis (6379):"  
+lsof -i :6379 2>/dev/null || echo "  Nothing listening on port 6379"
+
+echo -e "\nMongoDB (27017):"
+lsof -i :27017 2>/dev/null || echo "  Nothing listening on port 27017"
+
+# Check for services
+echo -e "\n=== Service Status ==="
+if which brew &>/dev/null; then
+    echo "Homebrew services:"
+    brew services list 2>/dev/null | grep -E "(postgres|redis|mongo)" || echo "  No database services found"
+elif which systemctl &>/dev/null; then
+    echo "Systemd services:"
+    systemctl list-units --type=service | grep -E "(postgres|redis|mongo)" || echo "  No database services found"
+fi
+
+# Solutions
+echo -e "\n=== Solutions ==="
+echo "Start PostgreSQL:"
+echo "  macOS: brew services start postgresql@16"
+echo "  Linux: sudo systemctl start postgresql"
+
+echo -e "\nStart Redis:"
+echo "  macOS: brew services start redis"  
+echo "  Linux: sudo systemctl start redis"
+
+echo -e "\nStart MongoDB:"
+echo "  macOS: brew services start mongodb-community"
+echo "  Linux: sudo systemctl start mongod"
+```
+
+#### Pattern: "authentication failed" 
+```bash
+echo "=== Diagnosing Authentication Failures ==="
+
+# PostgreSQL authentication test
+echo "PostgreSQL authentication:"
+echo "Testing default postgres user..."
+timeout 5s psql -h localhost -U postgres -c "SELECT current_user" 2>&1 | head -3
+
+if [ $? -ne 0 ]; then
+    echo "❌ Default postgres user failed"
+    echo "Solutions:"
+    echo "  1. Set password: sudo -u postgres psql -c \"ALTER USER postgres PASSWORD 'newpass';\""
+    echo "  2. Use peer auth: sudo -u postgres psql"
+    echo "  3. Create MCP user: sudo -u postgres createuser --interactive mcp_user"
+fi
+
+# MongoDB authentication test (if auth is enabled)
+echo -e "\nMongoDB authentication:"
+if mongosh --eval "db.runCommand('ping')" 2>&1 | grep -q "Authentication failed"; then
+    echo "❌ MongoDB auth required"
+    echo "Solutions:"
+    echo "  1. Connect without auth: mongosh --host localhost:27017/test"
+    echo "  2. Use admin database: mongosh --host localhost:27017/admin"
+    echo "  3. Create user: mongosh --eval 'use admin; db.createUser({user:\"mcp\",pwd:\"pass\",roles:[\"readWrite\"]})'"
+else
+    echo "✅ MongoDB no auth required (or working)"
+fi
+
+# Redis authentication test (if auth is enabled)
+echo -e "\nRedis authentication:"
+if redis-cli ping 2>&1 | grep -q "NOAUTH"; then
+    echo "❌ Redis password required"
+    echo "Solutions:"
+    echo "  1. Use password: redis-cli -a yourpassword ping"
+    echo "  2. Disable auth: redis-cli CONFIG SET requirepass ''"
+else
+    echo "✅ Redis auth working or not required"
+fi
+```
+
+#### Pattern: "package not found" or "404"
+```bash
+echo "=== Diagnosing Package Not Found Errors ==="
+
+# Test package registry access
+echo "Testing package registries:"
+
+# NPM registry
+echo "NPM packages:"
+timeout 10s npm view @modelcontextprotocol/server-postgres version 2>&1 && echo "✅ PostgreSQL MCP package found" || echo "❌ PostgreSQL MCP package not accessible"
+
+timeout 10s npm view mongodb-mcp-server version 2>&1 && echo "✅ MongoDB MCP package found" || echo "❌ MongoDB MCP package not accessible"
+
+# GitHub packages (for Redis MCP)
+echo -e "\nGitHub packages:"
+timeout 10s git ls-remote --heads https://github.com/redis/mcp-redis.git 2>&1 >/dev/null && echo "✅ Redis MCP repository accessible" || echo "❌ Redis MCP repository not accessible"
+
+# Solutions for package issues
+echo -e "\n=== Solutions ==="
+echo "Clear caches:"
+echo "  npm cache clean --force"
+echo "  bun pm cache rm"
+
+echo -e "\nUpdate package managers:"
+echo "  npm update -g npm"
+echo "  curl -fsSL https://bun.sh/install | bash  # Update bun"
+
+echo -e "\nTry direct installation:"
+echo "  npm install -g @modelcontextprotocol/server-postgres"
+echo "  git clone https://github.com/redis/mcp-redis.git && cd mcp-redis && pip install -e ."
+```
+
+### Full Diagnostic Script
+
+Complete diagnostic script that tests everything systematically:
+
+```bash
+#!/bin/bash
+echo "🔍 MCP Server Comprehensive Diagnostic Tool"
+echo "=============================================="
+
+# Color codes for better output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to test command with colored output
+test_command() {
+    local cmd="$1"
+    local name="$2"
+    local timeout_sec="${3:-5}"
+    
+    if timeout "${timeout_sec}s" bash -c "$cmd" &>/dev/null; then
+        echo -e "${GREEN}✅ $name${NC}"
+        return 0
+    else
+        echo -e "${RED}❌ $name${NC}"
+        echo -e "   ${YELLOW}Command: $cmd${NC}"
+        local error_output=$(timeout "${timeout_sec}s" bash -c "$cmd" 2>&1 | head -1)
+        echo -e "   ${YELLOW}Error: $error_output${NC}"
+        return 1
+    fi
+}
+
+# Function to test port connectivity
+test_port() {
+    local port="$1"
+    local service="$2"
+    
+    if nc -zv localhost "$port" 2>&1 | grep -q succeeded; then
+        echo -e "${GREEN}✅ $service (port $port)${NC}"
+        return 0
+    else
+        echo -e "${RED}❌ $service (port $port)${NC}"
+        return 1
+    fi
+}
+
+echo -e "\n${BLUE}📦 Package Managers:${NC}"
+test_command "which npx && npx --version" "npx"
+test_command "which bunx && bunx --version" "bunx" 
+test_command "which uvx && uvx --version" "uvx"
+test_command "which pip3 && pip3 --version" "pip3"
+
+echo -e "\n${BLUE}🌐 Network Connectivity:${NC}"
+test_command "curl -I --connect-timeout 5 https://registry.npmjs.org" "NPM Registry" 10
+test_command "curl -I --connect-timeout 5 https://pypi.org" "PyPI" 10
+test_command "curl -I --connect-timeout 5 https://github.com" "GitHub" 10
+
+echo -e "\n${BLUE}🗄️ Database Ports:${NC}"  
+test_port 5432 "PostgreSQL"
+test_port 6379 "Redis"
+test_port 27017 "MongoDB"
+
+echo -e "\n${BLUE}🔄 Database Processes:${NC}"
+ps aux | grep postgres | grep -v grep >/dev/null && echo -e "${GREEN}✅ PostgreSQL process${NC}" || echo -e "${RED}❌ PostgreSQL process${NC}"
+ps aux | grep redis-server | grep -v grep >/dev/null && echo -e "${GREEN}✅ Redis process${NC}" || echo -e "${RED}❌ Redis process${NC}"  
+ps aux | grep mongod | grep -v grep >/dev/null && echo -e "${GREEN}✅ MongoDB process${NC}" || echo -e "${RED}❌ MongoDB process${NC}"
+
+echo -e "\n${BLUE}🧪 Database Client Tests:${NC}"
+test_command "which psql && timeout 3s psql -h localhost -p 5432 -U postgres -c 'SELECT 1'" "PostgreSQL Client"
+test_command "which redis-cli && timeout 3s redis-cli -h localhost -p 6379 ping" "Redis Client"  
+test_command "which mongosh && timeout 3s mongosh --host localhost:27017 --eval 'db.runCommand(\"ping\")'" "MongoDB Client"
+
+echo -e "\n${BLUE}📦 MCP Package Tests:${NC}"
+test_command "npx -y @modelcontextprotocol/server-postgres --help" "PostgreSQL MCP (npx)" 10
+test_command "bunx @modelcontextprotocol/server-postgres --help" "PostgreSQL MCP (bunx)" 10
+test_command "bunx mongodb-mcp-server --help" "MongoDB MCP (bunx)" 10
+test_command "npx -y mongodb-mcp-server --help" "MongoDB MCP (npx)" 10
+test_command "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --help" "Redis MCP (uvx)" 15
+
+echo -e "\n${BLUE}🔍 Current MCP Configuration:${NC}"
+if claude mcp list &>/dev/null; then
+    claude mcp list | grep -E "(postgres|redis|mongodb|✅|❌|✓|✗)"
+else
+    echo -e "${YELLOW}⚠️  Claude MCP command not available${NC}"
+fi
+
+echo -e "\n${BLUE}💡 Diagnostic Summary & Recommendations:${NC}"
+
+# Check if essential tools are missing
+missing_tools=()
+! command -v bunx &>/dev/null && ! command -v npx &>/dev/null && missing_tools+=("Node.js package manager")
+! command -v uvx &>/dev/null && missing_tools+=("uv (for Python MCP)")
+
+if [ ${#missing_tools[@]} -gt 0 ]; then
+    echo -e "${RED}Missing Essential Tools:${NC}"
+    for tool in "${missing_tools[@]}"; do
+        echo "  • $tool"
+    done
+    echo
+fi
+
+# Installation recommendations
+if ! command -v bunx &>/dev/null && ! command -v npx &>/dev/null; then
+    echo -e "${YELLOW}📝 Install Node.js package manager:${NC}"
+    echo "  • bun (recommended): curl -fsSL https://bun.sh/install | bash"
+    echo "  • npm: Install Node.js from https://nodejs.org"
+fi
+
+if ! command -v uvx &>/dev/null; then
+    echo -e "${YELLOW}📝 Install uv for Python MCP servers:${NC}"
+    echo "  • curl -LsSf https://astral.sh/uv/install.sh | sh"
+fi
+
+# Database service recommendations
+db_services_down=()
+! nc -zv localhost 5432 &>/dev/null && db_services_down+=("PostgreSQL")
+! nc -zv localhost 6379 &>/dev/null && db_services_down+=("Redis")
+! nc -zv localhost 27017 &>/dev/null && db_services_down+=("MongoDB")
+
+if [ ${#db_services_down[@]} -gt 0 ]; then
+    echo -e "${YELLOW}📝 Start database services:${NC}"
+    for service in "${db_services_down[@]}"; do
+        case $service in
+            "PostgreSQL")
+                echo "  • brew services start postgresql@16  # macOS"
+                echo "  • sudo systemctl start postgresql    # Linux"
+                ;;
+            "Redis")
+                echo "  • brew services start redis          # macOS"  
+                echo "  • sudo systemctl start redis         # Linux"
+                ;;
+            "MongoDB")
+                echo "  • brew services start mongodb-community  # macOS"
+                echo "  • sudo systemctl start mongod            # Linux"
+                ;;
+        esac
+    done
+fi
+
+echo -e "\n${GREEN}🏁 Diagnostic Complete${NC}"
+echo "Run this script again after making changes to verify fixes."
+```
+
+### Interactive Troubleshooter
+
+Interactive troubleshooting flow for guided problem resolution:
+
+```bash
+#!/bin/bash
+echo "🔧 Interactive MCP Troubleshooter"
+echo "================================="
+
+# Color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m' 
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo "Which MCP server is failing?"
+echo "1. PostgreSQL MCP"
+echo "2. Redis MCP"
+echo "3. MongoDB MCP" 
+echo "4. All/Multiple servers"
+echo "5. GitHub MCP"
+echo "6. Other MCP server"
+
+read -p "Select [1-6]: " choice
+
+diagnose_postgres() {
+    echo -e "\n${BLUE}🔍 Diagnosing PostgreSQL MCP...${NC}"
+    
+    # Test PostgreSQL service
+    if ! nc -zv localhost 5432 2>&1 | grep -q succeeded; then
+        echo -e "${RED}❌ PostgreSQL not running on port 5432${NC}"
+        echo -e "${YELLOW}💡 Start with: brew services start postgresql@16${NC}"
+        return 1
+    fi
+    echo -e "${GREEN}✅ PostgreSQL service running${NC}"
+    
+    # Test package managers
+    echo -e "\nTesting package managers..."
+    if command -v bunx &>/dev/null; then
+        echo "Testing bunx method..."
+        if timeout 10s bunx @modelcontextprotocol/server-postgres --help &>/dev/null; then
+            echo -e "${GREEN}✅ bunx can access PostgreSQL MCP${NC}"
+            echo -e "${YELLOW}💡 Use: claude mcp add postgres-local -s user 'bunx @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres'${NC}"
+        else
+            echo -e "${RED}❌ bunx cannot access PostgreSQL MCP${NC}"
+        fi
+    fi
+    
+    if command -v npx &>/dev/null; then
+        echo "Testing npx method..."
+        if timeout 10s npx -y @modelcontextprotocol/server-postgres --help &>/dev/null; then
+            echo -e "${GREEN}✅ npx can access PostgreSQL MCP${NC}"
+            echo -e "${YELLOW}💡 Use: claude mcp add postgres-local -s user 'npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres'${NC}"
+        else
+            echo -e "${RED}❌ npx cannot access PostgreSQL MCP${NC}"
+        fi
+    fi
+    
+    # Test database connection
+    echo -e "\nTesting database connection..."
+    if timeout 5s psql -h localhost -p 5432 -U postgres -c "SELECT 1" &>/dev/null; then
+        echo -e "${GREEN}✅ Database connection works${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Database connection issue (check auth)${NC}"
+        echo -e "${YELLOW}💡 Try: psql -h localhost -p 5432 -U postgres${NC}"
+    fi
+}
+
+diagnose_redis() {
+    echo -e "\n${BLUE}🔍 Diagnosing Redis MCP...${NC}"
+    
+    # Test Redis service
+    if ! nc -zv localhost 6379 2>&1 | grep -q succeeded; then
+        echo -e "${RED}❌ Redis not running on port 6379${NC}"
+        echo -e "${YELLOW}💡 Start with: brew services start redis${NC}"
+        return 1
+    fi
+    echo -e "${GREEN}✅ Redis service running${NC}"
+    
+    # Test uv/uvx
+    if ! command -v uvx &>/dev/null; then
+        echo -e "${RED}❌ uvx not found (required for Redis MCP)${NC}"
+        echo -e "${YELLOW}💡 Install with: curl -LsSf https://astral.sh/uv/install.sh | sh${NC}"
+        return 1
+    fi
+    echo -e "${GREEN}✅ uvx available${NC}"
+    
+    # Test Redis MCP package
+    echo "Testing Redis MCP package access..."
+    if timeout 15s uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --help &>/dev/null; then
+        echo -e "${GREEN}✅ Redis MCP package accessible${NC}"
+        echo -e "${YELLOW}💡 Use: claude mcp add redis-local -s user 'uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0'${NC}"
+    else
+        echo -e "${RED}❌ Redis MCP package not accessible${NC}"
+        echo -e "${YELLOW}💡 Check internet connection and GitHub access${NC}"
+    fi
+    
+    # Test Redis connection
+    echo -e "\nTesting Redis connection..."
+    if timeout 5s redis-cli -h localhost -p 6379 ping &>/dev/null; then
+        echo -e "${GREEN}✅ Redis connection works${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Redis connection issue${NC}"
+        echo -e "${YELLOW}💡 Try: redis-cli -h localhost -p 6379 ping${NC}"
+    fi
+}
+
+diagnose_mongodb() {
+    echo -e "\n${BLUE}🔍 Diagnosing MongoDB MCP...${NC}"
+    
+    # Test MongoDB service
+    if ! nc -zv localhost 27017 2>&1 | grep -q succeeded; then
+        echo -e "${RED}❌ MongoDB not running on port 27017${NC}"
+        echo -e "${YELLOW}💡 Start with: brew services start mongodb-community${NC}"
+        return 1
+    fi
+    echo -e "${GREEN}✅ MongoDB service running${NC}"
+    
+    # Test package managers
+    echo -e "\nTesting package managers..."
+    if command -v bunx &>/dev/null; then
+        echo "Testing bunx method..."
+        if timeout 10s bunx mongodb-mcp-server --help &>/dev/null; then
+            echo -e "${GREEN}✅ bunx can access MongoDB MCP${NC}"
+            echo -e "${YELLOW}💡 Use: claude mcp add mongodb-local -s user 'bunx mongodb-mcp-server --connectionString mongodb://localhost:27017/test --readOnly'${NC}"
+        else
+            echo -e "${RED}❌ bunx cannot access MongoDB MCP${NC}"
+        fi
+    fi
+    
+    if command -v npx &>/dev/null; then
+        echo "Testing npx method..."
+        if timeout 10s npx -y mongodb-mcp-server --help &>/dev/null; then
+            echo -e "${GREEN}✅ npx can access MongoDB MCP${NC}"
+            echo -e "${YELLOW}💡 Use: claude mcp add mongodb-local -s user 'npx -y mongodb-mcp-server --connectionString mongodb://localhost:27017/test --readOnly'${NC}"
+        else
+            echo -e "${RED}❌ npx cannot access MongoDB MCP${NC}"
+        fi
+    fi
+    
+    # Test database connection
+    echo -e "\nTesting MongoDB connection..."
+    if timeout 5s mongosh --host localhost:27017 --eval "db.runCommand('ping')" &>/dev/null; then
+        echo -e "${GREEN}✅ MongoDB connection works${NC}"
+    else
+        echo -e "${YELLOW}⚠️  MongoDB connection issue${NC}"
+        echo -e "${YELLOW}💡 Try: mongosh --host localhost:27017${NC}"
+    fi
+}
+
+case $choice in
+    1) diagnose_postgres ;;
+    2) diagnose_redis ;;
+    3) diagnose_mongodb ;;
+    4) 
+        echo -e "${BLUE}🔍 Running comprehensive diagnostics...${NC}"
+        diagnose_postgres
+        diagnose_redis  
+        diagnose_mongodb
+        ;;
+    5)
+        echo -e "\n${BLUE}🔍 GitHub MCP uses remote server (no local installation)${NC}"
+        echo -e "${YELLOW}💡 Check: https://api.githubcopilot.com/mcp/${NC}"
+        echo -e "${YELLOW}💡 Verify GitHub PAT has correct scopes${NC}"
+        ;;
+    6)
+        echo -e "\n${BLUE}🔍 For other MCP servers:${NC}"
+        echo "1. Check if the server package exists"
+        echo "2. Verify required runtime (Node.js, Python, etc.)"
+        echo "3. Test package manager access"
+        echo "4. Check server-specific requirements"
+        ;;
+    *)
+        echo "Invalid selection"
+        exit 1
+        ;;
+esac
+
+echo -e "\n${GREEN}🔄 After fixes, restart Claude Code: Ctrl+C then 'claude -c'${NC}"
+```
+
+### Logging and Debug Output
+
+#### Enable Comprehensive Logging
+```bash
+# Enable Claude debug mode
+export CLAUDE_DEBUG=1
+
+# Run MCP commands with detailed output
+CLAUDE_DEBUG=1 claude mcp list
+
+# Capture full error output for PostgreSQL
+echo "Capturing PostgreSQL MCP errors..."
+npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres 2>&1 | tee postgres-mcp-debug.log
+
+# Capture MongoDB MCP errors  
+echo "Capturing MongoDB MCP errors..."
+bunx mongodb-mcp-server --connectionString mongodb://localhost:27017/test --readOnly 2>&1 | tee mongodb-mcp-debug.log
+
+# Capture Redis MCP errors
+echo "Capturing Redis MCP errors..."
+uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0 2>&1 | tee redis-mcp-debug.log
+```
+
+#### Advanced Debug Testing
+```bash
+# Test with timeout to prevent hanging
+echo "Testing with explicit timeout..."
+timeout 30s npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres 2>&1
+
+# Test with environment variables 
+echo "Testing with debug environment..."
+DEBUG=* npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres 2>&1 | head -50
+
+# Test with verbose flags
+echo "Testing with verbose output..."
+npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres --verbose 2>&1 | head -20
+
+# Test connection variations
+echo "Testing different connection parameters..."
+npx -y @modelcontextprotocol/server-postgres postgresql://postgres:@localhost:5432/postgres 2>&1 | head -10
+npx -y @modelcontextprotocol/server-postgres postgresql://localhost/postgres 2>&1 | head -10
+```
+
+#### Log Analysis Commands
+```bash
+# Analyze error patterns
+echo "Common error patterns in logs:"
+grep -i -E "(error|failed|refused|timeout|not found)" *-mcp-debug.log 2>/dev/null | head -10
+
+# Check for permission issues
+echo "Permission-related errors:"
+grep -i -E "(permission|denied|auth|unauthorized)" *-mcp-debug.log 2>/dev/null
+
+# Check for network issues  
+echo "Network-related errors:"
+grep -i -E "(network|connection|timeout|refused|unreachable)" *-mcp-debug.log 2>/dev/null
+
+# Check for missing dependencies
+echo "Dependency-related errors:"
+grep -i -E "(not found|missing|module|package|dependency)" *-mcp-debug.log 2>/dev/null
+```
+
+### Quick Diagnostic Commands
+
+For rapid troubleshooting, use these one-liners:
+
+```bash
+# Quick MCP health check
+claude mcp list | grep -E "(✓|✗|✅|❌)" | head -10
+
+# Quick package manager test
+(command -v bunx && echo "bunx: ✅") || echo "bunx: ❌"; (command -v npx && echo "npx: ✅") || echo "npx: ❌"; (command -v uvx && echo "uvx: ✅") || echo "uvx: ❌"
+
+# Quick database port test
+for port in 5432 6379 27017; do nc -zv localhost $port 2>&1 | grep -q succeeded && echo "Port $port: ✅" || echo "Port $port: ❌"; done
+
+# Quick service test
+ps aux | grep -E "(postgres|redis|mongo)" | grep -v grep | awk '{print $11": ✅"}' || echo "No database services running: ❌"
+
+# Quick package access test
+timeout 5s npx -y @modelcontextprotocol/server-postgres --help &>/dev/null && echo "PostgreSQL MCP: ✅" || echo "PostgreSQL MCP: ❌"
+```
+
+This comprehensive diagnostic section provides systematic troubleshooting for MCP server failures, with specific tests, solutions, and interactive guides for resolving common issues.
 
 ## Other Key MCP Servers & Requirements
 - **21st.dev Magic** - AI components, needs MAGIC_MCP_API_KEY

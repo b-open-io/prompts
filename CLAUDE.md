@@ -2,6 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
+## Version Management for Agents and Commands
+
+**IMPORTANT**: Use semantic versioning correctly to prevent version inflation:
+- **Patch increment (x.y.Z)**: Bug fixes, documentation updates, minor improvements
+- **Minor increment (x.Y.z)**: New features, significant functionality additions  
+- **Major increment (X.y.z)**: Breaking changes, complete rewrites, API changes
+
+**Examples**:
+- Adding diagnostic commands: 3.0.0 → 3.1.0 (new feature)
+- Fixing typos: 3.1.0 → 3.1.1 (patch)
+- Reorganizing content: 3.1.0 → 3.1.1 (patch)
+- Complete rewrite: 3.1.0 → 4.0.0 (major)
+
+**DO NOT**: Jump versions unnecessarily (e.g., 2.2.0 → 10.0.0 for adding diagnostics)
+
 ## Repository Overview
 
 This is the OPL Prompts Registry - a collection of powerful, task-specific prompts designed to leverage our entire BSV blockchain development ecosystem. The prompts combine Claude Code capabilities, init-prism project generation, and our extensive toolchain to automate complex workflows.
@@ -93,6 +108,33 @@ This repository builds on our monorepo containing:
 - Test prompts thoroughly before committing
 - Keep prompts focused on specific, repeatable tasks
 - **Analyze tasks and reorganize for sub-agent parallelization** - Break complex operations into parallel sub-tasks that can be executed by multiple specialized agents simultaneously
+
+## Version Management Guidelines
+
+**CRITICAL VERSION POLICY**: When updating agents, commands, or prompts, use minimal version increments to avoid version number inflation:
+
+### Version Bump Rules
+- ✅ **PATCH updates only**: Use `x.y.z` → `x.y.(z+1)` format (e.g., 3.1.0 → 3.1.1)
+- ❌ **NO major bumps**: Never increment `x.0.0` unless it's a complete rewrite
+- ❌ **NO minor bumps**: Avoid `x.y.0` increments unless adding entirely new major functionality
+
+### When to Bump Versions
+- **Patch (0.0.1)**: Bug fixes, small improvements, content additions, diagnostic enhancements
+- **Minor (0.1.0)**: New features, new tools, significant capability additions  
+- **Major (1.0.0)**: Complete rewrites, breaking changes, fundamental restructuring
+
+### Examples
+```
+✅ Good: 3.1.0 → 3.1.1 (added diagnostic section)
+✅ Good: 2.5.3 → 2.5.4 (fixed command syntax)  
+✅ Good: 1.8.9 → 1.8.10 (improved error handling)
+
+❌ Bad: 3.1.0 → 4.0.0 (just for adding diagnostics)
+❌ Bad: 2.5.3 → 3.0.0 (minor content update)
+❌ Bad: 1.8.9 → 2.0.0 (small enhancement)
+```
+
+**Remember**: We want sustainable versioning - at current rate we'd hit version 400 within weeks!
 
 ## Agent Color Scheme
 
