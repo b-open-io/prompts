@@ -1,7 +1,7 @@
 ---
 name: mcp-specialist
-version: 2.0.0
-description: Installs and troubleshoots MCP servers, ensuring proper configuration and permissions. Expert in GitHub, Vercel, and Database MCP servers (PostgreSQL, Redis, MongoDB).
+version: 2.1.0
+description: Installs and troubleshoots MCP servers, ensuring proper configuration and permissions. Expert in GitHub, Vercel, and Database MCP servers (PostgreSQL, Redis, MongoDB) with database GUI tools knowledge.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite
 color: orange
 ---
@@ -816,16 +816,107 @@ claude mcp add redis-staging -s user "uvx --from git+https://github.com/redis/mc
 claude mcp add postgres-prod -s user "npx -y @modelcontextprotocol/server-postgres postgresql://readonly_user:pass@prod-host:5432/prod_db"
 ```
 
-### Redis GUI Tools Detection
-```bash
-# Check for RedisInsight
-ls /Applications | grep -i redis
+### Database GUI Tools
 
-# Install RedisInsight (recommended)
+#### Check Installed Database GUIs
+```bash
+# Check Applications folder (macOS)
+ls /Applications 2>/dev/null | grep -iE "(redis|mongo|postgres|dbeaver|sequel|table|navicat|datagrip)" || echo "Check via other methods"
+
+# Check via Homebrew
+brew list --cask | grep -iE "(redis|mongo|postgres|dbeaver|sequel|table)"
+
+# Check common database GUI tools
+which pgadmin4 2>/dev/null && echo "pgAdmin 4 found"
+which robo3t 2>/dev/null && echo "Robo 3T found"
+which compass 2>/dev/null && echo "MongoDB Compass found"
+```
+
+#### PostgreSQL GUI Tools
+```bash
+# DBeaver (Universal Database Tool) - Supports ALL databases
+brew install --cask dbeaver-community
+
+# TablePlus (Modern, Native) - Supports multiple DBs
+brew install --cask tableplus
+
+# pgAdmin 4 (Official PostgreSQL)
+brew install --cask pgadmin4
+
+# Postico 2 (Mac-native, Simple)
+brew install --cask postico
+
+# Sequel Pro (Free, macOS) - MySQL/MariaDB focused but works with PG
+brew install --cask sequel-pro
+```
+
+#### Redis GUI Tools
+```bash
+# RedisInsight (Official, Free) - RECOMMENDED
 brew install --cask redis-insight
 
-# Alternative: Medis
+# Medis (Native macOS, Beautiful UI)
 brew install medis
+
+# Another Redis Desktop Manager (Free, Cross-platform)
+brew install --cask another-redis-desktop-manager
+
+# RedisDesktopManager (Popular but now paid)
+# Download from: https://resp.app/
+```
+
+#### MongoDB GUI Tools
+```bash
+# MongoDB Compass (Official, Free) - RECOMMENDED
+brew install --cask mongodb-compass
+
+# Studio 3T (Professional, 30-day trial)
+brew install --cask studio-3t
+
+# Robo 3T (Free, formerly Robomongo)
+brew install --cask robo-3t
+
+# NoSQLBooster (Feature-rich)
+brew install --cask nosqlbooster-for-mongodb
+```
+
+#### Universal Database Tools
+```bash
+# DBeaver - Supports 100+ databases (PostgreSQL, MySQL, MongoDB, Redis, etc.)
+brew install --cask dbeaver-community
+
+# TablePlus - Modern UI, supports multiple databases
+brew install --cask tableplus
+
+# DataGrip (JetBrains, Paid) - Professional IDE for databases
+brew install --cask datagrip
+
+# Navicat Premium (Paid) - Supports all major databases
+brew install --cask navicat-premium
+```
+
+#### Quick GUI Setup for Each Database
+```bash
+# PostgreSQL: Install DBeaver (free, universal)
+brew install --cask dbeaver-community
+# Connect: localhost:5432, database: postgres
+
+# Redis: Install RedisInsight (official, free)
+brew install --cask redis-insight
+# Connect: localhost:6379
+
+# MongoDB: Install Compass (official, free)
+brew install --cask mongodb-compass
+# Connect: mongodb://localhost:27017
+```
+
+#### Verify GUI Tool Installation
+```bash
+# After installation, verify the apps
+ls /Applications | grep -i "redis insight" && echo "✅ RedisInsight installed"
+ls /Applications | grep -i "compass" && echo "✅ MongoDB Compass installed"
+ls /Applications | grep -i "dbeaver" && echo "✅ DBeaver installed"
+ls /Applications | grep -i "tableplus" && echo "✅ TablePlus installed"
 ```
 
 ### Security Best Practices for Database MCP
