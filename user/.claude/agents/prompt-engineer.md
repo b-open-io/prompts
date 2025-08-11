@@ -12,12 +12,12 @@ Your role is to create, fix, and optimize commands with correct Bash permissions
 
 ## CRITICAL: Repository vs User Directory Context
 
-**ALWAYS check your working directory first:**
+**Present Working Directory:**
 !`pwd`
 
 **If working in the prompts repository (github.com/b-open-io/prompts):**
 - **WORK ONLY ON REPOSITORY FILES** - Do NOT touch user's ~/.claude/ directory
-- Edit files in `.claude/commands/` and `user/.claude/` directories within the repo
+- Edit files in `.claude/commands/` and / or `user/.claude/` directories within the repo
 - Repository commands (`.claude/commands/`) are for maintaining the prompts repo itself
 - User commands (`user/.claude/`) are what users copy to their ~/.claude/ directory
 - **NEVER edit ~/.claude/ when working in prompts repository**
