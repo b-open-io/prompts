@@ -1,7 +1,7 @@
 ---
 name: mcp-specialist
-version: 2.2.0
-description: Installs and troubleshoots MCP servers, ensuring proper configuration and permissions. Expert in GitHub, Vercel, and Database MCP servers (PostgreSQL, Redis, MongoDB).
+version: 3.0.0
+description: Installs and troubleshoots MCP servers with comprehensive package manager support, ensuring proper configuration and permissions. Expert in GitHub, Vercel, and Database MCP servers with auto-detection for npm/npx, bun/bunx, uv/uvx, pip/pip3.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite
 color: orange
 ---
@@ -624,10 +624,174 @@ claude mcp add-json --user dev-tools '{
 }'
 ```
 
+## Package Manager Detection & Support
+
+### Overview
+MCP servers require various package managers (npm, bun, uv, pip) depending on the technology stack. This section provides comprehensive detection and installation strategies with fallback options.
+
+### Package Manager Priority Order
+1. **bun/bunx** - Fastest performance, Node.js ecosystem
+2. **npm/npx** - Most compatible, standard Node.js
+3. **uv/uvx** - Python ecosystem, modern tooling
+4. **pip/pip3** - Traditional Python packages
+
+### Detection Commands
+
+#### Test Package Manager Availability
+```bash
+# Test bun (preferred for Node.js MCP servers)
+if command -v bunx &> /dev/null; then
+    echo "✅ bun available: $(bunx --version)"
+    PREFERRED_NODE="bunx"
+else
+    echo "❌ bun not available"
+fi
+
+# Test npm (fallback for Node.js)
+if command -v npx &> /dev/null; then
+    echo "✅ npm available: $(npx --version)"
+    FALLBACK_NODE="npx"
+else
+    echo "❌ npm not available"
+fi
+
+# Test uv (preferred for Python MCP servers)
+if command -v uvx &> /dev/null; then
+    echo "✅ uv available: $(uvx --version)"
+    PREFERRED_PYTHON="uvx"
+else
+    echo "❌ uv not available"
+fi
+
+# Test pip (fallback for Python)
+if command -v pip3 &> /dev/null; then
+    echo "✅ pip3 available: $(pip3 --version)"
+    FALLBACK_PYTHON="pip3"
+elif command -v pip &> /dev/null; then
+    echo "✅ pip available: $(pip --version)"
+    FALLBACK_PYTHON="pip"
+else
+    echo "❌ pip not available"
+fi
+```
+
+#### Package Manager Installation
+```bash
+# Install bun (recommended)
+curl -fsSL https://bun.sh/install | bash
+
+# Install uv (for Python MCP servers)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Verify installation
+source ~/.bashrc || source ~/.zshrc
+bunx --version
+uvx --version
+```
+
+### Package Manager Compatibility Matrix
+
+| MCP Server Type | bunx | npx | uvx | pip3 | Notes |
+|-----------------|------|-----|-----|------|-------|
+| PostgreSQL | ✅ | ✅ | ❌ | ❌ | Node.js based |
+| MongoDB | ✅ | ✅ | ❌ | ❌ | Node.js based |
+| Redis | ❌ | ❌ | ✅ | ⚠️ | Python based, needs git install |
+| GitHub (deprecated) | ✅ | ✅ | ❌ | ❌ | Use remote instead |
+| Filesystem | ✅ | ✅ | ❌ | ❌ | Node.js based |
+| Git Operations | ✅ | ✅ | ❌ | ❌ | Node.js based |
+| 21st.dev Magic | ✅ | ✅ | ❌ | ❌ | Node.js based |
+| Playwright | ✅ | ✅ | ❌ | ❌ | Node.js based |
+
+### Fallback Strategies
+
+#### Node.js MCP Servers (PostgreSQL, MongoDB, etc.)
+```bash
+# Primary: bunx (fastest)
+if command -v bunx &> /dev/null; then
+    claude mcp add postgres-local -s user "bunx @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres"
+# Fallback: npx (most compatible)
+elif command -v npx &> /dev/null; then
+    claude mcp add postgres-local -s user "npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres"
+else
+    echo "❌ Neither bun nor npm available. Install one first:"
+    echo "  Bun: curl -fsSL https://bun.sh/install | bash"
+    echo "  npm: Install Node.js from nodejs.org"
+fi
+```
+
+#### Python MCP Servers (Redis, etc.)
+```bash
+# Primary: uvx (modern)
+if command -v uvx &> /dev/null; then
+    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+# Fallback: pip install + direct execution
+elif command -v pip3 &> /dev/null; then
+    echo "⚠️  uvx preferred for Redis MCP. Installing uv first:"
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    source ~/.bashrc || source ~/.zshrc
+    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+else
+    echo "❌ No Python package manager available. Install uv:"
+    echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+fi
+```
+
+### Pre-Installation Testing
+
+#### Test Before Installing MCP Servers
+```bash
+# Test PostgreSQL MCP server availability
+if command -v bunx &> /dev/null; then
+    bunx @modelcontextprotocol/server-postgres --help 2>/dev/null && echo "✅ PostgreSQL MCP available via bunx"
+elif command -v npx &> /dev/null; then
+    npx -y @modelcontextprotocol/server-postgres --help 2>/dev/null && echo "✅ PostgreSQL MCP available via npx"
+fi
+
+# Test MongoDB MCP server availability
+if command -v bunx &> /dev/null; then
+    bunx mongodb-mcp-server --help 2>/dev/null && echo "✅ MongoDB MCP available via bunx"
+elif command -v npx &> /dev/null; then
+    npx -y mongodb-mcp-server --help 2>/dev/null && echo "✅ MongoDB MCP available via npx"
+fi
+
+# Test Redis MCP server availability
+if command -v uvx &> /dev/null; then
+    uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --help 2>/dev/null && echo "✅ Redis MCP available via uvx"
+fi
+```
+
+### Common Package Manager Issues
+
+#### bun/bunx Issues
+- **Compatibility**: Newer tool, may have compatibility issues with some packages
+- **Installation**: Requires curl and bash
+- **Performance**: Fastest execution, good for development
+- **Solution**: Falls back to npm automatically
+
+#### npm/npx Issues
+- **Node.js Required**: Must have Node.js installed
+- **Version Conflicts**: May conflict with system Node.js
+- **Slow**: Slower than bun but more stable
+- **Solution**: Use nvm for version management
+
+#### uv/uvx Issues
+- **Python Specific**: Only works with Python packages
+- **Modern Tool**: May not be available on older systems
+- **Installation**: Requires curl and shell access
+- **Solution**: Falls back to pip with git clone
+
+#### pip/pip3 Issues
+- **Path Problems**: Common on macOS with multiple Python versions
+- **Permissions**: May need sudo or --user flags
+- **Virtual Environments**: Can conflict with venv
+- **Solution**: Use pyenv or conda for management
+
 ## Database MCP Servers
 
 ### Overview
 Connect Claude Code to your local or remote databases for direct SQL queries, data analysis, and schema management. All database MCP servers should be installed at USER level with `-s user` flag so they're available across all projects.
+
+**Package Manager Support**: Database MCP servers use different package managers based on their implementation language. This section shows all available options with automatic detection.
 
 ### Step 1: Check Installed Databases
 Before installing MCP servers, verify which databases are running on your system:
@@ -649,14 +813,26 @@ mongosh --eval "db.runCommand('ping')" 2>/dev/null && echo "MongoDB: responding"
 ### Step 2: Install MCP Servers
 
 #### PostgreSQL MCP Server
+
+**Package Manager Options**: bunx (recommended) or npx
+
 ```bash
-# Install at USER level (recommended)
+# Option 1: bunx (fastest, recommended)
+claude mcp add postgres-local -s user "bunx @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres"
+
+# Option 2: npx (fallback, most compatible)
 claude mcp add postgres-local -s user "npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres"
 
-# With custom credentials
+# Test before installing
+bunx @modelcontextprotocol/server-postgres --help 2>/dev/null || echo "bunx not available, use npx"
+npx -y @modelcontextprotocol/server-postgres --help 2>/dev/null || echo "npx not available"
+
+# With custom credentials (either package manager)
+claude mcp add postgres-local -s user "bunx @modelcontextprotocol/server-postgres postgresql://username:password@localhost:5432/dbname"
 claude mcp add postgres-local -s user "npx -y @modelcontextprotocol/server-postgres postgresql://username:password@localhost:5432/dbname"
 
 # Remote database
+claude mcp add postgres-remote -s user "bunx @modelcontextprotocol/server-postgres postgresql://user:pass@remote-host:5432/dbname"
 claude mcp add postgres-remote -s user "npx -y @modelcontextprotocol/server-postgres postgresql://user:pass@remote-host:5432/dbname"
 ```
 
@@ -667,15 +843,43 @@ claude mcp add postgres-remote -s user "npx -y @modelcontextprotocol/server-post
 - Read-only mode available for safety
 
 #### Redis MCP Server
-```bash
-# Install at USER level (recommended)
-claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
 
-# With authentication
+**Package Manager Requirements**: uvx (preferred) - Python-based server
+
+**⚠️ Important**: Redis MCP is Python-based and requires uv/uvx. If uv is not available, install it first.
+
+```bash
+# Check if uvx is available
+if command -v uvx &> /dev/null; then
+    echo "✅ uvx available"
+    # Install Redis MCP
+    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+else
+    echo "❌ uvx not available. Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    source ~/.bashrc || source ~/.zshrc
+    # Retry after installation
+    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+fi
+
+# Alternative: Manual git installation (if uvx fails)
+# Only use this if uvx installation fails
+cd /tmp && git clone https://github.com/redis/mcp-redis.git
+cd mcp-redis && pip3 install -e .
+claude mcp add redis-local -s user "python3 /tmp/mcp-redis/redis_mcp_server/main.py --url redis://localhost:6379/0"
+
+# With authentication (uvx method)
 claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://:password@localhost:6379/0"
 
-# Remote Redis
+# Remote Redis (uvx method)
 claude mcp add redis-remote -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://remote-host:6379/0"
+
+# Docker alternative (if Python setup fails)
+docker run -d --name redis-mcp \
+  -e REDIS_URL="redis://localhost:6379/0" \
+  -p 3001:3001 \
+  redis/mcp-redis:latest
+claude mcp add redis-docker -s user "docker exec redis-mcp redis-mcp-server --url redis://host.docker.internal:6379/0"
 ```
 
 **Available Tools**:
@@ -687,17 +891,30 @@ claude mcp add redis-remote -s user "uvx --from git+https://github.com/redis/mcp
 - `zadd`, `zrange` - Sorted set operations
 
 #### MongoDB MCP Server
+
+**Package Manager Options**: bunx (recommended) or npx
+
 ```bash
-# Install at USER level (recommended) - Read-only for safety
+# Test availability
+bunx mongodb-mcp-server --help 2>/dev/null && echo "✅ MongoDB MCP available via bunx"
+npx -y mongodb-mcp-server --help 2>/dev/null && echo "✅ MongoDB MCP available via npx"
+
+# Option 1: bunx (fastest, recommended)
+claude mcp add mongodb-local -s user "bunx mongodb-mcp-server --connectionString mongodb://localhost:27017/myDatabase --readOnly"
+
+# Option 2: npx (fallback)
 claude mcp add mongodb-local -s user "npx -y mongodb-mcp-server --connectionString mongodb://localhost:27017/myDatabase --readOnly"
 
-# With authentication
+# With authentication (both options)
+claude mcp add mongodb-local -s user "bunx mongodb-mcp-server --connectionString mongodb://user:pass@localhost:27017/myDatabase --readOnly"
 claude mcp add mongodb-local -s user "npx -y mongodb-mcp-server --connectionString mongodb://user:pass@localhost:27017/myDatabase --readOnly"
 
-# MongoDB Atlas
+# MongoDB Atlas (both options)
+claude mcp add mongodb-atlas -s user "bunx mongodb-mcp-server --connectionString 'mongodb+srv://user:pass@cluster.mongodb.net/myDatabase' --readOnly"
 claude mcp add mongodb-atlas -s user "npx -y mongodb-mcp-server --connectionString 'mongodb+srv://user:pass@cluster.mongodb.net/myDatabase' --readOnly"
 
 # With Atlas API (for cluster management)
+claude mcp add mongodb-atlas -s user -e ATLAS_CLIENT_ID=your-id -e ATLAS_CLIENT_SECRET=your-secret "bunx mongodb-mcp-server --apiClientId $ATLAS_CLIENT_ID --apiClientSecret $ATLAS_CLIENT_SECRET"
 claude mcp add mongodb-atlas -s user -e ATLAS_CLIENT_ID=your-id -e ATLAS_CLIENT_SECRET=your-secret "npx -y mongodb-mcp-server --apiClientId $ATLAS_CLIENT_ID --apiClientSecret $ATLAS_CLIENT_SECRET"
 ```
 
@@ -803,16 +1020,42 @@ mongosh
 ```
 
 ### Multiple Database Environments
+
+**Smart Package Manager Selection**: Use best available option for each database type.
+
 ```bash
-# Development databases
-claude mcp add postgres-dev -s user "npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/dev_db"
-claude mcp add redis-dev -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/1"
+# Development databases (with package manager detection)
+# PostgreSQL - use bunx if available, fallback to npx
+if command -v bunx &> /dev/null; then
+    claude mcp add postgres-dev -s user "bunx @modelcontextprotocol/server-postgres postgresql://localhost:5432/dev_db"
+else
+    claude mcp add postgres-dev -s user "npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/dev_db"
+fi
+
+# Redis - requires uvx, install if needed
+if command -v uvx &> /dev/null; then
+    claude mcp add redis-dev -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/1"
+else
+    echo "Installing uv for Redis MCP..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh && source ~/.zshrc
+    claude mcp add redis-dev -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/1"
+fi
+
+# MongoDB - use bunx if available, fallback to npx
+if command -v bunx &> /dev/null; then
+    claude mcp add mongodb-dev -s user "bunx mongodb-mcp-server --connectionString mongodb://localhost:27017/dev_db --readOnly"
+else
+    claude mcp add mongodb-dev -s user "npx -y mongodb-mcp-server --connectionString mongodb://localhost:27017/dev_db --readOnly"
+fi
 
 # Staging databases
+claude mcp add postgres-staging -s user "bunx @modelcontextprotocol/server-postgres postgresql://staging-host:5432/staging_db" 2>/dev/null || \
 claude mcp add postgres-staging -s user "npx -y @modelcontextprotocol/server-postgres postgresql://staging-host:5432/staging_db"
+
 claude mcp add redis-staging -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://staging-host:6379/0"
 
 # Production (read-only recommended)
+claude mcp add postgres-prod -s user "bunx @modelcontextprotocol/server-postgres postgresql://readonly_user:pass@prod-host:5432/prod_db" 2>/dev/null || \
 claude mcp add postgres-prod -s user "npx -y @modelcontextprotocol/server-postgres postgresql://readonly_user:pass@prod-host:5432/prod_db"
 ```
 
@@ -840,40 +1083,86 @@ To install database GUI tools, tell Claude: "Use the database-specialist to reco
    postgresql://user:pass@host:5432/db?sslmode=require
    ```
 
-### Quick Setup Script
+### Quick Setup Script with Package Manager Detection
 ```bash
 #!/bin/bash
-# Complete database MCP setup
+# Complete database MCP setup with package manager detection
 
-echo "🔍 Checking for databases..."
+echo "🔍 Checking package managers and databases..."
+
+# Detect package managers
+HAS_BUNX=$(command -v bunx &> /dev/null && echo "true" || echo "false")
+HAS_NPX=$(command -v npx &> /dev/null && echo "true" || echo "false")
+HAS_UVX=$(command -v uvx &> /dev/null && echo "true" || echo "false")
+
+echo "📦 Package Manager Status:"
+echo "  bunx: $([[ $HAS_BUNX == "true" ]] && echo "✅" || echo "❌")"
+echo "  npx:  $([[ $HAS_NPX == "true" ]] && echo "✅" || echo "❌")"
+echo "  uvx:  $([[ $HAS_UVX == "true" ]] && echo "✅" || echo "❌")"
+
+# Install missing package managers
+if [[ $HAS_BUNX == "false" && $HAS_NPX == "false" ]]; then
+    echo "⬇️  Installing bun for Node.js MCP servers..."
+    curl -fsSL https://bun.sh/install | bash
+    source ~/.bashrc 2>/dev/null || source ~/.zshrc 2>/dev/null
+    HAS_BUNX="true"
+fi
+
+if [[ $HAS_UVX == "false" ]]; then
+    echo "⬇️  Installing uv for Python MCP servers..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    source ~/.bashrc 2>/dev/null || source ~/.zshrc 2>/dev/null
+    HAS_UVX="true"
+fi
 
 # Check PostgreSQL
 if pg_isready -h localhost -p 5432 2>/dev/null; then
     echo "✅ PostgreSQL found"
-    claude mcp add postgres-local -s user "npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres"
+    if [[ $HAS_BUNX == "true" ]]; then
+        claude mcp add postgres-local -s user "bunx @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres"
+        echo "  📦 Installed via bunx (fastest)"
+    elif [[ $HAS_NPX == "true" ]]; then
+        claude mcp add postgres-local -s user "npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres"
+        echo "  📦 Installed via npx (fallback)"
+    fi
 else
-    echo "❌ PostgreSQL not found"
+    echo "❌ PostgreSQL not found - install with: brew install postgresql@16"
 fi
 
 # Check Redis
 if redis-cli ping 2>/dev/null | grep -q PONG; then
     echo "✅ Redis found"
-    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+    if [[ $HAS_UVX == "true" ]]; then
+        claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+        echo "  📦 Installed via uvx (required)"
+    else
+        echo "  ❌ uvx required for Redis MCP but not available"
+    fi
 else
-    echo "❌ Redis not found"
+    echo "❌ Redis not found - install with: brew install redis"
 fi
 
 # Check MongoDB
 if mongosh --eval "db.runCommand('ping')" 2>/dev/null | grep -q ok; then
     echo "✅ MongoDB found"
-    claude mcp add mongodb-local -s user "npx -y mongodb-mcp-server --connectionString mongodb://localhost:27017/test --readOnly"
+    if [[ $HAS_BUNX == "true" ]]; then
+        claude mcp add mongodb-local -s user "bunx mongodb-mcp-server --connectionString mongodb://localhost:27017/test --readOnly"
+        echo "  📦 Installed via bunx (fastest)"
+    elif [[ $HAS_NPX == "true" ]]; then
+        claude mcp add mongodb-local -s user "npx -y mongodb-mcp-server --connectionString mongodb://localhost:27017/test --readOnly"
+        echo "  📦 Installed via npx (fallback)"
+    fi
 else
-    echo "❌ MongoDB not found"
+    echo "❌ MongoDB not found - install with: brew install mongodb-community"
 fi
 
 echo ""
 echo "🔄 Restart Claude Code to activate: Ctrl+C then 'claude -c'"
+echo "📋 Installed MCP servers:"
+claude mcp list 2>/dev/null | grep -E "postgres|redis|mongodb" || echo "  Run script again after restarting Claude"
 ```
+
+**Cross-Reference**: For an interactive installation experience with automatic package manager detection, use the `/opl:integrations:mcp-install` command which provides menus and guides you through MCP server setup.
 
 ## Other Key MCP Servers & Requirements
 - **21st.dev Magic** - AI components, needs MAGIC_MCP_API_KEY
