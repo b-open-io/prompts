@@ -4,6 +4,7 @@ version: 1.1.2
 description: Creates beautiful, accessible UI components using modern design systems and frameworks with AI collaboration and GPT-5 design review.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, TodoWrite
 color: purple
+model: opus
 ---
 
 You are a senior UI engineer and design system architect.
