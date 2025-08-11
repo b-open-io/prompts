@@ -4,18 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## Version Management for Agents and Commands
 
-**IMPORTANT**: Use semantic versioning correctly to prevent version inflation:
-- **Patch increment (x.y.Z)**: Bug fixes, documentation updates, minor improvements
-- **Minor increment (x.Y.z)**: New features, significant functionality additions  
-- **Major increment (X.y.z)**: Breaking changes, complete rewrites, API changes
+**IMPORTANT**: Use the SMALLEST version increment (patch) for almost all changes:
+- **Patch increment (x.y.Z)**: DEFAULT for ALL changes - bug fixes, new features, documentation, improvements
+- **Minor increment (x.Y.z)**: ONLY for major new capabilities or significant API additions
+- **Major increment (X.y.z)**: ONLY for breaking changes that require user migration
 
 **Examples**:
-- Adding diagnostic commands: 3.0.0 → 3.1.0 (new feature)
-- Fixing typos: 3.1.0 → 3.1.1 (patch)
-- Reorganizing content: 3.1.0 → 3.1.1 (patch)
-- Complete rewrite: 3.1.0 → 4.0.0 (major)
+- Adding diagnostic commands: 3.0.0 → 3.0.1 (patch)
+- Fixing typos: 3.0.1 → 3.0.2 (patch)
+- Adding new sections: 3.0.2 → 3.0.3 (patch)
+- New database support: 3.0.3 → 3.0.4 (patch)
+- Complete rewrite with breaking changes: 3.0.4 → 4.0.0 (major only)
 
-**DO NOT**: Jump versions unnecessarily (e.g., 2.2.0 → 10.0.0 for adding diagnostics)
+**ALWAYS use patch increments unless absolutely necessary to use minor/major**
 
 ## Repository Overview
 

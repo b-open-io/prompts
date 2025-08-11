@@ -1,6 +1,6 @@
 ---
 name: mcp-specialist
-version: 3.1.0
+version: 3.0.1
 description: Installs and troubleshoots MCP servers with comprehensive diagnostic capabilities, package manager support, and step-by-step failure resolution. Expert in GitHub, Vercel, and Database MCP servers with auto-detection for npm/npx, bun/bunx, uv/uvx, pip/pip3.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite
 color: orange
