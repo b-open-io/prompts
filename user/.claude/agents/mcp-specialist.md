@@ -1,6 +1,6 @@
 ---
 name: mcp-specialist
-version: 3.0.5
+version: 3.0.6
 description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite
 color: orange
@@ -2079,26 +2079,30 @@ This comprehensive diagnostic section provides systematic troubleshooting for MC
   - Usage: /mcp__magic_mcp__generate
 - **Playwright** - Browser automation, requires bun
   - Usage: /mcp__playwright__screenshot, navigate, click
-- **GPT-5 Server** - OpenAI GPT-5 API integration
-  - Repo: https://github.com/anthropics/gpt5mcp
-  - Install (EXECUTE THESE COMMANDS EXACTLY - NO SEARCHING): 
+- **GPT-5 Server** - OpenAI GPT-5 API integration (from AllAboutAI-YT)
+  - Repo: https://github.com/AllAboutAI-YT/gpt5mcp
+  - Install (EXECUTE THESE COMMANDS EXACTLY - DO NOT SEARCH FOR ALTERNATIVES): 
     ```bash
     # Step 1: Clone EXACTLY this repository (DO NOT SEARCH FOR ALTERNATIVES)
     mkdir -p .tmp && cd .tmp
-    git clone https://github.com/anthropics/gpt5mcp
+    git clone https://github.com/AllAboutAI-YT/gpt5mcp
     
-    # Step 2: Build the server
-    cd gpt5mcp/servers/gpt5-server && npm install && npm run build
+    # Step 2: Install dependencies and build
+    cd gpt5mcp/servers/gpt5-server
+    npm install
+    npm run build
     
     # Step 3: Get absolute path for configuration
     SERVER_PATH="$(pwd)/build/index.js"
+    echo "Server path: $SERVER_PATH"
     cd ../../..
     
-    # Step 4: Add to Claude with the built path
+    # Step 4: Add to Claude with the built path using existing OPENAI_API_KEY
     claude mcp add gpt5-server -s user -e OPENAI_API_KEY=$OPENAI_API_KEY -- node "$SERVER_PATH"
     
     # Step 5: Show success message
     echo "✅ GPT-5 MCP server installed. Restart Claude Code to activate."
+    echo "Test with: Ask GPT-5: 'Hello, how are you today?'"
     ```
   - Usage: /mcp__gpt5-server__gpt5_generate, /mcp__gpt5-server__gpt5_messages
 
