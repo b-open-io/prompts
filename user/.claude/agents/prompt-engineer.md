@@ -1,7 +1,7 @@
 ---
 name: prompt-engineer
-version: 2.2.1
-description: Creates and maintains Claude Code slash commands, ensuring correct permissions and best practices.
+version: 2.2.2
+description: Slash command creation, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
 model: opus
 color: blue

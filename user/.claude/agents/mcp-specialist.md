@@ -1,7 +1,7 @@
 ---
 name: mcp-specialist
-version: 3.0.1
-description: Installs and troubleshoots MCP servers with comprehensive diagnostic capabilities, package manager support, and step-by-step failure resolution. Expert in GitHub, Vercel, and Database MCP servers with auto-detection for npm/npx, bun/bunx, uv/uvx, pip/pip3.
+version: 3.0.2
+description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite
 color: orange
 ---

@@ -1,7 +1,7 @@
 ---
 name: database-specialist
-version: 1.2.0
-description: Expert in database design, optimization, and data modeling for SQL and NoSQL systems with GUI tools knowledge and MCP awareness.
+version: 1.2.1
+description: Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
 color: green
 model: opus
