@@ -1,6 +1,6 @@
 ---
 name: agent-specialist
-version: 1.2.0
+version: 1.3.0
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, and resilient chat UIs.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
@@ -16,7 +16,7 @@ Mirror user instructions precisely. Prefer TypeScript and Bun. I don't handle pa
 ### Self-Announcement
 When starting any task, immediately announce:
 ```
-🤖 **Agent Specialist v1.2.0** activated
+🤖 **Agent Specialist v1.3.0** activated
 📋 **Specialization**: AI agent systems with OpenAI/Vercel SDKs, tool-calling, routing, and memory
 🎯 **Mission**: [State the specific task you're about to accomplish]
 ```
@@ -87,7 +87,11 @@ export const runtime = 'edge'
 export async function POST(req: Request) {
   const { messages } = await req.json()
   const result = await streamText({
-    model: openai('gpt-4o-mini'),
+    // GPT-5 models available: gpt-5, gpt-5-mini, gpt-5-nano
+    model: openai('gpt-5-mini'), // Balanced performance & cost
+    // model: openai('gpt-5'),      // Advanced reasoning & multimodal
+    // model: openai('gpt-5-nano'),  // Fast, lightweight tasks
+    // model: openai('gpt-4o-mini'), // Legacy GPT-4 option
     system: 'Be concise. Use tools only when needed.',
     messages,
     tools
@@ -116,134 +120,513 @@ export default function Chat() {
 }
 ```
 
-### AI Elements (Component Library for AI Applications)
+### GPT-5 Model Selection
 
-**Overview**: AI Elements is a comprehensive component library built on shadcn/ui designed specifically for AI-native applications. It provides ready-to-use, composable UI elements that handle complex AI interaction patterns out of the box.
+**Overview**: GPT-5 models provide next-generation AI capabilities with enhanced reasoning, multimodal understanding, and improved performance across all tasks.
 
-**Installation**:
-```bash
-# Initialize AI Elements in your project
-npx ai-elements@latest
+**Available GPT-5 Models**:
 
-# Follow the interactive setup to choose components
-# Supports both TypeScript and JavaScript projects
+1. **`gpt-5`** - Flagship model
+   - **Use for**: Complex reasoning, creative writing, code generation, multimodal tasks
+   - **Capabilities**: Advanced chain-of-thought reasoning, image/audio understanding, 200K+ context
+   - **Performance**: Highest accuracy and capability, but higher latency and cost
+   ```ts
+   import { openai } from '@ai-sdk/openai'
+   const model = openai('gpt-5')
+   ```
+
+2. **`gpt-5-mini`** - Balanced model
+   - **Use for**: General chat, code assistance, content generation, API backends
+   - **Capabilities**: Strong reasoning with optimized speed, 128K context
+   - **Performance**: 95% of gpt-5 capability at 40% of the cost
+   ```ts
+   const model = openai('gpt-5-mini')
+   ```
+
+3. **`gpt-5-nano`** - Lightweight model
+   - **Use for**: Classification, extraction, simple queries, real-time applications
+   - **Capabilities**: Fast inference, basic reasoning, 32K context
+   - **Performance**: Sub-100ms responses, lowest cost, ideal for high-volume
+   ```ts
+   const model = openai('gpt-5-nano')
+   ```
+
+**Integration Examples**:
+
+```ts
+// Using with streamText for chat
+import { streamText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+
+const result = await streamText({
+  model: openai('gpt-5-mini'),
+  messages,
+  // GPT-5 excels at multi-step reasoning
+  system: 'Think step-by-step before answering.',
+})
 ```
 
-**Complete Component Library**:
+```ts
+// Using with generateText for single responses
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
 
-**Core Chat Components**:
-- **`<Assistant>`**: Wrapper for AI assistant responses with avatar and metadata
-- **`<User>`**: User message component with profile and timestamp
-- **`<Message>`**: Base message component supporting all content types
-- **`<Thread>`**: Complete conversation thread with auto-scrolling and virtualization
-- **`<Composer>`**: Rich text input with file attachments, @mentions, and slash commands
+const { text } = await generateText({
+  model: openai('gpt-5'), // Use flagship for complex tasks
+  prompt: 'Analyze this codebase and suggest architectural improvements',
+  temperature: 0.7,
+})
+```
 
-**Tool & Function Components**:
-- **`<Tool>`**: Styled notification for tool invocations with loading states
-  ```tsx
-  <Tool name="weather" input={{ city: "NYC" }} isLoading={true}>
-    Getting weather data...
-  </Tool>
-  ```
-- **`<ToolCall>`**: Display tool/function calls with parameters
-- **`<ToolResult>`**: Render tool execution results with formatting
-- **`<FunctionInvocation>`**: Show function calls with syntax highlighting
-- **`<ToolChain>`**: Visualize sequences of tool calls
+```ts
+// Using with streamObject for structured output
+import { streamObject } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { z } from 'zod'
 
-**Content Display Components**:
-- **`<Markdown>`**: Enhanced markdown renderer with LaTeX, mermaid diagrams
-- **`<CodeBlock>`**: Syntax highlighting with diff view, line numbers, copy button
-- **`<Attachment>`**: File attachments with previews (images, PDFs, docs)
-- **`<Citation>`**: Reference links with hover previews
-- **`<Table>`**: Data tables with sorting, filtering, CSV export
-- **`<Chart>`**: Interactive charts for data visualization
-- **`<LaTeX>`**: Math equation rendering with KaTeX
-- **`<Mermaid>`**: Diagram rendering (flowcharts, sequences, etc.)
+const { partialObjectStream } = await streamObject({
+  model: openai('gpt-5-nano'), // Fast extraction
+  schema: z.object({
+    entities: z.array(z.string()),
+    sentiment: z.enum(['positive', 'negative', 'neutral']),
+  }),
+  prompt: 'Extract entities and sentiment from this text',
+})
+```
 
-**Interactive Components**:
-- **`<Suggestions>`**: Quick reply suggestions and prompts
-- **`<Actions>`**: Action buttons (retry, edit, copy, share)
-- **`<Feedback>`**: Thumbs up/down with optional text feedback
-- **`<Rating>`**: Star ratings for response quality
-- **`<Branch>`**: Conversation branching with version history
-- **`<Compare>`**: Side-by-side comparison of responses
-- **`<Regenerate>`**: Regenerate response with modified parameters
+**Advanced GPT-5 Features**:
 
-**Status & Loading Components**:
-- **`<Thinking>`**: Animated thinking indicator with custom messages
-- **`<Loading>`**: Skeleton loaders for messages
-- **`<StreamingIndicator>`**: Live streaming status with tokens/sec
-- **`<Error>`**: Error boundaries with retry options
-- **`<TokenUsage>`**: Real-time token counter with cost display
-- **`<Latency>`**: Response time indicators
+```ts
+// Multimodal with GPT-5
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
 
-**System Components**:
-- **`<SystemPrompt>`**: Display/edit system prompts
-- **`<ModelSelector>`**: Dropdown for model selection with capabilities
-- **`<Temperature>`**: Temperature slider with presets
-- **`<Parameters>`**: Full parameter control panel
-- **`<History>`**: Conversation history browser
-- **`<Export>`**: Export conversations (JSON, Markdown, PDF)
+const { text } = await generateText({
+  model: openai('gpt-5'),
+  messages: [{
+    role: 'user',
+    content: [
+      { type: 'text', text: 'What\'s in this image?' },
+      { type: 'image', image: base64ImageData },
+    ],
+  }],
+})
+```
 
-**Advanced Components**:
-- **`<Artifacts>`**: Claude-style artifacts for code/documents
-- **`<Canvas>`**: Collaborative canvas for diagrams/whiteboarding
-- **`<Voice>`**: Voice input/output with transcription
-- **`<Video>`**: Video message support with playback
-- **`<Screen>`**: Screen sharing and recording
-- **`<Whiteboard>`**: Drawing and annotation tools
+```ts
+// Enhanced tool calling with GPT-5
+const result = await streamText({
+  model: openai('gpt-5-mini'),
+  tools: {
+    analyze: tool({
+      description: 'Perform deep analysis',
+      parameters: z.object({ 
+        topic: z.string(),
+        depth: z.enum(['surface', 'detailed', 'comprehensive']),
+      }),
+      execute: async (params) => {
+        // GPT-5's improved function calling rarely needs retries
+        return performAnalysis(params)
+      },
+    }),
+  },
+  toolChoice: 'auto', // GPT-5 has superior tool selection
+})
+```
 
-**Integration**:
-```tsx
-// Example: Using AI Elements with Vercel AI SDK
-import { Conversation, Message, Actions } from '@ai-elements/react'
-import { useChat } from 'ai/react'
+**Model Selection Guidelines**:
 
-export function AIChat() {
-  const { messages, input, handleSubmit, isLoading } = useChat()
-  
-  return (
-    <Conversation>
-      {messages.map(m => (
-        <Message 
-          key={m.id}
-          role={m.role}
-          content={m.content}
-          toolInvocations={m.toolInvocations}
-        />
-      ))}
-      <Actions 
-        onSubmit={handleSubmit}
-        isLoading={isLoading}
-        input={input}
-      />
-    </Conversation>
-  )
+| Use Case | Recommended Model | Why |
+|----------|-------------------|-----|
+| Production chatbot | `gpt-5-mini` | Balance of capability and cost |
+| Code generation | `gpt-5` | Superior understanding of complex logic |
+| Real-time autocomplete | `gpt-5-nano` | Sub-100ms latency |
+| Document analysis | `gpt-5` | Best for long context and reasoning |
+| API classification | `gpt-5-nano` | Fast and cost-effective |
+| Creative writing | `gpt-5` | Highest quality output |
+| Customer support | `gpt-5-mini` | Good reasoning with reasonable cost |
+| Data extraction | `gpt-5-nano` | Quick structured output |
+
+**Performance Characteristics**:
+
+```ts
+// Latency expectations
+const latencyGuide = {
+  'gpt-5': '800-1500ms first token',
+  'gpt-5-mini': '300-600ms first token',
+  'gpt-5-nano': '50-150ms first token',
+}
+
+// Context windows
+const contextLimits = {
+  'gpt-5': 200_000,      // 200K tokens
+  'gpt-5-mini': 128_000, // 128K tokens
+  'gpt-5-nano': 32_000,  // 32K tokens
+}
+
+// Relative costs (approximate)
+const relativeCosts = {
+  'gpt-5': 1.0,      // Baseline
+  'gpt-5-mini': 0.4, // 40% of gpt-5
+  'gpt-5-nano': 0.1, // 10% of gpt-5
 }
 ```
 
-**SDK Compatibility**:
-- **OpenAI SDK**: Native support for GPT models, function calling, and streaming
-- **Anthropic SDK**: Full Claude integration with artifacts and multi-modal content
-- **X AI (Grok)**: Support for Grok models with specialized reasoning UI
-- **Vercel AI SDK**: Seamless integration with useChat, useCompletion, and useAssistant hooks
-- **Custom Adapters**: Extensible architecture for integrating any LLM provider
+**Migration from GPT-4**:
 
-**Use Cases**:
-- **Rapid Prototyping**: Build AI interfaces in minutes with pre-configured components
-- **Production Applications**: Battle-tested components used in enterprise deployments
-- **Multi-Modal Interfaces**: Handle text, images, audio, and video in conversations
-- **Agent UIs**: Specialized components for tool-calling agents and workflows
-- **Analytics Dashboards**: Built-in components for token usage, costs, and performance metrics
+```ts
+// Before (GPT-4)
+const model = openai('gpt-4o')
 
-**Benefits**:
-- **Ready-to-Use**: Zero-config components that work immediately
-- **Fully Composable**: Mix and match components to build custom layouts
-- **Accessibility**: WCAG 2.1 AA compliant with keyboard navigation and screen reader support
-- **Theme Support**: Automatic dark/light mode with customizable design tokens
-- **Type Safety**: Full TypeScript support with exported types for all components
-- **Performance**: Optimized rendering with virtual scrolling for long conversations
-- **Responsive**: Mobile-first design that adapts to all screen sizes
+// After (GPT-5) - Drop-in replacement
+const model = openai('gpt-5-mini')
+
+// No other code changes needed - fully compatible API
+```
+
+### AI Elements (Component Library for AI Applications)
+
+**Overview**: AI Elements is a comprehensive component library built on shadcn/ui designed specifically for AI-native applications. It provides ready-to-use, composable UI elements that handle complex AI interaction patterns out of the box. Unlike traditional component libraries hidden in node_modules, AI Elements components are added directly to your codebase, giving you full control and visibility.
+
+**Detailed Setup Process**:
+
+```bash
+# 1. Initialize AI Elements in your project (interactive CLI)
+npx ai-elements@latest
+
+# The CLI will:
+# - Detect your project framework (Next.js, Vite, etc.)
+# - Check for Tailwind CSS and configure if needed
+# - Let you select components to install
+# - Add components directly to your src/components/ai-elements/ directory
+# - Set up required dependencies
+
+# 2. Select components during installation:
+# ✓ Message - Core message display component
+# ✓ Prompt Input - Input field with toolbar
+# ✓ Response - AI response container
+# ✓ Tool - Tool invocation display
+# ✓ Loader - Loading states
+# ✓ Sources - Citation management
+# ... and more
+
+# 3. Components are now in YOUR codebase:
+ls -la src/components/ai-elements/
+# message.tsx
+# prompt-input.tsx
+# response.tsx
+# tool.tsx
+# loader.tsx
+# ...
+```
+
+**Key Concept - Components Live in Your Code**:
+- **No Hidden Dependencies**: Components are NOT in node_modules
+- **Full Visibility**: See and understand every line of code
+- **Direct Editing**: Modify components directly in your codebase
+- **Version Control**: Components are part of your git repository
+- **Safe Re-installation**: CLI prompts before overwriting modified components
+
+**Complete Component List**:
+
+**Core Components**:
+- **`<Actions>`**: Quick action buttons and interactions
+- **`<Branch>`**: Conversation branching and alternative paths
+- **`<Code Block>`**: Syntax-highlighted code display with copy functionality
+- **`<Conversation>`**: Complete conversation container with scroll management
+- **`<Image>`**: AI-generated or uploaded image display
+- **`<Loader>`**: Loading indicators and skeleton states
+- **`<Message>`**: Base message component with role-based styling
+- **`<Prompt Input>`**: Advanced input field with model selection and tools
+- **`<Reasoning>`**: Chain-of-thought reasoning display
+- **`<Response>`**: AI response container with markdown rendering
+- **`<Sources>`**: Citation and source reference management
+- **`<Suggestion>`**: Quick suggestion chips for common queries
+- **`<Task>`**: Task execution and status display
+- **`<Tool>`**: Tool invocation display with loading states
+- **`<Web Preview>`**: Website preview cards and embeds
+- **`<Inline Citation>`**: Inline reference links and citations
+
+**Input Components**:
+- **`<PromptInput>`**: Advanced input field with attachments and toolbar
+- **`<PromptInputTextarea>`**: Multi-line input with auto-resize
+- **`<PromptInputToolbar>`**: Toolbar for model selection and tools
+- **`<Composer>`**: Rich text input with @mentions and slash commands
+
+**Tool & Function Components**:
+- **`<Tool>`**: Tool invocation display with loading states
+- **`<ToolCall>`**: Display function calls with parameters
+- **`<ToolResult>`**: Render tool execution results
+- **`<Task>`**: Task execution status and progress
+
+**Content Display Components**:
+- **`<Image>`**: AI-generated or uploaded image display
+- **`<WebPreview>`**: Website preview with metadata
+- **`<InlineCitation>`**: Inline reference links with tooltips
+- **`<Sources>`**: Source citations with expandable details
+- **`<Attachment>`**: File attachments with previews
+- **`<CodeBlock>`**: Syntax highlighting with copy button
+- **`<Markdown>`**: Enhanced markdown rendering
+
+**Interactive Components**:
+- **`<Suggestion>`**: Quick reply suggestion chips
+- **`<Suggestions>`**: Container for multiple suggestions
+- **`<Actions>`**: Action buttons (retry, edit, copy)
+- **`<Feedback>`**: Thumbs up/down feedback
+
+**Status Components**:
+- **`<Loader>`**: Various loading states and animations
+- **`<Thinking>`**: AI thinking indicator
+- **`<StreamingIndicator>`**: Live streaming status
+- **`<Error>`**: Error boundaries with retry
+
+**Practical Usage Example**:
+
+```tsx
+// app/chat/page.tsx - Real-world implementation
+'use client';
+
+import { useChat } from '@ai-sdk/react';
+// Components are imported from YOUR codebase, not a library
+import { Message, MessageAvatar, MessageContent } from '@/components/ai-elements/message';
+import { Response } from '@/components/ai-elements/response';
+import { Tool } from '@/components/ai-elements/tool';
+import { Loader } from '@/components/ai-elements/loader';
+import { PromptInput, PromptInputTextarea } from '@/components/ai-elements/prompt-input';
+import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
+
+export default function ChatPage() {
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    api: '/api/chat',
+  });
+
+  return (
+    <div className="max-w-4xl mx-auto p-4">
+      {/* Message List */}
+      <div className="space-y-4 mb-4">
+        {messages.map((message) => (
+          <Message key={message.id} variant={message.role}>
+            <MessageAvatar role={message.role} />
+            <MessageContent>
+              {/* Handle different message parts */}
+              {message.toolInvocations?.map((invocation) => (
+                <Tool
+                  key={invocation.toolCallId}
+                  name={invocation.toolName}
+                  input={invocation.args}
+                  isLoading={!invocation.result}
+                >
+                  {invocation.result && (
+                    <div>{JSON.stringify(invocation.result, null, 2)}</div>
+                  )}
+                </Tool>
+              ))}
+              
+              {/* Main message content */}
+              <Response>{message.content}</Response>
+            </MessageContent>
+          </Message>
+        ))}
+        
+        {/* Loading state */}
+        {isLoading && (
+          <Message variant="assistant">
+            <MessageAvatar role="assistant" />
+            <MessageContent>
+              <Loader />
+            </MessageContent>
+          </Message>
+        )}
+      </div>
+
+      {/* Quick suggestions */}
+      {messages.length === 0 && (
+        <Suggestions>
+          <Suggestion onClick={() => handleInputChange({ target: { value: 'What can you help me with?' } })}>
+            What can you help me with?
+          </Suggestion>
+          <Suggestion onClick={() => handleInputChange({ target: { value: 'Tell me about AI Elements' } })}>
+            Tell me about AI Elements
+          </Suggestion>
+        </Suggestions>
+      )}
+
+      {/* Input area */}
+      <PromptInput onSubmit={handleSubmit}>
+        <PromptInputTextarea
+          value={input}
+          onChange={handleInputChange}
+          placeholder="Type your message..."
+          disabled={isLoading}
+        />
+      </PromptInput>
+    </div>
+  );
+}
+```
+
+**Extensibility**:
+
+All AI Elements components take as many primitive attributes as possible. For example, the `Message` component extends `HTMLAttributes<HTMLDivElement>`, so you can pass any props that a `div` supports. This makes it easy to extend the component with your own styles or functionality.
+
+**Customization**:
+
+```tsx
+// Since components live in YOUR code, you can modify them directly:
+
+// Before: src/components/ai-elements/message.tsx
+export function Message({ children, variant, className }) {
+  return (
+    <div className={cn(
+      "flex gap-3 p-4 rounded-lg", // <- You can remove rounded-lg
+      variant === 'user' && "bg-blue-50",
+      variant === 'assistant' && "bg-gray-50",
+      className
+    )}>
+      {children}
+    </div>
+  );
+}
+
+// After your customization:
+export function Message({ children, variant, className, noBorder }) {
+  return (
+    <div className={cn(
+      "flex gap-3 p-4", // Removed rounded-lg
+      !noBorder && "border-b", // Added custom border
+      variant === 'user' && "bg-gradient-to-r from-blue-50 to-transparent", // Custom gradient
+      variant === 'assistant' && "bg-gray-50",
+      className
+    )}>
+      {children}
+    </div>
+  );
+}
+```
+
+**Usage Example (from official docs)**:
+
+```tsx title="conversation.tsx"
+'use client';
+
+import {
+  Message,
+  MessageAvatar,
+  MessageContent,
+} from '@/components/ai-elements/message';
+import { useChat } from '@ai-sdk/react';
+import { Response } from '@/components/ai-elements/response';
+
+const Example = () => {
+  const { messages } = useChat();
+
+  return (
+    <>
+      {messages.map(({ role, parts }, index) => (
+        <Message from={role} key={index}>
+          <MessageContent>
+            {parts.map((part, i) => {
+              switch (part.type) {
+                case 'text':
+                  return <Response key={`${role}-${i}`}>{part.text}</Response>;
+              }
+            })}
+          </MessageContent>
+        </Message>
+      ))}
+    </>
+  );
+};
+
+export default Example;
+```
+
+**Re-installation with Preservation**:
+
+```bash
+# When updating or adding new components:
+npx ai-elements@latest
+
+# CLI detects modified components and asks:
+# ⚠️  message.tsx has been modified. Options:
+# 1. Skip (keep your changes)
+# 2. Overwrite (lose your changes)
+# 3. View diff
+# Choose: 1
+
+# This ensures your customizations are never lost accidentally
+```
+
+**Tailwind CSS Integration**:
+
+```tsx
+// AI Elements uses your existing Tailwind configuration
+// Components reference your design tokens:
+
+// Uses your configured colors
+<Message className="bg-primary text-primary-foreground" />
+
+// Works with your custom Tailwind utilities
+<Response className="prose prose-brand" />
+
+// Respects your dark mode settings
+<Tool className="dark:bg-gray-800" />
+```
+
+**Key Benefits**:
+
+1. **Full Control**: Components are in YOUR codebase, not hidden in node_modules
+2. **Transparency**: See exactly how each component works
+3. **Customizable**: Modify any component to match your needs
+4. **No Black Box**: No mysterious library behavior to debug
+5. **Version Control**: Track component changes in git
+6. **Safe Updates**: CLI respects your modifications
+7. **Framework Agnostic**: Works with any React framework
+8. **Type Safety**: Full TypeScript with your project's tsconfig
+9. **Tree Shaking**: Only bundle components you actually use
+10. **Learning Resource**: Study production-ready AI UI patterns
+
+**Philosophy**:
+
+AI Elements follows the shadcn/ui philosophy:
+- "This is NOT a library, it's a collection of copy-pasteable components"
+- "The code is yours to modify and extend"
+- "No npm package to install, no versioning issues"
+- "Components extend HTML primitives for maximum flexibility"
+
+**Common Patterns**:
+
+```tsx
+// Streaming responses with partial rendering
+{message.content && (
+  <Response isStreaming={isLoading}>
+    {message.content}
+  </Response>
+)}
+
+// Tool invocations with results
+{toolInvocations.map(tool => (
+  <Tool 
+    key={tool.id}
+    name={tool.name}
+    input={tool.input}
+    isLoading={tool.state === 'calling'}
+  >
+    {tool.result && <ToolResult data={tool.result} />}
+  </Tool>
+))}
+
+// Error handling
+<ErrorBoundary fallback={<Error onRetry={retry} />}>
+  <Message>{riskyContent}</Message>
+</ErrorBoundary>
+
+// Custom avatar logic
+<MessageAvatar 
+  src={message.role === 'user' ? userAvatar : '/ai-avatar.png'}
+  fallback={message.role === 'user' ? 'U' : 'AI'}
+/>
+```
 
 **Advanced Features**:
 ```tsx
