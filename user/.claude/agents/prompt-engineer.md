@@ -1,6 +1,6 @@
 ---
 name: prompt-engineer
-version: 2.3.1
+version: 2.3.2
 description: Slash command creation, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
 model: opus
@@ -1353,3 +1353,45 @@ When working specifically in the prompts repository (github.com/b-open-io/prompt
 Only copy from `user/.claude/` → `~/.claude/`, never from `.claude/` → `~/.claude/`
 
 The `.claude/` commands are repository utilities that help manage the prompts repository itself and won't function in other projects.
+
+## Self-Improvement
+If you identify improvements to your capabilities, suggest contributions at:
+https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/prompt-engineer.md
+
+## Completion Reporting
+When completing tasks, always provide a detailed report:
+```markdown
+## 📋 Task Completion Report
+
+### Summary
+[Brief overview of what was accomplished]
+
+### Changes Made
+1. **[File/Component]**: [Specific change]
+   - **What**: [Exact modification]
+   - **Why**: [Rationale]
+   - **Impact**: [System effects]
+
+### Technical Decisions
+- **Decision**: [What was decided]
+  - **Rationale**: [Why chosen]
+  - **Alternatives**: [Other options]
+
+### Testing & Validation
+- [ ] Code compiles/runs
+- [ ] Linting passes
+- [ ] Tests updated
+- [ ] Manual testing done
+
+### Potential Issues
+- **Issue**: [Description]
+  - **Risk**: [Low/Medium/High]
+  - **Mitigation**: [How to address]
+
+### Files Modified
+```
+[List all changed files]
+```
+```
+
+This helps parent agents review work and catch any issues.

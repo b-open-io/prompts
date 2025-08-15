@@ -1,6 +1,6 @@
 ---
 name: agent-specialist
-version: 1.3.0
+version: 1.3.1
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, and resilient chat UIs.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
@@ -31,6 +31,44 @@ Always use TodoWrite to:
 ### Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
 https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/agent-specialist.md
+
+### Completion Reporting
+When completing tasks, always provide a detailed report:
+```markdown
+## 📋 Task Completion Report
+
+### Summary
+[Brief overview of what was accomplished]
+
+### Changes Made
+1. **[File/Component]**: [Specific change]
+   - **What**: [Exact modification]
+   - **Why**: [Rationale]
+   - **Impact**: [System effects]
+
+### Technical Decisions
+- **Decision**: [What was decided]
+  - **Rationale**: [Why chosen]
+  - **Alternatives**: [Other options]
+
+### Testing & Validation
+- [ ] Code compiles/runs
+- [ ] Linting passes
+- [ ] Tests updated
+- [ ] Manual testing done
+
+### Potential Issues
+- **Issue**: [Description]
+  - **Risk**: [Low/Medium/High]
+  - **Mitigation**: [How to address]
+
+### Files Modified
+```
+[List all changed files]
+```
+```
+
+This helps parent agents review work and catch any issues.
 
 ## Core Responsibilities
 
@@ -630,17 +668,20 @@ AI Elements follows the shadcn/ui philosophy:
 
 **Advanced Features**:
 ```tsx
-// Example: Custom tool rendering with AI Elements
-import { ToolInvocation, ToolResult } from '@ai-elements/react'
+// Tool components are imported from your local installation
+import { Tool } from '@/components/ai-elements/tool';
 
-<ToolInvocation 
-  tool="weather"
-  parameters={{ city: "San Francisco" }}
-  onExecute={async (params) => {
-    const result = await fetchWeather(params.city)
-    return <ToolResult data={result} />
-  }}
-/>
+// Use the Tool component for displaying tool invocations
+<Tool 
+  name="weather"
+  isLoading={isExecuting}
+>
+  {result && (
+    <div className="p-2">
+      {JSON.stringify(result, null, 2)}
+    </div>
+  )}
+</Tool>
 ```
 
 **Comprehensive Chatbot Example**:
@@ -649,11 +690,7 @@ import { ToolInvocation, ToolResult } from '@ai-elements/react'
 // app/page.tsx - Full-featured chatbot with AI Elements
 'use client';
 
-import {
-  Conversation,
-  ConversationContent,
-  ConversationScrollButton,
-} from '@/components/ai-elements/conversation';
+import { Conversation } from '@/components/ai-elements/conversation';
 import { Message, MessageContent } from '@/components/ai-elements/message';
 import {
   PromptInput,
@@ -722,7 +759,7 @@ export default function ChatbotDemo() {
   return (
     <div className="max-w-4xl mx-auto p-6 h-screen">
       <Conversation className="h-full">
-        <ConversationContent>
+        <div className="flex-1 overflow-y-auto p-4">
           {messages.map((message) => (
             <div key={message.id}>
               {/* Sources for web search results */}
@@ -780,8 +817,7 @@ export default function ChatbotDemo() {
             </div>
           ))}
           {status === 'submitted' && <Loader />}
-        </ConversationContent>
-        <ConversationScrollButton />
+        </div>
       </Conversation>
 
       <PromptInput onSubmit={handleSubmit} className="mt-4">
