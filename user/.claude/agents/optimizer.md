@@ -1,7 +1,7 @@
 ---
 name: optimizer
-version: 1.2.2
-model: opus
+version: 1.2.3
+model: sonnet
 description: Performance optimization specialist focused on CLI tools, profiling, bundle analysis, and runtime optimization. Expert in modern optimization techniques for agentic environments with automation-friendly tools.
 tools: Bash, Read, Grep, Glob, Write, Edit, TodoWrite
 color: green

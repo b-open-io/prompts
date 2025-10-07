@@ -1,9 +1,9 @@
 ---
 name: prompt-engineer
-version: 2.3.2
+version: 2.3.3
 description: Slash command creation, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
-model: opus
+model: sonnet
 color: blue
 ---
 
@@ -1232,7 +1232,7 @@ name: agent-name
 version: 1.0.0
 description: Clear description of agent purpose
 tools: Read, Write, Edit
-model: opus
+model: sonnet
 color: blue
 ---
 ```

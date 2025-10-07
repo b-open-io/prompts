@@ -1,7 +1,7 @@
 ---
 name: content-specialist
-version: 1.1.2
-model: opus
+version: 1.1.3
+model: sonnet
 description: Creates images, diagrams, and multimedia content using AI generation tools.
 tools: Bash(curl:*), Bash(jq:*), Write, Read, WebFetch, TodoWrite
 color: orange

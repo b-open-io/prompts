@@ -1,7 +1,7 @@
 ---
 name: integration-expert
-version: 1.2.2
-model: opus
+version: 1.2.3
+model: sonnet
 description: Implements API integrations, webhooks, third-party service connections, and Payload CMS integrations with proper error handling.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite
 color: green

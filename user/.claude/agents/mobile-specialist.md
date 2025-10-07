@@ -1,9 +1,9 @@
 ---
 name: mobile-specialist
-version: 1.1.2
+version: 1.1.3
 description: Expert in mobile app development for React Native, Swift, Kotlin, and Flutter
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
-model: claude-opus-4-1-20250805
+model: sonnet
 color: purple
 ---
 

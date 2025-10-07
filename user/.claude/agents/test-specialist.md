@@ -1,7 +1,7 @@
 ---
 name: test-specialist
-version: 1.2.2
-model: opus
+version: 1.2.3
+model: sonnet
 description: Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
 tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, TodoWrite
 color: green

@@ -1,7 +1,7 @@
 ---
 name: bitcoin-specialist
-version: 1.1.2
-model: opus
+version: 1.1.4
+model: sonnet
 description: Builds BSV transactions, implements on-chain schemas, and manages blockchain operations. Expert with @bsv/sdk, js-1sat-ord, Bitcoin Schema, and token standards like 1Sat Ordinals.
 tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, TodoWrite
 color: yellow
@@ -609,6 +609,40 @@ try {
   }
 }
 ```
+
+### UI Components for Bitcoin
+
+**Web3 Icons Library**:
+```bash
+bun i @web3icons/react
+```
+
+```tsx
+import { BTC, BSV, SATS } from '@web3icons/react'
+
+// Use cryptocurrency icons in your UI
+function BitcoinButton() {
+  return (
+    <button className="flex items-center gap-2">
+      <BTC className="h-5 w-5" />
+      <span>Pay with Bitcoin</span>
+    </button>
+  )
+}
+
+// Available Bitcoin-related icons:
+// BTC - Bitcoin icon
+// BSV - Bitcoin SV icon 
+// SATS - Satoshi icon
+// And many other cryptocurrency/blockchain icons
+```
+
+The library provides:
+- **Comprehensive icon set**: All major cryptocurrencies and blockchain projects
+- **React optimized**: Tree-shakeable, TypeScript support
+- **Customizable**: Standard className and style props
+- **Consistent design**: Uniform style across all icons
+- **Small bundle**: Only import what you need
 
 ### Yours Wallet Integration
 

@@ -1,7 +1,7 @@
 ---
 name: data-specialist
-version: 1.1.2
-model: opus
+version: 1.1.3
+model: sonnet
 description: Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
 color: cyan
