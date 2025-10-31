@@ -9,14 +9,6 @@ argument-hint: [--help|--auto|--repo|--local|--merge|--interactive]
 
 Intelligent bidirectional synchronization between repository agents (`user/.claude/agents/`) and local agents (`~/.claude/agents/`).
 
-## 🚀 Quick Status (One-Liners)
-
-!`echo "📊 Repository: $(ls user/.claude/agents/*.md 2>/dev/null | wc -l) agents available"`
-
-!`echo "🔑 Permission Status: $(grep -q '~/.claude' .claude/settings.json 2>/dev/null && echo '✅ ~/.claude access configured' || echo '⚠️ ~/.claude not in additionalDirectories - sync may require permission setup')"`
-
-!`echo "💡 Quick Sync: Run '/opl:agents:sync --repo' to pull all agents from repository"`
-
 ## Quick Usage
 - `sync` - Interactive status overview and sync options
 - `sync --auto` - Auto-resolve version conflicts intelligently
@@ -82,11 +74,13 @@ Intelligent bidirectional synchronization between repository agents (`user/.clau
 
 ---
 
-Current directory: !`pwd`
-
-!`echo "$ARGUMENTS" | grep -q -- "--help" && echo "=== HELP: Agent Sync Commands ===" && echo "/opl:agents:sync --repo = Pull all from repository" && echo "/opl:agents:sync --local = Push all to repository" && echo "/opl:agents:sync --auto = Auto-sync (same as --repo)" && echo "No args = Status analysis"`
-
 **AGENT INSTRUCTIONS: Follow these step-by-step commands to perform sync operations**
+
+Parse the arguments to determine action:
+- If `--help` is present: Show the detailed help sections above
+- If `--auto` or `--repo`: Pull all agents from repository to local
+- If `--local`: Push all local agents to repository
+- If no arguments: Show status analysis
 
 ## For --auto or --repo: Pull All Agents from Repository to Local
 
@@ -138,12 +132,7 @@ Current directory: !`pwd`
 
 **Repository Version Summary:**
 ```bash
-echo "Repository Agent Versions:"
-for agent in user/.claude/agents/*.md; do
-  name=$(basename "$agent" .md)
-  version=$(grep -m 1 "^version:" "$agent" 2>/dev/null | sed 's/version: *//')
-  printf "  %-25s %s\n" "$name:" "$version"
-done | sort
+echo "Repository Agent Versions:" && find user/.claude/agents -name "*.md" -exec sh -c 'name=$(basename "{}" .md); version=$(grep -m 1 "^version:" "{}" 2>/dev/null | sed "s/version: *//"); printf "  %-25s %s\n" "$name:" "$version"' \; | sort
 ```
 
 🎯 **Sync Options:**
@@ -158,25 +147,11 @@ done | sort
 
 1. **Repository agent overview:**
    ```bash
-   echo "Repository Agent Status:"
-   echo "======================="
-   echo "Total agents: $(ls user/.claude/agents/*.md 2>/dev/null | wc -l)"
-   echo ""
-   echo "Agent versions:"
-   for f in user/.claude/agents/*.md; do
-     agent=$(basename "$f" .md)
-     version=$(grep -m1 "^version:" "$f" | cut -d: -f2 | tr -d ' ')
-     printf "  %-25s %s\n" "$agent:" "$version"
-   done | sort
+   echo "Repository Agent Status:" && echo "=======================" && echo "Total agents: $(ls user/.claude/agents/*.md 2>/dev/null | wc -l)" && echo "" && echo "Agent versions:" && find user/.claude/agents -name "*.md" -exec sh -c 'agent=$(basename "{}" .md); version=$(grep -m1 "^version:" "{}" | cut -d: -f2 | tr -d " "); printf "  %-25s %s\n" "$agent:" "$version"' \; | sort
    ```
 
 2. **Quick sync command:**
    ```bash
-   echo ""
-   echo "💡 To sync all agents to local ~/.claude:"
-   echo "   cp user/.claude/agents/*.md ~/.claude/agents/"
-   echo ""
-   echo "Note: If you get a permission error, add ~/.claude to additionalDirectories"
-   echo "in .claude/settings.json and restart Claude Code."
+   echo "" && echo "💡 To sync all agents to local ~/.claude:" && echo "   cp user/.claude/agents/*.md ~/.claude/agents/" && echo "" && echo "Note: If you get a permission error, add ~/.claude to additionalDirectories" && echo "in .claude/settings.json and restart Claude Code."
    ```
 
