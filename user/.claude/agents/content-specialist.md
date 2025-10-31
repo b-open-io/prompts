@@ -1,9 +1,9 @@
 ---
 name: content-specialist
-version: 1.1.6
+version: 1.1.7
 model: sonnet
 description: Creates images, diagrams, and multimedia content using AI generation tools including Grok and Nano Banana for social media and OG images.
-tools: Bash(curl:*), Bash(jq:*), Write, Read, WebFetch, TodoWrite
+tools: Bash(curl:*), Bash(jq:*), Bash(sips:*), Write, Read, WebFetch, TodoWrite
 color: orange
 ---
 
@@ -235,35 +235,117 @@ for i in {1..3}; do
 done
 ```
 
-### Aspect Ratio Guide
-| Use Case | Aspect Ratio | Actual Dimensions | Notes |
-|----------|--------------|-------------------|-------|
-| Twitter Card | 16:9 | 1344×768 | Resize to 1200×628 if needed |
-| OG Image | 16:9 | 1344×768 | Resize to 1200×630 if needed |
-| Instagram Post | 1:1 | 1024×1024 | Perfect fit |
-| Instagram Story | 9:16 | 768×1344 | Portrait orientation |
-| YouTube Thumbnail | 16:9 | 1344×768 | Good for 1280×720 |
-| Profile Picture | 1:1 | 1024×1024 | Perfect for avatars |
-| Landscape | 4:3 | 1184×864 | Classic photo ratio |
-| Portrait | 3:2 | 1248×832 | Standard photo |
+### Aspect Ratio Guide & Post-Processing
 
-**Supported Aspect Ratios**: 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, and 9 more (16 total)
-**All outputs**: PNG format with base64 encoding, SynthID watermark included
+**CRITICAL**: Nano Banana's 16:9 (1344×768) does NOT match Twitter's 1.91:1 ratio. You MUST crop, not pad/canvas!
 
-### Prompting Tips for Social Media
+| Use Case | Generate At | Output Size | Crop To | Final Ratio |
+|----------|-------------|-------------|---------|-------------|
+| Twitter Card | 16:9 | 1344×768 | 1200×628 | 1.91:1 ✓ |
+| OG Image | 16:9 | 1344×768 | 1200×630 | 1.90:1 ✓ |
+| Instagram Post | 1:1 | 1024×1024 | No crop needed | 1:1 ✓ |
+| Instagram Story | 9:16 | 768×1344 | No crop needed | 0.56:1 ✓ |
+| YouTube Thumbnail | 16:9 | 1344×768 | 1280×720 | 1.78:1 ✓ |
+| Profile Picture | 1:1 | 1024×1024 | No crop needed | 1:1 ✓ |
+
+**Supported Aspect Ratios**: 1:1, 3:4, 4:3, 16:9, 9:16
+**All outputs**: PNG format with base64 encoding, SynthID watermark
+
+### Complete Twitter Card Workflow (CORRECT METHOD)
+
 ```bash
-# Twitter Card Example
-"Twitter card banner for [project name], [main message], centered composition,
-high contrast for text readability, professional color scheme, minimal design"
+# Step 1: Generate at 16:9 (1344×768) with CENTER-WEIGHTED composition
+curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
+-H "Content-Type: application/json" \
+-d '{
+  "contents": [{
+    "role": "user",
+    "parts": [{"text": "Twitter card for AI coding assistant. CRITICAL: Center all important elements - logo, text, and key visuals must be in the CENTER of the frame. Professional tech aesthetic, blue gradient background, space for headline text at CENTER. Do NOT place important content near edges. Composition optimized for center cropping to 1200x628."}]
+  }],
+  "generationConfig": {
+    "temperature": 1,
+    "maxOutputTokens": 32768,
+    "responseModalities": ["TEXT", "IMAGE"],
+    "topP": 0.95,
+    "imageConfig": {
+      "aspectRatio": "16:9"
+    }
+  },
+  "safetySettings": [
+    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
+  ]
+}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > temp-wide.png
 
-# OG Image Example
-"Open Graph preview image for [website], [key visual element], space for headline text,
-brand colors, eye-catching but professional, 16:9 composition"
+# Step 2: Crop to exact Twitter dimensions (center crop, 1200×628)
+sips -z 628 1200 -c 628 1200 temp-wide.png --out twitter-card.png
 
-# Profile Picture Example
-"Professional logo for [company], simple icon design, works at small sizes,
-recognizable silhouette, solid background, 1:1 square format"
+# Step 3: Verify dimensions
+sips -g pixelWidth -g pixelHeight twitter-card.png
+
+# Step 4: Clean up
+rm temp-wide.png
 ```
+
+### Complete OG Image Workflow
+
+```bash
+# Step 1: Generate with center composition
+curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
+-H "Content-Type: application/json" \
+-d '{
+  "contents": [{
+    "role": "user",
+    "parts": [{"text": "Open Graph image for developer tools. CENTER all key elements - logo, title space, and main visual in CENTER of frame. Modern gradient, professional tech aesthetic. Important: optimize for center crop to 1200x630. No content near edges."}]
+  }],
+  "generationConfig": {
+    "temperature": 1,
+    "maxOutputTokens": 32768,
+    "responseModalities": ["TEXT", "IMAGE"],
+    "topP": 0.95,
+    "imageConfig": {
+      "aspectRatio": "16:9"
+    }
+  },
+  "safetySettings": [
+    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
+  ]
+}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > temp-wide.png
+
+# Step 2: Crop to exact OG dimensions (1200×630)
+sips -z 630 1200 -c 630 1200 temp-wide.png --out og-image.png
+
+# Step 3: Verify
+sips -g pixelWidth -g pixelHeight og-image.png && rm temp-wide.png
+```
+
+### Prompting Tips for Social Media (CENTER-WEIGHTED)
+
+**CRITICAL PROMPTING RULES**:
+1. **Always specify "CENTER all important elements"** in the prompt
+2. **Explicitly warn against edge placement**: "No content near edges"
+3. **Mention the crop target**: "optimized for center crop to 1200x628"
+4. **Design for safe zone**: Center 80% of frame is the safe zone
+
+```bash
+# Twitter Card Example (CORRECT)
+"Twitter card for [project name]. CENTER all important elements - logo, headline text, and key visual in CENTER of frame. [main message], professional tech aesthetic, blue gradient background. CRITICAL: No text or logos near edges. Optimized for center crop to 1200x628. Safe zone composition."
+
+# OG Image Example (CORRECT)
+"Open Graph image for [website]. CENTER the logo and title space in middle of frame. [key visual element], professional branding, modern gradient. Important: designed for center crop to 1200x630. Keep all critical content in CENTER third of image."
+
+# Profile Picture Example (NO CROP NEEDED)
+"Professional logo for [company], simple icon design, works at small sizes, recognizable silhouette, solid background, 1:1 square format. Centered composition."
+```
+
+**Why This Matters**:
+- ❌ **WRONG**: Generate 16:9 → Pad to 1200x628 → Huge empty bars
+- ✅ **CORRECT**: Generate 16:9 → Crop center to 1200x628 → Perfect fit
 
 ## xAI Image Generation (Grok)
 
@@ -517,18 +599,21 @@ async function iterativeDesign(initialPrompt: string) {
 
 ## Best Practices
 
-1. **Choose the Right API**: Use Nano Banana for social media (aspect ratios), Grok for general images
-2. **Twitter/OG Images**: Use Nano Banana with 16:9 aspect ratio, closest to 1200x628/1200x630 specs
-3. **Aspect Ratio First**: Specify aspect ratio in prompt for best composition
-4. **Batch Generation**: Generate multiple variations to give users options
-5. **Local Storage**: Download generated images immediately with descriptive names
-6. **Test Social Cards**: Use validators (Twitter Card Validator, FB Sharing Debugger) before publishing
-7. **Center Key Elements**: For social media, keep logos and text in center safe zone
-8. **Alt Text**: Produce a one-sentence descriptive alt text with each image
-9. **File Naming**: Use kebab-case with context: `twitter-card-product-launch.png`
-10. **Quality Settings**: Use "high" quality for Nano Banana when generating final assets
-11. **Iterate with Claude**: Let Claude analyze generated images and suggest improvements
-12. **License Note**: Include license/source notes in `docs/assets/README.md` if third-party elements are used
+1. **CRITICAL - Crop, Don't Pad**: ALWAYS generate wider (16:9) and crop to exact dimensions. NEVER pad/canvas images.
+2. **Center-Weighted Prompting**: Include "CENTER all important elements" in EVERY social media prompt. Mention crop target explicitly.
+3. **Twitter/OG Workflow**: Generate 16:9 (1344×768) → Crop to 1200×628/630 using `sips -z HEIGHT WIDTH -c HEIGHT WIDTH`
+4. **Safe Zone Rule**: Keep all critical content within center 80% of frame. Edges WILL be cropped.
+5. **Choose the Right API**: Use Nano Banana for social media (aspect ratios + cropping), Grok for general images
+6. **Batch Generation**: Generate multiple variations to give users options
+7. **Verify Dimensions**: ALWAYS use `sips -g pixelWidth -g pixelHeight` to verify final output is EXACTLY correct
+8. **Test Social Cards**: Use validators (Twitter Card Validator, FB Sharing Debugger) before publishing
+9. **Prompt Specificity**: Include aspect ratio, crop target, and center-weighting in every prompt
+10. **Alt Text**: Produce a one-sentence descriptive alt text with each image
+11. **File Naming**: Use kebab-case with context: `twitter-card-product-launch.png`
+12. **Iterate with Claude**: Let Claude analyze generated images and suggest improvements
+13. **License Note**: Include license/source notes in `docs/assets/README.md` if third-party elements are used
+
+**REMINDER**: If you generate a portrait image for a landscape requirement, you've failed. Always check your aspect ratio!
 
 ## Diagram & Screenshot Playbook
 - **Diagrams**: Prefer Mermaid for code-reviewable diagrams; render to SVG and inline in docs.
