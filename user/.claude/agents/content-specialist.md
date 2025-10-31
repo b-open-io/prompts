@@ -1,6 +1,6 @@
 ---
 name: content-specialist
-version: 1.1.4
+version: 1.1.6
 model: sonnet
 description: Creates images, diagrams, and multimedia content using AI generation tools including Grok and Nano Banana for social media and OG images.
 tools: Bash(curl:*), Bash(jq:*), Write, Read, WebFetch, TodoWrite
@@ -102,83 +102,153 @@ find . -name "README.md" -o -name "readme.md"
 
 ### API Endpoint
 ```bash
-https://generativelanguage.googleapis.com/v1beta/models/gemini-2-5-flash-image:generate
+https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent
 ```
 
 ### Setup Requirements
 ```bash
 # Check if API key is set
-echo $GOOGLE_API_KEY
+echo $VERTEX_API_KEY
 
 # If not set, user must:
-# 1. Get API key from https://aistudio.google.com/apikey
-# 2. Add to profile: export GOOGLE_API_KEY="your-key"
-# 3. Completely restart terminal/source profile
-# 4. Exit and resume Claude Code session
+# 1. Get API key from Google Cloud Console or AI Studio
+# 2. Enable Vertex AI API in your Google Cloud project
+# 3. IMPORTANT: Must use VERTEX_API_KEY (not GEMINI_API_KEY)
+# 4. Add to profile: export VERTEX_API_KEY="your-key"
+# 5. Completely restart terminal/source profile
+# 6. Exit and resume Claude Code session
 ```
 
 ### Basic Usage with cURL
 
 **Generate Image with Aspect Ratio**:
 ```bash
-curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2-5-flash-image:generate?key=$GOOGLE_API_KEY" \
+curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
 -H "Content-Type: application/json" \
 -d '{
-  "prompt": "Modern tech startup hero banner, clean design, blue and white color scheme",
-  "aspectRatio": "16:9",
-  "quality": "high"
-}' | jq -r '.candidates[0].content.parts[0].inlineData.data' | base64 -d > hero-banner.png
+  "contents": [{
+    "role": "user",
+    "parts": [{"text": "Modern tech startup hero banner, clean design, blue and white color scheme"}]
+  }],
+  "generationConfig": {
+    "temperature": 1,
+    "maxOutputTokens": 32768,
+    "responseModalities": ["TEXT", "IMAGE"],
+    "topP": 0.95,
+    "imageConfig": {
+      "aspectRatio": "16:9"
+    }
+  },
+  "safetySettings": [
+    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
+  ]
+}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > hero-banner.png
 ```
 
 **Generate Twitter Card Image**:
 ```bash
-# 16:9 aspect ratio is closest to Twitter's 1.91:1 requirement
-curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2-5-flash-image:generate?key=$GOOGLE_API_KEY" \
+# 16:9 aspect ratio (1344x768) is closest to Twitter's 1.91:1 requirement
+curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
 -H "Content-Type: application/json" \
 -d '{
-  "prompt": "Twitter card banner for blockchain project, professional, centered logo area, high contrast for text overlay",
-  "aspectRatio": "16:9",
-  "quality": "high"
-}' | jq -r '.candidates[0].content.parts[0].inlineData.data' | base64 -d > twitter-card.png
+  "contents": [{
+    "role": "user",
+    "parts": [{"text": "Twitter card banner for blockchain project, professional, centered logo area, high contrast for text overlay"}]
+  }],
+  "generationConfig": {
+    "temperature": 1,
+    "maxOutputTokens": 32768,
+    "responseModalities": ["TEXT", "IMAGE"],
+    "topP": 0.95,
+    "imageConfig": {
+      "aspectRatio": "16:9"
+    }
+  },
+  "safetySettings": [
+    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
+  ]
+}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > twitter-card.png
 ```
 
 **Generate OG Image**:
 ```bash
-# Perfect for Open Graph 1200x630 (16:9 ratio)
-curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2-5-flash-image:generate?key=$GOOGLE_API_KEY" \
+# Perfect for Open Graph 1200x630 (16:9 ratio, outputs 1344x768)
+curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
 -H "Content-Type: application/json" \
 -d '{
-  "prompt": "Open Graph image for developer tools website, modern gradient background, space for title text, professional branding",
-  "aspectRatio": "16:9",
-  "quality": "high"
-}' | jq -r '.candidates[0].content.parts[0].inlineData.data' | base64 -d > og-image.png
+  "contents": [{
+    "role": "user",
+    "parts": [{"text": "Open Graph image for developer tools website, modern gradient background, space for title text, professional branding"}]
+  }],
+  "generationConfig": {
+    "temperature": 1,
+    "maxOutputTokens": 32768,
+    "responseModalities": ["TEXT", "IMAGE"],
+    "topP": 0.95,
+    "imageConfig": {
+      "aspectRatio": "16:9"
+    }
+  },
+  "safetySettings": [
+    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
+  ]
+}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > og-image.png
 ```
 
 **Generate Multiple Variations**:
 ```bash
-# Square logo variations
+# Square logo variations (1024x1024)
 for i in {1..3}; do
-  curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2-5-flash-image:generate?key=$GOOGLE_API_KEY" \
+  curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "prompt": "Minimalist logo for AI startup, geometric shapes, professional",
-    "aspectRatio": "1:1",
-    "quality": "high"
-  }' | jq -r '.candidates[0].content.parts[0].inlineData.data' | base64 -d > "logo-v$i.png"
+    "contents": [{
+      "role": "user",
+      "parts": [{"text": "Minimalist logo for AI startup, geometric shapes, professional"}]
+    }],
+    "generationConfig": {
+      "temperature": 1,
+      "maxOutputTokens": 32768,
+      "responseModalities": ["TEXT", "IMAGE"],
+      "topP": 0.95,
+      "imageConfig": {
+        "aspectRatio": "1:1"
+      }
+    },
+    "safetySettings": [
+      {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+      {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+      {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+      {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
+    ]
+  }' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > "logo-v$i.png"
+  echo "Generated logo-v$i.png"
 done
 ```
 
 ### Aspect Ratio Guide
-| Use Case | Aspect Ratio | Dimensions |
-|----------|--------------|------------|
-| Twitter Card | 16:9 | ~1024x576 (resize to 1200x628) |
-| OG Image | 16:9 | ~1024x576 (resize to 1200x630) |
-| Instagram Post | 1:1 | 1024x1024 |
-| Instagram Story | 9:16 | ~576x1024 |
-| YouTube Thumbnail | 16:9 | ~1024x576 |
-| Profile Picture | 1:1 | 1024x1024 |
+| Use Case | Aspect Ratio | Actual Dimensions | Notes |
+|----------|--------------|-------------------|-------|
+| Twitter Card | 16:9 | 1344×768 | Resize to 1200×628 if needed |
+| OG Image | 16:9 | 1344×768 | Resize to 1200×630 if needed |
+| Instagram Post | 1:1 | 1024×1024 | Perfect fit |
+| Instagram Story | 9:16 | 768×1344 | Portrait orientation |
+| YouTube Thumbnail | 16:9 | 1344×768 | Good for 1280×720 |
+| Profile Picture | 1:1 | 1024×1024 | Perfect for avatars |
+| Landscape | 4:3 | 1184×864 | Classic photo ratio |
+| Portrait | 3:2 | 1248×832 | Standard photo |
 
-**Note**: Nano Banana generates at max 1024 resolution. For Twitter/OG images requiring 1200px width, you may need to upscale the generated image using image processing tools.
+**Supported Aspect Ratios**: 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, and 9 more (16 total)
+**All outputs**: PNG format with base64 encoding, SynthID watermark included
 
 ### Prompting Tips for Social Media
 ```bash
