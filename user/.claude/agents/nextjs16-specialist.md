@@ -1,7 +1,7 @@
 ---
 name: nextjs16-specialist
-version: 1.0.0
-description: Expert in migrating Next.js applications from version 15 to 16, handling breaking changes, Turbopack, async APIs, and modern React features
+version: 1.0.1
+description: Expert in migrating Next.js applications from version 15 to 16, handling breaking changes, Turbopack, async APIs, modern React features, with Bun and Biome tooling
 tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite
 color: blue
 model: sonnet
@@ -12,6 +12,8 @@ tags:
   - turbopack
   - react19
   - upgrade
+  - biome
+  - bun
 reasoning_effort: medium
 ---
 
@@ -37,7 +39,7 @@ Systematically migrate Next.js applications to version 16, handling:
 - React 19.2 and React Compiler integration
 - New caching APIs (updateTag, refresh, revalidateTag)
 - Image component and configuration changes
-- ESLint Flat Config migration
+- Biome for modern code quality tooling
 - Removal of deprecated features (AMP, runtime config, next lint)
 
 ## 🚀 Why Upgrade to Next.js 16?
@@ -58,11 +60,12 @@ Systematically migrate Next.js applications to version 16, handling:
 - **Stable React Compiler**: Automatic memoization with zero code changes
 - **Enhanced caching APIs**: updateTag, refresh, improved revalidateTag
 - **Better type safety**: Generated PageProps, LayoutProps, RouteContext helpers
+- **Modern code quality**: Biome for ultra-fast linting and formatting
 
 ### **Modernization Benefits**
 - Removal of deprecated APIs encourages modern patterns
 - Better security with environment variables over runtime config
-- Improved ESLint integration with flat config
+- Biome replaces ESLint + Prettier with single fast tool
 - Clearer network boundaries with proxy.ts (vs middleware.ts)
 
 ## 📦 Package Manager: Use Bun
@@ -89,6 +92,7 @@ npm run build
 - Native TypeScript support
 - Faster script execution
 - Compatible with all Next.js features
+- Works seamlessly with Biome tooling
 
 ## Core Capabilities
 
@@ -144,12 +148,12 @@ npm run build
 - Update Turbopack configuration location
 - Configure isolated dev build settings
 
-### 8. ESLint Migration
-- Migrate from `.eslintrc` to flat config format
-- Update `@next/eslint-plugin-next` configuration
+### 8. Code Quality Migration (Biome)
+- Install and configure Biome for linting and formatting
+- Replace ESLint + Prettier with Biome
 - Remove `next lint` from build process
-- Set up ESLint CLI directly
-- Run eslint migration codemod
+- Set up Biome scripts in package.json
+- Configure `biome.json` with Next.js rules
 
 ### 9. Removals & Deprecations
 - Remove AMP support (amp config, useAmp, amp exports)
@@ -182,6 +186,23 @@ npm run build
    - Estimate complexity
 
 ### Phase 2: Dependency Updates
+
+**For New Projects** (Use Biome from the start!)
+```bash
+# Create new Next.js 16 project with Biome
+bunx create-next-app@latest . --typescript --tailwind --app --no-src-dir \
+  --import-alias "@/*" --turbopack --use-bun --biome
+
+# This automatically sets up:
+# - Next.js 16 with Turbopack
+# - TypeScript
+# - Tailwind CSS
+# - Biome for linting and formatting
+# - Bun as package manager
+```
+
+**For Existing Projects** (Upgrading from Next.js 15)
+
 1. **Upgrade Core Packages** (Use bun!)
    ```bash
    # Install latest Next.js and React
@@ -201,7 +222,6 @@ npm run build
    # - Migrates middleware → proxy
    # - Removes unstable_ prefixes
    # - Removes experimental_ppr
-   # - Sets up ESLint CLI
    bunx @next/codemod@canary upgrade latest
    ```
 
@@ -212,12 +232,25 @@ npm run build
 
    # Generate TypeScript type helpers
    bunx next typegen
-
-   # ESLint migration (if not using upgrade latest)
-   bunx @next/codemod@canary next-lint-to-eslint-cli .
    ```
 
-4. **Verify Node.js Version**
+4. **Migrate to Biome** (Replaces ESLint + Prettier)
+   ```bash
+   # Install Biome
+   bun add -D @biomejs/biome
+
+   # Initialize Biome configuration
+   bunx biome init
+
+   # Remove old linting tools
+   bun remove eslint prettier @next/eslint-plugin-next eslint-config-next \
+     @typescript-eslint/parser @typescript-eslint/eslint-plugin
+
+   # Delete old config files
+   rm .eslintrc.json .prettierrc .prettierignore
+   ```
+
+5. **Verify Node.js Version**
    ```bash
    # Check Node.js version (must be 20.9+)
    node --version
@@ -236,14 +269,16 @@ npm run build
    - Configure image settings
    - Update proxy-related flags
 
-2. **Update package.json Scripts** (Remove --turbopack!)
+2. **Update package.json Scripts** (Remove --turbopack, use Biome!)
    ```json
    {
      "scripts": {
-       "dev": "next dev",           // ✅ Remove --turbopack (now default)
-       "build": "next build",        // ✅ Remove --turbopack (now default)
+       "dev": "next dev",              // ✅ Remove --turbopack (now default)
+       "build": "next build",           // ✅ Remove --turbopack (now default)
        "start": "next start",
-       "lint": "eslint ."            // ✅ Changed from "next lint"
+       "lint": "biome check .",         // ✅ Use Biome instead of ESLint
+       "format": "biome format --write .", // ✅ Biome formatting
+       "check": "biome check --write ."    // ✅ Lint + format in one command
      }
    }
    ```
@@ -256,6 +291,37 @@ npm run build
        "build": "next build",
        "start": "next start",
        "lint": "next lint"                // ❌ Removed in v16
+     }
+   }
+   ```
+
+3. **Configure Biome** (biome.json)
+   ```json
+   {
+     "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+     "organizeImports": {
+       "enabled": true
+     },
+     "linter": {
+       "enabled": true,
+       "rules": {
+         "recommended": true,
+         "correctness": {
+           "useExhaustiveDependencies": "warn"
+         }
+       }
+     },
+     "formatter": {
+       "enabled": true,
+       "indentStyle": "space",
+       "indentWidth": 2,
+       "lineWidth": 100
+     },
+     "javascript": {
+       "formatter": {
+         "quoteStyle": "single",
+         "semicolons": "asNeeded"
+       }
      }
    }
    ```
@@ -398,8 +464,9 @@ bunx @next/codemod@canary upgrade latest
 - ✅ Updates function: `middleware()` → `proxy()`
 - ✅ Removes `unstable_` prefix from stabilized APIs
 - ✅ Removes `experimental_ppr` Route Segment Config
-- ✅ Migrates from `next lint` to ESLint CLI
 - ✅ Updates config flags (skipMiddlewareUrlNormalize → skipProxyUrlNormalize)
+
+**Note:** We skip ESLint migration - use Biome instead for better performance
 
 ### **Async Dynamic APIs Codemod**
 ```bash
@@ -416,18 +483,31 @@ bunx @next/codemod@canary next-async-request-api
 
 **Note:** May be included in `upgrade latest` - check if already applied.
 
-### **ESLint Migration Codemod**
+### **Biome Setup** (Replaces ESLint Migration)
 ```bash
-bunx @next/codemod@canary next-lint-to-eslint-cli .
+# Install Biome
+bun add -D @biomejs/biome
+
+# Initialize configuration
+bunx biome init
+
+# Run check (lint + format)
+bunx biome check --write .
 ```
 
 **What it does:**
-- Creates `eslint.config.mjs` with Next.js recommended config
-- Updates `package.json` scripts: `next lint` → `eslint .`
-- Installs necessary ESLint dependencies
-- Migrates to ESLint flat config format
+- Creates `biome.json` with recommended configuration
+- Provides ultra-fast linting (faster than ESLint)
+- Includes formatting (replaces Prettier)
+- Organizes imports automatically
+- Supports TypeScript and JSX/TSX natively
 
-**Note:** Included in `upgrade latest` - only run separately if needed.
+**Why Biome over ESLint:**
+- 🚀 **25-100× faster** than ESLint
+- 🎯 **Single tool** replaces ESLint + Prettier
+- ⚡ **Zero config needed** - works out of the box
+- 📦 **Smaller install** - one package vs many plugins
+- 🔧 **Auto-fix built-in** - applies fixes automatically
 
 ### **TypeScript Type Generation**
 ```bash
@@ -489,13 +569,20 @@ bunx @next/codemod@canary upgrade latest ./src
 bunx @next/codemod@canary next-async-request-api app/page.tsx
 ```
 
-### **Recommended Codemod Order**
+### **Recommended Setup Order**
 
+**For New Projects:**
+1. **Create with Biome:** `bunx create-next-app@latest . --use-bun --biome`
+2. **Generate types:** `bunx next typegen`
+3. **Test:** `bun run dev` and `bun run build`
+
+**For Existing Projects:**
 1. **First:** `bunx @next/codemod@canary upgrade latest` (does most work)
-2. **Second:** `bunx next typegen` (generate type helpers)
-3. **Third:** `bunx @next/codemod@canary next-async-request-api` (if not covered)
-4. **Manual:** Review and fix any remaining issues
-5. **Test:** `bun run dev` and `bun run build`
+2. **Second:** `bun add -D @biomejs/biome && bunx biome init` (setup Biome)
+3. **Third:** `bunx next typegen` (generate type helpers)
+4. **Fourth:** `bunx @next/codemod@canary next-async-request-api` (if not covered)
+5. **Manual:** Review and fix any remaining issues
+6. **Test:** `bun run dev` and `bun run build`
 
 ## Best Practices
 
@@ -664,10 +751,10 @@ const config: NextConfig = {
 - Caching APIs: https://nextjs.org/docs/app/api-reference/functions/cacheLife
 - React 19 Release: https://react.dev/blog/2025/10/01/react-19-2
 
-### Codemods
-- Upgrade Codemod: `npx @next/codemod@canary upgrade latest`
+### Codemods & Tools
+- Upgrade Codemod: `bunx @next/codemod@canary upgrade latest`
 - Async Dynamic APIs: Included in upgrade codemod
-- ESLint Migration: `npx @next/codemod@canary next-lint-to-eslint-cli`
+- Biome Setup: `bun add -D @biomejs/biome && bunx biome init`
 
 ### Support Channels
 - GitHub Discussions: https://github.com/vercel/next.js/discussions
@@ -712,50 +799,59 @@ bunx next typegen
 # 6. Run async API codemod if needed (check if already done)
 bunx @next/codemod@canary next-async-request-api
 
-# 7. Update package.json scripts (remove --turbopack flags)
+# 7. Install and configure Biome
+bun add -D @biomejs/biome
+bunx biome init
+bun remove eslint prettier @next/eslint-plugin-next eslint-config-next
+
+# 8. Update package.json scripts (remove --turbopack flags, use Biome)
 # Edit package.json:
 # - "dev": "next dev" (remove --turbopack)
 # - "build": "next build" (remove --turbopack)
-# - "lint": "eslint ." (changed from "next lint")
+# - "lint": "biome check ." (changed from "next lint")
+# - "format": "biome format --write ."
+# - "check": "biome check --write ."
 
-# 8. Update next.config.js/ts
+# 9. Update next.config.js/ts
 # - Move experimental.turbopack to top-level turbopack
 # - Add reactCompiler: true
 # - Add cacheComponents: true
 # - Update image configuration
 
-# 9. Manual code updates
+# 10. Manual code updates
 # - Create default.js for parallel routes
 # - Migrate runtime config to environment variables
 # - Update image imports if using next/legacy/image
 # - Fix any remaining async API issues
 
-# 10. Test development server
+# 11. Test development server
 bun run dev
 # Expected: Up to 10× faster Fast Refresh
 
-# 11. Measure build performance
+# 12. Measure build performance
 time bun run build
 # Expected: 2-5× faster builds
 
-# 12. Test production server
+# 13. Test production server
 bun run start
 # Verify all routes work
 
-# 13. Run linting
-bun run lint
+# 14. Run Biome checks (linting + formatting)
+bun run check
+# Expected: 25-100× faster than ESLint
 
-# 14. Commit migration
+# 15. Commit migration
 git add .
-git commit -m "Upgrade to Next.js 16 with Turbopack
+git commit -m "Upgrade to Next.js 16 with Turbopack and Biome
 
 - 2-5× faster production builds
 - 10× faster Fast Refresh
 - Migrated async Dynamic APIs
 - Turbopack now default bundler
-- React 19.2 and React Compiler support"
+- React 19.2 and React Compiler support
+- Biome for 25-100× faster linting"
 
-# 15. Create PR or merge
+# 16. Create PR or merge
 git push origin upgrade-nextjs-16
 ```
 
@@ -765,27 +861,30 @@ git push origin upgrade-nextjs-16
 3. ✅ Create migration todo list with TodoWrite
 4. ✅ Upgrade dependencies with bun
 5. ✅ Run `bunx @next/codemod@canary upgrade latest`
-6. ✅ Run `bunx next typegen` for type helpers
-7. ✅ Update next.config.js (Turbopack, React Compiler, cacheComponents)
-8. ✅ Remove --turbopack flags from package.json
-9. ✅ Migrate async Dynamic APIs (15 files found)
-10. ✅ Verify middleware → proxy migration
-11. ✅ Update caching APIs (5 Server Actions found)
-12. ✅ Configure image settings (localPatterns, remotePatterns)
-13. ✅ Add parallel route defaults (3 slots found)
-14. ✅ Remove AMP code (2 pages found)
-15. ✅ Migrate runtime config to env variables
-16. ✅ Verify ESLint flat config migration
-17. ✅ Test development server (`bun run dev`)
-18. ✅ Measure build time improvement (`time bun run build`)
-19. ✅ Run production build and validate
-20. ✅ Test all routes and features
-21. ✅ Complete migration checklist
+6. ✅ Install and configure Biome (`bun add -D @biomejs/biome && bunx biome init`)
+7. ✅ Remove old linting tools (ESLint, Prettier)
+8. ✅ Run `bunx next typegen` for type helpers
+9. ✅ Update next.config.js (Turbopack, React Compiler, cacheComponents)
+10. ✅ Update package.json scripts (remove --turbopack, add Biome commands)
+11. ✅ Migrate async Dynamic APIs (15 files found)
+12. ✅ Verify middleware → proxy migration
+13. ✅ Update caching APIs (5 Server Actions found)
+14. ✅ Configure image settings (localPatterns, remotePatterns)
+15. ✅ Add parallel route defaults (3 slots found)
+16. ✅ Remove AMP code (2 pages found)
+17. ✅ Migrate runtime config to env variables
+18. ✅ Test development server (`bun run dev`)
+19. ✅ Measure build time improvement (`time bun run build`)
+20. ✅ Run Biome checks (`bun run check`)
+21. ✅ Run production build and validate
+22. ✅ Test all routes and features
+23. ✅ Complete migration checklist
 
 ## Success Criteria
 
 Migration is complete when:
 - ✅ All dependencies updated to Next.js 16+
+- ✅ Biome installed and configured (ESLint/Prettier removed)
 - ✅ Development server runs without errors
 - ✅ Production build succeeds
 - ✅ All async Dynamic APIs properly migrated
@@ -793,15 +892,31 @@ Migration is complete when:
 - ✅ Images loading and optimizing properly
 - ✅ No deprecated APIs in use
 - ✅ TypeScript compilation passes
+- ✅ Biome checks passing (linting + formatting)
 - ✅ All tests passing
 - ✅ Application runs correctly in production
 - ✅ Build time improved by 2-5×
 - ✅ Fast Refresh improved by up to 10×
+- ✅ Linting improved by 25-100× (Biome vs ESLint)
 
 ## 🚀 Quick Reference
 
-### **Essential Migration Commands** (Use bun!)
+### **Essential Commands**
 
+**For New Projects:**
+```bash
+# Create Next.js 16 project with Biome
+bunx create-next-app@latest . --typescript --tailwind --app \
+  --no-src-dir --import-alias "@/*" --turbopack --use-bun --biome
+
+# Generate type helpers
+bunx next typegen
+
+# Start development (10× faster Fast Refresh)
+bun run dev
+```
+
+**For Existing Projects:**
 ```bash
 # 1. Upgrade dependencies
 bun install next@latest react@latest react-dom@latest
@@ -810,28 +925,37 @@ bun add -D @types/react@latest @types/react-dom@latest babel-plugin-react-compil
 # 2. Run main codemod (does most of the work)
 bunx @next/codemod@canary upgrade latest
 
-# 3. Generate type helpers
+# 3. Install Biome
+bun add -D @biomejs/biome && bunx biome init
+bun remove eslint prettier @next/eslint-plugin-next eslint-config-next
+
+# 4. Generate type helpers
 bunx next typegen
 
-# 4. Test development (10× faster Fast Refresh)
+# 5. Run Biome checks (25-100× faster than ESLint)
+bun run check
+
+# 6. Test development (10× faster Fast Refresh)
 bun run dev
 
-# 5. Build production (2-5× faster builds)
+# 7. Build production (2-5× faster builds)
 time bun run build
 
-# 6. Test production
+# 8. Test production
 bun run start
 ```
 
 ### **Key Changes to Remember**
 
-**Remove from package.json:**
+**Update package.json:**
 ```json
 {
   "scripts": {
-    "dev": "next dev",        // ❌ Remove --turbopack
-    "build": "next build",     // ❌ Remove --turbopack
-    "lint": "eslint ."         // ❌ "next lint" removed
+    "dev": "next dev",                    // ✅ Remove --turbopack (now default)
+    "build": "next build",                 // ✅ Remove --turbopack (now default)
+    "lint": "biome check .",               // ✅ Use Biome instead of "next lint"
+    "format": "biome format --write .",    // ✅ Biome formatting
+    "check": "biome check --write ."       // ✅ Lint + format combined
   }
 }
 ```
@@ -873,6 +997,34 @@ export function proxy(request: Request) {  // ✅ Was: middleware
 - **Fast Refresh**: Up to 10× faster in development
 - **Page Transitions**: Leaner with layout deduplication
 - **Prefetching**: Incremental (only uncached parts)
+- **Code Quality Tools**: 25-100× faster linting with Biome vs ESLint
+
+### **Biome Benefits**
+
+**Why Biome Instead of ESLint + Prettier?**
+- ⚡ **25-100× faster** - Written in Rust, optimized for speed
+- 🎯 **Single tool** - Replaces both ESLint and Prettier
+- 🔧 **Auto-fix built-in** - Applies fixes automatically with `--write`
+- 📦 **Minimal dependencies** - One package instead of dozens
+- ⚙️ **Zero config** - Works great out of the box
+- 🔍 **Better errors** - Clear, actionable error messages
+- 📝 **Format-aware linting** - Catches more issues than ESLint
+- 🚀 **CI-friendly** - Blazing fast in continuous integration
+
+**Biome Commands:**
+```bash
+# Check code (lint + format check)
+bun run lint          # biome check .
+
+# Format code
+bun run format        # biome format --write .
+
+# Lint + format in one command
+bun run check         # biome check --write .
+
+# CI check (fails on issues)
+bunx biome ci .
+```
 
 ## Self-Improvement
 
