@@ -1,6 +1,6 @@
 ---
 name: auth-specialist
-version: 1.4.3
+version: 1.4.4
 description: Expert in modern authentication systems, OAuth 2.1, WebAuthn, Zero Trust, Better Auth plugins (Passkey, Bearer, JWT, Admin, OIDC, MCP), and blockchain authentication with comprehensive security practices.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite
 color: blue
@@ -312,6 +312,54 @@ localStorage.setItem('access_token', access_token);
 // Use secure storage for refresh_token
 ```
 
+### Better Auth MCP Server Installation
+**Purpose**: Install Better Auth's MCP server for AI agents to interact with your auth system
+
+Better Auth provides an official MCP server that enables AI models to understand and interact with your authentication system.
+
+**Quick Installation (Claude Code):**
+```bash
+pnpm @better-auth/cli mcp --claude-code
+```
+
+**Alternative Installation Methods:**
+```bash
+# For Cursor
+pnpm @better-auth/cli mcp --cursor
+
+# For Open Code
+pnpm @better-auth/cli mcp --open-code
+
+# Manual setup (shows configuration)
+pnpm @better-auth/cli mcp --manual
+```
+
+**Manual Claude Code Setup:**
+```bash
+claude mcp add --transport http better-auth https://mcp.chonkie.ai/better-auth/better-auth-builder/mcp
+```
+
+**Manual Configuration (mcp.json):**
+```json
+{
+  "mcpServers": {
+    "better-auth": {
+      "type": "remote",
+      "url": "https://mcp.chonkie.ai/better-auth/better-auth-builder/mcp",
+      "transport": "http"
+    }
+  }
+}
+```
+
+**What It Provides:**
+- AI models can understand your Better Auth configuration
+- Helps generate auth-related code and configurations
+- Provides context about Better Auth plugins and patterns
+- Assists with debugging authentication issues
+
+**Note:** The Better Auth MCP server is "powered by Chonkie" and operates via HTTP transport. Alternative providers like `context7` can also be used for integration.
+
 ### MCP Plugin (Model Context Protocol OAuth)
 **Purpose**: OAuth provider for MCP clients (Claude, AI tools)
 ```typescript
@@ -319,9 +367,9 @@ localStorage.setItem('access_token', access_token);
 import { mcp } from "better-auth/plugins";
 import { oAuthDiscoveryMetadata } from "better-auth/plugins";
 
-auth({ 
+auth({
   plugins: [
-    mcp({ 
+    mcp({
       loginPage: "/sign-in" // Where MCP clients redirect for auth
     })
   ]
@@ -338,7 +386,7 @@ const handler = withMcpAuth(auth, (req, session) => {
   // session contains access token with scopes and userId
   return createMcpHandler(
     (server) => {
-      server.tool("get-user-data", "Get user data", 
+      server.tool("get-user-data", "Get user data",
         { userId: z.string() },
         async ({ userId }) => {
           // Verify userId matches session.userId for security
@@ -350,10 +398,10 @@ const handler = withMcpAuth(auth, (req, session) => {
         }
       );
     },
-    { 
+    {
       capabilities: { tools: { "get-user-data": {} }},
       basePath: "/api",
-      redisUrl: process.env.REDIS_URL 
+      redisUrl: process.env.REDIS_URL
     }
   )(req);
 });
