@@ -68,9 +68,10 @@ Then stop processing.
    ```
 
 2. **Gather Information**
-   - Find all hooks in repository: `find user/.claude/hooks -name "*.json" -type f`
-   - Find all hooks in local: `find ~/.claude/hooks -name "*.json" -type f`
-   - For each hook, extract version from JSON metadata, and the last modified timestamp
+   - Find all hooks in repository: `find user/.claude/hooks \( -name "*.json" -o -name "*.sh" \) -type f`
+   - Find all hooks in local: `find ~/.claude/hooks \( -name "*.json" -o -name "*.sh" \) -type f`
+   - For each hook, extract version from JSON metadata (for .json files), and the last modified timestamp
+   - For .sh files, check if a corresponding .json metadata file exists
    - Even if the version is found, still consider the file modification time
 
 3. **Version Extraction Function**
@@ -161,7 +162,8 @@ Then stop processing.
    - Copy files as needed
    - Track all changes made
    - Preserve file permissions
-   - Validate JSON syntax after copy
+   - For .sh files: ensure they are executable (`chmod +x`)
+   - Validate JSON syntax after copy (for .json files)
 
 8. **Git Integration**
    After push operations:
