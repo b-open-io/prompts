@@ -46,39 +46,56 @@ if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
     sed "s|${CODE_DIR}/||; s|/\$||")
 fi
 
-# Fallback: show cwd-based project if no recent file ops
-if [[ -z "$PROJECT" ]]; then
-  CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
-  if [[ "$CWD" =~ ^${CODE_DIR}/([^/]+) ]]; then
-    PROJECT="${BASH_REMATCH[1]}"
-  fi
+# Get CWD project (session root)
+CWD_PROJECT=""
+CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
+if [[ "$CWD" =~ ^${CODE_DIR}/([^/]+) ]]; then
+  CWD_PROJECT="${BASH_REMATCH[1]}"
 fi
 
-# Check for lint status
-LINT_INFO=""
-if [[ -n "$PROJECT" ]]; then
-  LINT_STATE="$HOME/.claude/lint-state/$PROJECT.json"
-  if [[ -f "$LINT_STATE" ]]; then
-    ERRORS=$(jq -r '.errors // 0' "$LINT_STATE" 2>/dev/null)
-    WARNINGS=$(jq -r '.warnings // 0' "$LINT_STATE" 2>/dev/null)
+# Function to get lint info for a project
+get_lint_info() {
+  local proj="$1"
+  local state_file="$HOME/.claude/lint-state/$proj.json"
 
-    if [[ "$ERRORS" -gt 0 || "$WARNINGS" -gt 0 ]]; then
-      if [[ "$ERRORS" -gt 0 && "$WARNINGS" -gt 0 ]]; then
-        LINT_INFO=" | ❌ $ERRORS ⚠️  $WARNINGS"
-      elif [[ "$ERRORS" -gt 0 ]]; then
-        LINT_INFO=" | ❌ $ERRORS"
-      else
-        LINT_INFO=" | ⚠️  $WARNINGS"
-      fi
-    else
-      LINT_INFO=" | ✅"
-    fi
+  if [[ ! -f "$state_file" ]]; then
+    echo ""
+    return
   fi
-fi
 
-# Format output
-if [[ -n "$PROJECT" ]]; then
-  echo "📁 $PROJECT$LINT_INFO"
+  local errors=$(jq -r '.errors // 0' "$state_file" 2>/dev/null || echo "0")
+  local warnings=$(jq -r '.warnings // 0' "$state_file" 2>/dev/null || echo "0")
+
+  # Ensure numeric values
+  [[ -z "$errors" || ! "$errors" =~ ^[0-9]+$ ]] && errors=0
+  [[ -z "$warnings" || ! "$warnings" =~ ^[0-9]+$ ]] && warnings=0
+
+  if [[ "$errors" -gt 0 && "$warnings" -gt 0 ]]; then
+    echo " ✗ $errors △ $warnings"
+  elif [[ "$errors" -gt 0 ]]; then
+    echo " ✗ $errors"
+  elif [[ "$warnings" -gt 0 ]]; then
+    echo " △ $warnings"
+  else
+    echo " ✓"
+  fi
+}
+
+# Format output: lastProject lint (cwd lint)
+# Show both last edited and current working directory with their respective lint statuses
+if [[ -n "$PROJECT" && -n "$CWD_PROJECT" && "$PROJECT" != "$CWD_PROJECT" ]]; then
+  # Last edit was in different project than cwd
+  PROJECT_LINT=$(get_lint_info "$PROJECT")
+  CWD_LINT=$(get_lint_info "$CWD_PROJECT")
+  echo "▸ $PROJECT$PROJECT_LINT ($CWD_PROJECT$CWD_LINT)"
+elif [[ -n "$PROJECT" ]]; then
+  # Last edit in same project as cwd (or no cwd project)
+  PROJECT_LINT=$(get_lint_info "$PROJECT")
+  echo "▸ $PROJECT$PROJECT_LINT"
+elif [[ -n "$CWD_PROJECT" ]]; then
+  # No recent edits, show cwd
+  CWD_LINT=$(get_lint_info "$CWD_PROJECT")
+  echo "▸ $CWD_PROJECT$CWD_LINT"
 else
-  echo "📁 ~/code"
+  echo "▸ ~/code"
 fi

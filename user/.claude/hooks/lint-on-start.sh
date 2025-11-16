@@ -1,6 +1,5 @@
 #!/bin/bash
-# Hook: Run lint:fix after file edits, store results for statusline
-# Silently runs lint and stores error/warning counts
+# Hook: Run lint check on session start to populate initial lint state
 # Only activates for projects with package.json containing lint:fix script
 
 set -e
@@ -8,27 +7,16 @@ set -e
 # Read hook input from stdin
 INPUT=$(cat)
 
-# Extract project path from file_path in tool_input
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-
-if [[ -z "$FILE_PATH" ]]; then
-  exit 0  # No file path, skip
-fi
-
-# Find project root (look for package.json going up)
-PROJECT_DIR=""
-SEARCH_DIR=$(dirname "$FILE_PATH")
-
-while [[ "$SEARCH_DIR" != "/" && "$SEARCH_DIR" != "$HOME" ]]; do
-  if [[ -f "$SEARCH_DIR/package.json" ]]; then
-    PROJECT_DIR="$SEARCH_DIR"
-    break
-  fi
-  SEARCH_DIR=$(dirname "$SEARCH_DIR")
-done
+# Get cwd from session start
+PROJECT_DIR=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
 
 if [[ -z "$PROJECT_DIR" ]]; then
-  exit 0  # No package.json found
+  exit 0
+fi
+
+# Check if this is a project with package.json
+if [[ ! -f "$PROJECT_DIR/package.json" ]]; then
+  exit 0
 fi
 
 # Check if lint script exists (prefer lint, fallback to lint:fix)
@@ -38,7 +26,7 @@ if jq -e '.scripts["lint"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
 elif jq -e '.scripts["lint:fix"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
   LINT_SCRIPT="lint:fix"
 else
-  exit 0  # No lint script
+  exit 0
 fi
 
 # Create state directory
@@ -49,28 +37,11 @@ mkdir -p "$STATE_DIR"
 PROJECT_NAME=$(basename "$PROJECT_DIR")
 STATE_FILE="$STATE_DIR/$PROJECT_NAME.json"
 
-# Check cooldown - skip if lint ran within last 60 seconds
-if [[ -f "$STATE_FILE" ]]; then
-  LAST_RUN=$(jq -r '.timestamp // 0' "$STATE_FILE" 2>/dev/null || echo "0")
-  NOW=$(date +%s)
-  ELAPSED=$((NOW - LAST_RUN))
-  if [[ "$ELAPSED" -lt 60 ]]; then
-    exit 0  # Skip, ran recently
-  fi
-fi
-
-# Run lint silently with timeout (30 seconds max)
-# macOS doesn't have timeout, use perl one-liner as fallback
+# Run lint silently and capture output
 cd "$PROJECT_DIR"
-if command -v timeout &> /dev/null; then
-  LINT_OUTPUT=$(timeout 30 bun $LINT_SCRIPT 2>&1 || true)
-else
-  # macOS fallback using perl alarm
-  LINT_OUTPUT=$(perl -e 'alarm 30; exec @ARGV' bun $LINT_SCRIPT 2>&1 || true)
-fi
+LINT_OUTPUT=$(bun $LINT_SCRIPT 2>&1 || true)
 
 # Parse lint output for errors and warnings
-# Common patterns: "Found X errors.", "Found X warnings.", "✖ X problems (Y errors, Z warnings)"
 ERRORS=0
 WARNINGS=0
 
@@ -82,18 +53,12 @@ if echo "$LINT_OUTPUT" | grep -q "Found.*warnings"; then
   WARNINGS=$(echo "$LINT_OUTPUT" | grep -oE 'Found [0-9]+ warnings' | grep -oE '[0-9]+' | head -1 || echo "0")
 fi
 
-# Try ESLint format: "X problems (Y errors, Z warnings)" or "X error(s)"
+# Try ESLint summary format: "X problems (Y errors, Z warnings)"
 if [[ "$ERRORS" == "0" && "$WARNINGS" == "0" ]]; then
   if echo "$LINT_OUTPUT" | grep -q "problems"; then
     ERRORS=$(echo "$LINT_OUTPUT" | grep -oE '[0-9]+ errors?' | head -1 | grep -oE '[0-9]+' || echo "0")
     WARNINGS=$(echo "$LINT_OUTPUT" | grep -oE '[0-9]+ warnings?' | head -1 | grep -oE '[0-9]+' || echo "0")
   fi
-fi
-
-# Alternative: count individual error/warning lines (Biome style)
-if [[ "$ERRORS" == "0" && "$WARNINGS" == "0" ]]; then
-  ERRORS=$(echo "$LINT_OUTPUT" | grep -cE '^\s*\d+:\d+\s+error' 2>/dev/null) || ERRORS=0
-  WARNINGS=$(echo "$LINT_OUTPUT" | grep -cE '^\s*\d+:\d+\s+(warning|warn)' 2>/dev/null) || WARNINGS=0
 fi
 
 # ESLint line-by-line format: "123:45  Error:" or "123:45  Warning:"
