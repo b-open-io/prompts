@@ -64,6 +64,7 @@ fi
 
 # Get last edited project and file path from transcript
 LAST_FILE=""
+PROJECT_IS_HOME=false  # Track if project root is ~ (not CODE_DIR)
 if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
   # Extract last file path from Edit/Write operations
   LAST_FILE=$(tail -200 "$TRANSCRIPT" 2>/dev/null | \
@@ -74,6 +75,10 @@ if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
   # Extract project from last file path
   if [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^${CODE_DIR}/([^/]+)/ ]]; then
     PROJECT="${BASH_REMATCH[1]}"
+  elif [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^$HOME/ ]]; then
+    # File is under home but not in CODE_DIR - use ~ as project root
+    PROJECT="~"
+    PROJECT_IS_HOME=true
   else
     # Fallback to old method
     PROJECT=$(tail -100 "$TRANSCRIPT" 2>/dev/null | \
@@ -181,6 +186,41 @@ if [[ -n "$CWD_DISPLAY" ]]; then
   if [[ -n "$PROJECT" && "$PROJECT" != "$CWD_PROJECT" ]]; then
     OUTPUT="${OUTPUT}${BG_P1}${WHITE} ✎ $PROJECT ${RESET}"
 
+    # Only show lint/git for CODE_DIR projects, not home-based (~)
+    if [[ "$PROJECT_IS_HOME" == false ]]; then
+      # Get lint for last edited project
+      read -r ERRORS WARNINGS <<< $(get_lint_counts "$PROJECT")
+
+      OUTPUT="${OUTPUT}${FG_P1}${BG_P2}▶"
+
+      if [[ "$ERRORS" -gt 0 ]]; then
+        OUTPUT="${OUTPUT}${ERR_TEXT}${BOLD} ✗$ERRORS"
+      fi
+
+      if [[ "$WARNINGS" -gt 0 ]]; then
+        OUTPUT="${OUTPUT}${WARN_TEXT}${BOLD} △$WARNINGS"
+      fi
+
+      if [[ "$ERRORS" -eq 0 && "$WARNINGS" -eq 0 ]]; then
+        OUTPUT="${OUTPUT}${OK_TEXT}${BOLD} ✓"
+      fi
+
+      OUTPUT="${OUTPUT} ${RESET}"
+
+      # Git branch segment (light purple)
+      PROJECT_BRANCH=$(get_git_branch "$PROJECT")
+      if [[ -n "$PROJECT_BRANCH" ]]; then
+        OUTPUT="${OUTPUT}${FG_P2}${BG_P3}▶${BLACK} ⎇ ${PROJECT_BRANCH} ${RESET}"
+      fi
+    fi
+  fi
+
+elif [[ -n "$PROJECT" ]]; then
+  # No CWD but have edited project (purple family) - ✎ symbol
+  OUTPUT="${BG_P1}${WHITE}${BOLD} ✎ $PROJECT ${RESET}"
+
+  # Only show lint/git for CODE_DIR projects, not home-based (~)
+  if [[ "$PROJECT_IS_HOME" == false ]]; then
     # Get lint for last edited project
     read -r ERRORS WARNINGS <<< $(get_lint_counts "$PROJECT")
 
@@ -200,40 +240,11 @@ if [[ -n "$CWD_DISPLAY" ]]; then
 
     OUTPUT="${OUTPUT} ${RESET}"
 
-    # Git branch segment (light purple)
+    # Git branch
     PROJECT_BRANCH=$(get_git_branch "$PROJECT")
     if [[ -n "$PROJECT_BRANCH" ]]; then
       OUTPUT="${OUTPUT}${FG_P2}${BG_P3}▶${BLACK} ⎇ ${PROJECT_BRANCH} ${RESET}"
     fi
-  fi
-
-elif [[ -n "$PROJECT" ]]; then
-  # No CWD but have edited project (purple family) - ✎ symbol
-  OUTPUT="${BG_P1}${WHITE}${BOLD} ✎ $PROJECT ${RESET}"
-
-  # Get lint for last edited project
-  read -r ERRORS WARNINGS <<< $(get_lint_counts "$PROJECT")
-
-  OUTPUT="${OUTPUT}${FG_P1}${BG_P2}▶"
-
-  if [[ "$ERRORS" -gt 0 ]]; then
-    OUTPUT="${OUTPUT}${ERR_TEXT}${BOLD} ✗$ERRORS"
-  fi
-
-  if [[ "$WARNINGS" -gt 0 ]]; then
-    OUTPUT="${OUTPUT}${WARN_TEXT}${BOLD} △$WARNINGS"
-  fi
-
-  if [[ "$ERRORS" -eq 0 && "$WARNINGS" -eq 0 ]]; then
-    OUTPUT="${OUTPUT}${OK_TEXT}${BOLD} ✓"
-  fi
-
-  OUTPUT="${OUTPUT} ${RESET}"
-
-  # Git branch
-  PROJECT_BRANCH=$(get_git_branch "$PROJECT")
-  if [[ -n "$PROJECT_BRANCH" ]]; then
-    OUTPUT="${OUTPUT}${FG_P2}${BG_P3}▶${BLACK} ⎇ ${PROJECT_BRANCH} ${RESET}"
   fi
 else
   OUTPUT="${BG_C1}${WHITE} ⌂ ${CODE_DIR/#$HOME/~} ${RESET}"
@@ -255,9 +266,12 @@ fi
 
 # Last edited file (clickable OSC 8 hyperlink)
 if [[ -n "$LAST_FILE" && -f "$LAST_FILE" ]]; then
-  # Make path relative to project root using sed (safer than bash regex)
+  # Make path relative to project root
   RELATIVE_FILE="$LAST_FILE"
-  if [[ -n "$PROJECT" ]]; then
+  if [[ "$PROJECT_IS_HOME" == true ]]; then
+    # Project is ~, strip $HOME/ to show relative path (e.g., .claude/hooks/file.sh)
+    RELATIVE_FILE="${LAST_FILE#$HOME/}"
+  elif [[ -n "$PROJECT" ]]; then
     RELATIVE_FILE="${LAST_FILE#${CODE_DIR}/${PROJECT}/}"
   elif [[ -n "$CWD_PROJECT" ]]; then
     RELATIVE_FILE="${LAST_FILE#${CODE_DIR}/${CWD_PROJECT}/}"
