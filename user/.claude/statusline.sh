@@ -64,6 +64,7 @@ fi
 
 # Get last edited project and file path from transcript
 LAST_FILE=""
+LAST_OPERATION_PATH=""  # For tracking operations even if file deleted
 PROJECT_IS_HOME=false  # Track if project root is ~ (not CODE_DIR)
 if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
   # Extract last file path from Edit/Write operations
@@ -72,15 +73,28 @@ if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
     tail -1 | \
     sed 's/"file_path":"//; s/"$//')
 
-  # Extract project from last file path
-  if [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^${CODE_DIR}/([^/]+)/ ]]; then
+  # Also check for Bash operations with paths (rm, mv, cp, mkdir, etc.)
+  if [[ -z "$LAST_FILE" ]]; then
+    # Extract paths from Bash commands (looks for absolute paths in command field)
+    LAST_OPERATION_PATH=$(tail -200 "$TRANSCRIPT" 2>/dev/null | \
+      grep -o '"command":"[^"]*"' | \
+      tail -1 | \
+      grep -oE '('"$CODE_DIR"'|'"$HOME"')/[^ "]+' | \
+      head -1)
+  fi
+
+  # Use Edit/Write path first, fallback to Bash operation path
+  EFFECTIVE_PATH="${LAST_FILE:-$LAST_OPERATION_PATH}"
+
+  # Extract project from effective path
+  if [[ -n "$EFFECTIVE_PATH" && "$EFFECTIVE_PATH" =~ ^${CODE_DIR}/([^/]+)/ ]]; then
     PROJECT="${BASH_REMATCH[1]}"
-  elif [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^$HOME/([^/]+)/ ]]; then
+  elif [[ -n "$EFFECTIVE_PATH" && "$EFFECTIVE_PATH" =~ ^$HOME/([^/]+)/ ]]; then
     # File is under home but not in CODE_DIR - use first dir as project
     # e.g., ~/.claude/hooks/file.sh -> project=~/.claude
     PROJECT="~/${BASH_REMATCH[1]}"
     PROJECT_IS_HOME=true
-  elif [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^$HOME/[^/]+$ ]]; then
+  elif [[ -n "$EFFECTIVE_PATH" && "$EFFECTIVE_PATH" =~ ^$HOME/[^/]+$ ]]; then
     # File directly in home (no subdirectory) - use ~ as project
     PROJECT="~"
     PROJECT_IS_HOME=true
