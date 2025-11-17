@@ -75,8 +75,13 @@ if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
   # Extract project from last file path
   if [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^${CODE_DIR}/([^/]+)/ ]]; then
     PROJECT="${BASH_REMATCH[1]}"
-  elif [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^$HOME/ ]]; then
-    # File is under home but not in CODE_DIR - use ~ as project root
+  elif [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^$HOME/([^/]+)/ ]]; then
+    # File is under home but not in CODE_DIR - use first dir as project
+    # e.g., ~/.claude/hooks/file.sh -> project=~/.claude
+    PROJECT="~/${BASH_REMATCH[1]}"
+    PROJECT_IS_HOME=true
+  elif [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^$HOME/[^/]+$ ]]; then
+    # File directly in home (no subdirectory) - use ~ as project
     PROJECT="~"
     PROJECT_IS_HOME=true
   else
@@ -268,9 +273,14 @@ fi
 if [[ -n "$LAST_FILE" && -f "$LAST_FILE" ]]; then
   # Make path relative to project root
   RELATIVE_FILE="$LAST_FILE"
-  if [[ "$PROJECT_IS_HOME" == true ]]; then
-    # Project is ~, strip $HOME/ to show relative path with ./ prefix for clarity
-    RELATIVE_FILE="./${LAST_FILE#$HOME/}"
+  if [[ "$PROJECT_IS_HOME" == true && "$PROJECT" != "~" ]]; then
+    # Project is ~/dirname, strip $HOME/dirname/ to show relative path
+    # e.g., ~/.claude/hooks/file.sh with project=~/.claude -> hooks/file.sh
+    HOME_SUBDIR="${PROJECT#\~/}"
+    RELATIVE_FILE="${LAST_FILE#$HOME/$HOME_SUBDIR/}"
+  elif [[ "$PROJECT_IS_HOME" == true ]]; then
+    # Project is ~, file directly in home
+    RELATIVE_FILE="${LAST_FILE#$HOME/}"
   elif [[ -n "$PROJECT" ]]; then
     RELATIVE_FILE="${LAST_FILE#${CODE_DIR}/${PROJECT}/}"
   elif [[ -n "$CWD_PROJECT" ]]; then
