@@ -115,6 +115,57 @@ Hooks run automatically to enhance your workflow:
 - **protect-env-files** - Prevents accidental .env modifications
 - **auto-test-on-save** - Runs tests when files change
 
+## Custom Statusline
+
+A powerline-style statusline for Claude Code with:
+- **Color families** - Linear RGB progression for visual cohesion
+- **Project tracking** - Shows CWD (⌂) and last edited project (✎)
+- **Lint status** - Error/warning counts with yellow text
+- **Git branch** - Branch name with dirty indicator (*)
+- **Clickable file paths** - OSC 8 hyperlinks to open in your editor
+
+### Installation
+
+```bash
+# Copy the statusline script
+cp user/.claude/statusline.sh ~/.claude/statusline.sh
+chmod +x ~/.claude/statusline.sh
+
+# Add to your settings.json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  }
+}
+```
+
+### Configuration
+
+Environment variables (set in your shell or before running Claude):
+
+```bash
+# Code directory (default: ~/code)
+export CODE_DIR="$HOME/projects"
+
+# Editor URL scheme (cursor, vscode, sublime, file)
+export EDITOR_SCHEME="cursor"  # default
+```
+
+**Editor schemes:**
+- `cursor` - Opens in Cursor editor
+- `vscode` - Opens in VS Code
+- `sublime` - Opens in Sublime Text
+- `file` - Opens with system default
+
+### Features
+
+- **⌂ CWD Project** (cyan family) - Where Claude was launched
+- **✎ Edited Project** (purple family) - Last file you edited
+- **Lint counts** - Yellow ✗ for errors, △ for warnings, ✓ for clean
+- **Git branch** - Branch name with * for uncommitted changes
+- **Clickable file** - Cmd+click to open last edited file
+
 ## Repository Structure
 
 ```
