@@ -149,14 +149,9 @@ if [[ -n "$PROJECT" ]]; then
   fi
 
   # CWD segment if different from project (green-gray background)
+  # No arrow here - hard edge separates the two project contexts
   if [[ -n "$CWD_DISPLAY" && "$PROJECT" != "$CWD_PROJECT" ]]; then
-    case "$LAST_BG" in
-      CYAN) OUTPUT="${OUTPUT}${FG_CYAN}${BG_GRAY}▶${WHITE} $CWD_DISPLAY ${RESET}" ;;
-      GREEN) OUTPUT="${OUTPUT}${FG_GREEN}${BG_GRAY}▶${WHITE} $CWD_DISPLAY ${RESET}" ;;
-      YELLOW) OUTPUT="${OUTPUT}${FG_YELLOW}${BG_GRAY}▶${WHITE} $CWD_DISPLAY ${RESET}" ;;
-      RED) OUTPUT="${OUTPUT}${FG_RED}${BG_GRAY}▶${WHITE} $CWD_DISPLAY ${RESET}" ;;
-      *) OUTPUT="${OUTPUT}${FG_BLUE}${BG_GRAY}▶${WHITE} $CWD_DISPLAY ${RESET}" ;;
-    esac
+    OUTPUT="${OUTPUT}${BG_GRAY}${WHITE} $CWD_DISPLAY ${RESET}"
 
     # Add CWD git branch if it's a project
     if [[ -n "$CWD_PROJECT" ]]; then
