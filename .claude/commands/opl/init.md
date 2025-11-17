@@ -93,12 +93,19 @@ if [[ -d ~/.claude/commands ]]; then
   done
 fi
 
-# Check settings.json
+# Check settings.json using jq for reliable detection
 HAS_COAUTHOR_DISABLED=false
 HAS_ALWAYS_THINKING=false
 if [[ -f ~/.claude/settings.json ]]; then
-  grep -q '"includeCoAuthoredBy": false' ~/.claude/settings.json && HAS_COAUTHOR_DISABLED=true
-  grep -q '"alwaysThinkingEnabled": true' ~/.claude/settings.json && HAS_ALWAYS_THINKING=true
+  # Use jq for reliable JSON parsing
+  if command -v jq &> /dev/null; then
+    [[ "$(jq -r '.includeCoAuthoredBy // "null"' ~/.claude/settings.json)" == "false" ]] && HAS_COAUTHOR_DISABLED=true
+    [[ "$(jq -r '.alwaysThinkingEnabled // "null"' ~/.claude/settings.json)" == "true" ]] && HAS_ALWAYS_THINKING=true
+  else
+    # Fallback to grep with flexible whitespace
+    grep -qE '"includeCoAuthoredBy"\s*:\s*false' ~/.claude/settings.json && HAS_COAUTHOR_DISABLED=true
+    grep -qE '"alwaysThinkingEnabled"\s*:\s*true' ~/.claude/settings.json && HAS_ALWAYS_THINKING=true
+  fi
 fi
 
 echo "Current installation status:"
