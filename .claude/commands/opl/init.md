@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Write, Edit, Bash(cp:*), Bash(chmod:*), Bash(mkdir:*), Bash(test:*), Bash(command:*), Bash(echo:*), Bash(ls:*), Bash(wc:*), Bash(tr:*), Bash(sed:*), AskUserQuestion
+allowed-tools: Read, Write, Edit, Bash, AskUserQuestion
 description: Interactive setup wizard for OPL prompts ecosystem
 argument-hint: [--help]
 ---
