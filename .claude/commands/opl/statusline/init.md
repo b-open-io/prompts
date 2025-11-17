@@ -14,9 +14,8 @@ opl:statusline:init - Install project-tracking status line
 Usage: /opl:statusline:init [OPTIONS]
 
 Description:
-Installs a custom status line that shows which project Claude is currently
-working on. Parses the session transcript to find recent file operations
-and displays the project directory (under ~/code/).
+Installs a powerline-style status line with project tracking, lint status,
+git branch info, and clickable file paths.
 
 Options:
   --check   Check status without installing
@@ -25,12 +24,20 @@ Options:
 Requirements:
   - jq (JSON processor)
   - Bash 4.0+
+  - git (for branch detection)
 
-The status line:
-  - Shows 📁 project-name when Claude edits files in ~/code/project-name/
-  - Updates automatically as Claude works
-  - Session-specific (won't show other sessions' activity)
-  - Falls back to current working directory if no recent file ops
+Features:
+  - Color families with linear RGB progression (purple for edited, cyan for CWD)
+  - ⌂ CWD project (where Claude started)
+  - ✎ Last edited project (what you touched)
+  - Lint status with yellow ✗ errors, △ warnings, ✓ clean
+  - Git branch name with * for uncommitted changes
+  - Clickable file paths (OSC 8 hyperlinks) - open in editor
+  - Configurable editor scheme (cursor, vscode, sublime, file)
+
+Environment Variables:
+  - CODE_DIR: Base code directory (default: ~/code)
+  - EDITOR_SCHEME: Editor for clickable links (default: cursor)
 ```
 
 Then stop.
@@ -115,22 +122,28 @@ If it exists and already has statusLine:
 ✅ Status Line Installation Complete!
 
 Installed:
-  📁 ~/.claude/statusline.sh
+  ~/.claude/statusline.sh
 
 Configuration:
-  📝 ~/.claude/settings.json (statusLine added)
+  ~/.claude/settings.json (statusLine added)
 
 Features:
-  - Shows current project: 📁 project-name
-  - Parses recent file operations from transcript
-  - Session-specific (isolated per Claude session)
-  - Configurable code directory (default: ~/code)
+  - ⌂ CWD project (cyan family) - where Claude started
+  - ✎ Edited project (purple family) - last file you touched
+  - Lint status: ✗ errors, △ warnings, ✓ clean (yellow text)
+  - Git branch with * for uncommitted changes
+  - Clickable file paths (cmd+click to open in editor)
+  - Color families with linear RGB progression
 
 To customize:
-  - Set CODE_DIR environment variable for different base path
-  - Edit ~/.claude/statusline.sh for custom formatting
+  - CODE_DIR: Set base code directory (default: ~/code)
+  - EDITOR_SCHEME: Set editor for links (cursor, vscode, sublime, file)
+
+Example:
+  export CODE_DIR="$HOME/projects"
+  export EDITOR_SCHEME="vscode"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️  RESTART REQUIRED - Start a new Claude session to see the status line
+RESTART REQUIRED - Start a new Claude session to see the status line
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
