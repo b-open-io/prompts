@@ -82,7 +82,29 @@ fi
 
 Then stop.
 
-### 3. Install Status Line Script
+### 3. Ask User Configuration Questions
+
+Use the AskUserQuestion tool to gather user preferences:
+
+**Question 1: Code Directory**
+- Header: "Code dir"
+- Question: "Where are your code projects located?"
+- Options:
+  - `~/code` - Standard location
+  - `~/projects` - Alternative location
+  - `~/dev` - Developer folder
+- Allow custom input for other paths
+
+**Question 2: Default Editor**
+- Header: "Editor"
+- Question: "Which editor should open when you click file paths?"
+- Options:
+  - `cursor` - Cursor editor
+  - `vscode` - Visual Studio Code
+  - `sublime` - Sublime Text
+  - `file` - System default
+
+### 4. Install Status Line Script
 
 ```bash
 # Copy the script
@@ -91,7 +113,29 @@ chmod +x ~/.claude/statusline.sh
 echo "✅ Installed ~/.claude/statusline.sh"
 ```
 
-### 4. Configure settings.json
+### 5. Apply User Configuration
+
+Based on their answers, update the statusline.sh with their settings:
+
+If CODE_DIR is not "~/code":
+```bash
+# Update CODE_DIR default in statusline.sh
+sed -i '' 's|CODE_DIR="\${CODE_DIR:-\$HOME/code}"|CODE_DIR="\${CODE_DIR:-'"$USER_CODE_DIR"'}"|' ~/.claude/statusline.sh
+```
+
+If EDITOR_SCHEME is not "cursor":
+```bash
+# Update EDITOR_SCHEME default in statusline.sh
+sed -i '' 's|EDITOR_SCHEME="\${EDITOR_SCHEME:-cursor}"|EDITOR_SCHEME="\${EDITOR_SCHEME:-'"$USER_EDITOR"'}"|' ~/.claude/statusline.sh
+```
+
+Report the changes:
+```
+✅ Configured CODE_DIR: $USER_CODE_DIR
+✅ Configured EDITOR_SCHEME: $USER_EDITOR
+```
+
+### 7. Configure settings.json
 
 Check if ~/.claude/settings.json exists:
 
@@ -116,7 +160,9 @@ If it exists and already has statusLine:
 - If yes, update the configuration
 - If no, skip
 
-### 5. Final Summary
+### 8. Final Summary
+
+Include the user's configured values:
 
 ```
 ✅ Status Line Installation Complete!
@@ -124,23 +170,21 @@ If it exists and already has statusLine:
 Installed:
   ~/.claude/statusline.sh
 
-Configuration:
-  ~/.claude/settings.json (statusLine added)
+Your Configuration:
+  Code directory: $USER_CODE_DIR
+  Editor scheme: $USER_EDITOR
+  Settings: ~/.claude/settings.json
 
 Features:
   - ⌂ CWD project (cyan family) - where Claude started
   - ✎ Edited project (purple family) - last file you touched
   - Lint status: ✗ errors, △ warnings, ✓ clean (yellow text)
   - Git branch with * for uncommitted changes
-  - Clickable file paths (cmd+click to open in editor)
+  - Clickable file paths (cmd+click to open in $USER_EDITOR)
   - Color families with linear RGB progression
 
-To customize:
-  - CODE_DIR: Set base code directory (default: ~/code)
-  - EDITOR_SCHEME: Set editor for links (cursor, vscode, sublime, file)
-
-Example:
-  export CODE_DIR="$HOME/projects"
+Override via environment:
+  export CODE_DIR="$HOME/other-path"
   export EDITOR_SCHEME="vscode"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
