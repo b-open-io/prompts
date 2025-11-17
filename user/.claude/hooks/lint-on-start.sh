@@ -1,6 +1,6 @@
 #!/bin/bash
 # Hook: Run lint check on session start to populate initial lint state
-# Only activates for projects with package.json containing lint:fix script
+# Supports Node.js (package.json) and Go (go.mod) projects
 
 set -e
 
@@ -14,19 +14,28 @@ if [[ -z "$PROJECT_DIR" ]]; then
   exit 0
 fi
 
-# Check if this is a project with package.json
-if [[ ! -f "$PROJECT_DIR/package.json" ]]; then
-  exit 0
-fi
-
-# Check if lint script exists (prefer lint, fallback to lint:fix)
+# Determine project type
+PROJECT_TYPE=""
 LINT_SCRIPT=""
-if jq -e '.scripts["lint"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
-  LINT_SCRIPT="lint"
-elif jq -e '.scripts["lint:fix"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
-  LINT_SCRIPT="lint:fix"
+
+if [[ -f "$PROJECT_DIR/package.json" ]]; then
+  PROJECT_TYPE="node"
+  # Check if lint script exists (prefer lint, fallback to lint:fix)
+  if jq -e '.scripts["lint"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
+    LINT_SCRIPT="lint"
+  elif jq -e '.scripts["lint:fix"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
+    LINT_SCRIPT="lint:fix"
+  else
+    exit 0  # No lint script
+  fi
+elif [[ -f "$PROJECT_DIR/go.mod" ]]; then
+  PROJECT_TYPE="go"
+  if ! command -v golangci-lint &> /dev/null; then
+    exit 0  # golangci-lint not installed
+  fi
+  LINT_SCRIPT="golangci-lint"
 else
-  exit 0
+  exit 0  # Not a supported project type
 fi
 
 # Create state directory
@@ -39,7 +48,12 @@ STATE_FILE="$STATE_DIR/$PROJECT_NAME.json"
 
 # Run lint silently and capture output
 cd "$PROJECT_DIR"
-LINT_OUTPUT=$(bun $LINT_SCRIPT 2>&1 || true)
+
+if [[ "$PROJECT_TYPE" == "node" ]]; then
+  LINT_OUTPUT=$(bun $LINT_SCRIPT 2>&1 || true)
+elif [[ "$PROJECT_TYPE" == "go" ]]; then
+  LINT_OUTPUT=$(golangci-lint run 2>&1 || true)
+fi
 
 # Parse lint output for errors and warnings
 ERRORS=0
@@ -65,6 +79,12 @@ fi
 if [[ "$ERRORS" == "0" && "$WARNINGS" == "0" ]]; then
   ERRORS=$(echo "$LINT_OUTPUT" | grep -cE '^\s*[0-9]+:[0-9]+\s+Error:' || echo "0")
   WARNINGS=$(echo "$LINT_OUTPUT" | grep -cE '^\s*[0-9]+:[0-9]+\s+Warning:' || echo "0")
+fi
+
+# golangci-lint format: "file.go:line:col: message (linter)"
+if [[ "$ERRORS" == "0" && "$WARNINGS" == "0" && "$PROJECT_TYPE" == "go" ]]; then
+  ERRORS=$(echo "$LINT_OUTPUT" | grep -cE '^[^:]+\.go:[0-9]+:[0-9]+:' || echo "0")
+  WARNINGS=0
 fi
 
 # Ensure we have valid numbers

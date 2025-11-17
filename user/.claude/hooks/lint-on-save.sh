@@ -15,30 +15,43 @@ if [[ -z "$FILE_PATH" ]]; then
   exit 0  # No file path, skip
 fi
 
-# Find project root (look for package.json going up)
+# Find project root (look for package.json or go.mod going up)
 PROJECT_DIR=""
+PROJECT_TYPE=""  # "node" or "go"
 SEARCH_DIR=$(dirname "$FILE_PATH")
 
 while [[ "$SEARCH_DIR" != "/" && "$SEARCH_DIR" != "$HOME" ]]; do
   if [[ -f "$SEARCH_DIR/package.json" ]]; then
     PROJECT_DIR="$SEARCH_DIR"
+    PROJECT_TYPE="node"
+    break
+  elif [[ -f "$SEARCH_DIR/go.mod" ]]; then
+    PROJECT_DIR="$SEARCH_DIR"
+    PROJECT_TYPE="go"
     break
   fi
   SEARCH_DIR=$(dirname "$SEARCH_DIR")
 done
 
 if [[ -z "$PROJECT_DIR" ]]; then
-  exit 0  # No package.json found
+  exit 0  # No project marker found
 fi
 
-# Check if lint script exists (prefer lint, fallback to lint:fix)
+# Check if lint tool exists for project type
 LINT_SCRIPT=""
-if jq -e '.scripts["lint"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
-  LINT_SCRIPT="lint"
-elif jq -e '.scripts["lint:fix"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
-  LINT_SCRIPT="lint:fix"
-else
-  exit 0  # No lint script
+if [[ "$PROJECT_TYPE" == "node" ]]; then
+  if jq -e '.scripts["lint"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
+    LINT_SCRIPT="lint"
+  elif jq -e '.scripts["lint:fix"]' "$PROJECT_DIR/package.json" > /dev/null 2>&1; then
+    LINT_SCRIPT="lint:fix"
+  else
+    exit 0  # No lint script
+  fi
+elif [[ "$PROJECT_TYPE" == "go" ]]; then
+  if ! command -v golangci-lint &> /dev/null; then
+    exit 0  # golangci-lint not installed
+  fi
+  LINT_SCRIPT="golangci-lint"
 fi
 
 # Create state directory
@@ -62,11 +75,20 @@ fi
 # Run lint silently with timeout (30 seconds max)
 # macOS doesn't have timeout, use perl one-liner as fallback
 cd "$PROJECT_DIR"
-if command -v timeout &> /dev/null; then
-  LINT_OUTPUT=$(timeout 30 bun $LINT_SCRIPT 2>&1 || true)
-else
-  # macOS fallback using perl alarm
-  LINT_OUTPUT=$(perl -e 'alarm 30; exec @ARGV' bun $LINT_SCRIPT 2>&1 || true)
+
+if [[ "$PROJECT_TYPE" == "node" ]]; then
+  if command -v timeout &> /dev/null; then
+    LINT_OUTPUT=$(timeout 30 bun $LINT_SCRIPT 2>&1 || true)
+  else
+    # macOS fallback using perl alarm
+    LINT_OUTPUT=$(perl -e 'alarm 30; exec @ARGV' bun $LINT_SCRIPT 2>&1 || true)
+  fi
+elif [[ "$PROJECT_TYPE" == "go" ]]; then
+  if command -v timeout &> /dev/null; then
+    LINT_OUTPUT=$(timeout 30 golangci-lint run 2>&1 || true)
+  else
+    LINT_OUTPUT=$(perl -e 'alarm 30; exec @ARGV' golangci-lint run 2>&1 || true)
+  fi
 fi
 
 # Parse lint output for errors and warnings
@@ -100,6 +122,15 @@ fi
 if [[ "$ERRORS" == "0" && "$WARNINGS" == "0" ]]; then
   ERRORS=$(echo "$LINT_OUTPUT" | grep -cE '^\s*[0-9]+:[0-9]+\s+Error:' || echo "0")
   WARNINGS=$(echo "$LINT_OUTPUT" | grep -cE '^\s*[0-9]+:[0-9]+\s+Warning:' || echo "0")
+fi
+
+# golangci-lint format: "file.go:line:col: message (linter)"
+# Each line with this pattern is an issue (all treated as errors by default)
+if [[ "$ERRORS" == "0" && "$WARNINGS" == "0" && "$PROJECT_TYPE" == "go" ]]; then
+  # Count lines matching go lint pattern
+  ERRORS=$(echo "$LINT_OUTPUT" | grep -cE '^[^:]+\.go:[0-9]+:[0-9]+:' || echo "0")
+  # golangci-lint doesn't distinguish warnings, all are errors
+  WARNINGS=0
 fi
 
 # Ensure we have valid numbers
