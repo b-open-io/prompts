@@ -269,8 +269,8 @@ if [[ -n "$LAST_FILE" && -f "$LAST_FILE" ]]; then
   # Make path relative to project root
   RELATIVE_FILE="$LAST_FILE"
   if [[ "$PROJECT_IS_HOME" == true ]]; then
-    # Project is ~, strip $HOME/ to show relative path (e.g., .claude/hooks/file.sh)
-    RELATIVE_FILE="${LAST_FILE#$HOME/}"
+    # Project is ~, strip $HOME/ to show relative path with ./ prefix for clarity
+    RELATIVE_FILE="./${LAST_FILE#$HOME/}"
   elif [[ -n "$PROJECT" ]]; then
     RELATIVE_FILE="${LAST_FILE#${CODE_DIR}/${PROJECT}/}"
   elif [[ -n "$CWD_PROJECT" ]]; then

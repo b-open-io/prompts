@@ -1,6 +1,7 @@
 #!/bin/bash
 # Hook: Run lint check on session start to populate initial lint state
 # Supports Node.js (package.json) and Go (go.mod) projects
+# Updated: 2025-01-17
 
 set -e
 
