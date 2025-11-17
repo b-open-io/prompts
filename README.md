@@ -127,18 +127,18 @@ A powerline-style statusline for Claude Code with:
 ### Installation
 
 ```bash
-# Copy the statusline script
-cp user/.claude/statusline.sh ~/.claude/statusline.sh
-chmod +x ~/.claude/statusline.sh
+# From the prompts repository, run:
+/opl:statusline:init
 
-# Add to your settings.json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh"
-  }
-}
+# Or check current status:
+/opl:statusline:init --check
 ```
+
+The init command will:
+- Install `~/.claude/statusline.sh`
+- Configure `~/.claude/settings.json` with statusLine settings
+- Check for required dependencies (jq)
+- Preserve existing settings
 
 ### Configuration
 
