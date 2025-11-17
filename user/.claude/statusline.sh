@@ -4,27 +4,37 @@
 
 set -e
 
-# ANSI Colors - Pastel/Muted (using 256-color palette)
-# Foregrounds
+# ANSI Colors - Cyberpunk/Matrix hacker theme
+# Base colors
 WHITE='\033[38;5;255m'
 BLACK='\033[38;5;232m'
 GRAY='\033[38;5;245m'
 
-# Backgrounds - Muted/Pastel tones
-BG_BLUE='\033[48;5;67m'      # Muted blue (last edited)
-BG_RED='\033[48;5;167m'      # Soft rose (errors)
-BG_YELLOW='\033[48;5;179m'   # Muted amber (warnings)
-BG_CYAN='\033[48;5;73m'      # Soft teal (branch)
-BG_GREEN='\033[48;5;65m'     # Darker sage (clean/cwd) - better contrast
-BG_GRAY='\033[48;5;240m'     # Dark gray (separator)
+# High contrast text colors for lint
+ERR_TEXT='\033[38;5;220m'    # Bright yellow text for errors
+WARN_TEXT='\033[38;5;220m'   # Bright yellow text for warnings
+OK_TEXT='\033[38;5;220m'     # Bright yellow text for success
 
-# Matching foregrounds for powerline arrows
-FG_BLUE='\033[38;5;67m'
-FG_RED='\033[38;5;167m'
-FG_YELLOW='\033[38;5;179m'
-FG_CYAN='\033[38;5;73m'
-FG_GREEN='\033[38;5;65m'
-FG_GRAY='\033[38;5;240m'
+# Color families derived from 2 base hues with +40 RGB steps
+# Purple family: base (95,0,95) - edited project
+BG_P1='\033[48;5;53m'        # (95,0,95) - dark magenta
+BG_P2='\033[48;5;90m'        # (135,40,135) - medium magenta
+BG_P3='\033[48;5;133m'       # (175,80,175) - light magenta
+FG_P1='\033[38;5;53m'
+FG_P2='\033[38;5;90m'
+FG_P3='\033[38;5;133m'
+TEXT_P_LIGHT='\033[38;5;176m' # (215,120,215) - pink-tinted white
+TEXT_P_DARK='\033[38;5;53m'   # Use base dark
+
+# Cyan family: base (0,95,95) - CWD project
+BG_C1='\033[48;5;23m'        # (0,95,95) - dark cyan
+BG_C2='\033[48;5;30m'        # (40,135,135) - medium cyan
+BG_C3='\033[48;5;73m'        # (80,175,175) - light cyan
+FG_C1='\033[38;5;23m'
+FG_C2='\033[38;5;30m'
+FG_C3='\033[38;5;73m'
+TEXT_C_LIGHT='\033[38;5;116m' # (120,215,215) - cyan-tinted white
+TEXT_C_DARK='\033[38;5;23m'   # Use base dark
 
 BOLD='\033[1m'
 RESET='\033[0m'
@@ -40,18 +50,47 @@ PROJECT=""
 # Configure your code directory here (default: ~/code)
 CODE_DIR="${CODE_DIR:-$HOME/code}"
 
+# Editor URL scheme (cursor, vscode, sublime, file)
+# cursor  -> cursor://file/PATH
+# vscode  -> vscode://file/PATH
+# sublime -> subl://open?url=file://PATH
+# file    -> file://PATH (opens in system default)
+EDITOR_SCHEME="${EDITOR_SCHEME:-cursor}"
+
 # Verify transcript exists
 if [[ -n "$TRANSCRIPT" && ! -f "$TRANSCRIPT" ]]; then
   TRANSCRIPT=""
 fi
 
-# Get last edited project from transcript
+# Get last edited project and file path from transcript
+LAST_FILE=""
 if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
-  PROJECT=$(tail -100 "$TRANSCRIPT" 2>/dev/null | \
-    jq -r 'select(.message.content) | .message.content[] | select(.type == "tool_use") | .input | to_entries[] | .value' 2>/dev/null | \
-    grep -oE "${CODE_DIR}/[a-zA-Z0-9_-]+/" | \
+  # Extract last file path from Edit/Write operations
+  LAST_FILE=$(tail -200 "$TRANSCRIPT" 2>/dev/null | \
+    grep -o '"file_path":"[^"]*"' | \
     tail -1 | \
-    sed "s|${CODE_DIR}/||; s|/\$||")
+    sed 's/"file_path":"//; s/"$//')
+
+  # Extract project from last file path
+  if [[ -n "$LAST_FILE" && "$LAST_FILE" =~ ^${CODE_DIR}/([^/]+)/ ]]; then
+    PROJECT="${BASH_REMATCH[1]}"
+  else
+    # Fallback to old method
+    PROJECT=$(tail -100 "$TRANSCRIPT" 2>/dev/null | \
+      jq -r 'select(.message.content) | .message.content[] | select(.type == "tool_use") | .input | to_entries[] | .value' 2>/dev/null | \
+      grep -oE "${CODE_DIR}/[a-zA-Z0-9_-]+/" | \
+      tail -1 | \
+      sed "s|${CODE_DIR}/||; s|/\$||")
+  fi
+fi
+
+# Get token usage from transcript (look for assistant turns with usage info)
+TOKEN_USAGE=""
+if [[ -n "$TRANSCRIPT" && -f "$TRANSCRIPT" ]]; then
+  # Extract from usage stats if available
+  TOKEN_USAGE=$(tail -50 "$TRANSCRIPT" 2>/dev/null | \
+    jq -r 'select(.usage) | "\(.usage.input_tokens // 0 + .usage.output_tokens // 0)"' 2>/dev/null | \
+    tail -1)
 fi
 
 # Get CWD project
@@ -105,104 +144,136 @@ get_lint_counts() {
 # Build Powerline statusline
 OUTPUT=""
 
-if [[ -n "$PROJECT" ]]; then
-  # Last edited project segment (blue)
-  OUTPUT="${BG_BLUE}${WHITE}${BOLD} $PROJECT ${RESET}"
-
-  # Get lint for last edited project
-  read -r ERRORS WARNINGS <<< $(get_lint_counts "$PROJECT")
-
-  # Errors segment (red) - only if errors exist
-  if [[ "$ERRORS" -gt 0 ]]; then
-    OUTPUT="${OUTPUT}${FG_BLUE}${BG_RED}▶${WHITE}${BOLD} ✗$ERRORS ${RESET}"
-    LAST_BG="RED"
-  else
-    LAST_BG="BLUE"
-  fi
-
-  # Warnings segment (yellow) - only if warnings exist
-  if [[ "$WARNINGS" -gt 0 ]]; then
-    if [[ "$LAST_BG" == "RED" ]]; then
-      OUTPUT="${OUTPUT}${FG_RED}${BG_YELLOW}▶${BLACK}${BOLD} △$WARNINGS ${RESET}"
-    else
-      OUTPUT="${OUTPUT}${FG_BLUE}${BG_YELLOW}▶${BLACK}${BOLD} △$WARNINGS ${RESET}"
-    fi
-    LAST_BG="YELLOW"
-  fi
-
-  # Clean indicator if no errors or warnings
-  if [[ "$ERRORS" -eq 0 && "$WARNINGS" -eq 0 ]]; then
-    OUTPUT="${OUTPUT}${FG_BLUE}${BG_GREEN}▶${WHITE}${BOLD} ✓ ${RESET}"
-    LAST_BG="GREEN"
-  fi
-
-  # Git branch segment (cyan)
-  PROJECT_BRANCH=$(get_git_branch "$PROJECT")
-  if [[ -n "$PROJECT_BRANCH" ]]; then
-    case "$LAST_BG" in
-      RED) OUTPUT="${OUTPUT}${FG_RED}${BG_CYAN}▶${WHITE} ⎇ ${PROJECT_BRANCH} ${RESET}" ;;
-      YELLOW) OUTPUT="${OUTPUT}${FG_YELLOW}${BG_CYAN}▶${WHITE} ⎇ ${PROJECT_BRANCH} ${RESET}" ;;
-      GREEN) OUTPUT="${OUTPUT}${FG_GREEN}${BG_CYAN}▶${WHITE} ⎇ ${PROJECT_BRANCH} ${RESET}" ;;
-      *) OUTPUT="${OUTPUT}${FG_BLUE}${BG_CYAN}▶${WHITE} ⎇ ${PROJECT_BRANCH} ${RESET}" ;;
-    esac
-    LAST_BG="CYAN"
-  fi
-
-  # CWD segment if different from project (green-gray background)
-  # No arrow here - hard edge separates the two project contexts
-  if [[ -n "$CWD_DISPLAY" && "$PROJECT" != "$CWD_PROJECT" ]]; then
-    OUTPUT="${OUTPUT}${BG_GRAY}${WHITE} $CWD_DISPLAY ${RESET}"
-
-    # Add CWD git branch if it's a project
-    if [[ -n "$CWD_PROJECT" ]]; then
-      CWD_BRANCH=$(get_git_branch "$CWD_PROJECT")
-      if [[ -n "$CWD_BRANCH" ]]; then
-        OUTPUT="${OUTPUT}${FG_GRAY}${BG_GREEN}▶${WHITE} ⎇ ${CWD_BRANCH} ${RESET}"
-      fi
-    fi
-  fi
-
-elif [[ -n "$CWD_DISPLAY" ]]; then
-  # No recent edits, just show CWD
-  OUTPUT="${BG_GREEN}${WHITE}${BOLD} $CWD_DISPLAY ${RESET}"
+# CWD comes first (⌂), then last edited (✎)
+if [[ -n "$CWD_DISPLAY" ]]; then
+  # CWD project segment (cyan family) - ⌂ symbol
+  OUTPUT="${BG_C1}${WHITE}${BOLD} ⌂ $CWD_DISPLAY ${RESET}"
 
   if [[ -n "$CWD_PROJECT" ]]; then
     # Add lint for CWD
-    read -r ERRORS WARNINGS <<< $(get_lint_counts "$CWD_PROJECT")
+    read -r CWD_ERRORS CWD_WARNINGS <<< $(get_lint_counts "$CWD_PROJECT")
 
-    if [[ "$ERRORS" -gt 0 ]]; then
-      OUTPUT="${OUTPUT}${FG_GREEN}${BG_RED}▶${WHITE}${BOLD} ✗$ERRORS ${RESET}"
-      LAST_BG="RED"
-    else
-      LAST_BG="GREEN"
+    OUTPUT="${OUTPUT}${FG_C1}${BG_C2}▶"
+
+    if [[ "$CWD_ERRORS" -gt 0 ]]; then
+      OUTPUT="${OUTPUT}${ERR_TEXT}${BOLD} ✗$CWD_ERRORS"
     fi
 
-    if [[ "$WARNINGS" -gt 0 ]]; then
-      if [[ "$LAST_BG" == "RED" ]]; then
-        OUTPUT="${OUTPUT}${FG_RED}${BG_YELLOW}▶${BLACK}${BOLD} △$WARNINGS ${RESET}"
-      else
-        OUTPUT="${OUTPUT}${FG_GREEN}${BG_YELLOW}▶${BLACK}${BOLD} △$WARNINGS ${RESET}"
-      fi
-      LAST_BG="YELLOW"
+    if [[ "$CWD_WARNINGS" -gt 0 ]]; then
+      OUTPUT="${OUTPUT}${WARN_TEXT}${BOLD} △$CWD_WARNINGS"
     fi
 
-    if [[ "$ERRORS" -eq 0 && "$WARNINGS" -eq 0 ]]; then
-      OUTPUT="${OUTPUT}${FG_GREEN}▶${RESET} ${GRAY}✓${RESET}"
-      LAST_BG="NONE"
+    if [[ "$CWD_ERRORS" -eq 0 && "$CWD_WARNINGS" -eq 0 ]]; then
+      OUTPUT="${OUTPUT}${OK_TEXT}${BOLD} ✓"
     fi
+
+    OUTPUT="${OUTPUT} ${RESET}"
 
     # Git branch
     CWD_BRANCH=$(get_git_branch "$CWD_PROJECT")
     if [[ -n "$CWD_BRANCH" ]]; then
-      case "$LAST_BG" in
-        RED) OUTPUT="${OUTPUT}${FG_RED}${BG_CYAN}▶${WHITE} ⎇ ${CWD_BRANCH} ${RESET}" ;;
-        YELLOW) OUTPUT="${OUTPUT}${FG_YELLOW}${BG_CYAN}▶${WHITE} ⎇ ${CWD_BRANCH} ${RESET}" ;;
-        *) OUTPUT="${OUTPUT}${FG_GREEN}${BG_CYAN}▶${WHITE} ⎇ ${CWD_BRANCH} ${RESET}" ;;
-      esac
+      OUTPUT="${OUTPUT}${FG_C2}${BG_C3}▶${BLACK} ⎇ ${CWD_BRANCH} ${RESET}"
     fi
   fi
+
+  # Last edited project segment if different (purple family) - ✎ symbol
+  # No arrow here - hard edge separates the two project contexts
+  if [[ -n "$PROJECT" && "$PROJECT" != "$CWD_PROJECT" ]]; then
+    OUTPUT="${OUTPUT}${BG_P1}${WHITE} ✎ $PROJECT ${RESET}"
+
+    # Get lint for last edited project
+    read -r ERRORS WARNINGS <<< $(get_lint_counts "$PROJECT")
+
+    OUTPUT="${OUTPUT}${FG_P1}${BG_P2}▶"
+
+    if [[ "$ERRORS" -gt 0 ]]; then
+      OUTPUT="${OUTPUT}${ERR_TEXT}${BOLD} ✗$ERRORS"
+    fi
+
+    if [[ "$WARNINGS" -gt 0 ]]; then
+      OUTPUT="${OUTPUT}${WARN_TEXT}${BOLD} △$WARNINGS"
+    fi
+
+    if [[ "$ERRORS" -eq 0 && "$WARNINGS" -eq 0 ]]; then
+      OUTPUT="${OUTPUT}${OK_TEXT}${BOLD} ✓"
+    fi
+
+    OUTPUT="${OUTPUT} ${RESET}"
+
+    # Git branch segment (light purple)
+    PROJECT_BRANCH=$(get_git_branch "$PROJECT")
+    if [[ -n "$PROJECT_BRANCH" ]]; then
+      OUTPUT="${OUTPUT}${FG_P2}${BG_P3}▶${BLACK} ⎇ ${PROJECT_BRANCH} ${RESET}"
+    fi
+  fi
+
+elif [[ -n "$PROJECT" ]]; then
+  # No CWD but have edited project (purple family) - ✎ symbol
+  OUTPUT="${BG_P1}${WHITE}${BOLD} ✎ $PROJECT ${RESET}"
+
+  # Get lint for last edited project
+  read -r ERRORS WARNINGS <<< $(get_lint_counts "$PROJECT")
+
+  OUTPUT="${OUTPUT}${FG_P1}${BG_P2}▶"
+
+  if [[ "$ERRORS" -gt 0 ]]; then
+    OUTPUT="${OUTPUT}${ERR_TEXT}${BOLD} ✗$ERRORS"
+  fi
+
+  if [[ "$WARNINGS" -gt 0 ]]; then
+    OUTPUT="${OUTPUT}${WARN_TEXT}${BOLD} △$WARNINGS"
+  fi
+
+  if [[ "$ERRORS" -eq 0 && "$WARNINGS" -eq 0 ]]; then
+    OUTPUT="${OUTPUT}${OK_TEXT}${BOLD} ✓"
+  fi
+
+  OUTPUT="${OUTPUT} ${RESET}"
+
+  # Git branch
+  PROJECT_BRANCH=$(get_git_branch "$PROJECT")
+  if [[ -n "$PROJECT_BRANCH" ]]; then
+    OUTPUT="${OUTPUT}${FG_P2}${BG_P3}▶${BLACK} ⎇ ${PROJECT_BRANCH} ${RESET}"
+  fi
 else
-  OUTPUT="${BG_GRAY}${WHITE} ${CODE_DIR/#$HOME/~} ${RESET}"
+  OUTPUT="${BG_C1}${WHITE} ⌂ ${CODE_DIR/#$HOME/~} ${RESET}"
 fi
 
-echo -e "$OUTPUT"
+# Add trailing info: token usage and last edited file (clickable)
+TRAIL=""
+
+# Token usage
+if [[ -n "$TOKEN_USAGE" && "$TOKEN_USAGE" =~ ^[0-9]+$ && "$TOKEN_USAGE" -gt 0 ]]; then
+  # Format as K (thousands)
+  if [[ "$TOKEN_USAGE" -ge 1000 ]]; then
+    TOKEN_K=$((TOKEN_USAGE / 1000))
+    TRAIL="${TRAIL} ${GRAY}${TOKEN_K}k${RESET}"
+  else
+    TRAIL="${TRAIL} ${GRAY}${TOKEN_USAGE}${RESET}"
+  fi
+fi
+
+# Last edited file (clickable OSC 8 hyperlink)
+if [[ -n "$LAST_FILE" && -f "$LAST_FILE" ]]; then
+  # Make path relative to project root using sed (safer than bash regex)
+  RELATIVE_FILE="$LAST_FILE"
+  if [[ -n "$PROJECT" ]]; then
+    RELATIVE_FILE="${LAST_FILE#${CODE_DIR}/${PROJECT}/}"
+  elif [[ -n "$CWD_PROJECT" ]]; then
+    RELATIVE_FILE="${LAST_FILE#${CODE_DIR}/${CWD_PROJECT}/}"
+  fi
+
+  # Build URL based on editor scheme
+  case "$EDITOR_SCHEME" in
+    cursor)  FILE_URL="cursor://file${LAST_FILE}" ;;
+    vscode)  FILE_URL="vscode://file${LAST_FILE}" ;;
+    sublime) FILE_URL="subl://open?url=file://${LAST_FILE}" ;;
+    *)       FILE_URL="file://${LAST_FILE}" ;;
+  esac
+
+  # OSC 8 hyperlink: \e]8;;URL\a TEXT \e]8;;\a
+  # Use \a (BEL) instead of \\ as terminator - more compatible
+  TRAIL="${TRAIL} ${GRAY}\033]8;;${FILE_URL}\a${RELATIVE_FILE}\033]8;;\a${RESET}"
+fi
+
+echo -e "${OUTPUT}${TRAIL}"
