@@ -18,8 +18,12 @@ Interactive wizard that configures your Claude Code environment with:
 - Specialized AI agents (22 domain experts)
 - User-level commands (/prd, etc.)
 - Automation hooks (lint-on-save, etc.)
-- Custom statusline (project tracking, git, lint status)
 - Recommended settings (includeCoAuthoredBy: false, etc.)
+
+For statusline (project tracking, git, lint status), install the claude-peacock plugin:
+  /plugin marketplace add b-open-io/claude-plugins
+  /plugin install claude-peacock@b-open-io
+  (auto-configures on next session)
 
 Features:
 - Detects existing installations and pre-checks those options
@@ -48,8 +52,9 @@ This wizard will help you configure:
 • 22 specialized AI agents
 • User-level commands (/prd, etc.)
 • Automation hooks
-• Custom statusline
 • Recommended settings
+
+For custom statusline, see claude-peacock plugin (details in --help)
 
 Note: OPL slash commands (/opl:*) are project-level and work
 automatically when you're in the prompts repo directory.
@@ -81,10 +86,6 @@ HAS_LINT_ON_START=false
 [[ -f ~/.claude/hooks/lint-on-save.sh ]] && HAS_LINT_ON_SAVE=true
 [[ -f ~/.claude/hooks/lint-on-start.sh ]] && HAS_LINT_ON_START=true
 
-# Check for existing statusline
-HAS_STATUSLINE=false
-[[ -f ~/.claude/statusline.sh ]] && HAS_STATUSLINE=true
-
 # Check for existing user commands
 INSTALLED_COMMANDS=()
 if [[ -d ~/.claude/commands ]]; then
@@ -111,7 +112,6 @@ fi
 echo "Current installation status:"
 echo "  Agents: ${#INSTALLED_AGENTS[@]} installed"
 echo "  Hooks: lint-on-save=$HAS_LINT_ON_SAVE, lint-on-start=$HAS_LINT_ON_START"
-echo "  Statusline: $HAS_STATUSLINE"
 echo "  Commands: ${#INSTALLED_COMMANDS[@]} installed"
 echo "  Co-Author disabled: $HAS_COAUTHOR_DISABLED"
 echo "  Always Thinking: $HAS_ALWAYS_THINKING"
@@ -137,7 +137,6 @@ Use AskUserQuestion tool with multi-select. **Pre-check options based on detecte
   - `Agents` - 22 specialized AI sub-agents (pre-check if ANY agents installed)
   - `Commands` - User-level commands like /prd (pre-check if ANY commands installed)
   - `Hooks` - Automation (lint-on-save, lint-on-start) (pre-check if ANY hooks installed)
-  - `Statusline` - Project tracking with git/lint status (pre-check if statusline exists)
 
 ### 4. Granular Agent Selection (if Agents selected)
 
@@ -194,28 +193,7 @@ AVAILABLE_COMMANDS=$(ls user/.claude/commands/*.md 2>/dev/null | xargs -I {} bas
   - `Disable Co-Author` - Remove "Co-Authored-By: Claude" from commits
   - `Always Thinking` - Enable extended thinking mode
 
-### 8. Statusline Configuration (if selected)
-
-If user selected Statusline, ask:
-
-**Question 6: Code Directory**
-- Header: "Code dir"
-- Question: "Where are your code projects located?"
-- Options:
-  - `~/code` - Standard location
-  - `~/projects` - Alternative location
-  - `~/dev` - Developer folder
-
-**Question 7: Editor**
-- Header: "Editor"
-- Question: "Which editor should open when you click file paths?"
-- Options:
-  - `cursor` - Cursor editor
-  - `vscode` - Visual Studio Code
-  - `sublime` - Sublime Text
-  - `file` - System default
-
-### 9. Install Selected Components
+### 8. Install Selected Components
 
 For each selected component:
 
@@ -250,24 +228,7 @@ done
 echo "✅ Installed/updated ${#SELECTED_HOOKS[@]} hooks"
 ```
 
-**Statusline:**
-```bash
-cp user/.claude/statusline.sh ~/.claude/statusline.sh
-chmod +x ~/.claude/statusline.sh
-echo "✅ Installed statusline"
-```
-
-If user configured non-default CODE_DIR:
-```bash
-sed -i '' 's|CODE_DIR="${CODE_DIR:-$HOME/code}"|CODE_DIR="${CODE_DIR:-'"$USER_CODE_DIR"'}"|' ~/.claude/statusline.sh
-```
-
-If user configured non-default EDITOR_SCHEME:
-```bash
-sed -i '' 's|EDITOR_SCHEME="${EDITOR_SCHEME:-cursor}"|EDITOR_SCHEME="${EDITOR_SCHEME:-'"$USER_EDITOR"'}"|' ~/.claude/statusline.sh
-```
-
-### 10. Update settings.json
+### 9. Update settings.json
 
 Read existing ~/.claude/settings.json or create new one.
 
@@ -305,16 +266,6 @@ Add to hooks configuration (merge with existing hooks, don't overwrite):
 }
 ```
 
-**If Statusline selected:**
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh"
-  }
-}
-```
-
 **If Disable Co-Author selected:**
 ```json
 {
@@ -343,13 +294,14 @@ Installed/Updated:
   ✅ Agents: X installed/updated
   ✅ Commands: X installed/updated
   ✅ Hooks: X installed/updated
-  ✅ Statusline: configured
   ✅ Settings: updated
 
 Configuration:
   Settings: ~/.claude/settings.json
-  [If statusline] Code directory: $USER_CODE_DIR
-  [If statusline] Editor scheme: $USER_EDITOR
+
+For statusline with Peacock theme colors:
+  /plugin marketplace add b-open-io/claude-plugins
+  /plugin install claude-peacock@b-open-io
 
 Next Steps:
   1. RESTART Claude Code to activate all features
