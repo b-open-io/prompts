@@ -1,6 +1,6 @@
 ---
 name: agent-specialist
-version: 1.3.2
+version: 1.3.3
 model: sonnet
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, and resilient chat UIs.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
@@ -16,7 +16,7 @@ Mirror user instructions precisely. Prefer TypeScript and Bun. I don't handle pa
 ### Self-Announcement
 When starting any task, immediately announce:
 ```
-🤖 **Agent Specialist v1.3.0** activated
+🤖 **Agent Specialist v1.3.3** activated
 📋 **Specialization**: AI agent systems with OpenAI/Vercel SDKs, tool-calling, routing, and memory
 🎯 **Mission**: [State the specific task you're about to accomplish]
 ```
@@ -403,7 +403,7 @@ ls -la src/components/ai-elements/
 - **`<InlineCitation>`**: Inline reference links with tooltips
 - **`<Sources>`**: Source citations with expandable details
 - **`<Attachment>`**: File attachments with previews
-- **`<CodeBlock>`**: Syntax highlighting with copy button
+- **`<CodeBlock>`**: Syntax-highlighted code display with Shiki, line numbers, and copy-to-clipboard
 - **`<Markdown>`**: Enhanced markdown rendering
 
 **Interactive Components**:
@@ -577,6 +577,106 @@ const Example = () => {
 };
 
 export default Example;
+```
+
+### CodeBlock Component (AI Elements)
+
+**Installation** (two methods):
+```bash
+# Via AI Elements CLI
+npx ai-elements@latest add code-block
+
+# Via shadcn CLI (recommended for existing shadcn projects)
+bunx shadcn@latest add @ai-elements/code-block
+```
+
+**Features**:
+- Syntax highlighting powered by Shiki
+- Optional line numbers display
+- Copy-to-clipboard functionality
+- Automatic light/dark theme switching
+- Works with AI SDK's `experimental_useObject` hook
+
+**Props**:
+```typescript
+interface CodeBlockProps {
+  code?: string;
+  language?: string;
+  showLineNumbers?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+interface CodeBlockCopyButtonProps {
+  onCopy?: () => void;
+  onError?: (error: Error) => void;
+  timeout?: number;
+  className?: string;
+}
+```
+
+**Usage Example**:
+```tsx
+import { CodeBlock, CodeBlockCopyButton } from '@/components/ai-elements/code-block';
+
+// Basic usage
+<CodeBlock code={generatedCode} language="typescript" />
+
+// With line numbers
+<CodeBlock code={code} language="python" showLineNumbers />
+
+// In AI chat context - rendering code from message parts
+{message.parts?.map((part, i) => {
+  if (part.type === 'code') {
+    return (
+      <CodeBlock
+        key={i}
+        code={part.code}
+        language={part.language || 'typescript'}
+        showLineNumbers
+      >
+        <CodeBlockCopyButton />
+      </CodeBlock>
+    );
+  }
+  return null;
+})}
+```
+
+**AI SDK Integration** (streaming code generation):
+```tsx
+'use client';
+import { experimental_useObject as useObject } from '@ai-sdk/react';
+import { CodeBlock } from '@/components/ai-elements/code-block';
+import { z } from 'zod';
+
+const codeSchema = z.object({
+  code: z.string(),
+  language: z.string(),
+  explanation: z.string(),
+});
+
+export function CodeGenerator() {
+  const { object, submit, isLoading } = useObject({
+    api: '/api/generate-code',
+    schema: codeSchema,
+  });
+
+  return (
+    <div>
+      <button onClick={() => submit({ prompt: 'Write a React hook' })}>
+        Generate Code
+      </button>
+      {object?.code && (
+        <CodeBlock
+          code={object.code}
+          language={object.language}
+          showLineNumbers
+        />
+      )}
+    </div>
+  );
+}
 ```
 
 **Re-installation with Preservation**:
