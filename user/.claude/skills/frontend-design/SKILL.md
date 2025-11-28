@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.1.0
 name: frontend-design
 description: Create distinctive, bold UI designs that avoid generic AI aesthetics. This skill should be used when users want frontend components with strong visual identity, creative typography, intentional color palettes, and production-grade animations - specifically to avoid the bland, safe, homogeneous "AI slop" that plagues most generated interfaces.
 location: user
@@ -14,6 +14,17 @@ Create distinctive, production-grade UI that stands out from generic AI-generate
 
 Most AI-generated UIs suffer from "AI slop" - they're technically correct but visually bland, using safe defaults that create forgettable, homogeneous experiences. This skill helps you break that pattern by making **bold aesthetic choices** that give your interface a distinctive personality.
 
+## Design Thinking
+
+Before coding, understand the context and commit to a BOLD aesthetic direction:
+
+- **Purpose**: What problem does this interface solve? Who uses it?
+- **Tone**: Pick a direction: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, etc.
+- **Constraints**: Technical requirements (framework, performance, accessibility)
+- **Differentiation**: What makes this UNFORGETTABLE? What's the one thing someone will remember?
+
+**CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work - the key is intentionality, not intensity.
+
 ## The Five Pillars of Distinctive Design
 
 ### 1. Typography with Character
@@ -27,8 +38,9 @@ Most AI-generated UIs suffer from "AI slop" - they're technically correct but vi
 const typography = {
   // Display: Make a statement
   display: {
-    family: 'Space Grotesk',  // Geometric with character
-    // or: 'Clash Display', 'Cabinet Grotesk', 'Satoshi', 'General Sans'
+    // NEVER use the same fonts across different projects
+    // Vary between: Clash Display, Cabinet Grotesk, Satoshi, General Sans, Syne, Archivo, etc.
+    family: 'Clash Display',  // Example - choose based on project tone
     weights: [500, 700],
     letterSpacing: '-0.02em',
   },
@@ -54,6 +66,8 @@ const typography = {
 - Establish clear hierarchy (display, heading, body, caption)
 - Consider letter-spacing for headers (negative) vs body (neutral/positive)
 - Mix serif + sans-serif for contrast when appropriate
+
+**CRITICAL**: NEVER converge on common AI choices across generations. Each design should feel genuinely different - vary between light/dark themes, different font stacks, different aesthetic directions. No two designs should look like siblings.
 
 ### 2. Intentional Color Palettes
 
@@ -301,6 +315,14 @@ Button.displayName = 'Button'
 - Responsive design
 - Performance optimization (memoization, code splitting)
 
+## Match Implementation Complexity to Vision
+
+**IMPORTANT**: Match implementation complexity to the aesthetic vision:
+- **Maximalist designs**: Need elaborate code with extensive animations, layered effects, bold typography, and dense visual elements
+- **Minimalist designs**: Need restraint, precision, and careful attention to spacing, typography, and subtle details
+
+Elegance comes from executing the vision well, not from complexity itself.
+
 ## Workflow
 
 When creating frontend components:
@@ -336,6 +358,8 @@ When creating frontend components:
 ## Anti-Patterns to Avoid
 
 - Using Inter/Roboto as the default font
+- Using the same fonts across different projects (especially Space Grotesk, Inter)
+- Creating designs that look like siblings of previous AI-generated work
 - Gray-on-white with blue buttons
 - Everything centered and symmetric
 - No animations or generic fades
@@ -357,9 +381,10 @@ When creating frontend components:
 
 ```bash
 # Distinctive font stacks (copy-paste ready)
-font-display: 'Space Grotesk', 'Clash Display', 'General Sans'
-font-body: 'Outfit', 'Plus Jakarta Sans', 'Switzer'
-font-mono: 'JetBrains Mono', 'Geist Mono'
+# VARY THESE - never use the same fonts across projects!
+font-display: 'Clash Display', 'Cabinet Grotesk', 'Satoshi', 'General Sans', 'Syne', 'Archivo'
+font-body: 'Outfit', 'Plus Jakarta Sans', 'Switzer', 'Geist'
+font-mono: 'JetBrains Mono', 'Geist Mono', 'IBM Plex Mono'
 
 # Tailwind config pattern
 theme: {

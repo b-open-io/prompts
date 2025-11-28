@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 name: skill-creator
 description: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.
 location: user
@@ -16,6 +16,20 @@ Skills are modular, self-contained packages that extend Claude's capabilities by
 specialized knowledge, workflows, and tools. Think of them as "onboarding guides" for specific
 domains or tasks—they transform Claude from a general-purpose agent into a specialized agent
 equipped with procedural knowledge that no model can fully possess.
+
+## Core Principles
+
+### Conciseness
+**"The context window is a public good."** Only include information Claude doesn't already possess. Challenge each detail's necessity before inclusion.
+
+### Appropriate Freedom Levels
+Match instruction specificity to task fragility:
+- **High-level guidance**: For flexible, creative tasks
+- **Pseudocode patterns**: For preferred approaches
+- **Exact scripts**: For fragile, deterministic operations
+
+### Multi-Model Testing
+Verify skills work across Haiku, Sonnet, and Opus. Instruction needs vary by model capability.
 
 ### What Skills Provide
 
@@ -44,6 +58,13 @@ skill-name/
 #### SKILL.md (required)
 
 **Metadata Quality:** The `name` and `description` in YAML frontmatter determine when Claude will use the skill. Be specific about what the skill does and when to use it. Use the third-person (e.g. "This skill should be used when..." instead of "Use this skill when...").
+
+**Size Limit**: Keep SKILL.md under 500 lines. Split detailed content into `references/` files.
+
+### Naming Convention
+Use **gerund form** (verb + -ing): `processing-pdfs`, `analyzing-spreadsheets`, `generating-reports`
+- **Avoid**: Vague terms like "helper", "utils", "manager"
+- **Max**: 64 characters, lowercase letters/numbers/hyphens only
 
 #### Bundled Resources (optional)
 
@@ -209,3 +230,22 @@ After testing the skill, users may request improvements. Often this happens righ
 2. Notice struggles or inefficiencies
 3. Identify how SKILL.md or bundled resources should be updated
 4. Implement changes and test again
+
+## Anti-Patterns to Avoid
+
+- ❌ Offering excessive options instead of recommending defaults
+- ❌ Assuming packages are pre-installed (document dependencies)
+- ❌ "Voodoo constants" - magic numbers without justification
+- ❌ Deeply nested file references (keep one level from SKILL.md)
+- ❌ Punting error handling to Claude instead of solving proactively
+- ❌ Duplicating information between SKILL.md and references
+- ❌ Using backslashes in paths (always forward slashes)
+- ❌ Time-sensitive information that will become outdated
+
+## API Integration
+
+Skills integrate with the Messages API via the `container` parameter:
+- Specify skill type: `anthropic` (pre-built) or `custom` (uploaded)
+- Include `code_execution` tool for file generation
+- Pin versions for production, use "latest" for development
+- Required beta headers: `code-execution-2025-08-25`, `skills-2025-10-02`

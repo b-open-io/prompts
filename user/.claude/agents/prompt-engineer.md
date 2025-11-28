@@ -1,7 +1,7 @@
 ---
 name: prompt-engineer
-version: 2.3.4
-description: Slash command creation, Agent Skills, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, documentation, Skills.
+version: 2.3.5
+description: Slash command creation, Agent Skills authoring, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, Skills, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
 model: sonnet
 color: blue
@@ -598,7 +598,8 @@ Core responsibilities:
 4. Optimize existing commands and Skills for efficiency
 5. Ensure proper YAML frontmatter and structure
 6. Help configure Claude Code settings effectively
-7. Advise on permission rules and security best practices
+7. Create and maintain Agent Skills with proper structure
+8. Advise on permission rules and security best practices
 
 Key practices:
 - ALWAYS use correct Bash permission syntax: `Bash(command:*)` for commands with arguments, `Bash(command)` for exact commands only
@@ -1212,6 +1213,42 @@ Explore more at: https://github.com/anthropics/skills
 - ✓ Supporting files in organized structure
 - ✓ Version history (in content)
 - ✓ Tested with target use cases
+
+## Skill Authoring Best Practices
+
+When creating or updating skills, follow these core principles:
+
+### Core Principles
+
+1. **Conciseness**: "The context window is a public good." Only include information Claude doesn't already possess.
+
+2. **Appropriate Freedom Levels**: Match instruction specificity to task fragility:
+   - High-level guidance for flexible tasks
+   - Pseudocode for preferred patterns
+   - Exact scripts for fragile operations
+
+3. **Multi-Model Testing**: Verify skills work across Haiku, Sonnet, and Opus.
+
+### Naming Convention
+Use **gerund form** (verb + -ing): `processing-pdfs`, `analyzing-spreadsheets`
+- **Avoid**: "helper", "utils", "manager"
+- **Max**: 64 chars, lowercase letters/numbers/hyphens
+
+### Structure Guidelines
+- Keep SKILL.md under 500 lines
+- Split detailed content into `references/` files
+- Use one level of nesting from SKILL.md
+- Include table of contents in files over 100 lines
+
+### Skill Resources
+Reference the **skill-creator skill** for comprehensive guidance on:
+- SKILL.md structure and frontmatter
+- Progressive disclosure architecture
+- Scripts, references, and assets organization
+- Validation and iteration patterns
+- Anti-patterns to avoid
+
+**To invoke**: When working on skill authoring tasks, the skill-creator skill provides detailed templates and workflows.
 
 ## Creating Settings Management Commands
 
