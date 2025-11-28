@@ -1,7 +1,7 @@
 ---
 name: mcp-specialist
-version: 3.0.8
-description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging.
+version: 3.0.9
+description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite
 color: orange
 ---
@@ -670,6 +670,74 @@ claude mcp add-json --user dev-tools '{
   }
 }'
 ```
+
+## Tool Search Tool (Context Optimization)
+
+The Tool Search Tool dramatically reduces context waste from MCP servers by enabling dynamic tool discovery instead of loading all tool definitions upfront.
+
+### The Problem
+- 50 MCP tools ≈ 10-20K tokens consumed
+- Claude's tool selection degrades with 30+ tools
+- Large MCP servers (200+ tools) waste most of the context window
+
+### The Solution
+Enable tool search to load tools on-demand:
+
+**Beta Headers Required**:
+- `advanced-tool-use-2025-11-20` (Claude API)
+- `mcp-client-2025-11-20` (for MCP integration)
+
+**Two Search Variants**:
+1. `tool_search_tool_regex_20251119` - Claude uses regex patterns
+2. `tool_search_tool_bm25_20251119` - Claude uses natural language queries
+
+### Implementation
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+
+response = client.beta.messages.create(
+    model="claude-opus-4-5-20251001",  # or claude-sonnet-4-5-20250929
+    betas=["advanced-tool-use-2025-11-20", "mcp-client-2025-11-20"],
+    max_tokens=4096,
+    tools=[
+        {
+            "type": "tool_search_tool_bm25_20251119",
+            "name": "tool_search"
+        },
+        # MCP tools with defer_loading
+        {
+            "name": "mcp__github__create_issue",
+            "description": "Create a GitHub issue",
+            "input_schema": {...},
+            "defer_loading": True  # Only loaded when discovered
+        }
+    ],
+    messages=[{"role": "user", "content": "Create an issue for the bug"}]
+)
+```
+
+### Best Practices
+
+1. **Keep 3-5 frequently-used tools non-deferred** for immediate access
+2. **Mark all other tools with `defer_loading: true`**
+3. **Use descriptive tool names and descriptions** for better discovery
+4. **Include semantic keywords** matching how users describe tasks
+
+### When to Use Tool Search
+
+- ✅ MCP servers with 10+ tools
+- ✅ Multiple MCP servers combined (GitHub + Postgres + Vercel)
+- ✅ Tool definitions exceeding 10K tokens total
+- ✅ Systems with 200+ available tools
+
+### Limits
+- Maximum 10,000 tools supported
+- Returns 3-5 results per search
+- 200-character regex pattern limit
+- Requires Claude Sonnet 4.5+ or Opus 4.5+
 
 ## Package Manager Detection & Support
 

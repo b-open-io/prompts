@@ -1,9 +1,9 @@
 ---
 name: legal-specialist
-version: 1.1.1
+version: 1.1.2
 description: Expert in legal compliance, privacy regulations, terms of service, and data protection
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
-model: claude-sonnet-4-20250514
+model: opus
 color: red
 ---
 

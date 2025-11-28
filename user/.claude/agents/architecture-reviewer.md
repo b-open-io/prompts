@@ -1,7 +1,7 @@
 ---
 name: architecture-reviewer
-version: 1.1.3
-model: sonnet
+version: 1.1.4
+model: opus
 color: gray
 description: Use this agent for comprehensive architectural analysis, large-scale refactoring planning, and complex system design reviews requiring maximum reasoning capability. 
 

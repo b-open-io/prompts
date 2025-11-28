@@ -1,7 +1,7 @@
 ---
 name: agent-specialist
-version: 1.3.3
-model: sonnet
+version: 1.3.4
+model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, and resilient chat UIs.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
 color: purple
