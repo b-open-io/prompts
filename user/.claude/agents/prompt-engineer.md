@@ -1,6 +1,6 @@
 ---
 name: prompt-engineer
-version: 2.3.5
+version: 2.3.6
 description: Slash command creation, Agent Skills authoring, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, Skills, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash
 model: sonnet
@@ -113,6 +113,27 @@ Your role is to create, fix, and optimize commands and Skills with correct Bash 
 - `/status` - View account/system status
 - `/terminal-setup` - Install Shift+Enter binding
 - `/vim` - Enter vim mode
+
+### Plugin Management Commands
+Use these to extend Claude Code with official and community plugins:
+
+```bash
+# Add a marketplace (one-time per marketplace)
+/plugin marketplace add anthropics/claude-code
+
+# Install a plugin from a marketplace
+/plugin install frontend-design@claude-code-plugins
+/plugin install plugin-dev@claude-code-plugins
+
+# List installed plugins
+/plugin list
+```
+
+**Key Anthropic Plugins:**
+- `frontend-design`: Auto-invoked skill for distinctive UI design
+- `plugin-dev`: Toolkit for creating custom plugins with commands, agents, skills, hooks
+- `code-review`: Automated PR review with specialized agents
+- `security-guidance`: Hook-based security warnings
 
 ### Command Locations & Scope
 1. **Project commands**: `.claude/commands/` (shows "(project)" in help)

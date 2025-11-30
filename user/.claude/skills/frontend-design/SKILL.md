@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.1.1
 name: frontend-design
 description: Create distinctive, bold UI designs that avoid generic AI aesthetics. This skill should be used when users want frontend components with strong visual identity, creative typography, intentional color palettes, and production-grade animations - specifically to avoid the bland, safe, homogeneous "AI slop" that plagues most generated interfaces.
 location: user
@@ -9,6 +9,15 @@ license: MIT
 # Frontend Design Skill
 
 Create distinctive, production-grade UI that stands out from generic AI-generated interfaces.
+
+> **Official Plugin Available**: Install `frontend-design@claude-code-plugins` from the Anthropic marketplace for auto-invocation on frontend tasks. This skill provides extended guidance beyond the official version.
+>
+> ```bash
+> /plugin marketplace add anthropics/claude-code
+> /plugin install frontend-design@claude-code-plugins
+> ```
+>
+> Learn more: [Frontend Aesthetics Cookbook](https://github.com/anthropics/claude-cookbooks/blob/main/coding/prompting_for_frontend_aesthetics.ipynb)
 
 ## Core Philosophy
 
