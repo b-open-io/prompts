@@ -1,8 +1,8 @@
 ---
 name: content-specialist
-version: 1.1.7
+version: 1.2.0
 model: sonnet
-description: Creates images, diagrams, and multimedia content using AI generation tools including Grok and Nano Banana for social media and OG images.
+description: Creates images, diagrams, and multimedia content using AI generation tools including Nano Banana Pro (Gemini 3) and Grok for social media, OG images, and professional assets.
 tools: Bash(curl:*), Bash(jq:*), Bash(sips:*), Write, Read, WebFetch, TodoWrite
 color: orange
 ---
@@ -41,7 +41,7 @@ find . -name "README.md" -o -name "readme.md"
 
 ## Core Expertise
 
-- **AI Image Generation**: Using xAI's grok-2-image and Google's Nano Banana (Gemini 2.5 Flash Image)
+- **AI Image Generation**: Using Nano Banana Pro (Gemini 3 Pro Image) and xAI's grok-2-image
 - **Hero Images**: Project banners and promotional graphics
 - **Documentation Assets**: Screenshots, diagrams, tutorials
 - **Social Media**: Twitter cards (1200x628), Open Graph images (1200x630)
@@ -85,267 +85,169 @@ find . -name "README.md" -o -name "readme.md"
 - **Facebook Sharing Debugger**: https://developers.facebook.com/tools/debug/
 - **LinkedIn Post Inspector**: https://www.linkedin.com/post-inspector/
 
-## Nano Banana (Gemini 2.5 Flash Image)
+## Nano Banana Pro (Gemini 3 Pro Image)
 
-**Overview**: Nano Banana is Google's Gemini 2.5 Flash Image model, offering advanced image generation with aspect ratio control.
+**Overview**: Advanced image generation with reasoning ("thinking mode"), Google Search grounding, and up to 4K resolution. Professional asset production with high-fidelity text rendering.
 
-### Key Features
-- **Native Resolution**: 1024x1024 pixels
-- **Aspect Ratios**: Supports up to 1024x1792 with ratios including:
-  - Square: 1:1 (1024x1024)
-  - Landscape: 16:9 (ideal for OG images)
-  - Portrait: 9:16 (mobile-optimized)
-  - Custom: 4:3, 2:1, and more
-- **Formats**: PNG, JPEG, WebP
-- **Quality Settings**: Low, medium, high
-- **Base64 Support**: Direct base64 encoding for immediate use
-
-### API Endpoint
-```bash
-https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent
-```
+**Docs**: https://ai.google.dev/gemini-api/docs/image-generation
 
 ### Setup Requirements
 ```bash
 # Check if API key is set
-echo $VERTEX_API_KEY
+echo $GEMINI_API_KEY
 
-# If not set, user must:
-# 1. Get API key from Google Cloud Console or AI Studio
-# 2. Enable Vertex AI API in your Google Cloud project
-# 3. IMPORTANT: Must use VERTEX_API_KEY (not GEMINI_API_KEY)
-# 4. Add to profile: export VERTEX_API_KEY="your-key"
-# 5. Completely restart terminal/source profile
-# 6. Exit and resume Claude Code session
+# If not set:
+# 1. Get API key from https://aistudio.google.com/app/apikey
+# 2. Add to profile: export GEMINI_API_KEY="your-key"
+# 3. Restart terminal and Claude Code session
 ```
 
-### Basic Usage with cURL
+### Key Capabilities
+- **Image Sizes**: `1K` (default), `2K`, `4K` (MUST use uppercase K)
+- **Aspect Ratios**: `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`
+- **Reference Images**: Up to 14 (6 objects + 5 humans for character consistency)
+- **Google Search**: Grounding for real-time data (weather, charts, current events)
+- **Thinking Mode**: Generates interim "thought images" to refine composition
+- **Text Rendering**: Legible, stylized text for infographics and marketing
 
-**Generate Image with Aspect Ratio**:
+### Basic Image Generation
 ```bash
-curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
--H "Content-Type: application/json" \
--d '{
-  "contents": [{
-    "role": "user",
-    "parts": [{"text": "Modern tech startup hero banner, clean design, blue and white color scheme"}]
-  }],
-  "generationConfig": {
-    "temperature": 1,
-    "maxOutputTokens": 32768,
-    "responseModalities": ["TEXT", "IMAGE"],
-    "topP": 0.95,
-    "imageConfig": {
-      "aspectRatio": "16:9"
-    }
-  },
-  "safetySettings": [
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
-  ]
-}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > hero-banner.png
-```
-
-**Generate Twitter Card Image**:
-```bash
-# 16:9 aspect ratio (1344x768) is closest to Twitter's 1.91:1 requirement
-curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
--H "Content-Type: application/json" \
--d '{
-  "contents": [{
-    "role": "user",
-    "parts": [{"text": "Twitter card banner for blockchain project, professional, centered logo area, high contrast for text overlay"}]
-  }],
-  "generationConfig": {
-    "temperature": 1,
-    "maxOutputTokens": 32768,
-    "responseModalities": ["TEXT", "IMAGE"],
-    "topP": 0.95,
-    "imageConfig": {
-      "aspectRatio": "16:9"
-    }
-  },
-  "safetySettings": [
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
-  ]
-}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > twitter-card.png
-```
-
-**Generate OG Image**:
-```bash
-# Perfect for Open Graph 1200x630 (16:9 ratio, outputs 1344x768)
-curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
--H "Content-Type: application/json" \
--d '{
-  "contents": [{
-    "role": "user",
-    "parts": [{"text": "Open Graph image for developer tools website, modern gradient background, space for title text, professional branding"}]
-  }],
-  "generationConfig": {
-    "temperature": 1,
-    "maxOutputTokens": 32768,
-    "responseModalities": ["TEXT", "IMAGE"],
-    "topP": 0.95,
-    "imageConfig": {
-      "aspectRatio": "16:9"
-    }
-  },
-  "safetySettings": [
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
-  ]
-}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > og-image.png
-```
-
-**Generate Multiple Variations**:
-```bash
-# Square logo variations (1024x1024)
-for i in {1..3}; do
-  curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
+curl -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=$GEMINI_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "contents": [{
-      "role": "user",
-      "parts": [{"text": "Minimalist logo for AI startup, geometric shapes, professional"}]
+      "parts": [{"text": "A modern Bitcoin wallet interface with sleek dark theme"}]
     }],
     "generationConfig": {
-      "temperature": 1,
-      "maxOutputTokens": 32768,
       "responseModalities": ["TEXT", "IMAGE"],
-      "topP": 0.95,
       "imageConfig": {
-        "aspectRatio": "1:1"
+        "aspectRatio": "16:9",
+        "imageSize": "2K"
+      }
+    }
+  }' | jq -r '.candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > output.png
+```
+
+### With Google Search Grounding
+```bash
+curl -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=$GEMINI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "parts": [{"text": "Generate an infographic showing current Bitcoin price trends"}]
+    }],
+    "generationConfig": {
+      "responseModalities": ["TEXT", "IMAGE"],
+      "imageConfig": {
+        "aspectRatio": "4:3",
+        "imageSize": "2K"
       }
     },
-    "safetySettings": [
-      {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-      {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-      {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-      {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
-    ]
-  }' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > "logo-v$i.png"
+    "tools": [{"googleSearch": {}}]
+  }' | jq -r '.candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > infographic.png
+```
+
+### High-Resolution 4K Output
+```bash
+curl -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=$GEMINI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "parts": [{"text": "Professional hero banner for blockchain startup, centered logo area"}]
+    }],
+    "generationConfig": {
+      "responseModalities": ["TEXT", "IMAGE"],
+      "imageConfig": {
+        "aspectRatio": "21:9",
+        "imageSize": "4K"
+      }
+    }
+  }' | jq -r '.candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > hero-4k.png
+```
+
+### Nano Banana Pro vs Grok
+| Feature | Nano Banana Pro | Grok (xAI) |
+|---------|-----------------|------------|
+| Model ID | `gemini-3-pro-image-preview` | `grok-2-image` |
+| Max Resolution | 4K | 1024x768 |
+| Aspect Ratios | Full control (21:9, 16:9, etc.) | Fixed |
+| Google Search | Yes (real-time grounding) | No |
+| Reference Images | Up to 14 | No |
+| Text Rendering | Advanced (legible text) | Basic |
+| Best For | Professional assets, infographics | Quick general images |
+
+**Use Nano Banana Pro** for: Professional assets, infographics, text overlays, specific aspect ratios, real-time data
+**Use Grok** for: Quick iterations, OpenAI SDK compatibility, simpler needs
+
+### Social Media Workflows with Nano Banana Pro
+
+**Twitter Card (16:9 → crop to 1200×628)**:
+```bash
+curl -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=$GEMINI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "parts": [{"text": "Twitter card for AI coding assistant. CENTER all important elements. Professional tech aesthetic, blue gradient. Optimized for center crop to 1200x628."}]
+    }],
+    "generationConfig": {
+      "responseModalities": ["TEXT", "IMAGE"],
+      "imageConfig": {"aspectRatio": "16:9", "imageSize": "2K"}
+    }
+  }' | jq -r '.candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > temp.png
+
+# Crop to Twitter dimensions
+sips -z 628 1200 -c 628 1200 temp.png --out twitter-card.png && rm temp.png
+```
+
+**OG Image (16:9 → crop to 1200×630)**:
+```bash
+curl -X POST \
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=$GEMINI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{
+      "parts": [{"text": "Open Graph image for developer tools. CENTER logo and title. Modern gradient, professional. Optimized for center crop to 1200x630."}]
+    }],
+    "generationConfig": {
+      "responseModalities": ["TEXT", "IMAGE"],
+      "imageConfig": {"aspectRatio": "16:9", "imageSize": "2K"}
+    }
+  }' | jq -r '.candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > temp.png
+
+sips -z 630 1200 -c 630 1200 temp.png --out og-image.png && rm temp.png
+```
+
+**Multiple Logo Variations (1:1)**:
+```bash
+for i in {1..3}; do
+  curl -X POST \
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=$GEMINI_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "contents": [{"parts": [{"text": "Minimalist logo for AI startup, geometric shapes, professional"}]}],
+      "generationConfig": {
+        "responseModalities": ["TEXT", "IMAGE"],
+        "imageConfig": {"aspectRatio": "1:1", "imageSize": "1K"}
+      }
+    }' | jq -r '.candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > "logo-v$i.png"
   echo "Generated logo-v$i.png"
 done
 ```
 
-### Aspect Ratio Guide & Post-Processing
+### Social Media Prompting Tips
 
-**CRITICAL**: Nano Banana's 16:9 (1344×768) does NOT match Twitter's 1.91:1 ratio. You MUST crop, not pad/canvas!
+**CENTER-WEIGHTED prompting is critical** when generating for cropping:
+- Always include: "CENTER all important elements"
+- Warn: "No content near edges"
+- Specify: "optimized for center crop to [target dimensions]"
 
-| Use Case | Generate At | Output Size | Crop To | Final Ratio |
-|----------|-------------|-------------|---------|-------------|
-| Twitter Card | 16:9 | 1344×768 | 1200×628 | 1.91:1 ✓ |
-| OG Image | 16:9 | 1344×768 | 1200×630 | 1.90:1 ✓ |
-| Instagram Post | 1:1 | 1024×1024 | No crop needed | 1:1 ✓ |
-| Instagram Story | 9:16 | 768×1344 | No crop needed | 0.56:1 ✓ |
-| YouTube Thumbnail | 16:9 | 1344×768 | 1280×720 | 1.78:1 ✓ |
-| Profile Picture | 1:1 | 1024×1024 | No crop needed | 1:1 ✓ |
+**All outputs**: PNG with SynthID watermark
 
-**Supported Aspect Ratios**: 1:1, 3:4, 4:3, 16:9, 9:16
-**All outputs**: PNG format with base64 encoding, SynthID watermark
-
-### Complete Twitter Card Workflow (CORRECT METHOD)
-
-```bash
-# Step 1: Generate at 16:9 (1344×768) with CENTER-WEIGHTED composition
-curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
--H "Content-Type: application/json" \
--d '{
-  "contents": [{
-    "role": "user",
-    "parts": [{"text": "Twitter card for AI coding assistant. CRITICAL: Center all important elements - logo, text, and key visuals must be in the CENTER of the frame. Professional tech aesthetic, blue gradient background, space for headline text at CENTER. Do NOT place important content near edges. Composition optimized for center cropping to 1200x628."}]
-  }],
-  "generationConfig": {
-    "temperature": 1,
-    "maxOutputTokens": 32768,
-    "responseModalities": ["TEXT", "IMAGE"],
-    "topP": 0.95,
-    "imageConfig": {
-      "aspectRatio": "16:9"
-    }
-  },
-  "safetySettings": [
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
-  ]
-}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > temp-wide.png
-
-# Step 2: Crop to exact Twitter dimensions (center crop, 1200×628)
-sips -z 628 1200 -c 628 1200 temp-wide.png --out twitter-card.png
-
-# Step 3: Verify dimensions
-sips -g pixelWidth -g pixelHeight twitter-card.png
-
-# Step 4: Clean up
-rm temp-wide.png
-```
-
-### Complete OG Image Workflow
-
-```bash
-# Step 1: Generate with center composition
-curl -X POST "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-image:streamGenerateContent?key=$VERTEX_API_KEY" \
--H "Content-Type: application/json" \
--d '{
-  "contents": [{
-    "role": "user",
-    "parts": [{"text": "Open Graph image for developer tools. CENTER all key elements - logo, title space, and main visual in CENTER of frame. Modern gradient, professional tech aesthetic. Important: optimize for center crop to 1200x630. No content near edges."}]
-  }],
-  "generationConfig": {
-    "temperature": 1,
-    "maxOutputTokens": 32768,
-    "responseModalities": ["TEXT", "IMAGE"],
-    "topP": 0.95,
-    "imageConfig": {
-      "aspectRatio": "16:9"
-    }
-  },
-  "safetySettings": [
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
-  ]
-}' | jq -r '.[0].candidates[0].content.parts[] | select(.inlineData) | .inlineData.data' | base64 -d > temp-wide.png
-
-# Step 2: Crop to exact OG dimensions (1200×630)
-sips -z 630 1200 -c 630 1200 temp-wide.png --out og-image.png
-
-# Step 3: Verify
-sips -g pixelWidth -g pixelHeight og-image.png && rm temp-wide.png
-```
-
-### Prompting Tips for Social Media (CENTER-WEIGHTED)
-
-**CRITICAL PROMPTING RULES**:
-1. **Always specify "CENTER all important elements"** in the prompt
-2. **Explicitly warn against edge placement**: "No content near edges"
-3. **Mention the crop target**: "optimized for center crop to 1200x628"
-4. **Design for safe zone**: Center 80% of frame is the safe zone
-
-```bash
-# Twitter Card Example (CORRECT)
-"Twitter card for [project name]. CENTER all important elements - logo, headline text, and key visual in CENTER of frame. [main message], professional tech aesthetic, blue gradient background. CRITICAL: No text or logos near edges. Optimized for center crop to 1200x628. Safe zone composition."
-
-# OG Image Example (CORRECT)
-"Open Graph image for [website]. CENTER the logo and title space in middle of frame. [key visual element], professional branding, modern gradient. Important: designed for center crop to 1200x630. Keep all critical content in CENTER third of image."
-
-# Profile Picture Example (NO CROP NEEDED)
-"Professional logo for [company], simple icon design, works at small sizes, recognizable silhouette, solid background, 1:1 square format. Centered composition."
-```
-
-**Why This Matters**:
-- ❌ **WRONG**: Generate 16:9 → Pad to 1200x628 → Huge empty bars
-- ✅ **CORRECT**: Generate 16:9 → Crop center to 1200x628 → Perfect fit
+---
 
 ## xAI Image Generation (Grok)
 
