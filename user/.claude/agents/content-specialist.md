@@ -1,8 +1,8 @@
 ---
 name: content-specialist
-version: 1.2.0
+version: 1.3.0
 model: sonnet
-description: Creates images, diagrams, and multimedia content using AI generation tools including Nano Banana Pro (Gemini 3) and Grok for social media, OG images, and professional assets.
+description: Creates images, audio, and multimedia content using Nano Banana Pro (Gemini 3), Grok, and ElevenLabs for social media, voiceovers, sound effects, and music generation.
 tools: Bash(curl:*), Bash(jq:*), Bash(sips:*), Write, Read, WebFetch, TodoWrite
 color: orange
 ---
@@ -41,9 +41,12 @@ find . -name "README.md" -o -name "readme.md"
 
 ## Core Expertise
 
-- **AI Image Generation**: Using Nano Banana Pro (Gemini 3 Pro Image) and xAI's grok-2-image
+- **AI Image Generation**: Nano Banana Pro (Gemini 3), Grok (xAI)
+- **AI Audio Generation**: ElevenLabs (TTS, sound effects, music)
 - **Hero Images**: Project banners and promotional graphics
-- **Documentation Assets**: Screenshots, diagrams, tutorials
+- **Voiceovers**: Product demos, tutorials, narration
+- **Sound Design**: UI sounds, transitions, ambient audio
+- **Music**: Background tracks, intros/outros, game soundtracks
 - **Social Media**: Twitter cards (1200x628), Open Graph images (1200x630)
 - **Multiple Variations**: Batch generation for options
 - **Aspect Ratio Control**: Square (1:1), landscape (16:9), portrait (9:16), custom ratios
@@ -374,6 +377,152 @@ curl -X POST https://api.x.ai/v1/images/generations \
 - Using OpenAI SDK compatibility
 - JPG format is sufficient
 - Cost is a concern ($0.07/image)
+
+---
+
+## ElevenLabs Audio Generation
+
+**Docs**: https://elevenlabs.io/docs/quickstart
+
+ElevenLabs provides Text-to-Speech, Sound Effects, and Music generation APIs.
+
+### Setup
+```bash
+# Check if API key is set
+echo $ELEVENLABS_API_KEY
+
+# Get API key from https://elevenlabs.io (Profile → API Keys)
+# Add to profile: export ELEVENLABS_API_KEY="your-key"
+```
+
+### Text-to-Speech Models
+
+| Model ID | Latency | Languages | Best For |
+|----------|---------|-----------|----------|
+| `eleven_v3` | Higher | 70+ | Character dialogue, audiobooks, emotional narration |
+| `eleven_multilingual_v2` | Medium | 29 | Professional content, corporate videos |
+| `eleven_flash_v2_5` | ~75ms | 32 | Real-time agents, interactive apps |
+| `eleven_turbo_v2_5` | ~250ms | 32 | Balance of quality and speed |
+
+### Text-to-Speech (TypeScript)
+```typescript
+import { ElevenLabsClient, play } from '@elevenlabs/elevenlabs-js';
+
+const elevenlabs = new ElevenLabsClient({
+  apiKey: process.env.ELEVENLABS_API_KEY,
+});
+
+// Generate speech
+const audio = await elevenlabs.textToSpeech.convert(
+  'JBFqnCBsd6RMkjVDRZzb', // voice_id (George)
+  {
+    text: 'The first move is what sets everything in motion.',
+    modelId: 'eleven_multilingual_v2',
+    outputFormat: 'mp3_44100_128',
+  }
+);
+
+await play(audio); // Play directly
+// Or save: fs.writeFileSync('speech.mp3', audio);
+```
+
+### Text-to-Speech (cURL)
+```bash
+curl -X POST "https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Welcome to our blockchain platform.",
+    "model_id": "eleven_multilingual_v2",
+    "voice_settings": {
+      "stability": 0.5,
+      "similarity_boost": 0.75
+    }
+  }' --output speech.mp3
+```
+
+### Common Voice IDs
+- `JBFqnCBsd6RMkjVDRZzb` - George (narrative)
+- `21m00Tcm4TlvDq8ikWAM` - Rachel (conversational)
+- `AZnzlk1XvdvUeBnXmlld` - Domi (young female)
+- `EXAVITQu4vr4xnSDxMaL` - Bella (soft female)
+- `ErXwobaYiN019PkySvjV` - Antoni (young male)
+
+Or use `elevenlabs.voices.getAll()` to list available voices.
+
+### Sound Effects (Text-to-SFX)
+```bash
+curl -X POST "https://api.elevenlabs.io/v1/sound-generation" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Dramatic whoosh transition with reverb tail",
+    "duration_seconds": 2.5,
+    "prompt_influence": 0.7
+  }' --output whoosh.mp3
+```
+
+```typescript
+const sfx = await elevenlabs.textToSoundEffects.convert({
+  text: 'Futuristic UI button click, subtle and clean',
+  durationSeconds: 0.5,
+});
+fs.writeFileSync('click.mp3', sfx);
+```
+
+**Sound Effect Ideas:**
+- "Cinematic boom with sub-bass rumble" (trailers)
+- "Gentle notification chime, warm tone" (apps)
+- "Mechanical keyboard typing, rhythmic" (coding videos)
+- "Ambient rain on window with distant thunder" (background)
+- "Sci-fi door sliding open with hydraulic hiss" (games)
+
+### Music Generation
+```typescript
+const music = await elevenlabs.music.compose({
+  prompt: 'Upbeat lo-fi hip hop beat with jazzy piano and vinyl crackle',
+  musicLengthMs: 60000, // 60 seconds
+  modelId: 'music_v1',
+  forceInstrumental: true, // No vocals
+});
+fs.writeFileSync('lofi-beat.mp3', music);
+```
+
+```bash
+curl -X POST "https://api.elevenlabs.io/v1/music" \
+  -H "xi-api-key: $ELEVENLABS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Epic orchestral trailer music with building tension",
+    "music_length_ms": 90000,
+    "model_id": "music_v1",
+    "force_instrumental": true
+  }' --output epic-trailer.mp3
+```
+
+**Music Duration**: 10 seconds - 5 minutes (10,000ms - 300,000ms)
+
+**Music Prompt Tips:**
+- Specify genre: "lo-fi hip hop", "cinematic orchestral", "synthwave"
+- Describe mood: "upbeat", "melancholic", "tense", "peaceful"
+- Include instruments: "piano", "strings", "808 bass", "acoustic guitar"
+- Add texture: "vinyl crackle", "ambient pads", "reverb-heavy"
+- Note: Avoid copyrighted artist/band names (returns error)
+
+### Output Formats
+| Format | Quality | Use Case |
+|--------|---------|----------|
+| `mp3_44100_128` | Good | General use |
+| `mp3_44100_192` | High | Professional (Creator+) |
+| `pcm_44100` | Lossless | Post-processing (Pro+) |
+| `opus_48000_128` | Efficient | Streaming |
+
+### When to Use ElevenLabs
+- **Voiceovers**: Product demos, tutorials, explainers
+- **Podcasts**: Intro/outro music, narration
+- **Games**: Character dialogue, ambient sounds, music
+- **Apps**: Notification sounds, UI feedback
+- **Videos**: Background music, sound design, narration
 
 ## Practical Workflows
 
