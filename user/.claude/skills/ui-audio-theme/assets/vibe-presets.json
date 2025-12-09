@@ -1,0 +1,83 @@
+{
+  "presets": {
+    "corporate-trust": {
+      "name": "Corporate Trust",
+      "description": "Professional, trustworthy sounds for banking and finance applications",
+      "prompt": "Warm professional interface sounds, soft banking app chimes, muted corporate clicks, trustworthy",
+      "characteristics": {
+        "tone": "warm",
+        "energy": "low",
+        "material": "soft fabric and wood",
+        "emotions": ["trust", "security", "professionalism"]
+      },
+      "best_for": ["banking apps", "finance dashboards", "enterprise software"]
+    },
+    "crypto-modern": {
+      "name": "Crypto Modern",
+      "description": "Clean, digital sounds for cryptocurrency and Web3 applications",
+      "prompt": "Clean digital minimal interface sounds, crisp modern app, subtle tech feedback, futuristic but understated",
+      "characteristics": {
+        "tone": "neutral",
+        "energy": "medium",
+        "material": "digital glass and metal",
+        "emotions": ["innovation", "precision", "modernity"]
+      },
+      "best_for": ["wallet apps", "trading platforms", "DeFi interfaces"]
+    },
+    "playful-delight": {
+      "name": "Playful Delight",
+      "description": "Bright, friendly sounds for consumer and social applications",
+      "prompt": "Bright friendly interface sounds, cheerful app feedback, bouncy micro-interactions, delightful",
+      "characteristics": {
+        "tone": "bright",
+        "energy": "high",
+        "material": "plastic and bubbles",
+        "emotions": ["joy", "fun", "engagement"]
+      },
+      "best_for": ["social apps", "games", "consumer products"]
+    },
+    "minimal-focus": {
+      "name": "Minimal Focus",
+      "description": "Ultra-subtle sounds for productivity and focus applications",
+      "prompt": "Ultra-subtle interface sounds, near-silent productivity app, barely perceptible feedback, zen-like",
+      "characteristics": {
+        "tone": "neutral",
+        "energy": "very low",
+        "material": "air and soft fabric",
+        "emotions": ["calm", "focus", "clarity"]
+      },
+      "best_for": ["productivity tools", "note-taking apps", "meditation apps"]
+    },
+    "retro-digital": {
+      "name": "Retro Digital",
+      "description": "8-bit inspired sounds for games and nostalgic applications",
+      "prompt": "8-bit inspired interface sounds, pixel art game UI, chip-tune bleeps, nostalgic digital",
+      "characteristics": {
+        "tone": "bright",
+        "energy": "medium-high",
+        "material": "electronic synthesizer",
+        "emotions": ["nostalgia", "playfulness", "retro"]
+      },
+      "best_for": ["retro games", "pixel art apps", "nostalgic products"]
+    },
+    "premium-luxury": {
+      "name": "Premium Luxury",
+      "description": "Rich, refined sounds for high-end applications",
+      "prompt": "Rich refined interface sounds, deep velvet tones, premium high-end app, sophisticated",
+      "characteristics": {
+        "tone": "deep",
+        "energy": "low",
+        "material": "velvet and brass",
+        "emotions": ["luxury", "exclusivity", "sophistication"]
+      },
+      "best_for": ["luxury brands", "high-end services", "VIP apps"]
+    }
+  },
+  "custom_template": {
+    "format": "[tone] [material] interface sounds, [specific quality], [context], [emotion]",
+    "tone_options": ["warm", "cool", "bright", "dark", "neutral", "rich"],
+    "material_options": ["digital", "glass", "wood", "metal", "fabric", "water", "air"],
+    "quality_options": ["subtle", "crisp", "soft", "sharp", "smooth", "textured"],
+    "emotion_options": ["trust", "joy", "calm", "energy", "focus", "delight"]
+  }
+}
