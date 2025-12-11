@@ -1,0 +1,19 @@
+{
+  "name": "Shadcn UI Component Protection",
+  "description": "Prevents accidental edits to shadcn/ui components to maintain library integrity",
+  "version": "1.0.0",
+  "safety": "Blocks edits to files in components/ui directories",
+  "hook": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|write_file|replace",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$1\" | grep -q 'components/ui/'; then echo '🔒 Protected Path: shadcn/ui components should not be edited manually.' >&2; exit 2; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
