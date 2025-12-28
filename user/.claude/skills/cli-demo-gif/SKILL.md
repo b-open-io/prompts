@@ -1,5 +1,6 @@
 ---
 name: cli-demo-gif
+version: 1.0.0
 description: Generate CLI demo GIFs using vhs (Charmbracelet). Use when creating terminal recordings for README files or documentation.
 ---
 

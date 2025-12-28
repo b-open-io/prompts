@@ -1,5 +1,6 @@
 ---
 name: txex
+version: 1.0.0
 description: Extract, cache, and transform media from Bitcoin blockchain transactions. Use when extracting files from outpoints, downloading NFT collections, or transforming blockchain media (images, video, audio).
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: npm-publish
+version: 1.0.0
 description: This skill should be used when the user wants to publish a package to npm, bump a version, release a new version, or mentions "npm publish", "bun publish", "version bump", or "release". Handles changelog updates, git push, and npm publishing with OTP authentication.
 ---
 

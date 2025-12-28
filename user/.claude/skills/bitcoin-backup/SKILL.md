@@ -1,5 +1,6 @@
 ---
 name: bitcoin-backup
+version: 1.0.0
 description: Encrypt and decrypt private key backups using AES-256-GCM. Use when creating encrypted .bep backups, decrypting BAP identity files, or upgrading legacy backup iterations.
 ---
 
