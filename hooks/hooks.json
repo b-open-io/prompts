@@ -1,0 +1,83 @@
+{
+  "PreToolUse": [
+    {
+      "matcher": "Write|Edit|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "if echo \"$1\" | grep -E '\\.(env|env\\.local|env\\.production|env\\.staging)$' >/dev/null; then echo '🔒 Protected file: This appears to be an environment configuration file with potential secrets.' >&2 && echo 'If you really need to edit this file, please confirm in the UI.' >&2 && exit 2; fi"
+        }
+      ]
+    },
+    {
+      "matcher": "Write|Edit|MultiEdit|write_file|replace",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "if echo \"$1\" | grep -q 'components/ui/'; then echo '🔒 Protected Path: shadcn/ui components should not be edited manually.' >&2; exit 2; fi"
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "git add -A",
+          "timeout": 5
+        }
+      ]
+    },
+    {
+      "matcher": "Edit|Write",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/lint-on-save.sh"
+        }
+      ]
+    },
+    {
+      "matcher": "Write|Edit|MultiEdit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "if echo \"$1\" | grep -E '\\.(test|spec)\\.(js|jsx|ts|tsx)$|\\.(js|jsx|ts|tsx)$' >/dev/null; then (npm test -- --findRelatedTests \"$1\" 2>/dev/null || yarn test --findRelatedTests \"$1\" 2>/dev/null || true) & fi",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "echo \"📍 Context: $(date '+%Y-%m-%d %H:%M:%S') | $(pwd) | Branch: $(git branch --show-current 2>/dev/null || echo 'not a git repo')\""
+        }
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/lint-on-start.sh"
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "if git status -s | grep -q .; then echo '📋 Uncommitted changes detected:' && git status -s && echo '' && echo 'Consider committing these changes.' && exit 2; fi"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "bopen-prompts",
+  "version": "1.0.0",
+  "description": "Claude Code plugin with agents, skills, hooks, and commands for development workflows",
+  "author": {
+    "name": "b-open-io",
+    "url": "https://github.com/b-open-io"
+  },
+  "repository": "https://github.com/b-open-io/prompts",
+  "keywords": ["agents", "skills", "hooks", "development", "workflows"]
+}
