@@ -28,27 +28,23 @@ Payload offers two API approaches:
 
 ## Local API Workflow
 
-Run TypeScript scripts with the project's environment variables:
+Run TypeScript scripts from the Payload project directory. The `.env` file already contains required credentials:
 
 ```bash
-# From the Payload project directory
-PAYLOAD_SECRET="..." DATABASE_URI="..." bunx tsx scripts/update-post.ts my-post-slug content.json
+# From the Payload project directory (e.g., ~/code/bopen-ai)
+source .env && bunx tsx scripts/update-post.ts my-post-slug content.json
 ```
 
-### Environment Variables
+Or inline for one-off commands:
 
-Required for Local API scripts:
-
-| Variable | Purpose |
-|----------|---------|
-| `PAYLOAD_SECRET` | Payload encryption secret |
-| `DATABASE_URI` | PostgreSQL/MongoDB connection string |
-| `NEXT_PUBLIC_SERVER_URL` | Site URL (optional, for output links) |
+```bash
+PAYLOAD_SECRET="$PAYLOAD_SECRET" DATABASE_URI="$DATABASE_URI" bunx tsx scripts/update-post.ts slug content.json
+```
 
 ### List Posts
 
 ```bash
-PAYLOAD_SECRET="$SECRET" DATABASE_URI="$DB_URI" bunx tsx scripts/list-posts.ts
+source .env && bunx tsx scripts/list-posts.ts
 ```
 
 ### Update Post Content
@@ -61,13 +57,13 @@ PAYLOAD_SECRET="$SECRET" DATABASE_URI="$DB_URI" bunx tsx scripts/list-posts.ts
 python3 scripts/md_to_lexical.py article.md > /tmp/content.json
 
 # Update the post
-PAYLOAD_SECRET="$SECRET" DATABASE_URI="$DB_URI" bunx tsx scripts/update-post.ts my-post-slug /tmp/content.json
+source .env && bunx tsx scripts/update-post.ts my-post-slug /tmp/content.json
 ```
 
 ### Create New Post
 
 ```bash
-PAYLOAD_SECRET="$SECRET" DATABASE_URI="$DB_URI" bunx tsx scripts/create-post.ts "Post Title" post-slug /tmp/content.json
+source .env && bunx tsx scripts/create-post.ts "Post Title" post-slug /tmp/content.json
 ```
 
 ## Markdown to Lexical Conversion
