@@ -1,87 +1,84 @@
 ---
 name: payload
-description: This skill should be used when the user asks to "create a post", "edit a post", "update post content", "list posts", "convert markdown to Lexical", or mentions Payload CMS content management. Handles Payload REST API operations and markdown-to-Lexical conversion.
-version: 0.1.0
+description: This skill should be used when the user asks to "create a post", "edit a post", "update post content", "list posts", "convert markdown to Lexical", or mentions Payload CMS content management. Handles Payload Local API operations and markdown-to-Lexical conversion.
+version: 0.2.0
 ---
 
 # Payload CMS Operations
 
-Manage Payload CMS content via the REST API, including creating and editing posts with markdown content converted to Lexical JSON format.
+Manage Payload CMS content using the Local API (preferred) or REST API. Includes markdown-to-Lexical JSON conversion for rich text fields.
 
 ## When to Use
 
 - Creating or editing posts/pages in Payload CMS
 - Converting markdown content to Lexical rich text format
 - Listing and querying Payload collections
-- Bulk content updates via API
+- Bulk content updates
 
-## Prerequisites
+## Authentication Strategy
 
-Before making API requests, identify the Payload instance:
+Payload offers two API approaches:
 
-1. **Base URL**: The site URL (e.g., `https://bopen.ai`)
-2. **API Endpoint**: `/api/{collection}` (e.g., `/api/posts`)
-3. **Authentication**: API key or session cookie if required
+| Approach | When to Use | Auth Required |
+|----------|-------------|---------------|
+| **Local API** | Running scripts in the project directory | No |
+| **REST API** | External access, remote automation | Yes |
 
-## Core Operations
+**Prefer Local API** for CLI workflows. It runs server-side with full database access and no authentication overhead.
+
+## Local API Workflow
+
+Run TypeScript scripts with the project's environment variables:
+
+```bash
+# From the Payload project directory
+PAYLOAD_SECRET="..." DATABASE_URI="..." bunx tsx scripts/update-post.ts my-post-slug content.json
+```
+
+### Environment Variables
+
+Required for Local API scripts:
+
+| Variable | Purpose |
+|----------|---------|
+| `PAYLOAD_SECRET` | Payload encryption secret |
+| `DATABASE_URI` | PostgreSQL/MongoDB connection string |
+| `NEXT_PUBLIC_SERVER_URL` | Site URL (optional, for output links) |
 
 ### List Posts
 
-Fetch existing posts to find IDs:
-
 ```bash
-curl -s "https://bopen.ai/api/posts?limit=100" | jq '.docs[] | {id, title, slug}'
+PAYLOAD_SECRET="$SECRET" DATABASE_URI="$DB_URI" bunx tsx scripts/list-posts.ts
 ```
 
-### Get Single Post
+### Update Post Content
 
-Retrieve a post by ID or slug:
+1. Convert markdown to Lexical JSON
+2. Run the update script
 
 ```bash
-# By ID
-curl -s "https://bopen.ai/api/posts/{id}" | jq
+# Convert markdown
+python3 scripts/md_to_lexical.py article.md > /tmp/content.json
 
-# By slug (query)
-curl -s "https://bopen.ai/api/posts?where[slug][equals]=my-post-slug" | jq '.docs[0]'
+# Update the post
+PAYLOAD_SECRET="$SECRET" DATABASE_URI="$DB_URI" bunx tsx scripts/update-post.ts my-post-slug /tmp/content.json
 ```
 
-### Create Post
-
-POST to the collection endpoint:
+### Create New Post
 
 ```bash
-curl -X POST "https://bopen.ai/api/posts" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Post Title",
-    "slug": "post-slug",
-    "content": { ... lexical JSON ... },
-    "_status": "published"
-  }'
-```
-
-### Update Post
-
-PATCH to update specific fields:
-
-```bash
-curl -X PATCH "https://bopen.ai/api/posts/{id}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "content": { ... lexical JSON ... }
-  }'
+PAYLOAD_SECRET="$SECRET" DATABASE_URI="$DB_URI" bunx tsx scripts/create-post.ts "Post Title" post-slug /tmp/content.json
 ```
 
 ## Markdown to Lexical Conversion
 
-Payload's rich text editor uses Lexical JSON format. To update post content from markdown:
+Payload's Lexical editor stores content as JSON. Convert markdown using the included Python script:
 
-1. Convert markdown to Lexical JSON structure
-2. PATCH the `content` field with the Lexical root object
+```bash
+python3 scripts/md_to_lexical.py input.md > output.json
+```
 
 ### Lexical JSON Structure
-
-The content field expects this structure:
 
 ```json
 {
@@ -91,171 +88,100 @@ The content field expects this structure:
     "indent": 0,
     "version": 1,
     "children": [
-      // paragraph, heading, list nodes go here
+      { "type": "paragraph", ... },
+      { "type": "heading", "tag": "h2", ... }
     ],
     "direction": "ltr"
   }
 }
 ```
 
-### Node Types
+### Supported Markdown Elements
 
-**Paragraph:**
-```json
-{
-  "type": "paragraph",
-  "format": "",
-  "indent": 0,
-  "version": 1,
-  "children": [
-    {"type": "text", "text": "Paragraph content", "format": 0, "version": 1}
-  ],
-  "direction": "ltr",
-  "textFormat": 0
-}
+| Markdown | Lexical Node Type |
+|----------|-------------------|
+| Paragraphs | `paragraph` |
+| `# Heading` | `heading` with tag h1-h6 |
+| `**bold**` | text with format: 1 |
+| `*italic*` | text with format: 2 |
+| `` `code` `` | text with format: 16 |
+| Code blocks | `block` with blockType: "code" |
+| Lists | `list` with `listitem` children |
+| `> quotes` | `quote` |
+| `---` | `horizontalrule` |
+| `[links](url)` | `link` with fields.url |
+
+### Text Format Bitmask
+
+| Value | Format |
+|-------|--------|
+| 0 | Normal |
+| 1 | Bold |
+| 2 | Italic |
+| 3 | Bold + Italic |
+| 16 | Code |
+
+## Inline Script Example
+
+For simple updates without the helper scripts:
+
+```typescript
+import { getPayload } from "payload";
+import configPromise from "@payload-config";
+
+const payload = await getPayload({ config: configPromise });
+
+// Find post by slug
+const result = await payload.find({
+  collection: "posts",
+  where: { slug: { equals: "my-post" } },
+});
+
+// Update content
+await payload.update({
+  collection: "posts",
+  id: result.docs[0].id,
+  data: {
+    content: { root: { ... } },
+  },
+});
 ```
 
-**Heading (h2):**
-```json
-{
-  "type": "heading",
-  "tag": "h2",
-  "format": "",
-  "indent": 0,
-  "version": 1,
-  "children": [
-    {"type": "text", "text": "Heading Text", "format": 0, "version": 1}
-  ],
-  "direction": "ltr"
-}
-```
+## Common Collections
 
-**Code Block:**
-```json
-{
-  "type": "block",
-  "format": "",
-  "indent": 0,
-  "version": 1,
-  "fields": {
-    "blockType": "code",
-    "code": "const x = 1;",
-    "language": "typescript"
-  }
-}
-```
-
-**Bold/Italic Text:**
-Text format is a bitmask: 0=normal, 1=bold, 2=italic, 3=bold+italic
-
-```json
-{"type": "text", "text": "bold text", "format": 1, "version": 1}
-```
-
-### Conversion Process
-
-To convert markdown to Lexical:
-
-1. Parse markdown into blocks (paragraphs, headings, code, lists)
-2. Map each block to the appropriate Lexical node type
-3. Wrap in the root structure
-4. POST/PATCH to Payload API
-
-Use the `scripts/md-to-lexical.sh` script for conversion:
-
-```bash
-./scripts/md-to-lexical.sh input.md > lexical.json
-```
-
-Or use the Python script for more complex conversions:
-
-```bash
-python3 ./scripts/md_to_lexical.py input.md
-```
-
-## Authentication
-
-### API Key (if configured)
-
-```bash
-curl -H "Authorization: users API-Key YOUR_API_KEY" ...
-```
-
-### Session Cookie
-
-For authenticated operations, use a session cookie:
-
-```bash
-curl -b "payload-token=YOUR_TOKEN" ...
-```
-
-### No Auth Required
-
-Some Payload instances allow public read/write. Check the collection's access control configuration.
-
-## Common Workflows
-
-### Update Post Content from Markdown
-
-1. Write content in markdown file
-2. Convert to Lexical JSON
-3. Get post ID by slug
-4. PATCH the content field
-
-```bash
-# Get post ID
-POST_ID=$(curl -s "https://bopen.ai/api/posts?where[slug][equals]=my-post" | jq -r '.docs[0].id')
-
-# Convert and update
-python3 scripts/md_to_lexical.py content.md | \
-  curl -X PATCH "https://bopen.ai/api/posts/$POST_ID" \
-    -H "Content-Type: application/json" \
-    -d @-
-```
-
-### Create New Post from Markdown
-
-```bash
-LEXICAL=$(python3 scripts/md_to_lexical.py content.md)
-
-curl -X POST "https://bopen.ai/api/posts" \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"title\": \"My New Post\",
-    \"slug\": \"my-new-post\",
-    \"content\": $LEXICAL,
-    \"_status\": \"published\"
-  }"
-```
-
-## Payload Collections Reference
-
-Common collections in Payload sites:
-
-| Collection | Endpoint | Purpose |
-|------------|----------|---------|
-| posts | /api/posts | Blog posts |
-| pages | /api/pages | Static pages |
-| media | /api/media | Uploaded files |
-| users | /api/users | User accounts |
-| categories | /api/categories | Post categories |
-
-## Error Handling
-
-**400 Bad Request**: Invalid JSON or missing required fields
-**401 Unauthorized**: Authentication required
-**403 Forbidden**: Insufficient permissions
-**404 Not Found**: Collection or document doesn't exist
-**500 Server Error**: Check server logs
+| Collection | Slug | Purpose |
+|------------|------|---------|
+| Posts | `posts` | Blog posts |
+| Pages | `pages` | Static pages |
+| Media | `media` | Uploaded files |
+| Users | `users` | User accounts |
+| Categories | `categories` | Post categories |
 
 ## Additional Resources
 
 ### Reference Files
 
-- **`references/lexical-format.md`** - Complete Lexical node type reference
-- **`references/payload-api.md`** - Full Payload REST API documentation
+- **`references/lexical-format.md`** - Complete Lexical node type reference with all fields
+- **`references/rest-api.md`** - REST API documentation for external access
 
 ### Scripts
 
 - **`scripts/md_to_lexical.py`** - Python markdown-to-Lexical converter
-- **`scripts/md-to-lexical.sh`** - Bash wrapper for simple conversions
+- **`scripts/md-to-lexical.sh`** - Bash wrapper for conversions
+- **`scripts/list-posts.ts`** - List posts using Local API
+- **`scripts/update-post.ts`** - Update post content using Local API
+- **`scripts/create-post.ts`** - Create new post using Local API
+
+## Troubleshooting
+
+**"Cannot find module '@payload-config'"**
+Run scripts from the Payload project root directory where `tsconfig.json` defines this path alias.
+
+**"PAYLOAD_SECRET is required"**
+Set the environment variable. Check the project's `.env` file for the correct value.
+
+**"Database connection failed"**
+Verify `DATABASE_URI` is correct and the database is accessible.
+
+**Post not updating**
+Check the post's `_status` field. Posts must be "published" to appear on the site.
