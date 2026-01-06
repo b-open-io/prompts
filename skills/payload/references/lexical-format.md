@@ -299,3 +299,57 @@ When sending to Payload API:
 2. Root must have `type: "root"` and `children` array
 3. Block nodes need `fields.blockType` matching collection config
 4. Text nodes inside containers (paragraph, heading, list item, etc.)
+
+## INVALID Node Types (Cause Error #17)
+
+These types will crash the frontend with "Minified Lexical error #17":
+
+| Invalid Type | Why | Use Instead |
+|--------------|-----|-------------|
+| `code` (direct) | Not registered as top-level | `block` with `blockType: "code"` |
+| `code-highlight` | Internal Lexical type | Text with `format: 16` |
+| `code-line` | Internal type | Regular text nodes |
+| Custom nodes | Not registered | Standard nodes only |
+
+### What Causes Error #17
+
+Lexical error #17 means the editor encountered a node type that isn't registered. This happens when:
+
+1. **Direct database edits** use invalid node structures
+2. **Draft versions** contain corrupted content from failed edits
+3. **Import/migration** scripts produce non-standard JSON
+
+### Fixing Error #17 in Admin Panel
+
+If the admin panel shows error #17 when editing a document:
+
+```sql
+-- Find corrupted draft versions
+SELECT id, version__status
+FROM _posts_v
+WHERE parent_id = POST_ID
+  AND version_content::text LIKE '%code-highlight%';
+
+-- Delete them
+DELETE FROM _posts_v WHERE id IN (corrupted_ids);
+```
+
+The admin loads the latest draft version, so corrupted drafts must be removed.
+
+### Safe Direct Database Updates
+
+When updating content directly:
+
+```sql
+-- 1. Update the main record with valid Lexical JSON
+UPDATE posts
+SET content = '{"root": {...}}', updated_at = NOW()
+WHERE slug = 'my-post';
+
+-- 2. Delete any draft versions that might have old content
+DELETE FROM _posts_v
+WHERE parent_id = (SELECT id FROM posts WHERE slug = 'my-post')
+  AND version__status = 'draft';
+```
+
+Then trigger ISR revalidation via Payload API or by saving in admin.
