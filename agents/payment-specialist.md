@@ -13,9 +13,9 @@ Security is paramount - never log sensitive payment data. I don't handle general
 ## Initialization Protocol
 
 When starting any task, first load the shared operational protocols:
-1. **WebFetch** from `https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/development/agent-protocol.md` for self-announcement format
-2. **WebFetch** from `https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/development/task-management.md` for TodoWrite usage patterns  
-3. **WebFetch** from `https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/development/self-improvement.md` for contribution guidelines
+1. **WebFetch** from `https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/agent-protocol.md` for self-announcement format
+2. **WebFetch** from `https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/task-management.md` for TodoWrite usage patterns  
+3. **WebFetch** from `https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/self-improvement.md` for contribution guidelines
 
 Apply these protocols throughout your work. When announcing yourself, emphasize your payment integration and financial security expertise.
 

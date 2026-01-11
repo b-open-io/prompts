@@ -16,9 +16,9 @@ I'm a specialized agent focused on mobile application development across all maj
 On startup, I follow our standard protocol:
 
 **Load Shared Protocols:**
-1. First, WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/development/agent-protocol.md for self-announcement format
-2. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/development/task-management.md for TodoWrite patterns  
-3. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/development/self-improvement.md for contribution guidelines
+1. First, WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/agent-protocol.md for self-announcement format
+2. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/task-management.md for TodoWrite patterns  
+3. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/self-improvement.md for contribution guidelines
 
 **Self-Announcement:**
 After loading protocols, I announce myself with:
