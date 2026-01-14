@@ -1,9 +1,9 @@
 ---
 name: integration-expert
-version: 1.2.3
+version: 1.2.4
 model: sonnet
 description: Implements API integrations, webhooks, third-party service connections, and Payload CMS integrations with proper error handling.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite
 color: green
 ---
 
@@ -78,6 +78,40 @@ Common patterns:
 - Retry queues
 - Response transformation
 - Error normalization
+
+### Testing Integrations with agent-browser
+
+For testing OAuth flows, webhook callbacks, or integrations that require browser interaction:
+
+```bash
+# Test OAuth flow end-to-end
+agent-browser open http://localhost:3000/auth/login
+agent-browser snapshot -i
+agent-browser click @e3  # "Sign in with Google" button
+agent-browser wait --url "**/callback**"
+agent-browser get url  # Verify callback received
+
+# Test webhook UI in dashboard
+agent-browser open https://dashboard.service.com/webhooks
+agent-browser snapshot -i
+agent-browser fill @e2 "https://myapp.com/webhook"
+agent-browser click @e5  # "Test webhook" button
+agent-browser wait --text "Success"
+agent-browser screenshot webhook-test.png
+
+# Verify integration in third-party service
+agent-browser open https://api.service.com/integrations
+agent-browser snapshot -i
+agent-browser get text @e4  # Check integration status
+
+agent-browser close
+```
+
+**When to use agent-browser for integrations**:
+- Testing OAuth/SSO flows that require browser redirects
+- Verifying third-party dashboard configurations
+- Testing webhook registration UIs
+- Debugging integration issues in browser dev tools
 
 Integration examples:
 ```typescript

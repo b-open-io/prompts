@@ -1,9 +1,9 @@
 ---
 name: data-specialist
-version: 1.1.3
+version: 1.1.4
 model: sonnet
 description: Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite
 color: cyan
 ---
 
@@ -405,7 +405,7 @@ class APIClient:
         self.base_url = base_url
         self.rate_limit = rate_limit
         self.session = self._create_session()
-    
+
     def _create_session(self):
         session = requests.Session()
         retry_strategy = Retry(
@@ -418,6 +418,42 @@ class APIClient:
         session.mount("https://", adapter)
         return session
 ```
+
+### Web Scraping with agent-browser
+
+For extracting data from dynamic websites (SPAs, JavaScript-rendered content), use `agent-browser`:
+
+```bash
+# Navigate to data source
+agent-browser open https://example.com/data-dashboard
+
+# Get page structure (compact for efficiency)
+agent-browser snapshot -i -c
+
+# Extract specific data elements
+agent-browser get text @e5   # Get data from element ref
+agent-browser get value @e3  # Get input/select value
+
+# For tables, scroll and extract iteratively
+agent-browser scrollintoview @table1
+agent-browser snapshot -i
+
+# Save screenshot as documentation
+agent-browser screenshot data-source.png
+
+# Handle pagination
+agent-browser click @next-page
+agent-browser wait --load networkidle
+agent-browser snapshot -i
+
+# Close when done
+agent-browser close
+```
+
+**When to use agent-browser vs WebFetch/APIs**:
+- **agent-browser**: JavaScript-rendered pages, SPAs, pages requiring auth, data behind interactions
+- **WebFetch**: Static HTML pages, simple text extraction
+- **APIs**: Always prefer APIs when available (structured, faster, more reliable)
 
 ### Real-time Streaming
 ```python

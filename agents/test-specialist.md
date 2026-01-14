@@ -1,9 +1,9 @@
 ---
 name: test-specialist
-version: 1.2.3
+version: 1.2.4
 model: sonnet
 description: Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, TodoWrite
+tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite
 color: green
 ---
 
@@ -173,6 +173,42 @@ export class LoginPage {
   }
 }
 ```
+
+**Quick E2E Testing with agent-browser**:
+
+For rapid manual E2E verification without writing Playwright tests, use `agent-browser`:
+
+```bash
+# Start local dev server first, then:
+agent-browser open http://localhost:3000
+
+# Get interactive elements with refs
+agent-browser snapshot -i
+# Output: textbox "Email" [ref=e1], textbox "Password" [ref=e2], button "Login" [ref=e3]
+
+# Test login flow
+agent-browser fill @e1 "test@example.com"
+agent-browser fill @e2 "password123"
+agent-browser click @e3
+agent-browser wait --load networkidle
+
+# Verify navigation
+agent-browser get url  # Should be /dashboard
+
+# Check for expected content
+agent-browser snapshot -i
+agent-browser get text @e5  # Get welcome message
+
+# Screenshot for visual verification
+agent-browser screenshot login-result.png
+
+# Close when done
+agent-browser close
+```
+
+**When to use agent-browser vs Playwright**:
+- **agent-browser**: Quick manual verification, exploratory testing, debugging UI issues
+- **Playwright**: Automated test suites, CI/CD pipelines, cross-browser testing
 
 ### Testing Patterns & Best Practices
 
