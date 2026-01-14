@@ -13,13 +13,15 @@ Original: https://github.com/hardikpandya/stop-slop by Hardik Pandya (MIT Licens
 
 1. **Cut filler phrases.** Remove throat-clearing openers and emphasis crutches. See [references/phrases.md](references/phrases.md).
 
-2. **Break formulaic structures.** Avoid binary contrasts, dramatic fragmentation, rhetorical setups. See [references/structures.md](references/structures.md).
+2. **Avoid AI words.** Words overused by AI that signal machine-generated text. See [references/words.md](references/words.md).
 
-3. **Vary rhythm.** Mix sentence lengths. Two items beat three. End paragraphs differently.
+3. **Break formulaic structures.** Avoid binary contrasts, dramatic fragmentation, rhetorical setups. See [references/structures.md](references/structures.md).
 
-4. **Trust readers.** State facts directly. Skip softening, justification, hand-holding.
+4. **Vary rhythm.** Mix sentence lengths. Two items beat three. End paragraphs differently.
 
-5. **Cut quotables.** If it sounds like a pull-quote, rewrite it.
+5. **Trust readers.** State facts directly. Skip softening, justification, hand-holding.
+
+6. **Cut quotables.** If it sounds like a pull-quote, rewrite it.
 
 ## Quick Checks
 
