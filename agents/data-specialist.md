@@ -450,10 +450,9 @@ agent-browser snapshot -i
 agent-browser close
 ```
 
-**When to use agent-browser vs WebFetch/APIs**:
-- **agent-browser**: JavaScript-rendered pages, SPAs, pages requiring auth, data behind interactions
-- **WebFetch**: Static HTML pages, simple text extraction
+**When to use agent-browser vs APIs**:
 - **APIs**: Always prefer APIs when available (structured, faster, more reliable)
+- **agent-browser**: Default for web scraping - more context-efficient than WebFetch, handles all page types
 
 ### Real-time Streaming
 ```python

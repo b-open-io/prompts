@@ -118,8 +118,8 @@ agent-browser snapshot -i     # New page content
 ```
 
 **When to use agent-browser vs WebFetch:**
-- **agent-browser**: Dynamic pages, SPAs, pages requiring interaction, auth-protected content
-- **WebFetch**: Simple static pages, quick text extraction, when browser isn't installed
+- **agent-browser**: Default choice - more context-efficient, handles all page types
+- **WebFetch**: Only when agent-browser is unavailable
 
 ### WebSearch Optimization
 - Use `site:` operator for targeted searches
@@ -307,8 +307,7 @@ echo "$RESPONSE" | jq -r '.choices[0].message.content'
 ### Combined Tool Workflow
 ```
 1. WebSearch for discovery (find URLs)
-2. agent-browser for page content (preferred - efficient)
-   OR WebFetch for simple static pages (fallback)
+2. agent-browser for page content (always preferred)
 3. Grok API for real-time/social insights
 4. Grep/Read for local verification
 5. Structured summarization with sources
