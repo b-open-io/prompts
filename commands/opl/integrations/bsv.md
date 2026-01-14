@@ -38,7 +38,7 @@ Access comprehensive documentation for the @bsv/sdk library.
 ## Quick Reference
 
 ### BSV SDK Overview
-@https://raw.githubusercontent.com/b-open-io/prompts/master/development/bsv-sdk.md
+@https://raw.githubusercontent.com/b-open-io/prompts/master/references/development/bsv-sdk.md
 
 ### Full Cookbook (39K+ tokens)
 The complete BSV SDK cookbook is available at:

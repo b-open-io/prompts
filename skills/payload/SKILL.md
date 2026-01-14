@@ -1,12 +1,12 @@
 ---
 name: payload
-description: This skill should be used when the user asks to "create a post", "edit a post", "update post content", "list posts", "convert markdown to Lexical", or mentions Payload CMS content management. Handles Payload Local API operations and markdown-to-Lexical conversion.
-version: 0.2.0
+description: This skill should be used when the user asks to "create a post", "edit a post", "update post content", "list posts", "convert markdown to Lexical", "write article to Payload", or mentions Payload CMS content management. Handles both production and local Payload sites via REST API with authentication.
+version: 0.4.0
 ---
 
 # Payload CMS Operations
 
-Manage Payload CMS content using the Local API (preferred) or REST API. Includes markdown-to-Lexical JSON conversion for rich text fields.
+Manage Payload CMS content via REST API. Works with any Payload deployment (production or local).
 
 ## When to Use
 
@@ -15,66 +15,74 @@ Manage Payload CMS content using the Local API (preferred) or REST API. Includes
 - Listing and querying Payload collections
 - Bulk content updates
 
-## Authentication Strategy
+## Workflow: REST API with Authentication
 
-Payload offers two API approaches:
+### Step 1: Determine the API Endpoint
 
-| Approach | When to Use | Auth Required |
-|----------|-------------|---------------|
-| **Local API** | Running scripts in the project directory | No |
-| **REST API** | External access, remote automation | Yes |
-
-**Prefer Local API** for CLI workflows. It runs server-side with full database access and no authentication overhead.
-
-## Local API Workflow
-
-Run TypeScript scripts from the Payload project directory. The `.env` file already contains required credentials:
+Ask the user for their Payload site URL, or check common locations:
 
 ```bash
-# From the Payload project directory (e.g., ~/code/bopen-ai)
-source .env && bunx tsx scripts/update-post.ts my-post-slug content.json
+# Production site (ask user or check project config)
+curl -s "https://your-site.com/api/posts?limit=1" | head -c 100
+
+# Local development
+curl -s "http://localhost:3000/api/posts?limit=1" 2>/dev/null | head -c 100
+curl -s "http://localhost:3010/api/posts?limit=1" 2>/dev/null | head -c 100
 ```
 
-Or inline for one-off commands:
+### Step 2: Authenticate
+
+For mutations (create/update/delete), authentication is required. Payload uses session-based auth.
+
+**Option A: User provides credentials**
+```bash
+# Login to get auth token
+curl -X POST "https://your-site.com/api/users/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "..."}' \
+  -c cookies.txt
+
+# Use the cookie file for authenticated requests
+curl -X POST "https://your-site.com/api/posts" \
+  -H "Content-Type: application/json" \
+  -b cookies.txt \
+  -d '{"title": "...", "content": {...}}'
+```
+
+**Option B: User logs in via admin UI**
+Have the user log in at `/admin`, then extract the `payload-token` cookie from their browser for use in API calls.
+
+### Step 3: Create/Update Content
 
 ```bash
-PAYLOAD_SECRET="$PAYLOAD_SECRET" DATABASE_URI="$DATABASE_URI" bunx tsx scripts/update-post.ts slug content.json
+# Create a post
+curl -X POST "https://your-site.com/api/posts" \
+  -H "Content-Type: application/json" \
+  -b cookies.txt \
+  -d '{
+    "title": "Post Title",
+    "slug": "post-slug",
+    "content": { "root": { ... } },
+    "_status": "published"
+  }'
+
+# Update a post
+curl -X PATCH "https://your-site.com/api/posts/POST_ID" \
+  -H "Content-Type: application/json" \
+  -b cookies.txt \
+  -d '{"content": { "root": { ... } }}'
 ```
 
-### List Posts
+### Step 4: Verify
 
 ```bash
-source .env && bunx tsx scripts/list-posts.ts
+# Check the post was created
+curl -s "https://your-site.com/api/posts?where[slug][equals]=post-slug" | jq '.docs[0]'
 ```
 
-### Update Post Content
+## Lexical JSON Structure
 
-1. Convert markdown to Lexical JSON
-2. Run the update script
-
-```bash
-# Convert markdown
-python3 scripts/md_to_lexical.py article.md > /tmp/content.json
-
-# Update the post
-source .env && bunx tsx scripts/update-post.ts my-post-slug /tmp/content.json
-```
-
-### Create New Post
-
-```bash
-source .env && bunx tsx scripts/create-post.ts "Post Title" post-slug /tmp/content.json
-```
-
-## Markdown to Lexical Conversion
-
-Payload's Lexical editor stores content as JSON. Convert markdown using the included Python script:
-
-```bash
-python3 scripts/md_to_lexical.py input.md > output.json
-```
-
-### Lexical JSON Structure
+Payload's Lexical editor stores content as JSON:
 
 ```json
 {
@@ -83,19 +91,27 @@ python3 scripts/md_to_lexical.py input.md > output.json
     "format": "",
     "indent": 0,
     "version": 1,
+    "direction": "ltr",
     "children": [
-      { "type": "paragraph", ... },
-      { "type": "heading", "tag": "h2", ... }
-    ],
-    "direction": "ltr"
+      {
+        "type": "paragraph",
+        "format": "",
+        "indent": 0,
+        "version": 1,
+        "direction": "ltr",
+        "children": [
+          {"type": "text", "text": "Content here", "mode": "normal", "format": 0, "detail": 0, "version": 1, "style": ""}
+        ]
+      }
+    ]
   }
 }
 ```
 
-### Supported Markdown Elements
+### Supported Node Types
 
-| Markdown | Lexical Node Type |
-|----------|-------------------|
+| Markdown | Lexical Node |
+|----------|--------------|
 | Paragraphs | `paragraph` |
 | `# Heading` | `heading` with tag h1-h6 |
 | `**bold**` | text with format: 1 |
@@ -104,8 +120,6 @@ python3 scripts/md_to_lexical.py input.md > output.json
 | Code blocks | `block` with blockType: "code" |
 | Lists | `list` with `listitem` children |
 | `> quotes` | `quote` |
-| `---` | `horizontalrule` |
-| `[links](url)` | `link` with fields.url |
 
 ### Text Format Bitmask
 
@@ -117,30 +131,12 @@ python3 scripts/md_to_lexical.py input.md > output.json
 | 3 | Bold + Italic |
 | 16 | Code |
 
-## Inline Script Example
+## Markdown to Lexical Conversion
 
-For simple updates without the helper scripts:
+The skill includes a Python script for converting markdown to Lexical JSON:
 
-```typescript
-import { getPayload } from "payload";
-import configPromise from "@payload-config";
-
-const payload = await getPayload({ config: configPromise });
-
-// Find post by slug
-const result = await payload.find({
-  collection: "posts",
-  where: { slug: { equals: "my-post" } },
-});
-
-// Update content
-await payload.update({
-  collection: "posts",
-  id: result.docs[0].id,
-  data: {
-    content: { root: { ... } },
-  },
-});
+```bash
+python3 ${SKILL_DIR}/scripts/md_to_lexical.py article.md > /tmp/content.json
 ```
 
 ## Common Collections
@@ -151,33 +147,30 @@ await payload.update({
 | Pages | `pages` | Static pages |
 | Media | `media` | Uploaded files |
 | Users | `users` | User accounts |
-| Categories | `categories` | Post categories |
+
+## Local Development Alternative
+
+If working locally and REST auth is problematic, write an inline script in the project:
+
+```typescript
+// scripts/create-post.ts
+import { getPayload } from 'payload'
+import config from '../src/payload.config'
+
+const payload = await getPayload({ config })
+await payload.create({
+  collection: 'posts',
+  data: { title: '...', content: {...}, _status: 'published' }
+})
+process.exit(0)
+```
+
+Run with: `source .env.local && bunx tsx scripts/create-post.ts`
+
+**Note**: If Drizzle prompts for schema migration, answer 'n' and use REST API instead.
 
 ## Additional Resources
 
-### Reference Files
-
-- **`references/lexical-format.md`** - Complete Lexical node type reference with all fields
-- **`references/rest-api.md`** - REST API documentation for external access
-
-### Scripts
-
-- **`scripts/md_to_lexical.py`** - Python markdown-to-Lexical converter
-- **`scripts/md-to-lexical.sh`** - Bash wrapper for conversions
-- **`scripts/list-posts.ts`** - List posts using Local API
-- **`scripts/update-post.ts`** - Update post content using Local API
-- **`scripts/create-post.ts`** - Create new post using Local API
-
-## Troubleshooting
-
-**"Cannot find module '@payload-config'"**
-Run scripts from the Payload project root directory where `tsconfig.json` defines this path alias.
-
-**"PAYLOAD_SECRET is required"**
-Set the environment variable. Check the project's `.env` file for the correct value.
-
-**"Database connection failed"**
-Verify `DATABASE_URI` is correct and the database is accessible.
-
-**Post not updating**
-Check the post's `_status` field. Posts must be "published" to appear on the site.
+- **`references/lexical-format.md`** - Complete Lexical node type reference
+- **`references/rest-api.md`** - Full REST API documentation
+- **`scripts/md_to_lexical.py`** - Markdown to Lexical converter
