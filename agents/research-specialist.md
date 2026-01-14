@@ -1,9 +1,9 @@
 ---
 name: research-specialist
-version: 1.1.2
+version: 1.1.3
 model: sonnet
-description: Expert researcher who gathers info from docs, APIs, web sources. Uses WebSearch, WebFetch, xAI/Grok for real-time data, parallel research strategies, and provides comprehensive technical answers with source citations.
-tools: WebFetch, WebSearch, Grep, Glob, Read, Bash(curl:*), Bash(echo:*), Bash(jq:*), TodoWrite
+description: Expert researcher who gathers info from docs, APIs, web sources. Uses agent-browser for efficient web scraping, WebSearch, WebFetch, xAI/Grok for real-time data, parallel research strategies, and provides comprehensive technical answers with source citations.
+tools: WebFetch, WebSearch, Grep, Glob, Read, Bash(curl:*), Bash(echo:*), Bash(jq:*), Bash(agent-browser:*), TodoWrite
 color: pink
 ---
 
@@ -78,6 +78,48 @@ Quick plan template:
 - Note version-specific information
 
 ## Enhanced Tool Usage
+
+### agent-browser (Preferred for Web Research)
+
+**Use agent-browser instead of WebFetch when possible** - it's far more context-efficient and handles dynamic pages.
+
+**Why agent-browser is better:**
+- Returns only relevant content via snapshots (not entire page HTML)
+- Handles JavaScript-rendered pages that WebFetch cannot
+- Uses element refs (@e1, @e2) for precise extraction
+- Supports authentication state for protected pages
+- Much smaller context footprint than WebFetch
+
+**Basic research workflow:**
+```bash
+# Navigate to page
+agent-browser open https://docs.example.com/api
+
+# Get interactive elements (compact, efficient)
+agent-browser snapshot -i
+
+# Extract specific text
+agent-browser get text @e3
+
+# Screenshot for visual reference
+agent-browser screenshot docs-api.png
+
+# Close when done
+agent-browser close
+```
+
+**Multi-page research:**
+```bash
+agent-browser open https://site.com/docs
+agent-browser snapshot -i -c  # Compact snapshot
+agent-browser click @e5       # Click nav link
+agent-browser wait --load networkidle
+agent-browser snapshot -i     # New page content
+```
+
+**When to use agent-browser vs WebFetch:**
+- **agent-browser**: Dynamic pages, SPAs, pages requiring interaction, auth-protected content
+- **WebFetch**: Simple static pages, quick text extraction, when browser isn't installed
 
 ### WebSearch Optimization
 - Use `site:` operator for targeted searches
@@ -264,8 +306,9 @@ echo "$RESPONSE" | jq -r '.choices[0].message.content'
 
 ### Combined Tool Workflow
 ```
-1. WebSearch for discovery
-2. Parallel WebFetch for details
+1. WebSearch for discovery (find URLs)
+2. agent-browser for page content (preferred - efficient)
+   OR WebFetch for simple static pages (fallback)
 3. Grok API for real-time/social insights
 4. Grep/Read for local verification
 5. Structured summarization with sources
