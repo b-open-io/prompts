@@ -10,7 +10,26 @@ This repository provides:
 - **Automation Hooks** - Background workflows to enhance development
 - **Powerful Prompts** - Reusable templates for complex operations
 
-## Quick Start (30 seconds)
+## Quick Start
+
+### Option 1: Install Skills (Recommended)
+
+Works with Claude Code, Cursor, Codex, and other AI coding agents:
+
+```bash
+npx add-skill b-open-io/prompts
+```
+
+### Option 2: Full Plugin Install
+
+Via Claude Code marketplace:
+
+```bash
+/plugin marketplace add b-open-io/claude-plugins
+/plugin install bopen-tools@b-open-io
+```
+
+### Option 3: Clone & Sync (Advanced)
 
 ```bash
 # 1. Clone this repository
@@ -22,7 +41,7 @@ claude
 
 # 3. Run the sync commands to install everything
 /opl:agents:sync
-/opl:commands:sync  
+/opl:commands:sync
 /opl:hooks:sync
 
 # That's it! All agents, commands, and hooks are now installed.
