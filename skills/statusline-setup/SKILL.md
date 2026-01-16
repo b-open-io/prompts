@@ -1,7 +1,7 @@
 ---
 name: statusline-setup
 description: This skill should be used when the user asks to "create a status line", "customize status line", "set up statusline", "configure Claude Code status bar", "install ccstatusline", "add project colors to status line", "show git branch in status", "display token usage", or mentions Peacock colors, powerline, or status line configuration.
-version: 1.0.0
+version: 1.0.1
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
 ---
 
@@ -15,7 +15,47 @@ Claude Code supports custom status lines displayed at the bottom of the interfac
 
 ## Interactive Setup Flow
 
-When setting up a status line, use AskUserQuestion to gather preferences:
+When setting up a status line, first check for existing configuration and use AskUserQuestion to gather preferences.
+
+### Pre-Check: Existing Status Line
+
+Before making changes, check for existing configuration:
+
+```bash
+# Check for existing status line in settings
+if [[ -f ~/.claude/settings.json ]]; then
+    EXISTING=$(jq -r '.statusLine // empty' ~/.claude/settings.json)
+    if [[ -n "$EXISTING" ]]; then
+        # User has existing status line - ask about backup
+    fi
+fi
+
+# Check for existing script
+if [[ -f ~/.claude/statusline.sh ]]; then
+    # Existing custom script found
+fi
+```
+
+### Question 0: Existing Configuration (if found)
+```
+header: "Existing config"
+question: "You have an existing status line configuration. What would you like to do?"
+options:
+  - label: "Back up and replace"
+    description: "Save current config before making changes"
+  - label: "View current config"
+    description: "Show what's currently configured"
+  - label: "Start fresh"
+    description: "Replace without backup"
+```
+
+If user chooses backup, run:
+```bash
+~/.claude/plugins/cache/.../scripts/install-statusline.sh --backup-only
+# Or manually:
+cp ~/.claude/settings.json ~/.claude/settings.json.backup.$(date +%Y%m%d%H%M%S)
+cp ~/.claude/statusline.sh ~/.claude/statusline.sh.backup.$(date +%Y%m%d%H%M%S) 2>/dev/null
+```
 
 ### Question 1: Approach
 ```
@@ -301,6 +341,52 @@ Use `scripts/install-statusline.sh` to:
 - Copy status line script to `~/.claude/`
 - Update settings.json
 - Create backup of existing configuration
+
+## Restore Previous Configuration
+
+Backups are created with timestamps in `~/.claude/`:
+
+```bash
+# List available backups
+ls -la ~/.claude/*.backup.*
+
+# Example output:
+# settings.json.backup.20240115143022
+# statusline.sh.backup.20240115143022
+```
+
+**Restore using the restore script:**
+```bash
+~/.claude/plugins/cache/.../scripts/restore-statusline.sh
+# Or with specific backup:
+~/.claude/plugins/cache/.../scripts/restore-statusline.sh 20240115143022
+```
+
+**Manual restore:**
+```bash
+# Find most recent backup
+LATEST=$(ls -t ~/.claude/settings.json.backup.* 2>/dev/null | head -1)
+
+# Restore settings
+if [[ -n "$LATEST" ]]; then
+    cp "$LATEST" ~/.claude/settings.json
+    echo "Restored settings from $LATEST"
+fi
+
+# Restore script if exists
+SCRIPT_BACKUP=$(ls -t ~/.claude/statusline.sh.backup.* 2>/dev/null | head -1)
+if [[ -n "$SCRIPT_BACKUP" ]]; then
+    cp "$SCRIPT_BACKUP" ~/.claude/statusline.sh
+    echo "Restored script from $SCRIPT_BACKUP"
+fi
+```
+
+**Remove status line entirely:**
+```bash
+# Remove statusLine from settings
+jq 'del(.statusLine)' ~/.claude/settings.json > /tmp/settings.json && \
+    mv /tmp/settings.json ~/.claude/settings.json
+```
 
 ## Additional Resources
 

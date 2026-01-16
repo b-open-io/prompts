@@ -1,12 +1,12 @@
 #!/bin/bash
 # Install status line script to Claude Code
-# Usage: ./install-statusline.sh [script-path]
+# Usage: ./install-statusline.sh [script-path|--backup-only]
 
 set -e
 
-SCRIPT_PATH="${1:-}"
 CLAUDE_DIR="$HOME/.claude"
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
+SCRIPT_PATH="${1:-}"
 
 # Colors
 RED='\033[0;31m'
@@ -27,9 +27,38 @@ fi
 # Create .claude directory if needed
 mkdir -p "$CLAUDE_DIR"
 
+# Backup-only mode
+if [[ "$SCRIPT_PATH" == "--backup-only" ]]; then
+    log_info "Creating backup of existing configuration..."
+
+    TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+    if [[ -f "$SETTINGS_FILE" ]]; then
+        BACKUP="$SETTINGS_FILE.backup.$TIMESTAMP"
+        cp "$SETTINGS_FILE" "$BACKUP"
+        log_info "Backed up settings to: $BACKUP"
+    else
+        log_warn "No settings.json found to backup"
+    fi
+
+    if [[ -f "$CLAUDE_DIR/statusline.sh" ]]; then
+        BACKUP="$CLAUDE_DIR/statusline.sh.backup.$TIMESTAMP"
+        cp "$CLAUDE_DIR/statusline.sh" "$BACKUP"
+        log_info "Backed up script to: $BACKUP"
+    else
+        log_warn "No statusline.sh found to backup"
+    fi
+
+    log_info "Backup complete! Timestamp: $TIMESTAMP"
+    exit 0
+fi
+
 # If no script provided, list available options
 if [[ -z "$SCRIPT_PATH" ]]; then
     echo "Usage: $0 <script-path>"
+    echo ""
+    echo "Options:"
+    echo "  --backup-only    Create backup without installing"
     echo ""
     echo "Available example scripts:"
     SCRIPT_DIR="$(dirname "$0")/../examples"
