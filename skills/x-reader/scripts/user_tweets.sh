@@ -1,47 +1,40 @@
 #!/bin/bash
-# Get recent tweets from an X (Twitter) user using xAI Grok API
+# Get recent tweets from an X (Twitter) user using X.com API v2
 # Usage: ./user_tweets.sh "<handle>"
 
 set -e
 
 HANDLE="$1"
+MAX_RESULTS="${2:-10}"
 
 if [ -z "$HANDLE" ]; then
-    echo "Usage: user_tweets.sh <handle>"
-    echo "Example: user_tweets.sh @jack"
+    echo "Usage: user_tweets.sh <handle> [max_results]"
+    echo "Example: user_tweets.sh @jack 10"
     echo "Example: user_tweets.sh elonmusk"
     exit 1
 fi
 
-if [ -z "$XAI_API_KEY" ]; then
-    echo "Error: XAI_API_KEY environment variable not set"
+if [ -z "$X_BEARER_TOKEN" ]; then
+    echo "Error: X_BEARER_TOKEN environment variable not set"
+    echo "Get one at: https://developer.x.com/en/portal/dashboard"
     exit 1
 fi
 
-# Remove @ prefix if present for consistent handling
+# Remove @ prefix if present
 HANDLE="${HANDLE#@}"
 
-# Build the prompt for fetching user tweets
-PROMPT="Get the most recent tweets from X user @${HANDLE}
+# First get the user ID from username
+USER_RESPONSE=$(curl -s "https://api.x.com/2/users/by/username/${HANDLE}" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN")
 
-Please provide:
-1. Their 5-10 most recent tweets
-2. For each tweet include: content, timestamp, engagement metrics (likes, retweets, views if available)
-3. Note any threads or ongoing conversations
+USER_ID=$(echo "$USER_RESPONSE" | jq -r '.data.id // empty')
 
-Format each tweet clearly and include the date/time."
+if [ -z "$USER_ID" ]; then
+    echo "Error: Could not find user @${HANDLE}"
+    echo "$USER_RESPONSE" | jq '.'
+    exit 1
+fi
 
-# Make the API request with X search enabled
-curl -s https://api.x.ai/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d "$(jq -n \
-    --arg prompt "$PROMPT" \
-    '{
-      "messages": [{"role": "user", "content": $prompt}],
-      "model": "grok-3-latest",
-      "search_parameters": {
-        "mode": "on",
-        "sources": [{"type": "x"}]
-      }
-    }')" | jq -r '.choices[0].message.content // .error.message // "Error: No response"'
+# Get user's tweets
+curl -s "https://api.x.com/2/users/${USER_ID}/tweets?tweet.fields=created_at,public_metrics,entities&max_results=${MAX_RESULTS}" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN" | jq '.'

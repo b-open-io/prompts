@@ -1,163 +1,247 @@
 ---
 name: x-reader
-version: 1.0.0
-description: Fetch and search X (Twitter) content using xAI Grok and browser automation. Use when user wants to search X, get tweets from a user, fetch specific tweet URLs, or analyze X discussions.
+version: 2.0.0
+description: Fetch X (Twitter) content directly using the X.com API v2. Use when user shares tweet URLs, wants to fetch tweets by ID, search recent posts, or get user timelines. Requires X_BEARER_TOKEN.
+allowed-tools: Bash(curl:*), Bash(jq:*)
 ---
 
 # X (Twitter) Reader Skill
 
-Search, fetch, and analyze X (Twitter) content using a hybrid approach: xAI Grok for discovery/analysis, browser automation for specific URLs.
+Fetch X (Twitter) content directly using the official X.com API v2.
 
 ## When to Use This Skill
 
 Trigger when user:
-- Wants to search X/Twitter for a topic
-- Asks about recent tweets from a user
 - Shares a tweet URL (`https://x.com/...` or `https://twitter.com/...`)
-- Wants sentiment analysis of X discussions
-- Uses phrases like "x search", "search twitter", "get tweets", "fetch tweet"
+- Wants to fetch a specific tweet by ID
+- Wants to search recent X posts
+- Wants tweets from a specific user
 
-## Architecture
+## Setup Requirements
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    X Skill Entry Point                   │
-│  ┌─────────────┐  ┌──────────────┐  ┌────────────────┐  │
-│  │   search    │  │  user_tweets │  │   fetch_url    │  │
-│  └──────┬──────┘  └──────┬───────┘  └───────┬────────┘  │
-│         │                │                   │           │
-│         ▼                ▼                   ▼           │
-│    ┌─────────────────────────┐        ┌─────────────┐   │
-│    │     xAI Grok API        │        │  Browser    │   │
-│    │  (No auth required)     │        │  Automation │   │
-│    └─────────────────────────┘        └─────────────┘   │
-└─────────────────────────────────────────────────────────┘
-```
+**Required:** X.com API Bearer Token
 
-## Commands
-
-### 1. Search X by Topic
-
-**Usage:** `x search <query>`
-
-Search X for tweets about a specific topic using xAI Grok's real-time X access.
-
-**Examples:**
-- `x search Bitcoin BSV`
-- `x search "artificial intelligence" recent`
-- `x search #blockchain`
-
-**Implementation:**
 ```bash
-bash "${CLAUDE_SKILL_ROOT}/scripts/search.sh" "<query>"
+if [ -z "$X_BEARER_TOKEN" ]; then
+  echo "ERROR: X_BEARER_TOKEN is not set"
+  echo "1. Go to https://developer.x.com/en/portal/dashboard"
+  echo "2. Create a project and app"
+  echo "3. Generate a Bearer Token"
+  echo "4. Add to profile: export X_BEARER_TOKEN=\"your-token\""
+  exit 1
+else
+  echo "X_BEARER_TOKEN is configured"
+fi
 ```
 
-### 2. Get User's Recent Tweets
+## API Overview
 
-**Usage:** `x user <handle>`
+**Base URL**: `https://api.x.com/2`
 
-Fetch recent tweets from a specific X user.
+**Authentication**: Bearer Token in header
 
-**Examples:**
-- `x user @jack`
-- `x user elonmusk`
-- `x user @naval`
+**Key Endpoints**:
+- `GET /2/tweets/:id` - Get single tweet
+- `GET /2/tweets` - Get multiple tweets by IDs
+- `GET /2/tweets/search/recent` - Search recent tweets (last 7 days)
+- `GET /2/users/:id/tweets` - Get user's tweets
 
-**Implementation:**
+## Basic Usage
+
+### Fetch Tweet by URL
+
+When user provides a URL like `https://x.com/user/status/123456789`:
+
+1. Extract the tweet ID from the URL
+2. Call the tweets endpoint
+
 ```bash
-bash "${CLAUDE_SKILL_ROOT}/scripts/user_tweets.sh" "<handle>"
+# Extract ID from URL (last numeric segment)
+URL="https://x.com/someone/status/1234567890123456789"
+TWEET_ID=$(echo "$URL" | grep -oE '[0-9]+$')
+
+# Fetch the tweet
+curl -s "https://api.x.com/2/tweets/${TWEET_ID}?tweet.fields=created_at,author_id,public_metrics,entities&expansions=author_id&user.fields=username,name" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN" | jq '.'
 ```
 
-### 3. Fetch Specific Tweet/Thread by URL
+### Fetch Tweet by ID
 
-**Usage:** `x fetch <url>`
-
-Fetch a specific tweet or thread by URL using browser automation. This requires the Claude-in-Chrome MCP to be available.
-
-**Examples:**
-- `x fetch https://x.com/elonmusk/status/1234567890`
-- `x fetch https://twitter.com/jack/status/9876543210`
-
-**Implementation:** Use browser automation (Claude-in-Chrome MCP):
-1. Call `mcp__claude-in-chrome__tabs_context_mcp` to get browser context
-2. Create new tab with `mcp__claude-in-chrome__tabs_create_mcp`
-3. Navigate to URL with `mcp__claude-in-chrome__navigate`
-4. Wait for page load with `mcp__claude-in-chrome__computer` (action: wait, duration: 3)
-5. Extract content with `mcp__claude-in-chrome__get_page_text`
-
-### 4. Analyze Sentiment/Discussion
-
-**Usage:** `x analyze <topic>`
-
-Get sentiment analysis and summary of current X discussion on a topic.
-
-**Examples:**
-- `x analyze "AI safety"`
-- `x analyze cryptocurrency regulation`
-- `x analyze "climate change"`
-
-**Implementation:**
 ```bash
-bash "${CLAUDE_SKILL_ROOT}/scripts/analyze.sh" "<topic>"
+curl -s "https://api.x.com/2/tweets/1234567890?tweet.fields=created_at,author_id,public_metrics,context_annotations,entities&expansions=author_id&user.fields=username,name,verified" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN" | jq '.'
 ```
 
-## Routing Logic
+### Fetch Multiple Tweets
 
-When user invokes this skill, route based on command:
-
-| Pattern | Action |
-|---------|--------|
-| `x search <query>` | Run `search.sh` with xAI |
-| `x user <handle>` | Run `user_tweets.sh` with xAI |
-| `x fetch <url>` | Use browser automation MCP |
-| `x analyze <topic>` | Run `analyze.sh` with xAI |
-| URL only (auto-detect x.com/twitter.com) | Use browser automation MCP |
-
-## Environment Variables
-
-Required:
-- `XAI_API_KEY` - xAI Grok API key for search/user/analyze commands
-
-## Capabilities by Method
-
-| Operation | xAI Grok | Browser MCP |
-|-----------|----------|-------------|
-| Search by topic | Best | Works |
-| User's recent tweets | Best | Works |
-| Specific tweet URL | Cannot | Required |
-| Complete thread/replies | Partial | Required |
-| Sentiment analysis | Excellent | N/A |
-
-## Decision Flow
-
-```
-User wants X content
-    │
-    ├── Contains x.com/twitter.com URL?
-    │   └── Yes → Use browser automation
-    │
-    ├── "x search <query>" or "search twitter <query>"?
-    │   └── Yes → Run search.sh with xAI
-    │
-    ├── "x user <handle>" or "tweets from @user"?
-    │   └── Yes → Run user_tweets.sh with xAI
-    │
-    └── "x analyze <topic>" or "sentiment on X about..."?
-        └── Yes → Run analyze.sh with xAI
+```bash
+curl -s "https://api.x.com/2/tweets?ids=1234567890,9876543210&tweet.fields=created_at,author_id,public_metrics&expansions=author_id&user.fields=username,name" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN" | jq '.'
 ```
 
-## Notes
+### Search Recent Tweets
 
-- xAI Grok has real-time access to X content without requiring user authentication
-- Browser automation uses the user's authenticated browser session
-- For URL fetching, ensure Chrome is open with the Claude-in-Chrome extension active
-- The xAI API returns tweet metadata including timestamps, view counts, and engagement metrics
+Search tweets from the last 7 days:
 
-## Troubleshooting
+```bash
+curl -s "https://api.x.com/2/tweets/search/recent?query=bitcoin&tweet.fields=created_at,author_id,public_metrics&expansions=author_id&user.fields=username&max_results=10" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN" | jq '.'
+```
 
-| Problem | Solution |
-|---------|----------|
-| XAI_API_KEY not set | Export the key: `export XAI_API_KEY="your-key"` |
-| Browser MCP unavailable | Ensure Chrome is open with Claude-in-Chrome extension |
-| Rate limits | xAI has usage limits; wait and retry |
-| Empty results | Try broader search terms or check user handle spelling |
+**Search Operators:**
+- `bitcoin` - Contains "bitcoin"
+- `from:username` - From specific user
+- `to:username` - Reply to user
+- `#hashtag` - Contains hashtag
+- `-is:retweet` - Exclude retweets
+- `is:verified` - Only verified users
+- `has:links` - Contains links
+- `has:media` - Contains media
+
+### Get User's Tweets
+
+First get user ID, then fetch tweets:
+
+```bash
+# Get user ID by username
+USER_ID=$(curl -s "https://api.x.com/2/users/by/username/elonmusk" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN" | jq -r '.data.id')
+
+# Get their tweets
+curl -s "https://api.x.com/2/users/${USER_ID}/tweets?tweet.fields=created_at,public_metrics&max_results=10" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN" | jq '.'
+```
+
+## Response Fields
+
+### Tweet Fields (`tweet.fields`)
+- `created_at` - Timestamp
+- `author_id` - Author's user ID
+- `public_metrics` - likes, retweets, replies, quotes
+- `entities` - URLs, mentions, hashtags
+- `context_annotations` - Topics, entities
+- `conversation_id` - Thread ID
+
+### User Fields (`user.fields`)
+- `username` - @handle
+- `name` - Display name
+- `verified` - Verification status
+- `description` - Bio
+- `public_metrics` - followers, following, tweet count
+
+### Expansions (`expansions`)
+- `author_id` - Include author user object
+- `referenced_tweets.id` - Include quoted/replied tweets
+
+## Example Response
+
+```json
+{
+  "data": {
+    "id": "1234567890",
+    "text": "Hello world!",
+    "created_at": "2025-01-15T10:30:00.000Z",
+    "author_id": "987654321",
+    "public_metrics": {
+      "retweet_count": 100,
+      "reply_count": 50,
+      "like_count": 500,
+      "quote_count": 25
+    }
+  },
+  "includes": {
+    "users": [{
+      "id": "987654321",
+      "username": "someone",
+      "name": "Some One"
+    }]
+  }
+}
+```
+
+## Common Patterns
+
+### Parse Tweet URL and Fetch Content
+
+```bash
+fetch_tweet() {
+  local URL="$1"
+  local TWEET_ID=$(echo "$URL" | grep -oE '[0-9]+$')
+
+  if [ -z "$TWEET_ID" ]; then
+    echo "Error: Could not extract tweet ID from URL"
+    return 1
+  fi
+
+  curl -s "https://api.x.com/2/tweets/${TWEET_ID}?tweet.fields=created_at,author_id,public_metrics,entities&expansions=author_id&user.fields=username,name" \
+    -H "Authorization: Bearer $X_BEARER_TOKEN"
+}
+
+# Usage
+fetch_tweet "https://x.com/user/status/1234567890"
+```
+
+### Format Tweet for Display
+
+```bash
+format_tweet() {
+  local RESPONSE="$1"
+
+  local TEXT=$(echo "$RESPONSE" | jq -r '.data.text')
+  local USERNAME=$(echo "$RESPONSE" | jq -r '.includes.users[0].username')
+  local NAME=$(echo "$RESPONSE" | jq -r '.includes.users[0].name')
+  local DATE=$(echo "$RESPONSE" | jq -r '.data.created_at')
+  local LIKES=$(echo "$RESPONSE" | jq -r '.data.public_metrics.like_count')
+  local RTS=$(echo "$RESPONSE" | jq -r '.data.public_metrics.retweet_count')
+
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "📝 @${USERNAME} (${NAME})"
+  echo "📅 ${DATE}"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "$TEXT"
+  echo ""
+  echo "❤️ ${LIKES} likes | 🔄 ${RTS} retweets"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+```
+
+## Rate Limits
+
+Free tier limits:
+- 10 requests per 15 minutes for search
+- 10 requests per 15 minutes for tweet lookup
+- 1,500 tweets per month
+
+Higher tiers have higher limits. Check your plan at developer.x.com.
+
+## Error Handling
+
+| Error Code | Meaning | Solution |
+|------------|---------|----------|
+| 401 | Unauthorized | Check X_BEARER_TOKEN is valid |
+| 403 | Forbidden | Check API access level |
+| 404 | Not Found | Tweet may be deleted or private |
+| 429 | Rate Limited | Wait and retry |
+
+## Comparison with xAI Grok
+
+| Feature | X.com API | xAI Grok |
+|---------|-----------|----------|
+| Direct tweet data | Yes | Summarized |
+| Real-time | Yes | Yes |
+| Auth required | X_BEARER_TOKEN | XAI_API_KEY |
+| Rate limits | Strict (free tier) | More generous |
+| AI analysis | No | Yes |
+| Exact tweet text | Yes | May paraphrase |
+
+**Use X.com API when:** You need exact tweet content, metrics, or metadata.
+
+**Use xAI Grok when:** You need sentiment analysis, search across many tweets, or AI-powered insights.
+
+## References
+
+- [X API Documentation](https://developer.x.com/en/docs/x-api)
+- [Tweet Lookup](https://developer.x.com/en/docs/x-api/tweets/lookup)
+- [Search Tweets](https://developer.x.com/en/docs/x-api/tweets/search)
+- [Rate Limits](https://developer.x.com/en/docs/x-api/rate-limits)

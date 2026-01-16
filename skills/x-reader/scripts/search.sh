@@ -1,43 +1,27 @@
 #!/bin/bash
-# Search X (Twitter) for a topic using xAI Grok API
+# Search X (Twitter) for recent posts using X.com API v2
 # Usage: ./search.sh "<query>"
 
 set -e
 
 QUERY="$1"
+MAX_RESULTS="${2:-10}"
 
 if [ -z "$QUERY" ]; then
-    echo "Usage: search.sh <query>"
-    echo "Example: search.sh \"Bitcoin BSV\""
+    echo "Usage: search.sh <query> [max_results]"
+    echo "Example: search.sh \"Bitcoin BSV\" 10"
     exit 1
 fi
 
-if [ -z "$XAI_API_KEY" ]; then
-    echo "Error: XAI_API_KEY environment variable not set"
+if [ -z "$X_BEARER_TOKEN" ]; then
+    echo "Error: X_BEARER_TOKEN environment variable not set"
+    echo "Get one at: https://developer.x.com/en/portal/dashboard"
     exit 1
 fi
 
-# Build the prompt for searching X
-PROMPT="Search X (Twitter) for recent posts about: ${QUERY}
+# URL encode the query
+ENCODED_QUERY=$(printf '%s' "$QUERY" | jq -sRr @uri)
 
-Please provide:
-1. The most relevant and recent tweets about this topic
-2. For each tweet include: author handle, content, timestamp, engagement (likes/retweets if available)
-3. A brief summary of the overall sentiment and key themes
-
-Format the results clearly with each tweet separated."
-
-# Make the API request with X search enabled
-curl -s https://api.x.ai/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d "$(jq -n \
-    --arg prompt "$PROMPT" \
-    '{
-      "messages": [{"role": "user", "content": $prompt}],
-      "model": "grok-3-latest",
-      "search_parameters": {
-        "mode": "on",
-        "sources": [{"type": "x"}]
-      }
-    }')" | jq -r '.choices[0].message.content // .error.message // "Error: No response"'
+# Search recent tweets
+curl -s "https://api.x.com/2/tweets/search/recent?query=${ENCODED_QUERY}&tweet.fields=created_at,author_id,public_metrics,entities&expansions=author_id&user.fields=username,name&max_results=${MAX_RESULTS}" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN" | jq '.'
