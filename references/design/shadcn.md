@@ -827,7 +827,7 @@ export function CommandMenu() {
 }
 ```
 
-## Sidebar Component (New in 2024)
+## Sidebar Component
 
 ### Installation
 ```bash
