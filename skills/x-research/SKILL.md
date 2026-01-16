@@ -1,30 +1,36 @@
 ---
 name: x-research
-version: 1.1.1
-description: This skill should be used when the user asks about "what's trending on X", "Twitter trends", "social sentiment", "what are people saying about", "X/Twitter research", "real-time social data", "Grok research", "search Twitter", "check X for", "breaking news", or needs current events, social insights, or undiscovered tools/frameworks. Uses xAI Grok API with agentic search tools for real-time intelligence from X/Twitter and web sources.
-allowed-tools: Bash(curl:*), Bash(jq:*)
+version: 1.1.2
+description: AI-powered X/Twitter research via xAI Grok. Returns AI SUMMARIES with analysis, not raw tweets. Use for "what's trending", "social sentiment", "summarize X discussion about", "analyze X conversation about", "research topic on X". For RAW tweet data, use x-user-timeline, x-tweet-search, x-tweet-fetch instead. Requires XAI_API_KEY.
+allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_PLUGIN_ROOT}:*)
 ---
 
 # X Research (xAI/Grok)
 
-Real-time research using xAI's Grok API with agentic search tools for X/Twitter trends, social sentiment, current events, and emerging tools/frameworks.
+AI-powered research using xAI's Grok API. Returns **AI summaries with citations**, not raw tweet data.
+
+> **Want raw tweets instead?** Use these skills:
+> - `x-user-timeline` - Raw tweets from a user
+> - `x-tweet-search` - Raw search results
+> - `x-tweet-fetch` - Raw single tweet
+> - `x-user-lookup` - User profile data
+>
+> These require `X_BEARER_TOKEN` instead of `XAI_API_KEY`.
 
 ## When to Use
 
 **USE THIS SKILL FOR:**
+- Summarized research with AI analysis
 - Current events and breaking news
 - Social sentiment ("What are developers saying about Y?")
 - X/Twitter trending topics and viral posts
 - Emerging tools/frameworks not in documentation yet
-- Real-time status of services/outages
 - Community opinions on best practices
-- Undiscovered gems and new libraries
 
 **DON'T USE FOR:**
+- Raw tweet data (use x-user-timeline, x-tweet-search)
+- Specific user's posts verbatim (use x-user-timeline)
 - Well-documented APIs (use WebFetch instead)
-- Static technical specifications
-- Code syntax questions
-- Historical information (cutoff: November 2024)
 
 ## Setup Requirements
 
