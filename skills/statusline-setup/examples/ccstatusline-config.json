@@ -1,0 +1,52 @@
+{
+  "lines": [
+    {
+      "widgets": [
+        {
+          "type": "Model",
+          "color": "#ff6b6b",
+          "bold": true
+        },
+        {
+          "type": "Separator"
+        },
+        {
+          "type": "GitBranch",
+          "color": "#4ecdc4"
+        },
+        {
+          "type": "GitChanges",
+          "color": "#ffe66d",
+          "rawValue": true
+        },
+        {
+          "type": "FlexSeparator"
+        },
+        {
+          "type": "SessionCost",
+          "color": "#95e1d3"
+        },
+        {
+          "type": "Separator"
+        },
+        {
+          "type": "ContextPercentage",
+          "color": "#f38181"
+        },
+        {
+          "type": "Separator"
+        },
+        {
+          "type": "BlockTimer",
+          "displayMode": "compact",
+          "color": "#a8e6cf"
+        }
+      ]
+    }
+  ],
+  "powerline": true,
+  "powerlineFont": true,
+  "defaultPadding": true,
+  "defaultSeparator": true,
+  "globalBold": false
+}
