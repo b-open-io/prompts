@@ -257,6 +257,29 @@ init-prism create my-app --template bitcoin-auth
 /opl:mcp:install-github      # GitHub integration
 ```
 
+## Skill Limits & Configuration
+
+Claude Code has a default **15,000 character budget** for skill metadata. When you have many skills installed, some may be truncated from Claude's context.
+
+### Symptoms
+- `/skills` shows fewer skills than expected
+- Claude doesn't recognize skills you know are installed
+- "75 of 107 skills" type messages
+
+### Fix: Increase the Budget
+
+Add to your shell profile (`~/.zshrc` or `~/.bashrc`):
+
+```bash
+export SLASH_COMMAND_TOOL_CHAR_BUDGET=30000
+```
+
+Then restart your terminal and Claude Code.
+
+### Check Current Status
+
+Run `/context` to see token usage and which skills are being truncated.
+
 ## Tips & Best Practices
 
 1. **Use agents for expertise** - They have specialized knowledge
