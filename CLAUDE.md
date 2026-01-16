@@ -75,31 +75,30 @@ This repository builds on our monorepo containing:
 
 ## Directory Structure and Usage
 
-**CRITICAL**: Understand the difference between repository-specific and distributable content:
+This repository is a **Claude plugin** with standard plugin structure. Components live at root level.
 
-### `.claude/` Directory (Repository-Specific)
-- **Purpose**: Contains commands and settings ONLY for working on the prompts repository itself
-- **Example**: `.claude/commands/opl/agents/sync.md` - syncs agents within this repo
-- **When to use**: Only place files here if they are specifically for maintaining/developing the prompts repository
-- **IMPORTANT**: These commands ONLY work when you're in the prompts repository directory
+### Plugin Structure (Root Level)
+```
+prompts/
+├── .claude-plugin/
+│   └── plugin.json      # Plugin manifest
+├── agents/              # Specialized AI sub-agents (19+ files)
+├── commands/            # User commands with OPL namespace
+├── skills/              # Skill definitions with scripts
+└── hooks/               # Automation hooks
+```
 
-### `user/.claude/` Directory (For Distribution)
-- **Purpose**: Contains commands, agents, and hooks to be distributed to end users
-- **Example**: `user/.claude/commands/opl/mcp/install-magic.md` - users will copy this to their `~/.claude/`
-- **When to use**: Place ALL commands/agents/hooks here that users should have access to across their projects
-- **Contents**: 
-  - `commands/opl/` - OPL organization commands with category subdirectories
-  - `agents/` - Specialized AI sub-agents
-  - `hooks/` - Automation hooks for workflow enhancement
+### Installation
+This plugin is distributed via the Claude Code marketplace:
+```bash
+/plugin install bopen-tools@b-open-io
+```
 
-### Common Mistakes to Avoid
-- ❌ NEVER copy `.claude/` commands to user's `~/.claude/` directory
-- ❌ NEVER put general-purpose agents in `.claude/agents/` 
-- ❌ NEVER put user commands in `.claude/commands/`
-- ❌ NEVER put shareable hooks in `.claude/hooks/`
-- ✅ ALWAYS put distributable content in `user/.claude/`
-- ✅ ONLY put repo maintenance tools in `.claude/`
-- ✅ ONLY copy from `user/.claude/` to `~/.claude/`
+### Root-Level Directories
+- **`agents/`** - Specialized AI sub-agents
+- **`commands/`** - User commands with OPL namespace categories
+- **`skills/`** - Skill definitions with SKILL.md and scripts/
+- **`hooks/`** - Automation hooks
 
 ## Development Notes
 
@@ -172,7 +171,10 @@ Our specialized agents use a consistent color scheme for easy identification:
 
 ## Command Management
 
-Commands in this repository are organized under the OPL namespace and can be installed to your local Claude Code configuration using the repository management commands.
+Commands in this repository are organized under the OPL namespace and are automatically distributed via the plugin system. Users install commands by installing the plugin:
+```bash
+/plugin install bopen-tools@b-open-io
+```
 
 ## InitPRISM Integration
 
@@ -215,31 +217,6 @@ ls -la development/
 grep -r "shadcn" design/
 ```
 
-### Repository Maintenance Commands
-
-When working in this prompts repository, you have access to these management commands:
-
-#### Commands Management
-- `/opl:commands:help` - Show comprehensive help for repository management
-- `/opl:commands:init` - Initialize user commands (copy from `user/.claude/commands/opl/` to `~/.claude/commands/opl/`)
-- `/opl:commands:sync` - Synchronize commands between repository and user directory (pull/push/status)
-
-#### Agents Management  
-- `/opl:agents:init` - Install specialized agents to `~/.claude/agents/`
-  - First time setup copies all agents
-  - Use `--list` to preview, `--force` to overwrite
-- `/opl:agents:sync` - Update agents between repository and local
-  - Check status, pull updates, or contribute improvements back
-
-#### Hooks Management
-- `/opl:hooks:init` - Install automation hooks to `~/.claude/hooks/`
-- `/opl:hooks:sync` - Update hook definitions between repo and local
-
-#### Repository Help
-- `/opl:commands:help` - Get comprehensive help for repository management
-
-**Important**: These commands are only available when working in the prompts repository itself. They help maintain and distribute the OPL command ecosystem.
-
 ## Prompt Creation Guidelines
 
 When creating new prompts or commands:
@@ -253,10 +230,10 @@ When creating new prompts or commands:
 
 ### Content Organization
 - **Prompts** go in category directories (design/, development/, infrastructure/)
-- **User commands** go in `user/.claude/commands/opl/` with category subdirectories
-- **Repository commands** go in `.claude/commands/` (maintenance only)
-- **Agents** go in `user/.claude/agents/` for distribution
-- **Hooks** go in `user/.claude/hooks/` for automation
+- **Commands** go in root `commands/` with OPL namespace subdirectories
+- **Agents** go in root `agents/` directory
+- **Skills** go in root `skills/` directory
+- **Hooks** go in root `hooks/` directory
 
 ### Namespace Convention for Commands
 Commands use a three-part namespace to avoid conflicts:
@@ -307,8 +284,8 @@ this is a simple example, in reality you want to be as detailed as possible as e
 
 When developing in this prompts repository, leverage our specialized agents to enhance your workflow:
 
-### 🔵 Use the prompt-engineer agent for:
-- Creating new slash commands in `user/.claude/commands/`
+### Use the prompt-engineer agent for:
+- Creating new slash commands in root `commands/` directory
 - Editing existing command files
 - Developing prompt templates
 - Ensuring proper YAML frontmatter format
@@ -333,5 +310,3 @@ When editing files in this repository, especially command and prompt files, expl
 ```
 
 This ensures that commands follow our established patterns and maintain consistency across the OPL ecosystem.
-
-When you're done working make sure you edit the files in the prompts repo and THEN sync the local agents / hooks / commands / etc. not the other way around.
