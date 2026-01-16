@@ -89,6 +89,28 @@ Our 21 expert agents enhance Claude Code with specialized knowledge. See [user/.
 
 **Usage:** `"Use the [agent-name] to [specific task]"`
 
+## Skills
+
+Skills are context-triggered capabilities. They activate automatically or can be invoked directly.
+
+### X/Twitter
+- [x-reader](skills/x-reader/SKILL.md) - Fetch tweets, search X, get user timelines via X.com API v2 (requires `X_BEARER_TOKEN`)
+- [x-research](skills/x-research/SKILL.md) - Research X/Twitter trends and sentiment via xAI Grok (requires `XAI_API_KEY`)
+
+### Content & Media
+- [frontend-design](skills/frontend-design/SKILL.md) - Bold UI designs that avoid generic AI aesthetics
+- [ui-audio-theme](skills/ui-audio-theme/SKILL.md) - Generate cohesive UI sound effects
+- [cli-demo-gif](skills/cli-demo-gif/SKILL.md) - Create terminal demo GIFs for documentation
+
+### Development
+- [npm-publish](skills/npm-publish/SKILL.md) - Publish packages with changelog and version management
+- [dev-browser](skills/dev-browser/SKILL.md) - Browser automation for testing and research
+- [notebooklm](skills/notebooklm/SKILL.md) - Query Google NotebookLM for source-grounded answers
+
+### Integrations
+- [resend-integration](skills/resend-integration/SKILL.md) - Email with Resend Audiences and webhooks
+- [plaid-integration](skills/plaid-integration/SKILL.md) - Banking data via Plaid API
+
 ## Slash Commands
 
 Commands follow the format `/opl:category:command [arguments]`:
