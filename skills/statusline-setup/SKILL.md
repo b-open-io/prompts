@@ -1,7 +1,7 @@
 ---
 name: statusline-setup
 description: This skill should be used when the user asks to "create a status line", "customize status line", "set up statusline", "configure Claude Code status bar", "install ccstatusline", "add project colors to status line", "show git branch in status", "display token usage", or mentions Peacock colors, powerline, or status line configuration.
-version: 1.0.1
+version: 0.0.1
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
 ---
 
