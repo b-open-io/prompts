@@ -1,6 +1,6 @@
 #!/bin/bash
 # Get recent tweets from an X (Twitter) user using X.com API v2
-# Usage: ./user_tweets.sh "<handle>"
+# Usage: ./user_tweets.sh "<handle>" [max_results]
 
 set -e
 
@@ -10,20 +10,20 @@ MAX_RESULTS="${2:-10}"
 if [ -z "$HANDLE" ]; then
     echo "Usage: user_tweets.sh <handle> [max_results]"
     echo "Example: user_tweets.sh @jack 10"
-    echo "Example: user_tweets.sh elonmusk"
     exit 1
 fi
 
 if [ -z "$X_BEARER_TOKEN" ]; then
-    echo "Error: X_BEARER_TOKEN environment variable not set"
+    echo "Error: X_BEARER_TOKEN not set"
     echo "Get one at: https://developer.x.com/en/portal/dashboard"
+    echo "Docs: https://docs.x.com/llms.txt"
     exit 1
 fi
 
 # Remove @ prefix if present
 HANDLE="${HANDLE#@}"
 
-# First get the user ID from username
+# Get user ID from username
 USER_RESPONSE=$(curl -s "https://api.x.com/2/users/by/username/${HANDLE}" \
   -H "Authorization: Bearer $X_BEARER_TOKEN")
 

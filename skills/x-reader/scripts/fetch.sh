@@ -14,8 +14,9 @@ if [ -z "$INPUT" ]; then
 fi
 
 if [ -z "$X_BEARER_TOKEN" ]; then
-    echo "Error: X_BEARER_TOKEN environment variable not set"
+    echo "Error: X_BEARER_TOKEN not set"
     echo "Get one at: https://developer.x.com/en/portal/dashboard"
+    echo "Docs: https://docs.x.com/llms.txt"
     exit 1
 fi
 
@@ -23,7 +24,6 @@ fi
 if [[ "$INPUT" =~ ^[0-9]+$ ]]; then
     TWEET_ID="$INPUT"
 else
-    # Extract ID from URL (last numeric segment)
     TWEET_ID=$(echo "$INPUT" | grep -oE '[0-9]+$')
 fi
 

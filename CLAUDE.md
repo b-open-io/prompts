@@ -2,21 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
-## Version Management for Agents and Commands
+## Version Management for Agents, Commands, and Skills
 
-**IMPORTANT**: Use the SMALLEST version increment (patch) for almost all changes:
-- **Patch increment (x.y.Z)**: DEFAULT for ALL changes - bug fixes, new features, documentation, improvements
-- **Minor increment (x.Y.z)**: ONLY for major new capabilities or significant API additions
-- **Major increment (X.y.z)**: ONLY for breaking changes that require user migration
+**CRITICAL - READ THIS FIRST**: Only increment by +0.0.1 (patch) for virtually ALL changes.
 
-**Examples**:
-- Adding diagnostic commands: 3.0.0 → 3.0.1 (patch)
-- Fixing typos: 3.0.1 → 3.0.2 (patch)
-- Adding new sections: 3.0.2 → 3.0.3 (patch)
-- New database support: 3.0.3 → 3.0.4 (patch)
-- Complete rewrite with breaking changes: 3.0.4 → 4.0.0 (major only)
+### The Rule
+```
+ALWAYS: x.y.z → x.y.(z+1)    e.g., 2.0.0 → 2.0.1
+NEVER:  x.y.z → x.(y+1).0    unless explicitly told to
+NEVER:  x.y.z → (x+1).0.0    unless explicitly told to
+```
 
-**ALWAYS use patch increments unless absolutely necessary to use minor/major**
+### What Counts as Patch (+0.0.1)
+- Bug fixes
+- New features
+- Documentation updates
+- Adding new sections
+- Refactoring
+- Adding fallbacks
+- Improving error messages
+- ANY normal development work
+
+### What Counts as Minor (+0.1.0) - RARE
+- Complete API redesign (user explicitly requests)
+- Major architectural change (user explicitly requests)
+
+### What Counts as Major (+1.0.0) - EXTREMELY RARE
+- Breaking changes requiring user migration
+- Complete rewrite with incompatible interface
+
+**When in doubt, use +0.0.1. You almost certainly want +0.0.1.**
 
 ## Repository Overview
 

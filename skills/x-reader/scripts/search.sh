@@ -1,6 +1,6 @@
 #!/bin/bash
 # Search X (Twitter) for recent posts using X.com API v2
-# Usage: ./search.sh "<query>"
+# Usage: ./search.sh "<query>" [max_results]
 
 set -e
 
@@ -14,8 +14,9 @@ if [ -z "$QUERY" ]; then
 fi
 
 if [ -z "$X_BEARER_TOKEN" ]; then
-    echo "Error: X_BEARER_TOKEN environment variable not set"
+    echo "Error: X_BEARER_TOKEN not set"
     echo "Get one at: https://developer.x.com/en/portal/dashboard"
+    echo "Docs: https://docs.x.com/llms.txt"
     exit 1
 fi
 

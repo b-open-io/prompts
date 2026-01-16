@@ -1,6 +1,6 @@
 ---
 name: x-research
-version: 1.1.0
+version: 1.1.1
 description: This skill should be used when the user asks about "what's trending on X", "Twitter trends", "social sentiment", "what are people saying about", "X/Twitter research", "real-time social data", "Grok research", "search Twitter", "check X for", "breaking news", or needs current events, social insights, or undiscovered tools/frameworks. Uses xAI Grok API with agentic search tools for real-time intelligence from X/Twitter and web sources.
 allowed-tools: Bash(curl:*), Bash(jq:*)
 ---
@@ -271,6 +271,8 @@ New format (use this):
 
 ## References
 
+- **LLMs.txt (AI-optimized docs)**: https://docs.x.com/llms.txt
 - [xAI API Documentation](https://docs.x.ai)
 - [Search Tools Guide](https://docs.x.ai/docs/guides/tools/search-tools)
 - [Models Reference](https://docs.x.ai/docs/models)
+- [X.com API v2](https://developer.x.com/en/docs/x-api)
