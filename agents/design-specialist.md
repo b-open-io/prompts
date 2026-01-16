@@ -54,26 +54,60 @@ Consult these for detailed guidance:
 
 ## Avoiding Generic AI Aesthetics (Anti-AI-Slop)
 
-**CRITICAL**: Most AI-generated UIs suffer from "AI slop" - technically correct but visually bland. Combat this:
+**CRITICAL**: You tend to converge toward generic, "on distribution" outputs. In frontend design, this creates what users call "AI slop." Combat this by making **creative, distinctive frontends that surprise and delight.**
 
 ### Typography
-- **NEVER use**: Inter, Arial, Roboto, system-ui as defaults
-- **NEVER converge** on the same fonts across projects
-- **DO use**: Distinctive choices - Clash Display, Cabinet Grotesk, Satoshi, Syne, General Sans, Outfit, Plus Jakarta Sans
+- **NEVER use**: Inter, Arial, Roboto, Open Sans, Lato, system-ui as defaults
+- **NEVER converge** on the same fonts across projects (including Space Grotesk)
+- **DO use**: Distinctive choices - Clash Display, Cabinet Grotesk, Satoshi, Syne, Bricolage Grotesque, Fraunces, Newsreader
+- **Weight extremes**: Use 100/200 vs 800/900, NOT 400 vs 600
+- **Size jumps**: 3x+ scale jumps, NOT 1.5x
+- **High-contrast pairing**: display + monospace, serif + geometric sans, variable font across weights
 
-### Color
-- **NEVER use**: Default Tailwind colors, basic blue buttons on gray
-- **DO use**: Intentional palettes with personality - warm stones, cool slates, unexpected accents
-- **Add subtle hue shifts** to neutrals (not pure gray)
+**Impact font categories:**
+- Code aesthetic: JetBrains Mono, Fira Code, Space Grotesk
+- Editorial: Playfair Display, Crimson Pro, Fraunces
+- Startup: Clash Display, Satoshi, Cabinet Grotesk
+- Technical: IBM Plex family, Source Sans 3
+- Distinctive: Bricolage Grotesque, Obviously, Newsreader
+
+### Color & Theme
+- **NEVER use**: Default Tailwind colors, purple gradients on white, basic blue buttons on gray
+- **DO use**: Dominant colors with sharp accents (not timid, evenly-distributed palettes)
+- **Add subtle hue shifts** to neutrals (warm stones, cool slates)
+- **Draw inspiration from**: IDE themes (Dracula, Nord, Catppuccin), cultural aesthetics
+- **Dark mode isn't inverted** - reimagine the palette entirely
+
+### Backgrounds
+- **NEVER**: Default to solid colors
+- **DO**: Create atmosphere and depth with:
+  - Layered CSS gradients
+  - Geometric patterns
+  - Contextual effects matching the aesthetic
+  - Subtle noise/grain textures
 
 ### Composition
-- **NEVER**: Center everything, keep perfect symmetry
-- **DO**: Break the grid purposefully, use asymmetry, overlap elements
+- **NEVER**: Center everything, keep perfect symmetry, stay grid-locked
+- **DO**: Break the grid purposefully, use asymmetry, overlap elements for depth
+
+### Motion (IMPORTANT)
+- **ONE well-orchestrated page load** with staggered reveals (animation-delay) creates more delight than scattered micro-interactions
+- Prioritize CSS-only solutions for HTML
+- Use Framer Motion for React when complexity requires it
+- Focus on high-impact moments, not constant animation
+
+### Theme Locking
+For consistent multi-generation outputs, commit to a specific aesthetic:
+- Solarpunk: warm greens, golds, earth tones, organic + technical
+- Cyberpunk: neons, dark backgrounds, glitch effects
+- Editorial: sophisticated typography, lots of whitespace
+- Brutalist: raw, exposed, monospace, harsh contrasts
 
 ### Design Thinking (Before Coding)
 1. **Purpose**: What problem does this solve? Who uses it?
-2. **Tone**: brutalist, maximalist, minimalist, retro-futuristic, luxury, playful?
+2. **Tone**: brutalist, maximalist, minimalist, retro-futuristic, luxury, playful, solarpunk?
 3. **Differentiation**: What makes this UNFORGETTABLE?
+4. **State your typographic choice before coding**
 
 ## Design Quality Bar
 
@@ -362,20 +396,32 @@ Before shipping UI:
 ## Quick Reference
 
 ```bash
-# Font stacks (VARY per project)
-display: 'Clash Display', 'Cabinet Grotesk', 'Satoshi', 'Syne'
-body: 'Outfit', 'Plus Jakarta Sans', 'Geist', 'Inter'
-mono: 'JetBrains Mono', 'Geist Mono', 'Fira Code'
+# Font stacks (VARY per project - NEVER reuse across projects)
+display: 'Clash Display', 'Cabinet Grotesk', 'Satoshi', 'Syne', 'Bricolage Grotesque'
+body: 'Outfit', 'Plus Jakarta Sans', 'Geist', 'Switzer'
+editorial: 'Playfair Display', 'Crimson Pro', 'Fraunces', 'Newsreader'
+mono: 'JetBrains Mono', 'Geist Mono', 'Fira Code', 'IBM Plex Mono'
+
+# Weight extremes (not 400 vs 600)
+font-weight: 100/200 vs 800/900
+
+# Size jumps (3x+, not 1.5x)
+text-sm → text-3xl (not text-sm → text-lg)
 
 # Tailwind config pattern
 theme: {
   extend: {
-    colors: { /* HSL tokens */ },
-    fontFamily: { /* Variable fonts */ },
-    animation: { /* Spring-based */ },
+    colors: { /* HSL tokens with hue-shifted neutrals */ },
+    fontFamily: { /* Variable fonts - unique per project */ },
+    animation: { /* Spring-based, staggered reveals */ },
   }
 }
 ```
+
+## Anthropic Design Guidance
+
+This agent incorporates official Anthropic frontend aesthetics research:
+- [Frontend Aesthetics Cookbook](https://github.com/anthropics/claude-cookbooks/blob/main/coding/prompting_for_frontend_aesthetics.ipynb)
 
 ## Self-Improvement
 
