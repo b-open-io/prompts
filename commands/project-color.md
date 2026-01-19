@@ -1,6 +1,6 @@
 ---
-version: 1.0.1
-allowed-tools: Read, Write, Edit, Bash(jq:*), Bash(mkdir:*)
+version: 1.0.2
+allowed-tools: Read, Write, Edit, Bash
 description: Set VSCode project colors (like Peacock extension) with random, hex, or natural language color descriptions
 argument-hint: [color] | --help
 tags: design, vscode, peacock, colors, workspace
@@ -214,17 +214,14 @@ Calculate relative luminance: L = 0.2126*R + 0.7152*G + 0.0722*B
 
 ## Step 4: Create .vscode Directory
 
-Use Bash tool to ensure .vscode directory exists:
-```
-Bash(mkdir:-p .vscode)
+Use the Bash tool to ensure .vscode directory exists:
+```bash
+mkdir -p .vscode
 ```
 
 ## Step 5: Read Existing Settings
 
-Use Read tool to check for existing settings:
-```
-Read(file_path=".vscode/settings.json")
-```
+Use the Read tool to check for existing settings at `.vscode/settings.json`.
 
 If the file doesn't exist, treat it as an empty JSON object: {}
 
@@ -300,12 +297,10 @@ Cmd+Shift+P → "Developer: Reload Window"
 
 ## Important Notes
 
-- NEVER use `!` syntax - that's for hooks only
-- Always use proper tool calls: Bash(), Read(), Write(), Edit()
 - Handle missing jq gracefully - suggest installation if needed
 - Validate hex color format before processing
 - Preserve all existing VSCode settings when merging
-- Use absolute paths for temp files if needed
+- Use absolute paths for temp files (e.g., /tmp/)
 
 </instructions>
 
