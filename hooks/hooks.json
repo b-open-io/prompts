@@ -1,63 +1,24 @@
 {
-  "description": "Development workflow hooks for bopen-tools plugin",
+  "description": "Plugin hooks for tool validation and workflow enforcement",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "FILE_PATH=$(cat | jq -r '.tool_input.file_path // .tool_input.path // empty'); if echo \"$FILE_PATH\" | grep -E '\\.(env|env\\.local|env\\.production|env\\.staging)$' >/dev/null; then echo 'Protected file: This appears to be an environment configuration file with potential secrets.' >&2 && echo 'If you really need to edit this file, please confirm in the UI.' >&2 && exit 2; fi"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit|MultiEdit|write_file|replace",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "FILE_PATH=$(cat | jq -r '.tool_input.file_path // .tool_input.path // empty'); if echo \"$FILE_PATH\" | grep -q 'components/ui/'; then echo 'Protected Path: shadcn/ui components should not be edited manually.' >&2; exit 2; fi"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "git add -A",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/bouncer.sh",
             "timeout": 5
           }
         ]
       },
       {
-        "matcher": "Edit|Write",
+        "matcher": "WebSearch|WebFetch",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/lint-on-save.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "FILE_PATH=$(cat | jq -r '.tool_input.file_path // .tool_input.path // empty'); if echo \"$FILE_PATH\" | grep -E '\\.(test|spec)\\.(js|jsx|ts|tsx)$|\\.(js|jsx|ts|tsx)$' >/dev/null; then (bun test --findRelatedTests \"$FILE_PATH\" 2>/dev/null || true) & fi",
-            "timeout": 30
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "if git status -s | grep -q .; then echo 'Uncommitted changes detected:' && git status -s && echo '' && echo 'Consider committing these changes.'; fi"
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/agent-browser-solo.sh",
+            "timeout": 5
           }
         ]
       }
