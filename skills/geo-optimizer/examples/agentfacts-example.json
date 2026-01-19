@@ -1,0 +1,53 @@
+{
+  "@context": "https://nanda.dev/ns/agent-facts/v1",
+  "id": "nanda:myapp.example.com",
+  "agent_name": "urn:agent:myapp:example:com",
+  "version": "1.0.0",
+  "description": "Project management platform with AI-powered task automation",
+  "homepage": "https://myapp.example.com",
+  "documentation": "https://docs.myapp.example.com",
+
+  "endpoints": {
+    "static": [
+      "https://api.myapp.example.com/v1/agent",
+      "https://api.myapp.example.com/v2/agent"
+    ],
+    "adaptive_resolver": {
+      "url": "https://resolver.myapp.example.com/dispatch",
+      "policies": ["geo", "load"]
+    }
+  },
+
+  "capabilities": {
+    "modalities": ["text", "code"],
+    "operations": ["query", "create", "update"],
+    "domains": ["project-management", "task-automation", "collaboration"],
+    "languages": ["en", "es", "fr"],
+    "authentication": {
+      "methods": ["oauth2", "jwt"],
+      "scopes": ["read:projects", "write:tasks", "read:users"]
+    },
+    "rate_limits": {
+      "requests_per_minute": 60,
+      "requests_per_day": 10000
+    }
+  },
+
+  "trust": {
+    "certification": "self-attested",
+    "human_oversight": "true",
+    "privacy_policy": "https://myapp.example.com/privacy",
+    "terms_of_service": "https://myapp.example.com/terms"
+  },
+
+  "contact": {
+    "email": "ai-support@myapp.example.com",
+    "abuse": "abuse@myapp.example.com"
+  },
+
+  "metadata": {
+    "created": "2024-01-15T00:00:00Z",
+    "modified": "2025-06-20T00:00:00Z",
+    "ttl": 86400
+  }
+}
