@@ -72,7 +72,6 @@ Skills are context-triggered capabilities. They activate automatically or can be
 
 ### Development
 - [npm-publish](skills/npm-publish/SKILL.md) - Publish packages with changelog and version management
-- [dev-browser](skills/dev-browser/SKILL.md) - Browser automation for testing and research
 - [notebooklm](skills/notebooklm/SKILL.md) - Query Google NotebookLM for source-grounded answers
 - [hook-manager](user/.claude/skills/hook-manager/SKILL.md) - Discover and install automation hooks
 
