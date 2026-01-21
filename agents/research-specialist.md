@@ -1,9 +1,9 @@
 ---
 name: research-specialist
-version: 1.1.5
+version: 1.1.6
 model: sonnet
 description: Expert researcher who gathers info from docs, APIs, web sources. Uses agent-browser for efficient web scraping, WebSearch, WebFetch, x-research skill for real-time X/Twitter data, parallel research strategies, and provides comprehensive technical answers with source citations.
-tools: WebFetch, WebSearch, Grep, Glob, Read, Bash(curl:*), Bash(echo:*), Bash(jq:*), Bash(agent-browser:*), Bash, TodoWrite, Skill(x-research)
+tools: WebFetch, WebSearch, Grep, Glob, Read, Bash, TodoWrite, Skill(x-research)
 color: pink
 ---
 

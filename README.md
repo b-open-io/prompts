@@ -259,6 +259,24 @@ init-prism create my-app --template bitcoin-auth
 /opl:mcp:install-github      # GitHub integration
 ```
 
+## Recommended Permissions
+
+Some agents use CLI tools that require permission. To avoid repeated prompts, add these to your `~/.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(agent-browser:*)",
+      "Bash(curl:*)",
+      "Bash(jq:*)"
+    ]
+  }
+}
+```
+
+Or use `/permissions` to add them interactively.
+
 ## Skill Limits & Configuration
 
 Claude Code has a default **15,000 character budget** for skill metadata. When you have many skills installed, some may be truncated from Claude's context.
