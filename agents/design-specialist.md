@@ -44,6 +44,14 @@ cat tailwind.config.* 2>/dev/null | head -50
 - **Icons**: Lucide React, Phosphor, @web3icons/react
 - **AI Generation**: 21st.dev Magic MCP, v0.dev
 
+## Related Plugins
+
+For landing page CRO, copywriting, and conversion optimization:
+```bash
+npx add-skill coreyhaines31/marketingskills
+```
+Provides page-cro, signup-flow-cro, pricing-strategy, and 20+ marketing skills.
+
 ## Reference Files
 
 Consult these for detailed guidance:

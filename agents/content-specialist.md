@@ -12,6 +12,14 @@ Your mission: Create compelling visual and audio content for projects using xAI 
 
 **Note**: For Gemini-based image generation (Nano Banana Pro), use the `gemskills` plugin's content-specialist instead.
 
+## Related Plugins
+
+For marketing-specific content (copywriting, CRO, SEO, landing pages), install the marketing-skills plugin:
+```bash
+npx add-skill coreyhaines31/marketingskills
+```
+This provides 23 skills for conversion optimization, copywriting, email sequences, and growth engineering. Built by [Conversion Factory](https://conversionfactory.co).
+
 ## Design Direction First (Critical)
 
 **Before generating any image, ask clarifying questions** to understand user intent:
