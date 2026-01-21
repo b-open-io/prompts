@@ -10,49 +10,17 @@ This repository provides:
 - **Automation Hooks** - Background workflows to enhance development
 - **Powerful Prompts** - Reusable templates for complex operations
 
-## Quick Start
+## Installation
 
-### Option 1: Install Skills (Recommended)
-
-Works with Claude Code, Cursor, Codex, and other AI coding agents:
-
+**Full Plugin** (recommended - includes 18 agents, 10 hooks, commands):
 ```bash
-npx add-skill b-open-io/prompts
-```
-
-### Option 2: Full Plugin Install
-
-Via Claude Code marketplace:
-
-```bash
-/plugin marketplace add b-open-io/claude-plugins
 /plugin install bopen-tools@b-open-io
 ```
 
-### Option 3: Clone & Sync (Advanced)
-
+**Skills Only** (for other agentic frameworks):
 ```bash
-# 1. Clone this repository
-git clone https://github.com/b-open-io/prompts.git
-cd prompts
-
-# 2. Launch Claude Code in this repo
-claude
-
-# 3. Run the sync commands to install everything
-/opl:agents:sync
-/opl:commands:sync
-/opl:hooks:sync
-
-# That's it! All agents, commands, and hooks are now installed.
+skills add b-open-io/bopen-tools
 ```
-
-**Advanced sync options:**
-- Add `--auto` to auto-resolve to newest versions
-- Add `--repo` to pull all from repository  
-- Add `--local` to push all to repository
-- Add `--merge` to combine changes intelligently
-- Default is interactive mode for full control
 
 ## Specialized AI Agents
 
@@ -66,7 +34,7 @@ Our 21 expert agents enhance Claude Code with specialized knowledge. See [user/.
 - 🧪 [**test-specialist**](user/.claude/agents/test-specialist.md) - Comprehensive testing strategies
 - 🧹 [**consolidator**](user/.claude/agents/consolidator.md) - System organization and cleanup
 
-### Platform & Infrastructure  
+### Platform & Infrastructure
 - 🟠 [**devops-specialist**](user/.claude/agents/devops-specialist.md) - Deployment automation and cloud infrastructure
 - 🟢 [**database-specialist**](user/.claude/agents/database-specialist.md) - Database design, optimization, and data modeling
 - 📱 [**mobile-specialist**](user/.claude/agents/mobile-specialist.md) - React Native, Swift, Kotlin, and Flutter development
@@ -106,6 +74,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 - [npm-publish](skills/npm-publish/SKILL.md) - Publish packages with changelog and version management
 - [dev-browser](skills/dev-browser/SKILL.md) - Browser automation for testing and research
 - [notebooklm](skills/notebooklm/SKILL.md) - Query Google NotebookLM for source-grounded answers
+- [hook-manager](user/.claude/skills/hook-manager/SKILL.md) - Discover and install automation hooks
 
 ### Integrations
 - [resend-integration](skills/resend-integration/SKILL.md) - Email with Resend Audiences and webhooks
@@ -117,7 +86,7 @@ Commands follow the format `/opl:category:command [arguments]`:
 
 ### 🛠️ Development (`dev`)
 - `/opl:dev:lint` - Run linting and fix code quality issues
-- `/opl:dev:enhance` - Improve code with AI assistance  
+- `/opl:dev:enhance` - Improve code with AI assistance
 - `/opl:dev:create-prompt` - Create new prompt templates
 - `/opl:dev:update-prompt` - Update existing prompts
 
@@ -125,7 +94,7 @@ Commands follow the format `/opl:category:command [arguments]`:
 - `/opl:design:design` - Get AI-powered design assistance
 - `/opl:design:ai-inspiration` - Generate design inspiration and concepts
 
-### 📚 Documentation (`docs`) 
+### 📚 Documentation (`docs`)
 - `/opl:docs:prd` - Create Product Requirements Documents
 - `/opl:docs:prd-enhanced` - Enhanced PRD with detailed analysis
 - `/opl:docs:check` - Validate and improve documentation
@@ -139,7 +108,7 @@ Commands follow the format `/opl:category:command [arguments]`:
 
 ### 🔌 MCP Servers (`mcp`)
 - `/opl:mcp:install-magic` - Install 21st.dev Magic MCP server
-- `/opl:mcp:install-playwright` - Install Playwright testing MCP server  
+- `/opl:mcp:install-playwright` - Install Playwright testing MCP server
 - `/opl:mcp:install-github` - Install GitHub MCP server
 
 ### 🔧 Utilities (`utils`)
@@ -148,13 +117,24 @@ Commands follow the format `/opl:category:command [arguments]`:
 
 ## Automation Hooks
 
-Hooks run automatically to enhance your workflow:
+Hooks are opt-in automation that runs in the background. Use the `hook-manager` skill or install manually:
 
-- **time-dir-context** - Adds timestamp and directory to every prompt
-- **auto-git-add** - Auto-stages changed files
-- **uncommitted-reminder** - Reminds about uncommitted changes
-- **protect-env-files** - Prevents accidental .env modifications
-- **auto-test-on-save** - Runs tests when files change
+| Hook | Description |
+|------|-------------|
+| `protect-env-files` | Blocks edits to .env files (security - recommended) |
+| `uncommitted-reminder` | Shows uncommitted changes when Claude stops |
+| `auto-git-add` | Auto-stages files after edits |
+| `time-dir-context` | Adds timestamp/dir/branch to prompts |
+| `lint-on-save` | Runs lint:fix after file edits |
+| `lint-on-start` | Runs linting on session start |
+| `auto-test-on-save` | Runs tests after file edits |
+| `protect-shadcn-components` | Protects shadcn UI components |
+
+**Install a hook:**
+```bash
+mkdir -p ~/.claude/hooks
+cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.claude/hooks/
+```
 
 ## Custom Statusline
 
@@ -322,4 +302,3 @@ When adding new content:
 3. **Hooks** go in `user/.claude/hooks/`
 4. Use the prompt-engineer agent for creating commands
 5. Test thoroughly before committing
-

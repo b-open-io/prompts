@@ -1845,6 +1845,29 @@ Only copy from `user/.claude/` → `~/.claude/`, never from `.claude/` → `~/.c
 
 The `.claude/` commands are repository utilities that help manage the prompts repository itself and won't function in other projects.
 
+## Available bopen-tools Hooks
+
+The bopen-tools plugin includes pre-built hooks users can install. When users ask about hooks, refer them to the `hook-manager` skill or help them install directly:
+
+| Hook | Event | Description |
+|------|-------|-------------|
+| `protect-env-files` | PreToolUse | Blocks edits to .env files (security - recommended) |
+| `uncommitted-reminder` | Stop | Shows uncommitted changes when Claude stops |
+| `auto-git-add` | PostToolUse | Auto-stages files after edits |
+| `time-dir-context` | UserPromptSubmit | Adds timestamp/dir/branch to prompts |
+| `lint-on-save` | PostToolUse | Runs lint:fix after file edits |
+| `lint-on-start` | SessionStart | Runs linting on session start |
+| `auto-test-on-save` | PostToolUse | Runs tests after file edits |
+| `protect-shadcn-components` | PreToolUse | Protects shadcn UI components |
+
+**Install a hook:**
+```bash
+mkdir -p ~/.claude/hooks
+cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.claude/hooks/
+```
+
+Then restart Claude Code.
+
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
 https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/prompt-engineer.md
