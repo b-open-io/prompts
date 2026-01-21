@@ -22,7 +22,7 @@ try:
     requests = _requests
     BeautifulSoup = _BeautifulSoup
 except ImportError:
-    pass  # URL fetching won't work, but text/file analysis will
+    pass  # Will auto-install if URL mode is used
 
 
 # Hedge patterns with categories
@@ -59,8 +59,15 @@ HEDGE_PATTERNS = {
 
 def fetch_text_from_url(url: str) -> str:
     """Fetch and extract text from a URL."""
+    global requests, BeautifulSoup
     if requests is None or BeautifulSoup is None:
-        raise ImportError("URL fetching requires: pip install requests beautifulsoup4")
+        import subprocess
+        print("Installing required packages...", file=sys.stderr)
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "requests", "beautifulsoup4"])
+        import requests as _requests
+        from bs4 import BeautifulSoup as _BeautifulSoup
+        requests = _requests
+        BeautifulSoup = _BeautifulSoup
 
     headers = {
         "User-Agent": "Mozilla/5.0 (compatible; HedgeAnalyzer/1.0)",

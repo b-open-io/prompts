@@ -19,8 +19,11 @@ try:
     import requests
     from bs4 import BeautifulSoup
 except ImportError:
-    print("Required packages: pip install requests beautifulsoup4")
-    sys.exit(1)
+    import subprocess
+    print("Installing required packages...", file=sys.stderr)
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "requests", "beautifulsoup4"])
+    import requests
+    from bs4 import BeautifulSoup
 
 
 # Hedge words for confidence analysis

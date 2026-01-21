@@ -16,7 +16,7 @@ from datetime import datetime
 try:
     import requests
 except ImportError:
-    requests = None
+    requests = None  # Will auto-install if validation is used
 
 
 def generate_agent_facts(
@@ -91,9 +91,14 @@ def validate_agent_facts(url_or_schema) -> dict:
     warnings = []
 
     # Fetch if URL
+    global requests
     if isinstance(url_or_schema, str) and url_or_schema.startswith("http"):
         if requests is None:
-            return {"valid": False, "errors": ["requests library not installed"]}
+            import subprocess
+            print("Installing required packages...", file=sys.stderr)
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "requests"])
+            import requests as _requests
+            requests = _requests
 
         try:
             response = requests.get(url_or_schema, timeout=10)

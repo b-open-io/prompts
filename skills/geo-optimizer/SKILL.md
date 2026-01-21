@@ -22,7 +22,7 @@ GEO is NOT traditional SEO. AI search engines (ChatGPT, Perplexity, Claude, Gemi
 ### 1. Technical Visibility Check
 ```bash
 # Run full GEO audit
-python ${CLAUDE_SKILL_DIR}/scripts/audit-geo.py https://example.com
+python3 ${CLAUDE_SKILL_DIR}/scripts/audit-geo.py https://example.com
 
 # Check HTML size and JS dependency
 curl -sI https://example.com | grep -i content-length
@@ -31,16 +31,16 @@ curl -sI https://example.com | grep -i content-length
 ### 2. Content Authority Analysis
 ```bash
 # Check hedge density of your content
-python ${CLAUDE_SKILL_DIR}/scripts/check-hedge-density.py --url https://example.com/blog/post
+python3 ${CLAUDE_SKILL_DIR}/scripts/check-hedge-density.py --url https://example.com/blog/post
 
 # Or analyze text directly
-python ${CLAUDE_SKILL_DIR}/scripts/check-hedge-density.py --text "Your content here"
+python3 ${CLAUDE_SKILL_DIR}/scripts/check-hedge-density.py --text "Your content here"
 ```
 
 ### 3. Agent Infrastructure Setup
 ```bash
 # Generate AgentFacts schema for your domain
-python ${CLAUDE_SKILL_DIR}/scripts/generate-agentfacts.py \
+python3 ${CLAUDE_SKILL_DIR}/scripts/generate-agentfacts.py \
   --domain example.com \
   --agent-name "Example Service" \
   --capabilities text,image \
@@ -160,13 +160,13 @@ A complete GEO audit covers:
 
 ```bash
 # Full audit with report
-python ${CLAUDE_SKILL_DIR}/scripts/audit-geo.py https://mysite.com --output report.md
+python3 ${CLAUDE_SKILL_DIR}/scripts/audit-geo.py https://mysite.com --output report.md
 
 # Quick hedge check
-python ${CLAUDE_SKILL_DIR}/scripts/check-hedge-density.py --url https://mysite.com/about
+python3 ${CLAUDE_SKILL_DIR}/scripts/check-hedge-density.py --url https://mysite.com/about
 
 # Generate AgentFacts for SaaS
-python ${CLAUDE_SKILL_DIR}/scripts/generate-agentfacts.py \
+python3 ${CLAUDE_SKILL_DIR}/scripts/generate-agentfacts.py \
   --domain myapp.com \
   --agent-name "MyApp AI" \
   --capabilities text \
