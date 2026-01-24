@@ -176,6 +176,27 @@ Our specialized agents use a consistent color scheme for easy identification:
 - **Vercel CLI**: Deployment platform for frontend applications
 - **Railway CLI**: Backend deployment and database hosting
 - **Cloudflare CLI (Wrangler)**: CDN, DNS, and edge services
+- **critique**: Beautiful terminal/web UI for reviewing git diffs (requires Bun)
+
+### Showing Users Code Changes with Critique
+
+When users ask to see what changed, use `critique` to display diffs. Since the TUI is hidden inside Bash tool calls, use one of these visible approaches:
+
+```bash
+# Split pane (macOS/iTerm2) - opens TUI in split, auto-closes on quit
+/path/to/skills/critique/scripts/open-critique-pane.sh "$PWD" -h
+
+# Web preview - opens in browser (cross-platform)
+bunx critique --web --open
+
+# AI-explained review
+bunx critique review --agent claude --web --open
+
+# Compare branches (PR-style)
+bunx critique main HEAD --web --open
+```
+
+Prefer the split pane script for the best TUI experience on macOS, or `--web --open` for cross-platform.
 
 ### Our Projects (Referenced in Prompts)
 - **BigBlocks**: Bitcoin component library
