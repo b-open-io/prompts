@@ -18,12 +18,13 @@ Use this skill when the user asks to:
 
 ## Process Overview
 
-The deck creation process follows 4 phases:
+The deck creation process follows 5 phases:
 
 1. **Discovery** - Gather context, examples, and references
 2. **Theme** - Establish visual style and color palette
 3. **Copy** - Plan and write slide content using marketing principles
 4. **Generation** - Create all slides in parallel with consistent style
+5. **Assembly** - Optimize images and stitch into PDF
 
 ## Phase 1: Discovery
 
@@ -224,16 +225,62 @@ Each agent receives:
 After all slides are generated:
 
 1. **Verify Files** - Check all slides exist at correct paths
-2. **Create Index** - Generate DECK-INDEX.md with slide inventory
-3. **Provide Summary** - List all slides with file paths
+2. **Optimize Images** - Run optimization to reduce file sizes:
+   ```bash
+   # Use the optimize-images skill on the slides directory
+   /optimize-images ./slides
+   ```
+3. **Stitch PDF** - Combine slides into single PDF:
+   ```bash
+   # Use kebab-case filename derived from deck title
+   # Example: "Scribe Product Overview" → deck-scribe-product-overview.pdf
+   bun run ~/code/prompts/skills/deck-creator/scripts/stitch-to-pdf.ts ./slides ./deck-{title-in-kebab-case}.pdf
+   ```
+4. **Create Index** - Generate DECK-INDEX.md with slide inventory + PDF path
+5. **Provide Summary** - List all slides with file paths and PDF location
+
+## Phase 5: PDF Assembly
+
+After all slides are generated, optimized, and verified, combine them into a single PDF:
+
+### Prerequisites
+
+Ensure `pdf-lib` is available:
+```bash
+bun add pdf-lib
+```
+
+### Run the Stitch Script
+
+```bash
+# Derive filename from deck title using kebab-case with "deck-" prefix
+# Examples:
+#   "Investor Pitch 2024" → deck-investor-pitch-2024.pdf
+#   "Scribe Product Overview" → deck-scribe-product-overview.pdf
+bun run ~/code/prompts/skills/deck-creator/scripts/stitch-to-pdf.ts ./slides ./deck-{title}.pdf
+```
+
+The script will:
+- Find all PNG files in the slides directory
+- Sort them by numeric prefix (01-, 02-, etc.)
+- Embed each as a full-page image in the PDF
+- Create a PDF with pages sized to match slide dimensions (1920x1080)
+
+### Verification
+
+After stitching:
+- Open the PDF and verify all slides are present
+- Check correct order (should match numeric prefixes)
+- Confirm full resolution with no quality loss
 
 ## Output Structure
 
 ```
 project/deck/
-├── THEME.md           # Visual style definition
-├── DECK-PLAN.md       # Content planning document
-├── DECK-INDEX.md      # Final deck inventory
+├── THEME.md                        # Visual style definition
+├── DECK-PLAN.md                    # Content planning document
+├── DECK-INDEX.md                   # Final deck inventory
+├── deck-{title-kebab-case}.pdf     # Combined presentation PDF
 └── slides/
     ├── 01-title.png
     ├── 02-problem.png
@@ -241,6 +288,8 @@ project/deck/
     ...
     └── 14-closing.png
 ```
+
+**PDF Naming**: Derive from deck title, kebab-case, prefixed with `deck-`. Example: "Q1 Sales Review" → `deck-q1-sales-review.pdf`
 
 ## Slide Type Templates
 
