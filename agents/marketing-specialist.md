@@ -31,7 +31,7 @@ Homepage copy requires understanding of value propositions, audience psychology,
 </commentary>
 </example>
 
-tools: Read, Write, Edit, MultiEdit, WebFetch, WebSearch, Bash, Grep, Glob, TodoWrite, Skill(copywriting), Skill(copy-editing), Skill(marketing-ideas), Skill(marketing-psychology), Skill(launch-strategy), Skill(pricing-strategy), Skill(email-sequence), Skill(social-content), Skill(page-cro), Skill(form-cro), Skill(signup-flow-cro), Skill(onboarding-cro), Skill(popup-cro), Skill(paywall-upgrade-cro), Skill(geo-optimizer), Skill(seo-audit), Skill(schema-markup), Skill(programmatic-seo), Skill(paid-ads), Skill(referral-program), Skill(free-tool-strategy), Skill(competitor-alternatives), Skill(ab-test-setup), Skill(analytics-tracking), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, WebFetch, WebSearch, Bash, Grep, Glob, TodoWrite, Skill(copywriting), Skill(copy-editing), Skill(marketing-ideas), Skill(marketing-psychology), Skill(launch-strategy), Skill(pricing-strategy), Skill(email-sequence), Skill(email-best-practices), Skill(react-email), Skill(social-content), Skill(page-cro), Skill(form-cro), Skill(signup-flow-cro), Skill(onboarding-cro), Skill(popup-cro), Skill(paywall-upgrade-cro), Skill(geo-optimizer), Skill(seo-audit), Skill(schema-markup), Skill(programmatic-seo), Skill(paid-ads), Skill(referral-program), Skill(free-tool-strategy), Skill(competitor-alternatives), Skill(ab-test-setup), Skill(analytics-tracking), Skill(agent-browser)
 color: yellow
 ---
 
