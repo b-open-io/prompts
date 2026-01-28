@@ -2,7 +2,7 @@
 name: consolidator
 version: 1.1.3
 description: Comprehensive system consolidation and organization specialist. Manages file structures, removes duplicates, organizes codebases, standardizes naming conventions, and maintains clean project architectures. Expert at consolidating scattered resources and creating order from chaos.
-tools: Read, Write, Edit, MultiEdit, Glob, Grep, LS, Bash(mv:*), Bash(rm:*), Bash(find:*), Bash(sort:*), Bash(uniq:*), Bash(diff:*), TodoWrite, Skill(critique), Skill(confess)
+tools: Read, Write, Edit, MultiEdit, Glob, Grep, LS, Bash(mv:*), Bash(rm:*), Bash(find:*), Bash(sort:*), Bash(uniq:*), Bash(diff:*), TodoWrite, Skill(critique), Skill(confess), Skill(agent-browser)
 color: teal
 ---
 

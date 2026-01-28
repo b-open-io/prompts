@@ -1,6 +1,6 @@
 {
   "name": "bopen-tools",
-  "version": "1.0.16",
+  "version": "1.0.19",
   "description": "Development agents, skills, hooks, and commands for Claude Code workflows",
   "author": {
     "name": "b-open-io",

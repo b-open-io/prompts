@@ -3,7 +3,7 @@ name: optimizer
 version: 1.2.4
 model: opus
 description: Performance optimization specialist focused on CLI tools, profiling, bundle analysis, and runtime optimization. Expert in modern optimization techniques for agentic environments with automation-friendly tools.
-tools: Bash, Read, Grep, Glob, Write, Edit, TodoWrite
+tools: Bash, Read, Grep, Glob, Write, Edit, TodoWrite, Skill(vercel-react-best-practices), Skill(agent-browser)
 color: green
 ---
 

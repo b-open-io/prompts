@@ -2,7 +2,7 @@
 name: devops-specialist
 version: 1.1.3
 description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(agent-browser)
 color: orange
 ---
 

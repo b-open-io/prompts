@@ -2,7 +2,7 @@
 name: legal-specialist
 version: 1.1.2
 description: Expert in legal compliance, privacy regulations, terms of service, and data protection
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(agent-browser)
 model: opus
 color: red
 ---

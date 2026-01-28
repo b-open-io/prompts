@@ -2,7 +2,7 @@
 name: nextjs-specialist
 version: 1.0.0
 description: Expert in Next.js and React development with Vercel best practices, Turbopack, async APIs, React 19, and modern tooling (Bun, Biome)
-tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(vercel-react-best-practices)
+tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(vercel-react-best-practices), Skill(agent-browser)
 color: blue
 model: sonnet
 emoji: ⚡

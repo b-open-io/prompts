@@ -3,7 +3,7 @@ name: documentation-writer
 version: 1.1.3
 model: sonnet
 description: Technical writer expert in developer docs. Creates READMEs, API docs, PRDs, guides. Uses Shape Up & Amazon Working Backwards for PRDs. Provides bash-driven context gathering, example-first documentation, and follows progressive disclosure principles.
-tools: Read, Write, Edit, MultiEdit, Grep, WebFetch, TodoWrite
+tools: Read, Write, Edit, MultiEdit, Grep, WebFetch, TodoWrite, Skill(cli-demo-gif), Skill(stop-slop), Skill(agent-browser)
 color: cyan
 ---
 

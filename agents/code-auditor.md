@@ -3,7 +3,7 @@ name: code-auditor
 version: 1.2.5
 model: opus
 description: Senior security engineer performing comprehensive code audits. Identifies vulnerabilities, ensures quality, prevents breaches. Uses git diff, security patterns, xAI/Grok for complex reviews. Provides structured reports with severity levels and specific fixes.
-tools: Read, Grep, Glob, Bash, Git, Bash(curl:*), Bash(jq:*), TodoWrite, Skill(critique), Skill(confess)
+tools: Read, Grep, Glob, Bash, Git, Bash(curl:*), Bash(jq:*), TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser)
 color: red
 ---
 

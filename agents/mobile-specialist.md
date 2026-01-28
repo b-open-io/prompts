@@ -2,7 +2,7 @@
 name: mobile-specialist
 version: 1.1.3
 description: Expert in mobile app development for React Native, Swift, Kotlin, and Flutter
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(vercel-react-native-skills), Skill(agent-browser)
 model: sonnet
 color: purple
 ---

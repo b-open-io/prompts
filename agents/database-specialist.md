@@ -2,7 +2,7 @@
 name: database-specialist
 version: 1.2.6
 description: Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(agent-browser)
 color: green
 model: opus
 ---

@@ -3,7 +3,7 @@ name: data-specialist
 version: 1.1.4
 model: sonnet
 description: Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(agent-browser)
 color: cyan
 ---
 
