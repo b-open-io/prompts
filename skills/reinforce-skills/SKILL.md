@@ -1,6 +1,6 @@
 ---
 name: reinforce-skills
-description: "This skill should be used when the user asks to 'reinforce skills', 'add skill map', 'update skill map', 'sync skills to CLAUDE.md', 'I keep forgetting skills', 'embed skills', or when setting up a new project where installed skills should be persisted as context. Generates a compressed skill-mapping directive in CLAUDE.md following the Vercel AGENTS.md research pattern."
+description: "This skill should be used when the user asks to 'reinforce skills', 'add skill map', 'update skill map', 'sync skills to CLAUDE.md', 'persist skills', 'save skills to project', 'embed skills', 'skills keep getting forgotten', 'I keep forgetting skills', or when setting up a new project where installed skills should be persisted as context. Generates a compressed skill-mapping directive in CLAUDE.md following the Vercel AGENTS.md research pattern."
 ---
 
 # Reinforce Skills
@@ -44,28 +44,28 @@ Single-line, pipe-delimited block wrapped in HTML comments. Opens with a forcefu
 - Arrow `→` maps trigger to skill invocation
 - HTML comment markers `SKILL-MAP-START` / `SKILL-MAP-END` enable programmatic updates
 - Opening directive must be forceful and imperative
-- Use exact skill names from `npx skills list` or the Skill tool's available list
+- Use exact skill names as listed in the Skill tool's available skills (shown in system-reminder messages)
 - Wildcard syntax `Skill(namespace:*)` for skill families (e.g., `bsv-skills:*`)
 
 ## Workflow
 
 ### Step 1: Inventory available skills
 
-```bash
-# User-installed skills (global)
-ls ~/.claude/skills/
+Two authoritative sources for installed skills:
 
-# All skills including plugin skills
-# Check the Skill tool's available skills list in the system prompt
-# Both sources may contain relevant skills
-```
+1. **System-reminder skill list** — The Skill tool's available skills appear in system-reminder messages at conversation start. This is the definitive list of all skills including plugin skills.
+2. **Global skills directory** — `ls ~/.claude/skills/` shows user-installed skills (subset of the full list).
+
+Cross-reference both sources.
 
 ### Step 2: Identify project-relevant skills
 
 1. **Read CLAUDE.md** — Identify tech stack, frameworks, tools
-2. **Check package.json** — Map dependencies to skills (e.g., `better-auth` → `better-auth-best-practices`, `ai` → `ai-sdk`, `tauri` → `tauri-v2`)
+2. **Check package.json / go.mod / Cargo.toml** — Map dependencies to skills (e.g., `better-auth` → `better-auth-best-practices`, `ai` → `ai-sdk`, `remotion` → `remotion-best-practices`)
 3. **Scan recent git history** — Identify recurring work patterns
 4. **Check conversation history** — Look for past `Skill()` invocations if available
+
+For a comprehensive trigger-to-skill mapping table, consult **`references/common-mappings.md`**.
 
 ### Step 3: Next.js codemod (conditional)
 
@@ -77,43 +77,29 @@ npx @next/codemod@canary agents-md --version <version-from-package.json> --outpu
 
 This creates a separate compressed Next.js docs index in AGENTS.md. The skill map is independent and goes in CLAUDE.md.
 
-If the project does not use Next.js, skip this step. The skill map technique works identically without the codemod — the codemod only handles Next.js framework documentation.
+If the project does not use Next.js, skip this step entirely.
 
 ### Step 4: Build the skill map
 
-Construct the compressed directive. Only include skills relevant to the project's stack.
-
-Common mappings reference table:
-
-| Trigger | Skill |
-|---------|-------|
-| dependency-updates | find-skills |
-| ai-sdk-work | ai-sdk |
-| code-cleanup | code-simplifier |
-| post-implementation | confess |
-| debugging | superpowers:systematic-debugging |
-| planning | superpowers:writing-plans |
-| execution | superpowers:executing-plans |
-| parallel-work | superpowers:dispatching-parallel-agents |
-| npm-publish | npm-publish |
-| react-patterns | vercel-react-best-practices |
-| composition | vercel-composition-patterns |
-| frontend-ui | frontend-design |
-| web-design | web-design-guidelines |
-| brainstorming | superpowers:brainstorming |
-| code-review | superpowers:requesting-code-review |
-| auth-setup | sigma-auth:setup |
-| better-auth | better-auth-best-practices |
-| bitcoin-auth | bitcoin-auth-diagnostics |
-| bsv-work | bsv-skills:* |
-| tauri-desktop | tauri-v2 |
-| tauri-events | tauri-event-system |
-| tauri-testing | testing-tauri-apps |
-| resend-email | resend-integration |
+Construct the compressed directive. Only include skills relevant to the project's stack. Refer to **`references/common-mappings.md`** for the full trigger-to-skill reference table.
 
 ### Step 5: Inject into CLAUDE.md
 
-Place the skill map near the top of CLAUDE.md, after the title but before project content:
+Place the skill map near the top of CLAUDE.md. If the file has YAML frontmatter (`---` delimiters), place the skill map **after** the closing `---` but before the first heading or content. If no frontmatter, place after the title heading.
+
+```markdown
+---
+description: Project description
+globs: "*.ts"
+---
+
+<!-- SKILL-MAP-START -->STOP. You WILL forget skill names mid-session. Check this map before ANY task.|trigger→Skill(name)|...<!-- SKILL-MAP-END -->
+
+## Project Overview
+...
+```
+
+Or without frontmatter:
 
 ```markdown
 # CLAUDE.md
@@ -127,9 +113,10 @@ Place the skill map near the top of CLAUDE.md, after the title but before projec
 ### Step 6: Verify
 
 1. Block is a single line (no breaks between START and END markers)
-2. All skill names are exact (match `npx skills list` output)
+2. All skill names are exact (match the Skill tool's available skills list)
 3. Directive opens with a forceful imperative
 4. CLAUDE.md still reads cleanly for humans
+5. If frontmatter exists, the block is outside the `---` delimiters
 
 ## Updating an Existing Map
 
@@ -151,3 +138,4 @@ Place the skill map near the top of CLAUDE.md, after the title but before projec
 ### Reference Files
 
 - **`references/vercel-research.md`** — Detailed summary of Vercel's AGENTS.md research: methodology, eval results, three factors for passive context superiority, and compression technique details
+- **`references/common-mappings.md`** — Comprehensive trigger-to-skill mapping table organized by category (workflow, quality, frontend, video, marketing, auth, infrastructure, desktop)
