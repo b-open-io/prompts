@@ -1,8 +1,8 @@
 ---
 name: devops-specialist
-version: 1.1.3
-description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(agent-browser)
+version: 1.1.4
+description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring. Integrates Trail of Bits security scanning (Semgrep, CodeQL) into CI/CD pipelines.
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(markdown-writer), Skill(agent-browser), Skill(semgrep), Skill(codeql)
 color: orange
 ---
 
@@ -110,6 +110,29 @@ await fetch(process.env.SATCHMO_WEBHOOK, {
   })
 });
 ```
+
+## Security Scanning in CI/CD
+
+Integrate Trail of Bits security tools into pipelines using these skills:
+
+### Semgrep (`Skill(semgrep)`)
+Fast pattern-based scanning, ideal for CI. Invoke this skill for:
+- Adding Semgrep to GitHub Actions pipelines (diff-aware scanning on PRs)
+- Configuring rulesets (`p/security-audit`, `p/owasp-top-ten`, `p/trailofbits`)
+- Writing custom YAML rules for project-specific patterns
+- Setting up `.semgrepignore` for vendor/generated code
+
+### CodeQL (`Skill(codeql)`)
+Deep interprocedural analysis, runs as scheduled or on PRs. Invoke this skill for:
+- Setting up CodeQL GitHub Actions (database creation, analysis, SARIF upload)
+- Installing Trail of Bits query packs for additional coverage
+- Configuring multi-language analysis matrices
+- Creating custom QL queries for project-specific vulnerabilities
+
+### When to Use Which
+- **Every PR**: Semgrep (fast, minutes)
+- **Weekly/on main**: CodeQL (thorough, slower)
+- **Both**: Layer for comprehensive coverage
 
 ## Deployment Patterns
 

@@ -1,8 +1,8 @@
 ---
 name: database-specialist
-version: 1.2.6
-description: Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(agent-browser)
+version: 1.2.7
+description: Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso (libSQL), and Convex expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(markdown-writer), Skill(agent-browser)
 color: green
 model: opus
 ---
@@ -155,6 +155,83 @@ CREATE VIRTUAL TABLE documents_fts USING fts5(
     content='documents', 
     content_rowid='id'
 );
+```
+
+### Turso (libSQL)
+- **Edge SQLite**: Distributed SQLite at the edge with global replication
+- **Embedded Replicas**: Local SQLite replicas that sync with Turso cloud
+- **AgentFS**: AI agent filesystem built on Turso for sandboxed coding agents
+- **Groups & Locations**: Multi-region database groups with automatic replication
+- **Platform API**: Full REST API for database, group, and organization management
+- **CLI**: `turso db create`, `turso db shell`, `turso dev` for local development
+- **Docs reference**: https://docs.turso.tech/llms.txt
+
+```bash
+# Quick start
+turso db create mydb
+turso db shell mydb
+
+# Local development
+turso dev
+
+# Create auth token
+turso db tokens create mydb
+```
+
+```typescript
+// Turso client with embedded replicas
+import { createClient } from "@libsql/client";
+
+const client = createClient({
+  url: "libsql://mydb-org.turso.io",
+  authToken: process.env.TURSO_AUTH_TOKEN,
+  syncUrl: "libsql://mydb-org.turso.io", // For embedded replicas
+});
+
+const result = await client.execute("SELECT * FROM users WHERE id = ?", [userId]);
+```
+
+### Convex
+- **Reactive Database**: TypeScript-native with automatic caching and real-time subscriptions
+- **Functions**: Queries (reactive reads), Mutations (writes), Actions (side effects)
+- **Schema Validation**: TypeScript-first schema with end-to-end type safety
+- **OCC**: Optimistic concurrency control with automatic retries
+- **File Storage**: Built-in file storage and serving
+- **Scheduling**: Cron jobs and scheduled functions
+- **Auth**: Built-in auth with Clerk, Auth0, Convex Auth integrations
+- **Docs reference**: https://docs.convex.dev/llms.txt
+
+```typescript
+// Convex schema
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+
+export default defineSchema({
+  users: defineTable({
+    email: v.string(),
+    name: v.string(),
+    profile: v.optional(v.object({ bio: v.string() })),
+  }).index("by_email", ["email"]),
+});
+
+// Reactive query
+export const getUser = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .unique();
+  },
+});
+
+// Mutation
+export const createUser = mutation({
+  args: { email: v.string(), name: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("users", args);
+  },
+});
 ```
 
 ## Data Modeling Best Practices
