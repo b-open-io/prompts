@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="banner.jpg" alt="bOpen Tools" width="100%" />
+</p>
+
 # OPL Prompts & AI Agents
 
 **Supercharge Claude Code with specialized AI agents and prompts** for BSV blockchain development, project automation, and workflow optimization.
