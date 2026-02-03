@@ -66,22 +66,110 @@ Our 21 expert agents enhance Claude Code with specialized knowledge. See [user/.
 Skills are context-triggered capabilities. They activate automatically or can be invoked directly.
 
 ### X/Twitter
-- [x-reader](skills/x-reader/SKILL.md) - Fetch tweets, search X, get user timelines via X.com API v2 (requires `X_BEARER_TOKEN`)
-- [x-research](skills/x-research/SKILL.md) - Research X/Twitter trends and sentiment via xAI Grok (requires `XAI_API_KEY`)
+- **x-research** - Research X/Twitter trends and sentiment via xAI Grok (requires `XAI_API_KEY`)
+  ```bash
+  npx skills add b-open-io/bopen-tools/x-research
+  ```
+- **x-tweet-fetch** - Fetch individual tweets by ID via X API v2
+  ```bash
+  npx skills add b-open-io/bopen-tools/x-tweet-fetch
+  ```
+- **x-tweet-search** - Search X/Twitter for tweets via X API v2
+  ```bash
+  npx skills add b-open-io/bopen-tools/x-tweet-search
+  ```
+- **x-user-lookup** - Look up X/Twitter user profiles via X API v2
+  ```bash
+  npx skills add b-open-io/bopen-tools/x-user-lookup
+  ```
+- **x-user-timeline** - Fetch user timelines and recent tweets via X API v2
+  ```bash
+  npx skills add b-open-io/bopen-tools/x-user-timeline
+  ```
 
 ### Content & Media
-- [frontend-design](skills/frontend-design/SKILL.md) - Bold UI designs that avoid generic AI aesthetics
-- [ui-audio-theme](skills/ui-audio-theme/SKILL.md) - Generate cohesive UI sound effects
-- [cli-demo-gif](skills/cli-demo-gif/SKILL.md) - Create terminal demo GIFs for documentation
+- **frontend-design** - Bold UI designs that avoid generic AI aesthetics
+  ```bash
+  npx skills add b-open-io/bopen-tools/frontend-design
+  ```
+- **ui-audio-theme** - Generate cohesive UI sound effects
+  ```bash
+  npx skills add b-open-io/bopen-tools/ui-audio-theme
+  ```
+- **cli-demo-gif** - Create terminal demo GIFs for documentation
+  ```bash
+  npx skills add b-open-io/bopen-tools/cli-demo-gif
+  ```
+- **markdown-writer** - Write and format markdown content with best practices
+  ```bash
+  npx skills add b-open-io/bopen-tools/markdown-writer
+  ```
+- **deck-creator** - Create presentation decks and slide content
+  ```bash
+  npx skills add b-open-io/bopen-tools/deck-creator
+  ```
+- **stop-slop** - Detect and prevent low-quality AI-generated content
+  ```bash
+  npx skills add b-open-io/bopen-tools/stop-slop
+  ```
 
 ### Development
-- [npm-publish](skills/npm-publish/SKILL.md) - Publish packages with changelog and version management
-- [notebooklm](skills/notebooklm/SKILL.md) - Query Google NotebookLM for source-grounded answers
-- [hook-manager](user/.claude/skills/hook-manager/SKILL.md) - Discover and install automation hooks
+- **npm-publish** - Publish packages with changelog and version management
+  ```bash
+  npx skills add b-open-io/bopen-tools/npm-publish
+  ```
+- **notebooklm** - Query Google NotebookLM for source-grounded answers
+  ```bash
+  npx skills add b-open-io/bopen-tools/notebooklm
+  ```
+- **frontend-performance** - Optimize frontend performance and loading speed
+  ```bash
+  npx skills add b-open-io/bopen-tools/frontend-performance
+  ```
+- **confess** - Analyze and document code issues and technical debt
+  ```bash
+  npx skills add b-open-io/bopen-tools/confess
+  ```
+- **critique** - Review and provide constructive feedback on code and design
+  ```bash
+  npx skills add b-open-io/bopen-tools/critique
+  ```
+- **reinforce-skills** - Strengthen and reinforce installed skill behaviors
+  ```bash
+  npx skills add b-open-io/bopen-tools/reinforce-skills
+  ```
+- **statusline-setup** - Configure custom statusline for Claude Code
+  ```bash
+  npx skills add b-open-io/bopen-tools/statusline-setup
+  ```
 
 ### Integrations
-- [resend-integration](skills/resend-integration/SKILL.md) - Email with Resend Audiences and webhooks
-- [plaid-integration](skills/plaid-integration/SKILL.md) - Banking data via Plaid API
+- **resend-integration** - Email with Resend Audiences and webhooks
+  ```bash
+  npx skills add b-open-io/bopen-tools/resend-integration
+  ```
+- **plaid-integration** - Banking data via Plaid API
+  ```bash
+  npx skills add b-open-io/bopen-tools/plaid-integration
+  ```
+- **payload** - Payload CMS integration and management
+  ```bash
+  npx skills add b-open-io/bopen-tools/payload
+  ```
+
+### Operations
+- **geo-optimizer** - Geographic and location-based optimizations
+  ```bash
+  npx skills add b-open-io/bopen-tools/geo-optimizer
+  ```
+- **saas-launch-audit** - Audit SaaS applications for launch readiness
+  ```bash
+  npx skills add b-open-io/bopen-tools/saas-launch-audit
+  ```
+- **workflow-orchestration** - Orchestrate and automate complex workflows
+  ```bash
+  npx skills add b-open-io/bopen-tools/workflow-orchestration
+  ```
 
 ## Slash Commands
 
@@ -103,16 +191,8 @@ Commands follow the format `/opl:category:command [arguments]`:
 - `/opl:docs:check` - Validate and improve documentation
 
 ### 🔗 Integrations (`integrations`)
-- `/opl:integrations:auth` - Set up authentication systems
 - `/opl:integrations:auth-smoke` - Run authentication smoke tests
-- `/opl:integrations:stripe` - Integrate Stripe payments
-- `/opl:integrations:bsv` - Bitcoin SV blockchain integration
 - `/opl:integrations:tanstack` - TanStack Query integration
-
-### 🔌 MCP Servers (`mcp`)
-- `/opl:mcp:install-magic` - Install 21st.dev Magic MCP server
-- `/opl:mcp:install-playwright` - Install Playwright testing MCP server
-- `/opl:mcp:install-github` - Install GitHub MCP server
 
 ### 🔧 Utilities (`utils`)
 - `/opl:utils:find` - Advanced file and code search
@@ -120,7 +200,7 @@ Commands follow the format `/opl:category:command [arguments]`:
 
 ## Automation Hooks
 
-Hooks are opt-in automation that runs in the background. Use the `hook-manager` skill or install manually:
+Hooks are opt-in automation that runs in the background. Install manually:
 
 | Hook | Description |
 |------|-------------|
@@ -232,9 +312,8 @@ Create project-specific automation by combining:
 init-prism create my-app --template bitcoin-auth
 
 # Set up integrations
-/opl:integrations:auth
-/opl:integrations:stripe
-/opl:integrations:bsv
+/opl:integrations:auth-smoke
+/opl:integrations:tanstack
 ```
 
 ### Code Quality
@@ -254,13 +333,7 @@ init-prism create my-app --template bitcoin-auth
 "Have the documentation-writer create a comprehensive README"
 ```
 
-### MCP Server Setup
-```bash
-# Install powerful MCP servers
-/opl:mcp:install-magic       # AI-powered component generation
-/opl:mcp:install-playwright  # End-to-end testing
-/opl:mcp:install-github      # GitHub integration
-```
+
 
 ## Recommended Permissions
 

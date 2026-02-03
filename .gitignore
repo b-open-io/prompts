@@ -41,3 +41,34 @@ coverage/
 
 # Local workspace files
 *.local
+# Agent-specific directories (created on install, not committed)
+.agent/
+.agents/
+.claude/
+.cline/
+.codex/
+.cursor/
+.opencode/
+.codebuddy/
+.commandcode/
+.continue/
+.crush/
+.factory/
+.gemini/
+.goose/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.windsurf/
+.zencoder/
