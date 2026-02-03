@@ -23,7 +23,30 @@ This repository provides:
 
 **Skills Only** (for other agentic frameworks):
 ```bash
-skills add b-open-io/bopen-tools
+bunx skills add b-open-io/bopen-tools --skill x-research
+bunx skills add b-open-io/bopen-tools --skill x-tweet-fetch
+bunx skills add b-open-io/bopen-tools --skill x-tweet-search
+bunx skills add b-open-io/bopen-tools --skill x-user-lookup
+bunx skills add b-open-io/bopen-tools --skill x-user-timeline
+bunx skills add b-open-io/bopen-tools --skill frontend-design
+bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
+bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
+bunx skills add b-open-io/bopen-tools --skill markdown-writer
+bunx skills add b-open-io/bopen-tools --skill deck-creator
+bunx skills add b-open-io/bopen-tools --skill stop-slop
+bunx skills add b-open-io/bopen-tools --skill npm-publish
+bunx skills add b-open-io/bopen-tools --skill notebooklm
+bunx skills add b-open-io/bopen-tools --skill payload
+bunx skills add b-open-io/bopen-tools --skill plaid-integration
+bunx skills add b-open-io/bopen-tools --skill reinforce-skills
+bunx skills add b-open-io/bopen-tools --skill resend-integration
+bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
+bunx skills add b-open-io/bopen-tools --skill statusline-setup
+bunx skills add b-open-io/bopen-tools --skill workflow-orchestration
+bunx skills add b-open-io/bopen-tools --skill confess
+bunx skills add b-open-io/bopen-tools --skill critique
+bunx skills add b-open-io/bopen-tools --skill geo-optimizer
+bunx skills add b-open-io/bopen-tools --skill frontend-performance
 ```
 
 ## Specialized AI Agents
@@ -68,107 +91,107 @@ Skills are context-triggered capabilities. They activate automatically or can be
 ### X/Twitter
 - **x-research** - Research X/Twitter trends and sentiment via xAI Grok (requires `XAI_API_KEY`)
   ```bash
-  npx skills add b-open-io/bopen-tools/x-research
+  bunx skills add b-open-io/bopen-tools --skill x-research
   ```
 - **x-tweet-fetch** - Fetch individual tweets by ID via X API v2
   ```bash
-  npx skills add b-open-io/bopen-tools/x-tweet-fetch
+  bunx skills add b-open-io/bopen-tools --skill x-tweet-fetch
   ```
 - **x-tweet-search** - Search X/Twitter for tweets via X API v2
   ```bash
-  npx skills add b-open-io/bopen-tools/x-tweet-search
+  bunx skills add b-open-io/bopen-tools --skill x-tweet-search
   ```
 - **x-user-lookup** - Look up X/Twitter user profiles via X API v2
   ```bash
-  npx skills add b-open-io/bopen-tools/x-user-lookup
+  bunx skills add b-open-io/bopen-tools --skill x-user-lookup
   ```
 - **x-user-timeline** - Fetch user timelines and recent tweets via X API v2
   ```bash
-  npx skills add b-open-io/bopen-tools/x-user-timeline
+  bunx skills add b-open-io/bopen-tools --skill x-user-timeline
   ```
 
 ### Content & Media
 - **frontend-design** - Bold UI designs that avoid generic AI aesthetics
   ```bash
-  npx skills add b-open-io/bopen-tools/frontend-design
+  bunx skills add b-open-io/bopen-tools --skill frontend-design
   ```
 - **ui-audio-theme** - Generate cohesive UI sound effects
   ```bash
-  npx skills add b-open-io/bopen-tools/ui-audio-theme
+  bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
   ```
 - **cli-demo-gif** - Create terminal demo GIFs for documentation
   ```bash
-  npx skills add b-open-io/bopen-tools/cli-demo-gif
+  bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
   ```
 - **markdown-writer** - Write and format markdown content with best practices
   ```bash
-  npx skills add b-open-io/bopen-tools/markdown-writer
+  bunx skills add b-open-io/bopen-tools --skill markdown-writer
   ```
 - **deck-creator** - Create presentation decks and slide content
   ```bash
-  npx skills add b-open-io/bopen-tools/deck-creator
+  bunx skills add b-open-io/bopen-tools --skill deck-creator
   ```
 - **stop-slop** - Detect and prevent low-quality AI-generated content
   ```bash
-  npx skills add b-open-io/bopen-tools/stop-slop
+  bunx skills add b-open-io/bopen-tools --skill stop-slop
   ```
 
 ### Development
 - **npm-publish** - Publish packages with changelog and version management
   ```bash
-  npx skills add b-open-io/bopen-tools/npm-publish
+  bunx skills add b-open-io/bopen-tools --skill npm-publish
   ```
 - **notebooklm** - Query Google NotebookLM for source-grounded answers
   ```bash
-  npx skills add b-open-io/bopen-tools/notebooklm
+  bunx skills add b-open-io/bopen-tools --skill notebooklm
   ```
 - **frontend-performance** - Optimize frontend performance and loading speed
   ```bash
-  npx skills add b-open-io/bopen-tools/frontend-performance
+  bunx skills add b-open-io/bopen-tools --skill frontend-performance
   ```
 - **confess** - Analyze and document code issues and technical debt
   ```bash
-  npx skills add b-open-io/bopen-tools/confess
+  bunx skills add b-open-io/bopen-tools --skill confess
   ```
 - **critique** - Review and provide constructive feedback on code and design
   ```bash
-  npx skills add b-open-io/bopen-tools/critique
+  bunx skills add b-open-io/bopen-tools --skill critique
   ```
 - **reinforce-skills** - Strengthen and reinforce installed skill behaviors
   ```bash
-  npx skills add b-open-io/bopen-tools/reinforce-skills
+  bunx skills add b-open-io/bopen-tools --skill reinforce-skills
   ```
 - **statusline-setup** - Configure custom statusline for Claude Code
   ```bash
-  npx skills add b-open-io/bopen-tools/statusline-setup
+  bunx skills add b-open-io/bopen-tools --skill statusline-setup
   ```
 
 ### Integrations
 - **resend-integration** - Email with Resend Audiences and webhooks
   ```bash
-  npx skills add b-open-io/bopen-tools/resend-integration
+  bunx skills add b-open-io/bopen-tools --skill resend-integration
   ```
 - **plaid-integration** - Banking data via Plaid API
   ```bash
-  npx skills add b-open-io/bopen-tools/plaid-integration
+  bunx skills add b-open-io/bopen-tools --skill plaid-integration
   ```
 - **payload** - Payload CMS integration and management
   ```bash
-  npx skills add b-open-io/bopen-tools/payload
+  bunx skills add b-open-io/bopen-tools --skill payload
   ```
 
 ### Operations
 - **geo-optimizer** - Geographic and location-based optimizations
   ```bash
-  npx skills add b-open-io/bopen-tools/geo-optimizer
+  bunx skills add b-open-io/bopen-tools --skill geo-optimizer
   ```
 - **saas-launch-audit** - Audit SaaS applications for launch readiness
   ```bash
-  npx skills add b-open-io/bopen-tools/saas-launch-audit
+  bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
   ```
 - **workflow-orchestration** - Orchestrate and automate complex workflows
   ```bash
-  npx skills add b-open-io/bopen-tools/workflow-orchestration
+  bunx skills add b-open-io/bopen-tools --skill workflow-orchestration
   ```
 
 ## Slash Commands
