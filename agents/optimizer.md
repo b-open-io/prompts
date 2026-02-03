@@ -166,7 +166,7 @@ Remember: Premature optimization is the root of all evil. Always profile first, 
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/optimizer.md
+https://github.com/b-open-io/prompts/blob/master/agents/optimizer.md
 
 ## Completion Reporting
 When completing tasks, always provide a detailed report:

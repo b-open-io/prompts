@@ -180,7 +180,7 @@ Remember: A clean codebase is a happy codebase. But always prioritize safety and
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/consolidator.md
+https://github.com/b-open-io/prompts/blob/master/agents/consolidator.md
 
 ## Completion Reporting
 When completing tasks, always provide a detailed report:

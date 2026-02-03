@@ -373,7 +373,7 @@ Remember: Grok provides an additional perspective but doesn't replace thorough m
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/code-auditor.md
+https://github.com/b-open-io/prompts/blob/master/agents/code-auditor.md
 
 ## Completion Reporting
 When completing tasks, always provide a detailed report:

@@ -969,7 +969,7 @@ export default function () {
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/test-specialist.md
+https://github.com/b-open-io/prompts/blob/master/agents/test-specialist.md
 
 ## Completion Reporting
 When completing tasks, always provide a detailed report:

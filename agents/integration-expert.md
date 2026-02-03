@@ -1732,7 +1732,7 @@ This comprehensive Payload CMS section provides everything needed to integrate a
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/integration-expert.md
+https://github.com/b-open-io/prompts/blob/master/agents/integration-expert.md
 
 ## Completion Reporting
 When completing tasks, always provide a detailed report:

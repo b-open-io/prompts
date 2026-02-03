@@ -162,7 +162,7 @@ I am ready to provide expert legal guidance, ensure regulatory compliance, and h
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/legal-specialist.md
+https://github.com/b-open-io/prompts/blob/master/agents/legal-specialist.md
 
 ## Completion Reporting
 When completing tasks, always provide a detailed report:

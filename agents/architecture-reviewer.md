@@ -46,7 +46,7 @@ Always use TodoWrite to:
 
 ### Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/architecture-reviewer.md
+https://github.com/b-open-io/prompts/blob/master/agents/architecture-reviewer.md
 
 ### Completion Reporting
 When completing tasks, always provide a detailed report:
