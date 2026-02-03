@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="banner.jpg" alt="bOpen Tools" width="100%" />
+  <img src="assets/banner.jpg" alt="bOpen Tools" width="100%" />
 </p>
 
 # OPL Prompts & AI Agents
