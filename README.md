@@ -114,6 +114,10 @@ Skills are context-triggered capabilities. They activate automatically or can be
   ```bash
   bunx skills add b-open-io/bopen-tools --skill frontend-design
   ```
+- **prd-creator** - Create comprehensive PRDs with Shape Up + Working Backwards methodology
+  ```bash
+  bunx skills add b-open-io/bopen-tools --skill prd-creator
+  ```
 - **ui-audio-theme** - Generate cohesive UI sound effects
   ```bash
   bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
@@ -204,12 +208,9 @@ Commands follow the format `/opl:category:command [arguments]`:
 - `/opl:design:ai-inspiration` - Generate design inspiration and concepts
 
 ### 📚 Documentation (`docs`)
-- `/opl:docs:prd` - Create Product Requirements Documents
-- `/opl:docs:prd-enhanced` - Enhanced PRD with detailed analysis
-- `/opl:docs:check` - Validate and improve documentation
+- `/opl:docs:prd` - Create comprehensive PRDs with Shape Up + Working Backwards methodology
 
 ### 🔗 Integrations (`integrations`)
-- `/opl:integrations:auth-smoke` - Run authentication smoke tests
 - `/opl:integrations:tanstack` - TanStack Query integration
 
 ### 🔧 Utilities (`utils`)

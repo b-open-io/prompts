@@ -4,6 +4,8 @@ description: Run basic auth security smoke checks (headers, cookies, rate limits
 argument-hint: <base_url> - e.g., https://api.example.com
 ---
 
+**NOTE:** This command is not currently referenced by any agent. Consider converting to a skill at `~/code/prompts/skills/auth-smoke/` for better discoverability and integration.
+
 ## Your Task
 
 If args are missing or contain "--help", show usage and exit.
