@@ -1,5 +1,6 @@
 ---
 name: confess
+version: 1.0.0
 description: "Systematic self-audit to discover and reveal mistakes, incomplete work, pattern violations, and hidden knowledge. Use when asking agent to 'confess', 'what did I miss', 'audit my work', 'what's wrong with this', or after completing significant changes."
 ---
 

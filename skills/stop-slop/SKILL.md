@@ -1,6 +1,7 @@
 ---
 name: stop-slop
-description: Remove AI writing patterns from prose. Use when drafting, editing, or reviewing text to eliminate predictable AI tells.
+version: 1.0.0
+description: This skill should be used when the user wants to remove AI writing patterns from prose. Use when drafting, editing, or reviewing text to eliminate predictable AI tells.
 ---
 
 # Stop Slop

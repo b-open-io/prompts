@@ -3,7 +3,7 @@ name: test-specialist
 version: 1.2.5
 model: sonnet
 description: Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
-tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(markdown-writer), Skill(agent-browser)
 color: green
 ---
 

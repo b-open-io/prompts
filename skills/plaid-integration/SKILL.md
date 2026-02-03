@@ -1,6 +1,7 @@
 ---
 name: plaid-integration
-description: Integrate Plaid API for bank account connections and transaction syncing. Use when implementing financial data access, bank linking, or transaction imports in TypeScript/Bun applications.
+version: 1.0.0
+description: This skill should be used when the user wants to integrate Plaid API for bank account connections and transaction syncing. Use when implementing financial data access, bank linking, or transaction imports in TypeScript/Bun applications.
 ---
 
 # Plaid API Integration

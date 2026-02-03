@@ -19,7 +19,7 @@ A comprehensive, repeatable audit workflow for SaaS products approaching launch.
 
 ## Purpose
 
-Validate launch readiness across 10 critical areas: validation, pricing, payments, AI economics, discovery, competitors, social presence, legal, trust infrastructure, and launch day operations. Incorporates 2026-specific guidance on outcome-based pricing, AI visibility optimization, and modern SaaS metrics.
+Validate launch readiness across 10 critical areas: validation, pricing, payments, AI economics, discovery, competitors, social presence, legal, trust infrastructure, and launch day operations.
 
 ## Workflow Overview
 
@@ -30,7 +30,7 @@ Validate launch readiness across 10 critical areas: validation, pricing, payment
 
 ## Discovery Survey
 
-Before running the checklist, gather project context. Use AskUserQuestion:
+Before running the checklist, gather project context:
 
 **Questions to ask:**
 1. Product type: B2B SaaS, B2C, Developer Tool, Marketplace, or Other?
@@ -39,7 +39,7 @@ Before running the checklist, gather project context. Use AskUserQuestion:
 4. Does the product use AI/ML that affects unit economics?
 5. Primary domain/URL to audit (if live)
 
-**Platform recommendations based on product type:**
+**Platform recommendations by product type:**
 - **Developer Tools**: GitHub, Hacker News, Reddit, X, Dev.to
 - **B2B SaaS**: LinkedIn, Product Hunt, G2/Capterra
 - **B2C/Consumer**: X, TikTok, Instagram, YouTube
@@ -58,8 +58,6 @@ Before running the checklist, gather project context. Use AskUserQuestion:
 
 ### 2. Pricing Strategy
 
-Consult `references/pricing-2026.md` for detailed guidance.
-
 | Item | Verification Method |
 |------|---------------------|
 | Pricing model selected (outcome/usage/hybrid) | Ask user, verify NOT per-seat only |
@@ -69,8 +67,6 @@ Consult `references/pricing-2026.md` for detailed guidance.
 | Pricing page live and scannable | Browser: visual check |
 
 ### 3. Payment Integration
-
-Consult `references/payment-verification.md` for Stripe go-live checklist.
 
 | Item | Verification Method |
 |------|---------------------|
@@ -82,8 +78,6 @@ Consult `references/payment-verification.md` for Stripe go-live checklist.
 
 ### 4. AI Economics (if applicable)
 
-Consult `references/metrics-2026.md` for AI-first metrics.
-
 | Item | Verification Method |
 |------|---------------------|
 | Inference costs calculated per action | Ask user for cost breakdown |
@@ -92,11 +86,7 @@ Consult `references/metrics-2026.md` for AI-first metrics.
 | Margin protection strategy exists | Ask about usage caps, tiering |
 | Cost monitoring/alerts configured | Ask user |
 
-> **Note:** IER (Inference Efficiency Ratio) is a useful internal metric but not an industry standard. Target AI costs < 30% of revenue as the primary benchmark.
-
 ### 5. GEO & AI Discovery
-
-Consult `references/geo-visibility.md` for optimization guide.
 
 | Item | Verification Method |
 |------|---------------------|
@@ -105,13 +95,11 @@ Consult `references/geo-visibility.md` for optimization guide.
 | Content uses authoritative language | Browser: check for excessive hedging |
 | SSR/pre-rendering for LLM crawlers | Ask about rendering strategy |
 | Server response time < 200ms | Run `scripts/tech-audit.sh` |
-| Core Web Vitals passing (LCP < 2.5s, INP ≤ 200ms, CLS < 0.1) | Check PageSpeed Insights |
+| Core Web Vitals passing | Check PageSpeed Insights |
 
 > **2026 Fact:** AI agents account for ~33% of organic search activity. Only 12% of companies appear across ChatGPT, Perplexity, and Claude.
 
 ### 6. Competitor Intelligence
-
-Run `scripts/competitor-visibility.sh` for automated checks.
 
 | Item | Verification Method |
 |------|---------------------|
@@ -123,15 +111,13 @@ Run `scripts/competitor-visibility.sh` for automated checks.
 
 ### 7. Social Media & Launch Prep
 
-Consult `references/launch-tactics.md` and `references/platform-guides.md`.
-
 | Item | Verification Method |
 |------|---------------------|
 | Primary platform profiles created | Browser: check each platform |
 | LinkedIn founder profile optimized | Browser: review profile |
 | X/Twitter presence established | Browser: check account |
 | Product Hunt profile ready | Browser: check PH profile |
-| 400+ PH supporters lined up | Ask user about DM outreach (warm contacts preferred) |
+| 400+ PH supporters lined up | Ask user about DM outreach |
 | Launch email sequence drafted | Ask user |
 | Content calendar for 30 days | Ask user |
 | "Magic Triangle" ready | Ask about founder content + outreach + retargeting |
@@ -146,8 +132,6 @@ Consult `references/launch-tactics.md` and `references/platform-guides.md`.
 | DPA template ready (if B2B) | Ask user |
 
 ### 9. Trust Infrastructure
-
-Consult `references/trust-infrastructure.md` for Trust-as-a-Product guide.
 
 | Item | Verification Method |
 |------|---------------------|
@@ -182,19 +166,6 @@ or
   → Next step: Single actionable instruction
 ```
 
-Example output:
-```
-## Pricing Strategy
-
-[PASS] Pricing model selected (usage-based)
-[PASS] Value metric identified (API calls)
-[FAIL] 3-4 tiers with clear differentiation
-  → Next step: Add a middle tier between Free and Pro to capture mid-market
-[PASS] Annual contract incentives configured (20% discount)
-[FAIL] Pricing page not found
-  → Next step: Create /pricing page with tier comparison table
-```
-
 ## Verification Tools
 
 ### Browser Verification
@@ -215,14 +186,14 @@ Use provided scripts:
 - `scripts/tech-audit.sh` - Core Web Vitals, SSL, security headers
 - `scripts/competitor-visibility.sh` - AI visibility comparison
 
-## Reference Files
+## Additional Resources
 
-Consult these for detailed guidance:
+For detailed guidance, see the references directory:
 
-- **`references/pricing-2026.md`** - Outcome/usage-based pricing strategies
+- **`references/pricing-2026.md`** - Outcome/usage-based pricing strategies, 2026 trends, tier design principles
 - **`references/payment-verification.md`** - Stripe go-live checklist
-- **`references/geo-visibility.md`** - GEO/AI discovery optimization
-- **`references/launch-tactics.md`** - Product Hunt and social strategies
+- **`references/geo-visibility.md`** - GEO/AI discovery optimization, technical requirements, content strategies
+- **`references/launch-tactics.md`** - Product Hunt and social strategies, "Magic Triangle" approach
 - **`references/trust-infrastructure.md`** - Trust-as-a-Product requirements
 - **`references/metrics-2026.md`** - AI-first SaaS metrics (gross margins, cost optimization)
 - **`references/platform-guides.md`** - Platform-specific launch guides
@@ -236,12 +207,10 @@ The audit is complete when:
 
 Re-run the audit after implementing fixes until all critical items pass.
 
-## Key 2026 Insights (Research-Verified)
+## Key 2026 Insights
 
-Embedded throughout this audit:
-
-1. **Pricing**: Per-seat is declining (126% YoY growth in credit models). Use outcome-based or hybrid models. Note: pendulum swinging back toward simplicity.
+1. **Pricing**: Per-seat is declining (126% YoY growth in credit models). Use outcome-based or hybrid models.
 2. **AI Economics**: Target AI costs < 30% of revenue. Traditional SaaS: 80-90% margins. AI-first: 50-65% margins.
-3. **Discovery**: AI agents now ~33% of organic search. Only 12% of companies appear across all AI platforms. Server response < 200ms critical.
+3. **Discovery**: AI agents now ~33% of organic search. Only 12% of companies appear across all AI platforms.
 4. **Trust**: Trust-as-a-Product is a differentiator, not just compliance.
-5. **Product Hunt**: 26.5% of launches get 500-1000 users. 49% fail by relying on PH alone. Warm outreach > cold DMs.
+5. **Product Hunt**: 26.5% of launches get 500-1000 users. 49% fail by relying on PH alone.

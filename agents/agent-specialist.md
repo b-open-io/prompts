@@ -3,7 +3,7 @@ name: agent-specialist
 version: 1.3.5
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, and resilient chat UIs.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(markdown-writer), Skill(agent-browser), Skill(ai-sdk)
 color: purple
 ---
 

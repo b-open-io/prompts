@@ -1,6 +1,6 @@
 ---
 name: resend-integration
-description: Set up Resend email integration with newsletters, contact forms, and booking systems. Use when implementing email functionality with Resend Audiences, segments, topics, webhooks, and multi-domain accounts.
+description: This skill should be used when the user wants to set up Resend email integration with newsletters, contact forms, and booking systems. Use when implementing email functionality with Resend Audiences, segments, topics, webhooks, and multi-domain accounts.
 ---
 
 # Resend Integration
@@ -35,15 +35,15 @@ For accounts with multiple domains, tag contacts with properties:
 await resend.contacts.create({
   email,
   properties: {
-    domain: "example.com",     // Which project
-    source: "newsletter",       // How they signed up
+    domain: "example.com",
+    source: "newsletter",
   },
   segments: [{ id: SEGMENT_ID }],
   topics: [{ id: TOPIC_ID, subscription: "opt_in" }],
 });
 ```
 
-## Implementation
+## Core Implementation
 
 ### 1. Shared Utility (`lib/resend.ts`)
 
@@ -51,21 +51,6 @@ await resend.contacts.create({
 import { Resend } from "resend";
 
 export const resend = new Resend(process.env.RESEND_API_KEY);
-
-const SEGMENT_NEWSLETTER = process.env.RESEND_SEGMENT_NEWSLETTER;
-const SEGMENT_LEADS = process.env.RESEND_SEGMENT_LEADS;
-const TOPIC_NEWSLETTER = process.env.RESEND_TOPIC_NEWSLETTER;
-
-type ContactSource = "newsletter" | "booking" | "contact";
-
-interface CreateContactOptions {
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  company?: string;
-  source: ContactSource;
-  subscribeToNewsletter?: boolean;
-}
 
 export async function createContact({
   email,
@@ -75,32 +60,20 @@ export async function createContact({
   source,
   subscribeToNewsletter = false,
 }: CreateContactOptions) {
-  const segments: { id: string }[] = [];
-  if (source === "newsletter" && SEGMENT_NEWSLETTER) {
-    segments.push({ id: SEGMENT_NEWSLETTER });
-  } else if ((source === "booking" || source === "contact") && SEGMENT_LEADS) {
-    segments.push({ id: SEGMENT_LEADS });
-  }
-
-  const topics: { id: string; subscription: "opt_in" | "opt_out" }[] = [];
+  const segments = [];
+  const topics = [];
+  
   if (subscribeToNewsletter && TOPIC_NEWSLETTER) {
     topics.push({ id: TOPIC_NEWSLETTER, subscription: "opt_in" });
   }
 
-  const properties: Record<string, string> = {
-    domain: "YOUR_DOMAIN.com",  // Replace with actual domain
-    source,
-  };
-  if (company) properties.company = company;
-
   const { data, error } = await resend.contacts.create({
     email,
-    firstName: firstName || undefined,
-    lastName: lastName || undefined,
-    unsubscribed: false,
-    ...(Object.keys(properties).length > 0 && { properties }),
-    ...(segments.length > 0 && { segments }),
-    ...(topics.length > 0 && { topics }),
+    firstName,
+    lastName,
+    properties: { domain: "YOUR_DOMAIN.com", source, company },
+    segments,
+    topics,
   });
 
   if (error?.message?.includes("already exists")) {
@@ -108,31 +81,14 @@ export async function createContact({
   }
   return { data, exists: false, error };
 }
-
-export async function contactExists(email: string): Promise<boolean> {
-  try {
-    const { data } = await resend.contacts.get({ email });
-    return !!data;
-  } catch {
-    return false;
-  }
-}
 ```
 
 ### 2. Newsletter Route (`/api/newsletter`)
 
 ```typescript
-import { NextResponse } from "next/server";
-import { resend, createContact, contactExists } from "@/lib/resend";
-
 export async function POST(request: Request) {
   const { email } = await request.json();
 
-  if (!email) {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 });
-  }
-
-  // Duplicate check
   if (await contactExists(email)) {
     return NextResponse.json(
       { error: "already_subscribed", message: "You're already subscribed!" },
@@ -147,14 +103,7 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    // Return actual error, not generic 500
-    const message = typeof error === "object" && "message" in error
-      ? (error as { message: string }).message
-      : "Failed to subscribe";
-    const statusCode = typeof error === "object" && "statusCode" in error
-      ? (error as { statusCode: number }).statusCode
-      : 500;
-    return NextResponse.json({ error: message }, { status: statusCode });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   // Send welcome email
@@ -169,32 +118,7 @@ export async function POST(request: Request) {
 }
 ```
 
-### 3. Frontend Duplicate Handling
-
-```typescript
-const response = await fetch("/api/newsletter", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email }),
-});
-
-const data = await response.json();
-
-if (response.status === 409) {
-  toast.info("You're already subscribed!");
-  return;
-}
-
-if (!response.ok) {
-  throw new Error(data.error);
-}
-
-toast.success("Thanks for subscribing!");
-```
-
-### 4. Booking/Contact Form (Create Lead)
-
-Add contact creation without blocking the main flow:
+### 3. Booking/Contact Form (Create Lead)
 
 ```typescript
 // In booking or contact form API route
@@ -207,16 +131,12 @@ createContact({
 }).catch((err) => console.error("Failed to create contact:", err));
 ```
 
-### 5. Inbound Email Forwarding
-
-For receiving emails via subdomain (e.g., `mail.example.com`):
-
-**Webhook handler (`/api/webhooks/resend`):**
+### 4. Inbound Email Forwarding
 
 ```typescript
+// Webhook handler for email.received
 case "email.received":
   const forwardTo = process.env.EMAIL_FORWARD_TO?.split(",").map(e => e.trim());
-
   if (!forwardTo?.length) return;
 
   await resend.emails.send({
@@ -252,52 +172,27 @@ RESEND_TOPIC_NEWSLETTER=top_xxxxx
 EMAIL_FORWARD_TO=email1@example.com,email2@example.com
 ```
 
-## Resend Dashboard Setup
+## Dashboard Setup (Required First)
 
-**IMPORTANT: Create these in the dashboard BEFORE deploying code that uses them.**
+**IMPORTANT:** Create these in the Resend dashboard BEFORE deploying code:
 
-### Create Properties
-
-Properties must exist before the API can use them.
-
-1. Go to Audiences → Properties tab
-2. Create these properties:
-   - `domain` (text) - For multi-domain account filtering
-   - `source` (text) - How contact signed up (newsletter, booking, contact)
+1. **Properties** (Audiences → Properties):
+   - `domain` (text) - For multi-domain filtering
+   - `source` (text) - How contact signed up
    - `company` (text) - Optional company name
 
-### Create Segments
+2. **Segments** (Audiences → Segments):
+   - Create segments for newsletter, leads
+   - Copy IDs to env vars
 
-1. Go to Audiences → Segments
-2. Create "project-newsletter" segment
-3. Create "project-leads" segment
-4. Copy IDs to env vars
-
-### Create Topics
-
-1. Go to Audiences → Topics
-2. Create topic (e.g., "Project Newsletter")
-3. **Defaults to**: Opt-in (subscribers must explicitly opt in)
-4. **Visibility**: Public (visible on preference page) or Private
-5. Copy ID to env var
-
-### Email Receiving (Subdomain)
-
-To receive emails without conflicting with existing email (e.g., Google Workspace):
-
-1. **DNS**: Add MX record for subdomain
-   - Name: `mail`
-   - Content: `inbound-smtp.us-east-1.amazonaws.com`
-   - Priority: 10
-
-2. **Resend**: Enable receiving for `mail.yourdomain.com`
-
-3. **Webhook**: Point to your `/api/webhooks/resend` endpoint
+3. **Topics** (Audiences → Topics):
+   - Create topics for user preferences
+   - Set default to Opt-in
+   - Copy IDs to env vars
 
 ## Broadcasts
 
 Use Resend dashboard for sending newsletters:
-
 1. Go to Broadcasts → Create
 2. Select segment to target
 3. Use personalization: `{{{FIRST_NAME|there}}}`
@@ -308,7 +203,6 @@ Use Resend dashboard for sending newsletters:
 
 ### Sender Addresses
 
-Use consistent from addresses:
 - `noreply@domain.com` - Automated notifications
 - `contact@domain.com` - Contact form
 - `booking@domain.com` - Calendar invites
@@ -320,3 +214,11 @@ Send internal notifications to a subdomain address that forwards:
 ```typescript
 to: ["info@mail.domain.com"]  // Forwards via webhook
 ```
+
+## Additional Resources
+
+For detailed guidance, see the references directory:
+
+- **`references/advanced-patterns.md`** - Multi-domain contact management, email routing systems, drip campaigns, contact enrichment, analytics
+- **`references/api-reference.md`** - Complete API reference for Contacts, Emails, Audiences, Segments, Topics, Broadcasts, and Webhooks
+- **`references/dashboard-setup.md`** - Step-by-step dashboard configuration, DNS setup, webhook configuration, testing procedures, and troubleshooting

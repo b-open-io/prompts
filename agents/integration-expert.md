@@ -3,7 +3,7 @@ name: integration-expert
 version: 1.2.5
 model: sonnet
 description: Implements API integrations, webhooks, third-party service connections, and Payload CMS integrations with proper error handling.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(resend-integration), Skill(payload), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(resend-integration), Skill(payload), Skill(markdown-writer), Skill(agent-browser)
 color: green
 ---
 
