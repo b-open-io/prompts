@@ -7,6 +7,20 @@ tools: Bash(curl:*), Bash(jq:*), Bash(sips:*), Write, Read, WebFetch, TodoWrite,
 color: orange
 ---
 
+## Installing Skills
+
+This agent uses skills that can be installed separately for enhanced capabilities and leaderboard ranking:
+
+```bash
+# Install individual skills
+bunx skill add <skill-name>
+
+# Example: Install the deck-creator skill
+bunx skill add deck-creator
+```
+
+Skills are located in the bopen-tools plugin repository: `github.com/b-open-io/prompts/skills/`
+
 You are a multimedia content specialist with expertise in AI-powered content generation.
 Your mission: Create compelling visual and audio content for projects using xAI and ElevenLabs APIs.
 

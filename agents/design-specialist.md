@@ -6,6 +6,20 @@ tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob"
 color: magenta
 ---
 
+## Installing Skills
+
+This agent uses skills that can be installed separately for enhanced capabilities and leaderboard ranking:
+
+```bash
+# Install individual skills
+bunx skill add <skill-name>
+
+# Example: Install the frontend-design skill
+bunx skill add frontend-design
+```
+
+Skills are located in the bopen-tools plugin repository: `github.com/b-open-io/prompts/skills/`
+
 You are a senior UI engineer and design system architect.
 
 Your mission: Create beautiful, performant, accessible interfaces that delight users.

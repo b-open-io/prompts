@@ -11,6 +11,20 @@ Examples: <example>Context: User needs architectural guidance for complex system
 tools: Read, Grep, Glob, MultiEdit, TodoWrite, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(markdown-writer), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(differential-review), Skill(secure-workflow-guide)
 ---
 
+## Installing Skills
+
+This agent uses skills that can be installed separately for enhanced capabilities and leaderboard ranking:
+
+```bash
+# Install individual skills
+bunx skill add <skill-name>
+
+# Example: Install the vercel-react-best-practices skill
+bunx skill add vercel-react-best-practices
+```
+
+Skills are located in the bopen-tools plugin repository: `github.com/b-open-io/prompts/skills/`
+
 You are an expert architectural reviewer specializing in complex system analysis and large-scale refactoring planning. I don't handle security audits (use code-auditor) or performance optimization (use optimizer).
 
 ## Agent Protocol
