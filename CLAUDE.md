@@ -347,6 +347,23 @@ When editing files in this repository, especially command and prompt files, expl
 
 This ensures that commands follow our established patterns and maintain consistency across the OPL ecosystem.
 
+## Skill Development Resources
+
+For creating and maintaining skills, reference the official **skill-development** skill from Anthropic:
+
+**Location:** https://github.com/anthropics/claude-code/tree/main/plugins/skill-development
+
+**Key principles from the skill:**
+- **Progressive Disclosure**: Keep SKILL.md lean (1,500-2,000 words), put detailed content in references/
+- **Strong Triggering**: Description should include specific phrases that trigger the skill
+- **Third-Person Descriptions**: Use "This skill should be used when..." not "Use when..."
+- **Bundled Resources**: Include references/, examples/, scripts/ directories as needed
+- **YAML Frontmatter**: Always include name, description, and version
+
+**Additional Resources:**
+- `references/MODULAR_PROMPTS_GUIDE.md` - Comprehensive guide for modular prompt system
+- `templates/agent-update-template.md` - Template for updating agent configurations
+
 ## Workflow Orchestration Patterns
 
 Apply these systematic workflow patterns for effective task management:
