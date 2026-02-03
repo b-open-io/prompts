@@ -1,18 +1,19 @@
 ---
 name: hook-manager
-description: Discover and install Claude Code hooks from bopen-tools. This skill should be used when users ask to "list hooks", "install a hook", "show available hooks", "enable hook", "what hooks are available", or need help managing Claude Code automation hooks.
+version: 1.0.0
+description: Discover and install automation hooks for Claude Code and Opencode. This skill should be used when users ask to "list hooks", "install a hook", "show available hooks", "enable hook", "what hooks are available", or need help managing agent automation hooks.
 ---
 
 # Hook Manager
 
-Discover, install, and manage Claude Code hooks from the bopen-tools collection.
+Discover, install, and manage automation hooks from the bopen-tools collection for Claude Code and Opencode.
 
 ## Available Hooks
 
 | Hook | Event | Description | Auto-install |
 |------|-------|-------------|--------------|
 | `protect-env-files` | PreToolUse | Blocks edits to .env files (security) | Recommended |
-| `uncommitted-reminder` | Stop | Shows uncommitted changes when Claude stops | Optional |
+| `uncommitted-reminder` | Stop | Shows uncommitted changes when agent stops | Optional |
 | `auto-git-add` | PostToolUse | Auto-stages files after edits | Optional |
 | `time-dir-context` | UserPromptSubmit | Adds timestamp/dir/branch to prompts | Optional |
 | `lint-on-save` | PostToolUse | Runs lint:fix after file edits | Optional |
@@ -22,8 +23,9 @@ Discover, install, and manage Claude Code hooks from the bopen-tools collection.
 
 ## Installing a Hook
 
-Hooks are installed by copying the JSON config to `~/.claude/hooks/`:
+Hooks are installed by copying the JSON config to your agent's hooks directory:
 
+### Claude Code
 ```bash
 # Create hooks directory if needed
 mkdir -p ~/.claude/hooks
@@ -32,7 +34,16 @@ mkdir -p ~/.claude/hooks
 cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.claude/hooks/
 ```
 
-Then restart Claude Code to load the hook.
+### Opencode
+```bash
+# Create hooks directory if needed
+mkdir -p ~/.opencode/hooks
+
+# Copy hook from plugin cache
+cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.opencode/hooks/
+```
+
+Then restart your agent to load the hook.
 
 ## Hook Details
 
@@ -91,22 +102,41 @@ Prevents edits to shadcn/ui component files.
 
 - Only relevant for projects using shadcn/ui
 
+## Installing This Skill
+
+```bash
+bunx skills add b-open-io/bopen-tools --skill hook-manager
+```
+
 ## Uninstalling a Hook
 
+**Claude Code:**
 ```bash
 rm ~/.claude/hooks/<hook-name>.json
 ```
 
-Restart Claude Code.
+**Opencode:**
+```bash
+rm ~/.opencode/hooks/<hook-name>.json
+```
+
+Restart your agent.
 
 ## Listing Installed Hooks
 
+**Claude Code:**
 ```bash
 ls ~/.claude/hooks/
 ```
 
+**Opencode:**
+```bash
+ls ~/.opencode/hooks/
+```
+
 ## Quick Install Commands
 
+### Claude Code
 ```bash
 # Security (recommended)
 cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/protect-env-files.json ~/.claude/hooks/
@@ -123,9 +153,26 @@ cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-save.json ~/.c
 cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-start.json ~/.claude/hooks/
 ```
 
+### Opencode
+```bash
+# Security (recommended)
+cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/protect-env-files.json ~/.opencode/hooks/
+
+# Workflow helpers
+cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/uncommitted-reminder.json ~/.opencode/hooks/
+cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/auto-git-add.json ~/.opencode/hooks/
+
+# Context enrichment
+cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/time-dir-context.json ~/.opencode/hooks/
+
+# Development automation
+cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-save.json ~/.opencode/hooks/
+cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-start.json ~/.opencode/hooks/
+```
+
 ## Verifying Installation
 
-After installing and restarting Claude Code:
+After installing and restarting your agent:
 
 ```bash
 claude --debug
