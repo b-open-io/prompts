@@ -39,7 +39,6 @@ bunx skills add b-open-io/bopen-tools --skill notebooklm
 bunx skills add b-open-io/bopen-tools --skill payload
 bunx skills add b-open-io/bopen-tools --skill plaid-integration
 bunx skills add b-open-io/bopen-tools --skill reinforce-skills
-bunx skills add b-open-io/bopen-tools --skill resend-integration
 bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
 bunx skills add b-open-io/bopen-tools --skill statusline-setup
 bunx skills add b-open-io/bopen-tools --skill workflow-orchestration
@@ -51,36 +50,36 @@ bunx skills add b-open-io/bopen-tools --skill frontend-performance
 
 ## Specialized AI Agents
 
-Our 21 expert agents enhance Claude Code with specialized knowledge. See [user/.claude/agents/](user/.claude/agents/) for full details.
+Our 21 expert agents enhance Claude Code with specialized knowledge. See [agents/](agents/) for full details.
 
 ### Development & Architecture
-- 🔵 [**prompt-engineer**](user/.claude/agents/prompt-engineer.md) - Claude Code commands and prompt development
-- 🏗️ [**architecture-reviewer**](user/.claude/agents/architecture-reviewer.md) - Large-scale system design and refactoring
-- 🔴 [**code-auditor**](user/.claude/agents/code-auditor.md) - Security vulnerabilities and code quality
-- 🚀 [**optimizer**](user/.claude/agents/optimizer.md) - Performance optimization and efficiency
-- 🧪 [**test-specialist**](user/.claude/agents/test-specialist.md) - Comprehensive testing strategies
-- 🧹 [**consolidator**](user/.claude/agents/consolidator.md) - System organization and cleanup
+- 🔵 [**prompt-engineer**](agents/prompt-engineer.md) - Claude Code commands and prompt development
+- 🏗️ [**architecture-reviewer**](agents/architecture-reviewer.md) - Large-scale system design and refactoring
+- 🔴 [**code-auditor**](agents/code-auditor.md) - Security vulnerabilities and code quality
+- 🚀 [**optimizer**](agents/optimizer.md) - Performance optimization and efficiency
+- 🧪 [**test-specialist**](agents/test-specialist.md) - Comprehensive testing strategies
+- 🧹 [**consolidator**](agents/consolidator.md) - System organization and cleanup
 
 ### Platform & Infrastructure
-- 🟠 [**devops-specialist**](user/.claude/agents/devops-specialist.md) - Deployment automation and cloud infrastructure
-- 🟢 [**database-specialist**](user/.claude/agents/database-specialist.md) - Database design, optimization, and data modeling
-- 📱 [**mobile-specialist**](user/.claude/agents/mobile-specialist.md) - React Native, Swift, Kotlin, and Flutter development
-- 🔗 [**integration-expert**](user/.claude/agents/integration-expert.md) - API integration and third-party services
-- 🟠 [**mcp-specialist**](user/.claude/agents/mcp-specialist.md) - Model Context Protocol server development
+- 🟠 [**devops-specialist**](agents/devops-specialist.md) - Deployment automation and cloud infrastructure
+- 🟢 [**database-specialist**](agents/database-specialist.md) - Database design, optimization, and data modeling
+- 📱 [**mobile-specialist**](agents/mobile-specialist.md) - React Native, Swift, Kotlin, and Flutter development
+- 🔗 [**integration-expert**](agents/integration-expert.md) - API integration and third-party services
+- 🟠 [**mcp-specialist**](agents/mcp-specialist.md) - Model Context Protocol server development
 
 ### Specialized Domains
-- 🟡 [**bitcoin-specialist**](user/.claude/agents/bitcoin-specialist.md) - BSV blockchain and cryptography
-- 💚 [**payment-specialist**](user/.claude/agents/payment-specialist.md) - Payment processing and financial operations
-- 🔵 [**auth-specialist**](user/.claude/agents/auth-specialist.md) - Authentication and identity management
-- 🤖 [**agent-specialist**](user/.claude/agents/agent-specialist.md) - AI agent development and tool-calling
-- 📊 [**data-specialist**](user/.claude/agents/data-specialist.md) - Data processing, analytics, and ETL pipelines
-- ⚖️ [**legal-specialist**](user/.claude/agents/legal-specialist.md) - Legal compliance and privacy regulations
+- 🟡 [**bitcoin-specialist**](agents/bitcoin-specialist.md) - BSV blockchain and cryptography
+- 💚 [**payment-specialist**](agents/payment-specialist.md) - Payment processing and financial operations
+- 🔵 [**auth-specialist**](agents/auth-specialist.md) - Authentication and identity management
+- 🤖 [**agent-specialist**](agents/agent-specialist.md) - AI agent development and tool-calling
+- 📊 [**data-specialist**](agents/data-specialist.md) - Data processing, analytics, and ETL pipelines
+- ⚖️ [**legal-specialist**](agents/legal-specialist.md) - Legal compliance and privacy regulations
 
 ### Content & Communication
-- 🟣 [**design-specialist**](user/.claude/agents/design-specialist.md) - UI/UX design and component libraries
-- 🔷 [**documentation-writer**](user/.claude/agents/documentation-writer.md) - Technical documentation and guides
-- 🟠 [**content-specialist**](user/.claude/agents/content-specialist.md) - AI-powered media generation
-- 🩷 [**research-specialist**](user/.claude/agents/research-specialist.md) - Information gathering and analysis
+- 🟣 [**design-specialist**](agents/design-specialist.md) - UI/UX design and component libraries
+- 🔷 [**documentation-writer**](agents/documentation-writer.md) - Technical documentation and guides
+- 🟠 [**content-specialist**](agents/content-specialist.md) - AI-powered media generation
+- 🩷 [**research-specialist**](agents/research-specialist.md) - Information gathering and analysis
 
 **Usage:** `"Use the [agent-name] to [specific task]"`
 
@@ -167,10 +166,6 @@ Skills are context-triggered capabilities. They activate automatically or can be
   ```
 
 ### Integrations
-- **resend-integration** - Email with Resend Audiences and webhooks
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill resend-integration
-  ```
 - **plaid-integration** - Banking data via Plaid API
   ```bash
   bunx skills add b-open-io/bopen-tools --skill plaid-integration
@@ -239,7 +234,7 @@ Hooks are opt-in automation that runs in the background. Install manually:
 **Install a hook:**
 ```bash
 mkdir -p ~/.claude/hooks
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.claude/hooks/
+cp ~/.claude/plugins/cache/bopen-tools/hooks/<hook-name>.json ~/.claude/hooks/
 ```
 
 ## Custom Statusline
@@ -276,12 +271,13 @@ See the [claude-peacock plugin](https://github.com/b-open-io/claude-peacock) for
 
 ```
 prompts/
-├── user/.claude/
-│   ├── agents/             # Specialized AI agents
-│   ├── commands/opl/       # OPL slash commands (copy to ~/.claude/commands/opl)
-│   └── hooks/              # Automation hooks (copy to ~/.claude/hooks)
+├── agents/                 # Specialized AI agents
+├── commands/opl/           # OPL slash commands (copy to ~/.claude/commands/opl)
+├── hooks/                  # Automation hooks (copy to ~/.claude/hooks)
+├── skills/                 # Agent skills
 ├── design/                 # Prompt templates (design)
 ├── development/            # Prompt templates (development)
+├── references/             # Reference documentation
 ├── README.md
 └── QUICKSTART.md
 ```
@@ -414,8 +410,9 @@ Run `/context` to see token usage and which skills are being truncated.
 ## Contributing
 
 When adding new content:
-1. **Commands** go in `user/.claude/commands/opl/[category]/`
-2. **Agents** go in `user/.claude/agents/`
-3. **Hooks** go in `user/.claude/hooks/`
-4. Use the prompt-engineer agent for creating commands
-5. Test thoroughly before committing
+1. **Commands** go in `commands/opl/[category]/`
+2. **Agents** go in `agents/`
+3. **Hooks** go in `hooks/`
+4. **Skills** go in `skills/`
+5. Use the prompt-engineer agent for creating commands
+6. Test thoroughly before committing

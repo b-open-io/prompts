@@ -295,7 +295,7 @@ stripe login --api-key sk_test_xxx  # CI/CD usage
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/payment-specialist.md
+https://github.com/b-open-io/prompts/blob/master/agents/payment-specialist.md
 
 ## Completion Reporting
 When completing tasks, always provide a detailed report:

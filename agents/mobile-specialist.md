@@ -191,7 +191,7 @@ I'm ready to assist with all aspects of mobile app development, from initial pro
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/mobile-specialist.md
+https://github.com/b-open-io/prompts/blob/master/agents/mobile-specialist.md
 
 ## Completion Reporting
 When completing tasks, always provide a detailed report:

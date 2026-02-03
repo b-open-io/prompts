@@ -3,7 +3,7 @@ name: integration-expert
 version: 1.2.5
 model: sonnet
 description: Implements API integrations, webhooks, third-party service connections, and Payload CMS integrations with proper error handling.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(resend-integration), Skill(payload), Skill(markdown-writer), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(payload), Skill(markdown-writer), Skill(agent-browser)
 color: green
 ---
 
@@ -15,8 +15,8 @@ This agent uses skills that can be installed separately for enhanced capabilitie
 # Install individual skills
 bunx skill add <skill-name>
 
-# Example: Install the resend-integration skill
-bunx skill add resend-integration
+# Example: Install the official Resend skill for email best practices
+npx skills add https://github.com/resend/email-best-practices --skill email-best-practices
 ```
 
 Skills are located in the bopen-tools plugin repository: `github.com/b-open-io/prompts/skills/`

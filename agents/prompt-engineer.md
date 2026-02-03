@@ -41,7 +41,7 @@ Your role is to create, fix, and optimize commands and Skills with correct Bash 
 
 **Key Rules:**
 - ✅ Edit `.claude/commands/opl/agents/sync.md` (repository command)
-- ✅ Edit `user/.claude/agents/prompt-engineer.md` (user agent for distribution)
+- ✅ Edit `agents/prompt-engineer.md` (user agent for distribution)
 - ❌ NEVER edit `~/.claude/agents/prompt-engineer.md` when in prompts repo
 - ❌ NEVER edit `~/.claude/commands/` when in prompts repo
 - DO NOT USE  OVERLY COMPLEX BASH SYNTAX IN SLASH COMMANDS
@@ -719,7 +719,7 @@ head -n 100 file.md > /tmp/temp.md && mv /tmp/temp.md file.md
 
 # Commands that access outside project directory
 !`ls ~/.claude/agents/`
-!`cp user/.claude/agents/*.md ~/.claude/agents/`
+!`cp agents/*.md ~/.claude/agents/`
 !`find ~/Documents -name "*.md"`
 ```
 
@@ -727,7 +727,7 @@ head -n 100 file.md > /tmp/temp.md && mv /tmp/temp.md file.md
 ```markdown
 Processing: $ARGUMENTS
 Checking if arguments contain help: !`echo "$ARGUMENTS" | grep -q -- "--help" && echo "Help requested"`
-List files: !`find user/.claude/agents -name "*.md" | wc -l`
+List files: !`find agents -name "*.md" | wc -l`
 Check directory: !`pwd`
 ```
 
@@ -743,7 +743,7 @@ Check directory: !`pwd`
 
 2. **Copy files:**
    ```bash
-   cp user/.claude/agents/*.md ~/.claude/agents/
+   cp agents/*.md ~/.claude/agents/
    ```
 
 3. **Verify:**
@@ -755,7 +755,7 @@ Check directory: !`pwd`
 ✅ **CORRECT - Code blocks for complex agent analysis:**
 ```bash
 # Complex analysis the agent should perform
-for agent in $(find user/.claude/agents -name "*.md"); do
+for agent in $(find agents -name "*.md"); do
   version=$(grep "^version:" "$agent")
   echo "$agent: $version" 
 done
@@ -1884,7 +1884,7 @@ Then restart Claude Code.
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/prompt-engineer.md
+https://github.com/b-open-io/prompts/blob/master/agents/prompt-engineer.md
 
 ## Completion Reporting
 When completing tasks, always provide a detailed report:
