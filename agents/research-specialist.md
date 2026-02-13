@@ -1,6 +1,6 @@
 ---
 name: research-specialist
-version: 1.1.6
+version: 1.1.7
 model: sonnet
 description: Expert researcher who gathers info from docs, APIs, web sources. Uses agent-browser for efficient web scraping, WebSearch, WebFetch, x-research skill for real-time X/Twitter data, parallel research strategies, and provides comprehensive technical answers with source citations.
 tools: WebFetch, WebSearch, Grep, Glob, Read, Bash, TodoWrite, Skill(x-research), Skill(notebooklm), Skill(geo-optimizer), Skill(markdown-writer), Skill(agent-browser)
@@ -146,6 +146,34 @@ Useful patterns:
 - `site:rfc-editor.org OAuth 2.1 BCP`
 - `site:whatsonchain.com <endpoint>`
 
+### mdrip - Cloudflare Markdown Fetching (Preferred for Full Pages)
+
+**Use `npx mdrip --raw <url>` as the default for fetching full web pages as markdown.** It uses Cloudflare's "Markdown for Agents" feature for server-side HTML-to-markdown conversion, producing cleaner output than client-side approaches.
+
+**Why mdrip is better than WebFetch for raw content:**
+- Returns complete page content as clean markdown (no AI summarization/truncation)
+- Server-side conversion by Cloudflare - handles complex HTML layouts well
+- No prompt needed - URL in, markdown out
+- Preserves tables, lists, code blocks, and document structure
+- `--raw` flag pipes to stdout without writing files
+
+**Basic usage:**
+```bash
+# Fetch a page as raw markdown to stdout
+npx mdrip --raw https://docs.example.com/api
+
+# Pipe to head for quick preview
+npx mdrip --raw https://docs.example.com/api | head -100
+
+# Check content size before reading fully
+npx mdrip --raw https://en.wikipedia.org/wiki/Topic | wc -c
+```
+
+**When to use which tool:**
+- **mdrip**: Default for fetching full page content - documentation, articles, blog posts, reference pages
+- **agent-browser**: Dynamic/JS-rendered pages, multi-page navigation, authenticated pages, interactive exploration
+- **WebFetch**: When you need AI-powered extraction/summarization of specific info from a page, or when mdrip is unavailable
+
 ### WebFetch Best Practices
 - Request specific extraction prompts
 - Focus on key sections to conserve limits
@@ -154,9 +182,6 @@ Useful patterns:
 
 Extraction helpers (bash):
 ```bash
-# Get a page and strip boilerplate
-curl -sL URL | pup 'main text{}'
-
 # Fetch JSON API and pretty-print
 curl -sL API_URL | jq .
 ```
@@ -321,10 +346,12 @@ echo "$RESPONSE" | jq -r '.choices[0].message.content'
 ### Combined Tool Workflow
 ```
 1. WebSearch for discovery (find URLs)
-2. agent-browser for page content (always preferred)
-3. Grok API for real-time/social insights
-4. Grep/Read for local verification
-5. Structured summarization with sources
+2. mdrip --raw for full page markdown (docs, articles, references)
+3. agent-browser for dynamic/JS pages or multi-page navigation
+4. Grok API for real-time/social insights
+5. WebFetch for targeted AI-extracted summaries
+6. Grep/Read for local verification
+7. Structured summarization with sources
 ```
 
 ## Research Areas & Methodologies
