@@ -169,8 +169,224 @@ Run with: `source .env.local && bunx tsx scripts/create-post.ts`
 
 **Note**: If Drizzle prompts for schema migration, answer 'n' and use REST API instead.
 
+## Payload CLI Commands
+
+The Payload CLI provides comprehensive database and project management:
+
+### Migration Commands
+```bash
+# Check migration status
+bun run payload migrate:status
+
+# Run pending migrations
+bun run payload migrate
+
+# Create a new migration
+bun run payload migrate:create migration-name
+
+# Rollback last migration
+bun run payload migrate:down
+
+# Rollback and re-run all migrations
+bun run payload migrate:refresh
+
+# Reset all migrations (rollback everything)
+bun run payload migrate:reset
+
+# Fresh start - drop all tables and re-run migrations
+bun run payload migrate:fresh
+```
+
+### Generation Commands
+```bash
+# Generate TypeScript types from collections
+bun run payload generate:types
+
+# Generate import map
+bun run payload generate:importmap
+
+# Generate Drizzle database schema
+bun run payload generate:db-schema
+```
+
+### Utility Commands
+```bash
+# Show Payload project info
+bun run payload info
+
+# Run a custom script with Payload initialized
+bun run payload run scripts/my-script.ts
+```
+
+### Jobs Commands (if using Payload Jobs)
+```bash
+# Run queued jobs
+bun run payload jobs:run
+
+# Run jobs with options
+bun run payload jobs:run --limit 10 --queue default
+
+# Handle scheduled jobs
+bun run payload jobs:handle-schedules
+```
+
+## Database Security (RLS)
+
+**CRITICAL**: Payload uses application-level access control by default. For production security, implement Row Level Security (RLS) at the database level:
+
+### Why RLS Matters
+- Application-level filtering can be bypassed with direct database connections
+- RLS enforces security at the database level
+- Even table owners cannot bypass RLS when `FORCE ROW LEVEL SECURITY` is enabled
+
+### RLS Migration Template
+
+Create a migration for user-data tables:
+
+```typescript
+// src/migrations/YYYYMMDDHHMMSS_enable_rls.ts
+import { type MigrateUpArgs, type MigrateDownArgs, sql } from "@payloadcms/db-postgres";
+
+export async function up({ db }: MigrateUpArgs): Promise<void> {
+  // Helper function to check admin status
+  await db.execute(sql`
+    CREATE OR REPLACE FUNCTION is_admin()
+    RETURNS BOOLEAN
+    LANGUAGE SQL
+    STABLE
+    SECURITY DEFINER
+    AS $$
+      SELECT COALESCE(
+        CURRENT_SETTING('app.current_user_role', TRUE) = 'admin',
+        FALSE
+      );
+    $$;
+  `);
+
+  // Enable RLS on sensitive tables
+  await db.execute(sql`
+    ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE users FORCE ROW LEVEL SECURITY;
+    
+    -- Users can only access their own data
+    CREATE POLICY users_select_policy ON users
+      FOR SELECT USING (id = (SELECT get_current_user_id()) OR (SELECT is_admin()));
+    
+    CREATE POLICY users_update_policy ON users
+      FOR UPDATE USING (id = (SELECT get_current_user_id()) OR (SELECT is_admin()));
+  `);
+}
+
+export async function down({ db }: MigrateDownArgs): Promise<void> {
+  await db.execute(sql`DROP FUNCTION IF EXISTS is_admin();`);
+  await db.execute(sql`ALTER TABLE users DISABLE ROW LEVEL SECURITY;`);
+}
+```
+
+### Tables Requiring RLS
+- `users` - User profiles and sensitive data
+- `api_keys` - API credentials
+- `deposits` - Financial transaction data
+- `usage_logs` - Audit trails and usage data
+- Any table with user-specific data
+
+### Performance Optimization
+- Always add indexes on columns used in RLS policies (e.g., `user_id`)
+- Use `(SELECT function())` pattern for caching auth checks per query
+- Create helper functions with `SECURITY DEFINER` for complex logic
+
+## Migration Workflows
+
+### Development Mode vs Migrations
+
+**Development Mode (Push)**:
+- Automatic schema updates via `push: true` (default)
+- Good for rapid prototyping
+- NOT for production
+
+**Migration Mode**:
+- Explicit schema control via migration files
+- Required for production databases
+- Version-controlled schema changes
+
+### Typical Workflow
+
+1. **Develop locally with push mode** (default)
+   - Make changes to Payload config
+   - Drizzle automatically pushes changes to local DB
+
+2. **Create migration when feature is complete**
+   ```bash
+   bun run payload migrate:create feature-name
+   ```
+
+3. **Review generated migration** before committing
+
+4. **Run migrations in production** before deployment
+   ```bash
+   # In CI/CD pipeline
+   bun run payload migrate && bun run build
+   ```
+
+### Migration Sync Issues
+
+If you get "dev mode" warnings when running migrations:
+
+```bash
+# Mark existing migrations as already run
+psql "$DATABASE_URL" -c "
+INSERT INTO payload_migrations (name, batch, created_at, updated_at)
+SELECT * FROM (VALUES 
+  ('20250101_000000_migration_name', 1, NOW(), NOW())
+) AS v(name, batch, created_at, updated_at)
+WHERE NOT EXISTS (
+  SELECT 1 FROM payload_migrations WHERE name = v.name
+);
+"
+```
+
+## Project Maintenance
+
+### Dependency Updates
+```bash
+# Check for outdated packages
+bun outdated
+
+# Update specific packages
+bun update package-name
+
+# Update all packages
+bun update
+```
+
+### Type Generation
+After modifying collections or globals:
+```bash
+bun run generate:types
+```
+
+### Database Connection
+Payload uses connection pooling. Common connection strings:
+- `DATABASE_URI` - Primary connection (often pooled)
+- `POSTGRES_URL_NON_POOLING` - Direct connection for migrations
+
+### Troubleshooting
+
+**Migration timeout**: Use non-pooled connection string
+```bash
+# Use POSTGRES_URL_NON_POOLING for migrations
+DATABASE_URL=$(grep POSTGRES_URL_NON_POOLING .env.local | cut -d'"' -f2)
+```
+
+**Drizzle schema prompts**: Answer 'n' to avoid conflicts with migrations
+
+**Type errors after updates**: Run `bun run generate:types`
+
 ## Additional Resources
 
 - **`references/lexical-format.md`** - Complete Lexical node type reference
 - **`references/rest-api.md`** - Full REST API documentation
+- **`references/database-security.md`** - RLS and security best practices
 - **`scripts/md_to_lexical.py`** - Markdown to Lexical converter
+- **`scripts/create-post.ts`** - Example local API script
+- **Payload Docs**: https://payloadcms.com/docs
