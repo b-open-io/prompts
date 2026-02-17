@@ -268,11 +268,15 @@ After all agents complete and the build passes locally, provision the database B
 
 ### 5a. Link to Vercel
 
+**Ask the user which Vercel team/org to deploy to before running anything.** `bunx vercel link` is interactive and will prompt for team selection -- if the agent runs it non-interactively or passes wrong flags, it defaults to the user's personal account, which is almost always wrong for team projects. The same applies to `bunx vercel --yes` or similar shortcut flags that skip prompts.
+
+Best approach: instruct the user to run it themselves, or run it interactively so the user can select the correct team:
+
 ```bash
 bunx vercel link
 ```
 
-This creates the Vercel project but does NOT deploy.
+This creates the Vercel project but does NOT deploy. Confirm with the user that it linked to the correct org before proceeding.
 
 ### 5b. Provision the database
 
