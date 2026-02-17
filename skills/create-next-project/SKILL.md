@@ -308,7 +308,13 @@ After linking, pull the env vars that Vercel and the storage integration set aut
 vercel env pull
 ```
 
-This creates `.env.local` with all env vars from the Vercel project (including any auto-set by storage integrations like `CONVEX_DEPLOY_KEY`). Check the file to see what's there and what's still missing.
+This creates `.env.local` with all env vars from the Vercel project. At this stage the expected state is:
+
+- `CONVEX_DEPLOY_KEY` -- **present** (auto-set by the Convex Vercel integration)
+- `NEXT_PUBLIC_CONVEX_URL` -- **missing** (this gets set after `bunx convex dev` connects the local project to the Convex deployment in Step 5e)
+- All other env vars from `.env.vercel` -- present
+
+This is normal. Do not treat the missing `NEXT_PUBLIC_CONVEX_URL` as an error.
 
 ### 5e. Provision the database
 
