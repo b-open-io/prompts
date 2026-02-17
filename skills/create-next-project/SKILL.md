@@ -316,88 +316,107 @@ This creates `.env.local` with all env vars from the Vercel project. At this sta
 
 This is normal. Do not treat the missing `NEXT_PUBLIC_CONVEX_URL` as an error.
 
-### 5e. Provision the database
+### 5e. Complete database setup
 
-#### Convex (via Vercel Storage)
+#### Convex
 
-Tell the user:
+**Always provision Convex through the Vercel Marketplace integration** (Step 5b). Never create a standalone Convex project separately -- the Vercel integration automatically connects deploy keys, handles preview deployments, and syncs env vars. Setting up Convex outside the marketplace when deploying to Vercel creates disconnected projects and manual sync headaches.
 
-> Go to your Vercel project dashboard > **Storage** > **Add** > **Convex**
->
-> Then follow the 4-step setup:
->
-> **Step 1: Connect to the Convex CLI**
-> ```bash
-> bunx convex login --vercel
-> ```
->
-> **Step 2: Install Convex into your codebase**
-> We already have Convex installed and configured. Skip `npm create convex@latest`.
-> To link local development, run:
-> ```bash
-> bunx convex dev
-> ```
-> Follow the prompts to "Choose an existing project" in your Convex team created for the Vercel marketplace, and select this project. This generates the real `convex/_generated/` files (replacing the stubs) and pushes your schema.
->
-> **Step 3: Connect a Vercel project**
-> In the Convex dashboard, connect your Convex project to your Vercel project. This syncs deploy keys (`CONVEX_DEPLOY_KEY`) to Vercel automatically.
->
-> **IMPORTANT**: Enable both "Production" and "Preview" environments. Keep the "Custom Prefix" field **empty**.
->
-> **Step 4: Override the Vercel build command**
-> In Vercel project Settings > Build and Deployment, override the build command:
-> ```
-> bunx convex deploy --cmd 'bun run build'
-> ```
-> This deploys the Convex backend (schema + functions) before building the Next.js frontend, ensuring the database exists when the app builds.
+After Vercel Storage adds Convex, the dashboard shows a 4-step setup guide. Walk the user through it:
 
-After Convex is provisioned, set server-side env vars in the Convex deployment:
+**Convex Step 1: Connect to the Convex CLI**
 
 ```bash
-bunx convex env set SITE_URL "https://your-domain.com" --prod
-bunx convex env set BETTER_AUTH_SECRET "$(openssl rand -hex 32)" --prod
-# Add auth-specific vars based on selections:
-bunx convex env set NEXT_PUBLIC_SIGMA_CLIENT_ID "your-app-name" --prod
-bunx convex env set NEXT_PUBLIC_SIGMA_AUTH_URL "https://auth.sigmaidentity.com" --prod
-bunx convex env set SIGMA_MEMBER_PRIVATE_KEY "<your-wif-key>" --prod
+bunx convex login --vercel
 ```
 
-#### Turso (via Vercel Storage or CLI)
+This authenticates the CLI with the Vercel-managed Convex team.
 
-Tell the user:
+**Convex Step 2: Link local project to Convex deployment**
 
-> Go to Vercel dashboard > **Storage** > **Add** > **Turso**
->
-> Or provision via CLI:
+We already have `convex/` with schema and functions. Skip `npm create convex@latest`. Run:
+
+```bash
+bunx convex dev
+```
+
+Follow the prompts to "Choose an existing project" and select the project from the Vercel-managed Convex team. This:
+- Generates the real `convex/_generated/` files (replacing the stubs)
+- Pushes your schema and functions to the **dev** deployment
+- Writes `NEXT_PUBLIC_CONVEX_URL` to `.env.local`
+- Starts watching for changes
+
+**Keep `convex dev` running** in its own terminal during development. It continuously syncs your `convex/` code to the dev deployment.
+
+**Convex Step 3: Connect Convex project to Vercel project**
+
+This may already be done by the Vercel Storage integration. If not, in the Convex dashboard, connect to the Vercel project. This syncs `CONVEX_DEPLOY_KEY` to Vercel automatically.
+
+**IMPORTANT**: Enable both "Production" and "Preview" environments. Keep the "Custom Prefix" field **empty**.
+
+**Convex Step 4: Override the Vercel build command**
+
+In Vercel project Settings > Build and Deployment, override the build command:
+
+```
+bunx convex deploy --cmd 'bun run build'
+```
+
+This is critical: `convex deploy` pushes functions/schema to the **production** Convex deployment, then runs `bun run build` which builds the Next.js frontend with `NEXT_PUBLIC_CONVEX_URL` pointing at production.
+
+**Set Convex server-side env vars:**
+
+Convex has its own environment variables separate from Vercel. These are set via the Convex CLI and are available inside Convex functions (actions, mutations, etc.).
+
+**CRITICAL: `bunx convex env set` targets the DEV deployment by default, NOT production.** Always use `--prod` for production vars:
+
+```bash
+# Production (deployed app)
+bunx convex env set SITE_URL "https://your-domain.com" --prod
+bunx convex env set BETTER_AUTH_SECRET "$(openssl rand -hex 32)" --prod
+
+# Dev (local development) -- same vars, different values
+bunx convex env set SITE_URL "http://localhost:3000"
+bunx convex env set BETTER_AUTH_SECRET "dev-secret-change-me"
+```
+
+Without `--prod`, you are ONLY setting vars on the dev deployment. Your production app will have missing env vars and fail silently or throw errors. This mismatch is a common source of hours-long debugging sessions.
+
+**Commit the generated files:**
+
+After `convex dev` runs, commit the real `convex/_generated/` files:
+
+```bash
+git add convex/_generated/
+git commit -m "Add Convex generated files from dev deployment"
+```
+
+These should be checked in so teammates can type-check without running `convex dev`.
+
+#### Turso
+
+> Provision via Vercel Storage or CLI:
 > ```bash
 > turso db create <name>
-> turso db show <name> --url     # Get TURSO_DATABASE_URL
-> turso db tokens create <name>  # Get TURSO_AUTH_TOKEN
+> turso db show <name> --url     # TURSO_DATABASE_URL
+> turso db tokens create <name>  # TURSO_AUTH_TOKEN
 > ```
->
-> Set both on Vercel via dashboard or CLI.
+> Set both on Vercel.
 
-#### PostgreSQL (via Vercel Storage or external)
+#### PostgreSQL
 
-Tell the user:
-
-> Go to Vercel dashboard > **Storage** > **Add** > **Neon** (or use an external provider like Supabase, Railway)
->
+> Add via Vercel Storage (Neon) or use an external provider (Supabase, Railway).
 > Set `DATABASE_URL` on Vercel.
 
 #### SQLite
 
 > Local development only. No provisioning needed. Uses `./dev.db`.
 
-### 5c. Import remaining env vars
-
-Tell the user:
-
-> In Vercel dashboard > Settings > Environment Variables, import the `.env.vercel` file from your repo root. Fill in any values that are still empty (the file has comments explaining where to get each one).
-
 ---
 
-## Step 6: First Deploy
+## Step 6: First Deploy + Ongoing Workflow
+
+### First deploy
 
 Now that the database is provisioned and env vars are set, push to trigger the first deploy:
 
@@ -405,34 +424,56 @@ Now that the database is provisioned and env vars are set, push to trigger the f
 git push -u origin main
 ```
 
-Or if the user hasn't set up a GitHub remote yet, ask which org/owner they want and do it now:
+Or if the user hasn't set up a GitHub remote yet, list orgs with `gh org list`, ask the user which one, then:
 
 ```bash
-gh repo create <owner>/<name> --private --source=. --remote=origin --push
+gh repo create <org>/<name> --private --source=. --remote=origin --push
 ```
 
-The deploy will:
-1. Run `bunx convex deploy --cmd 'bun run build'` (if Convex, per the build override)
-2. Deploy Convex functions and schema first
-3. Build the Next.js app with `NEXT_PUBLIC_CONVEX_URL` available
-4. Deploy to Vercel
+The Vercel deploy will:
+1. Run `bunx convex deploy --cmd 'bun run build'` (per the build override)
+2. `convex deploy` pushes functions/schema to the **production** Convex deployment
+3. `convex deploy` sets `NEXT_PUBLIC_CONVEX_URL` to the production URL
+4. `bun run build` builds the Next.js app pointing at production Convex
+5. Vercel deploys the built frontend
 
-### Local development
+### Ongoing development workflow
 
-For local dev, the user runs two terminals:
+**Two terminals, always:**
+
 ```bash
-# Terminal 1: Convex dev server
+# Terminal 1: Convex dev server (watches convex/ and pushes to DEV deployment)
 bunx convex dev
 
-# Terminal 2: Next.js dev server
+# Terminal 2: Next.js dev server (uses NEXT_PUBLIC_CONVEX_URL from .env.local pointing at DEV)
 bun dev
 ```
 
+`convex dev` continuously:
+- Pushes backend code changes to your dev deployment on every save
+- Regenerates `convex/_generated/` types
+- Enforces schema changes
+- Shows function logs
+
+Your local Next.js app (via `bun dev`) connects to the **dev** Convex deployment. The production app connects to the **production** deployment. They have separate data, separate env vars, and separate function code.
+
+### Dev vs Production -- key differences
+
+| | Dev deployment | Production deployment |
+|---|---|---|
+| **Connected by** | `bunx convex dev` | `bunx convex deploy` (Vercel build) |
+| **URL in** | `.env.local` | Set automatically by `convex deploy` during build |
+| **Env vars set with** | `bunx convex env set VAR val` | `bunx convex env set VAR val --prod` |
+| **Data** | Separate (dev data) | Separate (production data) |
+| **Schema pushed by** | `convex dev` (on save) | `convex deploy` (on Vercel build) |
+| **When to use** | Local development | Deployed app |
+
 ### Verification
 
-After deploy completes:
+After first deploy completes:
 - Visit the Vercel URL and confirm the app loads without client errors
-- Check Convex dashboard to confirm schema was pushed
+- Check Convex dashboard to confirm schema was pushed to production
+- Verify both dev and production deployments exist in the Convex dashboard
 - Test auth flow if configured
 - Confirm theme toggle works
 
