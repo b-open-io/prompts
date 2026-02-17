@@ -4,15 +4,33 @@ Exact configurations and setup patterns for the core stack.
 
 ## Biome Configuration
 
-`create-next-app@latest` with the `--biome` flag scaffolds the project with Biome pre-configured. No manual ESLint removal or `bunx biome init` needed.
+`create-next-app` does NOT have a `--biome` flag. It installs ESLint by default. After scaffolding, manually remove ESLint and replace with Biome:
 
-After scaffolding, add Tailwind v4 directive support so Biome does not error on `@theme`, `@apply`, and other Tailwind directives. Merge this into the generated `biome.json`:
+```bash
+bun remove eslint eslint-config-next
+rm -f eslint.config.mjs
+bun add -d @biomejs/biome
+```
+
+Create `biome.json` with the Biome 2.x config:
 
 ```json
 {
-  "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
-  "organizeImports": {
-    "enabled": true
+  "$schema": "https://biomejs.dev/schemas/2.4.2/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!src/components/ui", "!.claude"]
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   },
   "linter": {
     "enabled": true,
@@ -32,9 +50,17 @@ After scaffolding, add Tailwind v4 directive support so Biome does not error on 
 }
 ```
 
+Biome 2.x differences from 1.x:
+- `organizeImports` is now under `assist.actions.source`, NOT the old `organizeImports.enabled` top-level key
+- There is NO `files.ignore` key. Use negation patterns in `files.includes` (e.g., `"!src/components/ui"`)
+- Folder ignores do NOT use trailing `/**` (since Biome 2.2.0). Just `"!foldername"`
+- `vcs.useIgnoreFile: true` respects `.gitignore` so `.next/` is auto-excluded
+- `src/components/ui` is excluded because shadcn generates those components
+- `.claude` directory is excluded because it has its own formatting conventions
+
 The `css.parser.tailwindDirectives` setting is required for Tailwind v4 projects using `@theme` blocks, `@apply`, `@variant`, and other Tailwind-specific CSS directives. Without it, Biome will report parse errors on these directives.
 
-After updating biome.json, run `bunx biome check --write .` to fix all files. The project must lint 100% clean at every phase.
+After creating biome.json, run `bunx biome check --write .` to fix all files. The project must lint 100% clean at every phase.
 
 ## Theme Provider (next-themes)
 
@@ -87,4 +113,4 @@ shadcn/ui init will add CSS variables for theming. tweakcn themes (installed via
 }
 ```
 
-The `--biome` flag in create-next-app sets up the lint script automatically, but verify it matches the above pattern. Remove any `"lint": "next lint"` if present.
+Since ESLint was replaced manually, update the lint scripts to use Biome. Remove any `"lint": "next lint"` if present and replace with the above pattern.

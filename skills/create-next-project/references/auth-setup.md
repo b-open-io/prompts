@@ -37,12 +37,43 @@ export const { signIn, signUp, signOut, useSession } = authClient
 
 ### API Route (`src/app/api/auth/[...all]/route.ts`)
 
+For standard (non-Convex) setups:
+
 ```ts
 import { auth } from "@/lib/auth"
 import { toNextJsHandler } from "better-auth/next-js"
 
 export const { GET, POST } = toNextJsHandler(auth)
 ```
+
+For Convex setups, use **lazy initialization** to prevent build-time crashes when env vars are not yet set:
+
+```ts
+import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
+
+function createHandler() {
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+  const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
+  if (!convexUrl || !convexSiteUrl) {
+    throw new Error(
+      "NEXT_PUBLIC_CONVEX_URL and NEXT_PUBLIC_CONVEX_SITE_URL must be set",
+    );
+  }
+  return convexBetterAuthNextJs({ convexUrl, convexSiteUrl }).handler;
+}
+
+export const GET = async (req: Request) => {
+  const { GET } = createHandler();
+  return GET(req);
+};
+
+export const POST = async (req: Request) => {
+  const { POST } = createHandler();
+  return POST(req);
+};
+```
+
+The `convexBetterAuthNextJs` function throws eagerly at import time if env vars are missing. Wrapping it in a function defers evaluation to request time, allowing builds to succeed without env vars.
 
 ### Middleware (`src/middleware.ts`)
 
@@ -92,10 +123,16 @@ Already enabled in base config above. The login-05 and signup-05 shadcn blocks p
 ```
 
 ```ts
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} environment variable is required`);
+  return value;
+}
+
 socialProviders: {
   google: {
-    clientId: process.env.GOOGLE_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    clientId: requireEnv("GOOGLE_CLIENT_ID"),
+    clientSecret: requireEnv("GOOGLE_CLIENT_SECRET"),
   },
 },
 ```
@@ -111,8 +148,8 @@ socialProviders: {
 ```ts
 socialProviders: {
   github: {
-    clientId: process.env.GITHUB_CLIENT_ID!,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    clientId: requireEnv("GITHUB_CLIENT_ID"),
+    clientSecret: requireEnv("GITHUB_CLIENT_SECRET"),
   },
 },
 ```
@@ -130,8 +167,8 @@ socialProviders: {
 ```ts
 socialProviders: {
   apple: {
-    clientId: process.env.APPLE_CLIENT_ID!,
-    clientSecret: process.env.APPLE_CLIENT_SECRET!,
+    clientId: requireEnv("APPLE_CLIENT_ID"),
+    clientSecret: requireEnv("APPLE_CLIENT_SECRET"),
   },
 },
 ```
@@ -185,12 +222,26 @@ export const authClient = createAuthClient({
 
 ### Convex
 
-Use the Convex adapter for better-auth. Follow the `Skill(convex)` skill for Convex setup:
+Use the Convex adapter for better-auth via `@convex-dev/better-auth`. Follow the `Skill(convex)` skill for Convex setup:
 
 ```bash
-bun add convex better-auth-convex
-bunx convex dev --once  # Initialize Convex project
+bun add convex @convex-dev/better-auth
+bunx convex init
 ```
+
+IMPORTANT: Create `convex/convex.config.ts` to register the better-auth component:
+
+```ts
+import betterAuth from "@convex-dev/better-auth/convex.config";
+import { defineApp } from "convex/server";
+
+const app = defineApp();
+app.use(betterAuth);
+
+export default app;
+```
+
+Also create `convex/_generated/` stub files so the build passes before a Convex deployment exists. See the main SKILL.md Phase 4 for the full stub file contents.
 
 ### Turso/libSQL
 
@@ -201,11 +252,16 @@ bun add @libsql/client
 ```ts
 import { betterAuth } from "better-auth"
 
+const tursoUrl = process.env.TURSO_DATABASE_URL;
+const tursoToken = process.env.TURSO_AUTH_TOKEN;
+if (!tursoUrl) throw new Error("TURSO_DATABASE_URL is required");
+if (!tursoToken) throw new Error("TURSO_AUTH_TOKEN is required");
+
 export const auth = betterAuth({
   database: {
     type: "sqlite",
-    url: process.env.TURSO_DATABASE_URL!,
-    authToken: process.env.TURSO_AUTH_TOKEN!,
+    url: tursoUrl,
+    authToken: tursoToken,
   },
 })
 ```
@@ -217,9 +273,12 @@ bun add pg
 ```
 
 ```ts
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) throw new Error("DATABASE_URL is required");
+
 database: {
   type: "postgres",
-  url: process.env.DATABASE_URL!,
+  url: databaseUrl,
 },
 ```
 
