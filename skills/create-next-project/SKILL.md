@@ -1,12 +1,12 @@
 ---
 name: create-next-project
-description: This skill should be used when the user asks to "create a new project", "scaffold a Next.js app", "initialize a new app", "start a new project", "set up a new Next.js project", or mentions "create-next-project". Provides an opinionated full-stack Next.js project initialization with Biome, Tailwind v4, shadcn/ui, TanStack Query, better-auth, and Vercel deployment.
-version: 1.2.0
+description: This skill should be used when the user asks to "create a new project", "scaffold a Next.js app", "initialize a new app", "start a new project", "set up a new Next.js project", or mentions "create-next-project". Provides a guided, opinionated full-stack Next.js project initialization with Biome, Tailwind v4, shadcn/ui, better-auth, and Vercel deployment. Uses agent teams for parallel execution.
+version: 2.0.0
 ---
 
 # Create Next.js Project
 
-Opinionated full-stack Next.js project scaffolding. Single app, App Router, TypeScript, with interactive prompts for auth methods, database, and optional packages.
+Guided full-stack Next.js project scaffolding. Six interactive steps that scaffold, configure, and deploy a production-ready app using agent teams for parallel execution.
 
 ## Core Stack (Always Included)
 
@@ -16,67 +16,35 @@ Opinionated full-stack Next.js project scaffolding. Single app, App Router, Type
 - **shadcn/ui** with dashboard-01 block as app shell
 - **tweakcn** for theme customization (web editor at tweakcn.com)
 - **next-themes** for light/dark mode
-- **TanStack Query** for all client-side data fetching
 - **better-auth** for authentication
 - **Vercel** for deployment
 
-## Interactive Prompts
+## Data Layer (depends on database choice)
 
-Before scaffolding, prompt the user for each of these decisions. Use AskUserQuestion with multiple-choice options.
+- **Convex** selected: Use Convex's built-in `useQuery`/`useMutation` for all client data. NO TanStack Query needed.
+- **All other databases**: Install TanStack Query for client-side data fetching.
 
-### Required Prompts
+---
 
-1. **Project name** - free text, lowercase-hyphenated
-2. **Auth methods** (multi-select):
-   - Email/password (recommended default)
-   - OAuth providers (Google, GitHub, Apple)
-   - Sigma/Bitcoin auth (BSV-enabled apps)
-   - Passkeys/WebAuthn
-3. **Database**:
-   - Convex (real-time, serverless)
-   - Turso/libSQL (edge SQLite)
-   - PostgreSQL (traditional)
-   - SQLite (local development)
-4. **Optional packages** (multi-select):
-   - `@ai-sdk/openai` + `ai` - AI/agent features
-   - `@bsv/sdk` - BSV blockchain
-   - `@1sat-lexi/js` - 1Sat Ordinals
-   - `clawnet` - ClawNet agent platform
-   - `resend` - Transactional email
-   - None
-5. **Skills to reference in CLAUDE.md** (multi-select from installed plugins):
-   - List available skills from user's installed plugins
-   - Always include `vercel-react-best-practices` and `vercel-composition-patterns`
+## Step 0: Load Skills
 
-## Step 0: Invoke Required Skills
-
-BEFORE doing any scaffolding work, invoke these skills to load their guidance into context:
+BEFORE any work, invoke these skills to load guidance into context:
 
 1. `Skill(vercel-react-best-practices)` - React/Next.js optimization rules
 2. `Skill(vercel-composition-patterns)` - Component composition patterns
 3. `Skill(better-auth-best-practices)` - Auth integration patterns
 
-Apply their guidance throughout all phases. These skills inform architecture decisions, component structure, and data fetching patterns used during setup.
-
-## Execution Flow
-
-Execute phases in order. Use `bun` for ALL commands - never `npm`, `npx`, or `yarn`. Each phase ends with a checkpoint that includes a build verification and a git commit.
-
-### Parallelization (Claude Code Agent Teams)
-
-After Phase 1 completes, subsequent phases can be parallelized using agent teams:
-
-- **Agent 1**: UI foundation + layout (Phases 2 + 3)
-- **Agent 2**: Data layer setup (Phase 4) -- if Convex, creates the stub files that Agent 3 needs
-- **Agent 3**: Auth setup (Phase 5) -- depends on Phase 4 completing first for Convex `_generated/` stubs
-
-Provide each agent with thorough context since they lack conversation history. If not using agent teams, execute phases sequentially.
+Apply their guidance throughout all steps.
 
 ---
 
-### Phase 1: Scaffold
+## Step 1: Scaffold + Git + Repo
 
-Scaffold the project with create-next-app. Note: `create-next-app` does NOT have a `--biome` flag. It installs ESLint by default, which we remove and replace with Biome manually.
+This step gets the bare project on disk and into version control.
+
+### 1a. Scaffold
+
+If the target directory already has files (e.g., a `.claude/` directory), move them to `/tmp` first, scaffold, then move them back.
 
 ```bash
 bunx create-next-app@latest <project-name> \
@@ -85,71 +53,22 @@ bunx create-next-app@latest <project-name> \
 cd <project-name>
 ```
 
-**Replace ESLint with Biome:**
+### 1b. Replace ESLint with Biome
 
-1. Remove ESLint and its config:
+`create-next-app` does NOT have a `--biome` flag. It installs ESLint by default.
+
 ```bash
 bun remove eslint eslint-config-next
 rm -f eslint.config.mjs
-```
-
-2. Install Biome:
-```bash
 bun add -d @biomejs/biome
 ```
 
-3. Create `biome.json` with the Biome 2.x config:
-```json
-{
-  "$schema": "https://biomejs.dev/schemas/2.4.2/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "files": {
-    "includes": ["**", "!src/components/ui", "!.claude"]
-  },
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "tab"
-  },
-  "css": {
-    "parser": {
-      "tailwindDirectives": true
-    }
-  }
-}
-```
-
-Key Biome 2.x notes:
-- `organizeImports` is under `assist.actions.source`, NOT the old `organizeImports.enabled` top-level key
-- There is NO `files.ignore` key. Use negation patterns in `files.includes` (e.g., `"!src/components/ui"`)
+Create `biome.json` -- see `references/stack-defaults.md` for the exact config. Key Biome 2.x rules:
+- `organizeImports` goes under `assist.actions.source` (not the old top-level key)
+- There is NO `files.ignore`. Use negation patterns in `files.includes` (e.g., `"!src/components/ui"`)
 - Folder ignores do NOT use trailing `/**` (since Biome 2.2.0). Just `"!foldername"`
-- `vcs.useIgnoreFile: true` respects `.gitignore` so `.next/` is auto-excluded
-- `css.parser.tailwindDirectives: true` is required for Tailwind v4 (`@theme`, `@apply`, `@variant` directives)
-- `src/components/ui` is excluded because shadcn generates those components
-- `.claude` directory is excluded because it has its own formatting conventions
-
-4. Auto-fix all files:
-```bash
-bunx biome check --write .
-```
-
-The project must lint 100% clean at every checkpoint.
+- `vcs.useIgnoreFile: true` respects `.gitignore` so `.next/` and `node_modules/` are auto-excluded
+- `css.parser.tailwindDirectives: true` is required for Tailwind v4
 
 Update `package.json` scripts:
 ```json
@@ -164,114 +83,363 @@ Update `package.json` scripts:
 }
 ```
 
-Initialize git and verify:
+Auto-fix all files:
+```bash
+bunx biome check --write .
+```
+
+### 1c. Git init + verify
+
 ```bash
 git init
 bun run build
 bun run lint
+git add .
+git commit -m "Initial Next.js scaffold with Biome"
 ```
 
-> **CHECKPOINT 1**: `git add . && git commit -m "Initial Next.js scaffold with Biome"`
+### 1d. Ask about repo
+
+Prompt the user with 3 options:
+
+1. **Create new GitHub repo** -- ask for the org/owner and repo name. Run `gh repo create <owner>/<name> --private --source=. --remote=origin` (do NOT push yet). Never assume the user's personal account -- always ask which org/owner.
+2. **Use existing remote** -- ask for the remote URL, then `git remote add origin <url>` (do NOT push yet)
+3. **Skip for now** -- continue without remote
+
+**IMPORTANT: Do NOT push to GitHub yet.** Pushing triggers a Vercel deploy, and the deploy will fail if the database isn't provisioned. The first push happens in Step 6 after all infrastructure is set up.
 
 ---
 
-### Phase 2: UI Foundation
+## Step 2: Ask All Project Questions
 
-Initialize shadcn/ui (use `--defaults` to skip interactive prompts):
-```bash
-bunx shadcn@latest init --defaults
-```
+Now that the scaffold exists, gather ALL requirements in one round. Use `AskUserQuestion` with multiple questions.
 
-Install the dashboard block as the app shell:
-```bash
-bunx shadcn@latest add dashboard-01
-```
+### Questions to ask:
 
-IMPORTANT: The dashboard block creates example components AND a `src/app/dashboard/` route. After extracting the layout structure (sidebar/navbar + content area):
-1. Restructure into the single-layout pattern described in `references/layout-architecture.md`
-2. **Delete `src/app/dashboard/`** to avoid a dead route -- the layout components are used in the root `(app)/layout.tsx`, not at a separate `/dashboard` path
+1. **Auth methods** (multi-select):
+   - Email/password (recommended default)
+   - OAuth providers (Google, GitHub, Apple)
+   - Sigma/Bitcoin auth (BSV-enabled apps)
+   - Passkeys/WebAuthn
 
-Install next-themes for dark mode:
-```bash
-bun add next-themes
-```
+2. **Database**:
+   - Convex (real-time, serverless) -- NOTE: replaces TanStack Query with Convex's own client
+   - Turso/libSQL (edge SQLite)
+   - PostgreSQL (traditional)
+   - SQLite (local development)
 
-Set up theme provider wrapping the app. See `references/stack-defaults.md` for the ThemeProvider pattern.
+3. **Optional packages** (multi-select):
+   - `@ai-sdk/openai` + `ai` - AI/agent features
+   - `@bsv/sdk` - BSV blockchain
+   - `@1sat-lexi/js` - 1Sat Ordinals
+   - `@1sat/connect` + `@1sat/react` - 1Sat wallet integration
+   - `clawnet` - ClawNet agent platform
+   - `resend` - Transactional email
+   - None
 
-**tweakcn theme customization:**
+4. **Theme**: "Pick a theme at tweakcn.com and paste the registry URL, or skip to use the default shadcn theme."
 
-tweakcn is a web-based theme editor at [tweakcn.com](https://tweakcn.com). Users pick a theme visually, then install it via a shadcn registry URL.
+5. **Skills to reference in CLAUDE.md** (multi-select from installed plugins):
+   - List available skills
+   - Always include `vercel-react-best-practices` and `vercel-composition-patterns`
 
-Prompt the user: "Pick a theme at tweakcn.com and paste the registry URL, or skip to use the default shadcn theme."
-
-If the user provides a tweakcn URL, install it:
-```bash
-bunx shadcn@latest add <tweakcn-theme-url>
-```
-
-If skipped, proceed with the default shadcn theme.
-
-Verify: `bun run build` should pass.
-
-> **CHECKPOINT 2**: `git add . && git commit -m "Add shadcn/ui and theme support"`
+Record all answers -- they inform the research agents and build team.
 
 ---
 
-### Phase 3: Layout Architecture
+## Step 3: Dispatch Research Agents
 
-CRITICAL: Follow `references/layout-architecture.md` exactly.
+Send **parallel research agents** (using the Task tool with `run_in_background: true`) to gather context for each build workstream. Each agent reads relevant source code, docs, or skills so the build agents have everything they need.
 
-- One root layout with navbar/sidebar from dashboard-01
-- Content area renders `{children}` from route segments
-- Navigation uses Next.js `<Link>` components
-- Active route highlighting in navbar
-- NO component tree restating across routes
-- Each route is a `page.tsx` that renders only its unique content
+### Agent assignments (run simultaneously):
 
-Verify: `bun run build` should pass.
+**Research Agent 1: UI + Layout**
+- Read `references/layout-architecture.md` and `references/stack-defaults.md`
+- If user provided a tweakcn URL, note it for the build agent
+- If the project has specific layout needs (e.g., Discord-like, dashboard), research the pattern
 
-> **CHECKPOINT 3**: `git add . && git commit -m "Set up layout architecture"`
+**Research Agent 2: Auth**
+- Read `references/auth-setup.md`
+- Invoke relevant auth skills based on user selections:
+  - Sigma: `Skill(sigma-auth:setup-convex)` or `Skill(sigma-auth:setup-nextjs)`
+  - Passkeys: read better-auth passkey docs
+  - OAuth: note required env vars per provider
+- If using Convex, research the `@convex-dev/better-auth` adapter pattern
+
+**Research Agent 3: Data Layer**
+- If Convex: invoke `Skill(convex-best-practices)`, read Convex schema patterns
+- If Turso/PostgreSQL/SQLite: read `references/tanstack-query-setup.md`
+- If the project has an existing data model or old project to port from, read those source files
+- Identify all env vars the data layer needs
+
+**Research Agent 4: Optional Packages** (only if user selected packages)
+- Research configuration needs for each selected package
+- Identify env vars, provider setup, and integration patterns
+
+Wait for all research agents to complete before Step 4.
 
 ---
 
-### Phase 4: Data Layer
+## Step 4: Dispatch Build Team
 
-Install TanStack Query:
+Create an agent team (using `TeamCreate`) with specialized agents. Provide each agent with FULL context from Step 2 answers and Step 3 research results.
+
+### Team structure:
+
+**Agent 1: UI + Layout + Theme** (Phases 2-3)
+Responsibilities:
+- `bunx shadcn@latest init --defaults`
+- `bunx shadcn@latest add dashboard-01`
+- Install tweakcn theme if URL provided
+- `bun add next-themes`
+- Set up ThemeProvider (see `references/stack-defaults.md`)
+- Restructure into single-layout pattern (see `references/layout-architecture.md`)
+- Delete `src/app/dashboard/` (dead route from dashboard-01 block)
+- Create route group structure: `(app)/`, `(auth)/`
+- Run `bun run build` and `bun run lint` to verify
+- Commit: `"Add UI foundation and layout architecture"`
+
+**Agent 2: Data Layer** (Phase 4)
+Responsibilities depend on database choice:
+
+*If Convex:*
+- `bun add convex`
+- `bunx convex init` (creates `convex/` directory)
+- Create `convex/_generated/` stub files so build passes pre-deployment (see Convex Stubs section below)
+- Create `convex/schema.ts` based on project needs
+- Create query/mutation files
+- NO TanStack Query -- Convex replaces it entirely
+- Create `src/components/convex-provider.tsx`
+- Run `bun run build` to verify
+- Commit: `"Add Convex data layer"`
+
+*If other databases:*
+- Install TanStack Query: `bun add @tanstack/react-query`
+- Optionally: `bun add -d @tanstack/react-query-devtools`
+- Set up QueryProvider (see `references/tanstack-query-setup.md`)
+- Install database adapter (Turso, pg, etc.)
+- Run `bun run build` to verify
+- Commit: `"Add data layer"`
+
+**Agent 3: Auth** (Phase 5 -- depends on Agent 2 completing first if Convex)
+Responsibilities:
+- `bun add better-auth`
+- If Convex: `bun add @convex-dev/better-auth` + create `convex/convex.config.ts`
+- If Sigma: `bun add @sigma-auth/better-auth-plugin`
+- `bunx shadcn@latest add login-05 signup-05`
+- Configure server auth (`convex/auth.ts` or `src/lib/auth.ts`)
+- Configure client auth (`src/lib/auth-client.ts`)
+- Create API route handler (`src/app/api/auth/[...all]/route.ts`) -- use lazy initialization pattern for Convex
+- Create callback page if using OAuth
+- Create login/signup pages wired to auth client
+- Set up middleware for protected routes
+- Run `bun run build` to verify
+- Commit: `"Add authentication"`
+
+**Agent 4: Config + Optional Packages** (Phase 6-7)
+Responsibilities:
+- Install optional packages from user selections
+- Create `.claude/CLAUDE.md` with project conventions, commands, selected skills
+- Create `.env.vercel` with ALL env vars the project needs (see .env.vercel section below)
+- Add `.gitignore` exception for `.env.vercel`
+- Run `bun run build` and `bun run lint` final check
+- Commit: `"Add project configuration and optional packages"`
+
+### Agent coordination:
+- Agent 1 (UI) and Agent 2 (Data) can run in parallel
+- Agent 3 (Auth) must wait for Agent 2 to complete (needs data layer stubs/config)
+- Agent 4 (Config) runs after all others complete (needs to know all env vars)
+
+### What to tell each agent:
+Every agent MUST receive:
+1. The project path
+2. The user's answers from Step 2
+3. The relevant research results from Step 3
+4. The specific reference file contents they need
+5. The Biome 2.x rules (no non-null assertions, etc.)
+6. Instruction to run `bun run build` and `bun run lint` before committing
+7. Instruction to commit their work with a descriptive message
+
+---
+
+## Step 5: Provision Database via Vercel
+
+After all agents complete and the build passes locally, provision the database BEFORE the first deploy. Deploying without a database creates broken deployments and can cause duplicate/disconnected database instances.
+
+### 5a. Link to Vercel
+
 ```bash
-bun add @tanstack/react-query
+bunx vercel link
 ```
 
-Set up the QueryClientProvider. See `references/tanstack-query-setup.md` for:
-- Provider wrapping in root layout
-- Custom hook patterns for data fetching
-- ALL client-side data fetching must go through TanStack Query - no raw `fetch` in components
+This creates the Vercel project but does NOT deploy.
 
-Install the selected database adapter and configure the connection.
+### 5b. Provision the database
 
-#### Convex-Specific Setup
+Instruct the user to go to their Vercel project dashboard and add their database via **Storage**.
 
-If Convex is the selected database:
+#### Convex (via Vercel Storage)
+
+Tell the user:
+
+> Go to your Vercel project dashboard > **Storage** > **Add** > **Convex**
+>
+> Then follow the 4-step setup:
+>
+> **Step 1: Connect to the Convex CLI**
+> ```bash
+> bunx convex login --vercel
+> ```
+>
+> **Step 2: Install Convex into your codebase**
+> We already have Convex installed and configured. Skip `npm create convex@latest`.
+> To link local development, run:
+> ```bash
+> bunx convex dev
+> ```
+> Follow the prompts to "Choose an existing project" in your Convex team created for the Vercel marketplace, and select this project. This generates the real `convex/_generated/` files (replacing the stubs) and pushes your schema.
+>
+> **Step 3: Connect a Vercel project**
+> In the Convex dashboard, connect your Convex project to your Vercel project. This syncs deploy keys (`CONVEX_DEPLOY_KEY`) to Vercel automatically.
+>
+> **IMPORTANT**: Enable both "Production" and "Preview" environments. Keep the "Custom Prefix" field **empty**.
+>
+> **Step 4: Override the Vercel build command**
+> In Vercel project Settings > Build and Deployment, override the build command:
+> ```
+> bunx convex deploy --cmd 'bun run build'
+> ```
+> This deploys the Convex backend (schema + functions) before building the Next.js frontend, ensuring the database exists when the app builds.
+
+After Convex is provisioned, set server-side env vars in the Convex deployment:
 
 ```bash
-bun add convex @convex-dev/better-auth
-bunx convex init
+bunx convex env set SITE_URL "https://your-domain.com" --prod
+bunx convex env set BETTER_AUTH_SECRET "$(openssl rand -hex 32)" --prod
+# Add auth-specific vars based on selections:
+bunx convex env set NEXT_PUBLIC_SIGMA_CLIENT_ID "your-app-name" --prod
+bunx convex env set NEXT_PUBLIC_SIGMA_AUTH_URL "https://auth.sigmaidentity.com" --prod
+bunx convex env set SIGMA_MEMBER_PRIVATE_KEY "<your-wif-key>" --prod
 ```
 
-**Create `convex/convex.config.ts`** -- required when using Convex components like `@convex-dev/better-auth`:
+#### Turso (via Vercel Storage or CLI)
 
-```typescript
-import betterAuth from "@convex-dev/better-auth/convex.config";
-import { defineApp } from "convex/server";
+Tell the user:
 
-const app = defineApp();
-app.use(betterAuth);
+> Go to Vercel dashboard > **Storage** > **Add** > **Turso**
+>
+> Or provision via CLI:
+> ```bash
+> turso db create <name>
+> turso db show <name> --url     # Get TURSO_DATABASE_URL
+> turso db tokens create <name>  # Get TURSO_AUTH_TOKEN
+> ```
+>
+> Set both on Vercel via dashboard or CLI.
 
-export default app;
+#### PostgreSQL (via Vercel Storage or external)
+
+Tell the user:
+
+> Go to Vercel dashboard > **Storage** > **Add** > **Neon** (or use an external provider like Supabase, Railway)
+>
+> Set `DATABASE_URL` on Vercel.
+
+#### SQLite
+
+> Local development only. No provisioning needed. Uses `./dev.db`.
+
+### 5c. Import remaining env vars
+
+Tell the user:
+
+> In Vercel dashboard > Settings > Environment Variables, import the `.env.vercel` file from your repo root. Fill in any values that are still empty (the file has comments explaining where to get each one).
+
+---
+
+## Step 6: First Deploy
+
+Now that the database is provisioned and env vars are set, push to trigger the first deploy:
+
+```bash
+git push -u origin main
 ```
 
-**Create `convex/_generated/` stubs** so the project builds before a Convex deployment exists. Running `bunx convex init` without a deployment does NOT create the `_generated/` directory, and imports from `convex/_generated/api` will fail at build time.
+Or if the user hasn't set up a GitHub remote yet, ask which org/owner they want and do it now:
 
-Create these stub files:
+```bash
+gh repo create <owner>/<name> --private --source=. --remote=origin --push
+```
+
+The deploy will:
+1. Run `bunx convex deploy --cmd 'bun run build'` (if Convex, per the build override)
+2. Deploy Convex functions and schema first
+3. Build the Next.js app with `NEXT_PUBLIC_CONVEX_URL` available
+4. Deploy to Vercel
+
+### Local development
+
+For local dev, the user runs two terminals:
+```bash
+# Terminal 1: Convex dev server
+bunx convex dev
+
+# Terminal 2: Next.js dev server
+bun dev
+```
+
+### Verification
+
+After deploy completes:
+- Visit the Vercel URL and confirm the app loads without client errors
+- Check Convex dashboard to confirm schema was pushed
+- Test auth flow if configured
+- Confirm theme toggle works
+
+---
+
+## .env.vercel Pattern
+
+Create a `.env.vercel` file committed to the repo with ALL env vars the project needs. Known defaults are pre-filled; unknowns are left empty. Add a `.gitignore` exception:
+
+```gitignore
+# env files
+.env*
+!.env.vercel
+```
+
+Example `.env.vercel`:
+```bash
+# Vercel Environment Variables
+# Import this file into Vercel: Settings > Environment Variables > Import .env
+# Values marked with comments must be filled in during setup
+
+# Database (Convex example)
+NEXT_PUBLIC_CONVEX_URL=
+CONVEX_DEPLOY_KEY=
+
+# Site URL - set to your production domain
+NEXT_PUBLIC_CONVEX_SITE_URL=https://your-domain.com
+
+# Auth
+BETTER_AUTH_SECRET=
+
+# OAuth (if selected)
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=
+
+# Sigma Auth (if selected)
+NEXT_PUBLIC_SIGMA_CLIENT_ID=your-app-name
+NEXT_PUBLIC_SIGMA_AUTH_URL=https://auth.sigmaidentity.com
+```
+
+Only include env vars for features the user actually selected.
+
+---
+
+## Convex Stubs
+
+When using Convex, the `convex/_generated/` directory does not exist until `bunx convex dev` runs. Create stub files so `bun run build` passes pre-deployment:
 
 `convex/_generated/api.d.ts`:
 ```typescript
@@ -320,186 +488,83 @@ import type { GenericDataModel } from "convex/server";
 export type DataModel = GenericDataModel;
 ```
 
-These stubs get overwritten on first `bunx convex dev`. They exist solely to unblock `bun run build` before a deployment is created.
-
-> **CHECKPOINT 4**: **STOP** -- Before continuing, the user must:
-> 1. Create a Convex deployment: `bunx convex dev` (sets up the project in Convex dashboard)
-> 2. Create a Vercel project: `bunx vercel link` (connects the local directory)
-> 3. Set env vars on Vercel: `NEXT_PUBLIC_CONVEX_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`
->
-> If not using Convex, just verify `bun run build` passes and commit.
->
-> `git add . && git commit -m "Add data layer"`
-
----
-
-### Phase 5: Authentication
-
-Install better-auth:
-```bash
-bun add better-auth
-```
-
-Install auth UI blocks:
-```bash
-bunx shadcn@latest add login-05 signup-05
-```
-
-Configure based on user's auth method selections. See `references/auth-setup.md` for per-provider patterns.
-
-#### Convex Auth Route Handler (Lazy Initialization)
-
-When using Convex as the database with `@convex-dev/better-auth`, the auth route handler at `src/app/api/auth/[...all]/route.ts` **MUST use lazy initialization**. The `convexBetterAuthNextJs` function throws eagerly at import time if `NEXT_PUBLIC_CONVEX_URL` or `NEXT_PUBLIC_CONVEX_SITE_URL` are not set. This causes build failures in CI/CD and local builds where env vars are not yet configured.
+**Important**: If using `@convex-dev/better-auth` or other Convex components, the `api.d.ts` stub must also export `components`:
 
 ```typescript
-import { convexBetterAuthNextJs } from "@convex-dev/better-auth/nextjs";
-
-function createHandler() {
-  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
-  const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
-  if (!convexUrl || !convexSiteUrl) {
-    throw new Error(
-      "NEXT_PUBLIC_CONVEX_URL and NEXT_PUBLIC_CONVEX_SITE_URL must be set",
-    );
-  }
-  return convexBetterAuthNextJs({ convexUrl, convexSiteUrl }).handler;
-}
-
-export const GET = async (req: Request) => {
-  const { GET } = createHandler();
-  return GET(req);
-};
-
-export const POST = async (req: Request) => {
-  const { POST } = createHandler();
-  return POST(req);
-};
+import type { AnyApi } from "convex/server";
+declare const api: AnyApi;
+declare const internal: AnyApi;
+declare const components: Record<string, AnyApi>;
+export { api, internal, components };
 ```
 
-This pattern defers env var access to request time instead of module evaluation time, so the build succeeds even without env vars.
+```javascript
+import { anyApi } from "convex/server";
+export const api = anyApi;
+export const internal = anyApi;
+export const components = { betterAuth: anyApi };
+```
 
-#### Wiring Auth Pages
-
-Wire login/signup pages into the layout using route groups:
-- `(auth)/login/page.tsx` - renders login-05 block
-- `(auth)/signup/page.tsx` - renders signup-05 block
-- `(auth)/layout.tsx` - centered layout without navbar
-
-Set up middleware for protected routes.
-
-Verify: `bun run build` should pass.
-
-> **CHECKPOINT 5**: `git add . && git commit -m "Add authentication"`
+These stubs get overwritten on first `bunx convex dev`.
 
 ---
-
-### Phase 6: Optional Packages
-
-Install packages based on user selections. Add appropriate configuration files and update CLAUDE.md references.
-
----
-
-### Phase 7: Project Configuration
-
-Create `.claude/` directory with:
-- `CLAUDE.md` referencing selected skills, project conventions, and commands
-- `settings.json` if needed
-
-Create `.env.vercel` with ALL env vars the project needs (known defaults pre-filled, unknowns left empty). This file is committed to the repo and imported into Vercel during setup. Add a `.gitignore` exception for it:
-
-```gitignore
-# env files
-.env*
-!.env.vercel
-```
-
-The `.env.vercel` should include comments explaining where to get each value. Example:
-```bash
-# Vercel Environment Variables
-# Import: Settings > Environment Variables > Import .env
-
-# Database - get from your provider dashboard
-DATABASE_URL=
-
-# Auth
-BETTER_AUTH_SECRET=
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
-```
-
-Link to Vercel (if not already done in Phase 4):
-```bash
-bunx vercel link
-```
-
-Create GitHub repo and push:
-```bash
-git add .
-git commit -m "Add project configuration"
-gh repo create <project-name> --private --source=. --remote=origin --push
-```
-
-### Phase 8: Verification
-
-```bash
-bun run build
-bun run lint
-bun dev
-```
-
-Confirm the dev server starts, dashboard layout renders, auth pages load, and theme toggle works.
-
-## Key Principles
-
-- **Bun everywhere** - never npm, npx, or yarn. Use `bun`, `bunx` for everything
-- **Manual Biome setup** - `create-next-app` does NOT have a `--biome` flag. Remove ESLint after scaffolding, install `@biomejs/biome`, and create `biome.json` manually
-- **Biome 2.x config** - use `assist.actions.source.organizeImports`, negation patterns in `files.includes` (no `files.ignore`), and `css.parser.tailwindDirectives: true` for Tailwind v4
-- **No non-null assertions** - Biome's recommended rules flag `process.env.FOO!` as `noNonNullAssertion`. Always validate env vars explicitly and throw an informative error instead. Example:
-  ```typescript
-  // WRONG - Biome error
-  const url = process.env.DATABASE_URL!;
-
-  // RIGHT - validate and throw
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error("DATABASE_URL environment variable is required");
-  }
-  ```
-- **CLIs first** - use `create-next-app`, `shadcn`, `biome`, `vercel`, `gh` CLIs. Prefer CLI initialization over manual file creation
-- **Biome defaults** - no custom rules, lint 100% clean at every checkpoint
-- **TanStack Query for ALL frontend requests** - no raw fetch in components
-- **Single layout** - navbar persists, routes swap content area only
-- **Latest versions** - always `@latest` for all installations
-- **No deployment on scaffold** - git push triggers Vercel deploy automatically
-- **Build verification** - run `bun run build` at every checkpoint
-- **Lazy handler initialization** - auth route handlers that depend on env vars must defer access to request time, not module evaluation time, to avoid build crashes
-- **Explicit return types on cron actions** - when Convex cron jobs reference `internal.moduleName.functionName`, the module's action handlers must have explicit return type annotations to avoid circular type references between the cron module and the action module
 
 ## Convex Pitfalls
 
-These are common issues when using Convex as the data layer:
+1. **Missing `_generated/` stubs** -- `bunx convex init` without a deployment does not create `convex/_generated/`. Create stub files (see above) so the build passes before first deployment.
 
-1. **Missing `_generated/` stubs** -- `bunx convex init` without a deployment does not create `convex/_generated/`. Create stub files (see Phase 4) so the build passes before first deployment.
+2. **Missing `convex.config.ts`** -- required when using Convex components like `@convex-dev/better-auth`. Without it, the component is not registered and Convex fails at deploy time:
+   ```typescript
+   import betterAuth from "@convex-dev/better-auth/convex.config";
+   import { defineApp } from "convex/server";
+   const app = defineApp();
+   app.use(betterAuth);
+   export default app;
+   ```
 
-2. **Missing `convex.config.ts`** -- required when using Convex components like `@convex-dev/better-auth`. Without it, the component is not registered and Convex will fail at deploy time.
+3. **Auth handler eager initialization** -- `convexBetterAuthNextJs()` throws at import time if env vars are missing. Use the lazy initialization pattern (see `references/auth-setup.md`).
 
-3. **Auth handler eager initialization** -- `convexBetterAuthNextJs()` throws at import time if env vars are missing. Use the lazy initialization pattern (see Phase 5).
-
-4. **Circular type references in cron jobs** -- when `convex/crons.ts` references `internal.someModule.someAction`, and that module's return type depends on the `internal` type (which includes the cron module), TypeScript gets a circular reference. Fix by adding explicit return type annotations (`Promise<void>`, `Promise<string>`, etc.) to the action handlers referenced by crons.
+4. **Circular type references in cron jobs** -- when `convex/crons.ts` references `internal.someModule.someAction`, and that module's return type depends on the `internal` type, TypeScript gets a circular reference. Fix by adding explicit return type annotations to action handlers referenced by crons.
 
 5. **Env var mismatch: dev vs production** -- `bunx convex env set` targets the dev deployment by default. Always use `--prod` for production: `bunx convex env set VAR_NAME "value" --prod`.
 
-## Additional Resources
+---
 
-### Reference Files
+## Key Principles
 
-- **`references/stack-defaults.md`** - Exact configs for Biome, theme provider, Tailwind, shadcn
-- **`references/layout-architecture.md`** - Single-layout pattern with navbar and route-based content
-- **`references/auth-setup.md`** - better-auth setup per provider (email, OAuth, Sigma, passkeys)
-- **`references/tanstack-query-setup.md`** - Provider setup, custom hooks, server prefetching patterns
+- **Bun everywhere** -- never npm, npx, or yarn. Use `bun`, `bunx` for everything
+- **Manual Biome setup** -- `create-next-app` does NOT have a `--biome` flag. Remove ESLint, install Biome, create `biome.json` manually
+- **Biome 2.x config** -- `assist.actions.source.organizeImports`, negation patterns in `files.includes` (no `files.ignore`), `css.parser.tailwindDirectives: true`
+- **No non-null assertions** -- Biome flags `process.env.FOO!`. Always validate env vars and throw informatively:
+  ```typescript
+  // WRONG
+  const url = process.env.DATABASE_URL!;
+  // RIGHT
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL environment variable is required");
+  ```
+- **Lazy handler initialization** -- auth route handlers that depend on env vars must defer to request time, not module evaluation time
+- **Explicit return types on cron actions** -- avoids circular type references
+- **Convex replaces TanStack Query** -- when using Convex, use `useQuery`/`useMutation` from `convex/react`. Do NOT install TanStack Query.
+- **CLIs first** -- use `create-next-app`, `shadcn`, `biome`, `vercel`, `gh` CLIs
+- **Latest versions** -- always `@latest` for all installations
+- **Build verification** -- run `bun run build` at every commit checkpoint
+- **No push before database** -- NEVER push to GitHub before the database is provisioned via Vercel Storage. Pushing triggers a Vercel deploy that will fail without a connected database, creating broken deployments and potentially duplicate disconnected database instances
+- **Agent teams** -- in Claude Code, use `TeamCreate` to parallelize Phases 2-7. Provide each agent thorough context since they lack conversation history.
 
-### Related Skills
+## Reference Files
 
-- **`vercel-react-best-practices`** - 57 React/Next.js optimization rules
-- **`vercel-composition-patterns`** - Component composition for scalable apps
-- **`frontend-design`** - UI design avoiding generic aesthetics
-- **`better-auth-best-practices`** - Auth integration patterns
+- **`references/stack-defaults.md`** -- Exact configs for Biome, theme provider, Tailwind, shadcn
+- **`references/layout-architecture.md`** -- Single-layout pattern with navbar and route-based content
+- **`references/auth-setup.md`** -- better-auth setup per provider (email, OAuth, Sigma, passkeys)
+- **`references/tanstack-query-setup.md`** -- Provider setup, custom hooks (for non-Convex projects only)
+
+## Related Skills
+
+- **`vercel-react-best-practices`** -- React/Next.js optimization rules
+- **`vercel-composition-patterns`** -- Component composition for scalable apps
+- **`frontend-design`** -- UI design avoiding generic aesthetics
+- **`better-auth-best-practices`** -- Auth integration patterns
+- **`convex-best-practices`** -- Convex patterns (when using Convex)
+- **`sigma-auth:setup-convex`** -- Sigma auth with Convex
+- **`sigma-auth:setup-nextjs`** -- Sigma auth with Next.js (non-Convex)
