@@ -266,27 +266,51 @@ Every agent MUST receive:
 
 After all agents complete and the build passes locally, provision the database BEFORE the first deploy. Deploying without a database creates broken deployments and can cause duplicate/disconnected database instances.
 
-### 5a. Link to Vercel
+### 5a. User creates Vercel project (human-in-the-loop checkpoint)
 
-**Never guess the Vercel team/org slug.** Always look it up first:
+**STOP and instruct the user to do this themselves.** The agent should NOT create the Vercel project. The user needs to:
+
+> 1. Go to [vercel.com/new](https://vercel.com/new)
+> 2. Select the correct team/org
+> 3. Import the GitHub repo
+> 4. Import the `.env.vercel` file (Settings > Environment Variables > Import .env) and fill in any empty values
+> 5. **Do NOT deploy yet** -- add storage first (Step 5b)
+
+Wait for the user to confirm they've done this before proceeding.
+
+### 5b. User adds database via Vercel Storage (human-in-the-loop checkpoint)
+
+**STOP and instruct the user to do this themselves.** The user needs to:
+
+> Go to the Vercel project dashboard > **Storage** > **Add** > select your database
+
+### 5c. Link local project to Vercel
+
+After the user confirms the Vercel project exists and storage is added, link the local project. **Never guess the team slug** -- look it up:
 
 ```bash
 bunx vercel teams list
 ```
 
-This returns the actual team slugs (e.g., `bopen` not "bOpen/OPL"). Ask the user which team from the list, then link with the exact slug:
+Ask the user which team from the list, then link with the exact slug:
 
 ```bash
 bunx vercel link --yes --scope <team-slug>
 ```
 
-This creates the Vercel project but does NOT deploy. Confirm with the user that it linked to the correct org before proceeding.
+Confirm it linked to the correct project.
 
-The same principle applies to `gh repo create` -- list orgs with `gh org list` first, never guess the org name from what the user said conversationally.
+### 5d. Pull env vars
 
-### 5b. Provision the database
+After linking, pull the env vars that Vercel and the storage integration set automatically:
 
-Instruct the user to go to their Vercel project dashboard and add their database via **Storage**.
+```bash
+vercel env pull
+```
+
+This creates `.env.local` with all env vars from the Vercel project (including any auto-set by storage integrations like `CONVEX_DEPLOY_KEY`). Check the file to see what's there and what's still missing.
+
+### 5e. Provision the database
 
 #### Convex (via Vercel Storage)
 
