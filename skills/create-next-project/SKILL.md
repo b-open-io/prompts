@@ -496,11 +496,12 @@ Example `.env.vercel`:
 # Values marked with comments must be filled in during setup
 
 # Database (Convex example)
+# IMPORTANT: NEXT_PUBLIC_CONVEX_URL = .convex.cloud (client SDK)
+# IMPORTANT: NEXT_PUBLIC_CONVEX_SITE_URL = .convex.site (auth proxy destination)
+# These are DIFFERENT URLs! Do NOT set SITE_URL to your app domain.
 NEXT_PUBLIC_CONVEX_URL=
+NEXT_PUBLIC_CONVEX_SITE_URL=
 CONVEX_DEPLOY_KEY=
-
-# Site URL - set to your production domain
-NEXT_PUBLIC_CONVEX_SITE_URL=https://your-domain.com
 
 # Auth
 BETTER_AUTH_SECRET=
@@ -608,6 +609,14 @@ These stubs get overwritten on first `bunx convex dev`.
 4. **Circular type references in cron jobs** -- when `convex/crons.ts` references `internal.someModule.someAction`, and that module's return type depends on the `internal` type, TypeScript gets a circular reference. Fix by adding explicit return type annotations to action handlers referenced by crons.
 
 5. **Env var mismatch: dev vs production** -- `bunx convex env set` targets the dev deployment by default. Always use `--prod` for production: `bunx convex env set VAR_NAME "value" --prod`.
+
+6. **`NEXT_PUBLIC_CONVEX_SITE_URL` must be `.convex.site`, NOT the app domain** -- The auth proxy (`convexBetterAuthNextJs`) forwards `/api/auth/*` requests to this URL. If it points to your app domain (e.g., `https://myapp.com`), the proxy loops back to itself causing infinite redirects. Must be `https://<deployment>.convex.site`.
+
+7. **`NEXT_PUBLIC_CONVEX_URL` must be set on Vercel** -- This env var (`https://<deployment>.convex.cloud`) is NOT auto-set by the Convex Vercel integration. You must add it manually to Vercel env vars, or pull it after `vercel env pull`. Without it, the production app has no Convex connection.
+
+8. **Convex functions not deployed to production** -- `bunx convex dev` only pushes to the dev deployment. For production, run `bunx convex deploy --yes`. Without this, your production Convex deployment has no functions, queries, or HTTP actions.
+
+9. **Sigma `SIGMA_MEMBER_PRIVATE_KEY` must be on Convex prod** -- This WIF key is required for server-side OAuth token exchange. Without it on production (`bunx convex env set SIGMA_MEMBER_PRIVATE_KEY "..." --prod`), sign-in silently fails.
 
 ---
 

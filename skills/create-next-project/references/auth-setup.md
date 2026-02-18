@@ -2,6 +2,8 @@
 
 better-auth configuration patterns for each auth method.
 
+> For general Better Auth concepts (session management, plugins, hooks, database adapters), see `Skill(better-auth-best-practices)`. This file covers project-specific wiring patterns and Convex-specific pitfalls.
+
 ## Base Setup (Always)
 
 ### Server Configuration (`src/lib/auth.ts`)
@@ -74,6 +76,12 @@ export const POST = async (req: Request) => {
 ```
 
 The `convexBetterAuthNextJs` function throws eagerly at import time if env vars are missing. Wrapping it in a function defers evaluation to request time, allowing builds to succeed without env vars.
+
+**CRITICAL: `NEXT_PUBLIC_CONVEX_SITE_URL` vs `NEXT_PUBLIC_CONVEX_URL`** -- these are DIFFERENT values:
+- `NEXT_PUBLIC_CONVEX_URL` = `https://<deployment>.convex.cloud` (client SDK connection for queries/mutations)
+- `NEXT_PUBLIC_CONVEX_SITE_URL` = `https://<deployment>.convex.site` (HTTP actions URL, where auth proxy forwards requests)
+
+If you set `NEXT_PUBLIC_CONVEX_SITE_URL` to your app domain (e.g., `https://myapp.com`) instead of the `.convex.site` URL, the auth proxy loops back to itself, causing infinite redirects or timeouts during sign-in. This is the most common deployment-breaking mistake.
 
 ### Middleware (`src/middleware.ts`)
 
@@ -303,3 +311,45 @@ The `login-05` and `signup-05` blocks from shadcn/ui provide styled forms. After
 6. Add redirect logic after successful auth
 
 The blocks are starting points - customize them to match the auth methods selected.
+
+**For Sigma-only auth**: Remove email/password input fields entirely. Keep the layout, branding, and terms/privacy links. Replace the form with a single "Sign in with Sigma Identity" button. Add your project logo using `next/image` instead of the default email icon.
+
+## Auth UI in the App Shell
+
+A login page alone is not sufficient. Users need auth controls accessible from within the app:
+
+1. **Sidebar footer**: Show sign-in button when unauthenticated, show user info + sign-out button when authenticated
+2. **Header/navbar**: Show a "Sign in" button when unauthenticated
+3. **Root page**: Check auth state before redirecting into protected routes. Don't blindly redirect unauthenticated users into the app -- redirect them to `/login` instead.
+
+## Route Protection
+
+Use middleware to prevent unauthenticated users from accessing the app:
+
+```typescript
+// src/middleware.ts
+import { betterFetch } from "@better-fetch/fetch";
+import type { Session } from "better-auth/types";
+import { type NextRequest, NextResponse } from "next/server";
+
+export default async function authMiddleware(request: NextRequest) {
+  const { data: session } = await betterFetch<Session>(
+    "/api/auth/get-session",
+    {
+      baseURL: request.nextUrl.origin,
+      headers: { cookie: request.headers.get("cookie") || "" },
+    },
+  );
+
+  if (!session) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|login|signup).*)"],
+};
+```
+
+Without this, unauthenticated users land in the app shell with broken/empty state.
