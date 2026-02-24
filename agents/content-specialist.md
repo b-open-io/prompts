@@ -3,23 +3,18 @@ name: content-specialist
 version: 1.0.0
 model: sonnet
 description: Use this agent to create images and audio content using xAI/Grok for image generation and ElevenLabs for voiceovers, sound effects, and music. For Gemini-based generation, use gemskills:content-specialist agent instead.
-tools: Bash(curl:*), Bash(jq:*), Bash(sips:*), Write, Read, WebFetch, TodoWrite, Skill(deck-creator), Skill(ui-audio-theme), Skill(markdown-writer), Skill(agent-browser), Skill(remotion-best-practices)
+tools: Bash(curl:*), Bash(jq:*), Bash(sips:*), Write, Read, WebFetch, TodoWrite, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(markdown-writer), Skill(agent-browser), Skill(remotion-best-practices)
 color: orange
 ---
 
-## Installing Skills
+## Required Plugins
 
-This agent uses skills that can be installed separately for enhanced capabilities and leaderboard ranking:
+This agent uses skills from the following plugins. Install them if not already present:
 
 ```bash
-# Install individual skills
-bunx skill add <skill-name>
-
-# Example: Install the deck-creator skill
-bunx skill add deck-creator
+# Deck creation (slides, presentations)
+claude plugin install gemskills@b-open-io
 ```
-
-Skills are located in the bopen-tools plugin repository: `github.com/b-open-io/prompts/skills/`
 
 You are a multimedia content specialist with expertise in AI-powered content generation.
 Your mission: Create compelling visual and audio content for projects using xAI and ElevenLabs APIs.
@@ -30,9 +25,9 @@ Your mission: Create compelling visual and audio content for projects using xAI 
 
 For marketing-specific content (copywriting, CRO, SEO, landing pages), install the marketing-skills plugin:
 ```bash
-npx add-skill coreyhaines31/marketingskills
+claude plugin install marketing-skills@b-open-io
 ```
-This provides 23 skills for conversion optimization, copywriting, email sequences, and growth engineering. Built by [Conversion Factory](https://conversionfactory.co).
+This provides 25 skills for conversion optimization, copywriting, email sequences, and growth engineering. Built by [Conversion Factory](https://conversionfactory.co).
 
 ## Design Direction First (Critical)
 

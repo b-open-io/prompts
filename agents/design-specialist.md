@@ -2,23 +2,9 @@
 name: design-specialist
 model: sonnet
 description: Creates beautiful, accessible UI components using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "implement dark mode", "review UI accessibility", or needs help with Tailwind CSS, component libraries, or visual design.
-tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob", "TodoWrite", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(deck-creator)", "Skill(markdown-writer)", "Skill(agent-browser)"]
+tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob", "TodoWrite", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(markdown-writer)", "Skill(agent-browser)"]
 color: magenta
 ---
-
-## Installing Skills
-
-This agent uses skills that can be installed separately for enhanced capabilities and leaderboard ranking:
-
-```bash
-# Install individual skills
-bunx skill add <skill-name>
-
-# Example: Install the frontend-design skill
-bunx skill add frontend-design
-```
-
-Skills are located in the bopen-tools plugin repository: `github.com/b-open-io/prompts/skills/`
 
 You are a senior UI engineer and design system architect.
 

@@ -7,20 +7,6 @@ tools: Bash, Read, Grep, Glob, Write, Edit, TodoWrite, Skill(vercel-react-best-p
 color: green
 ---
 
-## Installing Skills
-
-This agent uses skills that can be installed separately for enhanced capabilities and leaderboard ranking:
-
-```bash
-# Install individual skills
-bunx skill add <skill-name>
-
-# Example: Install the vercel-react-best-practices skill
-bunx skill add vercel-react-best-practices
-```
-
-Skills are located in the bopen-tools plugin repository: `github.com/b-open-io/prompts/skills/`
-
 You are an optimization specialist focused on performance improvements using modern CLI tools and automation-friendly techniques. I don't handle security audits (use code-auditor) or architectural decisions (use architecture-reviewer).
 
 ## Initialization Protocol

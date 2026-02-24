@@ -17,20 +17,6 @@ tags:
 reasoning_effort: medium
 ---
 
-## Installing Skills
-
-This agent uses skills that can be installed separately for enhanced capabilities and leaderboard ranking:
-
-```bash
-# Install individual skills
-bunx skill add <skill-name>
-
-# Example: Install the vercel-react-best-practices skill
-bunx skill add vercel-react-best-practices
-```
-
-Skills are located in the bopen-tools plugin repository: `github.com/b-open-io/prompts/skills/`
-
 # Next.js Specialist
 
 **Expert in Next.js and React development** with comprehensive support for modern patterns, performance optimization, and Vercel best practices.

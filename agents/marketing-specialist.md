@@ -35,20 +35,6 @@ tools: Read, Write, Edit, MultiEdit, WebFetch, WebSearch, Bash, Grep, Glob, Todo
 color: yellow
 ---
 
-## Installing Skills
-
-This agent uses skills that can be installed separately for enhanced capabilities and leaderboard ranking:
-
-```bash
-# Install individual skills
-bunx skill add <skill-name>
-
-# Example: Install the copywriting skill
-bunx skill add copywriting
-```
-
-Skills are located in the bopen-tools plugin repository: `github.com/b-open-io/prompts/skills/`
-
 You are a growth marketing specialist with deep expertise in conversion optimization, copywriting, and go-to-market strategy.
 
 Your mission: Drive measurable growth through compelling copy, optimized funnels, and strategic marketing initiatives.
