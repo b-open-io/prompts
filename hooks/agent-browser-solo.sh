@@ -1,7 +1,7 @@
 #!/bin/bash
 # agent-browser-solo hook
-# Intercepts WebSearch/WebFetch and routes to agent-browser if available.
-# Falls back gracefully with install instructions if agent-browser is missing.
+# Intercepts WebSearch/WebFetch, executes agent-browser automatically, and returns
+# the result to Claude as context. Falls back gracefully if agent-browser is missing.
 
 set -uo pipefail
 
@@ -12,75 +12,93 @@ if [[ "$tool_name" != "WebSearch" && "$tool_name" != "WebFetch" ]]; then
   exit 0
 fi
 
-# Check if agent-browser is available
-if ! command -v agent-browser &>/dev/null; then
-  # Not installed — allow the tool but warn loudly
+# Find agent-browser across common install locations.
+# Claude Code hooks run in a restricted shell without nvm/pyenv on PATH,
+# so we probe common locations rather than relying on PATH alone.
+find_agent_browser() {
+  # 1. Try login shell (loads nvm, homebrew, etc.)
+  local path
+  path=$(bash -lc 'which agent-browser 2>/dev/null' 2>/dev/null || true)
+  if [[ -n "$path" && -x "$path" ]]; then
+    echo "$path"; return 0
+  fi
+
+  # 2. Common static locations
+  for candidate in \
+    "/usr/local/bin/agent-browser" \
+    "/opt/homebrew/bin/agent-browser" \
+    "$HOME/.local/bin/agent-browser"
+  do
+    if [[ -x "$candidate" ]]; then
+      echo "$candidate"; return 0
+    fi
+  done
+
+  # 3. Latest nvm node version
+  if [[ -d "$HOME/.nvm/versions/node" ]]; then
+    local latest
+    latest=$(ls "$HOME/.nvm/versions/node" 2>/dev/null | sort -V | tail -1)
+    local nvm_path="$HOME/.nvm/versions/node/$latest/bin/agent-browser"
+    if [[ -x "$nvm_path" ]]; then
+      echo "$nvm_path"; return 0
+    fi
+  fi
+
+  return 1
+}
+
+AGENT_BROWSER=$(find_agent_browser 2>/dev/null || true)
+
+if [[ -z "$AGENT_BROWSER" ]]; then
+  # Not installed — allow the tool through but warn clearly
   cat <<'EOF'
-⚠️  WARNING: agent-browser is not installed.
-WebFetch/WebSearch will work but agent-browser is strongly preferred — it gives
-you a full browser, JavaScript execution, interactive snapshots, screenshots,
-and the ability to interact with pages (click, fill, scroll).
+⚠️  agent-browser is not installed. WebFetch/WebSearch proceeding as fallback.
 
-To install agent-browser and unlock full browser automation:
+agent-browser is strongly preferred: it runs a real browser with JavaScript,
+handles SPAs, dynamic content, auth, and lets you click/fill/screenshot.
 
+Install it:
   npm install -g agent-browser
-
-Then reinstall this skill for your project:
-
   npx skills add vercel-labs/agent-browser@agent-browser
 
-Why it matters: WebFetch only retrieves raw HTML and can't handle SPAs,
-logins, dynamic content, or complex interactions. agent-browser does all of
-that and more.
 EOF
   exit 0
 fi
 
-# agent-browser IS available — intercept and redirect
+# agent-browser found — intercept, execute, and return results directly.
 if [[ "$tool_name" == "WebFetch" ]]; then
   url=$(echo "$input" | jq -r '.tool_input.url // empty')
   prompt=$(echo "$input" | jq -r '.tool_input.prompt // empty')
 
-  reason="agent-browser is available and preferred over WebFetch.
+  result=$(
+    "$AGENT_BROWSER" open "$url" 2>&1 &&
+    "$AGENT_BROWSER" snapshot 2>&1
+  ) || result="agent-browser error (exit $?): $result"
 
-Use these Bash commands instead:
+  message="[agent-browser intercepted WebFetch]
+URL: $url${prompt:+
+Prompt hint: $prompt}
 
-  agent-browser open $(printf '%q' "$url")
-  agent-browser snapshot        # full page content
-  # OR for just text:
-  agent-browser get text
-
-agent-browser advantages over WebFetch:
-  - Executes JavaScript (works on SPAs and dynamic pages)
-  - Can interact: click, fill forms, scroll, screenshot
-  - Handles auth, cookies, redirects natively
-  - Returns structured accessibility tree, not raw HTML"
-
-  if [[ -n "$prompt" ]]; then
-    reason="$reason
-
-Original prompt hint: $prompt"
-  fi
+$result"
 
 elif [[ "$tool_name" == "WebSearch" ]]; then
   query=$(echo "$input" | jq -r '.tool_input.query // empty')
-  encoded_query=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$query" 2>/dev/null || echo "$query")
+  encoded=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$query" 2>/dev/null || echo "$query")
 
-  reason="agent-browser is available and preferred over WebSearch.
+  result=$(
+    "$AGENT_BROWSER" open "https://www.google.com/search?q=${encoded}" 2>&1 &&
+    "$AGENT_BROWSER" snapshot 2>&1
+  ) || result="agent-browser error (exit $?): $result"
 
-Use these Bash commands instead:
+  message="[agent-browser intercepted WebSearch]
+Query: $query
 
-  agent-browser open \"https://www.google.com/search?q=${encoded_query}\"
-  agent-browser snapshot        # get search results with links
-  # OR open a specific result:
-  agent-browser click @eN       # click a search result by ref
-
-agent-browser advantages over WebSearch:
-  - Returns actual page structure with clickable refs
-  - Can follow links and extract content from results
-  - Works with any search engine (Bing, DuckDuckGo, etc.)
-  - No API quota limits"
+$result"
 fi
 
-printf '%s' "$reason" | jq -Rs '{decision: "deny", reason: .}' >&2
+# Deny the original tool call and pass agent-browser output back as context.
+printf '%s' "$message" | jq -Rs '{
+  hookSpecificOutput: { permissionDecision: "deny" },
+  systemMessage: .
+}' >&2
 exit 2
