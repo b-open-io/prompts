@@ -97,8 +97,9 @@ $result"
 fi
 
 # Deny the original tool call and pass agent-browser output back as context.
+# Output to stdout + exit 0 for a clean deny (not "hook error").
 printf '%s' "$message" | jq -Rs '{
   hookSpecificOutput: { permissionDecision: "deny" },
   systemMessage: .
-}' >&2
-exit 2
+}'
+exit 0
