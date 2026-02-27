@@ -264,7 +264,11 @@ else:
 " 2>/dev/null || echo "")
   fi
 
-  CTX="[Linear/$WS_ID] Repo: $REPO_NAME | Workspace: $WS_NAME | Project: $PROJECT | Team: $TEAM | Label: $LABEL | Branch format: $TEAM-<number>-slug | Commit format: $TEAM-<number>: description"
+  # Resolve scripts directory from hook location (hooks/scripts/ -> ../../scripts/)
+  _HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  _SCRIPTS_DIR="$(cd "$_HOOK_DIR/../../scripts" 2>/dev/null && pwd)"
+
+  CTX="[Linear/$WS_ID] Repo: $REPO_NAME | Workspace: $WS_NAME | Project: $PROJECT | Team: $TEAM | Label: $LABEL | Branch format: $TEAM-<number>-slug | Commit format: $TEAM-<number>: description | scripts_dir: $_SCRIPTS_DIR"
 
   if [ -n "$LAST_ISSUE" ]; then
     CTX="$CTX | last_issue: $LAST_ISSUE"
@@ -314,8 +318,7 @@ if repo is not None:
 " 2>/dev/null || true
 
     # Inline digest fetch via linear-api.sh (no subagent needed)
-    _HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    _API_SCRIPT="$_HOOK_DIR/../../scripts/linear-api.sh"
+    _API_SCRIPT="$_SCRIPTS_DIR/linear-api.sh"
     if [ -f "$_API_SCRIPT" ]; then
       _DIGEST_RAW=$(bash "$_API_SCRIPT" "query { viewer { assignedIssues(filter: { project: { name: { eq: \"$PROJECT\" } }, labels: { some: { name: { eq: \"$LABEL\" } } }, state: { type: { in: [\"started\", \"unstarted\"] } } }, first: 10) { nodes { identifier title state { name } priority } } } }" 2>/dev/null || echo "")
       if [ -n "$_DIGEST_RAW" ]; then

@@ -1,7 +1,7 @@
 ---
 name: linear-sync
 description: This skill should be used when the session-start hook injects Linear context (e.g., "[Linear/..." or "[LINEAR-SETUP]" or "[LINEAR-DIGEST]"), when the prompt-check hook injects "[Linear/<workspace>] Issue(s) referenced:", when the commit guard hook blocks a command for missing an issue ID or injects "[CROSS-ISSUE-COMMITS]", when the user mentions Linear issues (e.g., "ENG-123", "OPL-456"), when creating commits/branches/PRs in a Linear-linked repo, when the user asks about Linear workflow or issue tracking, or when working in any repository that has a .claude/linear-sync.json config file. Provides behavioral rules for Linear-GitHub sync workflow orchestration.
-version: 0.1.1
+version: 0.1.2
 ---
 
 # Linear Sync Workflow
@@ -232,8 +232,10 @@ Use for operations that return data the main agent needs to present:
 - **Fetch Active Cycle** — cycle info for assignment offer
 - **Link Repo** — setup wizard (one-time)
 
+**When delegating to the subagent**, always include the `scripts_dir` from the session-start hook context in your prompt so the subagent can find `linear-api.sh`. Example: "Search for duplicates in OPL project. scripts_dir: /path/to/scripts"
+
 ### Direct Bash (one tool call, no subagent overhead)
-Use `${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh` or `python3` one-liners for simple mutations:
+Use `linear-api.sh` at the path from the session-start hook's `scripts_dir` field, or `python3` one-liners for simple mutations:
 - **Save last_issue**: `python3 -c "import json; f='$HOME/.claude/linear-sync/state.json'; d=json.load(open(f)); d['repos']['REPO']['last_issue']='ID'; json.dump(d,open(f,'w'),indent=2)"`
 - **Auto-assign**: `bash linear-api.sh 'query { viewer { id } }'` then `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { assigneeId: "..." }) { issue { id } } }'`
 - **Add to cycle**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { cycleId: "..." }) { issue { id } } }'`
@@ -243,8 +245,8 @@ Use `${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh` or `python3` one-liners for si
 
 ## Companion Files
 
-This skill orchestrates components at the plugin root:
-- **Subagent**: `${CLAUDE_PLUGIN_ROOT}/agents/linear-sync.md` — handles Linear API queries (foreground only)
-- **Hooks**: `${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-session-start.sh` (session init + inline digest), `linear-commit-guard.sh` (commit/branch/PR enforcement), `linear-prompt-check.sh` (issue reference injection), `linear-post-push-sync.sh` (GitHub sync + comment reminder)
-- **Scripts**: `${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh` (API wrapper), `sync-github-issues.sh` (GH sync)
+This skill orchestrates components at the plugin root (path injected by session-start hook as `scripts_dir`):
+- **Subagent**: `agents/linear-sync.md` — handles Linear API queries (foreground only)
+- **Hooks**: `hooks/scripts/linear-session-start.sh` (session init + inline digest), `linear-commit-guard.sh` (commit/branch/PR enforcement), `linear-prompt-check.sh` (issue reference injection), `linear-post-push-sync.sh` (GitHub sync + comment reminder)
+- **Scripts**: `scripts/linear-api.sh` (API wrapper), `scripts/sync-github-issues.sh` (GH sync)
 - **State**: `~/.claude/linear-sync/state.json` (credential routing, session state)
