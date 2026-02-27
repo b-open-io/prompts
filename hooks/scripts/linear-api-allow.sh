@@ -17,7 +17,7 @@ fi
 # Auto-approve: single-line bash call to our trusted Linear API wrapper
 # Pattern: starts with "bash", path contains "linear-api.sh", followed by args
 if echo "$COMMAND" | grep -qE '^\s*bash\s+\S*linear-api\.sh\s'; then
-  printf '{"hookSpecificOutput":{"permissionDecision":"allow"}}\n'
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}\n'
   exit 0
 fi
 
