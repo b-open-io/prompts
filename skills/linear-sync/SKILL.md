@@ -1,7 +1,7 @@
 ---
 name: linear-sync
 description: This skill should be used when the session-start hook injects Linear context (e.g., "[Linear/..." or "[LINEAR-SETUP]" or "[LINEAR-DIGEST]"), when the prompt-check hook injects "[Linear/<workspace>] Issue(s) referenced:", when the commit guard hook blocks a command for missing an issue ID or injects "[CROSS-ISSUE-COMMITS]", when the user mentions Linear issues (e.g., "ENG-123", "OPL-456"), when creating commits/branches/PRs in a Linear-linked repo, when the user asks about Linear workflow or issue tracking, or when working in any repository that has a .claude/linear-sync.json config file. Provides behavioral rules for Linear-GitHub sync workflow orchestration.
-version: 0.1.3
+version: 0.1.4
 ---
 
 # Linear Sync Workflow
@@ -39,7 +39,7 @@ Use AskUserQuestion: "What are you working on today in <repo>?"
 
 If no `last_issue` is present, skip option 1 and start with options 2-4 (renumber accordingly).
 
-**When the dev picks any issue (resume, existing, or new):** If the issue is unassigned, auto-assign it directly via `linear-api.sh` (see Execution Model — Direct Bash). No need to ask — if they're working on it, they should own it.
+**When the dev picks any issue (resume, existing, or new):** If the issue is unassigned, auto-assign it directly via `linear-api.sh` (see Execution Model — Direct Bash). No need to ask — if they're working on it, they should own it. **Parallel optimization:** Run `query { viewer { id } }` in the same message as the subagent fetch so the viewer ID is ready when the issue details come back.
 
 Keep the kickoff brief and natural: "What are you working on today in <repo>?"
 
@@ -240,6 +240,14 @@ Use `linear-api.sh` at the path from the session-start hook's `scripts_dir` fiel
 - **Add to cycle**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { cycleId: "..." }) { issue { id } } }'`
 - **Post comment**: `bash linear-api.sh 'mutation($input: CommentCreateInput!) { commentCreate(input: $input) { comment { id } } }' '{"input": {"issueId": "...", "body": "..."}}'`
 - **Status change**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { stateId: "..." }) { issue { id } } }'`
+
+### Parallel execution
+**Always batch independent API calls in the same message.** Claude can make multiple tool calls simultaneously when they don't depend on each other. Key patterns:
+- **Issue resume + auto-assign**: Run the subagent fetch AND `query { viewer { id } }` in the same message. When both return, you have the issue UUID and viewer ID — fire the assign mutation immediately.
+- **Multiple independent mutations**: If you need to assign + add to cycle + change status, batch all three mutations in one message.
+- **State update + API call**: Read/Write to the state file can happen in parallel with an API mutation since they're independent operations.
+
+**Sequential only when dependent**: A mutation that needs data from a query (e.g., assign needs viewer ID) must wait for the query to complete first. But two independent queries should always run in parallel.
 
 ### Read/Write tools (no Bash needed)
 Use the Read and Write tools for state file updates — no permission prompts, no subagent overhead:
