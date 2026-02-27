@@ -1,18 +1,18 @@
 ---
 name: linear-sync
 description: This skill should be used when the session-start hook injects Linear context (e.g., "[Linear/..." or "[LINEAR-SETUP]" or "[LINEAR-DIGEST]"), when the prompt-check hook injects "[Linear/<workspace>] Issue(s) referenced:", when the commit guard hook blocks a command for missing an issue ID or injects "[CROSS-ISSUE-COMMITS]", when the user mentions Linear issues (e.g., "ENG-123", "OPL-456"), when creating commits/branches/PRs in a Linear-linked repo, when the user asks about Linear workflow or issue tracking, or when working in any repository that has a .claude/linear-sync.json config file. Provides behavioral rules for Linear-GitHub sync workflow orchestration.
-version: 0.1.0
+version: 0.1.1
 ---
 
 # Linear Sync Workflow
 
-This system keeps Linear and GitHub in sync automatically. All Linear API calls go through the `linear-sync` subagent — never call Linear MCP directly from the main context.
+This system keeps Linear and GitHub in sync automatically. Linear API queries go through the `linear-sync` subagent (foreground), while simple mutations use `linear-api.sh` directly via Bash.
 
 ## Session Start Behavior
 
 At the start of every session, the `linear-session-start` hook fires and checks the repo:
 
-- **Linked repo**: The hook injects config context (workspace, project, team, label, formats, last_issue if any, stale branch warnings, digest trigger). Follow the session kickoff directive below.
+- **Linked repo**: The hook injects config context (workspace, project, team, label, formats, last_issue if any, stale branch warnings, and pre-fetched digest if due). Follow the session kickoff directive below.
 - **Opted-out repo** (`workspace: "none"`): The hook is silent. Do nothing related to Linear.
 - **Unregistered repo**: The hook injects a `[LINEAR-SETUP]` directive. Follow the setup wizard rules below. If a `.linear-sync-template.json` is found, the hook also injects `[LINEAR-TEMPLATE]` with defaults to pre-fill.
 - **Broken workspace reference**: The hook injects a `[LINEAR-SETUP]` directive to reconfigure or opt out.
@@ -21,31 +21,25 @@ At the start of every session, the `linear-session-start` hook fires and checks 
 
 When the hook injects config context for a linked repo:
 
-**Step 1: Notification digest and GitHub sync (if available)**
+**Step 1: Digest and stale branches**
 
-Do two things in parallel:
-- **Notification digest** (if `[LINEAR-DIGEST]` is present): Delegate to `linear-sync` subagent (background): "Fetch notification digest for project '<project>' with label '<label>'."
-- **GitHub issue sync** (always): Delegate to `linear-sync` subagent (background): "Run sync-github-issues.sh for repo at <repo-root>".
+- **Notification digest** (if `[LINEAR-DIGEST]` data is present in hook context): The session-start hook pre-fetches your active issues inline. Show the digest briefly (1 line) before asking what to work on.
+- **GitHub issue sync**: Runs automatically via PostToolUse hook after `git push` or `gh pr create` — no action needed at session start.
+- **Stale branches** (if `[STALE-BRANCHES]` is present): Show a brief warning. Example: "Heads up: branch `dan/ENG-100-old-feature` has had no commits in 7 days."
 
-Briefly surface both results before asking what to work on. Keep each to 1 line.
-
-**Step 2: Stale branch warning (if present)**
-
-If the hook context includes `[STALE-BRANCHES]`, show a brief warning before the main prompt. Example: "Heads up: branch `dan/ENG-100-old-feature` has had no commits in 7 days."
-
-**Step 3: Resume or ask**
+**Step 2: Resume or ask**
 
 If the hook context includes `last_issue: <ISSUE_ID>`, offer to resume that issue first:
 
 Use AskUserQuestion: "What are you working on today in <repo>?"
-1. **"Resume <ISSUE_ID>"** — Delegate to `linear-sync` subagent (background) to fetch the issue summary. After fetching, also delegate to save `last_issue` for this repo. Check for blockers in the response and warn if any.
-2. **"Work on a different issue"** — Delegate to `linear-sync` subagent (background) to fetch the dev's assigned in-progress issues ("Fetch My Issues" task). Present the returned list as AskUserQuestion choices, plus an option to "Enter an issue ID manually". After selection, delegate to save `last_issue` for this repo. Check for blockers in the response and warn if any.
-3. **"Start something new"** — Ask for a one-line description via AskUserQuestion. Check for duplicates first (see Duplicate Detection below). Then delegate to `linear-sync` subagent (background) to create a ticket in the correct project with the repo label. After creation, offer to assign to current cycle (see Cycle Assignment below). Use the returned issue ID going forward.
+1. **"Resume <ISSUE_ID>"** — Delegate to `linear-sync` subagent (foreground) to fetch the issue summary. After fetching, save `last_issue` for this repo (direct Bash — see Execution Model). Check for blockers in the response and warn if any.
+2. **"Work on a different issue"** — Delegate to `linear-sync` subagent (foreground) to fetch the dev's assigned in-progress issues ("Fetch My Issues" task). Present the returned list as AskUserQuestion choices, plus an option to "Enter an issue ID manually". After selection, save `last_issue` for this repo (direct Bash). Check for blockers in the response and warn if any.
+3. **"Start something new"** — Ask for a one-line description via AskUserQuestion. Check for duplicates first (see Duplicate Detection below). Then delegate to `linear-sync` subagent (foreground) to create a ticket in the correct project with the repo label. After creation, offer to assign to current cycle (see Cycle Assignment below). Use the returned issue ID going forward.
 4. **"Just exploring / no ticket needed"** — Proceed normally. The commit guard hook will catch untagged commits later and you can offer to create a ticket at that point.
 
 If no `last_issue` is present, skip option 1 and start with options 2-4 (renumber accordingly).
 
-**When the dev picks any issue (resume, existing, or new):** If the issue is unassigned, automatically delegate to `linear-sync` subagent (background) to assign it to the dev ("Assign Issue to Viewer" task). No need to ask — if they're working on it, they should own it.
+**When the dev picks any issue (resume, existing, or new):** If the issue is unassigned, auto-assign it directly via `linear-api.sh` (see Execution Model — Direct Bash). No need to ask — if they're working on it, they should own it.
 
 Keep the kickoff brief and natural: "What are you working on today in <repo>?"
 
@@ -54,7 +48,7 @@ Keep the kickoff brief and natural: "What are you working on today in <repo>?"
 When a `[LINEAR-SETUP]` directive is injected:
 
 1. **Always use AskUserQuestion** for every choice. The dev never types workspace names, project IDs, or labels manually.
-2. **Always offer "This repo doesn't use Linear"** as an option. If chosen, delegate to `linear-sync` subagent to write `workspace: "none"` and move on.
+2. **Always offer "This repo doesn't use Linear"** as an option. If chosen, opt the repo out via direct Bash (python3 one-liner to set `workspace: "none"` in state file) and move on.
 3. Use the `linear-sync` subagent in **foreground** mode to fetch real data from Linear MCP (workspaces, teams, projects, labels).
 4. Present fetched data as AskUserQuestion choices.
 5. For labels, suggest `repo:<repo-name>` as the default.
@@ -83,14 +77,16 @@ These conventions are mechanically enforced by hooks. They apply ONLY to repos w
 | Issue creation | Check for duplicates first | Subagent search + AskUserQuestion |
 | Issue creation | Infer priority from keywords | AskUserQuestion if detected |
 | Issue creation | Offer cycle/sprint assignment | AskUserQuestion if active cycle |
-| Issue picked / resumed | Auto-assign if unassigned | Subagent handles silently |
-| `gh pr create` (after success) | **Offer** a progress comment on the Linear issue | AskUserQuestion |
-| `git push` (final push) | **Offer** a progress comment on the Linear issue | AskUserQuestion |
+| Issue picked / resumed | Auto-assign if unassigned | Direct Bash (`linear-api.sh`) |
+| `gh pr create` (after success) | **Offer** a progress comment on the Linear issue | PostToolUse hook reminder + AskUserQuestion |
+| `git push` (final push) | **Offer** a progress comment on the Linear issue | PostToolUse hook reminder + AskUserQuestion |
 | Session ending / major milestone | **Offer** a progress comment on the Linear issue | AskUserQuestion |
 
 ## Linear Comments
 
 **IMPORTANT: You MUST offer a comment at every natural stopping point.** Never post automatically, but always ask.
+
+The PostToolUse hook automatically injects a `[Linear Comment Reminder]` after `git push` and `gh pr create` in linked repos. When you see this reminder, follow the comment flow below.
 
 Natural stopping points (offer every time):
 - **After creating a PR** — this is the most important one
@@ -115,9 +111,11 @@ Use AskUserQuestion with a draft comment:
 
 If they pick "edit", ask them what they'd like it to say. Never post without showing them exactly what will be posted first. If they skip, don't ask again until the next stopping point.
 
+**Posting comments:** Use direct Bash with `linear-api.sh` (see Execution Model — no subagent needed for simple mutations).
+
 ## Issue Status
 
-**If the dev explicitly asks to change a status, do it.** No pushback, no warnings. Just delegate to the linear-sync subagent and confirm.
+**If the dev explicitly asks to change a status, do it.** No pushback, no warnings. Use direct Bash with `linear-api.sh` and confirm.
 
 For **automatic** status changes, only act at these moments:
 - **"Start something new"** — Set to **In Progress** on creation.
@@ -145,7 +143,7 @@ When a commit, branch, or PR is blocked by the hook for missing an issue ID:
 
 1. **Proactively offer to create a Linear ticket.** Do not just report the error.
 2. Use AskUserQuestion to ask for a one-line description of the work.
-3. Delegate to `linear-sync` subagent to create the ticket.
+3. Delegate to `linear-sync` subagent (foreground) to create the ticket.
 4. Retry the original command with the new issue ID inserted.
 5. Do not make the dev start over or re-type their commit message.
 
@@ -153,7 +151,7 @@ When a commit, branch, or PR is blocked by the hook for missing an issue ID:
 
 Before creating any new issue:
 
-1. Delegate to `linear-sync` subagent (background) with the "Search Issues" task.
+1. Delegate to `linear-sync` subagent (foreground) with the "Search Issues" task.
 2. If duplicates found, present them via AskUserQuestion with option to use existing or create anyway.
 3. If no duplicates, proceed with creation normally.
 
@@ -187,9 +185,10 @@ When `gh pr create` is about to run and you have issue context:
 ## Cycle/Sprint Auto-Assignment
 
 When creating a new issue:
-1. After creation, delegate to fetch the active cycle for the team.
+1. After creation, delegate to `linear-sync` subagent (foreground) to fetch the active cycle for the team.
 2. If an active cycle exists, use AskUserQuestion to offer adding the issue to it.
 3. If no active cycle, skip silently.
+4. To add: use direct Bash with `linear-api.sh` (no subagent needed).
 
 ## Priority Inference
 
@@ -216,17 +215,36 @@ If the session-start digest mentions closed issues without linked PRs, surface i
 
 If a `.linear-sync-template.json` exists in the repo root and the hook injects `[LINEAR-TEMPLATE]`, use its values as defaults during the setup wizard. Present them for confirmation: "Found a team config template. Use these defaults? Workspace: X, Project: Y, Team: Z, Label: W". The dev can override any value.
 
-## Context Conservation
+## Execution Model
 
-- **Never call Linear MCP directly** from the main context window. Always delegate to the `linear-sync` subagent.
-- Use **background** mode for ongoing work (fetching summaries, posting comments, creating issues).
-- Use **foreground** mode only during one-time setup wizard flows.
-- The hooks inject minimal `additionalContext` strings — they do not dump API data into the context.
+Operations use three tiers to avoid context bloat and work around background subagent permission limitations:
+
+### Hooks (zero context cost)
+- **GitHub sync** — PostToolUse hook runs `sync-github-issues.sh` after `git push` / `gh pr create` in linked repos. Injects `[Linear Comment Reminder]` with the result.
+- **Notification digest** — SessionStart hook pre-fetches active issues inline via `linear-api.sh`. Result appears in `[LINEAR-DIGEST]` context.
+
+### Foreground subagent (`linear-sync`)
+Use for operations that return data the main agent needs to present:
+- **Fetch Issue Summary** — issue details + blocker warnings
+- **Fetch My Issues** — assigned in-progress issues list
+- **Create Issue** — creates ticket, returns issue ID
+- **Search Issues** — duplicate detection before creation
+- **Fetch Active Cycle** — cycle info for assignment offer
+- **Link Repo** — setup wizard (one-time)
+
+### Direct Bash (one tool call, no subagent overhead)
+Use `${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh` or `python3` one-liners for simple mutations:
+- **Save last_issue**: `python3 -c "import json; f='$HOME/.claude/linear-sync/state.json'; d=json.load(open(f)); d['repos']['REPO']['last_issue']='ID'; json.dump(d,open(f,'w'),indent=2)"`
+- **Auto-assign**: `bash linear-api.sh 'query { viewer { id } }'` then `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { assigneeId: "..." }) { issue { id } } }'`
+- **Add to cycle**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { cycleId: "..." }) { issue { id } } }'`
+- **Post comment**: `bash linear-api.sh 'mutation($input: CommentCreateInput!) { commentCreate(input: $input) { comment { id } } }' '{"input": {"issueId": "...", "body": "..."}}'`
+- **Status change**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { stateId: "..." }) { issue { id } } }'`
+- **Opt repo out**: `python3 -c "import json; f='$HOME/.claude/linear-sync/state.json'; d=json.load(open(f)); d['repos']['REPO']['workspace']='none'; json.dump(d,open(f,'w'),indent=2)"`
 
 ## Companion Files
 
 This skill orchestrates components at the plugin root:
-- **Subagent**: `${CLAUDE_PLUGIN_ROOT}/agents/linear-sync.md` — handles all Linear API calls
-- **Hooks**: `${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-session-start.sh`, `linear-commit-guard.sh`, `linear-prompt-check.sh`
+- **Subagent**: `${CLAUDE_PLUGIN_ROOT}/agents/linear-sync.md` — handles Linear API queries (foreground only)
+- **Hooks**: `${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-session-start.sh` (session init + inline digest), `linear-commit-guard.sh` (commit/branch/PR enforcement), `linear-prompt-check.sh` (issue reference injection), `linear-post-push-sync.sh` (GitHub sync + comment reminder)
 - **Scripts**: `${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh` (API wrapper), `sync-github-issues.sh` (GH sync)
 - **State**: `~/.claude/linear-sync/state.json` (credential routing, session state)

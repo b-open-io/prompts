@@ -8,7 +8,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-session-start.sh",
-            "timeout": 10
+            "timeout": 15
           }
         ]
       }
@@ -46,6 +46,18 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/agent-browser-solo.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-post-push-sync.sh",
             "timeout": 30
           }
         ]

@@ -2,7 +2,7 @@
 # linear-session-start.sh — SessionStart hook for Linear Sync
 # Detects repo status and injects minimal context or triggers setup wizard.
 # Event: SessionStart (matcher: startup|clear|compact)
-# Timeout: 10s
+# Timeout: 15s
 set -euo pipefail
 
 # ---------- helpers ----------
@@ -313,12 +313,36 @@ if repo is not None:
         f.write('\n')
 " 2>/dev/null || true
 
-    CTX="$CTX
-[LINEAR-DIGEST] Delegate to linear-sync subagent (background) to fetch notification digest before asking what to work on."
+    # Inline digest fetch via linear-api.sh (no subagent needed)
+    _HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    _API_SCRIPT="$_HOOK_DIR/../../scripts/linear-api.sh"
+    if [ -f "$_API_SCRIPT" ]; then
+      _DIGEST_RAW=$(bash "$_API_SCRIPT" "query { viewer { assignedIssues(filter: { project: { name: { eq: \"$PROJECT\" } }, labels: { some: { name: { eq: \"$LABEL\" } } }, state: { type: { in: [\"started\", \"unstarted\"] } } }, first: 10) { nodes { identifier title state { name } priority } } } }" 2>/dev/null || echo "")
+      if [ -n "$_DIGEST_RAW" ]; then
+        _DIGEST=$(printf '%s' "$_DIGEST_RAW" | python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    issues = data.get("data", {}).get("viewer", {}).get("assignedIssues", {}).get("nodes", [])
+    if not issues:
+        print("No pending items.")
+    else:
+        lines = []
+        for i in issues:
+            lines.append("{}: {} [{}]".format(i["identifier"], i["title"], i["state"]["name"]))
+        print("\n".join(lines))
+except:
+    print("")
+' 2>/dev/null || echo "")
+        if [ -n "$_DIGEST" ]; then
+          CTX="$CTX
+[LINEAR-DIGEST] Your active issues:
+$_DIGEST"
+        fi
+      fi
+    fi
   fi
 
-  CTX="$CTX
-Delegate GitHub issue sync to linear-sync subagent (background): \"Run sync-github-issues.sh for repo at $GIT_TOP\""
   CTX="$CTX
 Follow the Linear Sync workflow skill instructions to ask the dev what they're working on today in $REPO_NAME."
   emit "$CTX"

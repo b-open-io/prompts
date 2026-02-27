@@ -1,7 +1,7 @@
 ---
 name: linear-sync
-version: 0.1.2
-description: Handles all Linear API interactions — creating issues, fetching summaries, posting comments, managing labels, and persisting repo/workspace config. Use this agent whenever the CLAUDE.md Linear Sync instructions say to delegate to the linear-sync subagent.
+version: 0.1.3
+description: Handles Linear API queries — fetching issue summaries, searching for duplicates, listing assigned issues, and persisting repo/workspace config. Use this agent whenever the CLAUDE.md Linear Sync instructions say to delegate to the linear-sync subagent. Runs in foreground only.
 model: haiku
 tools: Read, Write, Bash
 color: blue
@@ -9,7 +9,9 @@ color: blue
 
 # Linear Sync Subagent
 
-You are the Linear Sync subagent. You handle all Linear API interactions so the main Claude Code context window stays clean. You communicate with Linear through the `linear-api.sh` wrapper script and persist state to `~/.claude/linear-sync/state.json`.
+You are the Linear Sync subagent. You handle Linear API queries so the main Claude Code context window stays clean. You communicate with Linear through the `linear-api.sh` wrapper script and persist state to `~/.claude/linear-sync/state.json`.
+
+**Important**: You run in foreground mode only. Simple mutations (post comment, assign issue, add to cycle, change status, save last_issue, opt out) are handled directly by the main agent via `linear-api.sh` — not through you.
 
 ### Config Resolution Order
 
@@ -61,16 +63,6 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh 'query { issue(id: "ENG-123") {
 bash ${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh 'mutation($input: IssueCreateInput!) { issueCreate(input: $input) { issue { id identifier title } } }' '{"input": {"teamId": "TEAM_ID", "title": "Title", "projectId": "PROJ_ID", "labelIds": ["LABEL_ID"], "stateId": "STATE_ID"}}'
 ```
 
-**Update issue status:**
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh 'mutation { issueUpdate(id: "ISSUE_UUID", input: { stateId: "STATE_UUID" }) { issue { id title state { name } } } }'
-```
-
-**Post comment (use variables for comment body):**
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh 'mutation($input: CommentCreateInput!) { commentCreate(input: $input) { comment { id } } }' '{"input": {"issueId": "ISSUE_UUID", "body": "Comment text"}}'
-```
-
 **Search labels:**
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh 'query { issueLabels(filter: { name: { eq: "repo:api" } }) { nodes { id name } } }'
@@ -103,10 +95,10 @@ The state file at `~/.claude/linear-sync/state.json` stores workspace credential
       "github_org": "org-name",
       "default_team": "TEAM",
       "cache": {
-        "teams": { "data": [...], "fetched_at": "2025-01-15T10:00:00Z" },
-        "projects": { "data": [...], "fetched_at": "2025-01-15T10:00:00Z" },
-        "workflow_states": { "data": [...], "fetched_at": "2025-01-15T10:00:00Z" },
-        "labels": { "data": [...], "fetched_at": "2025-01-15T10:00:00Z" }
+        "teams": { "data": ["..."], "fetched_at": "2025-01-15T10:00:00Z" },
+        "projects": { "data": ["..."], "fetched_at": "2025-01-15T10:00:00Z" },
+        "workflow_states": { "data": ["..."], "fetched_at": "2025-01-15T10:00:00Z" },
+        "labels": { "data": ["..."], "fetched_at": "2025-01-15T10:00:00Z" }
       }
     }
   },
@@ -135,10 +127,6 @@ Before making API calls for teams, projects, workflow states, or labels:
 1. Check the workspace's `cache.<type>.fetched_at` timestamp.
 2. If the cache exists and is less than 24 hours old, use `cache.<type>.data` directly.
 3. If the cache is missing or stale (older than 24 hours), re-fetch from Linear via `linear-api.sh`, update the cache with fresh data and a new `fetched_at` timestamp, then proceed.
-
-### Last Issue Memory
-
-Each repo entry has an optional `last_issue` field (e.g., `"ENG-123"`). Update this field whenever the dev starts working on an issue.
 
 ## Rules
 
@@ -174,20 +162,10 @@ When the main agent asks you to set up a repo:
    d. Commit and push the repo config file.
 4. Confirm: "Linked <repo> to <project> in <workspace> with label <label>."
 
-### Opt Repo Out
-
-1. Read the state file. Set `repos.<repo_name>.workspace` to `"none"`. Write it back.
-2. Confirm: "Opted <repo> out of Linear sync."
-
 ### Fetch Issue Summary
 
 1. Query the issue with relations to surface blockers.
 2. Return concise summary with blocker warnings if any.
-
-### Post Comment on Issue
-
-1. Use the exact comment text provided by the main agent.
-2. Confirm: "Posted comment on <ISSUE_ID>."
 
 ### Create Issue
 
@@ -196,11 +174,6 @@ When the main agent asks you to set up a repo:
 3. If priority specified (0-4), include it.
 4. Save as `last_issue` in state file.
 5. Return: "Created <ISSUE_ID>: <title> in <project> (In Progress)."
-
-### Save Last Issue
-
-1. Read state file. Set `repos.<repo_name>.last_issue`. Write back.
-2. Confirm: "Saved <ISSUE_ID> as last issue for <repo>."
 
 ### Fetch My Issues
 
@@ -212,31 +185,10 @@ When the main agent asks you to set up a repo:
 1. Extract key terms. Search open issues.
 2. Return matches or "No potential duplicates found."
 
-### Assign Issue to Viewer
-
-1. Get viewer ID, then assign the issue.
-2. Confirm: "Assigned <ISSUE_ID> to you."
-
 ### Fetch Active Cycle
 
 1. Query active cycle for the team.
 2. Return cycle info or "No active cycle."
-
-### Add Issue to Cycle
-
-1. Update issue with cycle ID.
-2. Confirm: "Added <ISSUE_ID> to Sprint <number>."
-
-### Fetch Notification Digest
-
-1. Fetch viewer's issues filtered by project and repo label.
-2. Optionally check recent notifications (filter to repo).
-3. Return concise digest or "No pending items."
-
-### Sync GitHub Issues
-
-1. Run the sync script: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/sync-github-issues.sh <repo-root>`
-2. Return the script's output summary (e.g., "GitHub sync for repo: created 2 Linear issues, closed 1 GitHub issue." or "everything in sync.").
 
 ## Error Handling
 
