@@ -1,7 +1,7 @@
 ---
 name: linear-sync
 description: This skill should be used when the session-start hook injects Linear context (e.g., "[Linear/..." or "[LINEAR-SETUP]" or "[LINEAR-DIGEST]"), when the prompt-check hook injects "[Linear/<workspace>] Issue(s) referenced:", when the commit guard hook blocks a command for missing an issue ID or injects "[CROSS-ISSUE-COMMITS]", when the user mentions Linear issues (e.g., "ENG-123", "OPL-456"), when creating commits/branches/PRs in a Linear-linked repo, when the user asks about Linear workflow or issue tracking, or when working in any repository that has a .claude/linear-sync.json config file. Provides behavioral rules for Linear-GitHub sync workflow orchestration.
-version: 0.1.2
+version: 0.1.3
 ---
 
 # Linear Sync Workflow
@@ -48,7 +48,7 @@ Keep the kickoff brief and natural: "What are you working on today in <repo>?"
 When a `[LINEAR-SETUP]` directive is injected:
 
 1. **Always use AskUserQuestion** for every choice. The dev never types workspace names, project IDs, or labels manually.
-2. **Always offer "This repo doesn't use Linear"** as an option. If chosen, opt the repo out via direct Bash (python3 one-liner to set `workspace: "none"` in state file) and move on.
+2. **Always offer "This repo doesn't use Linear"** as an option. If chosen, opt the repo out via Read/Write tools (read state file, set `workspace: "none"`, write back) and move on.
 3. Use the `linear-sync` subagent in **foreground** mode to fetch real data from Linear MCP (workspaces, teams, projects, labels).
 4. Present fetched data as AskUserQuestion choices.
 5. For labels, suggest `repo:<repo-name>` as the default.
@@ -234,14 +234,17 @@ Use for operations that return data the main agent needs to present:
 
 **When delegating to the subagent**, always include the `scripts_dir` from the session-start hook context in your prompt so the subagent can find `linear-api.sh`. Example: "Search for duplicates in OPL project. scripts_dir: /path/to/scripts"
 
-### Direct Bash (one tool call, no subagent overhead)
-Use `linear-api.sh` at the path from the session-start hook's `scripts_dir` field, or `python3` one-liners for simple mutations:
-- **Save last_issue**: `python3 -c "import json; f='$HOME/.claude/linear-sync/state.json'; d=json.load(open(f)); d['repos']['REPO']['last_issue']='ID'; json.dump(d,open(f,'w'),indent=2)"`
+### Direct Bash (auto-approved by PreToolUse hook)
+Use `linear-api.sh` at the path from the session-start hook's `scripts_dir` field for Linear API mutations. A PreToolUse hook auto-approves single-line `bash */linear-api.sh` commands, so these run without permission prompts:
 - **Auto-assign**: `bash linear-api.sh 'query { viewer { id } }'` then `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { assigneeId: "..." }) { issue { id } } }'`
 - **Add to cycle**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { cycleId: "..." }) { issue { id } } }'`
 - **Post comment**: `bash linear-api.sh 'mutation($input: CommentCreateInput!) { commentCreate(input: $input) { comment { id } } }' '{"input": {"issueId": "...", "body": "..."}}'`
 - **Status change**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { stateId: "..." }) { issue { id } } }'`
-- **Opt repo out**: `python3 -c "import json; f='$HOME/.claude/linear-sync/state.json'; d=json.load(open(f)); d['repos']['REPO']['workspace']='none'; json.dump(d,open(f,'w'),indent=2)"`
+
+### Read/Write tools (no Bash needed)
+Use the Read and Write tools for state file updates — no permission prompts, no subagent overhead:
+- **Save last_issue**: Read `~/.claude/linear-sync/state.json`, update `repos.<repo>.last_issue`, Write back
+- **Opt repo out**: Read state file, set `repos.<repo>.workspace` to `"none"`, Write back
 
 ## Companion Files
 

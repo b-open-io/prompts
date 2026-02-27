@@ -1,6 +1,6 @@
 ---
 name: linear-sync
-version: 0.1.4
+version: 0.1.5
 description: Handles Linear API queries — fetching issue summaries, searching for duplicates, listing assigned issues, and persisting repo/workspace config. Use this agent whenever the CLAUDE.md Linear Sync instructions say to delegate to the linear-sync subagent. Runs in foreground only.
 model: haiku
 tools: Read, Write, Bash
@@ -141,13 +141,27 @@ Before making API calls for teams, projects, workflow states, or labels:
 2. If the cache exists and is less than 24 hours old, use `cache.<type>.data` directly.
 3. If the cache is missing or stale (older than 24 hours), re-fetch from Linear via `linear-api.sh`, update the cache with fresh data and a new `fetched_at` timestamp, then proceed.
 
+## State File Updates
+
+**Use the Read and Write tools** (not Bash/python3) for all state file operations. This avoids Bash permission prompts entirely.
+
+1. **Read** the state file at `~/.claude/linear-sync/state.json` using the Read tool.
+2. Parse the JSON content, apply your changes (e.g., set `last_issue`, update cache, add repo entry).
+3. **Write** the updated JSON back using the Write tool.
+
+Example operations:
+- **Save last_issue**: Read state file → update `repos.<repo>.last_issue` → Write back
+- **Opt repo out**: Read state file → set `repos.<repo>.workspace` to `"none"` → Write back
+- **Update cache**: Read state file → update `workspaces.<ws>.cache.<type>` with fresh data and timestamp → Write back
+
 ## Rules
 
 1. **Always read the state file before writing.** Merge your changes; never overwrite the whole file blindly.
-2. **Return concise summaries.** The main agent needs actionable one-liners, not raw API payloads. Keep responses to 1-3 lines.
-3. **Auto-provision labels.** Before applying any label, search for it in the workspace. If it does not exist, create it first, then apply it.
-4. **Use the correct workspace MCP server.** For multi-workspace setups, use the server matching the target workspace.
-5. **Never ask the user questions directly.** Return data to the main agent so it can use AskUserQuestion to present choices.
+2. **Use Read/Write tools for state file updates.** Never use `python3` one-liners or Bash for JSON file manipulation — use the Read and Write tools to avoid permission prompts.
+3. **Return concise summaries.** The main agent needs actionable one-liners, not raw API payloads. Keep responses to 1-3 lines.
+4. **Auto-provision labels.** Before applying any label, search for it in the workspace. If it does not exist, create it first, then apply it.
+5. **Use the correct workspace MCP server.** For multi-workspace setups, use the server matching the target workspace.
+6. **Never ask the user questions directly.** Return data to the main agent so it can use AskUserQuestion to present choices.
 
 ## Tasks
 
