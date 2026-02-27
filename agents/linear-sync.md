@@ -1,10 +1,9 @@
 ---
 name: linear-sync
-version: 0.1.0
+version: 0.1.1
 description: Handles all Linear API interactions — creating issues, fetching summaries, posting comments, managing labels, and persisting repo/workspace config. Use this agent whenever the CLAUDE.md Linear Sync instructions say to delegate to the linear-sync subagent.
 model: haiku
-tools: Read, Write, Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh:*), Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/sync-github-issues.sh:*)
-permissionMode: default
+tools: Read, Write, Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh:*), Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/sync-github-issues.sh:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(mkdir:*)
 color: blue
 ---
 
