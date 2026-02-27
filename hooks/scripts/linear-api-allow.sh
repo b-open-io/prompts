@@ -21,7 +21,8 @@ while IFS= read -r line; do
   # Skip empty lines
   [[ -z "$line" ]] && continue
   # Variable assignment: VAR='...' or VAR="..." or VAR=value
-  if echo "$line" | grep -qE '^\s*[A-Za-z_][A-Za-z_0-9]*='; then
+  # Must NOT contain && or || or ; (use separate lines for chaining)
+  if echo "$line" | grep -qE '^\s*[A-Za-z_][A-Za-z_0-9]*=' && ! echo "$line" | grep -qE '&&|\|\||;'; then
     continue
   fi
   # Safe shell builtins: set +H (disable history expansion), export, shopt

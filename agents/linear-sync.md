@@ -64,10 +64,15 @@ When a variables JSON object is provided as the last argument, it is sent in the
 # WRONG — will fail with "Unexpected character: \" error
 bash "$API_SCRIPT" 'mutation($input: CommentCreateInput!) { commentCreate(input: $input) { comment { id } } }' '...'
 
-# CORRECT — use printf to inject ! safely
+# ALSO WRONG — do NOT chain with && (hook rejects && for security)
+QUERY=$(printf '...%s...' '!') && bash "$API_SCRIPT" "$QUERY" '...'
+
+# CORRECT — separate lines, printf to inject ! safely
 QUERY=$(printf 'mutation($input: CommentCreateInput%s) { commentCreate(input: $input) { comment { id } } }' '!')
 bash "$API_SCRIPT" "$QUERY" '{"input": {"issueId": "...", "body": "..."}}'
 ```
+
+**Important**: Put `QUERY=` and `bash` on **separate lines** (not chained with `&&`). The auto-approve hook validates each line independently and rejects `&&` chains for security.
 
 This applies to **any** query containing `!` (e.g., `IssueCreateInput!`, `CommentCreateInput!`, `String!`). Queries without `!` (simple queries, `issueUpdate`, `viewer`) can use the normal single-line syntax.
 

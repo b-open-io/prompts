@@ -242,11 +242,13 @@ Use `linear-api.sh` at the path from the session-start hook's `scripts_dir` fiel
 - **Status change**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { stateId: "..." }) { issue { id } } }'`
 
 ### CRITICAL: `!` escaping in GraphQL queries
-The Bash tool escapes `!` to `\!` even inside single quotes, breaking GraphQL non-null types like `CommentCreateInput!`. **Always use printf to construct queries containing `!`:**
+The Bash tool escapes `!` to `\!` even inside single quotes, breaking GraphQL non-null types like `CommentCreateInput!`. **Always use printf on a separate line to construct queries containing `!`:**
 ```bash
 QUERY=$(printf 'mutation($input: CommentCreateInput%s) { commentCreate(input: $input) { comment { id } } }' '!')
 bash linear-api.sh "$QUERY" '{"input": {"issueId": "...", "body": "..."}}'
 ```
+**Important**: Put `QUERY=` and `bash linear-api.sh` on **separate lines** (not chained with `&&`). The auto-approve hook validates each line independently and rejects `&&` chains for security.
+
 This applies to **any** query with `!` (e.g., `IssueCreateInput!`, `CommentCreateInput!`, `String!`). Queries without `!` (simple queries, `issueUpdate`, `viewer`) can use the normal single-line syntax.
 
 ### Parallel execution
