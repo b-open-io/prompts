@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/b-open-io/prompts/main/schema/linear-sync.json",
+  "title": "Linear Sync Repo Config",
+  "description": "Configuration for the linear-sync system, stored at .claude/linear-sync.json in a repo root.",
+  "type": "object",
+  "required": ["workspace", "team"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference URL."
+    },
+    "_warning": {
+      "type": "string",
+      "description": "Auto-managed warning message. Do not edit."
+    },
+    "workspace": {
+      "type": "string",
+      "description": "The Linear workspace identifier. Must match an entry in the local state file (~/.claude/linear-sync/state.json) for credential routing.",
+      "minLength": 1
+    },
+    "project": {
+      "type": "string",
+      "description": "The Linear project name this repo is linked to."
+    },
+    "team": {
+      "type": "string",
+      "description": "The Linear team key (e.g., \"ENG\", \"OPL\"). Used as the issue ID prefix.",
+      "pattern": "^[A-Z]{2,5}$"
+    },
+    "label": {
+      "type": "string",
+      "description": "The Linear label applied to issues from this repo (e.g., \"repo:my-repo\")."
+    },
+    "github_org": {
+      "type": "string",
+      "description": "The GitHub org/owner for this repo. Used for GitHub issue sync and org-level defaults."
+    }
+  },
+  "additionalProperties": false
+}
