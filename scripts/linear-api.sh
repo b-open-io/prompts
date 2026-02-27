@@ -83,7 +83,9 @@ fi
 # ---------- build JSON payload ----------
 PAYLOAD=$(QUERY="$QUERY" VARIABLES="$VARIABLES" python3 -c "
 import json, os
-payload = {'query': os.environ['QUERY']}
+# Strip \! → ! (Bash tool escapes ! even in single quotes due to history expansion)
+query = os.environ['QUERY'].replace(chr(92) + '!', '!')
+payload = {'query': query}
 variables = os.environ.get('VARIABLES', '')
 if variables:
     payload['variables'] = json.loads(variables)
