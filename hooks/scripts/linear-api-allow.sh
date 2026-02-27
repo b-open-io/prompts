@@ -24,6 +24,10 @@ while IFS= read -r line; do
   if echo "$line" | grep -qE '^\s*[A-Za-z_][A-Za-z_0-9]*='; then
     continue
   fi
+  # Safe shell builtins: set +H (disable history expansion), export, shopt
+  if echo "$line" | grep -qE '^\s*(set\s+[+-][A-Za-z]|set\s+[+-]o\s+\w+|export\s+[A-Za-z_]|shopt\s)'; then
+    continue
+  fi
   # bash linear-api.sh call
   if echo "$line" | grep -qE '^\s*bash\s+\S*linear-api\.sh(\s|$)'; then
     HAS_API_CALL=true
