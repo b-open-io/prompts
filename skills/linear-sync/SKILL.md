@@ -1,7 +1,7 @@
 ---
 name: linear-sync
 description: This skill should be used when the session-start hook injects Linear context (e.g., "[Linear/..." or "[LINEAR-SETUP]" or "[LINEAR-DIGEST]"), when the prompt-check hook injects "[Linear/<workspace>] Issue(s) referenced:", when the commit guard hook blocks a command for missing an issue ID or injects "[CROSS-ISSUE-COMMITS]", when the user mentions Linear issues (e.g., "ENG-123", "OPL-456"), when creating commits/branches/PRs in a Linear-linked repo, when the user asks about Linear workflow or issue tracking, or when working in any repository that has a .claude/linear-sync.json config file. Provides behavioral rules for Linear-GitHub sync workflow orchestration.
-version: 0.1.4
+version: 0.1.5
 ---
 
 # Linear Sync Workflow
@@ -235,11 +235,19 @@ Use for operations that return data the main agent needs to present:
 **When delegating to the subagent**, always include the `scripts_dir` from the session-start hook context in your prompt so the subagent can find `linear-api.sh`. Example: "Search for duplicates in OPL project. scripts_dir: /path/to/scripts"
 
 ### Direct Bash (auto-approved by PreToolUse hook)
-Use `linear-api.sh` at the path from the session-start hook's `scripts_dir` field for Linear API mutations. A PreToolUse hook auto-approves single-line `bash */linear-api.sh` commands, so these run without permission prompts:
+Use `linear-api.sh` at the path from the session-start hook's `scripts_dir` field for Linear API mutations. A PreToolUse hook auto-approves single-line `bash */linear-api.sh` commands (and multiline with variable assignments), so these run without permission prompts:
 - **Auto-assign**: `bash linear-api.sh 'query { viewer { id } }'` then `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { assigneeId: "..." }) { issue { id } } }'`
 - **Add to cycle**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { cycleId: "..." }) { issue { id } } }'`
-- **Post comment**: `bash linear-api.sh 'mutation($input: CommentCreateInput!) { commentCreate(input: $input) { comment { id } } }' '{"input": {"issueId": "...", "body": "..."}}'`
+- **Post comment**: See the `!` escaping workaround below, then: `bash linear-api.sh "$QUERY" '{"input": {"issueId": "...", "body": "..."}}'`
 - **Status change**: `bash linear-api.sh 'mutation { issueUpdate(id: "...", input: { stateId: "..." }) { issue { id } } }'`
+
+### CRITICAL: `!` escaping in GraphQL queries
+The Bash tool escapes `!` to `\!` even inside single quotes, breaking GraphQL non-null types like `CommentCreateInput!`. **Always use printf to construct queries containing `!`:**
+```bash
+QUERY=$(printf 'mutation($input: CommentCreateInput%s) { commentCreate(input: $input) { comment { id } } }' '!')
+bash linear-api.sh "$QUERY" '{"input": {"issueId": "...", "body": "..."}}'
+```
+This applies to **any** query with `!` (e.g., `IssueCreateInput!`, `CommentCreateInput!`, `String!`). Queries without `!` (simple queries, `issueUpdate`, `viewer`) can use the normal single-line syntax.
 
 ### Parallel execution
 **Always batch independent API calls in the same message.** Claude can make multiple tool calls simultaneously when they don't depend on each other. Key patterns:

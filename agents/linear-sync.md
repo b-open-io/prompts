@@ -1,6 +1,6 @@
 ---
 name: linear-sync
-version: 0.1.5
+version: 0.1.6
 description: Handles Linear API queries — fetching issue summaries, searching for duplicates, listing assigned issues, and persisting repo/workspace config. Use this agent whenever the CLAUDE.md Linear Sync instructions say to delegate to the linear-sync subagent. Runs in foreground only.
 model: haiku
 tools: Read, Write, Bash
@@ -45,7 +45,9 @@ bash /path/to/scripts/linear-api.sh 'query { viewer { id name } }'
 bash /path/to/scripts/linear-api.sh linear-opl 'query { teams { nodes { id name key } } }'
 
 # With GraphQL variables (for mutations with user-provided text — handles escaping automatically)
-bash /path/to/scripts/linear-api.sh 'mutation($input: IssueCreateInput!) { issueCreate(input: $input) { issue { id identifier title } } }' '{"input": {"teamId": "TEAM_ID", "title": "My Title", "description": "Body with \"quotes\" and\nnewlines"}}'
+# NOTE: Use printf for queries with ! (see "Bang Escaping" section below)
+QUERY=$(printf 'mutation($input: IssueCreateInput%s) { issueCreate(input: $input) { issue { id identifier title } } }' '!')
+bash /path/to/scripts/linear-api.sh "$QUERY" '{"input": {"teamId": "TEAM_ID", "title": "My Title", "description": "Body with \"quotes\" and\nnewlines"}}'
 ```
 
 Replace `/path/to/scripts/linear-api.sh` with the resolved path from your Script Path Resolution step.
@@ -53,6 +55,21 @@ Replace `/path/to/scripts/linear-api.sh` with the resolved path from your Script
 The script reads the API key from `~/.claude/mcp.json` internally — it never appears in your commands or output. The server name matches the key in `mcpServers` (e.g., `"linear"`, `"linear-opl"`).
 
 When a variables JSON object is provided as the last argument, it is sent in the request body alongside the query. **Always use variables for mutations that include user-provided text** (issue descriptions, comments, etc.) to avoid GraphQL injection and escaping issues.
+
+### Bang Escaping (`!` in GraphQL queries)
+
+**CRITICAL**: The Bash tool escapes `!` to `\!` even inside single quotes, breaking GraphQL non-null type annotations like `IssueCreateInput!`. **Always use printf to construct queries containing `!`:**
+
+```bash
+# WRONG — will fail with "Unexpected character: \" error
+bash "$API_SCRIPT" 'mutation($input: CommentCreateInput!) { commentCreate(input: $input) { comment { id } } }' '...'
+
+# CORRECT — use printf to inject ! safely
+QUERY=$(printf 'mutation($input: CommentCreateInput%s) { commentCreate(input: $input) { comment { id } } }' '!')
+bash "$API_SCRIPT" "$QUERY" '{"input": {"issueId": "...", "body": "..."}}'
+```
+
+This applies to **any** query containing `!` (e.g., `IssueCreateInput!`, `CommentCreateInput!`, `String!`). Queries without `!` (simple queries, `issueUpdate`, `viewer`) can use the normal single-line syntax.
 
 ### Common GraphQL patterns
 
@@ -73,7 +90,8 @@ bash "$API_SCRIPT" 'query { issue(id: "ENG-123") { id title state { id name } as
 
 **Create issue (use variables for user-provided text):**
 ```bash
-bash "$API_SCRIPT" 'mutation($input: IssueCreateInput!) { issueCreate(input: $input) { issue { id identifier title } } }' '{"input": {"teamId": "TEAM_ID", "title": "Title", "projectId": "PROJ_ID", "labelIds": ["LABEL_ID"], "stateId": "STATE_ID"}}'
+QUERY=$(printf 'mutation($input: IssueCreateInput%s) { issueCreate(input: $input) { issue { id identifier title } } }' '!')
+bash "$API_SCRIPT" "$QUERY" '{"input": {"teamId": "TEAM_ID", "title": "Title", "projectId": "PROJ_ID", "labelIds": ["LABEL_ID"], "stateId": "STATE_ID"}}'
 ```
 
 **Search labels:**
