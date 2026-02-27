@@ -318,7 +318,7 @@ if repo is not None:
   fi
 
   CTX="$CTX
-GitHub issue sync available. Run: bash \${CLAUDE_PLUGIN_ROOT}/scripts/sync-github-issues.sh $GIT_TOP"
+Delegate GitHub issue sync to linear-sync subagent (background): \"Run sync-github-issues.sh for repo at $GIT_TOP\""
   CTX="$CTX
 Follow the Linear Sync workflow skill instructions to ask the dev what they're working on today in $REPO_NAME."
   emit "$CTX"

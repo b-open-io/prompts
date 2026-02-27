@@ -25,7 +25,7 @@ When the hook injects config context for a linked repo:
 
 Do two things in parallel:
 - **Notification digest** (if `[LINEAR-DIGEST]` is present): Delegate to `linear-sync` subagent (background): "Fetch notification digest for project '<project>' with label '<label>'."
-- **GitHub issue sync** (always): Run the sync script directly: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/sync-github-issues.sh <repo-root>`. This is a shell script, not a subagent task — run it via Bash in the background.
+- **GitHub issue sync** (always): Delegate to `linear-sync` subagent (background): "Run sync-github-issues.sh for repo at <repo-root>".
 
 Briefly surface both results before asking what to work on. Keep each to 1 line.
 

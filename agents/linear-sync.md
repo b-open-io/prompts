@@ -3,7 +3,7 @@ name: linear-sync
 version: 0.1.0
 description: Handles all Linear API interactions — creating issues, fetching summaries, posting comments, managing labels, and persisting repo/workspace config. Use this agent whenever the CLAUDE.md Linear Sync instructions say to delegate to the linear-sync subagent.
 model: haiku
-tools: Bash, Read, Write
+tools: Read, Write, Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/linear-api.sh:*), Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/sync-github-issues.sh:*)
 permissionMode: default
 color: blue
 ---
@@ -236,10 +236,8 @@ When the main agent asks you to set up a repo:
 
 ### Sync GitHub Issues
 
-1. Resolve config. Fetch GH issues and Linear issues.
-2. Create Linear issues for unsynced GH issues.
-3. Close GH issues when linked Linear issue is completed.
-4. Return summary.
+1. Run the sync script: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/sync-github-issues.sh <repo-root>`
+2. Return the script's output summary (e.g., "GitHub sync for repo: created 2 Linear issues, closed 1 GitHub issue." or "everything in sync.").
 
 ## Error Handling
 
