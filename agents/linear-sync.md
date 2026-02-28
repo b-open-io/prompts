@@ -1,6 +1,6 @@
 ---
 name: linear-sync
-version: 0.1.6
+version: 0.1.7
 description: Handles Linear API queries — fetching issue summaries, searching for duplicates, listing assigned issues, and persisting repo/workspace config. Use this agent whenever the CLAUDE.md Linear Sync instructions say to delegate to the linear-sync subagent. Runs in foreground only.
 model: haiku
 tools: Read, Write, Bash
@@ -209,7 +209,9 @@ When the main agent asks you to set up a repo:
       }
       ```
    c. Read and update the local state file with workspace routing.
-   d. Commit and push the repo config file.
+   d. Create a setup issue following the **Create Issue** task below (title: "Set up Linear sync configuration", status: In Progress, with repo label).
+   e. Commit the repo config file with the issue ID in the message (e.g., `PEAK-123: add Linear sync config`).
+   f. **Push the commit** (`git push`). This is critical — other devs need the committed config.
 4. Confirm: "Linked <repo> to <project> in <workspace> with label <label>."
 
 ### Fetch Issue Summary
@@ -220,10 +222,12 @@ When the main agent asks you to set up a repo:
 ### Create Issue
 
 1. Check workspace cache. Use cached IDs if fresh.
-2. Create issue with title, status In Progress, and repo label.
-3. If priority specified (0-4), include it.
-4. Save as `last_issue` in state file.
-5. Return: "Created <ISSUE_ID>: <title> in <project> (In Progress)."
+2. Fetch workflow states for the team: `query { workflowStates(filter: { team: { key: { eq: "TEAM" } } }) { nodes { id name type } } }`
+3. Find the "In Progress" state (type: `started`, name: "In Progress") from the results.
+4. Create issue with title, stateId set to the In Progress state, projectId, and repo label.
+5. If priority specified (0-4), include it.
+6. Save as `last_issue` in state file.
+7. Return: "Created <ISSUE_ID>: <title> in <project> (In Progress)."
 
 ### Fetch My Issues
 
