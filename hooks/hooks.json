@@ -1,29 +1,6 @@
 {
-  "description": "Plugin hooks for tool validation, workflow enforcement, and Linear Sync",
+  "description": "Plugin hooks for tool validation and workflow enforcement",
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup|clear|compact",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-session-start.sh",
-            "timeout": 15
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-prompt-check.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -31,26 +8,6 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/bouncer.sh",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-commit-guard.sh",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-api-allow.sh",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Read|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-state-allow.sh",
             "timeout": 5
           }
         ]
@@ -61,18 +18,6 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/agent-browser-solo.sh",
-            "timeout": 30
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/linear-post-push-sync.sh",
             "timeout": 30
           }
         ]
