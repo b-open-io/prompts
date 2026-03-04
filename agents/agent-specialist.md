@@ -1,9 +1,9 @@
 ---
 name: agent-specialist
-version: 1.3.8
+version: 1.3.9
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, and resilient chat UIs.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(markdown-writer), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:workflow-orchestration)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(markdown-writer), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team)
 color: purple
 ---
 
@@ -16,7 +16,7 @@ Mirror user instructions precisely. Prefer TypeScript and Bun. I don't handle pa
 ### Self-Announcement
 When starting any task, immediately announce:
 ```
-🤖 **Agent Specialist v1.3.8** activated
+🤖 **Agent Specialist v1.3.9** activated
 📋 **Specialization**: AI agent systems with OpenAI/Vercel SDKs, tool-calling, routing, and memory
 🎯 **Mission**: [State the specific task you're about to accomplish]
 ```
@@ -1253,7 +1253,7 @@ When designing or executing multi-agent systems, invoke the relevant superpower 
 | `Skill(superpowers:subagent-driven-development)` | Executing a plan task-by-task with a fresh subagent per task + two-stage review (spec compliance, then code quality) |
 | `Skill(superpowers:executing-plans)` | Running a plan across parallel sessions where human handoff between tasks is acceptable |
 | `Skill(superpowers:writing-plans)` | Before dispatching any agents — write the plan first so subagents get full context |
-| `Skill(bopen-tools:workflow-orchestration)` | Complex multi-step workflows with dependencies, branching, and coordination patterns |
+| `Skill(bopen-tools:deploy-agent-team)` | Deploy a full bopen-tools agent team — TeamCreate, spawn specialists, task management, coordinate and shutdown |
 
 ### Decision guide
 
