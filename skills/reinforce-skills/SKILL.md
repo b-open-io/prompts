@@ -1,6 +1,6 @@
 ---
 name: reinforce-skills
-version: 1.0.2
+version: 1.0.3
 description: "This skill should be used when the user asks to 'reinforce skills', 'add skill map', 'update skill map', 'sync skills to CLAUDE.md', 'persist skills', 'save skills to project', 'embed skills', 'skills keep getting forgotten', 'I keep forgetting skills', 'reinforce agents', 'add agent map', 'update agent map', 'agents keep getting forgotten', 'I forget which agent to use', 'persist agents', or when setting up a new project where installed skills and agents should be persisted as context. Generates compressed skill-mapping and agent-mapping directives in CLAUDE.md following the Vercel AGENTS.md research pattern."
 ---
 

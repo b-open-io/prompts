@@ -38,6 +38,7 @@ These skills ship with plugins and are available to anyone who installs the plug
 | clean-ai-slop, remove-ai-patterns | bopen-tools:stop-slop |
 | refresh-skill-map | bopen-tools:reinforce-skills |
 | npm-publish | bopen-tools:npm-publish |
+| benchmark-skills, write-evals, test-skill-quality | bopen-tools:benchmark-skills |
 
 ### BSV Skills
 
@@ -90,6 +91,7 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 | data-pipeline, analytics | bopen-tools:data |
 | legal-review, privacy-policy, tos | bopen-tools:legal |
 | testing, e2e-tests, unit-tests | bopen-tools:tester |
+| skill-benchmarking, eval-writing, measure-skill | bopen-tools:tester |
 | code-review, post-step-review | superpowers:code-reviewer |
 | file-consolidation, cleanup, organize | bopen-tools:consolidator |
 | architecture-review | bopen-tools:architecture-reviewer |

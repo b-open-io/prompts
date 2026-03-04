@@ -2,5 +2,9 @@
   "private": true,
   "scripts": {
     "benchmark": "bun run scripts/benchmark.ts"
+  },
+  "dependencies": {
+    "ink": "^5",
+    "react": "^18"
   }
 }
