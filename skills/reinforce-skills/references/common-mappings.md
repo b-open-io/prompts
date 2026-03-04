@@ -21,6 +21,14 @@ These skills ship with plugins and are available to anyone who installs the plug
 | finishing-branch, merge-prep | superpowers:finishing-a-development-branch |
 | verify-completion | superpowers:verification-before-completion |
 
+### Anthropic Official (skill-creator plugin)
+
+| Trigger | Skill |
+|---------|-------|
+| create-skill, new-skill, write-skill-md | skill-creator:skill-creator |
+| modify-skill, improve-skill, update-skill | skill-creator:skill-creator |
+| test-skill, eval-skill, benchmark-skill | skill-creator:skill-creator |
+
 ### BOpen Tools
 
 | Trigger | Skill |

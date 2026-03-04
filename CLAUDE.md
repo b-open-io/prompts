@@ -1,5 +1,8 @@
 # CLAUDE.md
 
+<!-- SKILL-MAP-START -->STOP. You WILL forget skill names mid-session. Check this map before ANY task.|create/improve/test/benchmark any skill→Skill(skill-creator:skill-creator)|writing SKILL.md→Skill(plugin-dev:skill-development)|writing agent .md→Skill(plugin-dev:agent-development)|writing slash commands→Skill(plugin-dev:command-development)|inject skill/agent map into CLAUDE.md→Skill(bopen-tools:reinforce-skills)|writing docs→Skill(bopen-tools:markdown-writer)<!-- SKILL-MAP-END -->
+<!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|create/edit skills, commands, prompts→Agent(bopen-tools:prompt-engineer)|agent systems, multi-agent orchestration→Agent(bopen-tools:agent-specialist)|docs and READMEs→Agent(bopen-tools:documentation-writer)|researching tools and best practices→Agent(bopen-tools:research-specialist)<!-- AGENT-MAP-END -->
+
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
 ## Version Management for Agents, Commands, and Skills
