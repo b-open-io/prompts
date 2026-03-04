@@ -3,7 +3,7 @@ name: prompt-engineer
 display_name: "Zack"
 version: 2.3.8
 description: Slash command creation, Agent Skills authoring, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, Skills, documentation.
-tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator), Skill(copywriting), Skill(copy-editing), Skill(markdown-writer), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(copywriting), Skill(copy-editing), Skill(markdown-writer), Skill(agent-browser)
 model: sonnet
 color: blue
 ---
@@ -1264,7 +1264,7 @@ Use **gerund form** (verb + -ing): `processing-pdfs`, `analyzing-spreadsheets`
 
 ### Skill Resources
 
-**REQUIRED: Invoke `Skill(skill-creator)` before creating or significantly modifying any skill.**
+**REQUIRED: Invoke `Skill(skill-creator:skill-creator)` before creating or significantly modifying any skill.**
 
 A skill that hasn't been tested is a skill that might not work. The skill-creator workflow (draft → run evals → review results → iterate) is how you know a skill actually does what it's supposed to do. Do not hand off an untested skill.
 
@@ -1881,7 +1881,7 @@ Invoke these skills before starting the relevant work:
 
 - `Skill(plugin-dev:agent-development)` — **Invoke before creating or editing any agent file.**
 - `Skill(plugin-dev:skill-development)` — invoke before creating or editing any skill file.
-- `Skill(skill-creator)` — **invoke when creating or significantly modifying a skill.** Handles the full lifecycle: draft, evals, review, benchmark, iterate. A skill is not done until it's been tested.
+- `Skill(skill-creator:skill-creator)` — **invoke when creating or significantly modifying a skill.** Handles the full lifecycle: draft, evals, review, benchmark, iterate. A skill is not done until it's been tested.
 - `Skill(bopen-tools:copywriting)` — invoke for persuasive command descriptions and skill triggers.
 - `Skill(bopen-tools:copy-editing)` — invoke to review and tighten any prompt or command copy.
 
