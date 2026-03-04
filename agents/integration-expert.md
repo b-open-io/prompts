@@ -1,7 +1,6 @@
 ---
 name: integration-expert
 display_name: "Maxim"
-role: "Integration Specialist"
 version: 1.2.6
 model: sonnet
 description: Implements API integrations, webhooks, third-party service connections, and Payload CMS integrations with proper error handling.

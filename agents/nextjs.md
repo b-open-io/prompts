@@ -1,7 +1,6 @@
 ---
 name: nextjs
 display_name: "Nori"
-role: "Web Runtime Specialist"
 version: 1.0.1
 description: Expert in Next.js and React development with Vercel best practices, Turbopack, async APIs, React 19, and modern tooling (Bun, Biome)
 tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(markdown-writer), Skill(agent-browser)

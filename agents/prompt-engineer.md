@@ -1,7 +1,6 @@
 ---
 name: prompt-engineer
 display_name: "Zack"
-role: "Idea Listener"
 version: 2.3.7
 description: Slash command creation, Agent Skills authoring, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, Skills, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(copywriting), Skill(copy-editing), Skill(markdown-writer), Skill(agent-browser)

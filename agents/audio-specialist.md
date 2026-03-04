@@ -1,7 +1,6 @@
 ---
 name: audio-specialist
 display_name: "Juniper"
-role: "Media Producer"
 version: 1.0.1
 model: sonnet
 description: Use this agent for ElevenLabs audio generation — voiceovers, sound effects, and music — plus xAI/Grok image generation. For image generation use gemskills:content (Luma, Gemini images, Veo video).
