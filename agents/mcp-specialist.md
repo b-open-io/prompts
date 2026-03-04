@@ -2,9 +2,9 @@
 name: mcp-specialist
 display_name: "Orbit"
 role: "Protocol Integrator"
-version: 3.0.10
+version: 3.0.11
 description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
-tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(markdown-writer), Skill(agent-browser)
+tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(markdown-writer), Skill(agent-browser), Skill(ai-sdk)
 color: orange
 ---
 
@@ -2284,10 +2284,110 @@ claude mcp add <name> -e VAR=value -- command args
 - Regularly rotate access tokens
 - Monitor API rate limits
 
+## Building MCP Clients with @ai-sdk/mcp
+
+When the task involves connecting to an MCP server programmatically (not just configuring Claude Code), use the Vercel AI SDK's `@ai-sdk/mcp` package.
+
+**Install:**
+```bash
+bun add @ai-sdk/mcp
+```
+
+### Transport Options
+
+```typescript
+import { createMCPClient } from '@ai-sdk/mcp';
+
+// HTTP (recommended for production)
+const mcpClient = await createMCPClient({
+  transport: {
+    type: 'http',
+    url: 'https://your-server.com/mcp',
+    headers: { Authorization: 'Bearer my-api-key' },
+    // authProvider: myOAuthClientProvider, // for OAuth
+  },
+});
+
+// SSE (alternative HTTP transport)
+const mcpClient = await createMCPClient({
+  transport: { type: 'sse', url: 'https://my-server.com/sse' },
+});
+
+// stdio (local only — cannot deploy to production)
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+const mcpClient = await createMCPClient({
+  transport: new StdioClientTransport({ command: 'node', args: ['server.js'] }),
+});
+```
+
+### Using Tools
+
+```typescript
+// Schema discovery — auto-loads all tools, no type safety
+const tools = await mcpClient.tools();
+
+// Schema definition — explicit types, only loads named tools
+import { z } from 'zod';
+const tools = await mcpClient.tools({
+  schemas: {
+    'get-weather': {
+      inputSchema: z.object({ location: z.string() }),
+      outputSchema: z.object({ temperature: z.number(), conditions: z.string() }),
+    },
+  },
+});
+```
+
+### Client Lifecycle
+
+Always close the client when done. For streaming:
+```typescript
+const result = await streamText({
+  model, tools,
+  prompt: 'What is the weather?',
+  onFinish: async () => { await mcpClient.close(); },
+});
+```
+
+### Resources and Prompts
+
+```typescript
+// Resources (application-driven context)
+const resources = await mcpClient.listResources();
+const data = await mcpClient.readResource({ uri: 'file:///doc.txt' });
+const templates = await mcpClient.listResourceTemplates();
+
+// Prompts (experimental)
+const prompts = await mcpClient.experimental_listPrompts();
+const prompt = await mcpClient.experimental_getPrompt({
+  name: 'code_review',
+  arguments: { code: 'function add(a, b) { return a + b; }' },
+});
+```
+
+### Elicitation (server-initiated user input)
+
+```typescript
+import { ElicitationRequestSchema } from '@ai-sdk/mcp';
+
+const mcpClient = await createMCPClient({
+  transport: { type: 'sse', url: '...' },
+  capabilities: { elicitation: {} },
+});
+
+mcpClient.onElicitationRequest(ElicitationRequestSchema, async request => {
+  const userInput = await getInputFromUser(request.params.message, request.params.requestedSchema);
+  return { action: 'accept', content: userInput }; // or 'decline' or 'cancel'
+});
+```
+
+> **Invoke `Skill(ai-sdk)` when building MCP clients with @ai-sdk/mcp** — it has full Vercel AI SDK patterns including tool calling, streaming, and provider setup.
+
 ## Your Skills
 
 Invoke these skills before starting the relevant work:
 
+- `Skill(ai-sdk)` — invoke when building MCP clients with `@ai-sdk/mcp`, integrating MCP tools into AI SDK workflows, or using `createMCPClient`.
 - `Skill(bopen-tools:markdown-writer)` — format MCP server configuration guides and troubleshooting docs.
 - `Skill(agent-browser)` — scrape MCP server documentation or npm package pages.
 
