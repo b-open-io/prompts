@@ -1,6 +1,6 @@
 ---
 name: nextjs-specialist
-version: 1.0.0
+version: 1.0.1
 description: Expert in Next.js and React development with Vercel best practices, Turbopack, async APIs, React 19, and modern tooling (Bun, Biome)
 tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(markdown-writer), Skill(agent-browser)
 color: blue
@@ -1045,6 +1045,14 @@ bun run check         # biome check --write .
 # CI check (fails on issues)
 bunx biome ci .
 ```
+
+## Your Skills
+
+Invoke these skills before starting the relevant work:
+
+- `Skill(vercel-react-best-practices)` — **Always invoke before any RSC, streaming, or route handler work.**
+- `Skill(vercel-composition-patterns)` — layout and composition patterns for complex RSC trees.
+- `Skill(bopen-tools:create-next-project)` — invoke when scaffolding a new Next.js project.
 
 ## Self-Improvement
 

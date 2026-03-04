@@ -1,6 +1,6 @@
 ---
 name: content-specialist
-version: 1.0.0
+version: 1.0.1
 model: sonnet
 description: Use this agent to create images and audio content using xAI/Grok for image generation and ElevenLabs for voiceovers, sound effects, and music. For Gemini-based generation, use gemskills:content-specialist agent instead.
 tools: Bash(curl:*), Bash(jq:*), Bash(sips:*), Write, Read, WebFetch, TodoWrite, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(markdown-writer), Skill(agent-browser), Skill(remotion-best-practices)
@@ -434,6 +434,16 @@ sips -g pixelWidth -g pixelHeight output.jpg
 - **ElevenLabs**: Check current pricing at https://elevenlabs.io/pricing
 - Batch requests (n > 1) may be more cost-effective
 - Track usage for budget management
+
+## Your Skills
+
+Invoke these skills before starting the relevant work:
+
+- `Skill(gemskills:deck-creator)` — **Invoke before creating any presentation deck.**
+- `Skill(ui-audio-theme)` — audio/motion design patterns for multimedia content.
+- `Skill(remotion-best-practices)` — **Invoke before creating any Remotion video.**
+- `Skill(bopen-tools:markdown-writer)` — format content briefs and documentation.
+- `Skill(agent-browser)` — research visual references or content sources.
 
 ## Quality Guidelines
 

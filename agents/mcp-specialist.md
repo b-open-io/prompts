@@ -1,6 +1,6 @@
 ---
 name: mcp-specialist
-version: 3.0.9
+version: 3.0.10
 description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(markdown-writer), Skill(agent-browser)
 color: orange
@@ -2281,6 +2281,13 @@ claude mcp add <name> -e VAR=value -- command args
 - Use input prompts for sensitive data
 - Regularly rotate access tokens
 - Monitor API rate limits
+
+## Your Skills
+
+Invoke these skills before starting the relevant work:
+
+- `Skill(bopen-tools:markdown-writer)` — format MCP server configuration guides and troubleshooting docs.
+- `Skill(agent-browser)` — scrape MCP server documentation or npm package pages.
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:

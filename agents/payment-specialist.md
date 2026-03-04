@@ -1,6 +1,6 @@
 ---
 name: payment-specialist
-version: 1.1.2
+version: 1.1.3
 description: Handles payment integrations, transactions, and financial operations with security best practices.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite, Skill(plaid-integration), Skill(markdown-writer), Skill(agent-browser)
 color: green
@@ -278,6 +278,14 @@ stripe login --api-key sk_test_xxx  # CI/CD usage
 # 4. Filter logs to reduce noise
 # 5. Create fixtures for complex multi-step flows
 ```
+
+## Your Skills
+
+Invoke these skills before starting the relevant work:
+
+- `Skill(bopen-tools:plaid-integration)` — **Invoke before any Plaid/banking integration work.**
+- `Skill(bopen-tools:markdown-writer)` — format payment integration docs and flow diagrams.
+- `Skill(agent-browser)` — scrape Stripe, Plaid, or payment provider documentation.
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:

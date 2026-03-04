@@ -1,7 +1,7 @@
 ---
 name: deploy-agent-team
-version: 1.0.0
-description: This skill should be used when the user wants to deploy a team of specialized agents to work in parallel on a complex task. Use when breaking down large tasks into coordinated sub-tasks that require multiple domain experts working simultaneously — e.g. "build this feature", "audit and fix the whole codebase", "ship this product". Orchestrates Claude Code's experimental agent team system using our full kit of bopen-tools specialists.
+version: 1.0.1
+description: This skill should be used when the user says "deploy a team", "spin up agents to work on this", "use all our agents", "coordinate specialists", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full bopen-tools specialist roster.
 ---
 
 # Deploy Agent Team
@@ -27,40 +27,54 @@ Add to `~/.claude/settings.json`:
 
 Without this, `TeamCreate` will fail.
 
-## Available Agent Roster
+## Critical: Set `mode` on Every Agent Spawn
 
-These are the bopen-tools agents available as teammates. Reference them by `subagent_type` when spawning:
+> **WARNING**: The default permission mode **will block teammates** waiting for permission prompts that never arrive, stalling the whole team.
 
-| Agent | subagent_type | Model | Best for |
-|-------|--------------|-------|----------|
-| **research-specialist** | `bopen-tools:research-specialist` | sonnet | Researching libraries, APIs, docs, competitive analysis, web sources |
-| **nextjs-specialist** | `bopen-tools:nextjs-specialist` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
-| **design-specialist** | `bopen-tools:design-specialist` | sonnet | UI components, Tailwind, shadcn/ui, design systems, accessibility |
-| **agent-specialist** | `bopen-tools:agent-specialist` | opus | AI agent systems, tool-calling, LLM integration, Vercel AI SDK |
-| **database-specialist** | `bopen-tools:database-specialist` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
-| **integration-expert** | `bopen-tools:integration-expert` | sonnet | REST APIs, webhooks, third-party services, Payload CMS |
-| **code-auditor** | `bopen-tools:code-auditor` | opus | Security review, vulnerability scanning, code quality |
-| **test-specialist** | `bopen-tools:test-specialist` | sonnet | Unit, integration, e2e tests, mocking, coverage, CI |
-| **documentation-writer** | `bopen-tools:documentation-writer` | sonnet | READMEs, API docs, PRDs, guides |
-| **devops-specialist** | `bopen-tools:devops-specialist` | inherit | Vercel+Railway+Bun deployments, CI/CD, monitoring |
-| **optimizer** | `bopen-tools:optimizer` | opus | Bundle analysis, Lighthouse, runtime perf, Core Web Vitals |
-| **architecture-reviewer** | `bopen-tools:architecture-reviewer` | opus | System design review, refactoring strategy, tech debt |
-| **mobile-specialist** | `bopen-tools:mobile-specialist` | sonnet | React Native, Swift, Kotlin, Flutter |
-| **data-specialist** | `bopen-tools:data-specialist` | sonnet | ETL pipelines, analytics, data visualization |
-| **payment-specialist** | `bopen-tools:payment-specialist` | inherit | Stripe, billing, financial transactions |
-| **mcp-specialist** | `bopen-tools:mcp-specialist` | inherit | MCP server setup, config, diagnostics |
-| **marketing-specialist** | `bopen-tools:marketing-specialist` | sonnet | CRO, SEO, copy, launch strategy |
-| **legal-specialist** | `bopen-tools:legal-specialist` | opus | Privacy, compliance, ToS, data protection |
-| **content-specialist** | `bopen-tools:content-specialist` | sonnet | Images, audio, xAI/Grok generation, ElevenLabs |
-| **prompt-engineer** | `bopen-tools:prompt-engineer` | sonnet | Slash commands, skills, hooks, YAML frontmatter |
-| **consolidator** | `bopen-tools:consolidator` | inherit | File structure cleanup, deduplication, organization |
+Always set `mode: "bypassPermissions"` when spawning teammates:
+
+```
+Agent(
+  subagent_type: "bopen-tools:design-specialist",
+  team_name: "feature-billing",
+  name: "designer",
+  mode: "bypassPermissions",   # ← REQUIRED
+  prompt: "..."
+)
+```
+
+See `references/permissions-and-isolation.md` for all mode options and worktree isolation.
+
+## Available Agent Roster (Abbreviated)
+
+| Agent | subagent_type | Best for |
+|-------|--------------|----------|
+| **research-specialist** | `bopen-tools:research-specialist` | Libraries, APIs, docs, competitive analysis |
+| **nextjs-specialist** | `bopen-tools:nextjs-specialist` | Next.js, React, Vercel, RSC, app router |
+| **design-specialist** | `bopen-tools:design-specialist` | UI, Tailwind, shadcn/ui, accessibility |
+| **agent-specialist** | `bopen-tools:agent-specialist` | AI agent systems, LLM integration, Vercel AI SDK |
+| **database-specialist** | `bopen-tools:database-specialist` | Schema, queries, PostgreSQL, Redis, Convex |
+| **integration-expert** | `bopen-tools:integration-expert` | REST APIs, webhooks, Payload CMS |
+| **code-auditor** | `bopen-tools:code-auditor` | Security review, vulnerability scanning |
+| **test-specialist** | `bopen-tools:test-specialist` | Unit, integration, e2e tests, CI |
+| **documentation-writer** | `bopen-tools:documentation-writer` | READMEs, API docs, PRDs, guides |
+| **devops-specialist** | `bopen-tools:devops-specialist` | Vercel+Railway+Bun, CI/CD, monitoring |
+| **optimizer** | `bopen-tools:optimizer` | Bundle analysis, Lighthouse, Core Web Vitals |
+| **architecture-reviewer** | `bopen-tools:architecture-reviewer` | System design, refactoring strategy, tech debt |
+| **mobile-specialist** | `bopen-tools:mobile-specialist` | React Native, Swift, Kotlin, Flutter |
+| **payment-specialist** | `bopen-tools:payment-specialist` | Stripe, billing, financial transactions |
+| **marketing-specialist** | `bopen-tools:marketing-specialist` | CRO, SEO, copy, launch strategy |
+| **legal-specialist** | `bopen-tools:legal-specialist` | Privacy, compliance, ToS |
+| **mcp-specialist** | `bopen-tools:mcp-specialist` | MCP server setup, config, diagnostics |
+
+Full roster with per-agent skills to mention in spawn prompts: `references/agent-roster.md`
 
 ## Full Team Lifecycle
 
 ### Step 1: Decompose the task
 
-Before calling any tools, break the request into independent subtasks. Ask:
-- What domains are involved? (frontend, backend, testing, docs, etc.)
+Before calling any tools, identify:
+- What domains are involved? (frontend, backend, testing, docs, security...)
 - Which tasks can run in parallel vs. must be sequential?
 - What are the dependencies? (schema before API, API before tests)
 
@@ -73,76 +87,57 @@ TeamCreate(
 )
 ```
 
-### Step 3: Create tasks
+### Step 3: Create tasks upfront
 
-Create all tasks upfront. Set dependencies with `addBlockedBy` where order matters:
+Set dependencies with `addBlockedBy` where order matters:
 
 ```
 TaskCreate(
   subject: "Design billing UI components",
-  description: "Create PricingCard, BillingHistory, and UpgradeModal components
-  using shadcn/ui. Repo: ~/code/myapp. Use Tailwind v4. Components go in
-  src/components/billing/. Deliverable: typed, working components.",
+  description: "Create PricingCard, BillingHistory, UpgradeModal using shadcn/ui.
+  Repo: ~/code/myapp. Tailwind v4. Output: src/components/billing/.",
   activeForm: "Designing billing UI"
-)
-→ id: "1"
+) → id: "1"
 
 TaskCreate(
   subject: "Implement Stripe integration",
-  description: "Set up Stripe webhooks, subscription creation, and customer portal.
-  Repo: ~/code/myapp. API routes in app/api/billing/.
-  Deliverable: working checkout flow and webhook handler.",
+  description: "Set up webhooks, subscription creation, customer portal.
+  Repo: ~/code/myapp. API routes in app/api/billing/.",
   activeForm: "Implementing Stripe integration"
-)
-→ id: "2"
+) → id: "2"
 
 TaskCreate(
   subject: "Write billing test suite",
-  description: "Write tests for all billing API routes and the Stripe webhook handler.
-  Repo: ~/code/myapp. Use Vitest. Tests in __tests__/billing/.",
+  description: "Vitest tests for all billing API routes and webhook handler.
+  Repo: ~/code/myapp. Tests in __tests__/billing/.",
   activeForm: "Writing billing tests"
-)
-→ id: "3"
+) → id: "3"
 
-# Tests must wait for Stripe impl to be done
-TaskUpdate(taskId: "3", addBlockedBy: ["2"])
+TaskUpdate(taskId: "3", addBlockedBy: ["2"])  # tests wait for Stripe impl
 ```
 
 ### Step 4: Spawn teammates
-
-Spawn one agent per independent domain. **Every spawn prompt must be self-contained** — teammates do not inherit your conversation history.
 
 ```
 Agent(
   subagent_type: "bopen-tools:design-specialist",
   team_name: "feature-billing",
   name: "designer",
-  prompt: "..."   # see Spawn Prompt Template below
-)
-
-Agent(
-  subagent_type: "bopen-tools:integration-expert",
-  team_name: "feature-billing",
-  name: "backend",
-  prompt: "..."
-)
-
-Agent(
-  subagent_type: "bopen-tools:test-specialist",
-  team_name: "feature-billing",
-  name: "tester",
-  prompt: "..."   # task 3 is blocked — tester will wait and self-claim when unblocked
+  mode: "bypassPermissions",
+  prompt: "..."  # see references/spawn-prompt-guide.md
 )
 ```
 
+Every spawn prompt must be **self-contained** — teammates have zero conversation history. See `references/spawn-prompt-guide.md` for the full template and how to list each agent's available skills.
+
 ### Step 5: Monitor and coordinate
 
-Messages from teammates arrive automatically. Check overall progress:
+Messages from teammates arrive automatically. Check progress:
 ```
 TaskList()
 ```
 
-Send a correction or answer to a blocked teammate:
+Answer a blocked teammate:
 ```
 SendMessage(
   type: "message",
@@ -163,39 +158,6 @@ SendMessage(type: "shutdown_request", recipient: "tester", content: "Work comple
 TeamDelete()
 ```
 
-## Spawn Prompt Template
-
-```markdown
-You are part of the [TEAM_NAME] agent team working on [REPO_PATH].
-
-## Your Role
-[One sentence: what this agent specializes in]
-
-## Task Workflow
-1. Call TaskList to see available tasks
-2. Claim an unowned, unblocked task that matches your expertise:
-   TaskUpdate(taskId: "X", owner: "[YOUR_NAME]", status: "in_progress")
-3. Call TaskGet(taskId) for the full description
-4. Complete the work
-5. Mark complete: TaskUpdate(taskId: "X", status: "completed")
-6. Return to step 1 — repeat until no tasks remain for you
-7. Report to lead when done:
-   SendMessage(type: "message", recipient: "lead",
-     content: "All my tasks complete. [Summary of what was done]",
-     summary: "[5-10 word summary]")
-
-## Project Conventions
-- Bun (not npm)
-- [Framework and version specifics]
-- Biome for linting
-- [Key file paths]
-- [Any gotchas or constraints]
-
-## Boundaries
-Skip tasks outside your expertise — leave them for other teammates.
-Blocked tasks (blockedBy) will not appear in TaskList until dependencies complete.
-```
-
 ## Task Decomposition Patterns
 
 ### Feature implementation
@@ -204,7 +166,7 @@ Parallel from the start:
 ├── research-specialist: research best practices / prior art
 ├── design-specialist: UI components
 ├── nextjs-specialist or integration-expert: API / server logic
-├── database-specialist: schema changes
+└── database-specialist: schema changes
 
 Blocked until implementation complete:
 ├── test-specialist: test suite
@@ -214,7 +176,7 @@ Blocked until implementation complete:
 ### Security audit + fix
 ```
 Parallel:
-├── code-auditor: full vulnerability scan
+├── code-auditor: full vulnerability scan (Semgrep, CodeQL)
 └── architecture-reviewer: structural/design issues
 
 Blocked until audit complete:
@@ -237,20 +199,29 @@ Blocked until all above complete:
 
 ## Key Rules
 
-- **Self-contained prompts**: teammates get zero conversation history. Include repo path, conventions, and full context in every spawn prompt.
-- **One task at a time**: agents claim → complete → claim next. No parallel hoarding.
-- **No JSON in messages**: use TaskUpdate for status. SendMessage content is plain text only.
-- **Idle is normal**: teammates go idle between tasks. Send a message to wake them.
-- **No nested teams**: only the lead calls TeamCreate. Teammates cannot spawn sub-teams.
-- **Shutdown before TeamDelete**: TeamDelete fails if any teammate is still active.
-- **Broadcast sparingly**: each broadcast = one API call per teammate. Default to direct messages.
+- **`mode: "bypassPermissions"`** on every Agent spawn or teammates block
+- **Self-contained prompts**: teammates get zero conversation history — include repo path, conventions, and full context
+- **Mention agent skills in spawn prompts** — each agent has specialized skills; tell them which to use
+- **One task at a time**: claim → complete → claim next. No parallel hoarding
+- **No JSON in messages**: use TaskUpdate for status. SendMessage is plain text only
+- **Idle is normal**: teammates go idle between tasks. Send a message to wake them
+- **No nested teams**: only the lead calls TeamCreate
+- **Shutdown before TeamDelete**: TeamDelete fails if any teammate is still active
+- **Broadcast sparingly**: each broadcast = one API call per teammate
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
 | `TeamCreate` fails | Check `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set |
-| Teammate not claiming tasks | Check `blockedBy` deps with `TaskGet` — task may be waiting on another |
+| Teammate blocks/stalls | Missing `mode: "bypassPermissions"` — always set this |
+| Teammate not claiming tasks | Check `blockedBy` deps with `TaskGet` |
 | Teammate idle and unresponsive | Send a direct `SendMessage` — idle agents wake on receipt |
-| `TeamDelete` fails | Teammates still running. Send `shutdown_request` to each, wait for `shutdown_response` |
-| Teammate went off-script | Send correction via `SendMessage`. If severe, shutdown and respawn with clearer prompt |
+| `TeamDelete` fails | Teammates still running. Send `shutdown_request` to each |
+| Teammate went off-script | Send correction via `SendMessage`. If severe, shutdown and respawn |
+
+## References
+
+- `references/permissions-and-isolation.md` — `mode` parameter options, worktree isolation for parallel edits
+- `references/agent-roster.md` — full roster table + which skills to mention per agent in spawn prompts
+- `references/spawn-prompt-guide.md` — complete spawn prompt template with skills section
