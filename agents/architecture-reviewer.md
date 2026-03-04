@@ -1,5 +1,7 @@
 ---
 name: architecture-reviewer
+display_name: "Kayle"
+role: "Systems Architect"
 version: 1.1.6
 model: opus
 color: gray

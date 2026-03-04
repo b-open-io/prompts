@@ -1,5 +1,7 @@
 ---
 name: mobile-specialist
+display_name: "Kira"
+role: "Mobile Builder"
 version: 1.1.4
 description: Expert in mobile app development for React Native, Swift, Kotlin, and Flutter
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(vercel-react-native-skills), Skill(markdown-writer), Skill(agent-browser)

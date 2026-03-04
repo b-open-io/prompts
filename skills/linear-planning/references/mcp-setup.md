@@ -1,69 +1,85 @@
 # Linear MCP Server Setup
 
-## Install via Claude Code
+## The Official Server
 
-The easiest way — run this in Claude Code and authenticate:
+Linear provides an official MCP server hosted at `https://mcp.linear.app/mcp`. No local npm package needed — it connects over HTTP with OAuth authentication.
+
+## Install in Claude Code
 
 ```bash
-/mcp
+claude mcp add --transport http linear-server https://mcp.linear.app/mcp
 ```
 
-Then search for "Linear" and follow the OAuth flow. Claude Code will store the credentials and the MCP server will be available in all sessions.
+Then run `/mcp` in your Claude Code session to complete the OAuth authentication flow.
 
-## Manual Install
+## Install in Claude Desktop (Free/Pro)
 
-Add to `~/.claude/settings.json`:
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "linear": {
       "command": "npx",
-      "args": ["@linear/mcp-server@latest"],
-      "env": {
-        "LINEAR_API_KEY": "your-linear-api-key"
-      }
+      "args": ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]
     }
   }
 }
 ```
 
-Get your API key from: Linear → Settings → API → Personal API Keys
+Restart Claude Desktop afterward.
 
-## Verify It's Working
+## Other Clients
 
-After setup, check Claude Code has Linear tools:
+| Client | Method |
+|--------|--------|
+| **Cursor** | Search "Linear" in MCP directory, or use the deeplink on linear.app/docs/mcp |
+| **VS Code** | `CTRL/CMD + P` → "MCP: Add Server" → Command → `npx mcp-remote https://mcp.linear.app/mcp` |
+| **Windsurf** | Settings → Cascade → MCP servers → Add Server |
+| **Generic** | `npx -y mcp-remote https://mcp.linear.app/mcp` |
+
+## Authentication
+
+**Default (OAuth)**: Interactive OAuth 2.1 flow — authenticates with your Linear account and grants scoped access.
+
+**Alternative (API Key)**: Pass your Linear API key directly as a Bearer token in the Authorization header. Get a key at Linear → Settings → Account → Security & Access → Personal API Keys.
+
+## Discover Available Tools
+
+After connecting, check what tools are available:
 
 ```
-linear_get_teams()
+/mcp
 ```
 
-Should return your Linear workspace teams with their IDs.
+The Linear MCP server provides tools for finding, creating, and updating issues, projects, and comments. Tool names are not fully documented — run `/mcp` after setup to see the full list in Claude Code.
 
-## Finding Your IDs
+## Find Your IDs
 
-You'll need these IDs frequently — fetch them once and note them down:
+After connecting, use the available tools to look up the IDs you'll need:
 
 ```
-# Get team ID
-linear_get_teams()
-→ Note: team.id (e.g., "a1b2c3d4-...")
+# Get your teams and their IDs
+[use the teams lookup tool]
 
-# Get project ID
-linear_get_projects(teamId: "your-team-id")
-→ Note: project.id for the project you're working in
+# Get projects for a team
+[use the projects lookup tool]
 
-# Get state IDs (for status transitions)
-linear_get_issue_statuses(teamId: "your-team-id")
-→ Note: state.id for Todo, In Progress, In Review, Done
+# Get workflow state IDs (Todo, In Progress, In Review, Done)
+[use the workflow states or team details tool]
 ```
+
+Note these IDs — you'll reference them when creating issues.
 
 ## Troubleshooting
 
-**MCP tools not appearing**: Restart Claude Code after adding to settings.json.
+| Problem | Fix |
+|---------|-----|
+| Auth issues / internal error | Run `rm -rf ~/.mcp-auth` in Terminal, reconnect |
+| WSL on Windows | Use SSE endpoint: `https://mcp.linear.app/sse` with `--transport sse-only` |
+| Node compatibility error | Update Node.js to a recent LTS version |
+| MCP server not appearing | Restart Claude Code after running `claude mcp add` |
 
-**Auth error**: Run `/mcp` again and re-authenticate.
+## Official Docs
 
-**Rate limits**: Linear has API rate limits. For bulk ticket creation (20+), add a brief pause between calls or batch them.
-
-**Missing tools**: Tool names vary slightly by MCP server version. Run `linear_` and tab-complete to see available tools, or check the `@linear/mcp-server` changelog.
+Full setup instructions at: https://linear.app/docs/mcp

@@ -1,5 +1,7 @@
 ---
 name: legal-specialist
+display_name: "Helena"
+role: "Compliance Counsel"
 version: 1.1.3
 description: Expert in legal compliance, privacy regulations, terms of service, and data protection
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(markdown-writer), Skill(agent-browser)

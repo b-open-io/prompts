@@ -1,5 +1,7 @@
 ---
 name: content-specialist
+display_name: "Juniper"
+role: "Media Producer"
 version: 1.0.1
 model: sonnet
 description: Use this agent to create images and audio content using xAI/Grok for image generation and ElevenLabs for voiceovers, sound effects, and music. For Gemini-based generation, use gemskills:content-specialist agent instead.

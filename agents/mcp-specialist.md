@@ -1,5 +1,7 @@
 ---
 name: mcp-specialist
+display_name: "Orbit"
+role: "Protocol Integrator"
 version: 3.0.10
 description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(markdown-writer), Skill(agent-browser)
