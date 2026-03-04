@@ -7,5 +7,11 @@
     "url": "https://github.com/b-open-io"
   },
   "repository": "https://github.com/b-open-io/prompts",
-  "keywords": ["agents", "skills", "hooks", "development", "workflows"]
+  "keywords": [
+    "agents",
+    "skills",
+    "hooks",
+    "development",
+    "workflows"
+  ]
 }
