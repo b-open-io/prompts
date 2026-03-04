@@ -66,7 +66,7 @@ The `linear-sync` plugin is **for day-to-day automation** — hooks that enforce
 
 Install:
 ```bash
-claude plugin install linear-sync@crystal-peak
+claude plugin install linear-sync@b-open-io
 ```
 
 What it does automatically:
