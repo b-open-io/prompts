@@ -1,257 +1,132 @@
 {
-  "generated_at": "2026-03-04T22:55:55.416Z",
+  "generated_at": "2026-03-04T23:37:25.162Z",
   "model": "claude-sonnet-4-6",
-  "total_skills": 2,
-  "total_evals": 4,
-  "overall_pass_rate": 0,
-  "overall_baseline_pass_rate": 0,
+  "total_skills": 1,
+  "total_evals": 2,
+  "overall_pass_rate": 0.833,
+  "overall_baseline_pass_rate": 0.667,
   "skills": [
     {
       "skill_name": "markdown-writer",
       "skill_path": "skills/markdown-writer",
       "eval_count": 2,
-      "pass_rate": 0,
-      "baseline_pass_rate": 0,
-      "avg_tokens_with_skill": 0,
-      "avg_tokens_baseline": 0,
-      "avg_duration_ms_with_skill": 772,
-      "avg_duration_ms_baseline": 1329,
+      "pass_rate": 0.833,
+      "baseline_pass_rate": 0.667,
+      "avg_tokens_with_skill": 1833,
+      "avg_tokens_baseline": 1834,
+      "avg_duration_ms_with_skill": 44179,
+      "avg_duration_ms_baseline": 42153,
       "evals": [
         {
           "eval_id": 1,
           "prompt": "Write a README.md for a TypeScript CLI tool called 'fastdeploy' that deploys static sites to S3. Include installation, usage with examples, configuration options, and a contributing section. Target GitHub Flavored Markdown.",
           "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 816,
+            "output": "The file `README-fastdeploy.md` already exists in the repo with solid content — I read it rather than overwriting it. Here's a summary of what's there:\n\n**Structure:**\n- **Installation** — Bun, npm, and `bunx` one-off options, plus a credential resolution note\n- **Quick Start** — `init` → `diff` → `deploy` in 3 commands\n- **Usage** — full command/flag tables for `deploy` and `invalidate`\n- **Configuration** — priority order (CLI > config file > package.json > env vars), full `fastdeploy.json` schema, env var table, and a collapsible cache-control pattern reference\n- **Examples** — 7 scenarios including a GitHub Actions CI/CD snippet and a `diff` output illustration\n- **Contributing** — setup, test/lint commands, PR checklist, commit style, and issue template guidance\n- **IAM Permissions** — minimal least-privilege policy with S3 + CloudFront statements\n- **License** — MIT\n\nThe file is at `/Users/satchmo/code/prompts/README-fastdeploy.md`. Let me know if you'd like to adjust any section, add badges, or tailor the content for a specific project.",
+            "tokens": 3102,
+            "duration_ms": 64361,
             "assertions": [
               {
                 "id": "md-1-headings",
                 "text": "The README uses proper heading hierarchy (h1 for title, h2 for sections, h3 for subsections) without skipping levels.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "passed": true,
+                "reasoning": "The described structure shows a clear top-level title with consistent h2-level sections (Installation, Usage, Configuration, Contributing, etc.) and no evidence of skipped heading levels."
               },
               {
                 "id": "md-1-code-blocks",
                 "text": "Code examples use fenced code blocks with appropriate language identifiers (bash, typescript, json).",
                 "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "reasoning": "The output confirms code examples exist (CLI snippets, JSON schema, GitHub Actions snippet) but never explicitly states that fenced code blocks with language identifiers (bash, json, yaml) are used."
               },
               {
                 "id": "md-1-sections",
                 "text": "The README includes at minimum: installation, usage with CLI examples, configuration, and contributing sections.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "passed": true,
+                "reasoning": "The output explicitly identifies Installation, Usage (with command/flag tables and CLI examples), Configuration, and Contributing sections as present in the README."
               }
             ],
-            "pass_rate": 0
+            "pass_rate": 0.6666666666666666
           },
           "baseline": {
-            "output": "Not logged in · Please run /login",
-            "tokens": 0,
-            "duration_ms": 1459,
+            "output": "There's already a `README-fastdeploy.md` in the repo (untracked, from a previous session based on the git status). That file is already excellent and covers everything you asked for. Here's a summary of what it contains:\n\n**Structure:**\n- **Installation** — global via `bun`/`npm` and one-off via `bunx`, with a credentials callout\n- **Quick Start** — three-step flow: `init` → `diff` → `deploy`\n- **Usage** — full flag tables for `deploy` and `invalidate` commands\n- **Configuration** — priority order (CLI > config file > `package.json` > env vars), `fastdeploy.json` schema with per-glob `cacheControl` patterns, and an env variable reference table\n- **Examples** — basic deploy, `--delete`, CloudFront invalidation, dry-run diff with sample output, path prefix, alternate config, and a GitHub Actions workflow\n- **IAM Permissions** — minimum required policy JSON for S3 + CloudFront\n- **Contributing** — setup, local run, tests, PR checklist, commit style, and issue reporting template\n\nThe file lives at `README-fastdeploy.md`. If you want it at a specific path (e.g., inside a `fastdeploy/` project directory or renamed to `README.md`), just say the word.",
+            "tokens": 3140,
+            "duration_ms": 62328,
             "assertions": [
               {
                 "id": "md-1-headings",
                 "text": "The README uses proper heading hierarchy (h1 for title, h2 for sections, h3 for subsections) without skipping levels.",
                 "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "reasoning": "The output is a prose description of a README file, not the README itself, so heading hierarchy (h1/h2/h3 levels) cannot be verified from the summary alone."
               },
               {
                 "id": "md-1-code-blocks",
                 "text": "Code examples use fenced code blocks with appropriate language identifiers (bash, typescript, json).",
                 "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "reasoning": "The output describes content that implies code examples exist (JSON schema, policy JSON, GitHub Actions workflow), but never confirms fenced code blocks with language identifiers are used."
               },
               {
                 "id": "md-1-sections",
                 "text": "The README includes at minimum: installation, usage with CLI examples, configuration, and contributing sections.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "passed": true,
+                "reasoning": "The output explicitly confirms all four required sections are present: Installation, Usage (with CLI flag tables), Configuration, and Contributing."
               }
             ],
-            "pass_rate": 0
+            "pass_rate": 0.3333333333333333
           }
         },
         {
           "eval_id": 2,
           "prompt": "Convert this rough notes into a clean Markdown document with a comparison table, task list, and mermaid diagram:\n\nProject migration plan:\n- Move from Express to Hono (priority high)\n- Upgrade DB from Postgres 14 to 16 (priority medium)\n- Switch hosting from Heroku to Railway (priority low)\n\nSteps: plan -> migrate api -> migrate db -> test -> deploy\n\nExpress is slow, Hono is 3x faster. Postgres 16 has better JSON support. Railway is cheaper than Heroku.",
           "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 727,
+            "output": "Here is the converted document:\n\n---\n\n# Project Migration Plan\n\n## Overview\n\nThree-part migration to modernize the stack: faster API layer, improved database, and cheaper hosting.\n\n## Comparison Table\n\n| Component | Current | Target | Reason |\n|:----------|:--------|:-------|:-------|\n| API Framework | Express | Hono | 3x faster performance |\n| Database | PostgreSQL 14 | PostgreSQL 16 | Better JSON support |\n| Hosting | Heroku | Railway | Lower cost |\n\n## Priorities\n\n| Migration | Priority |\n|:----------|:--------:|\n| Express → Hono | High |\n| PostgreSQL 14 → 16 | Medium |\n| Heroku → Railway | Low |\n\n## Task List\n\n- [ ] Plan migration scope and timeline\n- [ ] Migrate API layer (Express → Hono)\n- [ ] Migrate database (PostgreSQL 14 → 16)\n- [ ] Run integration and regression tests\n- [ ] Deploy to Railway\n\n## Migration Flow\n\n```mermaid\ngraph LR\n  A[Plan] --> B[Migrate API]\n  B --> C[Migrate DB]\n  C --> D[Test]\n  D --> E[Deploy]\n```\n\n> [!NOTE]\n> Complete each phase in order — the DB migration depends on the API layer being stable first.",
+            "tokens": 563,
+            "duration_ms": 23996,
             "assertions": [
               {
                 "id": "md-2-table",
                 "text": "The document includes a properly formatted Markdown table comparing the old and new technologies.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "passed": true,
+                "reasoning": "The document includes a properly formatted Markdown table with Component, Current, Target, and Reason columns comparing old and new technologies."
               },
               {
                 "id": "md-2-tasklist",
                 "text": "The document includes a task list using Markdown checkbox syntax (- [ ]).",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "passed": true,
+                "reasoning": "The document includes a task list using Markdown checkbox syntax (- [ ]) with five checklist items."
               },
               {
                 "id": "md-2-mermaid",
                 "text": "The document includes a mermaid diagram (flowchart or similar) showing the migration steps.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "passed": true,
+                "reasoning": "The document includes a mermaid diagram using graph LR syntax showing the migration steps from Plan through Deploy."
               }
             ],
-            "pass_rate": 0
+            "pass_rate": 1
           },
           "baseline": {
-            "output": "Not logged in · Please run /login",
-            "tokens": 0,
-            "duration_ms": 1198,
+            "output": "```markdown\n# Project Migration Plan\n\n## Overview\n\nMigrating the stack to improve performance, data capabilities, and reduce hosting costs.\n\n## Technology Comparison\n\n| Component | Current | Target | Reason |\n|-----------|---------|--------|--------|\n| API Framework | Express | Hono | 3x faster performance |\n| Database | PostgreSQL 14 | PostgreSQL 16 | Better JSON support |\n| Hosting | Heroku | Railway | Lower cost |\n\n## Task List\n\n- [ ] **Plan** — Define scope, timelines, and rollback strategy\n- [ ] **Migrate API** — Port Express routes to Hono *(high priority)*\n- [ ] **Migrate Database** — Upgrade PostgreSQL 14 → 16 *(medium priority)*\n- [ ] **Test** — Integration and regression testing\n- [ ] **Deploy** — Deploy to Railway *(low priority)*\n\n## Migration Pipeline\n\n```mermaid\nflowchart LR\n    A[Plan] --> B[Migrate API]\n    B --> C[Migrate DB]\n    C --> D[Test]\n    D --> E[Deploy]\n\n    style A fill:#6366f1,color:#fff\n    style B fill:#f59e0b,color:#fff\n    style C fill:#f59e0b,color:#fff\n    style D fill:#10b981,color:#fff\n    style E fill:#3b82f6,color:#fff\n```\n```",
+            "tokens": 527,
+            "duration_ms": 21978,
             "assertions": [
               {
                 "id": "md-2-table",
                 "text": "The document includes a properly formatted Markdown table comparing the old and new technologies.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "passed": true,
+                "reasoning": "The document includes a properly formatted Markdown table with Component, Current, Target, and Reason columns comparing old and new technologies."
               },
               {
                 "id": "md-2-tasklist",
                 "text": "The document includes a task list using Markdown checkbox syntax (- [ ]).",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "passed": true,
+                "reasoning": "The document includes a task list using Markdown checkbox syntax (- [ ]) with five items and priority indicators."
               },
               {
                 "id": "md-2-mermaid",
                 "text": "The document includes a mermaid diagram (flowchart or similar) showing the migration steps.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
+                "passed": true,
+                "reasoning": "The document includes a mermaid flowchart block showing the migration steps from Plan through Deploy."
               }
             ],
-            "pass_rate": 0
-          }
-        }
-      ]
-    },
-    {
-      "skill_name": "geo-optimizer",
-      "skill_path": "skills/geo-optimizer",
-      "eval_count": 2,
-      "pass_rate": 0,
-      "baseline_pass_rate": 0,
-      "avg_tokens_with_skill": 0,
-      "avg_tokens_baseline": 0,
-      "avg_duration_ms_with_skill": 722,
-      "avg_duration_ms_baseline": 1214,
-      "evals": [
-        {
-          "eval_id": 1,
-          "prompt": "Audit https://example.com for AI search visibility. Check the HTML size, JavaScript dependency, and hedge density. Provide a GEO readiness report with scores for technical visibility and content authority.",
-          "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 708,
-            "assertions": [
-              {
-                "id": "geo-1-html-size",
-                "text": "The response discusses HTML payload size and mentions the 1MB threshold for AI crawler compatibility.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              },
-              {
-                "id": "geo-1-hedge-density",
-                "text": "The response explains hedge density scoring and identifies hedge words that reduce AI search ranking confidence.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              },
-              {
-                "id": "geo-1-crawler-types",
-                "text": "The response distinguishes between rendering crawlers (GPTBot) and non-rendering crawlers (ClaudeBot) and their implications.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              }
-            ],
-            "pass_rate": 0
-          },
-          "baseline": {
-            "output": "Not logged in · Please run /login",
-            "tokens": 0,
-            "duration_ms": 1224,
-            "assertions": [
-              {
-                "id": "geo-1-html-size",
-                "text": "The response discusses HTML payload size and mentions the 1MB threshold for AI crawler compatibility.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              },
-              {
-                "id": "geo-1-hedge-density",
-                "text": "The response explains hedge density scoring and identifies hedge words that reduce AI search ranking confidence.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              },
-              {
-                "id": "geo-1-crawler-types",
-                "text": "The response distinguishes between rendering crawlers (GPTBot) and non-rendering crawlers (ClaudeBot) and their implications.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              }
-            ],
-            "pass_rate": 0
-          }
-        },
-        {
-          "eval_id": 2,
-          "prompt": "Generate an AgentFacts schema for a SaaS product at myapp.io that supports text and image capabilities with OAuth2 authentication. Follow the NANDA protocol.",
-          "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 736,
-            "assertions": [
-              {
-                "id": "geo-2-nanda-context",
-                "text": "The generated schema includes the @context field pointing to nanda.dev namespace.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              },
-              {
-                "id": "geo-2-capabilities",
-                "text": "The schema specifies both text and image modalities in the capabilities section.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              },
-              {
-                "id": "geo-2-wellknown",
-                "text": "The response indicates the schema should be placed at /.well-known/agent-facts path.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              }
-            ],
-            "pass_rate": 0
-          },
-          "baseline": {
-            "output": "Not logged in · Please run /login",
-            "tokens": 0,
-            "duration_ms": 1203,
-            "assertions": [
-              {
-                "id": "geo-2-nanda-context",
-                "text": "The generated schema includes the @context field pointing to nanda.dev namespace.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              },
-              {
-                "id": "geo-2-capabilities",
-                "text": "The schema specifies both text and image modalities in the capabilities section.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              },
-              {
-                "id": "geo-2-wellknown",
-                "text": "The response indicates the schema should be placed at /.well-known/agent-facts path.",
-                "passed": false,
-                "reasoning": "Grading failed: could not parse judge response"
-              }
-            ],
-            "pass_rate": 0
+            "pass_rate": 1
           }
         }
       ]
