@@ -1,0 +1,51 @@
+{
+  "skill_name": "geo-optimizer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audit https://example.com for AI search visibility. Check the HTML size, JavaScript dependency, and hedge density. Provide a GEO readiness report with scores for technical visibility and content authority.",
+      "expected_output": "A structured GEO audit report covering HTML payload size (target <1MB), JS dependency risk assessment, hedge density score (target <0.2%), and recommendations for improving AI crawler visibility.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "geo-1-html-size",
+          "text": "The response discusses HTML payload size and mentions the 1MB threshold for AI crawler compatibility.",
+          "type": "qualitative"
+        },
+        {
+          "id": "geo-1-hedge-density",
+          "text": "The response explains hedge density scoring and identifies hedge words that reduce AI search ranking confidence.",
+          "type": "qualitative"
+        },
+        {
+          "id": "geo-1-crawler-types",
+          "text": "The response distinguishes between rendering crawlers (GPTBot) and non-rendering crawlers (ClaudeBot) and their implications.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Generate an AgentFacts schema for a SaaS product at myapp.io that supports text and image capabilities with OAuth2 authentication. Follow the NANDA protocol.",
+      "expected_output": "A valid NANDA-compliant AgentFacts JSON schema placed at /.well-known/agent-facts with proper context URL, agent name, endpoints, capabilities (text, image), and authentication (oauth2) fields.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "geo-2-nanda-context",
+          "text": "The generated schema includes the @context field pointing to nanda.dev namespace.",
+          "type": "qualitative"
+        },
+        {
+          "id": "geo-2-capabilities",
+          "text": "The schema specifies both text and image modalities in the capabilities section.",
+          "type": "qualitative"
+        },
+        {
+          "id": "geo-2-wellknown",
+          "text": "The response indicates the schema should be placed at /.well-known/agent-facts path.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}
