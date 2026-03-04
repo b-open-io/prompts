@@ -46,7 +46,7 @@ Two separate single-line blocks — one for skills, one for agents. Both use the
 <!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|task-trigger→Agent(plugin:agent-id)|another-trigger→Agent(plugin:agent-id)<!-- AGENT-MAP-END -->
 ```
 
-Agent IDs use `plugin:agent-name` format matching the `subagent_type` parameter of the Agent tool (e.g., `bopen-tools:code-auditor`, `bopen-tools:design-specialist`, `gemskills:content-specialist`).
+Agent IDs use `plugin:agent-name` format matching the `subagent_type` parameter of the Agent tool (e.g., `bopen-tools:code-auditor`, `bopen-tools:designer`, `gemskills:content`).
 
 ### Format Rules (both blocks)
 
@@ -69,7 +69,7 @@ Agent IDs use `plugin:agent-name` format matching the `subagent_type` parameter 
 
 **Agents** — two authoritative sources:
 
-1. **System-reminder agent list** — The Agent tool's available agent types appear in system-reminder messages. Look for entries like `bopen-tools:code-auditor`, `gemskills:design-specialist`, etc.
+1. **System-reminder agent list** — The Agent tool's available agent types appear in system-reminder messages. Look for entries like `bopen-tools:code-auditor`, `gemskills:designer`, etc.
 2. **Plugin agent directories** — `ls ~/.claude/plugins/cache/*/agents/` or check installed plugin repos.
 
 Cross-reference both sources for each.

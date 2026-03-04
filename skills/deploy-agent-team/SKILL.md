@@ -35,7 +35,7 @@ Always set `mode: "bypassPermissions"` when spawning teammates:
 
 ```
 Agent(
-  subagent_type: "bopen-tools:design-specialist",
+  subagent_type: "bopen-tools:designer",
   team_name: "feature-billing",
   name: "designer",
   mode: "bypassPermissions",   # ← REQUIRED
@@ -49,23 +49,23 @@ See `references/permissions-and-isolation.md` for all mode options and worktree 
 
 | Agent | subagent_type | Best for |
 |-------|--------------|----------|
-| **research-specialist** | `bopen-tools:research-specialist` | Libraries, APIs, docs, competitive analysis |
-| **nextjs-specialist** | `bopen-tools:nextjs-specialist` | Next.js, React, Vercel, RSC, app router |
-| **design-specialist** | `bopen-tools:design-specialist` | UI, Tailwind, shadcn/ui, accessibility |
-| **agent-specialist** | `bopen-tools:agent-specialist` | AI agent systems, LLM integration, Vercel AI SDK |
-| **database-specialist** | `bopen-tools:database-specialist` | Schema, queries, PostgreSQL, Redis, Convex |
+| **researcher** | `bopen-tools:researcher` | Libraries, APIs, docs, competitive analysis |
+| **nextjs** | `bopen-tools:nextjs` | Next.js, React, Vercel, RSC, app router |
+| **designer** | `bopen-tools:designer` | UI, Tailwind, shadcn/ui, accessibility |
+| **agent-builder** | `bopen-tools:agent-builder` | AI agent systems, LLM integration, Vercel AI SDK |
+| **database** | `bopen-tools:database` | Schema, queries, PostgreSQL, Redis, Convex |
 | **integration-expert** | `bopen-tools:integration-expert` | REST APIs, webhooks, Payload CMS |
 | **code-auditor** | `bopen-tools:code-auditor` | Security review, vulnerability scanning |
-| **test-specialist** | `bopen-tools:test-specialist` | Unit, integration, e2e tests, CI |
+| **tester** | `bopen-tools:tester` | Unit, integration, e2e tests, CI |
 | **documentation-writer** | `bopen-tools:documentation-writer` | READMEs, API docs, PRDs, guides |
-| **devops-specialist** | `bopen-tools:devops-specialist` | Vercel+Railway+Bun, CI/CD, monitoring |
+| **devops** | `bopen-tools:devops` | Vercel+Railway+Bun, CI/CD, monitoring |
 | **optimizer** | `bopen-tools:optimizer` | Bundle analysis, Lighthouse, Core Web Vitals |
 | **architecture-reviewer** | `bopen-tools:architecture-reviewer` | System design, refactoring strategy, tech debt |
-| **mobile-specialist** | `bopen-tools:mobile-specialist` | React Native, Swift, Kotlin, Flutter |
-| **payment-specialist** | `bopen-tools:payment-specialist` | Stripe, billing, financial transactions |
-| **marketing-specialist** | `bopen-tools:marketing-specialist` | CRO, SEO, copy, launch strategy |
-| **legal-specialist** | `bopen-tools:legal-specialist` | Privacy, compliance, ToS |
-| **mcp-specialist** | `bopen-tools:mcp-specialist` | MCP server setup, config, diagnostics |
+| **mobile** | `bopen-tools:mobile` | React Native, Swift, Kotlin, Flutter |
+| **payments** | `bopen-tools:payments` | Stripe, billing, financial transactions |
+| **marketer** | `bopen-tools:marketer` | CRO, SEO, copy, launch strategy |
+| **legal** | `bopen-tools:legal` | Privacy, compliance, ToS |
+| **mcp** | `bopen-tools:mcp` | MCP server setup, config, diagnostics |
 
 Full roster with per-agent skills to mention in spawn prompts: `references/agent-roster.md`
 
@@ -120,7 +120,7 @@ TaskUpdate(taskId: "3", addBlockedBy: ["2"])  # tests wait for Stripe impl
 
 ```
 Agent(
-  subagent_type: "bopen-tools:design-specialist",
+  subagent_type: "bopen-tools:designer",
   team_name: "feature-billing",
   name: "designer",
   mode: "bypassPermissions",
@@ -163,13 +163,13 @@ TeamDelete()
 ### Feature implementation
 ```
 Parallel from the start:
-├── research-specialist: research best practices / prior art
-├── design-specialist: UI components
-├── nextjs-specialist or integration-expert: API / server logic
-└── database-specialist: schema changes
+├── researcher: research best practices / prior art
+├── designer: UI components
+├── nextjs or integration-expert: API / server logic
+└── database: schema changes
 
 Blocked until implementation complete:
-├── test-specialist: test suite
+├── tester: test suite
 └── documentation-writer: feature docs
 ```
 
@@ -180,21 +180,21 @@ Parallel:
 └── architecture-reviewer: structural/design issues
 
 Blocked until audit complete:
-├── nextjs-specialist or integration-expert: fix findings
-└── test-specialist: regression tests
+├── nextjs or integration-expert: fix findings
+└── tester: regression tests
 ```
 
 ### Launch prep
 ```
 Parallel:
 ├── code-auditor: security review
-├── test-specialist: coverage audit
+├── tester: coverage audit
 ├── optimizer: Lighthouse + bundle
 ├── documentation-writer: user-facing docs
-└── legal-specialist: privacy / ToS
+└── legal: privacy / ToS
 
 Blocked until all above complete:
-└── devops-specialist: deploy pipeline
+└── devops: deploy pipeline
 ```
 
 ## Key Rules

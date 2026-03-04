@@ -66,22 +66,22 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 | Trigger | Agent |
 |---------|-------|
 | security-audit, vulnerability-review | bopen-tools:code-auditor |
-| design-ui, create-component, style-page | bopen-tools:design-specialist |
+| design-ui, create-component, style-page | bopen-tools:designer |
 | write-docs, readme, api-docs | bopen-tools:documentation-writer |
-| database-schema, query-optimization | bopen-tools:database-specialist |
-| nextjs-feature, react-component | bopen-tools:nextjs-specialist |
+| database-schema, query-optimization | bopen-tools:database |
+| nextjs-feature, react-component | bopen-tools:nextjs |
 | api-integration, webhook, third-party | bopen-tools:integration-expert |
-| devops, ci-cd, deployment | bopen-tools:devops-specialist |
-| payments, stripe, checkout | bopen-tools:payment-specialist |
+| devops, ci-cd, deployment | bopen-tools:devops |
+| payments, stripe, checkout | bopen-tools:payments |
 | performance-optimization, bundle-size | bopen-tools:optimizer |
-| mobile-app, react-native | bopen-tools:mobile-specialist |
-| mcp-server, mcp-config | bopen-tools:mcp-specialist |
-| research, gather-info, web-research | bopen-tools:research-specialist |
-| agent-design, ai-agent | bopen-tools:agent-specialist |
-| marketing-copy, growth | bopen-tools:marketing-specialist |
-| data-pipeline, analytics | bopen-tools:data-specialist |
-| legal-review, privacy-policy, tos | bopen-tools:legal-specialist |
-| testing, e2e-tests, unit-tests | bopen-tools:test-specialist |
+| mobile-app, react-native | bopen-tools:mobile |
+| mcp-server, mcp-config | bopen-tools:mcp |
+| research, gather-info, web-research | bopen-tools:researcher |
+| agent-design, ai-agent | bopen-tools:agent-builder |
+| marketing-copy, growth | bopen-tools:marketer |
+| data-pipeline, analytics | bopen-tools:data |
+| legal-review, privacy-policy, tos | bopen-tools:legal |
+| testing, e2e-tests, unit-tests | bopen-tools:tester |
 | code-review, post-step-review | superpowers:code-reviewer |
 | file-consolidation, cleanup, organize | bopen-tools:consolidator |
 | architecture-review | bopen-tools:architecture-reviewer |
@@ -91,23 +91,23 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 
 | Trigger | Agent |
 |---------|-------|
-| bsv-transactions, blockchain-ops | bsv-skills:bitcoin-specialist |
-| ordinals, nft, 1sat | 1sat-skills:ordinals-specialist |
+| bsv-transactions, blockchain-ops | bsv-skills:bitcoin |
+| ordinals, nft, 1sat | 1sat-skills:ordinals |
 | sigma-auth, bitcoin-oauth | sigma-auth:sigma-auth-guide |
 
 ### Gemini / Image Agents
 
 | Trigger | Agent |
 |---------|-------|
-| generate-image, visual-content, video | gemskills:content-specialist |
-| design-ui-gemini | gemskills:design-specialist |
+| generate-image, visual-content, video | gemskills:content |
+| design-ui-gemini | gemskills:designer |
 
 ### Product Agents
 
 | Trigger | Agent |
 |---------|-------|
-| seo, search-optimization | product-skills:seo-specialist |
-| legal, compliance | product-skills:legal-specialist |
+| seo, search-optimization | product-skills:seo |
+| legal, compliance | product-skills:legal |
 
 ### Auth Agents
 
@@ -120,5 +120,5 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 For a full-stack Next.js app with BSV auth and a design system:
 
 ```
-<!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|design-ui,create-component→Agent(bopen-tools:design-specialist)|security-review,audit→Agent(bopen-tools:code-auditor)|write-docs,readme→Agent(bopen-tools:documentation-writer)|nextjs-feature,react→Agent(bopen-tools:nextjs-specialist)|sigma-auth,bitcoin-oauth→Agent(sigma-auth:sigma-auth-guide)|generate-image,visual→Agent(gemskills:content-specialist)|test,e2e→Agent(bopen-tools:test-specialist)<!-- AGENT-MAP-END -->
+<!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|design-ui,create-component→Agent(bopen-tools:designer)|security-review,audit→Agent(bopen-tools:code-auditor)|write-docs,readme→Agent(bopen-tools:documentation-writer)|nextjs-feature,react→Agent(bopen-tools:nextjs)|sigma-auth,bitcoin-oauth→Agent(sigma-auth:sigma-auth-guide)|generate-image,visual→Agent(gemskills:content)|test,e2e→Agent(bopen-tools:tester)<!-- AGENT-MAP-END -->
 ```

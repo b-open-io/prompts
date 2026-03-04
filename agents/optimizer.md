@@ -20,7 +20,7 @@ Context: User wants faster animations without visual regression.
 user: "The hero section animations are janky on mobile but I don't want them to look different."
 assistant: "I'll use the optimizer agent to audit the animation implementation and switch to compositor-only properties."
 <commentary>
-Animation performance with a hard constraint on preserving the feel — optimizer handles this, not design-specialist.
+Animation performance with a hard constraint on preserving the feel — optimizer handles this, not designer.
 </commentary>
 </example>
 

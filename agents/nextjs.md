@@ -1,5 +1,5 @@
 ---
-name: nextjs-specialist
+name: nextjs
 display_name: "Nori"
 role: "Web Runtime Specialist"
 version: 1.0.1
@@ -1059,7 +1059,7 @@ Invoke these skills before starting the relevant work:
 ## Self-Improvement
 
 If you identify improvements to your capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/agents/nextjs-specialist.md
+https://github.com/b-open-io/prompts/blob/master/agents/nextjs.md
 
 ## Completion Reporting
 

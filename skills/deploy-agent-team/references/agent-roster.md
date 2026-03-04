@@ -8,25 +8,25 @@ Full bopen-tools agent roster with `subagent_type` identifiers and the skills to
 
 | Agent | subagent_type | Model | Best for |
 |-------|--------------|-------|----------|
-| **research-specialist** | `bopen-tools:research-specialist` | sonnet | Libraries, APIs, docs, competitive analysis, web sources |
-| **nextjs-specialist** | `bopen-tools:nextjs-specialist` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
-| **design-specialist** | `bopen-tools:design-specialist` | sonnet | UI components, Tailwind, shadcn/ui, design systems, accessibility |
-| **agent-specialist** | `bopen-tools:agent-specialist` | opus | AI agent systems, tool-calling, LLM integration, Vercel AI SDK |
-| **database-specialist** | `bopen-tools:database-specialist` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
+| **researcher** | `bopen-tools:researcher` | sonnet | Libraries, APIs, docs, competitive analysis, web sources |
+| **nextjs** | `bopen-tools:nextjs` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
+| **designer** | `bopen-tools:designer` | sonnet | UI components, Tailwind, shadcn/ui, design systems, accessibility |
+| **agent-builder** | `bopen-tools:agent-builder` | opus | AI agent systems, tool-calling, LLM integration, Vercel AI SDK |
+| **database** | `bopen-tools:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
 | **integration-expert** | `bopen-tools:integration-expert` | sonnet | REST APIs, webhooks, third-party services, Payload CMS |
 | **code-auditor** | `bopen-tools:code-auditor` | opus | Security review, vulnerability scanning, code quality |
-| **test-specialist** | `bopen-tools:test-specialist` | sonnet | Unit, integration, e2e tests, mocking, coverage, CI |
+| **tester** | `bopen-tools:tester` | sonnet | Unit, integration, e2e tests, mocking, coverage, CI |
 | **documentation-writer** | `bopen-tools:documentation-writer` | sonnet | READMEs, API docs, PRDs, guides |
-| **devops-specialist** | `bopen-tools:devops-specialist` | sonnet | Vercel+Railway+Bun deployments, CI/CD, monitoring |
+| **devops** | `bopen-tools:devops` | sonnet | Vercel+Railway+Bun deployments, CI/CD, monitoring |
 | **optimizer** | `bopen-tools:optimizer` | opus | Bundle analysis, Lighthouse, runtime perf, Core Web Vitals |
 | **architecture-reviewer** | `bopen-tools:architecture-reviewer` | opus | System design review, refactoring strategy, tech debt |
-| **mobile-specialist** | `bopen-tools:mobile-specialist` | sonnet | React Native, Swift, Kotlin, Flutter |
-| **data-specialist** | `bopen-tools:data-specialist` | sonnet | ETL pipelines, analytics, data visualization |
-| **payment-specialist** | `bopen-tools:payment-specialist` | sonnet | Stripe, billing, financial transactions |
-| **mcp-specialist** | `bopen-tools:mcp-specialist` | sonnet | MCP server setup, config, diagnostics |
-| **marketing-specialist** | `bopen-tools:marketing-specialist` | sonnet | CRO, SEO, copy, launch strategy |
-| **legal-specialist** | `bopen-tools:legal-specialist` | opus | Privacy, compliance, ToS, data protection |
-| **content-specialist** | `bopen-tools:content-specialist` | sonnet | Images, audio, xAI/Grok generation, ElevenLabs |
+| **mobile** | `bopen-tools:mobile` | sonnet | React Native, Swift, Kotlin, Flutter |
+| **data** | `bopen-tools:data` | sonnet | ETL pipelines, analytics, data visualization |
+| **payments** | `bopen-tools:payments` | sonnet | Stripe, billing, financial transactions |
+| **mcp** | `bopen-tools:mcp` | sonnet | MCP server setup, config, diagnostics |
+| **marketer** | `bopen-tools:marketer` | sonnet | CRO, SEO, copy, launch strategy |
+| **legal** | `bopen-tools:legal` | opus | Privacy, compliance, ToS, data protection |
+| **audio-specialist** | `bopen-tools:audio-specialist` | sonnet | Audio, xAI/Grok generation, ElevenLabs |
 | **prompt-engineer** | `bopen-tools:prompt-engineer` | sonnet | Slash commands, skills, hooks, YAML frontmatter |
 | **consolidator** | `bopen-tools:consolidator` | sonnet | File structure cleanup, deduplication, organization |
 
@@ -44,7 +44,7 @@ Full bopen-tools agent roster with `subagent_type` identifiers and the skills to
 Invoke these BEFORE writing any security findings.
 ```
 
-### design-specialist
+### designer
 
 ```markdown
 ## Your Available Skills
@@ -78,7 +78,7 @@ Invoke performance skill before auditing any file.
 Use these to ground your review in concrete analysis, not just intuition.
 ```
 
-### nextjs-specialist
+### nextjs
 
 ```markdown
 ## Your Available Skills
@@ -89,7 +89,7 @@ Use these to ground your review in concrete analysis, not just intuition.
 Always invoke `Skill(vercel-react-best-practices)` before writing any server component or route handler.
 ```
 
-### research-specialist
+### researcher
 
 ```markdown
 ## Your Available Skills
@@ -111,7 +111,7 @@ Use `Skill(agent-browser)` for any page that requires interaction or dynamic loa
 Invoke the relevant skill before starting any third-party integration.
 ```
 
-### devops-specialist
+### devops
 
 ```markdown
 ## Your Available Skills
@@ -123,7 +123,7 @@ Invoke the relevant skill before starting any third-party integration.
 Always run `Skill(bopen-tools:saas-launch-audit)` before a production deploy.
 ```
 
-### agent-specialist
+### agent-builder
 
 ```markdown
 ## Your Available Skills
@@ -145,7 +145,7 @@ Invoke `Skill(ai-sdk)` first for any Vercel AI SDK or agent framework work.
 Invoke `Skill(bopen-tools:stop-slop)` after drafting to eliminate padding.
 ```
 
-### marketing-specialist
+### marketer
 
 ```markdown
 ## Your Available Skills
@@ -158,7 +158,7 @@ Invoke `Skill(bopen-tools:stop-slop)` after drafting to eliminate padding.
 Invoke the most relevant skill before starting any campaign or page work.
 ```
 
-### test-specialist
+### tester
 
 ```markdown
 ## Your Available Skills
@@ -168,7 +168,7 @@ Invoke the most relevant skill before starting any campaign or page work.
 Invoke `Skill(webapp-testing)` before setting up any test infrastructure.
 ```
 
-### payment-specialist
+### payments
 
 ```markdown
 ## Your Available Skills

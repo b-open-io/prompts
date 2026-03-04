@@ -50,7 +50,7 @@ Each bopen-tools agent has specialized skills available, but **agents only invok
 
 See `references/agent-roster.md` for the pre-written skills block for each agent type — copy and paste the relevant block.
 
-## Complete Example — design-specialist Spawn
+## Complete Example — designer Spawn
 
 ```markdown
 You are the designer on the feature-billing agent team.

@@ -247,6 +247,6 @@ The more frequently a sound occurs, the subtler it should be. Button clicks shou
 - `assets/vibe-presets.json` - Predefined vibe configurations
 - `assets/theme-template.json` - Example output manifest
 
-## Content-Specialist Integration
+## Audio-Specialist Integration
 
-For custom sound generation beyond standard categories, use the content-specialist agent which has full ElevenLabs API integration for sound effects, music, and voice generation.
+For custom sound generation beyond standard categories, use the audio-specialist agent which has full ElevenLabs API integration for sound effects, music, and voice generation.

@@ -8,7 +8,7 @@ The `mode` parameter on Agent spawning controls how the agent handles permission
 
 ```
 Agent(
-  subagent_type: "bopen-tools:design-specialist",
+  subagent_type: "bopen-tools:designer",
   team_name: "feature-billing",
   name: "designer",
   mode: "bypassPermissions",   # ← Required for teams
@@ -32,7 +32,7 @@ Use `plan` mode for agents making large structural changes — database migratio
 
 ```
 Agent(
-  subagent_type: "bopen-tools:database-specialist",
+  subagent_type: "bopen-tools:database",
   team_name: "feature-billing",
   name: "db-designer",
   mode: "plan",
@@ -58,7 +58,7 @@ When multiple agents edit the **same codebase in parallel**, you risk git confli
 
 ```
 Agent(
-  subagent_type: "bopen-tools:nextjs-specialist",
+  subagent_type: "bopen-tools:nextjs",
   team_name: "feature-billing",
   name: "frontend",
   mode: "bypassPermissions",

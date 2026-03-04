@@ -1,6 +1,6 @@
 ---
 name: linear-planning
-version: 1.0.2
+version: 1.0.3
 description: This skill should be used when the user wants to plan a project, feature, or bug fix using Linear as the agent control plane. Use when the user says "plan this in Linear", "create Linear tickets", "break this down into tasks", "push to Linear", "set up our board for this feature", or wants to turn a description or spec into well-structured, agent-ready Linear issues. Requires the official Linear MCP server to be configured.
 ---
 
@@ -23,7 +23,7 @@ After connecting, run `/mcp` to see all available tools — the official server 
 
 See `references/mcp-setup.md` for setup on other clients (Claude Desktop, Cursor, VS Code) and troubleshooting.
 
-> **Important**: Only the main Claude Code session can call MCP tools. Spawned subagents do not have MCP access — pass issue content to them via task descriptions.
+> **Important**: Only the main Claude Code session can call MCP tools. Spawned subagents do not have MCP access. Subagents can help with Phase 1 codebase research (reading files, analyzing code), but all Linear MCP calls must happen in the main session.
 
 ## The Core Principle: Tickets as Agent Briefs
 
@@ -38,55 +38,89 @@ Every ticket must answer:
 
 See `references/issue-template.md` for copy-paste templates.
 
-## Workflow: Plan → Create → Execute
+## Workflow: Research → Decompose → Approve → Create → Assign
 
-### Phase 1: Gather Context
+### Phase 1: Research
 
-Start by discovering the team, project, and workflow states needed for issue creation:
+Gather all context needed to write good tickets. This phase is read-only — no Linear MCP calls yet.
 
+**Codebase research** (can delegate to a subagent for file reading):
+- Read CLAUDE.md, README, package.json for stack conventions
+- Read relevant source files to understand existing architecture
+- Identify files that will need changes
+
+**Linear context** (main session only — MCP calls):
 ```
 [teams tool]           → get teamId
 [projects tool]        → get projectId for the team
-[workflow states tool] → get state IDs (Todo, In Progress, In Review, Done)
+[workflow states tool]  → get state IDs (Todo, In Progress, In Review, Done)
 [labels tool]          → get label IDs if needed
 ```
 
-Determine before creating any issues:
+**Determine before proceeding:**
 - Which Linear team and project to use
 - Whether there is an existing parent/epic to attach to
 - The spec file path in the repo, if one exists
 - The branch naming convention (e.g., `feat/PROJ-123-short-title`)
 
-### Phase 2: Decompose the Work
+### Phase 2: Decompose
 
-Break the request into independent, implementable tasks:
-
-```
-Feature: "Add billing with Stripe"
-
-Parent (Epic):
-└── Stripe billing integration
-
-Can run in parallel:
-├── Create billing UI components
-├── Implement Stripe webhook handler
-├── Add subscription creation API route
-└── Add customer portal API route
-
-Blocked until implementation complete:
-├── Write billing test suite
-└── Update environment variable docs
-```
+Break the request into an epic + stories + tasks. Write the full draft — but DO NOT create anything in Linear yet.
 
 Decomposition rules:
 - Each issue must be completable in one agent session
 - Minimize dependencies between issues
 - Separate UI, API, and tests into distinct issues
 - Blocked issues must explicitly reference their dependencies in the description
+- Include priority and point estimates
 
-### Phase 3: Create the Parent Issue (Epic)
+### Phase 3: Approval Gate
 
-Create the parent first with full project context — agents read it before working on any child:
+**MANDATORY — Do not skip this phase. No Linear issues may be created until the user explicitly approves.**
+
+Present the full issue tree in a clear hierarchical format:
+
+```
+EPIC: [Title] [priority]
+  STORY: [Title] [priority] [estimate]
+    - AC: [acceptance criterion]
+    - AC: [acceptance criterion]
+  STORY: [Title] [priority] [estimate]
+    - AC: [acceptance criterion]
+    Blocked by: [dependency]
+  STORY: [Title] [priority] [estimate]
+    - AC: [acceptance criterion]
+```
+
+Example:
+```
+EPIC: Stripe billing integration [HIGH]
+  STORY: Create billing UI components [HIGH] [3pts]
+    - AC: PricingCard, BillingHistory, UpgradeModal render correctly
+    - AC: Components use shadcn/ui and match design system
+  STORY: Implement Stripe webhook handler [HIGH] [3pts]
+    - AC: Webhook verifies signature and handles checkout.session.completed
+    - AC: Subscription status syncs to database
+  STORY: Add subscription creation API route [MEDIUM] [2pts]
+    - AC: POST /api/billing/subscribe creates Stripe checkout session
+    - AC: Returns checkout URL
+  STORY: Write billing test suite [MEDIUM] [2pts]
+    - AC: All API routes have Vitest tests
+    - AC: Webhook handler tested with mock events
+    Blocked by: webhook handler, subscription API
+```
+
+Then explicitly ask:
+
+**"Approve this plan, or tell me what to change."**
+
+WAIT for the user to respond. Do not proceed until you receive explicit approval.
+
+### Phase 4: Create Issues
+
+**Only after explicit user approval from Phase 3.**
+
+Create the parent issue (epic) first:
 
 ```
 [create issue tool](
@@ -113,7 +147,7 @@ Create the parent first with full project context — agents read it before work
 )
 ```
 
-### Phase 4: Create Child Issues
+Then create child issues in order:
 
 ```
 [create issue tool](
@@ -141,12 +175,12 @@ Include this pattern in every agent task description or spawn prompt so agents k
 ```
 1. Fetch issue details (read the full brief)
 2. Read parent issue for project context
-3. Update status → "In Progress"
+3. Update status -> "In Progress"
 4. git checkout -b feat/PROJ-3-billing-ui-components
 5. Implement the changes
 6. bun run build && bun run lint
 7. gh pr create --title "PROJ-3: Create billing UI components"
-8. Update status → "In Review"
+8. Update status -> "In Review"
 ```
 
 ## Writing Great Ticket Descriptions
@@ -172,7 +206,7 @@ Root cause: URL uses /api/invoice/:id but route is /api/invoices/:id (plural).
 - src/components/billing/BillingHistory.tsx:47 — where URL is built
 
 ## Fix
-Line 47: `/api/invoice/${id}` → `/api/invoices/${id}`
+Line 47: `/api/invoice/${id}` -> `/api/invoices/${id}`
 
 ## Acceptance Criteria
 - [ ] Download button fetches PDF without error

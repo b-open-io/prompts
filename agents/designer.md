@@ -1,5 +1,5 @@
 ---
-name: design-specialist
+name: designer
 display_name: "Mira"
 role: "Interface Designer"
 version: 1.0.1
@@ -447,4 +447,4 @@ Invoke these skills before starting the relevant work — don't skip them:
 ## Self-Improvement
 
 If you identify improvements to design capabilities, suggest contributions at:
-https://github.com/b-open-io/prompts/blob/master/agents/design-specialist.md
+https://github.com/b-open-io/prompts/blob/master/agents/designer.md

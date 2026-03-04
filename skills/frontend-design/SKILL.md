@@ -128,7 +128,7 @@ Use this skill for:
 - Bold spatial compositions
 - Production-ready animated components
 
-Use the design-specialist agent for:
+Use the designer agent for:
 - Comprehensive UI/UX reviews
 - Accessibility audits
 - Design system architecture
