@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "benchmark": "bun run scripts/benchmark.ts"
+    "benchmark": "bun run scripts/benchmark.tsx"
   },
   "dependencies": {
     "ink": "^5",
