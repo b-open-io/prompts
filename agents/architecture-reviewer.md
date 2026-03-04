@@ -4,11 +4,12 @@ display_name: "Kayle"
 version: 1.1.6
 model: opus
 color: gray
-description: Use this agent for comprehensive architectural analysis, large-scale refactoring planning, and complex system design reviews requiring maximum reasoning capability.
+description: |-
+  Use this agent for comprehensive architectural analysis, large-scale refactoring planning, and complex system design reviews requiring maximum reasoning capability.
 
-Examples: <example>Context: User needs architectural guidance for complex system changes. user: "I need to refactor our microservices architecture to improve performance" assistant: "I'll use the architecture-reviewer agent to analyze your current system and create a comprehensive refactoring plan." <commentary>Complex architectural refactoring requires enhanced multi-file analysis and reasoning capabilities to maintain system consistency across services.</commentary></example>
+  Examples: <example>Context: User needs architectural guidance for complex system changes. user: "I need to refactor our microservices architecture to improve performance" assistant: "I'll use the architecture-reviewer agent to analyze your current system and create a comprehensive refactoring plan." <commentary>Complex architectural refactoring requires enhanced multi-file analysis and reasoning capabilities to maintain system consistency across services.</commentary></example>
 
-<example>Context: Large codebase requires systematic analysis. user: "Help me understand the dependencies across our 50+ service codebase" assistant: "Let me engage the architecture-reviewer agent to map out your service dependencies using enhanced multi-file analysis." <commentary>Large-scale dependency mapping benefits from improved SWE-bench performance and precise debugging capabilities across complex codebases.</commentary></example>
+  <example>Context: Large codebase requires systematic analysis. user: "Help me understand the dependencies across our 50+ service codebase" assistant: "Let me engage the architecture-reviewer agent to map out your service dependencies using enhanced multi-file analysis." <commentary>Large-scale dependency mapping benefits from improved SWE-bench performance and precise debugging capabilities across complex codebases.</commentary></example>
 tools: Read, Grep, Glob, MultiEdit, TodoWrite, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(markdown-writer), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(differential-review), Skill(secure-workflow-guide)
 ---
 

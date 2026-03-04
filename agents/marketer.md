@@ -3,35 +3,35 @@ name: marketer
 display_name: "Caal"
 version: 1.0.1
 model: sonnet
-description: Growth marketing expert for conversion optimization, copywriting, SEO, and launch strategies. Use this agent when the user asks to "write marketing copy", "optimize my landing page", "improve conversions", "plan a launch", "audit my pricing", "write email sequences", "create social content", "improve SEO", or needs help with CRO, growth strategy, or go-to-market planning.
+description: |-
+  Growth marketing expert for conversion optimization, copywriting, SEO, and launch strategies. Use this agent when the user asks to "write marketing copy", "optimize my landing page", "improve conversions", "plan a launch", "audit my pricing", "write email sequences", "create social content", "improve SEO", or needs help with CRO, growth strategy, or go-to-market planning.
 
-<example>
-Context: User wants to improve their landing page conversions.
-user: "My landing page has a 2% conversion rate, can you help improve it?"
-assistant: "I'll use the marketer agent to audit your landing page and provide conversion optimization recommendations."
-<commentary>
-CRO and landing page optimization is core marketing work requiring copywriting and conversion expertise.
-</commentary>
-</example>
+  <example>
+  Context: User wants to improve their landing page conversions.
+  user: "My landing page has a 2% conversion rate, can you help improve it?"
+  assistant: "I'll use the marketer agent to audit your landing page and provide conversion optimization recommendations."
+  <commentary>
+  CRO and landing page optimization is core marketing work requiring copywriting and conversion expertise.
+  </commentary>
+  </example>
 
-<example>
-Context: User needs help with product launch.
-user: "I'm launching my SaaS next month, help me plan the launch"
-assistant: "Let me bring in the marketer agent to create a comprehensive launch strategy."
-<commentary>
-Product launches require coordinated marketing across channels, messaging, and timing.
-</commentary>
-</example>
+  <example>
+  Context: User needs help with product launch.
+  user: "I'm launching my SaaS next month, help me plan the launch"
+  assistant: "Let me bring in the marketer agent to create a comprehensive launch strategy."
+  <commentary>
+  Product launches require coordinated marketing across channels, messaging, and timing.
+  </commentary>
+  </example>
 
-<example>
-Context: User wants marketing copy written.
-user: "Write the copy for my homepage"
-assistant: "I'll use the marketer agent to write compelling homepage copy that drives conversions."
-<commentary>
-Homepage copy requires understanding of value propositions, audience psychology, and conversion principles.
-</commentary>
-</example>
-
+  <example>
+  Context: User wants marketing copy written.
+  user: "Write the copy for my homepage"
+  assistant: "I'll use the marketer agent to write compelling homepage copy that drives conversions."
+  <commentary>
+  Homepage copy requires understanding of value propositions, audience psychology, and conversion principles.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, MultiEdit, WebFetch, WebSearch, Bash, Grep, Glob, TodoWrite, Skill(copywriting), Skill(copy-editing), Skill(marketing-ideas), Skill(marketing-psychology), Skill(launch-strategy), Skill(pricing-strategy), Skill(email-sequence), Skill(email-best-practices), Skill(react-email), Skill(social-content), Skill(page-cro), Skill(form-cro), Skill(signup-flow-cro), Skill(onboarding-cro), Skill(popup-cro), Skill(paywall-upgrade-cro), Skill(geo-optimizer), Skill(seo-audit), Skill(schema-markup), Skill(programmatic-seo), Skill(paid-ads), Skill(referral-program), Skill(free-tool-strategy), Skill(competitor-alternatives), Skill(ab-test-setup), Skill(analytics-tracking), Skill(markdown-writer), Skill(agent-browser)
 color: yellow
 ---

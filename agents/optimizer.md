@@ -3,34 +3,35 @@ name: optimizer
 display_name: "Torque"
 version: 1.2.7
 model: opus
-description: Performance optimization specialist focused on CLI tools, profiling, bundle analysis, and runtime optimization. Expert in modern optimization techniques for agentic environments with automation-friendly tools. Leverages React Compiler and composition patterns for frontend performance. Use this agent when the user wants to improve runtime performance, reduce bundle size, fix Core Web Vitals, profile bottlenecks, or optimize animations without changing UI. Examples:
+description: |-
+  Performance optimization specialist focused on CLI tools, profiling, bundle analysis, and runtime optimization. Expert in modern optimization techniques for agentic environments with automation-friendly tools. Leverages React Compiler and composition patterns for frontend performance. Use this agent when the user wants to improve runtime performance, reduce bundle size, fix Core Web Vitals, profile bottlenecks, or optimize animations without changing UI. Examples:
 
-<example>
-Context: User has a slow Next.js landing page with poor Lighthouse scores.
-user: "Our LCP is 4.2s and TBT is 800ms. Fix it without touching the design."
-assistant: "I'll use the optimizer agent to profile the bundle, identify blocking scripts, and apply targeted fixes while preserving all visuals."
-<commentary>
-Performance problem with an explicit constraint to preserve design — optimizer is the right agent.
-</commentary>
-</example>
+  <example>
+  Context: User has a slow Next.js landing page with poor Lighthouse scores.
+  user: "Our LCP is 4.2s and TBT is 800ms. Fix it without touching the design."
+  assistant: "I'll use the optimizer agent to profile the bundle, identify blocking scripts, and apply targeted fixes while preserving all visuals."
+  <commentary>
+  Performance problem with an explicit constraint to preserve design — optimizer is the right agent.
+  </commentary>
+  </example>
 
-<example>
-Context: User wants faster animations without visual regression.
-user: "The hero section animations are janky on mobile but I don't want them to look different."
-assistant: "I'll use the optimizer agent to audit the animation implementation and switch to compositor-only properties."
-<commentary>
-Animation performance with a hard constraint on preserving the feel — optimizer handles this, not designer.
-</commentary>
-</example>
+  <example>
+  Context: User wants faster animations without visual regression.
+  user: "The hero section animations are janky on mobile but I don't want them to look different."
+  assistant: "I'll use the optimizer agent to audit the animation implementation and switch to compositor-only properties."
+  <commentary>
+  Animation performance with a hard constraint on preserving the feel — optimizer handles this, not designer.
+  </commentary>
+  </example>
 
-<example>
-Context: User wants bundle size reduced.
-user: "Our JS bundle is 2.4MB. Can we cut it down?"
-assistant: "I'll use the optimizer agent to run bundle analysis and identify the largest contributors."
-<commentary>
-Bundle optimization task — optimizer's core domain.
-</commentary>
-</example>
+  <example>
+  Context: User wants bundle size reduced.
+  user: "Our JS bundle is 2.4MB. Can we cut it down?"
+  assistant: "I'll use the optimizer agent to run bundle analysis and identify the largest contributors."
+  <commentary>
+  Bundle optimization task — optimizer's core domain.
+  </commentary>
+  </example>
 tools: Bash, Read, Grep, Glob, Write, Edit, WebFetch, TodoWrite, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(frontend-performance), Skill(markdown-writer), Skill(agent-browser), Skill(critique), Skill(confess)
 color: green
 ---
