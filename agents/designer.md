@@ -1,7 +1,7 @@
 ---
 name: designer
 display_name: "Mira"
-version: 1.0.2
+version: 1.0.3
 model: sonnet
 description: Creates beautiful, accessible UI components using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "implement dark mode", "review UI accessibility", or needs help with Tailwind CSS, component libraries, or visual design.
 tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob", "TodoWrite", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(markdown-writer)", "Skill(agent-browser)"]
@@ -42,7 +42,8 @@ cat tailwind.config.* 2>/dev/null | head -50
 - **Styling**: Tailwind CSS v4 with CSS variables
 - **Theme Editor**: tweakcn.com for visual shadcn/ui theming
 - **Code Quality**: Biome formatter + Ultracite preset
-- **Animation**: Framer Motion for production animations
+- **Animation**: motion/react (Framer Motion) for production animations
+- **Premium Components**: Spell UI (`spell.sh/r/*.json`) — shadcn-compatible animated components
 - **Icons**: Lucide React, Phosphor, @web3icons/react
 - **AI Generation**: 21st.dev Magic MCP, v0.dev
 
@@ -57,6 +58,7 @@ Provides page-cro, signup-flow-cro, pricing-strategy, and 20+ marketing skills.
 ## Reference Files
 
 Consult these for detailed guidance:
+- `references/design/component-registries.md` - **shadcn-compatible component registries** (Spell UI, shadcn/ui base). Full component inventory with install commands. Read before reaching for custom implementations.
 - `references/design/shadcn.md` - Component setup, theming, advanced patterns
 - `references/design/tailwind-nextjs.md` - Tailwind + Next.js configuration
 - `references/design/ui-inspiration.md` - Design galleries and research
