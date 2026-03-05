@@ -87,64 +87,37 @@ Use `` `code` `` to show backticks in inline code.
 
 ---
 
-## Cross-Renderer Syntax Mapping
+## GitHub Callout Types
 
-When converting between renderers, use this table to map features:
+All five types supported on GitHub:
 
-| Feature | GitHub (GFM) | Docusaurus | Fumadocs (MDX) |
-|---|---|---|---|
-| Info callout | `> [!NOTE]` | `:::note` | `<Callout type="info">` |
-| Warning callout | `> [!WARNING]` | `:::warning` | `<Callout type="warn">` |
-| Tip callout | `> [!TIP]` | `:::tip` | `<Callout type="info">` |
-| Danger callout | `> [!CAUTION]` | `:::danger` | `<Callout type="error">` |
-| Collapsible | `<details><summary>` | `<details><summary>` | `<Accordions><Accordion title="">` |
-| Tabs | Not supported | `<Tabs><TabItem>` | `<Tabs><Tab>` |
-| Code title | Not supported | `title="file.ts"` on fence | `title="file.ts"` on fence |
+```md
+> [!NOTE]
+> Information users should consider.
 
-### MDX Component Patterns
+> [!TIP]
+> Optional success information.
 
-**Imports go after frontmatter, before content:**
-```mdx
----
-title: My Page
----
+> [!IMPORTANT]
+> Crucial information necessary.
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+> [!WARNING]
+> Critical content demanding attention.
 
-# My Page
-
-<Callout type="warn">
-  This is a warning.
-</Callout>
+> [!CAUTION]
+> Negative potential consequences.
 ```
 
-**Nested collapsibles in MDX:**
-```mdx
-<Accordions>
-  <Accordion title="Platform Notes">
-    <Accordions>
-      <Accordion title="macOS">
-        Content here.
-      </Accordion>
-      <Accordion title="Linux">
-        Content here.
-      </Accordion>
-    </Accordions>
-  </Accordion>
-</Accordions>
-```
+## Nested Collapsibles
 
-### Nested Collapsibles on GitHub
-
-Blank lines are **required** around HTML tags when mixing with markdown content:
+Blank lines are **required** around HTML tags when mixing with markdown content. Without them, GitHub will not render the inner markdown.
 
 ```md
 <details>
-<summary>Outer</summary>
+<summary>Outer section</summary>
 
 <details>
-<summary>Inner</summary>
+<summary>Inner section</summary>
 
 Inner content with `code` and **bold**.
 
@@ -153,9 +126,45 @@ Inner content with `code` and **bold**.
 </details>
 ```
 
-Without blank lines, GitHub will not render the inner markdown.
+## Image Alignment and Layout
 
-### Keep a Changelog Format
+**Center an image:**
+```md
+<p align="center">
+  <img width="460" height="300" src="screenshot.png">
+</p>
+```
+
+**Left/right float:**
+```md
+<img align="right" width="100" height="100" src="logo.png">
+```
+
+**Light/dark mode images (GitHub):**
+```md
+![Logo](./dark.png#gh-dark-mode-only)
+![Logo](./light.png#gh-light-mode-only)
+```
+
+## Centered Text and Badges
+
+```md
+<div align="center">
+  <h1>Project Name</h1>
+  <p>Short description of the project</p>
+
+  [![CI](https://img.shields.io/badge/build-passing-green)](url)
+  [![License](https://img.shields.io/badge/license-MIT-blue)](url)
+</div>
+```
+
+## Tiny / Superscript Text
+
+```md
+<sup><sub>Tiny footnote text</sub></sup>
+```
+
+## Keep a Changelog Format
 
 ```md
 ## [1.2.0] - 2026-01-15
@@ -175,13 +184,14 @@ Without blank lines, GitHub will not render the inner markdown.
 [1.2.0]: https://github.com/org/repo/compare/v1.1.0...v1.2.0
 ```
 
-### Monorepo Relative Links
+## Monorepo Relative Links
 
 When linking between packages in a monorepo, resolve from the file's directory:
 
 ```
-packages/cli/README.md → packages/core/README.md  = ../core/README.md
-packages/cli/README.md → docs/pages/api/cli.mdx   = ../../docs/pages/api/cli.mdx
+packages/cli/README.md → packages/core/README.md     = ../core/README.md
+packages/cli/README.md → docs/getting-started.md      = ../../docs/getting-started.md
+packages/cli/README.md → docs/api/cli.md              = ../../docs/api/cli.md
 ```
 
-Never use absolute paths from repo root. Update `.md` to `.mdx` when targeting an MDX site.
+Never use absolute paths from repo root.

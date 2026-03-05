@@ -3,94 +3,94 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I have a Fumadocs (MDX) site and need to port this GitHub-flavored markdown into valid MDX. Convert it, keeping the same content but using the correct MDX equivalents:\n\n```md\n# Setup Guide\n\n> [!WARNING]\n> This requires Node 20+.\n\n> [!NOTE]\n> See the [config reference](../reference/config.md) for all options.\n\n<details>\n<summary>Advanced: Custom auth provider</summary>\n\nYou can pass a custom provider:\n\n```ts\nconst auth = createAuth({ provider: 'custom' });\n```\n\n</details>\n\nHere is a footnote about our API limits.[^1]\n\n[^1]: Rate limited to 100 req/min per API key.\n```\n\nThe MDX site uses `fumadocs-ui` components: `<Callout type=\"warn\">`, `<Callout type=\"info\">`, and `<Accordions>`/`<Accordion>` for collapsibles. Imports go at the top of the file after frontmatter.",
-      "expected_output": "Valid MDX file with fumadocs-ui component imports at the top, GitHub callouts converted to <Callout> components with correct type props, <details>/<summary> converted to <Accordions>/<Accordion>, the .md relative link updated to .mdx or a valid path, and footnotes either preserved or converted to inline notes since MDX footnote support varies.",
+      "prompt": "Write a CHANGELOG.md entry for version 2.4.0 of a library called 'dataforge'. Use Keep a Changelog format (keepachangelog.com). The changes are:\n- Breaking: renamed `DataForge.create()` to `DataForge.init()`, old name removed\n- Added streaming via new `stream()` method on query results\n- Fixed: nested object serialization dropping null values (issue #847)\n- Fixed: connection pool exhaustion under concurrent writes (issue #901)\n- Deprecated: `DataForge.connect()` in favor of `DataForge.init()` with connection options\n\nInclude a diff fence showing the migration path for the breaking change. Link issues to https://github.com/example/dataforge/issues/.",
+      "expected_output": "A CHANGELOG entry following Keep a Changelog format with categorized sections (Added, Changed, Deprecated, Fixed), a diff-fenced code block showing old vs new API, linked issue references, and a version heading with date.",
       "files": [],
       "assertions": [
         {
-          "id": "mdx-1-imports",
-          "text": "The output includes import statements for Callout and Accordion/Accordions components from fumadocs-ui at the top of the file (after any frontmatter).",
+          "id": "cl-1-keepachangelog-sections",
+          "text": "The entry uses separate Keep a Changelog section headers to categorize changes (e.g., Added, Changed, Deprecated, Fixed) rather than a flat bullet list under one heading.",
           "type": "qualitative"
         },
         {
-          "id": "mdx-1-callout-syntax",
-          "text": "GitHub blockquote callouts (> [!WARNING] and > [!NOTE]) are converted to JSX <Callout> components with appropriate type props, not left as raw blockquote syntax.",
+          "id": "cl-1-diff-fence",
+          "text": "The entry includes a diff-fenced code block (```diff) showing the migration from DataForge.create() to DataForge.init() with - and + prefixed lines.",
           "type": "qualitative"
         },
         {
-          "id": "mdx-1-collapsible",
-          "text": "The <details>/<summary> HTML block is converted to <Accordions>/<Accordion> components from fumadocs-ui, not left as raw HTML.",
+          "id": "cl-1-issue-links",
+          "text": "Issue numbers #847 and #901 are rendered as clickable markdown links pointing to https://github.com/example/dataforge/issues/847 and /901, not left as plain text.",
           "type": "qualitative"
         },
         {
-          "id": "mdx-1-link-path",
-          "text": "The relative link ../reference/config.md is updated to a valid MDX-compatible path (e.g., ../reference/config or .mdx extension), not left pointing to a .md file.",
-          "type": "qualitative"
-        },
-        {
-          "id": "mdx-1-valid-jsx",
-          "text": "The code block inside the accordion/collapsible is properly escaped or nested so it would not break JSX parsing (no unescaped curly braces in prose, code blocks are intact).",
+          "id": "cl-1-version-date",
+          "text": "The version heading includes both the version number (2.4.0) and a date in YYYY-MM-DD format, following Keep a Changelog convention (e.g., ## [2.4.0] - 2026-03-05).",
           "type": "qualitative"
         }
       ]
     },
     {
       "id": 2,
-      "prompt": "Write a CHANGELOG.md entry for version 2.4.0 of a library called 'dataforge'. The changes are:\n- Breaking: renamed `DataForge.create()` to `DataForge.init()` and the old name is removed\n- Added streaming support via new `stream()` method on query results\n- Fixed: nested object serialization was dropping null values (issue #847)\n- Fixed: connection pool exhaustion under concurrent writes (issue #901)\n- Deprecated: `DataForge.connect()` in favor of `DataForge.init()` with connection options\n\nUse the Keep a Changelog format (keepachangelog.com). Include diff fences showing the migration path for the breaking change. Link issues to https://github.com/example/dataforge/issues/.",
-      "expected_output": "A CHANGELOG entry following Keep a Changelog format with proper sections (Added, Changed/Breaking, Deprecated, Fixed), diff fences showing old vs new API, and linked issue references using markdown link syntax.",
+      "prompt": "I have a monorepo with this structure:\n\n```\npackages/\n  core/\n    README.md\n    src/index.ts\n  cli/\n    README.md\n    src/commands/deploy.ts\n  docs/\n    getting-started.md\n    api/\n      core.md\n      cli.md\n```\n\nWrite packages/cli/README.md. It must:\n1. Link to the core package README using a correct relative path from packages/cli/\n2. Link to docs/getting-started.md and docs/api/cli.md using correct relative paths\n3. Include a nested collapsible section: outer collapsible 'Platform Notes' containing two inner collapsibles 'macOS' and 'Linux', each with a fenced code block showing install commands\n4. Use GitHub-flavored markdown callouts and task lists\n5. Include a mermaid sequence diagram showing: User -> CLI -> Core -> API",
+      "expected_output": "A CLI README with correct relative paths (../core/README.md, ../docs/getting-started.md, ../docs/api/cli.md), properly nested <details> blocks with blank lines so GitHub renders inner markdown, a mermaid sequence diagram, GFM callouts, and task lists.",
       "files": [],
       "assertions": [
         {
-          "id": "cl-2-keepachangelog-sections",
-          "text": "The entry organizes changes under Keep a Changelog section headers — specifically using separate sections for breaking changes, additions, fixes, and deprecations (e.g., Changed, Added, Fixed, Deprecated or similar).",
+          "id": "mono-2-core-link",
+          "text": "The README links to the core package README using ../core/README.md (exactly one level up, into core/), not an absolute path, not ./core, not /packages/core.",
           "type": "qualitative"
         },
         {
-          "id": "cl-2-diff-fence",
-          "text": "The entry includes a diff-fenced code block (```diff) showing the migration from DataForge.create() to DataForge.init() with - and + prefixed lines.",
+          "id": "mono-2-docs-links",
+          "text": "The README links to docs pages using paths that go up two levels from packages/cli/ (e.g., ../../docs/getting-started.md), not paths starting from repo root.",
           "type": "qualitative"
         },
         {
-          "id": "cl-2-issue-links",
-          "text": "Issue numbers #847 and #901 are linked as clickable markdown links pointing to https://github.com/example/dataforge/issues/847 and /901 respectively, not just plain text '#847'.",
+          "id": "mono-2-nested-details",
+          "text": "The output has nested <details> blocks — an outer one containing at least two inner <details> blocks — with blank lines between HTML tags and markdown content (required for GitHub to render inner markdown).",
           "type": "qualitative"
         },
         {
-          "id": "cl-2-version-date",
-          "text": "The version heading includes both the version number (2.4.0) and a date in ISO format (YYYY-MM-DD), following Keep a Changelog convention.",
+          "id": "mono-2-mermaid-sequence",
+          "text": "The output includes a mermaid sequence diagram (```mermaid with sequenceDiagram keyword) showing message arrows between User, CLI, Core, and API participants.",
+          "type": "qualitative"
+        },
+        {
+          "id": "mono-2-gfm-callout",
+          "text": "The output uses at least one GitHub-flavored callout with the > [!TYPE] syntax (e.g., > [!NOTE], > [!TIP], > [!WARNING]), not a plain blockquote.",
           "type": "qualitative"
         }
       ]
     },
     {
       "id": 3,
-      "prompt": "I have a monorepo with this structure:\n\n```\npackages/\n  core/\n    README.md\n    src/\n      index.ts\n  cli/\n    README.md\n    src/\n      commands/\n        deploy.ts\n  docs/\n    pages/\n      getting-started.mdx\n      api/\n        core.mdx\n        cli.mdx\n```\n\nWrite the content for `packages/cli/README.md`. It should:\n1. Link to the core package README using a correct relative path\n2. Link to the docs site pages using relative paths that resolve from the cli package\n3. Include a nested collapsible section: outer collapsible 'Platform Notes' containing two inner collapsibles 'macOS' and 'Linux', each with a fenced code block showing install commands\n4. Use GitHub-flavored markdown throughout (callouts, task lists)\n5. Include a mermaid sequence diagram showing: User -> CLI -> Core -> API",
-      "expected_output": "A CLI README with correct relative links to ../core/README.md and ../docs/pages/*.mdx, properly nested <details> blocks that won't break GitHub rendering, a mermaid sequence diagram, GitHub callouts, and task lists.",
+      "prompt": "Convert this rough specification into a polished GitHub-flavored markdown document. The output should work perfectly when rendered on GitHub.\n\nSpec:\nWe have 3 deployment targets: Vercel (serverless, auto-scaling, $20/mo), Railway (containers, manual scaling, $5/mo), Cloudflare Workers (edge, auto-scaling, free tier). Vercel supports Node 20 and Bun. Railway supports any Docker image. Cloudflare supports workerd only.\n\nMigration steps: audit deps -> check runtime compat -> update config -> test locally -> deploy staging -> deploy prod.\n\nKnown issues: Vercel cold starts on hobby plan (workaround: use cron ping). Railway needs Dockerfile (workaround: use Nixpacks). Cloudflare no Node APIs (workaround: use polyfills from unenv).\n\nTODO: pick target by March 15, migrate staging by March 22, go live by April 1.\n\nInclude footnotes for the pricing sources.",
+      "expected_output": "A structured markdown document with: a comparison table with proper column alignment, a mermaid flowchart for migration steps, a known issues section using GFM callouts or collapsibles, a task list with dates, and footnotes using GFM footnote syntax.",
       "files": [],
       "assertions": [
         {
-          "id": "mono-3-relative-core-link",
-          "text": "The README links to the core package using the correct relative path ../core/README.md (not an absolute path, not ./core, not /packages/core).",
+          "id": "spec-3-comparison-table",
+          "text": "The document includes a properly formatted markdown table comparing the three deployment targets across multiple dimensions (at minimum: scaling model, price, and supported runtimes) with column alignment syntax.",
           "type": "qualitative"
         },
         {
-          "id": "mono-3-relative-docs-link",
-          "text": "The README links to at least one docs page using a relative path that correctly traverses from packages/cli/ to packages/docs/pages/ (e.g., ../docs/pages/getting-started.mdx).",
+          "id": "spec-3-mermaid-flow",
+          "text": "The document includes a mermaid diagram (flowchart, graph, or similar) visualizing the migration steps as a sequence or flow, not just a bullet list.",
           "type": "qualitative"
         },
         {
-          "id": "mono-3-nested-collapsible",
-          "text": "The output contains nested collapsible sections — an outer <details> block containing at least two inner <details> blocks, with blank lines separating the HTML tags from markdown content to prevent rendering issues.",
+          "id": "spec-3-footnotes",
+          "text": "The document uses GitHub-flavored footnote syntax ([^1] references with corresponding [^1]: definitions) for the pricing sources, not inline parenthetical citations.",
           "type": "qualitative"
         },
         {
-          "id": "mono-3-mermaid-sequence",
-          "text": "The output includes a mermaid sequence diagram (```mermaid with sequenceDiagram keyword) showing interactions between User, CLI, Core, and API.",
+          "id": "spec-3-task-list",
+          "text": "The TODO items are rendered as a GitHub task list using checkbox syntax (- [ ]) with their target dates, not as plain bullets.",
           "type": "qualitative"
         },
         {
-          "id": "mono-3-github-callout",
-          "text": "The output uses at least one GitHub-flavored callout (> [!NOTE], > [!TIP], > [!WARNING], etc.) not a generic blockquote.",
+          "id": "spec-3-workarounds-structured",
+          "text": "Known issues and their workarounds are presented in a structured format (callouts, table, or collapsible sections) rather than as a flat paragraph of prose.",
           "type": "qualitative"
         }
       ]
