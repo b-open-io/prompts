@@ -16,6 +16,9 @@ Options:
     --context <n>        Show N surrounding messages for each match (default: 2)
     --json               Output as JSON
     --session <id>       Read a specific session by ID (prints full conversation)
+    --recency-weight <f> Recency weight factor (default: 0.2)
+    --half-life <days>   Recency half-life in days (default: 30)
+    --no-recency         Disable recency weighting
 
 Examples:
     python3 search.py "auth middleware"
@@ -26,6 +29,7 @@ Examples:
 
 import argparse
 import json
+import math
 import os
 import re
 import sqlite3
@@ -41,7 +45,7 @@ SCRIBE_DB = Path.home() / ".scribe" / "scribe.db"
 # ─── Scribe DB Search (FTS5) ────────────────────────────────────────────────
 
 
-def scribe_search(query, project_filter=None, recent_days=None, limit=10, context_messages=2):
+def scribe_search(query, project_filter=None, recent_days=None, limit=10, context_messages=2, recency_weight=0.2, half_life_days=30):
     """Search using Scribe's SQLite FTS5 index. Returns grouped-by-session results."""
     if not SCRIBE_DB.exists():
         return None  # Signal to fall back
@@ -100,8 +104,15 @@ def scribe_search(query, project_filter=None, recent_days=None, limit=10, contex
                 "rank": row["rank"],
             })
 
-        # Sort sessions by latest match timestamp
-        sorted_sessions = sorted(sessions.values(), key=lambda s: -s["latest_timestamp"])
+        # Blend FTS rank with recency boost
+        now_ts = int(datetime.now(timezone.utc).timestamp())
+        for sid, session in sessions.items():
+            best_rank = min(m["rank"] for m in session["matches"])  # most negative = best
+            age_days = max((now_ts - session["latest_timestamp"]) / 86400, 0)
+            recency_boost = math.exp(-0.693 * age_days / half_life_days) if half_life_days > 0 else 0
+            session["blended_score"] = abs(best_rank) * (1 + recency_weight * recency_boost)
+
+        sorted_sessions = sorted(sessions.values(), key=lambda s: -s["blended_score"])
 
         # For each session, fetch surrounding context from evidence_messages
         results = []
@@ -130,15 +141,21 @@ def scribe_search(query, project_filter=None, recent_days=None, limit=10, contex
 
             # Get matching snippets
             snippets = []
-            for match in session["matches"][:3]:
+            for match in session["matches"][:5]:
                 content = match["content"]
                 if content:
                     # Clean up content for display
                     content = re.sub(r'<[^>]+>', '', content)  # Strip HTML/XML tags
                     content = re.sub(r'\x1b\[[0-9;]*m', '', content)  # Strip ANSI
-                    content = content.strip()[:300]
-                    if content:
+                    content = content.strip()
+                    # Skip context continuation summaries — they're noise
+                    if content.startswith("This session is being continued from"):
+                        continue
+                    content = content[:300]
+                    if content and len(content) > 10:
                         snippets.append(content)
+                if len(snippets) >= 3:
+                    break
 
             date_str = datetime.fromtimestamp(session["latest_timestamp"], tz=timezone.utc).strftime("%Y-%m-%d %H:%M")
 
@@ -305,7 +322,7 @@ def extract_messages_from_jsonl(jsonl_path):
     return messages
 
 
-def search_jsonl_full(query, project_filter=None, recent_days=None, limit=10):
+def search_jsonl_full(query, project_filter=None, recent_days=None, limit=10, recency_weight=0.2, half_life_days=30):
     """Deep search: scan actual JSONL conversation content."""
     query_lower = query.lower()
     query_words = query_lower.split()
@@ -363,8 +380,14 @@ def search_jsonl_full(query, project_filter=None, recent_days=None, limit=10):
 
             if best_score > 0:
                 first_user = next((m for m in messages if m["role"] == "user"), None)
+                mtime_ts = int(jsonl_file.stat().st_mtime)
+                now_ts = int(datetime.now(timezone.utc).timestamp())
+                age_days = max((now_ts - mtime_ts) / 86400, 0)
+                recency_boost = math.exp(-0.693 * age_days / half_life_days) if half_life_days > 0 else 0
+                blended = best_score * (1 + recency_weight * recency_boost)
                 results.append({
                     "score": best_score,
+                    "blended_score": blended,
                     "session_id": session_id,
                     "project": extract_project_name(project_dir.name),
                     "first_prompt": (first_user["text"][:200] if first_user else ""),
@@ -373,7 +396,7 @@ def search_jsonl_full(query, project_filter=None, recent_days=None, limit=10):
                     "modified": jsonl_file.stat().st_mtime,
                 })
 
-    results.sort(key=lambda x: (-x["score"], -x.get("modified", 0)))
+    results.sort(key=lambda x: (-x["blended_score"], -x.get("modified", 0)))
     return results[:limit]
 
 
@@ -456,6 +479,9 @@ def main():
     parser.add_argument("--context", type=int, default=2, help="Surrounding messages to show")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     parser.add_argument("--session", help="Read a specific session by ID")
+    parser.add_argument("--recency-weight", type=float, default=0.2, help="Recency weight factor (default: 0.2)")
+    parser.add_argument("--half-life", type=int, default=30, help="Recency half-life in days (default: 30)")
+    parser.add_argument("--no-recency", action="store_true", help="Disable recency weighting")
     args = parser.parse_args()
 
     # Session read mode
@@ -472,6 +498,8 @@ def main():
 
     # Search mode
     results = None
+    rw = 0.0 if args.no_recency else args.recency_weight
+    hl = args.half_life
 
     if not args.full:
         # Try Scribe DB first
@@ -480,6 +508,8 @@ def main():
             project_filter=args.project,
             recent_days=args.recent,
             limit=args.limit,
+            recency_weight=rw,
+            half_life_days=hl,
         )
         if results is not None:
             if not args.json:
@@ -494,6 +524,8 @@ def main():
             project_filter=args.project,
             recent_days=args.recent,
             limit=args.limit,
+            recency_weight=rw,
+            half_life_days=hl,
         )
 
     if args.json:

@@ -54,7 +54,7 @@ See `references/permissions-and-isolation.md` for all mode options and worktree 
 | **designer** | `bopen-tools:designer` | UI, Tailwind, shadcn/ui, accessibility |
 | **agent-builder** | `bopen-tools:agent-builder` | AI agent systems, LLM integration, Vercel AI SDK |
 | **database** | `bopen-tools:database` | Schema, queries, PostgreSQL, Redis, Convex |
-| **integration-expert** | `bopen-tools:integration-expert` | REST APIs, webhooks, Payload CMS |
+| **integration-expert** | `bopen-tools:integration-expert` | REST APIs, webhooks, third-party services |
 | **code-auditor** | `bopen-tools:code-auditor` | Security review, vulnerability scanning |
 | **tester** | `bopen-tools:tester` | Unit, integration, e2e tests, CI |
 | **documentation-writer** | `bopen-tools:documentation-writer` | READMEs, API docs, PRDs, guides |

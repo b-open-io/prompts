@@ -64,7 +64,7 @@ Our 22 expert agents enhance Claude Code with specialized knowledge. See [agents
 - 🟠 [**devops**](agents/devops.md) — Zoro — Vercel + Railway + Bun stack, CI/CD, security scanning
 - 🟢 [**database**](agents/database.md) — Idris — PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, Convex
 - 📱 [**mobile**](agents/mobile.md) — Kira — React Native, Swift, Kotlin, Flutter
-- 🔗 [**integration-expert**](agents/integration-expert.md) — Maxim — API integrations, webhooks, Payload CMS
+- 🔗 [**integration-expert**](agents/integration-expert.md) — Maxim — API integrations, webhooks, third-party services
 - 🟠 [**mcp**](agents/mcp.md) — Orbit — MCP server setup, diagnostics, PostgreSQL/Redis/GitHub MCP
 - ⚡ [**nextjs**](agents/nextjs.md) — Nori — Next.js, React 19, Turbopack, Bun, Biome
 
@@ -179,11 +179,6 @@ Skills are context-triggered capabilities. They activate automatically or can be
   ```bash
   bunx skills add b-open-io/bopen-tools --skill plaid-integration
   ```
-- **payload** - Payload CMS integration and management
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill payload
-  ```
-
 ### Operations
 - **geo-optimizer** - Geographic and location-based optimizations
   ```bash

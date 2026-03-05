@@ -1,6 +1,6 @@
 ---
 name: remind
-version: 1.0.0
+version: 1.0.1
 description: "Search and recall previous Claude Code conversation sessions. Use this skill whenever the user asks to remember, recall, find, or look up something from a past conversation or session. Triggers on phrases like: 'remember when we...', 'what did we do about...', 'find that conversation where...', 'when did I last work on...', 'what was that command/approach/solution we used for...', 'look up my past sessions about...'. Also use this skill when the user references prior work context that isn't in the current session, asks to continue work from a previous session, or wants to find a specific discussion, decision, or code snippet from their conversation history. Even vague references to past work ('that thing we did', 'the approach from last week') should trigger this skill."
 ---
 
@@ -44,6 +44,11 @@ python3 "SKILL_DIR/scripts/search.py" "<query>" [options]
 | `--full` | Force JSONL search (skip Scribe DB) |
 | `--json` | Machine-readable output |
 | `--session <id>` | Read a specific session's messages |
+| `--recency-weight <f>` | Recency weight factor (default: 0.2) |
+| `--half-life <days>` | Recency half-life in days (default: 30) |
+| `--no-recency` | Disable recency weighting |
+
+Results are ranked by a blend of BM25 relevance and recency. Recent conversations get a boost that decays exponentially (30-day half-life). Use `--no-recency` to disable.
 
 **Crafting good queries:**
 - Use 2-3 specific keywords, not full sentences

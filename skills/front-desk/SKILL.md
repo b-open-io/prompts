@@ -1,6 +1,6 @@
 ---
 name: front-desk
-description: "This skill should be used when the user asks 'who handles X?', 'what agents are available?', 'how do I contact Y?', 'team roster', 'what services do we use?', 'who should I talk to about Z?', or needs help routing to the right agent or service provider. Also use when connecting to live agent instances or checking availability."
+description: "This skill should be used when the user asks 'who handles X?', 'what agents are available?', 'how do I contact Y?', 'team roster', 'what services do we use?', 'who should I talk to about Z?', or needs help routing to the right agent or service provider. Also use when connecting to live agent instances, checking availability, sending emails on behalf of the org, or drafting communications."
 ---
 
 # Front Desk
@@ -40,6 +40,8 @@ Match the user's need to the right specialist:
 | Cleanup / consolidation | **Steve** (consolidator) | bopen-tools |
 | Google Workspace | **Tina** (executive-assistant) | bopen-tools |
 | API integrations | **Maxim** (integration-expert) | bopen-tools |
+| Send/draft emails | **Martha** (front-desk) | bopen-tools |
+| Draft communications | **Martha** (front-desk) | bopen-tools |
 
 ## Live Agent Instances
 

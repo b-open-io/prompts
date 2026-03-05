@@ -13,7 +13,7 @@ Full bopen-tools agent roster with `subagent_type` identifiers and the skills to
 | **designer** | `bopen-tools:designer` | sonnet | UI components, Tailwind, shadcn/ui, design systems, accessibility |
 | **agent-builder** | `bopen-tools:agent-builder` | opus | AI agent systems, tool-calling, LLM integration, Vercel AI SDK |
 | **database** | `bopen-tools:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
-| **integration-expert** | `bopen-tools:integration-expert` | sonnet | REST APIs, webhooks, third-party services, Payload CMS |
+| **integration-expert** | `bopen-tools:integration-expert` | sonnet | REST APIs, webhooks, third-party services |
 | **code-auditor** | `bopen-tools:code-auditor` | opus | Security review, vulnerability scanning, code quality |
 | **tester** | `bopen-tools:tester` | sonnet | Unit, integration, e2e tests, mocking, coverage, CI |
 | **documentation-writer** | `bopen-tools:documentation-writer` | sonnet | READMEs, API docs, PRDs, guides |
@@ -104,7 +104,6 @@ Use `Skill(agent-browser)` for any page that requires interaction or dynamic loa
 
 ```markdown
 ## Your Available Skills
-- `Skill(bopen-tools:payload)` — invoke for any Payload CMS integration work
 - `Skill(bopen-tools:resend)` — invoke for email sending integration with Resend
 - `Skill(mcp-integration)` — invoke when integrating with MCP servers
 
