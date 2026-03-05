@@ -1262,6 +1262,21 @@ Use **gerund form** (verb + -ing): `processing-pdfs`, `analyzing-spreadsheets`
 - Use one level of nesting from SKILL.md
 - Include table of contents in files over 100 lines
 
+### Cross-Skill Path References in SKILL.md
+
+When a SKILL.md references scripts or assets from sibling skills, use `${CLAUDE_PLUGIN_ROOT}/skills/<skill-name>`:
+
+```bash
+# Good - works from plugin cache and source repo
+cd ${CLAUDE_PLUGIN_ROOT}/skills/generate-image && bun run scripts/generate.ts "prompt"
+
+# Bad - breaks when skill is installed via npx skills add
+bun run ../browsing-styles/scripts/list_styles.ts
+cd ${SKILL_BASE_DIR}/../generate-image && bun run scripts/generate.ts "prompt"
+```
+
+For script path resolution patterns across platforms (Claude Code, OpenCode, Cursor, Gemini CLI, agentskills.io), see `references/plugin-installation-paths.md`.
+
 ### Skill Resources
 
 **REQUIRED: Invoke `Skill(skill-creator:skill-creator)` before creating or significantly modifying any skill.**
