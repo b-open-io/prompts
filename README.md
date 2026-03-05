@@ -50,36 +50,37 @@ bunx skills add b-open-io/bopen-tools --skill frontend-performance
 
 ## Specialized AI Agents
 
-Our 21 expert agents enhance Claude Code with specialized knowledge. See [agents/](agents/) for full details.
+Our 22 expert agents enhance Claude Code with specialized knowledge. See [agents/](agents/) for full details.
 
 ### Development & Architecture
-- 🔵 [**prompt-engineer**](agents/prompt-engineer.md) - Claude Code commands and prompt development
-- 🏗️ [**architecture-reviewer**](agents/architecture-reviewer.md) - Large-scale system design and refactoring
-- 🔴 [**code-auditor**](agents/code-auditor.md) - Security vulnerabilities and code quality
-- 🚀 [**optimizer**](agents/optimizer.md) - Performance optimization and efficiency
-- 🧪 [**test-specialist**](agents/test-specialist.md) - Comprehensive testing strategies
-- 🧹 [**consolidator**](agents/consolidator.md) - System organization and cleanup
+- 🔵 [**prompt-engineer**](agents/prompt-engineer.md) — Zack — Slash commands, agent skills, YAML frontmatter, Claude Code config
+- 🏗️ [**architecture-reviewer**](agents/architecture-reviewer.md) — Kayle — Large-scale system design, refactoring, multi-file analysis
+- 🔴 [**code-auditor**](agents/code-auditor.md) — Nyx — Security vulnerabilities, comprehensive code audits
+- 🚀 [**optimizer**](agents/optimizer.md) — Torque — Runtime performance, bundle analysis, Core Web Vitals
+- 🧪 [**tester**](agents/tester.md) — Iris — Testing strategies, evals, skill benchmarking, CI automation
+- 🧹 [**consolidator**](agents/consolidator.md) — Steve — File organization, deduplication, naming conventions
 
 ### Platform & Infrastructure
-- 🟠 [**devops-specialist**](agents/devops-specialist.md) - Deployment automation and cloud infrastructure
-- 🟢 [**database-specialist**](agents/database-specialist.md) - Database design, optimization, and data modeling
-- 📱 [**mobile-specialist**](agents/mobile-specialist.md) - React Native, Swift, Kotlin, and Flutter development
-- 🔗 [**integration-expert**](agents/integration-expert.md) - API integration and third-party services
-- 🟠 [**mcp-specialist**](agents/mcp-specialist.md) - Model Context Protocol server development
+- 🟠 [**devops**](agents/devops.md) — Zoro — Vercel + Railway + Bun stack, CI/CD, security scanning
+- 🟢 [**database**](agents/database.md) — Idris — PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, Convex
+- 📱 [**mobile**](agents/mobile.md) — Kira — React Native, Swift, Kotlin, Flutter
+- 🔗 [**integration-expert**](agents/integration-expert.md) — Maxim — API integrations, webhooks, Payload CMS
+- 🟠 [**mcp**](agents/mcp.md) — Orbit — MCP server setup, diagnostics, PostgreSQL/Redis/GitHub MCP
+- ⚡ [**nextjs**](agents/nextjs.md) — Nori — Next.js, React 19, Turbopack, Bun, Biome
 
 ### Specialized Domains
-- 🟡 [**bitcoin-specialist**](agents/bitcoin-specialist.md) - BSV blockchain and cryptography
-- 💚 [**payment-specialist**](agents/payment-specialist.md) - Payment processing and financial operations
-- 🔵 [**auth-specialist**](agents/auth-specialist.md) - Authentication and identity management
-- 🤖 [**agent-specialist**](agents/agent-specialist.md) - AI agent development and tool-calling
-- 📊 [**data-specialist**](agents/data-specialist.md) - Data processing, analytics, and ETL pipelines
-- ⚖️ [**legal-specialist**](agents/legal-specialist.md) - Legal compliance and privacy regulations
+- 💚 [**payments**](agents/payments.md) — Mina — Payment integrations, Plaid, financial operations
+- 🤖 [**agent-builder**](agents/agent-builder.md) — Rowan — AI agent systems, tool-calling, multi-agent orchestration
+- 📊 [**data**](agents/data.md) — Mr. Data Accumulator — Data processing, analytics, ETL pipelines
+- ⚖️ [**legal**](agents/legal.md) — Helena — Legal compliance, privacy regulations, terms of service
+- 📣 [**marketer**](agents/marketer.md) — Caal — CRO, copywriting, SEO, launch strategy, email sequences
+- 🗂️ [**project-manager**](agents/project-manager.md) — Sage — Linear planning, issue tracking, project organization
 
 ### Content & Communication
-- 🟣 [**design-specialist**](agents/design-specialist.md) - UI/UX design and component libraries
-- 🔷 [**documentation-writer**](agents/documentation-writer.md) - Technical documentation and guides
-- 🟠 [**content-specialist**](agents/content-specialist.md) - AI-powered media generation
-- 🩷 [**research-specialist**](agents/research-specialist.md) - Information gathering and analysis
+- 🟣 [**designer**](agents/designer.md) — Mira — UI/UX, Tailwind, shadcn/ui, accessibility, dark mode
+- 🔷 [**documentation-writer**](agents/documentation-writer.md) — Flow — READMEs, API docs, PRDs, guides
+- 🎵 [**audio-specialist**](agents/audio-specialist.md) — Juniper — ElevenLabs audio, sound effects, music generation
+- 🩷 [**researcher**](agents/researcher.md) — Parker — Web research, docs, APIs, parallel research strategies
 
 **Usage:** `"Use the [agent-name] to [specific task]"`
 
@@ -417,7 +418,7 @@ init-prism create my-app --template bitcoin-auth
 /opl:dev:lint
 /opl:dev:enhance
 "Ask the code-auditor to review security vulnerabilities"
-"Have the test-specialist create comprehensive tests"
+"Have the tester create comprehensive tests"
 ```
 
 ### Documentation
