@@ -98,6 +98,8 @@ interface SkillBenchmark {
 interface BenchmarkReport {
   generated_at: string;
   model: string;
+  runner: string;
+  script_url: string;
   total_skills: number;
   total_evals: number;
   overall_pass_rate: number;
@@ -423,10 +425,24 @@ function App({ state }: { state: AppState }) {
 // CLI arg parsing
 // ---------------------------------------------------------------------------
 
+function getRunner(): string {
+  if (process.env.GITHUB_ACTIONS === "true") {
+    const actor = process.env.GITHUB_ACTOR ?? "github-actions[bot]";
+    const runId = process.env.GITHUB_RUN_ID ?? "";
+    return `CI / ${actor}${runId ? ` (run ${runId})` : ""}`;
+  }
+  try {
+    return Bun.spawnSync(["whoami"]).stdout.toString().trim();
+  } catch {
+    return "local";
+  }
+}
+
 function parseArgs(): { skill?: string; model: string; concurrency: number } {
   const args = process.argv.slice(2);
   let skill: string | undefined;
-  let model = "claude-sonnet-4-6";
+  // Use haiku by default — cheap and fast. Pass --model to override.
+  let model = process.env.BENCHMARK_MODEL ?? "claude-haiku-4-5-20251001";
   let concurrency = 2;
 
   for (let i = 0; i < args.length; i++) {
@@ -778,6 +794,8 @@ async function main() {
   const report: BenchmarkReport = {
     generated_at: new Date().toISOString(),
     model,
+    runner: getRunner(),
+    script_url: "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
     total_skills: skillResults.length,
     total_evals: totalEvals,
     overall_pass_rate: Math.round(avg(skillResults.map(s => s.pass_rate)) * 1000) / 1000,
