@@ -1,7 +1,7 @@
 ---
 name: prompt-engineer
 display_name: "Zack"
-version: 2.3.8
+version: 2.3.9
 description: Slash command creation, Agent Skills authoring, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, Skills, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(copywriting), Skill(copy-editing), Skill(markdown-writer), Skill(agent-browser)
 model: sonnet
@@ -1735,44 +1735,6 @@ color: blue
 ---
 ```
 
-### Modular Prompt Architecture
-
-**Important**: Use shared prompt modules to avoid duplication and improve maintainability.
-
-#### Shared Prompt System
-Instead of duplicating common instructions across agents, use modular prompts:
-
-1. **Shared Modules Location**: `development/`
-   - `agent-protocol.md` - Self-announcement standards
-   - `task-management.md` - TodoWrite usage patterns
-   - `self-improvement.md` - Contribution guidelines
-
-2. **Agent Initialization Pattern**:
-```markdown
-## Initialization
-On startup, load shared protocols:
-1. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/agent-protocol.md for announcement format
-2. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/task-management.md for TodoWrite patterns
-3. WebFetch from https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/self-improvement.md for contribution guidelines
-```
-
-3. **Benefits**:
-   - **DRY Principle**: Don't Repeat Yourself
-   - **Consistency**: All agents follow same patterns
-   - **Maintainability**: Update once, affects all agents
-   - **Modularity**: Agents only load what they need
-
-4. **Implementation Example**:
-```markdown
-## Agent Initialization
-Load the following shared protocols:
-- For self-announcement: See development/agent-protocol.md
-- For task tracking: See development/task-management.md
-- For improvements: See development/self-improvement.md
-
-Note: While agents cannot execute @ syntax, they should be instructed to:
-"First, read the shared protocol files from development/ to understand standard operating procedures."
-```
 
 ### Directory Management Best Practices
 When creating directories, files, or managing the Claude configuration:

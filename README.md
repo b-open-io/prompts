@@ -33,7 +33,7 @@ bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
 bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
 bunx skills add b-open-io/bopen-tools --skill markdown-writer
 bunx skills add b-open-io/bopen-tools --skill deck-creator
-bunx skills add b-open-io/bopen-tools --skill stop-slop
+bunx skills add b-open-io/bopen-tools --skill humanize
 bunx skills add b-open-io/bopen-tools --skill npm-publish
 bunx skills add b-open-io/bopen-tools --skill notebooklm
 bunx skills add b-open-io/bopen-tools --skill payload
@@ -135,9 +135,9 @@ Skills are context-triggered capabilities. They activate automatically or can be
   ```bash
   bunx skills add b-open-io/bopen-tools --skill deck-creator
   ```
-- **stop-slop** - Detect and prevent low-quality AI-generated content
+- **humanize** - Remove AI writing patterns and restore natural voice
   ```bash
-  bunx skills add b-open-io/bopen-tools --skill stop-slop
+  bunx skills add b-open-io/bopen-tools --skill humanize
   ```
 
 ### Development

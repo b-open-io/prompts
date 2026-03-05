@@ -35,7 +35,7 @@ These skills ship with plugins and are available to anyone who installs the plug
 |---------|-------|
 | self-audit, find-mistakes | bopen-tools:confess |
 | quality-check, review-work | bopen-tools:critique |
-| clean-ai-slop, remove-ai-patterns | bopen-tools:stop-slop |
+| humanize, clean-ai-slop, remove-ai-patterns | bopen-tools:humanize |
 | refresh-skill-map | bopen-tools:reinforce-skills |
 | npm-publish | bopen-tools:npm-publish |
 | benchmark-skills, write-evals, test-skill-quality | bopen-tools:benchmark-skills |

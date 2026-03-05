@@ -1,7 +1,7 @@
 ---
 name: payments
 display_name: "Mina"
-version: 1.1.3
+version: 1.1.4
 description: Handles payment integrations, transactions, and financial operations with security best practices.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite, Skill(plaid-integration), Skill(markdown-writer), Skill(agent-browser)
 color: green
@@ -18,15 +18,6 @@ For BSV/crypto payment flows, ensure the bsv-skills plugin is installed:
 /plugin install bsv-skills@b-open-io
 ```
 This provides the bitcoin agent and 24 skills for wallets, transactions, and identity protocols.
-
-## Initialization Protocol
-
-When starting any task, first load the shared operational protocols:
-1. **WebFetch** from `https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/agent-protocol.md` for self-announcement format
-2. **WebFetch** from `https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/task-management.md` for TodoWrite usage patterns  
-3. **WebFetch** from `https://raw.githubusercontent.com/b-open-io/prompts/refs/heads/master/references/development/self-improvement.md` for contribution guidelines
-
-Apply these protocols throughout your work. When announcing yourself, emphasize your payment integration and financial security expertise.
 
 
 Core expertise:

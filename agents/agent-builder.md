@@ -1,7 +1,7 @@
 ---
 name: agent-builder
 display_name: "Rowan"
-version: 1.3.11
+version: 1.3.12
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, and resilient chat UIs.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(markdown-writer), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team)
@@ -1364,6 +1364,39 @@ Exposes tools: list projects, create deployments, manage domains, inspect build 
 Upcoming OAuth provider allowing agents to access user Vercel accounts with authorization. Currently private beta. When available: standard OAuth 2.1 flow → agent receives scoped token → can deploy/manage on user's behalf without claimable deployment pattern.
 
 **Summary**: Fluid compute + `after()` for background work; `@vercel/sdk` for programmatic deploys; claimable deployments for agent-generated apps; MCP server for tool-calling access.
+
+## Anthropic API Built-In Tools (2025-2026)
+
+When building Claude-based applications via the API, these server-side tools are available:
+
+### Memory Tool (`memory_20250818`)
+- Gives Claude persistent cross-session memory via a `/memories` directory
+- Client-side: you implement handlers for `view`, `create`, `str_replace`, `insert`, `delete`, `rename` commands
+- Claude automatically checks memory before tasks and writes what it learns
+- Best for: long-running agent workflows, multi-session projects, personalization
+- Combine with context editing (`clear_tool_uses_20250919`) for unbounded workflows
+
+### Web Search Tool (`web_search_20260209`)
+- Server-side search; Claude cites sources automatically
+- Latest version supports dynamic filtering (Claude writes code to filter results before context load)
+- Requires code execution tool for dynamic filtering
+- Params: `max_uses`, `allowed_domains`, `blocked_domains`, `user_location`
+- Priced at $10/1000 searches + token costs
+
+### Code Execution Tool
+- Runs Python/JS code server-side in a sandboxed environment
+- Required for dynamic filtering in web search
+- Use for data analysis, calculation, chart generation
+
+### Text Editor Tool
+- Gives Claude file editing capabilities in API context
+- Commands: `view`, `str_replace`, `create`, `undo_edit`
+- Client-side: implement file I/O handlers
+
+### Computer Use Tool (Beta)
+- Claude controls a virtual browser/desktop via screenshots + actions
+- Best for QA automation, web scraping complex sites
+- Use with caution (slow, expensive, beta)
 
 ## Key Collaborators
 
