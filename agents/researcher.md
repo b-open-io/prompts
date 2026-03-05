@@ -397,7 +397,7 @@ echo "$RESPONSE" | jq -r '.choices[0].message.content'
 
 ### BSV/Blockchain Specialized Knowledge
 - **WhatsOnChain API**: https://api.whatsonchain.com/v1/bsv/main (no key needed)
-- **1Sat Ordinals**: https://ordinals.gorillapool.io/api/ (Swagger at /swagger.json)
+- **1Sat API (unified)**: https://api.1sat.app/1sat (replaces GorillaPool ordinals API, WhatsOnChain for ordinals/tokens)
 - **bsocial overlay**: https://api.sigmaidentity.com/ (BAP identity + social)
 - **BitcoinSchema.org**: Primary reference for all BSV schemas
 - **Yours Wallet**: https://yours-wallet.gitbook.io/provider-api

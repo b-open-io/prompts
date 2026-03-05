@@ -288,6 +288,6 @@ const { tx: listTx } = await createOrdListings({
 
 ## Resources
 - [GitHub Repository](https://github.com/BitcoinSchema/js-1sat-ord)
-- [1Sat API Documentation](https://ordinals.gorillapool.io/api/docs)
+- [1Sat API Documentation](https://api.1sat.app/1sat)
 - [BSV SDK Documentation](@bsv/sdk)
 - [Ordinals Explorer](https://1satordinals.com)
