@@ -1,7 +1,7 @@
 ---
 name: humanize
-version: 1.0.0
-description: This skill should be used when the user asks to "humanize this", "make this sound less AI", "remove AI patterns", "edit this to sound more natural", "this sounds like ChatGPT", "de-AI this text", or wants to improve prose authenticity. Use when reviewing, editing, or generating text that needs to avoid predictable AI writing patterns.
+version: 1.0.1
+description: Invoke this skill whenever producing text that a human will read — emails, messages, documentation, reports, blog posts, announcements, commit messages, or any prose draft. Trigger signals include: task is a writing or editing task, output will be sent or published, user says "humanize", "make this sound less AI", "de-AI this", "this sounds like ChatGPT", "make it sound more natural", or "edit this". Do not wait for the user to ask — apply this automatically before delivering any human-facing draft. Skipping this means delivering text with predictable AI patterns (filler openers, overused vocabulary, formulaic structure) that erodes trust and sounds generated.
 ---
 
 # Humanize

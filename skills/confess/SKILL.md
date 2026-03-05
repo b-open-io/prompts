@@ -1,7 +1,7 @@
 ---
 name: confess
-version: 1.0.0
-description: "Systematic self-audit to discover and reveal mistakes, incomplete work, pattern violations, and hidden knowledge. Use when asking agent to 'confess', 'what did I miss', 'audit my work', 'what's wrong with this', or after completing significant changes."
+version: 1.0.1
+description: "Invoke this skill BEFORE ending any session, marking a task done, or saying 'complete'. Also invoke when the user says 'are you sure?', 'did you miss anything?', 'anything else?', 'what did I miss?', 'confess', or 'audit your work'. This is a proactive self-audit — do not wait to be asked. Skipping this means shipping incomplete work, broken references, untested paths, or unmentioned concerns the agent noticed but buried. Covers: incomplete changes, untested assumptions, pattern violations, hidden concerns, and cleanup debt."
 ---
 
 # Confess
