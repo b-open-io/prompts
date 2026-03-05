@@ -166,6 +166,56 @@ Our specialized agents use a consistent color scheme for easy identification:
 - 🔷 **Cyan** - documentation-writer (docs)
 - 🩷 **Pink** - research-specialist (info gathering)
 
+## Agent Avatar System (bopen.ai)
+
+Agent avatars are displayed on [bopen.ai](https://bopen.ai) and are stored in the bopen-ai repo at `public/images/agents/`.
+
+### How It Works
+
+```
+agents/*.md (this repo)          GitHub API fetch           bopen.ai site
+ ┌─────────────────┐          ┌──────────────────┐       ┌─────────────────┐
+ │ display_name:    │  push   │ marketplace.ts   │ build │ AgentAvatar.tsx  │
+ │   "Martha"       │───────→ │ fetches agent .md │──────→│ renders image   │
+ │                  │         │ from GitHub API   │       │                 │
+ └─────────────────┘          └──────────────────┘       └────────┬────────┘
+                                                                   │
+                                                     display_name.toLowerCase()
+                                                     .replace(/[^a-z0-9]+/g, "-")
+                                                                   │
+                                                                   ▼
+                                                    /images/agents/{slug}.png
+```
+
+- Image filename is derived from `display_name` in agent frontmatter (lowercased, non-alphanumeric → `-`)
+- All avatars are **1024x1024 PNG**, pixel art style
+
+### Avatar Prompt Template
+
+All avatars use a consistent Stardew Valley pixel art style. The documented prompts are in:
+**`~/code/bopen-ai/public/images/agents/prompts.json`**
+
+Base prompt template (from `meta.basePrompt`):
+```
+Stardew Valley retro 16-bit pixel art character portrait. Dark maroon background
+(#2b120a), steel blue (#8cb4cb) and amber (#e38f1a) accent colors. Head and
+shoulders portrait, expressive pixel face, no text.
+```
+
+### Generating an Avatar
+
+```bash
+cd ~/.claude/plugins/cache/b-open-io/gemskills/*/skills/generate-image
+bun run scripts/generate.ts "PROMPT" --style pixl --aspect 1:1 \
+  --output ~/code/bopen-ai/public/images/agents/NAME.png
+```
+
+- Use `--input reference.png` when a reference image exists
+- Always use `--style pixl`
+- Always include the base prompt colors and background in your prompt
+- After generation, update `prompts.json` with the prompt used
+- **Never use a made-up prompt style** — always follow the base template
+
 ## Tools Integration
 
 ### Active Tools We Use
