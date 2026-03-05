@@ -442,7 +442,8 @@ function parseArgs(): { skill?: string; model: string; concurrency: number } {
   const args = process.argv.slice(2);
   let skill: string | undefined;
   // Use haiku by default — cheap and fast. Pass --model to override.
-  let model = process.env.BENCHMARK_MODEL ?? "claude-haiku-4-5-20251001";
+  // "haiku" alias always resolves to the latest Haiku in the Claude CLI.
+  let model = process.env.BENCHMARK_MODEL ?? "haiku";
   let concurrency = 2;
 
   for (let i = 0; i < args.length; i++) {
@@ -477,7 +478,7 @@ function discoverSkills(repoRoot: string, filter?: string) {
 async function runClaude(
   prompt: string,
   opts: { model: string; skillPath?: string },
-): Promise<{ output: string; tokens: number; duration_ms: number }> {
+): Promise<{ output: string; tokens: number; duration_ms: number; resolvedModel?: string }> {
   const args = [
     "claude", "-p", prompt,
     "--model", opts.model,
@@ -512,7 +513,8 @@ async function runClaude(
     const tokens = parsed.usage?.total_tokens
       ?? (parsed.usage?.input_tokens + parsed.usage?.output_tokens)
       ?? 0;
-    return { output, tokens, duration_ms };
+    const resolvedModel = parsed.model as string | undefined;
+    return { output, tokens, duration_ms, resolvedModel };
   } catch {
     return { output: stdout, tokens: 0, duration_ms };
   }
@@ -629,6 +631,7 @@ async function main() {
   // Result storage
   const runResults = new Map<string, { output: string; tokens: number; duration_ms: number; cached: boolean }>();
   const gradeResults = new Map<string, { assertions: AssertionResult[]; pass_rate: number }>();
+  let resolvedModel: string | undefined; // actual model ID returned by the CLI (alias resolved)
 
   // Shared mutable job queue (run jobs first, grade jobs pushed as runs complete)
   const jobQueue: Job[] = [...runJobs];
@@ -660,6 +663,7 @@ async function main() {
               skillPath: job.variant === "with-skill" ? job.skillPath : undefined,
             });
 
+            if (!resolvedModel && result.resolvedModel) resolvedModel = result.resolvedModel;
             runResults.set(key, { ...result, cached: false });
             dispatch({ type: "RUN_DONE", skill: job.skill, evalId: job.evalCase.id, variant: job.variant, tokens: result.tokens, duration_ms: result.duration_ms, cached: false });
             triggerRerender();

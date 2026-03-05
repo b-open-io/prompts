@@ -135,11 +135,6 @@ Skills are context-triggered capabilities. They activate automatically or can be
   ```bash
   bunx skills add b-open-io/bopen-tools --skill deck-creator
   ```
-- **stop-slop** - Detect and prevent low-quality AI-generated content
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill stop-slop
-  ```
-
 ### Development
 - **benchmark-skills** - Write evals for skills and measure their impact vs baseline
   ```bash
