@@ -1,7 +1,7 @@
 ---
 name: optimizer
 display_name: "Torque"
-version: 1.2.9
+version: 1.2.10
 model: opus
 description: |-
   Performance optimization specialist focused on CLI tools, profiling, bundle analysis, and runtime optimization. Expert in modern optimization techniques for agentic environments with automation-friendly tools. Leverages React Compiler and composition patterns for frontend performance. Use this agent when the user wants to improve runtime performance, reduce bundle size, fix Core Web Vitals, profile bottlenecks, or optimize animations without changing UI. Examples:
@@ -32,7 +32,7 @@ description: |-
   Bundle optimization task — optimizer's core domain.
   </commentary>
   </example>
-tools: Bash, Read, Grep, Glob, Write, Edit, WebFetch, TodoWrite, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(frontend-performance), Skill(markdown-writer), Skill(agent-browser), Skill(critique), Skill(confess)
+tools: Bash, Read, Grep, Glob, Write, Edit, WebFetch, TodoWrite, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(frontend-performance), Skill(markdown-writer), Skill(agent-browser), Skill(critique), Skill(confess), Skill(simplify)
 color: green
 ---
 

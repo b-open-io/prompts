@@ -1,10 +1,10 @@
 ---
 name: data
 display_name: "Mr. Data Accumulator"
-version: 1.1.8
+version: 1.1.9
 model: sonnet
 description: Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(markdown-writer), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(markdown-writer), Skill(agent-browser), Skill(simplify)
 color: cyan
 ---
 

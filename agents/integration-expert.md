@@ -1,10 +1,10 @@
 ---
 name: integration-expert
 display_name: "Maxim"
-version: 1.2.9
+version: 1.2.10
 model: sonnet
 description: Implements API integrations, webhooks, third-party service connections, and Payload CMS integrations with proper error handling.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(payload), Skill(resend), Skill(markdown-writer), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(payload), Skill(resend), Skill(markdown-writer), Skill(agent-browser), Skill(simplify)
 color: green
 ---
 

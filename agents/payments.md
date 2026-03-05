@@ -1,9 +1,9 @@
 ---
 name: payments
 display_name: "Mina"
-version: 1.1.4
+version: 1.1.5
 description: Handles payment integrations, transactions, and financial operations with security best practices.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite, Skill(plaid-integration), Skill(markdown-writer), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite, Skill(plaid-integration), Skill(markdown-writer), Skill(agent-browser), Skill(simplify)
 model: sonnet
 color: green
 ---
