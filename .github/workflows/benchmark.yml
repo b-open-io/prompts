@@ -1,78 +1,51 @@
 name: Skill Benchmarks
 
+# Benchmarks are run locally (using your Claude session) before pushing.
+# This workflow just validates that results are present and not stale.
+# Run locally: bun run benchmark --skill <name>
+
 on:
   push:
     branches: [master]
     paths:
       - 'skills/**'
-      - 'scripts/benchmark.tsx'
-  schedule:
-    # Weekly on Sundays at 06:00 UTC — full re-run to catch model drift
-    - cron: '0 6 * * 0'
+      - 'benchmarks/latest.json'
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  benchmark:
+  validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Install Claude CLI
-        run: npm install -g @anthropic-ai/claude-code
-
-      - name: Detect changed skills (push only)
-        id: changed
-        if: github.event_name == 'push'
+      - name: Check benchmark results exist
         run: |
-          # Find skill directory names that changed in this push
-          SKILLS=$(git diff --name-only HEAD~1 HEAD \
+          if [ ! -f benchmarks/latest.json ]; then
+            echo "ERROR: benchmarks/latest.json missing. Run: bun run benchmark"
+            exit 1
+          fi
+          echo "Benchmark results present."
+          cat benchmarks/latest.json | python3 -c "
+import json, sys
+r = json.load(sys.stdin)
+print(f\"Skills: {r['total_skills']}, Evals: {r['total_evals']}, Generated: {r['generated_at']}\")
+"
+
+      - name: Warn if skills changed but results not updated
+        run: |
+          CHANGED_SKILLS=$(git diff --name-only HEAD~1 HEAD \
             | grep '^skills/' \
             | awk -F'/' '{print $2}' \
-            | sort -u \
-            | tr '\n' ' ' \
-            | xargs)
-          echo "skills=$SKILLS" >> "$GITHUB_OUTPUT"
-          echo "Changed skills: $SKILLS"
+            | sort -u)
 
-      - name: Run benchmarks (changed skills only)
-        if: github.event_name == 'push' && steps.changed.outputs.skills != ''
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          for skill in ${{ steps.changed.outputs.skills }}; do
-            if [ -f "skills/$skill/evals/evals.json" ]; then
-              echo "Benchmarking: $skill"
-              bun run scripts/benchmark.tsx --skill "$skill"
-            else
-              echo "Skipping $skill (no evals)"
+          if [ -n "$CHANGED_SKILLS" ]; then
+            RESULTS_CHANGED=$(git diff --name-only HEAD~1 HEAD | grep 'benchmarks/latest.json' || true)
+            if [ -z "$RESULTS_CHANGED" ]; then
+              echo "WARNING: Skills changed but benchmarks/latest.json was not updated."
+              echo "Changed skills: $CHANGED_SKILLS"
+              echo "Run: bun run benchmark --skill <name>"
             fi
-          done
-
-      - name: Run all benchmarks (schedule / manual)
-        if: github.event_name != 'push'
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: bun run scripts/benchmark.tsx
-
-      - name: Commit results
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add benchmarks/latest.json
-          git diff --cached --quiet || git commit -m "Update benchmark results [skip ci]"
-          git push
+          fi

@@ -355,7 +355,7 @@ Or ask the tester agent directly:
 
 ### CI Integration
 
-Benchmarks run automatically on push via `.github/workflows/benchmark.yml`. Only skills whose files changed in the push are re-benchmarked — no wasted tokens. Weekly scheduled runs re-benchmark everything to catch model drift. Results commit back to the repo, and bopen.ai picks them up via ISR — no manual steps needed.
+Benchmarks run **locally** using your existing Claude session — no API key needed. Commit `benchmarks/latest.json` alongside your skill changes and push. CI validates that results are present and warns if you changed a skill without updating its benchmarks. bopen.ai picks up the committed results via ISR.
 
 ---
 
