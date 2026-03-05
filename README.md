@@ -140,6 +140,10 @@ Skills are context-triggered capabilities. They activate automatically or can be
   ```
 
 ### Development
+- **benchmark-skills** - Write evals for skills and measure their impact vs baseline
+  ```bash
+  bunx skills add b-open-io/bopen-tools --skill benchmark-skills
+  ```
 - **npm-publish** - Publish packages with changelog and version management
   ```bash
   bunx skills add b-open-io/bopen-tools --skill npm-publish
@@ -275,13 +279,84 @@ prompts/
 ├── agents/                 # Specialized AI agents
 ├── commands/opl/           # OPL slash commands (copy to ~/.claude/commands/opl)
 ├── hooks/                  # Automation hooks (copy to ~/.claude/hooks)
-├── skills/                 # Agent skills
+├── skills/                 # Agent skills (each has SKILL.md + evals/)
+├── benchmarks/             # Benchmark results (latest.json)
+├── scripts/                # CLI tools (benchmark.tsx)
 ├── design/                 # Prompt templates (design)
 ├── development/            # Prompt templates (development)
 ├── references/             # Reference documentation
+├── tsconfig.json           # JSX config for benchmark CLI
 ├── README.md
 └── QUICKSTART.md
 ```
+
+## Skill Benchmarks
+
+Every skill ships with evals that prove it works. Each eval runs twice — once with the skill injected, once as a bare baseline — and an LLM judge scores each assertion. The delta is the signal.
+
+Live results: **[bopen.ai/benchmarks](https://bopen.ai/benchmarks)**
+
+### Eval Format
+
+Add evals alongside any skill at `skills/<name>/evals/evals.json`:
+
+```json
+[
+  {
+    "id": "basic-usage",
+    "prompt": "Write a short README for a CLI tool called 'greet'",
+    "assertions": [
+      {
+        "id": "has-install-section",
+        "text": "The output includes an installation section",
+        "type": "qualitative"
+      },
+      {
+        "id": "has-usage-section",
+        "text": "The output includes a usage section with an example command",
+        "type": "qualitative"
+      }
+    ]
+  }
+]
+```
+
+### Running the Benchmark CLI
+
+```bash
+# Run all skills with evals
+bun run benchmark
+
+# Run a single skill
+bun run benchmark --skill markdown-writer
+
+# Custom model or concurrency
+bun run benchmark --model claude-opus-4-6 --concurrency 5
+```
+
+Results are written to `benchmarks/latest.json` and automatically published to bopen.ai after each CI run.
+
+**Resume support:** Each eval result is cached by content hash (`benchmarks/cache/`). If a run is interrupted, restarting picks up where it left off — no tokens wasted.
+
+### Writing Evals for Your Skill
+
+Invoke the `benchmark-skills` skill to get guided help:
+
+```
+"Use the benchmark-skills skill to help me write evals for my skill"
+```
+
+Or ask the tester agent directly:
+
+```
+"Have the tester agent write evals for the x-research skill and run the benchmark"
+```
+
+### CI Integration
+
+Benchmarks run automatically on push via `.github/workflows/benchmark.yml`. Only skills whose files changed in the push are re-benchmarked — no wasted tokens. Weekly scheduled runs re-benchmark everything to catch model drift. Results commit back to the repo, and bopen.ai picks them up via ISR — no manual steps needed.
+
+---
 
 ## Key Features
 

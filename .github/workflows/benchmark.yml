@@ -5,9 +5,9 @@ on:
     branches: [master]
     paths:
       - 'skills/**'
-      - 'scripts/benchmark.ts'
+      - 'scripts/benchmark.tsx'
   schedule:
-    # Weekly on Sundays at 06:00 UTC
+    # Weekly on Sundays at 06:00 UTC — full re-run to catch model drift
     - cron: '0 6 * * 0'
   workflow_dispatch:
 
@@ -21,21 +21,53 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - name: Install Claude CLI
-        run: |
-          npm install -g @anthropic-ai/claude-code
+      - name: Install dependencies
+        run: bun install
 
-      - name: Run benchmarks
+      - name: Install Claude CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Detect changed skills (push only)
+        id: changed
+        if: github.event_name == 'push'
+        run: |
+          # Find skill directory names that changed in this push
+          SKILLS=$(git diff --name-only HEAD~1 HEAD \
+            | grep '^skills/' \
+            | awk -F'/' '{print $2}' \
+            | sort -u \
+            | tr '\n' ' ' \
+            | xargs)
+          echo "skills=$SKILLS" >> "$GITHUB_OUTPUT"
+          echo "Changed skills: $SKILLS"
+
+      - name: Run benchmarks (changed skills only)
+        if: github.event_name == 'push' && steps.changed.outputs.skills != ''
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          bun run scripts/benchmark.ts
+          for skill in ${{ steps.changed.outputs.skills }}; do
+            if [ -f "skills/$skill/evals/evals.json" ]; then
+              echo "Benchmarking: $skill"
+              bun run scripts/benchmark.tsx --skill "$skill"
+            else
+              echo "Skipping $skill (no evals)"
+            fi
+          done
+
+      - name: Run all benchmarks (schedule / manual)
+        if: github.event_name != 'push'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bun run scripts/benchmark.tsx
 
       - name: Commit results
         run: |
