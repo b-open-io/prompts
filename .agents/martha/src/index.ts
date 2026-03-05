@@ -1,5 +1,4 @@
-import { anthropic } from "@ai-sdk/anthropic";
-import { streamText } from "ai";
+import { gateway, streamText } from "ai";
 import { Hono } from "hono";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -65,14 +64,6 @@ app.get("/api/heartbeat", (c) =>
 // --- Chat (Vercel AI SDK compatible) ---
 
 app.post("/api/chat", async (c) => {
-	const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
-	if (!apiKey) {
-		return c.json(
-			{ success: false, error: "ANTHROPIC_API_KEY is not configured." },
-			503,
-		);
-	}
-
 	let payload: unknown;
 	try {
 		payload = await c.req.json();
@@ -119,14 +110,16 @@ app.post("/api/chat", async (c) => {
 
 	try {
 		const result = streamText({
-			model: anthropic("claude-sonnet-4-6"),
+			model: gateway("anthropic/claude-sonnet-4.6"),
 			system: systemPrompt,
 			messages: messages.map((m) => ({ role: m.role, content: m.content })),
 		});
 		return result.toDataStreamResponse();
-	} catch {
+	} catch (err) {
+		const message = err instanceof Error ? err.message : "Unknown error";
+		console.error("Chat error:", message);
 		return c.json(
-			{ success: false, error: "Failed to stream chat response." },
+			{ success: false, error: message },
 			502,
 		);
 	}
