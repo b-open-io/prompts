@@ -806,6 +806,28 @@ async function main() {
   const outDir = join(repoRoot, "benchmarks");
   if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
   const outPath = join(outDir, "latest.json");
+
+  // When running a subset of skills, merge into existing report instead of replacing
+  if (filterSkill && existsSync(outPath)) {
+    try {
+      const existing: BenchmarkReport = JSON.parse(readFileSync(outPath, "utf-8"));
+      const updatedSkillNames = new Set(skillResults.map(s => s.skill_name));
+      const mergedSkills = [
+        ...existing.skills.filter(s => !updatedSkillNames.has(s.skill_name)),
+        ...skillResults,
+      ];
+      const mergedTotalEvals = mergedSkills.reduce((s, sk) => s + sk.eval_count, 0);
+      const mergedAvg = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+      report.skills = mergedSkills;
+      report.total_skills = mergedSkills.length;
+      report.total_evals = mergedTotalEvals;
+      report.overall_pass_rate = Math.round(mergedAvg(mergedSkills.map(s => s.pass_rate)) * 1000) / 1000;
+      report.overall_baseline_pass_rate = Math.round(mergedAvg(mergedSkills.map(s => s.baseline_pass_rate)) * 1000) / 1000;
+    } catch {
+      // If existing file is corrupt, just overwrite
+    }
+  }
+
   writeFileSync(outPath, JSON.stringify(report, null, 2) + "\n");
 
   dispatch({ type: "COMPLETE", reportPath: outPath });

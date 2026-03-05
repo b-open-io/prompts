@@ -75,7 +75,26 @@ jobs:
           BENCHMARK_MODEL: claude-haiku-4-5-20251001
         run: bun run scripts/benchmark.tsx
 
+      - name: Validate results before committing
+        id: validate
+        run: |
+          if [ ! -f benchmarks/latest.json ]; then
+            echo "valid=false" >> "$GITHUB_OUTPUT"
+            echo "No benchmark file generated"
+            exit 0
+          fi
+          PASS_RATE=$(node -e "const r=JSON.parse(require('fs').readFileSync('benchmarks/latest.json','utf-8')); console.log(r.overall_pass_rate + r.overall_baseline_pass_rate)")
+          TOTAL_EVALS=$(node -e "const r=JSON.parse(require('fs').readFileSync('benchmarks/latest.json','utf-8')); console.log(r.total_evals)")
+          if [ "$TOTAL_EVALS" = "0" ] || [ "$PASS_RATE" = "0" ]; then
+            echo "valid=false" >> "$GITHUB_OUTPUT"
+            echo "Benchmark produced empty results (0 evals or 0 pass rate) — not committing"
+          else
+            echo "valid=true" >> "$GITHUB_OUTPUT"
+            echo "Results valid: $TOTAL_EVALS evals, combined rate $PASS_RATE"
+          fi
+
       - name: Commit results
+        if: steps.validate.outputs.valid == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
