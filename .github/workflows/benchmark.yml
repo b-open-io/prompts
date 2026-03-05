@@ -57,7 +57,7 @@ jobs:
         if: github.event_name == 'push' && steps.changed.outputs.skills != ''
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          BENCHMARK_MODEL: haiku
+          BENCHMARK_MODEL: claude-haiku-4-5-20251001
         run: |
           for skill in ${{ steps.changed.outputs.skills }}; do
             if [ -f "skills/$skill/evals/evals.json" ]; then
@@ -72,7 +72,7 @@ jobs:
         if: github.event_name != 'push'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          BENCHMARK_MODEL: haiku
+          BENCHMARK_MODEL: claude-haiku-4-5-20251001
         run: bun run scripts/benchmark.tsx
 
       - name: Commit results
