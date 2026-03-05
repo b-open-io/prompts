@@ -1,0 +1,56 @@
+{
+  "skill_name": "prd-creator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a PRD for a feature that lets users schedule recurring reports in our analytics dashboard. The reports should be emailed weekly or monthly with customizable filters.",
+      "expected_output": "A structured PRD that includes Shape Up appetite setting, Amazon Working Backwards press release, problem definition with Five Whys, solution shape, rabbit holes, and scope boundaries (what we're NOT building).",
+      "files": [],
+      "assertions": [
+        {
+          "id": "prd-1-working-backwards",
+          "text": "The PRD includes an Amazon Working Backwards section with a mock press release or customer quote.",
+          "type": "qualitative"
+        },
+        {
+          "id": "prd-1-appetite",
+          "text": "The PRD includes a Shape Up appetite section with a time budget (e.g., 2-week or 6-week batch) and scope constraints.",
+          "type": "qualitative"
+        },
+        {
+          "id": "prd-1-rabbit-holes",
+          "text": "The PRD identifies specific rabbit holes or risks that could derail the project.",
+          "type": "qualitative"
+        },
+        {
+          "id": "prd-1-not-building",
+          "text": "The PRD explicitly lists what is NOT being built to control scope.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write the problem definition section of a PRD for adding team workspaces to a single-user productivity app. Use the Five Whys technique.",
+      "expected_output": "A problem definition that starts with the surface problem and drills down using Five Whys to reach the root cause, identifies the job to be done, and documents current workarounds.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "prd-2-five-whys",
+          "text": "The response uses the Five Whys technique, asking 'why' iteratively to drill from surface problem to root cause.",
+          "type": "qualitative"
+        },
+        {
+          "id": "prd-2-jtbd",
+          "text": "The response includes a Job to Be Done statement describing what users are trying to accomplish.",
+          "type": "qualitative"
+        },
+        {
+          "id": "prd-2-workarounds",
+          "text": "The response documents current workarounds that users employ in the absence of the feature.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}

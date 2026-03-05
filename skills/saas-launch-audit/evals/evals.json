@@ -1,0 +1,56 @@
+{
+  "skill_name": "saas-launch-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm about to launch a B2B SaaS product for developer teams. What should I audit before launch? Give me a structured checklist.",
+      "expected_output": "A comprehensive audit checklist covering at least: pre-launch validation, pricing, payments, AI economics (if applicable), discovery/SEO, competitors, social presence, legal compliance, trust infrastructure, and launch day operations.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "sla-1-pricing-section",
+          "text": "The checklist includes a pricing audit section that covers pricing page clarity, tier structure, and competitive positioning.",
+          "type": "qualitative"
+        },
+        {
+          "id": "sla-1-legal-section",
+          "text": "The checklist includes a legal/compliance section covering privacy policy, terms of service, and cookie consent.",
+          "type": "qualitative"
+        },
+        {
+          "id": "sla-1-trust-infrastructure",
+          "text": "The checklist includes trust infrastructure items such as uptime monitoring, status page, error tracking, or logging.",
+          "type": "qualitative"
+        },
+        {
+          "id": "sla-1-pass-fail",
+          "text": "Items in the checklist use PASS/FAIL or YES/NO states (not vague recommendations) so the audit is repeatable.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My SaaS uses GPT-4 for AI features. What should I check regarding AI economics before launch?",
+      "expected_output": "A response covering AI unit economics: cost per request, margin analysis, rate limiting, caching strategies, model selection for cost optimization, and usage-based pricing considerations.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "sla-2-cost-per-request",
+          "text": "The response discusses calculating cost per API request or per-user AI cost.",
+          "type": "qualitative"
+        },
+        {
+          "id": "sla-2-margin",
+          "text": "The response discusses margin analysis — ensuring AI costs don't eat into pricing margins.",
+          "type": "qualitative"
+        },
+        {
+          "id": "sla-2-rate-limiting",
+          "text": "The response mentions rate limiting or usage caps to prevent cost runaway.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}

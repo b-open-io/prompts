@@ -1,0 +1,56 @@
+{
+  "skill_name": "hunter-skeptic-referee",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to do a thorough bug review of a codebase. Explain how you would structure a three-phase adversarial code review to maximize bug-finding accuracy while minimizing false positives.",
+      "expected_output": "A description of the three-phase workflow: Hunter (aggressive bug finding), Skeptic (adversarial challenge), Referee (ground truth arbitration). Should mention context isolation between phases, scoring incentives, and specific agent roles.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "hsr-1-three-phases",
+          "text": "The response describes three distinct phases with different roles: a bug finder (Hunter), an adversarial challenger (Skeptic), and a final arbiter (Referee).",
+          "type": "qualitative"
+        },
+        {
+          "id": "hsr-1-context-isolation",
+          "text": "The response explains that each phase runs in isolated context — the Skeptic should not see the Hunter's confidence/reasoning, and the Referee should not see either agent's emotional register.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hsr-1-scoring-incentives",
+          "text": "The response mentions scoring incentives that exploit sycophancy: the Hunter is rewarded for finding bugs, the Skeptic gets points for disproving but penalized 2x for wrongly dismissing, and the Referee is told ground truth exists.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hsr-1-sycophancy",
+          "text": "The response explains that the workflow is designed to neutralize sycophancy or confirmation bias by preventing agents from anchoring on each other's judgments.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "What are the context boundary rules for a hunter-skeptic-referee code review? What information does each phase get access to?",
+      "expected_output": "Clear specification of what each phase receives: Hunter gets full codebase, Skeptic gets only the bug list and referenced code snippets (not full codebase), Referee gets Hunter findings and Skeptic verdicts only.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "hsr-2-hunter-gets-codebase",
+          "text": "The response states that the Hunter/bug-finder gets access to the full codebase.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hsr-2-skeptic-limited",
+          "text": "The response states that the Skeptic gets only the bug list and specific code snippets referenced in findings — NOT the full codebase or the Hunter's reasoning.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hsr-2-referee-both",
+          "text": "The response states that the Referee gets the Hunter's findings AND the Skeptic's verdicts, but nothing else.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}
