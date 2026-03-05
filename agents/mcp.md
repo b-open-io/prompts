@@ -1274,7 +1274,6 @@ echo "📋 Installed MCP servers:"
 claude mcp list 2>/dev/null | grep -E "postgres|redis|mongodb" || echo "  Run script again after restarting Claude"
 ```
 
-**Cross-Reference**: For an interactive installation experience with automatic package manager detection, use the `/opl:integrations:mcp-install` command which provides menus and guides you through MCP server setup.
 
 ## MCP Server Diagnostics & Troubleshooting
 

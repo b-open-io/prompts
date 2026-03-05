@@ -101,7 +101,7 @@ prompts/
 ├── .claude-plugin/
 │   └── plugin.json      # Plugin manifest
 ├── agents/              # Specialized AI sub-agents (19+ files)
-├── commands/            # User commands with OPL namespace
+├── commands/            # User commands (category subdirectories)
 ├── skills/              # Skill definitions with scripts
 └── hooks/               # Automation hooks
 ```
@@ -114,7 +114,7 @@ This plugin is distributed via the Claude Code marketplace:
 
 ### Root-Level Directories
 - **`agents/`** - Specialized AI sub-agents
-- **`commands/`** - User commands with OPL namespace categories
+- **`commands/`** - User commands (category subdirectories or root level)
 - **`skills/`** - Skill definitions with SKILL.md and scripts/
 - **`hooks/`** - Automation hooks
 
@@ -260,7 +260,7 @@ Prefer the split pane script for the best TUI experience on macOS, or `--web --o
 
 ## Command Management
 
-Commands in this repository are organized under the OPL namespace and are automatically distributed via the plugin system. Users install commands by installing the plugin:
+Commands in this repository are automatically distributed via the plugin system. Users install commands by installing the plugin:
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
@@ -319,23 +319,20 @@ When creating new prompts or commands:
 
 ### Content Organization
 - **Prompts** go in category directories (design/, development/, infrastructure/)
-- **Commands** go in root `commands/` with OPL namespace subdirectories
+- **Commands** go in root `commands/` with optional category subdirectories
 - **Agents** go in root `agents/` directory
 - **Skills** go in root `skills/` directory
 - **Hooks** go in root `hooks/` directory
 
-### Namespace Convention for Commands
-Commands use a three-part namespace to avoid conflicts:
-- **Format**: `/organization:category:command`
-- **Example**: `/opl:utils:find` or `/opl:dev:lint`
+### Command Naming Convention
+Commands map directly from their file path under `commands/`:
+- **Root level**: `commands/name.md` → `/name`
+- **With category**: `commands/category/name.md` → `/category:name`
 
-OPL command categories:
-- `opl:utils:` - General utilities (find, search)
-- `opl:dev:` - Development tools (lint, enhance)
-- `opl:design:` - Design and UI tools
-- `opl:docs:` - Documentation generation
-- `opl:integrations:` - Third-party integrations
-- `opl:mcp:` - Model Context Protocol servers
+Current commands:
+- `/bug-hunt` - Root-level bug hunting command
+- `/docs:prd` - Product requirements document generation
+- `/utils:context` - Context gathering utility
 
 ## Testing Prompts
 
@@ -398,7 +395,7 @@ When editing files in this repository, especially command and prompt files, expl
 "Have the documentation-writer update the agent descriptions"
 ```
 
-This ensures that commands follow our established patterns and maintain consistency across the OPL ecosystem.
+This ensures that commands follow our established patterns and maintain consistency across the plugin ecosystem.
 
 ## Skill Development Resources
 

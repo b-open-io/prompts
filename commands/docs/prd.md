@@ -9,7 +9,7 @@ argument-hint: <project-description> - Brief description of your project
 If the arguments contain "--help", show this help:
 **prd** - Create comprehensive Product Requirements Documents combining Shape Up, Amazon Working Backwards, and traditional approaches
 
-**Usage:** `/opl:docs:prd <project-description>`
+**Usage:** `/docs:prd <project-description>`
 
 **Description:**
 Interactive PRD creation that combines the best of Shape Up methodology, Amazon's Working Backwards approach, and traditional PRD practices. Uses a conversational slot-filling process to gather all necessary information.
@@ -19,8 +19,8 @@ Interactive PRD creation that combines the best of Shape Up methodology, Amazon'
 - `--help`                : Show this help message
 
 **Examples:**
-- `/opl:docs:prd "AI-powered code review tool"`
-- `/opl:docs:prd "Mobile app for habit tracking"`
+- `/docs:prd "AI-powered code review tool"`
+- `/docs:prd "Mobile app for habit tracking"`
 
 **Features:**
 - Shape Up: Appetite setting, rabbit hole identification

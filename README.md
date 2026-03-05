@@ -10,7 +10,7 @@
 
 This repository provides:
 - **Specialized AI Agents** - Expert sub-agents for specific tasks (design, security, documentation, content, payments, auth, etc.)
-- **Slash Commands** - Instant automation tools under the OPL namespace
+- **Slash Commands** - Instant automation tools for common workflows
 - **Automation Hooks** - Background workflows to enhance development
 - **Powerful Prompts** - Reusable templates for complex operations
 
@@ -195,27 +195,11 @@ Skills are context-triggered capabilities. They activate automatically or can be
 
 ## Slash Commands
 
-Commands follow the format `/opl:category:command [arguments]`:
+Commands use category subdirectories: `/category:command` or `/command` for root-level commands.
 
-### 🛠️ Development (`dev`)
-- `/opl:dev:lint` - Run linting and fix code quality issues
-- `/opl:dev:enhance` - Improve code with AI assistance
-- `/opl:dev:create-prompt` - Create new prompt templates
-- `/opl:dev:update-prompt` - Update existing prompts
-
-### 🎨 Design (`design`)
-- `/opl:design:design` - Get AI-powered design assistance
-- `/opl:design:ai-inspiration` - Generate design inspiration and concepts
-
-### 📚 Documentation (`docs`)
-- `/opl:docs:prd` - Create comprehensive PRDs with Shape Up + Working Backwards methodology
-
-### 🔗 Integrations (`integrations`)
-- `/opl:integrations:tanstack` - TanStack Query integration
-
-### 🔧 Utilities (`utils`)
-- `/opl:utils:find` - Advanced file and code search
-- `/opl:utils:context` - Generate contextual information
+- `/bug-hunt` - Adversarial bug hunt with 3 isolated agents (hunter, skeptic, referee)
+- `/docs:prd` - Create comprehensive PRDs with Shape Up + Working Backwards methodology
+- `/utils:context` - Generate repo context snapshot for agents
 
 ## Automation Hooks
 
@@ -273,13 +257,14 @@ See the [claude-peacock plugin](https://github.com/b-open-io/claude-peacock) for
 ```
 prompts/
 ├── agents/                 # Specialized AI agents
-├── commands/opl/           # OPL slash commands (copy to ~/.claude/commands/opl)
+├── commands/               # Slash commands
+│   ├── bug-hunt.md         #   /bug-hunt
+│   ├── docs/               #   /docs:* commands
+│   └── utils/              #   /utils:* commands
 ├── hooks/                  # Automation hooks (copy to ~/.claude/hooks)
 ├── skills/                 # Agent skills (each has SKILL.md + evals/)
 ├── benchmarks/             # Benchmark results (latest.json)
 ├── scripts/                # CLI tools (benchmark.tsx)
-├── design/                 # Prompt templates (design)
-├── development/            # Prompt templates (development)
 ├── references/             # Reference documentation
 ├── tsconfig.json           # JSX config for benchmark CLI
 ├── README.md
@@ -383,10 +368,6 @@ Agents can be explicitly requested for specific tasks:
 "Ask the design-specialist about component library best practices"
 ```
 
-### Chaining Commands
-
-If you use OPL commands, you can chain them for complex workflows. See that repository for details.
-
 ### Custom Workflows
 
 Create project-specific automation by combining:
@@ -397,31 +378,20 @@ Create project-specific automation by combining:
 
 ## Common Use Cases
 
-### Starting a New Project
+### Bug Hunting
 ```bash
-# Use init-prism with our prompts
-init-prism create my-app --template bitcoin-auth
-
-# Set up integrations
-/opl:integrations:auth-smoke
-/opl:integrations:tanstack
-```
-
-### Code Quality
-```bash
-# Audit and fix code
-/opl:dev:lint
-/opl:dev:enhance
-"Ask the code-auditor to review security vulnerabilities"
-"Have the tester create comprehensive tests"
+/bug-hunt
 ```
 
 ### Documentation
 ```bash
-# Generate comprehensive docs
-/opl:docs:prd "Project Name"
-/opl:docs:check
+/docs:prd "Project Name"
 "Have the documentation-writer create a comprehensive README"
+```
+
+### Agent Context
+```bash
+/utils:context
 ```
 
 
@@ -482,7 +452,7 @@ Run `/context` to see token usage and which skills are being truncated.
 ## Contributing
 
 When adding new content:
-1. **Commands** go in `commands/opl/[category]/`
+1. **Commands** go in `commands/` (root-level) or `commands/[category]/`
 2. **Agents** go in `agents/`
 3. **Hooks** go in `hooks/`
 4. **Skills** go in `skills/`

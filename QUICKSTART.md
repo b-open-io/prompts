@@ -123,7 +123,7 @@ Ask explicitly for the agent you want, e.g.:
 
 ### Slash Commands
 
-This repo includes OPL slash commands (see `user/.claude/commands/opl/`). After copying, you can run `/opl:*` commands anywhere.
+This repo includes slash commands (see `commands/`). After installing the plugin, you can run them as `/category:name` or `/name`.
 
 ## Installing Skills
 
