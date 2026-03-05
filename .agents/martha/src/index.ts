@@ -1,4 +1,4 @@
-import { gateway, streamText } from "ai";
+import { gateway, streamText, type UIMessage } from "ai";
 import { Hono } from "hono";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -114,14 +114,12 @@ app.post("/api/chat", async (c) => {
 			system: systemPrompt,
 			messages: messages.map((m) => ({ role: m.role, content: m.content })),
 		});
-		return result.toDataStreamResponse();
+
+		return result.toUIMessageStreamResponse();
 	} catch (err) {
 		const message = err instanceof Error ? err.message : "Unknown error";
 		console.error("Chat error:", message);
-		return c.json(
-			{ success: false, error: message },
-			502,
-		);
+		return c.json({ success: false, error: message }, 502);
 	}
 });
 
