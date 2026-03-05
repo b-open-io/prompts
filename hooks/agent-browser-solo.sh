@@ -72,7 +72,8 @@ if [[ "$tool_name" == "WebFetch" ]]; then
 
   result=$(
     "$AGENT_BROWSER" open "$url" 2>&1 &&
-    "$AGENT_BROWSER" snapshot 2>&1
+    "$AGENT_BROWSER" snapshot -i 2>&1 &&
+    "$AGENT_BROWSER" close 2>&1
   ) || result="agent-browser error (exit $?): $result"
 
   message="[agent-browser intercepted WebFetch]
@@ -87,7 +88,8 @@ elif [[ "$tool_name" == "WebSearch" ]]; then
 
   result=$(
     "$AGENT_BROWSER" open "https://www.google.com/search?q=${encoded}" 2>&1 &&
-    "$AGENT_BROWSER" snapshot 2>&1
+    "$AGENT_BROWSER" snapshot -i -c 2>&1 &&
+    "$AGENT_BROWSER" close 2>&1
   ) || result="agent-browser error (exit $?): $result"
 
   message="[agent-browser intercepted WebSearch]

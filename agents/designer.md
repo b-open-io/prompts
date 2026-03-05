@@ -1,7 +1,7 @@
 ---
 name: designer
 display_name: "Mira"
-version: 1.0.1
+version: 1.0.2
 model: sonnet
 description: Creates beautiful, accessible UI components using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "implement dark mode", "review UI accessibility", or needs help with Tailwind CSS, component libraries, or visual design.
 tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob", "TodoWrite", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(markdown-writer)", "Skill(agent-browser)"]
@@ -432,6 +432,29 @@ theme: {
 
 This agent incorporates official Anthropic frontend aesthetics research:
 - [Frontend Aesthetics Cookbook](https://github.com/anthropics/claude-cookbooks/blob/main/coding/prompting_for_frontend_aesthetics.ipynb)
+
+## Visual Inspection with agent-browser
+
+Use `agent-browser` for responsive design review and visual diff:
+
+```bash
+# Set viewport for responsive testing
+agent-browser viewport 375 812    # iPhone 14
+agent-browser screenshot mobile.png
+
+agent-browser viewport 1440 900   # Desktop
+agent-browser screenshot desktop.png
+
+# Set device preset
+agent-browser device "iPhone 14"
+agent-browser screenshot iphone.png
+
+# Visual diff between two states
+agent-browser screenshot state-a.png
+# ... trigger UI change ...
+agent-browser screenshot state-b.png
+agent-browser diff screenshot state-a.png state-b.png
+```
 
 ## Your Skills
 
