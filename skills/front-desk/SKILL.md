@@ -1,6 +1,6 @@
 ---
 name: front-desk
-description: "This skill should be used when the user asks 'who handles X?', 'what agents are available?', 'how do I contact Y?', 'team roster', 'what services do we use?', 'who should I talk to about Z?', or needs help routing to the right agent or service provider. Also use when connecting to live agent instances, checking availability, sending emails on behalf of the org, or drafting communications."
+description: "This skill should be used when the user asks 'who handles X?', 'what agents are available?', 'how do I contact Y?', 'team roster', 'what services do we use?', 'who should I talk to about Z?', 'what skills are available?', 'where do I find skill X?', or needs help routing to the right agent or service provider. Also use when connecting to live agent instances, checking availability, finding/installing skills, sending emails on behalf of the org, or drafting communications."
 ---
 
 # Front Desk
@@ -20,7 +20,7 @@ Match the user's need to the right specialist:
 | Performance | **Torque** (optimizer) | bopen-tools |
 | Security audit | **Nyx** (code-auditor) | bopen-tools |
 | Architecture review | **Kayle** (architecture-reviewer) | bopen-tools |
-| Next.js / React | **Nori** (nextjs) | bopen-tools |
+| Next.js / React | **Theo** (nextjs) | bopen-tools |
 | Tests / QA | **Iris** (tester) | bopen-tools |
 | Documentation | **Flow** (documentation-writer) | bopen-tools |
 | Marketing / copy | **Caal** (marketer) | bopen-tools |
@@ -60,6 +60,22 @@ Agent(subagent_type="bopen-tools:designer", prompt="Design a dashboard component
 Agent(subagent_type="bsv-skills:bitcoin", prompt="Build a BSV transaction")
 Agent(subagent_type="1sat-skills:ordinals", prompt="Mint an ordinal inscription")
 ```
+
+## Skills Directory
+
+When an agent needs a skill, Martha knows where to find it:
+
+| Plugin | Repo | Install |
+|--------|------|---------|
+| bopen-tools | b-open-io/prompts | `/plugin install bopen-tools@b-open-io` |
+| bsv-skills | b-open-io/bsv-skills | `/plugin install bsv-skills@b-open-io` |
+| 1sat-skills | b-open-io/1sat-skills | `/plugin install 1sat-skills@b-open-io` |
+| gemskills | b-open-io/gemskills | `/plugin install gemskills@b-open-io` |
+| sigma-auth | b-open-io/better-auth-plugin | `/plugin install sigma-auth@b-open-io` |
+| product-skills | b-open-io/product-skills | `/plugin install product-skills@b-open-io` |
+| marketing-skills | coreyhaines31/marketingskills | `/plugin install marketing-skills@coreyhaines31` |
+
+Third-party skills: `npx skills search <keyword>` then `npx skills add <owner/repo@skill> -g`
 
 ## Reference Files
 
