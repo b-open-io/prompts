@@ -1,7 +1,7 @@
 ---
 name: agent-builder
 display_name: "Satchmo"
-version: 1.4.1
+version: 1.4.2
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(gemskills:visual-planner), Skill(simplify), Skill(hunter-skeptic-referee), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
@@ -1412,6 +1412,59 @@ Vercel provides first-class resources for AI agents at [vercel.com/docs/agent-re
 - **`vercel api`** — Authenticated HTTP requests to the Vercel REST API directly from CLI. Use `vercel api list` to discover all endpoints. Supports pagination, custom headers, file input, and output generation (`--generate=curl`).
 
 When building agent systems that deploy to Vercel, reference these resources and delegate infrastructure setup to the devops agent.
+
+### bash-tool — Skills in AI SDK Agents
+
+The `bash-tool` package ([vercel-labs/bash-tool](https://github.com/vercel-labs/bash-tool)) lets AI SDK agents discover and use skills via sandboxed Bash execution. Skills follow the same `SKILL.md` format we use everywhere.
+
+```bash
+bun add bash-tool
+```
+
+```typescript
+import { ToolLoopAgent } from "ai"
+import {
+  experimental_createSkillTool as createSkillTool,
+  createBashTool,
+} from "bash-tool"
+
+// 1. Discover skills from a directory
+const { loadSkill, skills, files, instructions } = await createSkillTool({
+  skillsDirectory: "./skills",
+})
+
+// 2. Create sandboxed bash with skill files available
+const { tools } = await createBashTool({
+  files,
+  extraInstructions: instructions,
+})
+
+// 3. Give agent both tools — it sees skill names, loads on demand, runs scripts
+const agent = new ToolLoopAgent({
+  model: "anthropic/claude-haiku-4.5",
+  tools: { loadSkill, bash: tools.bash },
+})
+```
+
+**Skill directory structure** — same as our plugin skills:
+```
+skills/
+├── csv/
+│   ├── SKILL.md          # YAML frontmatter + instructions
+│   └── scripts/          # Optional executable scripts
+│       ├── analyze.sh
+│       └── filter.sh
+└── text/
+    ├── SKILL.md
+    └── scripts/
+        └── search.sh
+```
+
+**Two modes:**
+- **Script-based skills**: `SKILL.md` + bash scripts in `scripts/` — agent runs them in sandbox
+- **Instruction-only skills**: Just `SKILL.md` — no bash needed, use `createSkillTool` standalone without `createBashTool`
+
+**Key design**: Progressive disclosure — agent initially sees only skill names, loads full instructions on demand via `loadSkill()`. Community skills available at [skills.sh](https://skills.sh/).
 
 ## ClawNet — Live Agent Deployment
 
