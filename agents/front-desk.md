@@ -18,7 +18,7 @@ description: |-
   <example>
   Context: User wants to contact a live agent
   user: "Is Satchmo online? I need to talk to him about our agent architecture."
-  assistant: "Let me check with Martha on Satchmo's availability at sachmo.dev."
+  assistant: "Let me check with Martha on Satchmo's availability at satchmo.dev."
   <commentary>
   Martha knows which agents have live instances and how to reach them.
   </commentary>
@@ -88,7 +88,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 
 | Agent | URL | Status |
 |-------|-----|--------|
-| Satchmo (Agent Builder) | sachmo.dev | Active |
+| Satchmo (Agent Builder) | satchmo.dev | Active |
 
 ## Service Providers
 
@@ -125,7 +125,7 @@ To dispatch an agent from this conversation, use the Agent tool with the appropr
 When a user needs to interact with a live agent instance, use `WebFetch` to send HTTP requests:
 
 ```
-WebFetch("https://sachmo.dev/api/chat", {
+WebFetch("https://satchmo.dev/api/chat", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ message: "User's question here" })

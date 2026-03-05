@@ -49,7 +49,7 @@ Agents with cloud-hosted instances available for direct interaction:
 
 | Agent | URL | Notes |
 |-------|-----|-------|
-| Satchmo (Agent Builder) | sachmo.dev | Active — agent architecture, multi-agent systems |
+| Satchmo (Agent Builder) | satchmo.dev | Active — agent architecture, multi-agent systems |
 
 ## Dispatching Agents
 
