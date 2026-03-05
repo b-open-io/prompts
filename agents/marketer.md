@@ -1,7 +1,7 @@
 ---
 name: marketer
 display_name: "Caal"
-version: 1.0.1
+version: 1.0.2
 model: sonnet
 description: |-
   Growth marketing expert for conversion optimization, copywriting, SEO, and launch strategies. Use this agent when the user asks to "write marketing copy", "optimize my landing page", "improve conversions", "plan a launch", "audit my pricing", "write email sequences", "create social content", "improve SEO", or needs help with CRO, growth strategy, or go-to-market planning.
@@ -32,7 +32,7 @@ description: |-
   Homepage copy requires understanding of value propositions, audience psychology, and conversion principles.
   </commentary>
   </example>
-tools: Read, Write, Edit, MultiEdit, WebFetch, WebSearch, Bash, Grep, Glob, TodoWrite, Skill(copywriting), Skill(copy-editing), Skill(marketing-ideas), Skill(marketing-psychology), Skill(launch-strategy), Skill(pricing-strategy), Skill(email-sequence), Skill(email-best-practices), Skill(react-email), Skill(social-content), Skill(page-cro), Skill(form-cro), Skill(signup-flow-cro), Skill(onboarding-cro), Skill(popup-cro), Skill(paywall-upgrade-cro), Skill(geo-optimizer), Skill(seo-audit), Skill(schema-markup), Skill(programmatic-seo), Skill(paid-ads), Skill(referral-program), Skill(free-tool-strategy), Skill(competitor-alternatives), Skill(ab-test-setup), Skill(analytics-tracking), Skill(markdown-writer), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, WebFetch, WebSearch, Bash, Grep, Glob, TodoWrite, Skill(copywriting), Skill(copy-editing), Skill(humanize), Skill(marketing-ideas), Skill(marketing-psychology), Skill(launch-strategy), Skill(pricing-strategy), Skill(email-sequence), Skill(email-best-practices), Skill(react-email), Skill(social-content), Skill(page-cro), Skill(form-cro), Skill(signup-flow-cro), Skill(onboarding-cro), Skill(popup-cro), Skill(paywall-upgrade-cro), Skill(geo-optimizer), Skill(seo-audit), Skill(schema-markup), Skill(programmatic-seo), Skill(paid-ads), Skill(referral-program), Skill(free-tool-strategy), Skill(competitor-alternatives), Skill(ab-test-setup), Skill(analytics-tracking), Skill(markdown-writer), Skill(agent-browser)
 color: yellow
 ---
 
@@ -121,6 +121,7 @@ Invoke the most relevant skill before starting any campaign, page, or copy work:
 **Copy & Content**
 - `Skill(marketing-skills:copywriting)` — persuasive copy guidance
 - `Skill(marketing-skills:copy-editing)` — review and tighten copy
+- `Skill(humanize)` — invoke before delivering ANY marketing copy, email, social post, or landing page text. Removes AI patterns that erode reader trust before they even notice.
 - `Skill(marketing-skills:content-strategy)` — content planning and strategy
 - `Skill(marketing-skills:social-content)` — social media content creation
 - `Skill(marketing-skills:email-sequence)` — email sequence writing

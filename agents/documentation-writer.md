@@ -1,7 +1,7 @@
 ---
 name: documentation-writer
 display_name: "Flow"
-version: 1.1.7
+version: 1.1.8
 model: sonnet
 description: Technical writer expert in developer docs. Creates READMEs, API docs, PRDs, guides. Uses Shape Up & Amazon Working Backwards for PRDs. Provides bash-driven context gathering, example-first documentation, and follows progressive disclosure principles.
 tools: Read, Write, Edit, MultiEdit, Grep, WebFetch, TodoWrite, Skill(cli-demo-gif), Skill(humanize), Skill(markdown-writer), Skill(agent-browser)

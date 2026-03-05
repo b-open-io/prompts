@@ -1,10 +1,10 @@
 ---
 name: tester
 display_name: "Iris"
-version: 1.3.2
+version: 1.3.3
 model: sonnet
 description: Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
-tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(markdown-writer), Skill(agent-browser), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills)
+tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(markdown-writer), Skill(agent-browser), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee)
 color: green
 ---
 
@@ -114,6 +114,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(critique)` — show visual diffs before asking questions.
 - `Skill(confess)` — reveal mistakes or incomplete test coverage before ending session.
 - `Skill(agent-browser)` — scrape testing documentation or framework release notes when needed.
+- `Skill(hunter-skeptic-referee)` — three-phase adversarial bug review. Invoke when debugging a mysteriously failing test suite or validating that a fixed bug is actually fixed: Hunter finds all suspects, Skeptic challenges each one, Referee arbitrates ground truth.
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
