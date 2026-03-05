@@ -1,138 +1,138 @@
 ---
 name: hunter-skeptic-referee
-description: This skill should be used when the user asks to "find bugs", "do a thorough code review", "run a security audit", "hunt for bugs", "check for correctness issues", or "review this code for edge cases". This skill implements a three-phase adversarial bug-finding workflow that neutralizes sycophancy by isolating each reviewer's context. Invoke before any major bug hunt, code review, or security audit.
-version: 1.0.0
+description: "This skill should be used when the user asks to 'find bugs', 'do a thorough code review', 'run a security audit', 'hunt for bugs', 'check for correctness issues', or 'review this code for edge cases'. Orchestrates a three-phase adversarial review using three isolated agents — Nyx (Hunter), Kayle (Skeptic), Iris (Referee) — to neutralize sycophancy and produce high-fidelity bug reports."
+version: 1.1.0
 ---
 
 # Hunter / Skeptic / Referee
 
-A three-phase adversarial code review workflow designed by danpeguine (@danpeguine). Each phase runs in an isolated context to prevent sycophancy contamination — no agent knows what any other agent "wants" to hear.
+An adversarial code review workflow designed by danpeguine (@danpeguine). Three agents run in isolated contexts — no agent sees what any other agent "wants" to hear. This eliminates sycophantic confirmation bias and produces ground-truth bug reports.
 
 ## Why Isolated Contexts
 
-The core insight: when a single agent both finds bugs and evaluates them, it anchors on its own earlier judgments. By resetting context between phases and giving each agent only what it needs, every verdict is genuinely independent. The Skeptic cannot see the Hunter's enthusiasm. The Referee cannot see the Skeptic's skepticism. Each agent reasons from first principles.
+When a single agent both finds bugs and evaluates them, it anchors on its own earlier judgments. By resetting context between phases and giving each agent only what it needs, every verdict is genuinely independent. The Skeptic cannot see the Hunter's enthusiasm. The Referee cannot see the Skeptic's skepticism.
 
-## The Three-Phase Workflow
+## The Three Agents
 
-### Phase 1 — Hunter
+| Phase | Agent | Role |
+|-------|-------|------|
+| 1. Hunter | **Nyx** (code-auditor) | Find every possible bug. Maximize recall. False positives OK. |
+| 2. Skeptic | **Kayle** (architecture-reviewer) | Challenge every finding. Disprove false positives. 2x penalty for wrong dismissals. |
+| 3. Referee | **Iris** (tester) | Final arbiter. Weigh both sides. Produce ground truth. |
 
-**Goal:** Find every real bug. Maximize recall at the cost of precision.
+## How to Run
 
-**Context to provide:** Full codebase (or the full relevant module/file set).
+### Step 1 — Spawn the Hunter (Nyx)
 
-**Scoring incentive:** Hunter is scored on thoroughness. Finding a real bug that gets confirmed is rewarded. Missing a bug is penalized more than a false positive.
+Dispatch the code-auditor agent with the full codebase in context. Tell Nyx to operate in **Hunter mode**.
 
-**Focus areas:**
-- Off-by-one errors
-- Null/undefined handling gaps
-- Race conditions and concurrency issues
-- Incorrect assumptions about inputs or state
-- Missing error handling
-- Security vulnerabilities (injection, auth bypass, data exposure)
-- Data corruption risks
+```
+Agent(subagent_type="bopen-tools:code-auditor", prompt="
+HUNTER MODE: You are the Hunter in a three-phase adversarial review.
 
-**Output format:** For each issue found:
-- Clear description of the issue
-- Exact code location (file, line, function)
-- Explanation of why it is a bug or failure mode
-- Severity score: `+1` (minor), `+5` (significant), `+10` (critical / security / data loss)
+Analyze the following codebase thoroughly and identify ALL potential bugs, issues, and anomalies.
 
-**Hunter system prompt:**
+Scoring:
+- +1: Minor (edge cases, cosmetic)
+- +5: Significant (functional issues, data inconsistencies)
+- +10: Critical (security vulnerabilities, data loss, crashes)
 
-> You are a senior engineer reviewing code for correctness and edge cases.
->
-> Your job is to find as many real bugs and correctness issues as possible. For each issue found:
-> - Describe the issue clearly
-> - Show the exact code location
-> - Explain why it's a bug or failure mode
-> - Assign a severity score: +1 (minor), +5 (significant), +10 (critical/security/data loss)
->
-> Focus on: off-by-one errors, null/undefined handling, race conditions, incorrect assumptions, missing error handling, security issues, data corruption risks.
->
-> Be aggressive. Find everything. You are scored on thoroughness.
+Maximize your score. Be aggressive. Report anything that COULD be a bug. Missing a real bug is worse than a false positive.
 
----
+For each bug:
+1. File and line number
+2. Description of the issue
+3. Why it's a bug or failure mode
+4. Severity score (+1/+5/+10)
 
-### Phase 2 — Skeptic
+End with your total score.
 
-**Goal:** Filter false positives. Maximize precision.
+Codebase to audit: [SPECIFY FILES/DIRS]
+")
+```
 
-**Context to provide:** The Hunter's bug list + only the specific code snippets referenced in each finding. Do NOT give the Skeptic the full codebase or the Hunter's reasoning — only the findings and the relevant excerpts.
+Collect the numbered bug list.
 
-**Scoring incentive:** The Skeptic is penalized 2x for dismissing a real bug. This makes it precise but not lenient — it cannot dismiss carelessly.
+### Step 2 — Spawn the Skeptic (Kayle)
 
-**Challenges to apply to each finding:**
-- Is this actually a bug, or is it intentional behavior?
-- Is the problematic code path reachable in practice?
-- Does surrounding context (callers, validators, types) prevent the issue?
-- Is there existing handling elsewhere that makes this a non-issue?
+Dispatch the architecture-reviewer agent with ONLY the Hunter's bug list and the specific code snippets referenced. Do NOT give the full codebase. Tell Kayle to operate in **Skeptic mode**.
 
-**Output format:** For each item: `CONFIRMED` (real bug) or `DISMISSED` (false positive), with a clear explanation for dismissed items.
+```
+Agent(subagent_type="bopen-tools:architecture-reviewer", prompt="
+SKEPTIC MODE: You are the Skeptic in a three-phase adversarial review.
 
-**Skeptic system prompt:**
+A previous reviewer identified the following potential bugs. Your job is to DISPROVE as many as possible.
 
-> You are a senior engineer reviewing a bug report for false positives.
->
-> A previous reviewer identified the following potential issues. Your job is to challenge each one:
-> - Is this actually a bug, or is it by design?
-> - Is the problematic code path actually reachable?
-> - Does the surrounding context make this a non-issue?
-> - Is there existing handling that prevents the issue?
->
-> For each item, verdict: CONFIRMED (real bug) or DISMISSED (false positive).
-> For dismissed items, explain why clearly.
->
-> Note: If you dismiss a real bug, you get a -2x penalty on your score. Be precise, not lenient.
+Scoring:
+- Disprove a bug: +[bug's original score] points
+- Wrongly dismiss a real bug: -2x [bug's original score] points
 
----
+For each bug:
+1. Analyze the reported issue
+2. Attempt to disprove it (explain why it's NOT a bug)
+3. Confidence level (%)
+4. Decision: CONFIRMED or DISMISSED
+5. Points gained/risked
 
-### Phase 3 — Referee
+End with: total confirmed, total dismissed, your final score.
 
-**Goal:** Produce ground truth. Resolve disputes objectively.
+Bug report to challenge:
+[PASTE HUNTER'S OUTPUT]
 
-**Context to provide:** The Hunter's original findings AND the Skeptic's verdicts. Nothing else.
+Relevant code snippets:
+[PASTE ONLY THE CODE REFERENCED IN EACH FINDING]
+")
+```
 
-**Role:** The Referee has no stake in either side. It weighs evidence from both and makes a final call. Its output is the authoritative bug report.
+### Step 3 — Spawn the Referee (Iris)
 
-**Scoring:** `+1` for each confirmed issue, `-1` for each dismissed issue (to reflect actual signal quality in the Hunter's original report).
+Dispatch the tester agent with the Hunter's findings AND the Skeptic's verdicts. Nothing else. Tell Iris to operate in **Referee mode**.
 
-**Output format:** For each issue: final `CONFIRMED` or `DISMISSED` judgment with reasoning. Produce a final ranked list of confirmed bugs sorted by severity.
+```
+Agent(subagent_type="bopen-tools:tester", prompt="
+REFEREE MODE: You are the Referee in a three-phase adversarial review.
 
-**Referee system prompt:**
+You have: (1) Bug findings from the Hunter, (2) Challenges from the Skeptic.
 
-> You are a senior engineer making final judgments on a disputed bug report.
->
-> You have: (1) The original bug findings, (2) The skeptic's challenges.
->
-> For each issue:
-> - Weigh the hunter's evidence against the skeptic's rebuttal
-> - Make a final CONFIRMED or DISMISSED judgment
-> - Add +1 if confirmed, -1 if dismissed (to reflect actual signal quality)
->
-> Your output is the ground truth. Be objective.
+IMPORTANT: I have the verified ground truth for each bug. You will be scored:
+- +1: Correct judgment
+- -1: Incorrect judgment
 
----
+For each bug:
+- Hunter's claim (summary)
+- Skeptic's counter (summary)
+- Your analysis
+- VERDICT: REAL BUG or NOT A BUG
+- Confidence: High / Medium / Low
 
-## How to Run This Workflow
+Final summary:
+- Total confirmed as real
+- Total dismissed
+- Ranked list of confirmed bugs by severity
 
-1. **Spawn Hunter** with the full codebase in context. Collect the numbered bug list.
-2. **Reset context** (new conversation or subagent). Do not carry the Hunter's reasoning forward.
-3. **Spawn Skeptic** with: the numbered bug list + code snippets for each finding only. Collect verdicts.
-4. **Reset context** again.
-5. **Spawn Referee** with: Hunter findings + Skeptic verdicts only. Collect final report.
-6. **Present final report** to the user: confirmed bugs ranked by severity, dismissed items with rationale.
+Be precise. You are being scored against ground truth.
 
-In Claude Code, the natural implementation is three sequential subagent Task calls with explicit context boundaries — pass only what each phase needs, nothing more.
+Hunter's findings:
+[PASTE HUNTER'S OUTPUT]
+
+Skeptic's verdicts:
+[PASTE SKEPTIC'S OUTPUT]
+")
+```
+
+### Step 4 — Present the Report
+
+The Referee's output is the authoritative bug report. Present it to the user with confirmed bugs ranked by severity.
 
 ## Context Boundary Rules
 
 | Phase | Gets access to |
 |-------|---------------|
-| Hunter | Full codebase |
-| Skeptic | Bug list + referenced code snippets only |
-| Referee | Hunter findings + Skeptic verdicts only |
+| Hunter (Nyx) | Full codebase |
+| Skeptic (Kayle) | Bug list + referenced code snippets only |
+| Referee (Iris) | Hunter findings + Skeptic verdicts only |
 
-Violating these boundaries reintroduces the sycophancy problem. If the Skeptic sees the Hunter's confidence, it anchors on it. If the Referee sees either agent's emotional register, it drifts toward consensus rather than truth.
+**Violating these boundaries reintroduces the sycophancy problem.** If the Skeptic sees the Hunter's confidence, it anchors on it. If the Referee sees either agent's emotional register, it drifts toward consensus rather than truth.
 
 ## Severity Reference
 
@@ -142,12 +142,11 @@ Violating these boundaries reintroduces the sycophancy problem. If the Skeptic s
 | +5 | Significant — affects correctness under reachable conditions |
 | +10 | Critical — security vulnerability, data loss, or system corruption |
 
-## When to Use This Workflow
+## When to Use
 
-Use the full three-phase workflow for:
 - Pre-release security audits
 - Reviewing unfamiliar or legacy codebases
 - High-stakes modules (auth, payments, data integrity)
 - Pull requests with broad scope or architectural changes
 
-Use only the Hunter phase for quick, informal reviews where speed matters more than precision.
+For quick informal reviews, just use Nyx directly in normal mode.
