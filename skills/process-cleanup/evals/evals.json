@@ -1,0 +1,99 @@
+{
+  "skill_name": "process-cleanup",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My laptop is crawling. What's eating all my resources? Find what's running and help me clean it up.",
+      "expected_output": "A categorized, scored report of running processes with friendly names, memory usage in human units, age as friendly durations, waste scores, and a clear separation of safe-to-kill vs caution vs protected processes. Ends with a copy-pasteable kill command.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "pc-1-friendly-names",
+          "text": "Processes are shown with human-readable friendly names (like 'Claude Code session' or 'Next.js dev server') rather than raw command-line strings or binary paths.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-1-memory-units",
+          "text": "Memory is displayed in human-readable units (MB or GB) not raw KB values or raw RSS numbers.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-1-safety-levels",
+          "text": "Processes are categorized into safety levels (safe to kill, caution, protected) rather than presented as a flat unsorted list.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-1-waste-score",
+          "text": "Each process or group of processes has a waste or priority score that combines resource usage and staleness, not just sorted by memory alone.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-1-kill-command",
+          "text": "The report ends with a ready-to-use kill command that the user can copy-paste, covering only the safe-to-kill processes.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-1-total-recoverable",
+          "text": "The report shows the total recoverable memory prominently (e.g., 'Total recoverable: ~X.X GB') so the user knows the impact at a glance.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I think I have a bunch of old dev servers and Claude sessions running. Can you check what's stale and free up some memory?",
+      "expected_output": "A report that specifically identifies stale dev servers and AI CLI sessions, groups related processes together, shows how long each has been running as friendly durations, and distinguishes the current session from old ones.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "pc-2-age-friendly",
+          "text": "Process age is shown as friendly durations like '3 days' or '2 weeks' rather than raw start timestamps.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-2-grouped",
+          "text": "Related processes are grouped together (e.g., multiple OpenCode sessions shown as a group with total memory, not listed individually with full command lines).",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-2-current-protected",
+          "text": "The current Claude session is identified and marked as protected or excluded from kill recommendations.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-2-project-context",
+          "text": "Dev servers include project context — which project directory they serve — not just the generic server type.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "What's using up all the resources on this machine? We have to kill some background processes.",
+      "expected_output": "A comprehensive resource report showing processes by category with scores, presented in a table or structured format with friendly names, clear safety recommendations, and actionable kill commands.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "pc-3-categories",
+          "text": "Processes are organized into meaningful categories (AI CLIs, dev servers, browsers, desktop apps, etc.) rather than just a raw sorted list.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-3-asks-before-killing",
+          "text": "The response presents the information and asks the user before killing anything, rather than immediately terminating processes without confirmation.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-3-actionable",
+          "text": "The report includes specific, copy-pasteable kill commands — not just advice to 'close unused applications'.",
+          "type": "qualitative"
+        },
+        {
+          "id": "pc-3-no-system-processes",
+          "text": "System processes (kernel, windowserver, mds, etc.) are excluded from kill recommendations — only user-owned application processes are listed.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}
