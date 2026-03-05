@@ -1,0 +1,145 @@
+{
+  "generated_at": "2026-03-05T21:34:16.453Z",
+  "model": "claude-sonnet-4-6",
+  "runner": "satchmo",
+  "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+  "skill_name": "hunter-skeptic-referee",
+  "skill_path": "skills/hunter-skeptic-referee",
+  "eval_count": 2,
+  "pass_rate": 1,
+  "baseline_pass_rate": 0.5,
+  "avg_tokens_with_skill": 496,
+  "avg_tokens_baseline": 1095,
+  "avg_duration_ms_with_skill": 20270,
+  "avg_duration_ms_baseline": 33988,
+  "evals": [
+    {
+      "eval_id": 1,
+      "prompt": "I want to do a thorough bug review of a codebase. Explain how you would structure a three-phase adversarial code review to maximize bug-finding accuracy while minimizing false positives.",
+      "with_skill": {
+        "output": "The Hunter/Skeptic/Referee workflow solves a specific problem: **a single agent anchors on its own judgments**, producing sycophantic bug reports where it confirms what it already \"decided.\" Three isolated agents eliminate that.\n\n---\n\n## The Core Insight: Context Isolation\n\nEach agent receives **only what it needs** — nothing more. This is the mechanism that makes verdicts genuinely independent.\n\n| Phase | Agent | Gets | Goal |\n|-------|-------|------|------|\n| 1 | **Nyx** (Hunter) | Full codebase | Maximize recall. False positives are fine. |\n| 2 | **Kayle** (Skeptic) | Bug list + referenced snippets only | Disprove as many as possible. |\n| 3 | **Iris** (Referee) | Hunter output + Skeptic output only | Render ground-truth verdicts. |\n\n---\n\n## Why This Works\n\n**Phase 1 — Hunter (high recall, no filter)**\nNyx operates with an aggressive scoring model: missing a real bug costs more than a false positive. This biases toward recall. Every suspicious thing gets reported.\n\n**Phase 2 — Skeptic (challenge mode)**\nKayle never sees the Hunter's confidence level or reasoning style — only the raw findings and the specific code they reference. The 2x penalty for wrongly dismissing a real bug keeps the Skeptic honest: it can't just blanket-reject everything.\n\n**Phase 3 — Referee (final arbiter)**\nIris sees both sides but no codebase. It weighs arguments without anchoring on the code itself. It's scored against \"ground truth,\" which pressures precision over consensus.\n\n---\n\n## The Anti-Sycophancy Mechanism\n\nThe key violations that break the system:\n\n- Skeptic seeing the Hunter's enthusiasm → anchors on it, becomes lenient\n- Referee seeing either agent's tone → drifts toward whichever sounds more confident\n- Any agent seeing both its own output and the next agent's reaction → confirmation loop\n\n---\n\n## When to Use It\n\n- Pre-release audits of auth, payments, or data-integrity modules\n- Reviewing unfamiliar/legacy codebases where you can't trust intuition\n- High-stakes PRs with broad",
+        "tokens": 829,
+        "duration_ms": 28357,
+        "assertions": [
+          {
+            "id": "hsr-1-three-phases",
+            "text": "The response describes three distinct phases with different roles: a bug finder (Hunter), an adversarial challenger (Skeptic), and a final arbiter (Referee).",
+            "passed": true,
+            "reasoning": "The response clearly describes Nyx (Hunter), Kayle (Skeptic), and Iris (Referee) as three distinct phases with different roles: finding bugs, challenging them, and arbitrating final verdicts."
+          },
+          {
+            "id": "hsr-1-context-isolation",
+            "text": "The response explains that each phase runs in isolated context — the Skeptic should not see the Hunter's confidence/reasoning, and the Referee should not see either agent's emotional register.",
+            "passed": true,
+            "reasoning": "The response explicitly details what each agent receives (Skeptic gets only bug list + snippets, Referee gets only Hunter+Skeptic output) and lists Skeptic seeing Hunter's enthusiasm as a key violation that breaks the system."
+          },
+          {
+            "id": "hsr-1-scoring-incentives",
+            "text": "The response mentions scoring incentives that exploit sycophancy: the Hunter is rewarded for finding bugs, the Skeptic gets points for disproving but penalized 2x for wrongly dismissing, and the Referee is told ground truth exists.",
+            "passed": true,
+            "reasoning": "The response mentions the Hunter's aggressive scoring model biasing toward recall, the Skeptic's 2x penalty for wrongly dismissing real bugs, and the Referee being scored against 'ground truth' to pressure precision."
+          },
+          {
+            "id": "hsr-1-sycophancy",
+            "text": "The response explains that the workflow is designed to neutralize sycophancy or confirmation bias by preventing agents from anchoring on each other's judgments.",
+            "passed": true,
+            "reasoning": "The response dedicates an entire 'Anti-Sycophancy Mechanism' section explaining how context isolation prevents agents from anchoring on each other's judgments and avoiding confirmation loops."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": false
+      },
+      "baseline": {
+        "output": "A three-phase adversarial code review works by separating **understanding**, **attacking**, and **validating** into distinct passes — each with a different mental posture to prevent the biases that cause reviewers to miss bugs.\n\n---\n\n## Phase 1: Passive Mapping (No Judgment Yet)\n\n**Goal:** Build a complete mental model before looking for anything wrong.\n\n- Read every entry point: HTTP handlers, CLI args, event listeners, cron jobs, message consumers\n- Map trust boundaries: where does data cross from untrusted to trusted?\n- Catalog all state mutations: DB writes, file writes, cache sets, session modifications\n- Note every place authentication/authorization is checked — and where it's *absent*\n- Document assumptions baked into the code (e.g., \"this list is never empty\", \"this field is always UTF-8\")\n\n**Why adversarial reviewers fail here:** They jump to attacking immediately, miss 40% of the attack surface, and end up with a biased sample of findings.\n\n---\n\n## Phase 2: Adversarial Attack (Assume Everything Is Wrong)\n\n**Goal:** Systematically attempt to break the system using a structured threat model.\n\nWork through each category independently — don't combine passes, or you'll anchor on one class of bug and miss others:\n\n### 2a. Input Validation Pass\n- Every external input: can it be null, empty, oversized, malformed, Unicode-malicious?\n- Type confusion: what happens if an integer field receives a string? An array?\n- Injection vectors: SQL, shell, path traversal, SSRF, template injection — check every interpolation point\n\n### 2b. Authorization Pass\n- For every privileged operation: is auth checked *before* the operation or *after* state mutation?\n- IDOR: are object IDs validated against the requesting user's ownership?\n- Privilege escalation: can role A grant itself role B?\n- Missing auth: check every endpoint against the entry point map from Phase 1\n\n### 2c. State & Concurrency Pass\n- Race conditions: any check-then-act patterns without locks?\n- TOCTOU: file exists ch",
+        "tokens": 1744,
+        "duration_ms": 50952,
+        "assertions": [
+          {
+            "id": "hsr-1-three-phases",
+            "text": "The response describes three distinct phases with different roles: a bug finder (Hunter), an adversarial challenger (Skeptic), and a final arbiter (Referee).",
+            "passed": false,
+            "reasoning": "The response describes three phases but frames them as Passive Mapping, Adversarial Attack, and Adversarial Validation — not Hunter, Skeptic, and Referee roles as specified."
+          },
+          {
+            "id": "hsr-1-context-isolation",
+            "text": "The response explains that each phase runs in isolated context — the Skeptic should not see the Hunter's confidence/reasoning, and the Referee should not see either agent's emotional register.",
+            "passed": false,
+            "reasoning": "The response never mentions context isolation between phases or preventing agents from seeing each other's reasoning/confidence/emotional register."
+          },
+          {
+            "id": "hsr-1-scoring-incentives",
+            "text": "The response mentions scoring incentives that exploit sycophancy: the Hunter is rewarded for finding bugs, the Skeptic gets points for disproving but penalized 2x for wrongly dismissing, and the Referee is told ground truth exists.",
+            "passed": false,
+            "reasoning": "The response contains no mention of scoring incentives, rewards for finding bugs, penalties for wrongly dismissing findings, or ground truth mechanics."
+          },
+          {
+            "id": "hsr-1-sycophancy",
+            "text": "The response explains that the workflow is designed to neutralize sycophancy or confirmation bias by preventing agents from anchoring on each other's judgments.",
+            "passed": false,
+            "reasoning": "The response mentions anchoring bias but does not discuss sycophancy or a multi-agent design specifically intended to neutralize sycophantic confirmation bias between agents."
+          }
+        ],
+        "pass_rate": 0,
+        "cached": false
+      }
+    },
+    {
+      "eval_id": 2,
+      "prompt": "What are the context boundary rules for a hunter-skeptic-referee code review? What information does each phase get access to?",
+      "with_skill": {
+        "output": "From the skill definition loaded at the top of this session:\n\n| Phase | Agent | Gets access to |\n|-------|-------|----------------|\n| Hunter (Nyx) | code-auditor | Full codebase |\n| Skeptic (Kayle) | architecture-reviewer | Bug list + referenced code snippets only |\n| Referee (Iris) | tester | Hunter findings + Skeptic verdicts only |\n\nThe key rule: **violating these boundaries reintroduces sycophancy**. If the Skeptic sees the Hunter's full confidence level, it anchors on it. If the Referee sees either agent's emotional register, it drifts toward consensus rather than truth.",
+        "tokens": 162,
+        "duration_ms": 12183,
+        "assertions": [
+          {
+            "id": "hsr-2-hunter-gets-codebase",
+            "text": "The response states that the Hunter/bug-finder gets access to the full codebase.",
+            "passed": true,
+            "reasoning": "The table explicitly states Hunter (Nyx) gets 'Full codebase'."
+          },
+          {
+            "id": "hsr-2-skeptic-limited",
+            "text": "The response states that the Skeptic gets only the bug list and specific code snippets referenced in findings — NOT the full codebase or the Hunter's reasoning.",
+            "passed": true,
+            "reasoning": "The table states Skeptic (Kayle) gets 'Bug list + referenced code snippets only', and the explanation clarifies it excludes the full codebase and Hunter's reasoning/confidence level."
+          },
+          {
+            "id": "hsr-2-referee-both",
+            "text": "The response states that the Referee gets the Hunter's findings AND the Skeptic's verdicts, but nothing else.",
+            "passed": true,
+            "reasoning": "The table states Referee (Iris) gets 'Hunter findings + Skeptic verdicts only', matching the assertion exactly."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": false
+      },
+      "baseline": {
+        "output": "Here are the context boundary rules for the hunter-skeptic-referee workflow:\n\n| Phase | Agent | Gets Access To |\n|-------|-------|----------------|\n| **Hunter** (Nyx) | code-auditor | Full codebase |\n| **Skeptic** (Kayle) | architecture-reviewer | Bug list + **only the specific code snippets referenced in each finding** |\n| **Referee** (Iris) | tester | Hunter findings + Skeptic verdicts only |\n\n**What each phase explicitly does NOT get:**\n\n- **Skeptic** — does not get the full codebase, and does not see the Hunter's confidence level or emotional register\n- **Referee** — does not get the codebase directly, and does not see either agent's tone/enthusiasm — only the structured findings and verdicts\n\n**Why this matters:** Giving any agent more context than listed reintroduces sycophancy. The Skeptic anchors on the Hunter's confidence if it can see it. The Referee drifts toward consensus if it can sense either agent's conviction. Each agent must reach its conclusion independently from a clean context.\n\nThe Referee's output is the only authoritative result — the prior phases are scaffolding to produce unbiased ground truth.",
+        "tokens": 446,
+        "duration_ms": 17024,
+        "assertions": [
+          {
+            "id": "hsr-2-hunter-gets-codebase",
+            "text": "The response states that the Hunter/bug-finder gets access to the full codebase.",
+            "passed": true,
+            "reasoning": "The response explicitly states the Hunter (Nyx) gets 'Full codebase' access."
+          },
+          {
+            "id": "hsr-2-skeptic-limited",
+            "text": "The response states that the Skeptic gets only the bug list and specific code snippets referenced in findings — NOT the full codebase or the Hunter's reasoning.",
+            "passed": true,
+            "reasoning": "The response states the Skeptic gets 'Bug list + only the specific code snippets referenced in each finding' and explicitly notes it does not get the full codebase."
+          },
+          {
+            "id": "hsr-2-referee-both",
+            "text": "The response states that the Referee gets the Hunter's findings AND the Skeptic's verdicts, but nothing else.",
+            "passed": true,
+            "reasoning": "The response states the Referee gets 'Hunter findings + Skeptic verdicts only', satisfying both the inclusion and exclusion requirements."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": false
+      }
+    }
+  ]
+}

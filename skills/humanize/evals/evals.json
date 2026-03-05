@@ -3,74 +3,79 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Rewrite this paragraph to sound more natural and less AI-generated:\n\nIn today's rapidly evolving technological landscape, it's important to note that artificial intelligence is fundamentally transforming the way we approach software development. This paradigm shift represents a significant opportunity for organizations to leverage cutting-edge tools to streamline their workflows and enhance productivity. By embracing these innovative solutions, teams can unlock unprecedented levels of efficiency.",
-      "expected_output": "A rewritten paragraph that removes AI filler openers, replaces overused AI vocabulary (leverage, paradigm shift, unprecedented, cutting-edge, innovative, streamline, enhance), breaks formulaic structure, and sounds like a human wrote it.",
+      "prompt": "Write the 'Our Values' section for a fintech company's about page. The company builds payment infrastructure for developers. Include 4 values with short descriptions (2-3 sentences each). Just write the section directly, no preamble.",
+      "expected_output": "A company values section where the 4 values use varied sentence structures, avoid binary contrast patterns like 'not X — it's Y', and don't all end with punchy one-liner conclusions.",
       "files": [],
       "assertions": [
         {
-          "id": "hum-1-no-filler-opener",
-          "text": "The rewritten text does not start with 'In today's rapidly evolving' or any similar throat-clearing opener.",
+          "id": "hum-1-no-binary-contrast",
+          "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
           "type": "qualitative"
         },
         {
-          "id": "hum-1-no-ai-vocab",
-          "text": "The rewritten text avoids the words 'leverage', 'paradigm shift', 'unprecedented', 'cutting-edge', 'innovative', 'streamline', and 'enhance' (or their variants).",
+          "id": "hum-1-varied-value-structure",
+          "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
           "type": "qualitative"
         },
         {
-          "id": "hum-1-concrete-language",
-          "text": "The rewritten text uses specific, concrete language instead of vague generalities (e.g., names a specific change rather than 'fundamentally transforming').",
-          "type": "qualitative"
-        },
-        {
-          "id": "hum-1-varied-rhythm",
-          "text": "The rewritten text varies sentence length rather than using three similarly-structured sentences in a row.",
+          "id": "hum-1-no-tricolon-conclusions",
+          "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
           "type": "qualitative"
         }
       ]
     },
     {
       "id": 2,
-      "prompt": "Edit this email draft to sound less robotic:\n\nI hope this email finds you well. I wanted to reach out to discuss a potential collaboration opportunity. Our team has been making significant strides in the blockchain space, and we believe there could be tremendous synergy between our organizations. I'd love to set up a call to explore how we might work together to create mutually beneficial outcomes. Please don't hesitate to reach out if you have any questions.",
-      "expected_output": "A rewritten email that cuts the 'I hope this email finds you well' opener, removes corporate jargon (synergy, mutually beneficial outcomes, significant strides), and reads like a real person writing a real email.",
+      "prompt": "Write a 2-paragraph section for a landing page explaining why your cloud hosting platform is better than the competition. Key differentiators: automatic scaling, pay-per-second billing, and built-in observability. Target audience is developers and CTOs. Tone should be confident and direct. Just write the copy, no questions.",
+      "expected_output": "Landing page copy that explains the three differentiators without binary contrasts, parallel tricolon structure, formulaic closers, or punchline paragraph endings.",
       "files": [],
       "assertions": [
         {
-          "id": "hum-2-no-finds-you-well",
-          "text": "The email does not contain 'I hope this email finds you well' or a similar formulaic greeting.",
+          "id": "hum-2-no-binary-contrast",
+          "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
           "type": "qualitative"
         },
         {
-          "id": "hum-2-no-jargon",
-          "text": "The email avoids the words 'synergy', 'mutually beneficial', 'significant strides', and 'don't hesitate to reach out'.",
+          "id": "hum-2-no-parallel-tricolon",
+          "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
           "type": "qualitative"
         },
         {
-          "id": "hum-2-direct-ask",
-          "text": "The email gets to the point quickly — the purpose of the email is clear within the first two sentences.",
+          "id": "hum-2-no-formulaic-closer",
+          "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-2-no-punchline-endings",
+          "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
           "type": "qualitative"
         }
       ]
     },
     {
       "id": 3,
-      "prompt": "Humanize this product announcement:\n\nWe are thrilled to announce the launch of our groundbreaking new feature. This game-changing addition to our platform represents months of dedicated effort from our talented team. The feature seamlessly integrates with your existing workflow, providing a robust solution that empowers users to take their productivity to the next level. We're excited about the possibilities this unlocks and can't wait to see what you build with it.",
-      "expected_output": "A rewritten announcement that removes 'thrilled to announce', 'groundbreaking', 'game-changing', 'seamlessly integrates', 'robust solution', 'empowers', 'next level', 'unlocks', and sounds like a real company update rather than a template.",
+      "prompt": "Write a short blog post (3 paragraphs) about why startups should invest in developer experience early. Target audience: CTOs and engineering leads. Just write the post directly.",
+      "expected_output": "A blog post that avoids binary contrasts, tricolons, AI business vocabulary, and doesn't end every paragraph with a punchy one-liner.",
       "files": [],
       "assertions": [
         {
-          "id": "hum-3-no-thrilled",
-          "text": "The announcement does not use 'thrilled', 'excited', 'groundbreaking', 'game-changing', or 'next level'.",
+          "id": "hum-3-no-binary-contrast",
+          "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
           "type": "qualitative"
         },
         {
-          "id": "hum-3-no-empowers",
-          "text": "The announcement avoids 'empowers', 'seamlessly', 'robust', and 'unlocks' (or 'unlocks possibilities').",
+          "id": "hum-3-no-punchline-endings",
+          "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
           "type": "qualitative"
         },
         {
-          "id": "hum-3-specifics",
-          "text": "The announcement describes what the feature actually does in concrete terms rather than using vague superlatives.",
+          "id": "hum-3-no-ai-business-vocab",
+          "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-3-no-tricolon-lists",
+          "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
           "type": "qualitative"
         }
       ]

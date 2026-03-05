@@ -1,0 +1,133 @@
+{
+  "generated_at": "2026-03-05T21:34:16.446Z",
+  "model": "claude-sonnet-4-6",
+  "runner": "satchmo",
+  "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+  "skill_name": "geo-optimizer",
+  "skill_path": "skills/geo-optimizer",
+  "eval_count": 2,
+  "pass_rate": 0.667,
+  "baseline_pass_rate": 0.5,
+  "avg_tokens_with_skill": 1871,
+  "avg_tokens_baseline": 2486,
+  "avg_duration_ms_with_skill": 48351,
+  "avg_duration_ms_baseline": 53863,
+  "evals": [
+    {
+      "eval_id": 1,
+      "prompt": "Audit https://example.com for AI search visibility. Check the HTML size, JavaScript dependency, and hedge density. Provide a GEO readiness report with scores for technical visibility and content authority.",
+      "with_skill": {
+        "output": "I have all the data. Here's the complete GEO Readiness Report:\n\n---\n\n## GEO Readiness Report: https://example.com\n\n---\n\n### 1. Technical Visibility — Score: 95/100\n\n| Check | Result | Status |\n|-------|--------|--------|\n| HTML payload size | **528 bytes** (limit: 1MB) | ✅ Excellent |\n| JavaScript dependency | **None** — pure HTML/CSS | ✅ No risk |\n| HTTPS | TLS 1.3 via Cloudflare | ✅ Pass |\n| Crawler accessibility | No blocking, no `robots.txt` | ✅ Pass |\n| HTTP/2 | Enabled | ✅ Pass |\n| Content-type header | `text/html` (no charset declared) | ⚠️ Minor |\n\n**Verdict:** Technically pristine for AI crawlers. At 528 bytes, this is the smallest possible footprint — zero JS rendering risk. All major AI crawlers (GPTBot, ClaudeBot, PerplexityBot) can read this page with zero friction.\n\n---\n\n### 2. Content Authority — Score: 12/100\n\n| Check | Result | Status |\n|-------|--------|--------|\n| Hedge density | **0%** (0 hedge words / ~18 words) | ✅ Target: <0.2% |\n| Content volume | **~18 words** of visible text | ❌ Critically thin |\n| Entity density | **~2 named entities** (Example Domain, IANA) | ❌ Near zero |\n| Structured data (JSON-LD) | **None** | ❌ Missing |\n| Meta description | **None** | ❌ Missing |\n| Open Graph / social tags | **None** | ❌ Missing |\n| Factual claims / statistics | **None** | ❌ Nothing to cite |\n\n**Verdict:** Hedge density is technically perfect (0%), but there's almost nothing for an LLM to cite or surface. AI search engines rank pages by how quotable and authoritative their content is — 18 words about a placeholder domain provides no signal. No structured data means no entity disambiguation.\n\n---\n\n### 3. Agent Infrastructure — Score: 0/100\n\n| Check | Result | Status |\n|-------|--------|--------|\n| `/.well-known/agent-facts` | ❌ Not found (returns HTML 200, no JSON) | ❌ Missing |\n| `robots.txt` | ❌ Not found (returns HTML 200) | ❌ Missing |\n| NANDA protocol | ❌ Not implemented | ❌ Missing |\n| AI crawler directives | ❌ No `GPTBot`, `ClaudeBot` rules | ❌",
+        "tokens": 2537,
+        "duration_ms": 64523,
+        "assertions": [
+          {
+            "id": "geo-1-html-size",
+            "text": "The response discusses HTML payload size and mentions the 1MB threshold for AI crawler compatibility.",
+            "passed": true,
+            "reasoning": "The response explicitly discusses HTML payload size (528 bytes) and mentions the 1MB limit in the Technical Visibility table."
+          },
+          {
+            "id": "geo-1-hedge-density",
+            "text": "The response explains hedge density scoring and identifies hedge words that reduce AI search ranking confidence.",
+            "passed": false,
+            "reasoning": "The response reports 0% hedge density but does not explain what hedge words are or identify specific hedge words that reduce AI search ranking confidence."
+          },
+          {
+            "id": "geo-1-crawler-types",
+            "text": "The response distinguishes between rendering crawlers (GPTBot) and non-rendering crawlers (ClaudeBot) and their implications.",
+            "passed": false,
+            "reasoning": "The response mentions GPTBot and ClaudeBot together as crawlers that can read the page but does not distinguish between rendering vs non-rendering crawler types or explain their different implications."
+          }
+        ],
+        "pass_rate": 0.3333333333333333,
+        "cached": false
+      },
+      "baseline": {
+        "output": "Now I have all the data. Here is the full GEO Readiness Report:\n\n---\n\n## GEO Readiness Report — `example.com`\n\n*Audit date: 2026-03-05 | Method: Raw HTML fetch, header inspection, content analysis*\n\n---\n\n### Technical Visibility — Score: **42 / 100**\n\n| Signal | Value | Status |\n|--------|-------|--------|\n| HTML payload size | **528 bytes** | ✅ Excellent (limit: 1MB) |\n| JS dependency | **0 script tags** | ✅ None — fully crawler-accessible |\n| Content-Length header | Not sent | ⚠️ Missing explicit size hint |\n| robots.txt | 404 Not Found | ❌ Missing |\n| `/.well-known/agent-facts` | 404 Not Found | ❌ Missing NANDA/AgentFacts |\n| Structured data (JSON-LD) | None | ❌ No schema markup |\n| Open Graph / Twitter meta | None | ❌ No social/AI graph signals |\n| Meta description | None | ❌ Missing |\n| Cache behavior | Cloudflare HIT | ✅ CDN-cached |\n| HTTPS | Valid | ✅ |\n\n**Analysis:** The bare technical foundation is solid — no JavaScript dependency means 100% of AI crawlers can read the page, and the tiny payload is never a problem. However, the page exposes zero machine-readable signals: no `robots.txt` to guide crawler behavior, no JSON-LD schema, no `agent-facts`, and no meta description for LLM summarization.\n\n---\n\n### Content Authority — Score: **8 / 100**\n\n| Signal | Value | Status |\n|--------|-------|--------|\n| Hedge density | **0%** | ✅ No hedging language |\n| Word count (body text) | ~30 words | ❌ Critically thin |\n| Named entities | 0 | ❌ No facts, no entities |\n| Factual claims | 0 | ❌ Nothing for AI to cite |\n| E-E-A-T signals | None | ❌ No author, date, expertise |\n| Topic specificity | None | ❌ Purpose-less placeholder |\n\n**Hedge words found:** None — technically perfect, but irrelevant when there is almost no content to hedge.\n\n**Analysis:** This page has ~2 sentences of substantive content. AI search engines need dense, factual, confident content to cite. There is nothing here for an LLM to extract, summarize, or reference. The hedge density score is techni",
+        "tokens": 3465,
+        "duration_ms": 80283,
+        "assertions": [
+          {
+            "id": "geo-1-html-size",
+            "text": "The response discusses HTML payload size and mentions the 1MB threshold for AI crawler compatibility.",
+            "passed": true,
+            "reasoning": "The report explicitly states HTML payload size as 528 bytes and notes the 1MB limit in the status table."
+          },
+          {
+            "id": "geo-1-hedge-density",
+            "text": "The response explains hedge density scoring and identifies hedge words that reduce AI search ranking confidence.",
+            "passed": true,
+            "reasoning": "The report includes a hedge density score of 0% and notes 'Hedge words found: None', explaining it targets <0.2% but caveats that the score is meaningless at low content volume."
+          },
+          {
+            "id": "geo-1-crawler-types",
+            "text": "The response distinguishes between rendering crawlers (GPTBot) and non-rendering crawlers (ClaudeBot) and their implications.",
+            "passed": false,
+            "reasoning": "The report mentions GPTBot, PerplexityBot, and ClaudeBot in the context of robots.txt, but does not distinguish between rendering vs. non-rendering crawlers or explain the implications of that distinction."
+          }
+        ],
+        "pass_rate": 0.6666666666666666,
+        "cached": false
+      }
+    },
+    {
+      "eval_id": 2,
+      "prompt": "Generate an AgentFacts schema for a SaaS product at myapp.io that supports text and image capabilities with OAuth2 authentication. Follow the NANDA protocol.",
+      "with_skill": {
+        "output": "Here's your NANDA-compliant AgentFacts schema for `myapp.io`:\n\n```json\n{\n  \"@context\": \"https://nanda.dev/ns/agent-facts/v1\",\n  \"id\": \"nanda:myapp.io\",\n  \"agent_name\": \"urn:agent:myapp:io\",\n  \"version\": \"1.0.0\",\n  \"description\": \"SaaS platform with text and image processing capabilities\",\n  \"homepage\": \"https://myapp.io\",\n  \"endpoints\": {\n    \"static\": [\n      \"https://api.myapp.io/v1/agent\"\n    ]\n  },\n  \"capabilities\": {\n    \"modalities\": [\"text\", \"image\"],\n    \"authentication\": {\n      \"methods\": [\"oauth2\"]\n    }\n  },\n  \"trust\": {\n    \"certification\": \"self-attested\",\n    \"human_oversight\": \"true\"\n  },\n  \"metadata\": {\n    \"created\": \"2026-03-05T16:28:52Z\",\n    \"modified\": \"2026-03-05T16:28:52Z\",\n    \"ttl\": 86400\n  }\n}\n```\n\n**Deploy it** at `https://myapp.io/.well-known/agent-facts` so AI crawlers can discover it automatically.\n\nKey fields:\n- `modalities` — declares `text` and `image` support so AI agents know what your app can handle\n- `authentication.methods` — signals OAuth2 is required before interacting\n- `ttl: 86400` — crawlers re-fetch every 24 hours\n- `human_oversight: true` — important trust signal for AI agent directories",
+        "tokens": 1205,
+        "duration_ms": 32179,
+        "assertions": [
+          {
+            "id": "geo-2-nanda-context",
+            "text": "The generated schema includes the @context field pointing to nanda.dev namespace.",
+            "passed": true,
+            "reasoning": "The schema includes `\"@context\": \"https://nanda.dev/ns/agent-facts/v1\"` which points to the nanda.dev namespace."
+          },
+          {
+            "id": "geo-2-capabilities",
+            "text": "The schema specifies both text and image modalities in the capabilities section.",
+            "passed": true,
+            "reasoning": "The schema specifies `\"modalities\": [\"text\", \"image\"]` in the capabilities section, covering both required modalities."
+          },
+          {
+            "id": "geo-2-wellknown",
+            "text": "The response indicates the schema should be placed at /.well-known/agent-facts path.",
+            "passed": true,
+            "reasoning": "The response explicitly instructs deploying at `https://myapp.io/.well-known/agent-facts` and references that path multiple times."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": false
+      },
+      "baseline": {
+        "output": "Here's an AgentFacts schema following the NANDA protocol for myapp.io:\n\n```json\n{\n  \"@context\": \"https://agentfacts.org/schema/v1\",\n  \"@type\": \"Agent\",\n  \"id\": \"https://myapp.io/.well-known/agent.json\",\n  \"name\": \"MyApp Agent\",\n  \"description\": \"AI-powered SaaS agent providing text and image processing capabilities via myapp.io\",\n  \"version\": \"1.0.0\",\n  \"url\": \"https://myapp.io\",\n  \"provider\": {\n    \"@type\": \"Organization\",\n    \"name\": \"MyApp\",\n    \"url\": \"https://myapp.io\",\n    \"contact\": \"support@myapp.io\"\n  },\n  \"capabilities\": [\n    {\n      \"@type\": \"Capability\",\n      \"id\": \"text-processing\",\n      \"name\": \"Text Processing\",\n      \"description\": \"Generate, analyze, summarize, and transform text content\",\n      \"modality\": \"text\",\n      \"inputFormats\": [\"text/plain\", \"text/markdown\", \"application/json\"],\n      \"outputFormats\": [\"text/plain\", \"text/markdown\", \"application/json\"]\n    },\n    {\n      \"@type\": \"Capability\",\n      \"id\": \"image-processing\",\n      \"name\": \"Image Processing\",\n      \"description\": \"Generate, analyze, and transform images\",\n      \"modality\": \"image\",\n      \"inputFormats\": [\"image/png\", \"image/jpeg\", \"image/webp\"],\n      \"outputFormats\": [\"image/png\", \"image/jpeg\", \"image/webp\"]\n    }\n  ],\n  \"authentication\": [\n    {\n      \"@type\": \"AuthMethod\",\n      \"scheme\": \"oauth2\",\n      \"flows\": {\n        \"authorizationCode\": {\n          \"authorizationUrl\": \"https://myapp.io/oauth/authorize\",\n          \"tokenUrl\": \"https://myapp.io/oauth/token\",\n          \"refreshUrl\": \"https://myapp.io/oauth/token/refresh\",\n          \"scopes\": {\n            \"text:read\": \"Read text processing results\",\n            \"text:write\": \"Submit text processing requests\",\n            \"image:read\": \"Read image processing results\",\n            \"image:write\": \"Submit image processing requests\",\n            \"profile\": \"Access basic profile information\"\n          }\n        },\n        \"clientCredentials\": {\n          \"tokenUrl\": \"https://myapp.io/oauth/token\",\n          \"scopes\": {\n",
+        "tokens": 1506,
+        "duration_ms": 27442,
+        "assertions": [
+          {
+            "id": "geo-2-nanda-context",
+            "text": "The generated schema includes the @context field pointing to nanda.dev namespace.",
+            "passed": false,
+            "reasoning": "The @context field points to 'https://agentfacts.org/schema/v1', not a nanda.dev namespace."
+          },
+          {
+            "id": "geo-2-capabilities",
+            "text": "The schema specifies both text and image modalities in the capabilities section.",
+            "passed": true,
+            "reasoning": "The capabilities array includes both 'text' and 'image' modalities explicitly."
+          },
+          {
+            "id": "geo-2-wellknown",
+            "text": "The response indicates the schema should be placed at /.well-known/agent-facts path.",
+            "passed": false,
+            "reasoning": "The output indicates the schema should be served at '/.well-known/agent.json', not '/.well-known/agent-facts' as required."
+          }
+        ],
+        "pass_rate": 0.3333333333333333,
+        "cached": false
+      }
+    }
+  ]
+}

@@ -88,6 +88,30 @@ Signs:
 
 **Fix:** Use lists for genuinely list-like content (steps, options, items). Use prose for reasoning, argument, and narrative.
 
+## Paragraph-Ending Punchlines
+
+AI text has a distinctive habit: every paragraph ends with a short, dramatic summary sentence. Read three paragraphs of AI prose and you'll see it — each one closes with a punchy one-liner that "lands the point." Real writing doesn't do this. Real paragraphs end at different lengths and in different ways.
+
+Signs:
+- Every paragraph's last sentence is under 15 words
+- Last sentences are declarative statements that summarize the paragraph
+- The pattern repeats across 3+ consecutive paragraphs
+- Endings feel like mic-drops: "That's the real advantage." / "And it compounds." / "This is what matters."
+
+**Fix:** Make paragraph endings vary. One might end with a long sentence (20+ words). One might end mid-thought, flowing into the next paragraph. One might end with a specific example or data point rather than an abstract claim. At most one paragraph in a piece should end with a short punchy line.
+
+## Parallel Structure in Conclusions
+
+When wrapping up a piece that covers multiple points (features, values, benefits), AI defaults to restating them in parallel structure: "X does A, Y does B, and Z does C." This creates a formulaic closer that signals machine authorship.
+
+Signs:
+- Final sentence lists all the key points in one parallel construction
+- "Whether you need A, B, or C, we've got you covered"
+- Three clauses with identical grammatical structure summarizing the piece
+- The closer mirrors the intro's structure exactly
+
+**Fix:** End with one specific point, a forward-looking statement, or just stop. Don't repackage everything into one tidy parallel sentence.
+
 ## Rhythm Traps
 
 | Pattern | Problem | Fix |

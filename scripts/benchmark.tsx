@@ -83,6 +83,10 @@ interface EvalRunResult {
 }
 
 interface SkillBenchmark {
+  generated_at: string;
+  model: string;
+  runner: string;
+  script_url: string;
   skill_name: string;
   skill_path: string;
   eval_count: number;
@@ -774,7 +778,15 @@ async function main() {
     const wsPassRates = evalResults.map(e => e.with_skill.pass_rate);
     const blPassRates = evalResults.map(e => e.baseline.pass_rate);
 
-    skillResults.push({
+    const generatedAt = new Date().toISOString();
+    const runner = getRunner();
+    const scriptUrl = "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx";
+
+    const skillBenchmark: SkillBenchmark = {
+      generated_at: generatedAt,
+      model,
+      runner,
+      script_url: scriptUrl,
       skill_name: skill.name,
       skill_path: `skills/${skill.name}`,
       eval_count: evalResults.length,
@@ -785,7 +797,17 @@ async function main() {
       avg_duration_ms_with_skill: Math.round(avg(evalResults.map(e => e.with_skill.duration_ms))),
       avg_duration_ms_baseline: Math.round(avg(evalResults.map(e => e.baseline.duration_ms))),
       evals: evalResults,
-    });
+    };
+
+    skillResults.push(skillBenchmark);
+
+    // Write per-skill benchmark file
+    const skillBenchDir = join(repoRoot, "skills", skill.name, "evals");
+    if (!existsSync(skillBenchDir)) mkdirSync(skillBenchDir, { recursive: true });
+    writeFileSync(
+      join(skillBenchDir, "benchmark.json"),
+      JSON.stringify(skillBenchmark, null, 2) + "\n",
+    );
   }
 
   const totalEvals = skillResults.reduce((s, sk) => s + sk.eval_count, 0);

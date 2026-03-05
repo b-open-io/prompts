@@ -1,0 +1,299 @@
+{
+  "generated_at": "2026-03-05T21:34:16.431Z",
+  "model": "claude-sonnet-4-6",
+  "runner": "satchmo",
+  "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+  "skill_name": "prd-creator",
+  "skill_path": "skills/prd-creator",
+  "eval_count": 3,
+  "pass_rate": 0.611,
+  "baseline_pass_rate": 0.778,
+  "avg_tokens_with_skill": 6534,
+  "avg_tokens_baseline": 5205,
+  "avg_duration_ms_with_skill": 176979,
+  "avg_duration_ms_baseline": 141333,
+  "evals": [
+    {
+      "eval_id": 1,
+      "prompt": "Write a complete PRD for adding dark mode to our mobile banking app. Don't ask me any questions — use reasonable assumptions and produce the full document now. The target audience is mobile banking users who use the app at night. We want to ship this in about 6 weeks with a team of 2 engineers and 1 designer.",
+      "with_skill": {
+        "output": "# PRD: Mobile Banking App — Dark Mode\n\n## Executive Summary\n**Version:** 1.0.0\n**Headline:** The Banking App That Won't Blind You at 2am\n**One-liner:** System-aware dark mode for every screen in the app, shipped in a single 6-week cycle.\n\nMobile banking is a night-time habit. Users check balances before bed, split dinner bills at restaurants, and review transactions during late-night anxiety spirals. Our current app responds to all of this with a full-brightness white interface. Dark mode eliminates eye strain for nighttime users, reduces battery drain on OLED devices, and signals to users that we care about daily-life ergonomics — not just daytime banking.\n\n---\n\n## The Problem\n\n### What We Heard\n> \"I use the app at night and it's painfully bright. I have to dim my screen all the way down just to check my balance.\"\n\n### Root Cause Analysis (5 Whys)\n\n1. **Why** do nighttime users find the app uncomfortable?\n   Because every screen uses white/light backgrounds with high-contrast black text.\n\n2. **Why** does the app use white backgrounds everywhere?\n   Because it was designed with a single light theme and no theming system was built.\n\n3. **Why** was no theming system built?\n   Because dark mode wasn't prioritized at launch — it was seen as cosmetic.\n\n4. **Why** was it treated as cosmetic?\n   Because the product team lacked data on nighttime usage and user complaints were siloed in support tickets.\n\n5. **Why** didn't support ticket data drive prioritization?\n   Because there was no feedback loop between support data and the product roadmap.\n\n**Root Cause:** The app was designed as a single-theme product with no theming infrastructure, and nighttime usage pain was invisible to the roadmap process.\n\n### Job to be Done\nWhen I check my banking app at night, I want my screen not to hurt my eyes or wake up my partner, so I can complete my task quickly and get back to sleep.\n\n### Current Workarounds\n- Users enable OS-level screen dimming (degrades readability)\n- Users enable O",
+        "tokens": 4726,
+        "duration_ms": 130449,
+        "assertions": [
+          {
+            "id": "prd-1-appetite",
+            "text": "The PRD includes an explicit appetite or time budget using Shape Up language — either a small batch or big batch framing with a fixed time box — not just a generic timeline estimate or story points.",
+            "passed": true,
+            "reasoning": "The PRD explicitly states '6-week big batch' under The Appetite section with team size, using Shape Up framing as required."
+          },
+          {
+            "id": "prd-1-press-release",
+            "text": "The PRD includes a mock press release headline or customer-facing announcement written as if the feature has already shipped, as part of a Working Backwards section.",
+            "passed": false,
+            "reasoning": "The headline 'The Banking App That Won't Blind You at 2am' appears as a tagline in the Executive Summary, not as a dedicated mock press release written from the future perspective as if the feature has already shipped."
+          },
+          {
+            "id": "prd-1-rabbit-holes",
+            "text": "The PRD has a dedicated rabbit holes section that names at least two specific technical or product complexities that could expand scope, with mitigation strategies.",
+            "passed": true,
+            "reasoning": "The 'Boundaries & Rabbit Holes' section names at least five specific complexities (third-party SDK screens, icon assets, CMS banners, transition animations, accessibility contrast) with mitigation strategies for each."
+          },
+          {
+            "id": "prd-1-not-building",
+            "text": "The PRD explicitly calls out what is NOT being built in this cycle — scope exclusions presented as intentional decisions, not just omissions.",
+            "passed": true,
+            "reasoning": "A dedicated 'What We're NOT Building' section explicitly lists seven intentional scope exclusions such as AMOLED mode, web theming, and auth screen dark mode."
+          },
+          {
+            "id": "prd-1-kill-criteria",
+            "text": "The PRD includes kill criteria — named conditions under which the team should abandon or pivot the bet.",
+            "passed": false,
+            "reasoning": "No kill criteria section is present in the output — the document is truncated at the Goals section and no named conditions for abandoning the bet appear anywhere in the visible content."
+          },
+          {
+            "id": "prd-1-betting-table",
+            "text": "The PRD includes a betting table or decision section with a confidence level expressed as a numeric score (e.g., 7/10) and a 'why now' rationale.",
+            "passed": false,
+            "reasoning": "No betting table or confidence level expressed as a numeric score (e.g., 7/10) appears anywhere in the output, which is cut off before any such section could have been included."
+          }
+        ],
+        "pass_rate": 0.5,
+        "cached": false
+      },
+      "baseline": {
+        "output": "# PRD: Dark Mode for Mobile Banking App\n\n## Executive Summary\n**Version:** 1.0\n**Headline:** Mobile Banking App Now Goes Easy on Your Eyes — Day or Night\n**One-liner:** A system-aware dark mode that makes nighttime banking comfortable, accessible, and on-brand.\n\nBanking doesn't stop when the sun goes down. Users check balances before bed, transfer money after late shifts, and monitor transactions during overnight hours — all on a screen that's painfully bright in low light. This 6-week bet ships a fully-implemented dark mode across all core app screens, respects the user's system preference by default, and gives users a manual toggle for personal control. Two engineers and one designer can comfortably scope, build, and ship this in one cycle.\n\n---\n\n## The Problem\n\n### What We Heard\n\"The app is blinding at night. I have to squint just to check my balance.\"\n\n### Root Cause Analysis (5 Whys)\n1. **Why do users find the app uncomfortable at night?** The UI uses full-brightness white backgrounds and dark text — optimized for daylight readability.\n2. **Why hasn't this been addressed?** The original design system was built for a single (light) theme with hard-coded color values throughout.\n3. **Why were colors hard-coded?** No theming infrastructure existed when the app was built; dark mode was not a product requirement at launch.\n4. **Why does this hurt engagement?** Discomfort causes users to close the app sooner, reducing session depth and increasing the chance they miss important account activity.\n5. **Why does it matter now?** iOS and Android have had system-level dark mode APIs since 2019; user expectation has shifted — not supporting it is now a noticeable gap vs. every major banking competitor.\n\n**Root Cause:** The app lacks a color token system and theming layer, forcing all UI to render in a single high-brightness palette regardless of ambient conditions or user preference.\n\n### Job to be Done\n*When* I open my banking app at night or in a dark room, *I want* the i",
+        "tokens": 5268,
+        "duration_ms": 139928,
+        "assertions": [
+          {
+            "id": "prd-1-appetite",
+            "text": "The PRD includes an explicit appetite or time budget using Shape Up language — either a small batch or big batch framing with a fixed time box — not just a generic timeline estimate or story points.",
+            "passed": true,
+            "reasoning": "The PRD explicitly states '6 weeks (big batch)' with team size, using Shape Up language for the time box."
+          },
+          {
+            "id": "prd-1-press-release",
+            "text": "The PRD includes a mock press release headline or customer-facing announcement written as if the feature has already shipped, as part of a Working Backwards section.",
+            "passed": true,
+            "reasoning": "The Executive Summary includes a mock press release headline ('Mobile Banking App Now Goes Easy on Your Eyes — Day or Night') and one-liner written as if the feature has shipped."
+          },
+          {
+            "id": "prd-1-rabbit-holes",
+            "text": "The PRD has a dedicated rabbit holes section that names at least two specific technical or product complexities that could expand scope, with mitigation strategies.",
+            "passed": true,
+            "reasoning": "The PRD has a dedicated 'Rabbit Holes' table naming five specific technical complexities (charts, SVG icons, Android status bar, image assets, animated splash) each with mitigation strategies."
+          },
+          {
+            "id": "prd-1-not-building",
+            "text": "The PRD explicitly calls out what is NOT being built in this cycle — scope exclusions presented as intentional decisions, not just omissions.",
+            "passed": true,
+            "reasoning": "The PRD has an explicit 'What We're NOT Building' section listing intentional scope exclusions like custom theme engine, server-side persistence, and web portal dark mode."
+          },
+          {
+            "id": "prd-1-kill-criteria",
+            "text": "The PRD includes kill criteria — named conditions under which the team should abandon or pivot the bet.",
+            "passed": false,
+            "reasoning": "The PRD contains no kill criteria section — no named conditions under which the team should abandon or pivot the bet are present anywhere in the output."
+          },
+          {
+            "id": "prd-1-betting-table",
+            "text": "The PRD includes a betting table or decision section with a confidence level expressed as a numeric score (e.g., 7/10) and a 'why now' rationale.",
+            "passed": false,
+            "reasoning": "The PRD does not include a betting table or decision section with a numeric confidence score; the output appears to be cut off before such a section could appear."
+          }
+        ],
+        "pass_rate": 0.6666666666666666,
+        "cached": false
+      }
+    },
+    {
+      "eval_id": 2,
+      "prompt": "Create a full product spec for letting customers split a restaurant bill inside our payments app. Don't ask clarifying questions — just produce the complete PRD with all sections filled in. Assume we're a mid-stage fintech startup, the feature was requested by 40% of surveyed users, and we want to keep scope tight.",
+      "with_skill": {
+        "output": "PRD saved to `PRD.md`. Here's a summary of the key decisions baked in:\n\n---\n\n**SplitPay — Bill Splitting for [App Name]**\n\n**The bet in one sentence:** 40% demand signal + existing payment rail + tight scope = a 6-week big batch that turns every group dinner into a transaction multiplier.\n\n**Scope (what made the cut):**\n- Even split + custom amounts\n- In-app contact requests + web pay links for non-users\n- Real-time settlement tracker\n- 7-day session expiry with reminders\n\n**Scope (what was cut):**\n- OCR receipt scanning — classic rabbit hole, doubles scope\n- Itemized splitting (who had what) — v2 if demand proves out\n- POS integrations — entirely different product motion\n\n**Key architectural decisions:**\n- Server-side session state — cross-device, tamper-proof\n- Reuse existing P2P rail — no new compliance surface\n- Rounding policy — initiator absorbs remainder (max ~$0.03)\n- Web pay via signed, single-use HMAC tokens\n\n**North Star:** 25% of group P2P transactions using SplitPay within 90 days.\n\n**Kill criteria:** < 500 sessions/week at day 30, or support tickets > 3% of sessions, or zero rounding errors is violated.",
+        "tokens": 8875,
+        "duration_ms": 239444,
+        "assertions": [
+          {
+            "id": "prd-2-five-whys",
+            "text": "The PRD drills from a surface-level problem statement down to a root cause using an iterative why-based analysis — a chain of at least three levels of causation, not a single problem statement.",
+            "passed": false,
+            "reasoning": "The summary mentions a demand signal and scope decisions but shows no iterative why-based chain of causation drilling to a root cause."
+          },
+          {
+            "id": "prd-2-customer-quote",
+            "text": "The PRD includes a fictional customer quote or testimonial written as a direct quote from a described user persona, as part of Working Backwards.",
+            "passed": false,
+            "reasoning": "No fictional customer quote or testimonial from a named persona appears in the output."
+          },
+          {
+            "id": "prd-2-appetite",
+            "text": "The PRD specifies an appetite using Shape Up terminology — small batch or big batch — with an explicit time box rather than a story point estimate or open-ended timeline.",
+            "passed": true,
+            "reasoning": "The output explicitly states '6-week big batch,' satisfying Shape Up appetite terminology with a time box."
+          },
+          {
+            "id": "prd-2-rabbit-holes",
+            "text": "The PRD identifies edge cases or complexity traps (rabbit holes) that the team should avoid or timebox, distinguishing them from the core solution shape.",
+            "passed": true,
+            "reasoning": "OCR receipt scanning and itemized splitting are explicitly called out as rabbit holes or deferred complexity traps."
+          },
+          {
+            "id": "prd-2-not-building",
+            "text": "The PRD lists explicit out-of-scope items framed as deliberate exclusions for this cycle.",
+            "passed": true,
+            "reasoning": "The output lists OCR receipt scanning, itemized splitting, and POS integrations as explicit out-of-scope exclusions for this cycle."
+          },
+          {
+            "id": "prd-2-confidence",
+            "text": "The PRD includes a confidence or conviction score (numeric, e.g., 7/10) attached to the bet.",
+            "passed": false,
+            "reasoning": "No numeric confidence or conviction score (e.g., 7/10) is present in the output."
+          }
+        ],
+        "pass_rate": 0.5,
+        "cached": false
+      },
+      "baseline": {
+        "output": "# PRD: Split the Bill\n\n## Executive Summary\n**Version:** 1.0.0\n**Headline:** Pay Your Share — Instantly Split Any Restaurant Bill Without Leaving the App\n**One-liner:** In-app restaurant bill splitting that lets diners divide a check by item or percentage and settle with friends in seconds.\n\nYou're at dinner with six friends. The check arrives. Someone does math on a napkin, someone else Venmos the wrong amount, and one person quietly disappears. Split the Bill eliminates the chaos by letting any diner photograph the receipt, assign items to people, and collect payment — all within the app, before anyone leaves the table.\n\n---\n\n## The Problem\n\n### What We Heard\n> \"When we go out as a group, I always end up being the one who pays the whole bill and then chases everyone down for their share. It takes days.\"\n\n### Root Cause Analysis (5 Whys)\n\n1. **Why** do users chase friends for money after dinner?\n   Because they pay the full bill and request individual shares afterward.\n\n2. **Why** do they pay the full bill instead of splitting at the table?\n   Because the restaurant payment terminal can't split between multiple payment methods cleanly, or servers decline split checks for large parties.\n\n3. **Why** can't they coordinate payment in-app before or during dinner?\n   Because our app has no mechanism to assign costs to specific people in a shared context.\n\n4. **Why** doesn't a shared payment context exist?\n   Because our product treats every transaction as a 1:1 exchange, with no concept of a group session or shared tab.\n\n5. **Why** is the 1:1 model still in place?\n   Because group payment requires session state, multi-party coordination, and receipt parsing — functionality we haven't prioritized.\n\n**Root Cause:** Our transaction model is purely bilateral. There is no group session primitive, which forces users out of the app to coordinate shared costs, fragmenting the payment experience and creating post-dinner debt.\n\n### Job to be Done\nWhen dining out with a group, I wa",
+        "tokens": 4895,
+        "duration_ms": 138191,
+        "assertions": [
+          {
+            "id": "prd-2-five-whys",
+            "text": "The PRD drills from a surface-level problem statement down to a root cause using an iterative why-based analysis — a chain of at least three levels of causation, not a single problem statement.",
+            "passed": true,
+            "reasoning": "The PRD includes a full Five Whys chain with five numbered levels tracing from surface symptom (chasing friends for money) down to root cause (bilateral transaction model with no group session primitive)."
+          },
+          {
+            "id": "prd-2-customer-quote",
+            "text": "The PRD includes a fictional customer quote or testimonial written as a direct quote from a described user persona, as part of Working Backwards.",
+            "passed": true,
+            "reasoning": "A direct fictional customer quote is present ('When we go out as a group, I always end up being the one who pays the whole bill and then chases everyone down for their share. It takes days.') under 'What We Heard'."
+          },
+          {
+            "id": "prd-2-appetite",
+            "text": "The PRD specifies an appetite using Shape Up terminology — small batch or big batch — with an explicit time box rather than a story point estimate or open-ended timeline.",
+            "passed": true,
+            "reasoning": "The PRD specifies '6-week big batch' using explicit Shape Up terminology with a concrete time box rather than story points or an open-ended timeline."
+          },
+          {
+            "id": "prd-2-rabbit-holes",
+            "text": "The PRD identifies edge cases or complexity traps (rabbit holes) that the team should avoid or timebox, distinguishing them from the core solution shape.",
+            "passed": true,
+            "reasoning": "A dedicated 'Rabbit Holes' section identifies six specific complexity traps (guest payments, OCR accuracy, partial payments, etc.) with explicit decisions to exclude each from v1."
+          },
+          {
+            "id": "prd-2-not-building",
+            "text": "The PRD lists explicit out-of-scope items framed as deliberate exclusions for this cycle.",
+            "passed": true,
+            "reasoning": "Both a 'Won't Have (P2)' list and a 'What We're NOT Building' section explicitly frame out-of-scope items as deliberate exclusions for this cycle."
+          },
+          {
+            "id": "prd-2-confidence",
+            "text": "The PRD includes a confidence or conviction score (numeric, e.g., 7/10) attached to the bet.",
+            "passed": false,
+            "reasoning": "The PRD contains no confidence or conviction score (e.g., 7/10) attached to the bet anywhere in the document."
+          }
+        ],
+        "pass_rate": 0.8333333333333334,
+        "cached": false
+      }
+    },
+    {
+      "eval_id": 3,
+      "prompt": "Build a complete product requirements document for an AI writing assistant feature inside our SaaS project management tool. The feature should help project managers write status updates faster. Don't start a conversation — produce the entire PRD now with all sections. We're a 50-person company, this is a high-priority bet, and we have 6 weeks to ship.",
+      "with_skill": {
+        "output": "# PRD: AI Status Update Assistant\n\n## Executive Summary\n\n**Version:** 1.0.0\n**Headline:** Project Managers Cut Status Update Time by 70% with AI-Powered Writing Assistance\n**One-liner:** An in-app AI assistant that drafts, refines, and formats project status updates from existing project data, so PMs can communicate faster without sacrificing quality.\n\nProject managers are the communication backbone of every team, yet they spend an outsized amount of their time writing — not managing. Status updates are high-frequency, high-stakes, and formulaic enough for AI to do the heavy lifting. This 6-week bet embeds an AI writing assistant directly into the status update workflow, pulling context from existing project data (tasks, milestones, blockers, team activity) to generate a first draft the PM can review, tweak, and send in under 2 minutes. This is not a general-purpose AI chatbot — it is purpose-built for the one writing task PMs do most.\n\n---\n\n## The Problem\n\n### What We Heard\n\n> \"Writing status updates takes me 30–45 minutes every Friday. I know what I want to say — I just hate writing it out. By the time I'm done, I've basically just restated what's already in the tool.\"\n\n### Root Cause Analysis (5 Whys)\n\n1. **Why** do PMs spend 30–45 min on status updates?\n   Because they must mentally synthesize data scattered across tasks, comments, milestones, and Slack before writing a single word.\n\n2. **Why** does synthesis take so long?\n   Because the tool doesn't surface a consolidated view of project health — PMs must visit multiple views to build the full picture.\n\n3. **Why** isn't there a consolidated view they can write from?\n   Because the tool is optimized for task execution, not communication output.\n\n4. **Why** hasn't this been solved with templates?\n   Because templates solve structure, not content — PMs still must populate them manually, and blank fields are just as daunting as a blank page.\n\n5. **Why** does populating templates feel hard even when data exists?\n   ",
+        "tokens": 6000,
+        "duration_ms": 161044,
+        "assertions": [
+          {
+            "id": "prd-3-working-backwards",
+            "text": "The PRD includes a Working Backwards artifact — a press release headline, customer quote, or internal quote — written from the perspective that the feature already exists.",
+            "passed": true,
+            "reasoning": "The PRD includes a press release headline ('Project Managers Cut Status Update Time by 70% with AI-Powered Writing Assistance') and a customer quote written as if the feature already exists."
+          },
+          {
+            "id": "prd-3-appetite",
+            "text": "The PRD frames scope in terms of a time budget (appetite) — a fixed-length cycle that constrains what gets built — rather than estimating how long the feature will take.",
+            "passed": true,
+            "reasoning": "The PRD explicitly frames scope as a '6-week big batch' time budget that constrains what gets built, not as an estimate of how long the feature will take."
+          },
+          {
+            "id": "prd-3-five-whys",
+            "text": "The PRD traces the problem from its observable symptom to a deeper root cause through iterative why reasoning, not just a single problem statement.",
+            "passed": true,
+            "reasoning": "The PRD iterates through five explicit 'Why' questions tracing from the observable symptom (30–45 min on status updates) to a root cause (AI translation gap between structured data and stakeholder prose)."
+          },
+          {
+            "id": "prd-3-fat-marker",
+            "text": "The solution section describes the feature at fat marker sketch level — broad strokes of the UX flow — without specifying pixel-level design or implementation details.",
+            "passed": true,
+            "reasoning": "The solution section describes broad UX flow elements (button, tone selector, streaming draft, refinement loop, breadboard) without specifying pixel-level design or implementation details."
+          },
+          {
+            "id": "prd-3-rabbit-holes",
+            "text": "The PRD names at least two rabbit holes specific to AI features (e.g., prompt tuning scope, hallucination handling) and describes how to avoid or bound them.",
+            "passed": true,
+            "reasoning": "The PRD names at least two AI-specific rabbit holes — 'Just add one more context source' (prompt engineering scope explosion) and implicitly references prompt complexity — though the output is truncated mid-sentence on the second rabbit hole, the first is clearly AI-specific and bounded."
+          },
+          {
+            "id": "prd-3-kill-criteria",
+            "text": "The PRD specifies kill criteria — named conditions that would cause the team to drop the bet rather than continue.",
+            "passed": false,
+            "reasoning": "The output is truncated before any kill criteria section appears, and no named conditions for dropping the bet are present in the visible text."
+          }
+        ],
+        "pass_rate": 0.8333333333333334,
+        "cached": false
+      },
+      "baseline": {
+        "output": "# PRD: AI Status Update Assistant\n\n## Executive Summary\n**Version:** 1.0  \n**Headline:** Project managers write better status updates in 30 seconds, not 30 minutes  \n**One-liner:** An AI writing assistant embedded in the project management tool that drafts, refines, and sends stakeholder status updates using live project data.\n\nProject managers spend significant time every week writing status updates that pull from information already living in the tool — tasks, blockers, milestones, and comments. This feature closes that gap by generating a ready-to-send draft from live project context, letting PMs review and send in under a minute. The 6-week bet targets the full PM workflow: draft generation, inline editing, tone/audience controls, and delivery. This is a high-confidence bet with direct impact on retention and daily active use.\n\n---\n\n## The Problem\n\n### What We Heard\n> \"Writing the weekly status update takes me 20–30 minutes. I already know everything that happened — I just have to say it again in a different format.\"\n\n### Root Cause Analysis (5 Whys)\n\n1. **Why** do PMs spend 20–30 min on status updates?  \n   Because they write them from scratch every time.\n\n2. **Why** do they write from scratch?  \n   Because the information is scattered across tasks, comments, and blockers — not aggregated anywhere.\n\n3. **Why** isn't it aggregated?  \n   Because the tool shows task status but doesn't summarize it in prose for communication.\n\n4. **Why** doesn't the tool do that?  \n   Because generating prose from structured data requires AI, which wasn't part of the original product.\n\n5. **Why** does this matter beyond inconvenience?  \n   Because status updates are written less frequently and less thoroughly when they're painful, leading to stakeholder misalignment and missed escalations.\n\n**Root Cause:** The tool captures project data but creates no bridge between that data and the stakeholder communication layer, forcing PMs to manually re-narrate information the system already ",
+        "tokens": 5453,
+        "duration_ms": 145881,
+        "assertions": [
+          {
+            "id": "prd-3-working-backwards",
+            "text": "The PRD includes a Working Backwards artifact — a press release headline, customer quote, or internal quote — written from the perspective that the feature already exists.",
+            "passed": true,
+            "reasoning": "The PRD includes a press release headline ('Project managers write better status updates in 30 seconds, not 30 minutes') and a customer quote written as if the feature already exists in the 'What We Heard' section."
+          },
+          {
+            "id": "prd-3-appetite",
+            "text": "The PRD frames scope in terms of a time budget (appetite) — a fixed-length cycle that constrains what gets built — rather than estimating how long the feature will take.",
+            "passed": true,
+            "reasoning": "The PRD explicitly frames scope as a '6-week big batch' time budget with a fixed team size, constraining what gets built rather than estimating how long the feature will take."
+          },
+          {
+            "id": "prd-3-five-whys",
+            "text": "The PRD traces the problem from its observable symptom to a deeper root cause through iterative why reasoning, not just a single problem statement.",
+            "passed": true,
+            "reasoning": "The PRD traces the problem through five explicit iterative 'Why' steps from the observable symptom (20-30 min writing time) to the root cause (no bridge between project data and stakeholder communication)."
+          },
+          {
+            "id": "prd-3-fat-marker",
+            "text": "The solution section describes the feature at fat marker sketch level — broad strokes of the UX flow — without specifying pixel-level design or implementation details.",
+            "passed": true,
+            "reasoning": "The solution section describes the UX flow at a broad stroke level with a breadboard diagram and key elements, without specifying pixel-level design or implementation details."
+          },
+          {
+            "id": "prd-3-rabbit-holes",
+            "text": "The PRD names at least two rabbit holes specific to AI features (e.g., prompt tuning scope, hallucination handling) and describes how to avoid or bound them.",
+            "passed": true,
+            "reasoning": "The PRD names multiple AI-specific rabbit holes including 'Make the draft perfect' (infinite prompt tuning loop) and handling context window limits for large projects, with explicit decisions on how to bound each."
+          },
+          {
+            "id": "prd-3-kill-criteria",
+            "text": "The PRD specifies kill criteria — named conditions that would cause the team to drop the bet rather than continue.",
+            "passed": false,
+            "reasoning": "The PRD does not specify any kill criteria — named conditions that would cause the team to stop the bet — despite including other Shape Up elements like appetite and rabbit holes."
+          }
+        ],
+        "pass_rate": 0.8333333333333334,
+        "cached": false
+      }
+    }
+  ]
+}
