@@ -1,0 +1,32 @@
+{
+  "output": "Here's the breakdown:\n\n---\n\n## Process Cleanup Report\n\n**The main culprits:**\n\n### 1. Playwright Headless Chrome — ~60+ orphaned processes\n\nThis is the biggest problem. Two zombie browser pools sitting around from old test runs:\n\n- **v1200** (PIDs 4815, 4824) — started **Feb 3**, ~30 days old, still burning ~13% CPU combined\n- **v1208** (~55+ processes) — scattered PIDs, clearly orphaned from test runs\n\n**To kill all of them:**\n```bash\n# Kill all orphaned Playwright headless shell processes\npkill -f \"chrome-headless-shell\"\n```\n\n---\n\n### 2. Stale Claude Code sessions — 8+ open terminals\n\n```\nPID 94349  — started Feb 26 (8 days ago)   ~481 MB  [s005]\nPID 7742   — started Fri 1AM (2 days ago)   ~429 MB  [s000]\nPID 40588  — started Fri 3PM (2 days ago)   ~307 MB  [s012]\nPID 48680  — started Fri 5PM (2 days ago)   ~368 MB  [s016]\n```\n\nKill the stale ones (not this session, PID 76187):\n```bash\nkill 94349 7742 40588 48680\n```\n\n---\n\n### 3. Databases running idle — MongoDB, Redis, PostgreSQL\n\nThese are running on their default ports. If you're not actively using them:\n```bash\n# Caution — only if you don't need them right now:\n# brew services stop mongodb-community\n# brew services stop redis\n# brew services stop postgresql\n```\n\n---\n\n### Protected (do not kill)\n- **This Claude session** — PID 76187 (1.1 GB, s008)\n- **Dia browser** — active app\n- **Wispr Flow** — active app (though it's using ~1 GB across renderers)\n- **Bun dev server** — :3333 (PID 20362)\n\n---\n\n**Recommended immediate action — safe, big impact:**\n\n```bash\n# Kill orphaned Playwright (~60 processes, estimated 2-3 GB + 13% CPU)\npkill -f \"chrome-headless-shell\"\n\n# Kill stale Claude sessions (saves ~1.6 GB)\nkill 94349 7742 40588 48680\n```\n\nWant me to run those kill commands?",
+  "tokens": 1877,
+  "duration_ms": 43974,
+  "assertions": [
+    {
+      "id": "pc-3-categories",
+      "text": "Processes are organized into meaningful categories (AI CLIs, dev servers, browsers, desktop apps, etc.) rather than just a raw sorted list.",
+      "passed": true,
+      "reasoning": "Processes are organized into meaningful categories: Playwright/browser processes, Claude Code sessions, and databases — not a raw sorted list."
+    },
+    {
+      "id": "pc-3-asks-before-killing",
+      "text": "The response presents the information and asks the user before killing anything, rather than immediately terminating processes without confirmation.",
+      "passed": true,
+      "reasoning": "The response ends with 'Want me to run those kill commands?' confirming it asks before executing any kill commands."
+    },
+    {
+      "id": "pc-3-actionable",
+      "text": "The report includes specific, copy-pasteable kill commands — not just advice to 'close unused applications'.",
+      "passed": true,
+      "reasoning": "The report includes specific copy-pasteable kill commands with exact PIDs and pkill patterns."
+    },
+    {
+      "id": "pc-3-no-system-processes",
+      "text": "System processes (kernel, windowserver, mds, etc.) are excluded from kill recommendations — only user-owned application processes are listed.",
+      "passed": true,
+      "reasoning": "Only user application processes (Playwright, Claude Code, databases, Dia, Wispr Flow) are mentioned; no system processes like kernel, WindowServer, or mds appear in recommendations."
+    }
+  ],
+  "pass_rate": 1
+}

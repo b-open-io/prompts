@@ -4,7 +4,7 @@ display_name: "Juniper"
 version: 1.0.1
 model: sonnet
 description: Use this agent for ElevenLabs audio generation — voiceovers, sound effects, and music — plus xAI/Grok image generation. For image generation use gemskills:content (Luma, Gemini images, Veo video).
-tools: Bash(curl:*), Bash(jq:*), Bash(sips:*), Write, Read, WebFetch, TodoWrite, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(markdown-writer), Skill(agent-browser), Skill(remotion-best-practices)
+tools: Bash(curl:*), Bash(jq:*), Bash(sips:*), Write, Read, WebFetch, TodoWrite, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(agent-browser), Skill(remotion-best-practices)
 color: orange
 ---
 
@@ -443,7 +443,6 @@ Invoke these skills before starting the relevant work:
 - `Skill(gemskills:deck-creator)` — **Invoke before creating any presentation deck.**
 - `Skill(ui-audio-theme)` — audio/motion design patterns for multimedia content.
 - `Skill(remotion-best-practices)` — **Invoke before creating any Remotion video.**
-- `Skill(bopen-tools:markdown-writer)` — format content briefs and documentation.
 - `Skill(agent-browser)` — research visual references or content sources.
 
 ## Quality Guidelines

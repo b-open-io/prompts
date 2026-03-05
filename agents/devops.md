@@ -1,9 +1,9 @@
 ---
 name: devops
 display_name: "Zoro"
-version: 1.1.9
-description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring. Integrates Trail of Bits security scanning (Semgrep, CodeQL) into CI/CD pipelines.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(markdown-writer), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify)
+version: 1.2.1
+description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring. Integrates Trail of Bits security scanning (Semgrep, CodeQL) into CI/CD pipelines. Manages ClawNet bot deployments as Vercel Sandboxes.
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
 model: sonnet
 color: orange
 ---
@@ -136,6 +136,59 @@ Deep interprocedural analysis, runs as scheduled or on PRs. Invoke this skill fo
 - **Every PR**: Semgrep (fast, minutes)
 - **Weekly/on main**: CodeQL (thorough, slower)
 - **Both**: Layer for comprehensive coverage
+
+## Vercel Agent Resources
+
+Vercel provides first-class agent support. Use these when troubleshooting or automating:
+
+- **Markdown docs access** — Append `.md` to any Vercel docs URL (e.g., `https://vercel.com/docs/functions.md`). Use `WebFetch` to pull docs directly.
+- **CLI Workflows** (`/docs/agent-resources/workflows`) — Multi-step CLI sequences for debugging 500s, rollbacks, cache issues, env var management, rolling releases.
+- **`vercel api`** — Authenticated REST API access from CLI. `vercel api list` discovers all endpoints. Supports `--paginate`, `--generate=curl`, file input.
+- **`vercel api /v6/deployments`** — List deployments programmatically
+- **`vercel api /v9/projects`** — Manage projects
+- **Agent Quickstarts** (`/docs/agent-resources`) — Copy-paste prompts for AI Gateway, OAuth, and middleware setup.
+
+### Pulling Vercel Docs On-Demand
+
+```bash
+# Fetch any docs page as markdown
+curl https://vercel.com/docs/functions.md
+curl https://vercel.com/docs/vercel-sandbox/run-commands-in-sandbox.md
+
+# Use vercel api for authenticated operations
+vercel api /v6/deployments --paginate
+vercel api /v2/user
+```
+
+## ClawNet Bot Deployment
+
+**Invoke `Skill(clawnet:clawnet-cli)` before any ClawNet work.** ClawNet deploys AI agents as Vercel Sandboxes within a project's Vercel link.
+
+### Quick Deploy
+
+```bash
+# Init workspace in .agents/
+clawnet bot init --template vercel-ai --name <slug> --display-name "Name" --runtime bun
+
+# Create identity + deploy
+BOT_IDENTITY_PASSWORD="pw" BOT_MASTER_IDENTITY_PASSWORD="mpw" \
+  clawnet bot identity create --name "Name" --password "pw"
+cp -r .vercel .agents/<name>/.vercel
+BOT_IDENTITY_PASSWORD="pw" clawnet bot deploy --name <slug> --yes
+```
+
+### Management
+
+```bash
+clawnet bot list              # List deployed bots
+clawnet bot logs <name>       # View logs
+clawnet bot stop <name>       # Stop sandbox
+clawnet bot restart <name>    # Restart
+clawnet bot remove <name>     # Remove
+clawnet bot exec <name> 'cmd' # Run command in sandbox
+```
+
+All bots share a single `.vercel/` project link. Bot workspaces live in `.agents/<name>/` within the repo.
 
 ## Deployment Patterns
 

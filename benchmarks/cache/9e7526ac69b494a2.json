@@ -1,0 +1,44 @@
+{
+  "output": "Now I have everything I need for a full analysis.\n\n---\n\n## Process Cleanup Report\n\n**Total recoverable (safe):** ~1.5 GB across 4 stale Claude sessions  \n**Total recoverable (with caution):** ~3.2 GB additional\n\n---\n\n### SAFE TO KILL (~1.5 GB) — Stale Claude sessions from 6-7 days ago\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 88 | Claude Code (Feb 26, stale resumed) | 469 MB | 7 days | 94349 |\n| 85 | Claude Code (Feb 27, stale `-c` session) | 419 MB | 6 days | 7742 |\n| 83 | Claude Code (Feb 27, stale) | 358 MB | 6 days | 48680 |\n| 80 | Claude Code (Feb 27, stale) | 299 MB | 6 days | 40588 |\n\n---\n\n### USE CAUTION (~3.2 GB) — Recent or active-looking sessions\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 55 | Wispr Flow (main + renderer) | ~708 MB | 1 day | 43157, 43185 |\n| 48 | Claude (started today 09:40, TTY ttys045) | 526 MB | ~7h | 19134 |\n| 45 | Claude (started today 12:04, TTY ttys002) | 496 MB | ~5h | 79340 |\n| 42 | Claude Code (Mar 4, yesterday) | 342 MB | 1 day | 57030 |\n| 40 | Claude (started today 15:19) | 367 MB | ~2h | 55933 |\n| 35 | Playwright headless shells (leftover test run) | ~370 MB | ~2h | 22384, 22385 |\n| 30 | Codex app | 225 MB | ~3h | 66336 |\n\n---\n\n### PROTECTED\n\n- **This Claude session** (claude -c, TTY ttys008) — 1.14 GB — PID 76187\n- **iTerm2** — 248 MB — PID 35149\n- **Google Chrome** — 416 MB+ (main) — PID 8886\n- **Dia browser** — ~600 MB — PID 95427\n- **WindowServer** — 128 MB, 39% CPU — PID 410 (system)\n- **MongoDB** :27017, **Redis** :6379, **PostgreSQL** :5432 — startup daemons\n\n---\n\n### Kill commands\n\n```bash\n# SAFE — reclaim ~1.5 GB (confirmed stale, 6-7 day old Claude sessions)\nkill 94349 7742 48680 40588\n\n# CAUTION — review these first:\n# kill 19134    # Claude session today 09:40, TTY ttys045 (526 MB)\n# kill 79340    # Claude session today 12:04, TTY ttys002 (496 MB)\n# kill 55933    # Claude session today 15:19 (367 MB)\n# kill 57030    # Claude session from yesterday Mar 4 (342 MB)\n# kill 22384 22385  # Playwright headless shells — safe if you're not running tests (370 MB)\n# kill 43157 43185  # Wispr Flow — safe to restart (708 MB)\n```\n\n---\n\n**My recommendation:** Start with the 4 safe kills (~1.5 GB immediate recovery). Then check your iTerm tabs — the 4 \"CAUTION\" Claude sessions (PIDs 19134, 79340, 55933, 57030) are likely abandoned terminal tabs and killing them would free another ~1.7 GB. The Playwright shells are also almost certainly orphaned test processes, safe to kill.",
+  "tokens": 4624,
+  "duration_ms": 92867,
+  "assertions": [
+    {
+      "id": "pc-1-friendly-names",
+      "text": "Processes are shown with human-readable friendly names (like 'Claude Code session' or 'Next.js dev server') rather than raw command-line strings or binary paths.",
+      "passed": true,
+      "reasoning": "Processes are labeled with human-readable names like 'Claude Code (Feb 26, stale resumed)', 'Wispr Flow (main + renderer)', 'Playwright headless shells', etc. rather than raw binary paths."
+    },
+    {
+      "id": "pc-1-memory-units",
+      "text": "Memory is displayed in human-readable units (MB or GB) not raw KB values or raw RSS numbers.",
+      "passed": true,
+      "reasoning": "All memory values are shown in MB or GB (e.g., '469 MB', '~1.5 GB', '1.14 GB') with no raw KB or RSS numbers."
+    },
+    {
+      "id": "pc-1-safety-levels",
+      "text": "Processes are categorized into safety levels (safe to kill, caution, protected) rather than presented as a flat unsorted list.",
+      "passed": true,
+      "reasoning": "Processes are explicitly categorized into three sections: 'SAFE TO KILL', 'USE CAUTION', and 'PROTECTED'."
+    },
+    {
+      "id": "pc-1-waste-score",
+      "text": "Each process or group of processes has a waste or priority score that combines resource usage and staleness, not just sorted by memory alone.",
+      "passed": true,
+      "reasoning": "Each process row includes a numeric 'Score' column (e.g., 88, 85, 55, 48) that combines resource usage and staleness rather than sorting by memory alone."
+    },
+    {
+      "id": "pc-1-kill-command",
+      "text": "The report ends with a ready-to-use kill command that the user can copy-paste, covering only the safe-to-kill processes.",
+      "passed": true,
+      "reasoning": "The report ends with a copy-pasteable 'kill 94349 7742 48680 40588' command covering only the safe-to-kill processes, with caution processes commented out."
+    },
+    {
+      "id": "pc-1-total-recoverable",
+      "text": "The report shows the total recoverable memory prominently (e.g., 'Total recoverable: ~X.X GB') so the user knows the impact at a glance.",
+      "passed": true,
+      "reasoning": "The report prominently shows 'Total recoverable (safe): ~1.5 GB' and 'Total recoverable (with caution): ~3.2 GB additional' at the top of the report."
+    }
+  ],
+  "pass_rate": 1
+}

@@ -1,0 +1,32 @@
+{
+  "output": "---\n\n## Process Cleanup Report\n\n**Total recoverable**: ~1.9 GB safe, ~2.5 GB with caution\n\n---\n\n### SAFE TO KILL (~1.9 GB)\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 65 | Claude Code (stale, ttys005) | 460 MB | 7 days | 94349 |\n| 65 | Claude Code (stale, ttys000) | 409 MB | 6 days | 7742 |\n| 65 | Claude Code (stale, ttys016) | 358 MB | 6 days | 48680 |\n| 60 | Claude Code (stale, ttys012) | 299 MB | 6 days | 40588 |\n| 45 | Claude Code (idle, ttys001) | 342 MB | 1 day | 57030 |\n| 45 | agent-browser daemon (clawnet) | 7 MB | 30 days | 4803 |\n| 40 | agent-browser daemons (x2, ~/code) | 16 MB | 12 days | 1313, 3892 |\n| 35 | notebooklm MCP server | 7 MB | 6 days | 7758 |\n\n---\n\n### USE CAUTION (~2.5 GB)\n\nThese started today — may be active terminal sessions.\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 43 | Claude Code (ttys008) | 1.14 GB | 5.5 hours | 76187 |\n| 43 | Claude Code (ttys045) | 527 MB | 7 hours | 19134 |\n| 40 | Claude Code (ttys002) | 496 MB | 5 hours | 79340 |\n| 38 | Claude Code (ttys010) | 367 MB | 2 hours | 55933 |\n\n---\n\n### PROTECTED\n\n- **This session** (claude -p) — 398 MB — PID 59805\n- **Active benchmarks** (process-cleanup + markdown-writer) — ~1 GB — PIDs 53947, 54019 and workers\n- **MongoDB** :27017 — PID 1416\n- **Redis** :6379 — PID 1422\n- **PostgreSQL** :5432 — PID 1429\n- **Bun dev → woa-procedural** :3333 — only 10 MB, 6 days (low priority)\n\n---\n\n```bash\n# SAFE — reclaim ~1.9 GB\nkill 94349 7742 48680 40588 57030 4803 1313 3892 7758\n\n# CAUTION — check if you have open terminal sessions first:\n# kill 76187   # Claude Code ttys008 (1.14 GB, 5.5h)\n# kill 19134   # Claude Code ttys045 (527 MB, 7h)\n# kill 79340   # Claude Code ttys002 (496 MB, 5h)\n# kill 55933   # Claude Code ttys010 (367 MB, 2h)\n```\n\nThe big wins are the **5 stale Claude sessions** (6–7 days old) at ~1.87 GB. The CAUTION group is another 2.5 GB if those terminal windows aren't actively in use — check if ttys008, ttys045, ttys002, ttys010 have open terminals before killing.",
+  "tokens": 5567,
+  "duration_ms": 95322,
+  "assertions": [
+    {
+      "id": "pc-2-age-friendly",
+      "text": "Process age is shown as friendly durations like '3 days' or '2 weeks' rather than raw start timestamps.",
+      "passed": true,
+      "reasoning": "Process ages are shown as friendly durations like '7 days', '6 days', '30 days', '5.5 hours', '2 hours', etc."
+    },
+    {
+      "id": "pc-2-grouped",
+      "text": "Related processes are grouped together (e.g., multiple OpenCode sessions shown as a group with total memory, not listed individually with full command lines).",
+      "passed": false,
+      "reasoning": "Claude Code sessions are listed individually with separate rows rather than grouped together with a combined total memory figure."
+    },
+    {
+      "id": "pc-2-current-protected",
+      "text": "The current Claude session is identified and marked as protected or excluded from kill recommendations.",
+      "passed": true,
+      "reasoning": "The current session is explicitly identified as 'This session (claude -p)' and listed under PROTECTED with its PID and memory."
+    },
+    {
+      "id": "pc-2-project-context",
+      "text": "Dev servers include project context — which project directory they serve — not just the generic server type.",
+      "passed": false,
+      "reasoning": "The dev server 'Bun dev → woa-procedural' shows project name but no directory path, and there's only one dev server mentioned with minimal context rather than full project directory information."
+    }
+  ],
+  "pass_rate": 0.5
+}

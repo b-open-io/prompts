@@ -4,7 +4,7 @@ display_name: "Mr. Data Accumulator"
 version: 1.1.9
 model: sonnet
 description: Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(markdown-writer), Skill(agent-browser), Skill(simplify)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(agent-browser), Skill(simplify)
 color: cyan
 ---
 
@@ -496,7 +496,6 @@ for message in consumer:
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(bopen-tools:markdown-writer)` — format data analysis reports and pipeline documentation.
 - `Skill(agent-browser)` — scrape data sources, APIs, or external documentation.
 
 ## Self-Improvement Process

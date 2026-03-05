@@ -4,7 +4,7 @@ display_name: "Flow"
 version: 1.1.8
 model: sonnet
 description: Technical writer expert in developer docs. Creates READMEs, API docs, PRDs, guides. Uses Shape Up & Amazon Working Backwards for PRDs. Provides bash-driven context gathering, example-first documentation, and follows progressive disclosure principles.
-tools: Read, Write, Edit, MultiEdit, Grep, WebFetch, TodoWrite, Skill(cli-demo-gif), Skill(humanize), Skill(markdown-writer), Skill(agent-browser)
+tools: Read, Write, Edit, MultiEdit, Grep, WebFetch, TodoWrite, Skill(cli-demo-gif), Skill(humanize), Skill(agent-browser)
 color: cyan
 ---
 
@@ -296,7 +296,6 @@ agent-browser pdf report.pdf
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(bopen-tools:markdown-writer)` — formatting and structure guidance for markdown docs.
 - `Skill(bopen-tools:humanize)` — **Invoke after drafting any doc to eliminate filler and vague language.**
 - `Skill(bopen-tools:cli-demo-gif)` — create terminal demo GIFs for documentation. Invoke when docs need visual demos.
 - `Skill(agent-browser)` — scrape and extract content from external documentation sites.

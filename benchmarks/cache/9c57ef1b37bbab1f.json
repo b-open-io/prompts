@@ -1,0 +1,32 @@
+{
+  "output": "Here is the CHANGELOG.md entry:\n\n---\n\n```markdown\n## [2.4.0] - 2026-03-05\n\n### Added\n\n- Streaming support for query results via the new `stream()` method. Call it on\n  any query result object to receive rows as an async iterable.\n\n### Changed\n\n- **Breaking:** `DataForge.create()` has been renamed to `DataForge.init()` and\n  the old name is removed. See the [migration guide](#migrating-from-create-to-init) below.\n\n### Deprecated\n\n- `DataForge.connect()` is deprecated in favor of `DataForge.init()` with\n  connection options. `connect()` will be removed in a future major release.\n\n### Fixed\n\n- Nested object serialization no longer drops `null` values.\n  ([#847](https://github.com/example/dataforge/issues/847))\n- Connection pool exhaustion under concurrent writes.\n  ([#901](https://github.com/example/dataforge/issues/901))\n\n---\n\n#### Migrating from `create()` to `init()`\n\n`DataForge.create()` has been removed. Replace all call sites with\n`DataForge.init()` — the signature is identical.\n\n```diff\n- const forge = await DataForge.create({ url: 'postgres://...' });\n+ const forge = await DataForge.init({ url: 'postgres://...' });\n```\n\nIf you were using `DataForge.connect()`, consolidate into `init()` at the same\ntime:\n\n```diff\n- const forge = DataForge.connect({ url: 'postgres://...' });\n- await forge.open();\n+ const forge = await DataForge.init({ url: 'postgres://...' });\n```\n```\n\n---\n\nA few notes on the format choices:\n\n- The diff fences use the `diff` language tag so GitHub renders red/green highlighting.\n- Issue links use inline style pointing to your tracker URL — swap in the real repo path if it differs.\n- The migration note is placed inside the same version block rather than as a separate section, keeping it co-located with the breaking change notice per Keep a Changelog conventions.\n- `DataForge.connect()` is listed under **Deprecated** (not **Removed**) since it still works in 2.4.0 — only `create()` is removed.",
+  "tokens": 896,
+  "duration_ms": 29414,
+  "assertions": [
+    {
+      "id": "cl-2-keepachangelog-sections",
+      "text": "The entry organizes changes under Keep a Changelog section headers — specifically using separate sections for breaking changes, additions, fixes, and deprecations (e.g., Changed, Added, Fixed, Deprecated or similar).",
+      "passed": true,
+      "reasoning": "The entry uses separate ### Added, ### Changed, ### Deprecated, and ### Fixed sections following Keep a Changelog format."
+    },
+    {
+      "id": "cl-2-diff-fence",
+      "text": "The entry includes a diff-fenced code block (```diff) showing the migration from DataForge.create() to DataForge.init() with - and + prefixed lines.",
+      "passed": true,
+      "reasoning": "The entry includes two ```diff fenced blocks showing - DataForge.create() and + DataForge.init() with proper diff syntax."
+    },
+    {
+      "id": "cl-2-issue-links",
+      "text": "Issue numbers #847 and #901 are linked as clickable markdown links pointing to https://github.com/example/dataforge/issues/847 and /901 respectively, not just plain text '#847'.",
+      "passed": true,
+      "reasoning": "Both #847 and #901 are formatted as clickable markdown links pointing to https://github.com/example/dataforge/issues/847 and /901 respectively."
+    },
+    {
+      "id": "cl-2-version-date",
+      "text": "The version heading includes both the version number (2.4.0) and a date in ISO format (YYYY-MM-DD), following Keep a Changelog convention.",
+      "passed": true,
+      "reasoning": "The version heading ## [2.4.0] - 2026-03-05 includes both the version number and an ISO format date."
+    }
+  ],
+  "pass_rate": 1
+}

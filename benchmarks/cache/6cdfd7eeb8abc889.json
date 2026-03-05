@@ -1,0 +1,44 @@
+{
+  "output": "PRD saved to `PRD.md`. Here's a summary of the key decisions baked in:\n\n---\n\n**SplitPay — Bill Splitting for [App Name]**\n\n**The bet in one sentence:** 40% demand signal + existing payment rail + tight scope = a 6-week big batch that turns every group dinner into a transaction multiplier.\n\n**Scope (what made the cut):**\n- Even split + custom amounts\n- In-app contact requests + web pay links for non-users\n- Real-time settlement tracker\n- 7-day session expiry with reminders\n\n**Scope (what was cut):**\n- OCR receipt scanning — classic rabbit hole, doubles scope\n- Itemized splitting (who had what) — v2 if demand proves out\n- POS integrations — entirely different product motion\n\n**Key architectural decisions:**\n- Server-side session state — cross-device, tamper-proof\n- Reuse existing P2P rail — no new compliance surface\n- Rounding policy — initiator absorbs remainder (max ~$0.03)\n- Web pay via signed, single-use HMAC tokens\n\n**North Star:** 25% of group P2P transactions using SplitPay within 90 days.\n\n**Kill criteria:** < 500 sessions/week at day 30, or support tickets > 3% of sessions, or zero rounding errors is violated.",
+  "tokens": 8875,
+  "duration_ms": 239444,
+  "assertions": [
+    {
+      "id": "prd-2-five-whys",
+      "text": "The PRD drills from a surface-level problem statement down to a root cause using an iterative why-based analysis — a chain of at least three levels of causation, not a single problem statement.",
+      "passed": false,
+      "reasoning": "The summary mentions a demand signal and scope decisions but shows no iterative why-based chain of causation drilling to a root cause."
+    },
+    {
+      "id": "prd-2-customer-quote",
+      "text": "The PRD includes a fictional customer quote or testimonial written as a direct quote from a described user persona, as part of Working Backwards.",
+      "passed": false,
+      "reasoning": "No fictional customer quote or testimonial from a named persona appears in the output."
+    },
+    {
+      "id": "prd-2-appetite",
+      "text": "The PRD specifies an appetite using Shape Up terminology — small batch or big batch — with an explicit time box rather than a story point estimate or open-ended timeline.",
+      "passed": true,
+      "reasoning": "The output explicitly states '6-week big batch,' satisfying Shape Up appetite terminology with a time box."
+    },
+    {
+      "id": "prd-2-rabbit-holes",
+      "text": "The PRD identifies edge cases or complexity traps (rabbit holes) that the team should avoid or timebox, distinguishing them from the core solution shape.",
+      "passed": true,
+      "reasoning": "OCR receipt scanning and itemized splitting are explicitly called out as rabbit holes or deferred complexity traps."
+    },
+    {
+      "id": "prd-2-not-building",
+      "text": "The PRD lists explicit out-of-scope items framed as deliberate exclusions for this cycle.",
+      "passed": true,
+      "reasoning": "The output lists OCR receipt scanning, itemized splitting, and POS integrations as explicit out-of-scope exclusions for this cycle."
+    },
+    {
+      "id": "prd-2-confidence",
+      "text": "The PRD includes a confidence or conviction score (numeric, e.g., 7/10) attached to the bet.",
+      "passed": false,
+      "reasoning": "No numeric confidence or conviction score (e.g., 7/10) is present in the output."
+    }
+  ],
+  "pass_rate": 0.5
+}

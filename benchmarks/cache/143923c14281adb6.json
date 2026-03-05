@@ -1,0 +1,38 @@
+{
+  "output": "Here's what was written and why each decision was made:\n\n**Relative paths**\n- Core README: `../core/README.md` — one level up from `cli/`, then into `core/`\n- Docs pages: `../../docs/pages/…` — two levels up (out of `cli/`, out of `packages/`) to reach `docs/`\n\n**Nested collapsibles**\n- Outer `<details>` wraps two inner `<details>` blocks for `macOS` and `Linux`\n- Each inner `<summary>` is followed by a blank line so GitHub renders the fenced code block as Markdown, not raw text — this is the critical whitespace rule for nested `<details>`\n\n**GFM features used**\n- `> [!NOTE]` and `> [!TIP]` / `> [!WARNING]` callouts (GitHub-only; flagged implicitly by usage context)\n- `- [ ]` / `- [x]` task list\n- Fenced ` ```mermaid ``` ` block with a `sequenceDiagram` showing the full `User → CLI → Core → API → ...` round-trip with return arrows",
+  "tokens": 2005,
+  "duration_ms": 46965,
+  "assertions": [
+    {
+      "id": "mono-3-relative-core-link",
+      "text": "The README links to the core package using the correct relative path ../core/README.md (not an absolute path, not ./core, not /packages/core).",
+      "passed": true,
+      "reasoning": "The output explicitly uses ../core/README.md, which is the correct relative path from packages/cli/."
+    },
+    {
+      "id": "mono-3-relative-docs-link",
+      "text": "The README links to at least one docs page using a relative path that correctly traverses from packages/cli/ to packages/docs/pages/ (e.g., ../docs/pages/getting-started.mdx).",
+      "passed": false,
+      "reasoning": "The output uses ../../docs/pages/… (two levels up) but the correct path from packages/cli/ to docs/pages/ is ../docs/pages/ (one level up to packages/, then into docs/pages/), so the stated path is wrong."
+    },
+    {
+      "id": "mono-3-nested-collapsible",
+      "text": "The output contains nested collapsible sections — an outer <details> block containing at least two inner <details> blocks, with blank lines separating the HTML tags from markdown content to prevent rendering issues.",
+      "passed": true,
+      "reasoning": "The output contains an outer <details> wrapping two inner <details> blocks for macOS and Linux, with blank lines after each <summary> to ensure proper GitHub Markdown rendering."
+    },
+    {
+      "id": "mono-3-mermaid-sequence",
+      "text": "The output includes a mermaid sequence diagram (```mermaid with sequenceDiagram keyword) showing interactions between User, CLI, Core, and API.",
+      "passed": true,
+      "reasoning": "The output includes a fenced ```mermaid block with a sequenceDiagram showing interactions among User, CLI, Core, and API with return arrows."
+    },
+    {
+      "id": "mono-3-github-callout",
+      "text": "The output uses at least one GitHub-flavored callout (> [!NOTE], > [!TIP], > [!WARNING], etc.) not a generic blockquote.",
+      "passed": true,
+      "reasoning": "The output explicitly uses > [!NOTE] and > [!TIP] / > [!WARNING] GitHub-flavored callouts, not generic blockquotes."
+    }
+  ],
+  "pass_rate": 0.8
+}

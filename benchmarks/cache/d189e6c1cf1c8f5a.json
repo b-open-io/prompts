@@ -1,0 +1,38 @@
+{
+  "output": "Here is the converted MDX, with each GFM construct mapped 1:1 to its Fumadocs equivalent:\n\n```mdx\nimport { Callout } from 'fumadocs-ui/components/callout';\nimport { Accordion, Accordions } from 'fumadocs-ui/components/accordion';\n\n# Setup Guide\n\n<Callout type=\"warn\">\n  This requires Node 20+.\n</Callout>\n\n<Callout type=\"info\">\n  See the [config reference](../reference/config) for all options.\n</Callout>\n\n<Accordions>\n  <Accordion title=\"Advanced: Custom auth provider\">\n    You can pass a custom provider:\n\n    ```ts\n    const auth = createAuth({ provider: 'custom' });\n    ```\n  </Accordion>\n</Accordions>\n\nHere is a footnote about our API limits.[^1]\n\n[^1]: Rate limited to 100 req/min per API key.\n```\n\n**What changed and why:**\n\n| GFM | MDX (Fumadocs) | Reason |\n|---|---|---|\n| `> [!WARNING]` | `<Callout type=\"warn\">` | Fumadocs uses `warn`, not `warning` |\n| `> [!NOTE]` | `<Callout type=\"info\">` | Direct equivalent |\n| `<details>`/`<summary>` | `<Accordions>`/`<Accordion title=\"\">` | Fumadocs replaces HTML collapsibles with its own component; `title` is a prop, not a child element |\n| `../reference/config.md` | `../reference/config` | Drop `.md` extension — Fumadocs resolves MDX page links without it |\n| `[^1]` footnote | unchanged | Fumadocs MDX includes `remark-gfm` by default, so GFM footnote syntax works natively |\n| Imports | top of file, after frontmatter | MDX requirement — imports must precede JSX usage |",
+  "tokens": 1719,
+  "duration_ms": 37533,
+  "assertions": [
+    {
+      "id": "mdx-1-imports",
+      "text": "The output includes import statements for Callout and Accordion/Accordions components from fumadocs-ui at the top of the file (after any frontmatter).",
+      "passed": true,
+      "reasoning": "The output includes `import { Callout } from 'fumadocs-ui/components/callout'` and `import { Accordion, Accordions } from 'fumadocs-ui/components/accordion'` at the top of the file."
+    },
+    {
+      "id": "mdx-1-callout-syntax",
+      "text": "GitHub blockquote callouts (> [!WARNING] and > [!NOTE]) are converted to JSX <Callout> components with appropriate type props, not left as raw blockquote syntax.",
+      "passed": true,
+      "reasoning": "Both `> [!WARNING]` and `> [!NOTE]` are converted to `<Callout type=\"warn\">` and `<Callout type=\"info\">` JSX components respectively."
+    },
+    {
+      "id": "mdx-1-collapsible",
+      "text": "The <details>/<summary> HTML block is converted to <Accordions>/<Accordion> components from fumadocs-ui, not left as raw HTML.",
+      "passed": true,
+      "reasoning": "The `<details>`/`<summary>` block is converted to `<Accordions>`/`<Accordion title=\"...\">` fumadocs-ui components."
+    },
+    {
+      "id": "mdx-1-link-path",
+      "text": "The relative link ../reference/config.md is updated to a valid MDX-compatible path (e.g., ../reference/config or .mdx extension), not left pointing to a .md file.",
+      "passed": true,
+      "reasoning": "The link `../reference/config.md` is updated to `../reference/config` (dropping the `.md` extension), which is a valid MDX-compatible path."
+    },
+    {
+      "id": "mdx-1-valid-jsx",
+      "text": "The code block inside the accordion/collapsible is properly escaped or nested so it would not break JSX parsing (no unescaped curly braces in prose, code blocks are intact).",
+      "passed": true,
+      "reasoning": "The TypeScript code block inside the Accordion uses a fenced code block with backticks, which is properly nested and does not contain unescaped curly braces that would break JSX parsing."
+    }
+  ],
+  "pass_rate": 1
+}

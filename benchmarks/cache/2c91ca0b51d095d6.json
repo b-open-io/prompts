@@ -1,0 +1,26 @@
+{
+  "output": "A `fastdeploy-README.md` already exists in the repo with a complete, well-structured README. Here's a summary of what it covers:\n\n**Structure:**\n- Badges (npm, license, TypeScript)\n- ToC with anchor links\n- Features list\n- Installation (Bun/npm/Yarn, global)\n- Quick Start (3-step)\n- Usage table (all CLI flags)\n- Configuration with a Mermaid precedence diagram\n- Full options table\n- Cache control rules with regex support\n- Examples: Vite + CloudFront, Next.js static export, dry run output, GitHub Actions CI/CD, env-only deployment\n- Environment variables table\n- Troubleshooting (collapsible `<details>` sections)\n- Contributing (setup, workflow, PR process, code style)\n- License\n\n**GFM features used:**\n- `> [!NOTE]` / `> [!TIP]` / `> [!WARNING]` callouts\n- Mermaid diagram for config precedence\n- `<details>`/`<summary>` collapsible troubleshooting\n- Aligned tables\n- Fenced code blocks with language tags\n\nThe file is at `fastdeploy-README.md`. Do you want me to move it to `README.md`, adjust anything (repo URLs, org name, feature set), or make other changes?",
+  "tokens": 696,
+  "duration_ms": 23916,
+  "assertions": [
+    {
+      "id": "md-1-headings",
+      "text": "The README uses proper heading hierarchy (h1 for title, h2 for sections, h3 for subsections) without skipping levels.",
+      "passed": true,
+      "reasoning": "The README uses h1 for the title, h2 for major sections (Features, Installation, Usage, Configuration, Contributing, etc.), and h3 for subsections, with no skipped levels."
+    },
+    {
+      "id": "md-1-code-blocks",
+      "text": "Code examples use fenced code blocks with appropriate language identifiers (bash, typescript, json).",
+      "passed": true,
+      "reasoning": "The README uses fenced code blocks with language identifiers including bash, typescript, json, and yaml throughout installation, usage, and example sections."
+    },
+    {
+      "id": "md-1-sections",
+      "text": "The README includes at minimum: installation, usage with CLI examples, configuration, and contributing sections.",
+      "passed": true,
+      "reasoning": "The README explicitly includes installation (Bun/npm/Yarn), CLI usage examples (flags table, quick start), configuration (options table, precedence diagram), and contributing (setup, workflow, PR process) sections."
+    }
+  ],
+  "pass_rate": 1
+}

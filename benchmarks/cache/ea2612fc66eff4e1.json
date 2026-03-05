@@ -1,0 +1,32 @@
+{
+  "output": "Here's what I found:\n\n**Claude sessions** — 10 idle/stale instances (PIDs: 57030, 19134, 55933, 48680, 40588, 79340, 94349, 7742, 66218, 64302, 64943, 76187). Several have near-zero CPU. The two active ones are `76187` (`claude -c`, 3.1% MEM) and `66218` (`claude -p`, currently running = this session likely).\n\n**Stale benchmark processes** — Two old bun benchmark runs still alive (PIDs 53947, 54019) for `process-cleanup` and `markdown-writer` skills.\n\n**agent-browser daemons** — 15+ node daemon instances (PIDs: 1313, 3892, 13348, 13500, 21706, 22322, 22558, 22854, 23770, 51919, 57249, 70501, 71426, 87753, 4803). These are zombie/leaked daemons.\n\n**No dev servers** running (no next dev, vite, etc.) — that's clean.\n\nWant me to kill the stale stuff? Specifically:\n1. Idle Claude sessions (all `claude` with ~0% CPU that aren't this session)\n2. The two stale benchmark bun processes\n3. The excess agent-browser daemons (keep 1, kill the rest)\n\nJust confirm and I'll clean them up.",
+  "tokens": 1329,
+  "duration_ms": 38382,
+  "assertions": [
+    {
+      "id": "pc-2-age-friendly",
+      "text": "Process age is shown as friendly durations like '3 days' or '2 weeks' rather than raw start timestamps.",
+      "passed": false,
+      "reasoning": "The output shows no friendly durations like '3 days' or '2 weeks' — process ages are completely absent from the report."
+    },
+    {
+      "id": "pc-2-grouped",
+      "text": "Related processes are grouped together (e.g., multiple OpenCode sessions shown as a group with total memory, not listed individually with full command lines).",
+      "passed": true,
+      "reasoning": "Processes are grouped by category (Claude sessions, stale benchmark processes, agent-browser daemons) rather than listed individually with full command lines."
+    },
+    {
+      "id": "pc-2-current-protected",
+      "text": "The current Claude session is identified and marked as protected or excluded from kill recommendations.",
+      "passed": true,
+      "reasoning": "The current session (PID 66218, 'claude -p') is identified and noted as 'currently running = this session likely', implicitly excluding it from kill recommendations."
+    },
+    {
+      "id": "pc-2-project-context",
+      "text": "Dev servers include project context — which project directory they serve — not just the generic server type.",
+      "passed": false,
+      "reasoning": "The output explicitly states 'No dev servers running' so there is no dev server project context shown, and even if there were, no project directory context is demonstrated."
+    }
+  ],
+  "pass_rate": 0.5
+}

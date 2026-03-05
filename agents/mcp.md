@@ -3,7 +3,7 @@ name: mcp
 display_name: "Orbit"
 version: 3.0.14
 description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
-tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(markdown-writer), Skill(agent-browser), Skill(ai-sdk), Skill(simplify)
+tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify)
 model: sonnet
 color: orange
 ---
@@ -2380,7 +2380,6 @@ Invoke these skills before starting the relevant work:
 
 - `Agent(claude-code-guide)` — **Built-in Claude Code expert. Invoke for deep questions about MCP configuration, transport types, authentication, Tool Search, or how Claude Code loads/uses MCP servers.** No installation — just tell Claude: `use the claude-code-guide agent`.
 - `Skill(ai-sdk)` — invoke when building MCP clients with `@ai-sdk/mcp`, integrating MCP tools into AI SDK workflows, or using `createMCPClient`.
-- `Skill(bopen-tools:markdown-writer)` — format MCP server configuration guides and troubleshooting docs.
 - `Skill(agent-browser)` — scrape MCP server documentation or npm package pages.
 
 ## Self-Improvement

@@ -1,0 +1,26 @@
+{
+  "output": "## Our Values\n\n**Reliability is the product.**\nEvery payment that clears is a promise kept. We treat uptime, latency, and accuracy as core features — not operational concerns — because the developers who build on us are making that same promise to their customers.\n\n**Developer experience is not a nicety.**\nPoorly documented APIs and opaque error messages are a tax on every team that uses us. We invest in clear docs, predictable behavior, and fast support because your time is better spent building than debugging our abstractions.\n\n**Transparency over comfort.**\nWe publish our incident history. We tell you when a fee changes before it changes. We don't bury the hard details in footnotes. Trust is built through honesty, especially when the news isn't good.\n\n**Simple by default, powerful when needed.**\nThe right payment integration shouldn't take a week. We design for the common case first, then expose depth for teams that need it — not the other way around.",
+  "tokens": 527,
+  "duration_ms": 24057,
+  "assertions": [
+    {
+      "id": "hum-1-no-binary-contrast",
+      "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
+      "passed": false,
+      "reasoning": "Value 1 embeds 'core features — not operational concerns' (a not-X contrast), and Value 2's title 'Developer experience is not a nicety' maps directly to the 'X aren't nice-to-haves — they're Y' pattern even without spelling out the second half."
+    },
+    {
+      "id": "hum-1-varied-value-structure",
+      "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
+      "passed": false,
+      "reasoning": "Values 1, 2, and 4 all share the same structure (bold declarative title + two-sentence explanation), with only Value 3 breaking the pattern via four short declarative sentences — only one of four meaningfully differs, not the required two."
+    },
+    {
+      "id": "hum-1-no-tricolon-conclusions",
+      "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
+      "passed": true,
+      "reasoning": "No value description ends with a three-item parallel list; 'uptime, latency, and accuracy' is a tricolon but appears mid-sentence in Value 1, not as a concluding element."
+    }
+  ],
+  "pass_rate": 0.3333333333333333
+}

@@ -3,7 +3,7 @@ name: database
 display_name: "Idris"
 version: 1.2.10
 description: Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso (libSQL), and Convex expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(markdown-writer), Skill(agent-browser), Skill(simplify)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(agent-browser), Skill(simplify)
 color: green
 model: opus
 ---
@@ -658,7 +658,6 @@ I use TodoWrite for systematic database project management:
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(bopen-tools:markdown-writer)` — format schema documentation and query analysis as clean markdown.
 - `Skill(critique)` — show visual diffs of schema changes before asking questions.
 - `Skill(confess)` — reveal mistakes, incomplete migrations, or concerns before ending session.
 - `Skill(agent-browser)` — scrape database documentation or release notes when needed.

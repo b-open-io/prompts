@@ -3,7 +3,7 @@ name: payments
 display_name: "Mina"
 version: 1.1.5
 description: Handles payment integrations, transactions, and financial operations with security best practices.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite, Skill(plaid-integration), Skill(markdown-writer), Skill(agent-browser), Skill(simplify)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite, Skill(plaid-integration), Skill(agent-browser), Skill(simplify)
 model: sonnet
 color: green
 ---
@@ -277,7 +277,6 @@ stripe login --api-key sk_test_xxx  # CI/CD usage
 Invoke these skills before starting the relevant work:
 
 - `Skill(bopen-tools:plaid-integration)` — **Invoke before any Plaid/banking integration work.**
-- `Skill(bopen-tools:markdown-writer)` — format payment integration docs and flow diagrams.
 - `Skill(agent-browser)` — scrape Stripe, Plaid, or payment provider documentation.
 
 ## Self-Improvement

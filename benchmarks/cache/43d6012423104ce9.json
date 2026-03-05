@@ -1,0 +1,44 @@
+{
+  "output": "Here's what's hammering your machine:\n\n---\n\n## Top Offenders\n\n### 1. Claude Code processes — **~6 GB RAM, 14 instances**\nThis is the biggest memory hog. You have 14 `claude` processes running simultaneously, with the largest consuming **1.1 GB** alone. These are likely orphaned subagents from past sessions.\n\n### 2. Playwright headless Chrome — **~4.5 GB RAM, 76 processes**\nSomething left 76 headless Chrome browser processes running. This is a huge resource drain and almost certainly a leak from a test run or benchmark that didn't clean up.\n\n### 3. Dia (browser app) — **~584 MB + multiple renderer processes**\nThe Dia browser is holding several hundred MB across multiple renderer processes.\n\n### 4. Wispr Flow — **~700 MB, high CPU**\nTwo renderer processes are each at ~6% CPU continuously.\n\n### 5. WindowServer + iTerm2 — **~58% CPU combined**\niTerm2 is at ~58% CPU — likely due to rendering lots of output from the above chaos.\n\n---\n\n## Recommended Cleanup\n\nKill the Playwright orphans (safe to do — these are zombie test browsers):\n```bash\npkill -f \"chrome-headless-shell\"\n```\n\nFor the extra Claude processes — do you want me to list them with more detail so you can identify which are safe to kill? (The current session is PID `76187` — I'd avoid that one.)\n\nWant me to kill the Playwright processes now?",
+  "tokens": 1780,
+  "duration_ms": 35465,
+  "assertions": [
+    {
+      "id": "pc-1-friendly-names",
+      "text": "Processes are shown with human-readable friendly names (like 'Claude Code session' or 'Next.js dev server') rather than raw command-line strings or binary paths.",
+      "passed": true,
+      "reasoning": "Processes are labeled with friendly names like 'Claude Code processes', 'Playwright headless Chrome', 'Dia (browser app)', and 'Wispr Flow' rather than raw binary paths."
+    },
+    {
+      "id": "pc-1-memory-units",
+      "text": "Memory is displayed in human-readable units (MB or GB) not raw KB values or raw RSS numbers.",
+      "passed": true,
+      "reasoning": "Memory is consistently shown in human-readable units (MB and GB) throughout the report."
+    },
+    {
+      "id": "pc-1-safety-levels",
+      "text": "Processes are categorized into safety levels (safe to kill, caution, protected) rather than presented as a flat unsorted list.",
+      "passed": false,
+      "reasoning": "The report does not categorize processes into explicit safety levels (safe to kill, caution, protected); it only provides a flat list of offenders with an informal recommendation section."
+    },
+    {
+      "id": "pc-1-waste-score",
+      "text": "Each process or group of processes has a waste or priority score that combines resource usage and staleness, not just sorted by memory alone.",
+      "passed": false,
+      "reasoning": "No waste or priority score is assigned to any process or group; processes are ranked by memory usage only without a combined staleness/resource score."
+    },
+    {
+      "id": "pc-1-kill-command",
+      "text": "The report ends with a ready-to-use kill command that the user can copy-paste, covering only the safe-to-kill processes.",
+      "passed": true,
+      "reasoning": "The report ends with a copy-pasteable kill command ('pkill -f \"chrome-headless-shell\"') covering safe-to-kill Playwright processes."
+    },
+    {
+      "id": "pc-1-total-recoverable",
+      "text": "The report shows the total recoverable memory prominently (e.g., 'Total recoverable: ~X.X GB') so the user knows the impact at a glance.",
+      "passed": false,
+      "reasoning": "There is no explicit 'Total recoverable: ~X GB' summary; the individual group totals are mentioned but never summed into a prominent total recoverable figure."
+    }
+  ],
+  "pass_rate": 0.5
+}

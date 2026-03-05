@@ -1,0 +1,32 @@
+{
+  "output": "The Hunter/Skeptic/Referee workflow solves a specific problem: **a single agent anchors on its own judgments**, producing sycophantic bug reports where it confirms what it already \"decided.\" Three isolated agents eliminate that.\n\n---\n\n## The Core Insight: Context Isolation\n\nEach agent receives **only what it needs** — nothing more. This is the mechanism that makes verdicts genuinely independent.\n\n| Phase | Agent | Gets | Goal |\n|-------|-------|------|------|\n| 1 | **Nyx** (Hunter) | Full codebase | Maximize recall. False positives are fine. |\n| 2 | **Kayle** (Skeptic) | Bug list + referenced snippets only | Disprove as many as possible. |\n| 3 | **Iris** (Referee) | Hunter output + Skeptic output only | Render ground-truth verdicts. |\n\n---\n\n## Why This Works\n\n**Phase 1 — Hunter (high recall, no filter)**\nNyx operates with an aggressive scoring model: missing a real bug costs more than a false positive. This biases toward recall. Every suspicious thing gets reported.\n\n**Phase 2 — Skeptic (challenge mode)**\nKayle never sees the Hunter's confidence level or reasoning style — only the raw findings and the specific code they reference. The 2x penalty for wrongly dismissing a real bug keeps the Skeptic honest: it can't just blanket-reject everything.\n\n**Phase 3 — Referee (final arbiter)**\nIris sees both sides but no codebase. It weighs arguments without anchoring on the code itself. It's scored against \"ground truth,\" which pressures precision over consensus.\n\n---\n\n## The Anti-Sycophancy Mechanism\n\nThe key violations that break the system:\n\n- Skeptic seeing the Hunter's enthusiasm → anchors on it, becomes lenient\n- Referee seeing either agent's tone → drifts toward whichever sounds more confident\n- Any agent seeing both its own output and the next agent's reaction → confirmation loop\n\n---\n\n## When to Use It\n\n- Pre-release audits of auth, payments, or data-integrity modules\n- Reviewing unfamiliar/legacy codebases where you can't trust intuition\n- High-stakes PRs with broad architectural changes\n\nFor quick, low-stakes reviews, just run Nyx (Hunter) directly in normal mode — the full three-phase process is overkill for routine PRs.\n\n---\n\n**To run this on your codebase**, point me at the files or directories and I'll dispatch the three agents in sequence.",
+  "tokens": 829,
+  "duration_ms": 28357,
+  "assertions": [
+    {
+      "id": "hsr-1-three-phases",
+      "text": "The response describes three distinct phases with different roles: a bug finder (Hunter), an adversarial challenger (Skeptic), and a final arbiter (Referee).",
+      "passed": true,
+      "reasoning": "The response clearly describes Nyx (Hunter), Kayle (Skeptic), and Iris (Referee) as three distinct phases with different roles: finding bugs, challenging them, and arbitrating final verdicts."
+    },
+    {
+      "id": "hsr-1-context-isolation",
+      "text": "The response explains that each phase runs in isolated context — the Skeptic should not see the Hunter's confidence/reasoning, and the Referee should not see either agent's emotional register.",
+      "passed": true,
+      "reasoning": "The response explicitly details what each agent receives (Skeptic gets only bug list + snippets, Referee gets only Hunter+Skeptic output) and lists Skeptic seeing Hunter's enthusiasm as a key violation that breaks the system."
+    },
+    {
+      "id": "hsr-1-scoring-incentives",
+      "text": "The response mentions scoring incentives that exploit sycophancy: the Hunter is rewarded for finding bugs, the Skeptic gets points for disproving but penalized 2x for wrongly dismissing, and the Referee is told ground truth exists.",
+      "passed": true,
+      "reasoning": "The response mentions the Hunter's aggressive scoring model biasing toward recall, the Skeptic's 2x penalty for wrongly dismissing real bugs, and the Referee being scored against 'ground truth' to pressure precision."
+    },
+    {
+      "id": "hsr-1-sycophancy",
+      "text": "The response explains that the workflow is designed to neutralize sycophancy or confirmation bias by preventing agents from anchoring on each other's judgments.",
+      "passed": true,
+      "reasoning": "The response dedicates an entire 'Anti-Sycophancy Mechanism' section explaining how context isolation prevents agents from anchoring on each other's judgments and avoiding confirmation loops."
+    }
+  ],
+  "pass_rate": 1
+}

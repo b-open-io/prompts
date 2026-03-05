@@ -4,7 +4,7 @@ display_name: "Maxim"
 version: 1.2.11
 model: sonnet
 description: Implements API integrations, webhooks, and third-party service connections with proper error handling.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(resend), Skill(markdown-writer), Skill(agent-browser), Skill(simplify)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(resend), Skill(agent-browser), Skill(simplify)
 color: green
 ---
 

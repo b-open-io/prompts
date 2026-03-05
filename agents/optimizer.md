@@ -50,7 +50,7 @@ description: |-
   Full site audit — Torque's website assessment workflow covers Lighthouse, images, bundle, and Core Web Vitals.
   </commentary>
   </example>
-tools: Bash, Read, Grep, Glob, Write, Edit, WebFetch, TodoWrite, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(frontend-performance), Skill(gemskills:optimize-images), Skill(saas-launch-audit), Skill(plugin-dev:skill-development), Skill(markdown-writer), Skill(agent-browser), Skill(critique), Skill(confess), Skill(simplify)
+tools: Bash, Read, Grep, Glob, Write, Edit, WebFetch, TodoWrite, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(frontend-performance), Skill(gemskills:optimize-images), Skill(saas-launch-audit), Skill(plugin-dev:skill-development), Skill(agent-browser), Skill(critique), Skill(confess), Skill(simplify)
 color: green
 ---
 

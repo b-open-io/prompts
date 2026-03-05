@@ -31,7 +31,6 @@ bunx skills add b-open-io/bopen-tools --skill x-user-timeline
 bunx skills add b-open-io/bopen-tools --skill frontend-design
 bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
 bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
-bunx skills add b-open-io/bopen-tools --skill markdown-writer
 bunx skills add b-open-io/bopen-tools --skill deck-creator
 bunx skills add b-open-io/bopen-tools --skill humanize
 bunx skills add b-open-io/bopen-tools --skill npm-publish
@@ -127,9 +126,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
   ```bash
   bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
   ```
-- **markdown-writer** - Write and format markdown content with best practices
   ```bash
-  bunx skills add b-open-io/bopen-tools --skill markdown-writer
   ```
 - **deck-creator** - Create presentation decks and slide content
   ```bash
@@ -309,7 +306,6 @@ Add evals alongside any skill at `skills/<name>/evals/evals.json`:
 bun run benchmark
 
 # Run a single skill
-bun run benchmark --skill markdown-writer
 
 # Custom model or concurrency
 bun run benchmark --model claude-opus-4-6 --concurrency 5

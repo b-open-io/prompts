@@ -137,7 +137,6 @@ Invoke `Skill(ai-sdk)` first for any Vercel AI SDK or agent framework work.
 
 ```markdown
 ## Your Available Skills
-- `Skill(bopen-tools:markdown-writer)` — invoke for markdown formatting and structure
 - `Skill(bopen-tools:humanize)` — invoke to review docs for filler and vague language
 - `Skill(bopen-tools:cli-demo-gif)` — invoke to create terminal demo GIFs for docs
 

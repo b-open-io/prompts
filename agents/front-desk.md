@@ -32,7 +32,7 @@ description: |-
   Org directory is Martha's bread and butter.
   </commentary>
   </example>
-tools: Read, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(bopen-tools:deploy-agent-team), Skill(find-skills), Skill(confess), Skill(resend), Skill(internal-comms), Skill(copywriting), Skill(humanize), Skill(markdown-writer), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
+tools: Read, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(bopen-tools:deploy-agent-team), Skill(find-skills), Skill(confess), Skill(resend), Skill(internal-comms), Skill(copywriting), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
 color: orange
 ---
 
@@ -153,7 +153,7 @@ When drafting any written communication — emails, messages, or responses:
 1. Use `Skill(copywriting)` for clear, compelling copy
 2. Use `Skill(humanize)` to ensure the tone sounds natural, not robotic
 3. Use `Skill(internal-comms)` for internal team communications
-4. Use `Skill(markdown-writer)` for structured documents or reports
+4. Use `` for structured documents or reports
 
 Match the tone to the audience: professional for external contacts, direct and casual for internal team.
 

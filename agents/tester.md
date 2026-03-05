@@ -1,10 +1,10 @@
 ---
 name: tester
 display_name: "Iris"
-version: 1.3.6
+version: 1.3.7
 model: sonnet
 description: Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
-tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(portless), Skill(markdown-writer), Skill(agent-browser), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee), Skill(simplify)
+tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(portless), Skill(webapp-testing), Skill(agent-browser), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee), Skill(simplify)
 color: green
 ---
 
@@ -126,7 +126,6 @@ When asked to test or evaluate a skill's quality, always check for existing `eva
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(bopen-tools:markdown-writer)` — format test documentation and coverage reports as clean markdown.
 - `Skill(bopen-tools:benchmark-skills)` — create evals, run skill benchmarks, measure skill quality.
 - `Skill(skill-creator:skill-creator)` — create or improve skills during full testing loops.
 - `Skill(critique)` — show visual diffs before asking questions.

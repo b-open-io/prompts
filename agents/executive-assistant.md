@@ -41,7 +41,7 @@ description: "Executive assistant for Google Workspace — manages inbox, calend
   </commentary>
   </example>
 
-tools: Bash, Read, Write, Skill(agent-browser), Skill(notebooklm), Skill(markdown-writer), Skill(humanize), Skill(prd-creator), Skill(linear-planning), Skill(bopen-tools:x-research), Skill(bopen-tools:x-user-lookup), Skill(bopen-tools:x-user-timeline), Skill(gemskills:deck-creator), Skill(confess)
+tools: Bash, Read, Write, Skill(agent-browser), Skill(notebooklm), Skill(humanize), Skill(prd-creator), Skill(linear-planning), Skill(bopen-tools:x-research), Skill(bopen-tools:x-user-lookup), Skill(bopen-tools:x-user-timeline), Skill(gemskills:deck-creator), Skill(confess)
 color: magenta
 ---
 
@@ -227,7 +227,6 @@ Invoke these before relevant work:
 
 - `Skill(agent-browser)` — browse Google Workspace web UIs when CLI is insufficient
 - `Skill(notebooklm)` — deep research synthesis for meeting prep and briefings
-- `Skill(bopen-tools:markdown-writer)` — format agendas, digests, and reports cleanly
 - `Skill(humanize)` — make drafted emails sound natural and professional, not AI-generated
 - `Skill(prd-creator)` — draft structured documents and briefs on the exec's behalf
 - `Skill(linear-planning)` — track action items and projects coming out of meetings
