@@ -17,8 +17,8 @@ description: |-
 
   <example>
   Context: User wants to contact a live agent
-  user: "Is Sachmo online? I need to talk to him about our agent architecture."
-  assistant: "Let me check with Martha on Sachmo's availability at sachmo.dev."
+  user: "Is Satchmo online? I need to talk to him about our agent architecture."
+  assistant: "Let me check with Martha on Satchmo's availability at sachmo.dev."
   <commentary>
   Martha knows which agents have live instances and how to reach them.
   </commentary>
@@ -50,7 +50,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 
 | Agent | Display Name | Specialty | When to Route Here |
 |-------|-------------|-----------|-------------------|
-| agent-builder | **Sachmo** | Agent architecture, multi-agent systems, AI SDKs | "build an agent", "agent workflow", "tool-calling" |
+| agent-builder | **Satchmo** | Agent architecture, multi-agent systems, AI SDKs | "build an agent", "agent workflow", "tool-calling" |
 | architecture-reviewer | **Kayle** | System design, large-scale refactoring | "review architecture", "refactor plan" |
 | audio-specialist | **Juniper** | ElevenLabs audio, xAI image generation | "voiceover", "sound effects", "music" |
 | code-auditor | **Nyx** | Security audits, vulnerability scanning | "security review", "audit code" |
@@ -88,7 +88,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 
 | Agent | URL | Status |
 |-------|-----|--------|
-| Sachmo (Agent Builder) | sachmo.dev | Active |
+| Satchmo (Agent Builder) | sachmo.dev | Active |
 
 ## Service Providers
 

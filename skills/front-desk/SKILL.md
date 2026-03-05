@@ -15,7 +15,7 @@ Match the user's need to the right specialist:
 |------|-------|--------|
 | BSV transactions, wallets | **Sato** (bitcoin) | bsv-skills |
 | Ordinals, NFTs, tokens | **Glyph** (ordinals) | 1sat-skills |
-| Agent architecture | **Sachmo** (agent-builder) | bopen-tools |
+| Agent architecture | **Satchmo** (agent-builder) | bopen-tools |
 | UI/UX design | **Mira** (designer) | bopen-tools |
 | Performance | **Torque** (optimizer) | bopen-tools |
 | Security audit | **Nyx** (code-auditor) | bopen-tools |
@@ -49,7 +49,7 @@ Agents with cloud-hosted instances available for direct interaction:
 
 | Agent | URL | Notes |
 |-------|-----|-------|
-| Sachmo (Agent Builder) | sachmo.dev | Active — agent architecture, multi-agent systems |
+| Satchmo (Agent Builder) | sachmo.dev | Active — agent architecture, multi-agent systems |
 
 ## Dispatching Agents
 

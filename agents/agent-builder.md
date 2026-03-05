@@ -1,6 +1,6 @@
 ---
 name: agent-builder
-display_name: "Sachmo"
+display_name: "Satchmo"
 version: 1.3.15
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, and resilient chat UIs.
