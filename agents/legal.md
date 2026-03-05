@@ -1,7 +1,7 @@
 ---
 name: legal
-display_name: "Helena"
-version: 1.1.4
+display_name: "Anthony"
+version: 1.1.5
 description: Expert in legal compliance, privacy regulations, terms of service, and data protection
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(markdown-writer), Skill(agent-browser)
 model: opus
