@@ -376,6 +376,7 @@ agent-browser request list    # confirm health endpoint called and status
 
 Invoke these skills before starting the relevant work:
 
+- `Agent(claude-code-guide)` — **Built-in Claude Code expert. Invoke for deep questions about hooks, headless mode, CI/CD integration, settings.json, or running Claude Code non-interactively.** No installation — just tell Claude to use it.
 - `Skill(semgrep)` — scan CI/CD configuration for security issues. **Invoke before auditing any pipeline.**
 - `Skill(codeql)` — deep workflow security analysis. Invoke for thorough security reviews.
 - `Skill(bopen-tools:saas-launch-audit)` — **Always invoke before any production deployment.**

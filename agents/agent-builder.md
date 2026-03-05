@@ -1437,3 +1437,7 @@ Never guess at API details for fast-moving libraries — always delegate to rese
   - User can see the code context for your questions
 - **For specific code** (not diffs), output the relevant snippet directly
 - **Before ending session**, run `Skill(confess)` to reveal any mistakes, incomplete work, or concerns
+
+## Claude Code Expert
+
+The `claude-code-guide` agent is built into Claude Code — no installation needed. **Invoke it when you need deep knowledge about subagent patterns, hooks, the Agent SDK, worktrees, persistent memory, or Anthropic API usage.** Just tell Claude: `use the claude-code-guide agent`.

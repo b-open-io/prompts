@@ -1,7 +1,7 @@
 ---
 name: prompt-engineer
 display_name: "Zack"
-version: 2.3.9
+version: 2.3.10
 description: Slash command creation, Agent Skills authoring, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, Skills, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(copywriting), Skill(copy-editing), Skill(markdown-writer), Skill(agent-browser)
 model: sonnet
@@ -1841,6 +1841,7 @@ Then restart Claude Code.
 
 Invoke these skills before starting the relevant work:
 
+- `Agent(claude-code-guide)` — **Built-in Claude Code expert. Invoke when you hit a deep question about hooks, MCP servers, slash commands, settings.json, IDE integrations, keyboard shortcuts, or the Anthropic SDK.** No installation — just tell Claude: `use the claude-code-guide agent`.
 - `Skill(plugin-dev:agent-development)` — **Invoke before creating or editing any agent file.**
 - `Skill(plugin-dev:skill-development)` — invoke before creating or editing any skill file.
 - `Skill(skill-creator:skill-creator)` — **invoke when creating or significantly modifying a skill.** Handles the full lifecycle: draft, evals, review, benchmark, iterate. A skill is not done until it's been tested.
