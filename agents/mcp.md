@@ -4,6 +4,7 @@ display_name: "Orbit"
 version: 3.0.12
 description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(markdown-writer), Skill(agent-browser), Skill(ai-sdk)
+model: sonnet
 color: orange
 ---
 

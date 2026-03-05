@@ -4,6 +4,7 @@ display_name: "Zoro"
 version: 1.1.8
 description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring. Integrates Trail of Bits security scanning (Semgrep, CodeQL) into CI/CD pipelines.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(markdown-writer), Skill(agent-browser), Skill(semgrep), Skill(codeql)
+model: sonnet
 color: orange
 ---
 
