@@ -1,6 +1,6 @@
 ---
 name: confess
-version: 1.0.1
+version: 1.0.2
 description: "Invoke this skill BEFORE ending any session, marking a task done, or saying 'complete'. Also invoke when the user says 'are you sure?', 'did you miss anything?', 'anything else?', 'what did I miss?', 'confess', or 'audit your work'. This is a proactive self-audit — do not wait to be asked. Skipping this means shipping incomplete work, broken references, untested paths, or unmentioned concerns the agent noticed but buried. Covers: incomplete changes, untested assumptions, pattern violations, hidden concerns, and cleanup debt."
 ---
 
@@ -47,6 +47,19 @@ Check for orphaned code:
 - Dead code that should be removed
 - Unused imports/dependencies
 - Orphaned files/routes
+
+## Adversarial Stance
+
+**Do not ask "what did I miss?" — that question invites rationalization.**
+
+Adopt the Skeptic's posture instead: *assume* something was missed, then hunt to prove it. Your job is to disprove your own "done" claim. A Skeptic is penalized for false dismissals, not for being thorough.
+
+Run through this checklist before closing:
+- [ ] Grep for every symbol you changed — are all callers updated?
+- [ ] Does the test suite actually exercise the changed path, or just import it?
+- [ ] Did you introduce any new import/dependency without documenting it?
+- [ ] Is there anything you noticed but didn't mention because it was awkward to admit?
+- [ ] What would break if someone reverted just your last commit?
 
 ## Workflow
 
@@ -98,11 +111,12 @@ Check for orphaned code:
 
 ## Key Principles
 
-1. **Non-judgmental** - Confessing is good, not shameful
-2. **Tool-assisted** - Use grep/glob, don't rely on memory
-3. **Systematic** - Cover all categories every time
-4. **Honest** - If uncertain, say so
-5. **Actionable** - Each confession should suggest a fix
+1. **Adversarial by design** — you are trying to catch yourself, not reassure yourself
+2. **Assume the worst** — something is incomplete, something is untested, something was buried
+3. **Tool-assisted** - Use grep/glob, don't rely on memory
+4. **Systematic** - Cover all categories every time
+5. **Honest** - If uncertain, say so
+6. **Actionable** - Each confession should suggest a fix
 
 ## Example Output
 
