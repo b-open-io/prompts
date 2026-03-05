@@ -1,0 +1,373 @@
+{
+  "name": "bopen-tools Agent Ecosystem",
+  "description": "23 agents across 5 functional teams — routing, dispatch, and skill dependencies",
+  "version": "0.1.0",
+  "nodes": [
+    {
+      "id": "martha",
+      "label": "Martha (Front Desk)",
+      "type": "supervisor",
+      "agent": "Martha",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["deploy-agent-team", "find-skills", "resend", "internal-comms"],
+      "description": "Entry point — routes users to the right agent or team",
+      "code_ref": "agents/front-desk.md"
+    },
+    {
+      "id": "sage",
+      "label": "Sage (Project Manager)",
+      "type": "supervisor",
+      "agent": "Sage",
+      "model": "inherit",
+      "phase": "implemented",
+      "tools": ["linear-planning", "deploy-agent-team"],
+      "description": "Plans work in Linear, dispatches agent teams for execution",
+      "code_ref": "agents/project-manager.md"
+    },
+    {
+      "id": "satchmo",
+      "label": "Satchmo (Agent Builder)",
+      "type": "supervisor",
+      "agent": "Satchmo",
+      "model": "opus",
+      "phase": "implemented",
+      "tools": ["brainstorming", "dispatching-parallel-agents", "visual-planner", "skill-creator"],
+      "description": "Designs agent systems, dispatches parallel builds, brainstorms architecture",
+      "code_ref": "agents/agent-builder.md"
+    },
+
+    {
+      "id": "theo",
+      "label": "Theo (Next.js)",
+      "type": "worker",
+      "agent": "Theo",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["vercel-react-best-practices", "create-next-project", "portless"],
+      "description": "Next.js 16, React 19, Vercel deployment",
+      "code_ref": "agents/nextjs.md"
+    },
+    {
+      "id": "mira",
+      "label": "Mira (Designer)",
+      "type": "worker",
+      "agent": "Mira",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["frontend-design", "web-design-guidelines", "ui-audio-theme"],
+      "description": "UI components, design systems, accessibility",
+      "code_ref": "agents/designer.md"
+    },
+    {
+      "id": "torque",
+      "label": "Torque (Optimizer)",
+      "type": "worker",
+      "agent": "Torque",
+      "model": "opus",
+      "phase": "implemented",
+      "tools": ["simplify"],
+      "description": "Performance profiling, bundle analysis, Core Web Vitals",
+      "code_ref": "agents/optimizer.md"
+    },
+
+    {
+      "id": "nyx",
+      "label": "Nyx (Code Auditor)",
+      "type": "worker",
+      "agent": "Nyx",
+      "model": "opus",
+      "phase": "implemented",
+      "tools": ["semgrep", "codeql", "differential-review", "secure-workflow-guide"],
+      "description": "Security audits, vulnerability scanning, Trail of Bits tooling",
+      "code_ref": "agents/code-auditor.md"
+    },
+    {
+      "id": "kayle",
+      "label": "Kayle (Architecture Reviewer)",
+      "type": "worker",
+      "agent": "Kayle",
+      "model": "opus",
+      "phase": "implemented",
+      "tools": ["semgrep", "codeql", "hunter-skeptic-referee"],
+      "description": "Architecture review, composition patterns, security patterns",
+      "code_ref": "agents/architecture-reviewer.md"
+    },
+    {
+      "id": "zoro",
+      "label": "Zoro (DevOps)",
+      "type": "worker",
+      "agent": "Zoro",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["npm-publish", "saas-launch-audit", "semgrep", "codeql"],
+      "description": "Vercel + Railway + Bun stack, CI/CD, monitoring",
+      "code_ref": "agents/devops.md"
+    },
+
+    {
+      "id": "parker",
+      "label": "Parker (Researcher)",
+      "type": "worker",
+      "agent": "Parker",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["x-research", "notebooklm", "geo-optimizer", "WebSearch"],
+      "description": "Web research, X/Twitter data, source-cited analysis",
+      "code_ref": "agents/researcher.md"
+    },
+    {
+      "id": "flow",
+      "label": "Flow (Doc Writer)",
+      "type": "worker",
+      "agent": "Flow",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["cli-demo-gif", "humanize"],
+      "description": "READMEs, API docs, PRDs, guides",
+      "code_ref": "agents/documentation-writer.md"
+    },
+    {
+      "id": "caal",
+      "label": "Caal (Marketer)",
+      "type": "worker",
+      "agent": "Caal",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["copywriting", "seo-audit", "launch-strategy"],
+      "description": "Growth marketing, CRO, copy, SEO, launch planning",
+      "code_ref": "agents/marketer.md"
+    },
+    {
+      "id": "zack",
+      "label": "Zack (Prompt Engineer)",
+      "type": "worker",
+      "agent": "Zack",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["plugin-dev:agent-development", "plugin-dev:skill-development", "skill-creator"],
+      "description": "Agent/skill authoring, YAML frontmatter, settings config",
+      "code_ref": "agents/prompt-engineer.md"
+    },
+
+    {
+      "id": "idris",
+      "label": "Idris (Database)",
+      "type": "worker",
+      "agent": "Idris",
+      "model": "opus",
+      "phase": "implemented",
+      "tools": ["critique", "confess"],
+      "description": "Schema design, query tuning, Postgres/Mongo/Redis/Convex",
+      "code_ref": "agents/database.md"
+    },
+    {
+      "id": "maxim",
+      "label": "Maxim (Integration)",
+      "type": "worker",
+      "agent": "Maxim",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["resend"],
+      "description": "API integrations, webhooks, third-party services",
+      "code_ref": "agents/integration-expert.md"
+    },
+    {
+      "id": "orbit",
+      "label": "Orbit (MCP)",
+      "type": "worker",
+      "agent": "Orbit",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["ai-sdk"],
+      "description": "MCP server setup, diagnostics, troubleshooting",
+      "code_ref": "agents/mcp.md"
+    },
+    {
+      "id": "mina",
+      "label": "Mina (Payments)",
+      "type": "worker",
+      "agent": "Mina",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["plaid-integration"],
+      "description": "Payment integrations, transactions, financial ops",
+      "code_ref": "agents/payments.md"
+    },
+
+    {
+      "id": "iris",
+      "label": "Iris (Tester)",
+      "type": "worker",
+      "agent": "Iris",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["benchmark-skills", "skill-creator", "hunter-skeptic-referee"],
+      "description": "Unit/integration/e2e testing, coverage, CI automation",
+      "code_ref": "agents/tester.md"
+    },
+    {
+      "id": "steve",
+      "label": "Steve (Consolidator)",
+      "type": "worker",
+      "agent": "Steve",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["critique", "confess"],
+      "description": "File consolidation, dedup, codebase organization",
+      "code_ref": "agents/consolidator.md"
+    },
+
+    {
+      "id": "data",
+      "label": "Mr. Data (Data)",
+      "type": "worker",
+      "agent": "Mr. Data Accumulator",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": [],
+      "description": "Data processing, analytics, ETL, visualization",
+      "code_ref": "agents/data.md"
+    },
+    {
+      "id": "kira",
+      "label": "Kira (Mobile)",
+      "type": "worker",
+      "agent": "Kira",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["vercel-react-native-skills"],
+      "description": "React Native, Swift, Kotlin, Flutter",
+      "code_ref": "agents/mobile.md"
+    },
+    {
+      "id": "juniper",
+      "label": "Juniper (Audio)",
+      "type": "worker",
+      "agent": "Juniper",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["ui-audio-theme", "deck-creator", "remotion-best-practices"],
+      "description": "ElevenLabs audio, voiceovers, sound effects, xAI images",
+      "code_ref": "agents/audio-specialist.md"
+    },
+    {
+      "id": "tina",
+      "label": "Tina (Executive Assistant)",
+      "type": "worker",
+      "agent": "Tina",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": [],
+      "description": "Google Workspace — inbox, calendar, Drive, Tasks, Chat",
+      "code_ref": "agents/executive-assistant.md"
+    },
+
+    {
+      "id": "human",
+      "label": "Human Review",
+      "type": "human_in_loop",
+      "phase": "implemented",
+      "description": "User reviews agent output, approves or requests revision"
+    }
+  ],
+  "edges": [
+    { "id": "entry-martha", "from": "martha", "to": "sage", "label": "project work", "type": "conditional" },
+    { "id": "martha-satchmo", "from": "martha", "to": "satchmo", "label": "agent/AI work", "type": "conditional" },
+    { "id": "martha-tina", "from": "martha", "to": "tina", "label": "calendar/email", "type": "conditional" },
+    { "id": "martha-parker", "from": "martha", "to": "parker", "label": "research question", "type": "conditional" },
+
+    { "id": "sage-frontend", "from": "sage", "to": "theo", "label": "frontend task", "type": "conditional" },
+    { "id": "sage-design", "from": "sage", "to": "mira", "label": "design task", "type": "conditional" },
+    { "id": "sage-security", "from": "sage", "to": "nyx", "label": "audit needed", "type": "conditional" },
+    { "id": "sage-devops", "from": "sage", "to": "zoro", "label": "deploy/infra", "type": "conditional" },
+    { "id": "sage-content", "from": "sage", "to": "flow", "label": "docs needed", "type": "conditional" },
+    { "id": "sage-marketing", "from": "sage", "to": "caal", "label": "marketing task", "type": "conditional" },
+    { "id": "sage-db", "from": "sage", "to": "idris", "label": "schema/db work", "type": "conditional" },
+    { "id": "sage-return", "from": "sage", "to": "human", "label": "plan ready", "type": "default" },
+
+    { "id": "satchmo-zack", "from": "satchmo", "to": "zack", "label": "write agent/skill", "type": "conditional" },
+    { "id": "satchmo-theo", "from": "satchmo", "to": "theo", "label": "build playground", "type": "conditional" },
+    { "id": "satchmo-mira", "from": "satchmo", "to": "mira", "label": "design review", "type": "conditional" },
+    { "id": "satchmo-iris", "from": "satchmo", "to": "iris", "label": "test it", "type": "conditional" },
+    { "id": "satchmo-kayle", "from": "satchmo", "to": "kayle", "label": "arch review", "type": "conditional" },
+    { "id": "satchmo-return", "from": "satchmo", "to": "human", "label": "design proposal", "type": "default" },
+
+    { "id": "human-sage", "from": "human", "to": "sage", "label": "approved → execute", "type": "conditional" },
+    { "id": "human-satchmo", "from": "human", "to": "satchmo", "label": "revision needed", "type": "loop_back" },
+    { "id": "human-martha", "from": "human", "to": "martha", "label": "new request", "type": "loop_back" },
+
+    { "id": "nyx-kayle", "from": "nyx", "to": "kayle", "label": "findings for arch review", "type": "default" },
+    { "id": "kayle-return", "from": "kayle", "to": "satchmo", "label": "review complete", "type": "loop_back" },
+    { "id": "nyx-return", "from": "nyx", "to": "sage", "label": "audit report", "type": "loop_back" },
+
+    { "id": "parker-flow", "from": "parker", "to": "flow", "label": "research → write up", "type": "default" },
+    { "id": "flow-caal", "from": "flow", "to": "caal", "label": "docs → marketing copy", "type": "conditional" },
+
+    { "id": "theo-torque", "from": "theo", "to": "torque", "label": "perf check", "type": "default" },
+    { "id": "mira-theo", "from": "mira", "to": "theo", "label": "design → implement", "type": "default" },
+
+    { "id": "idris-maxim", "from": "idris", "to": "maxim", "label": "schema → integrations", "type": "default" },
+    { "id": "maxim-mina", "from": "maxim", "to": "mina", "label": "payment hooks", "type": "conditional" },
+
+    { "id": "zoro-orbit", "from": "zoro", "to": "orbit", "label": "MCP setup", "type": "conditional" }
+  ],
+  "subgraphs": [
+    {
+      "id": "frontend-team",
+      "name": "Frontend Team",
+      "nodes": ["theo", "mira", "torque"],
+      "supervisor": "theo"
+    },
+    {
+      "id": "security-team",
+      "name": "Security & Review",
+      "nodes": ["nyx", "kayle"],
+      "supervisor": "nyx"
+    },
+    {
+      "id": "content-team",
+      "name": "Content Pipeline",
+      "nodes": ["parker", "flow", "caal"],
+      "supervisor": "parker"
+    },
+    {
+      "id": "infra-team",
+      "name": "Infrastructure",
+      "nodes": ["idris", "maxim", "orbit", "zoro", "mina"],
+      "supervisor": "idris"
+    },
+    {
+      "id": "agent-team",
+      "name": "Agent Development",
+      "nodes": ["zack", "iris"],
+      "supervisor": "zack"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "ann-opus-tier",
+      "target": "satchmo",
+      "type": "info",
+      "text": "Opus tier: Satchmo, Kayle, Nyx, Torque, Idris — used for complex reasoning tasks"
+    },
+    {
+      "id": "ann-shared-skills",
+      "target": "martha",
+      "type": "info",
+      "text": "All agents share: markdown-writer, agent-browser. Most share: critique, confess, simplify"
+    },
+    {
+      "id": "ann-missing",
+      "target": "sage",
+      "type": "todo",
+      "text": "Sage uses model:inherit — needs explicit dispatch routing logic. Currently Linear-focused only."
+    },
+    {
+      "id": "ann-gap",
+      "target": "data",
+      "type": "todo",
+      "text": "Mr. Data + Kira + Juniper + Steve are standalone — no team or dispatch path reaches them directly"
+    }
+  ]
+}
