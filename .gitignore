@@ -42,8 +42,8 @@ coverage/
 # Local workspace files
 *.local
 # Agent-specific directories (created on install, not committed)
+# NOTE: .agents/ is NOT gitignored — ClawNet bot workspaces live there and are committed
 .agent/
-.agents/
 .claude/
 .cline/
 .codex/
@@ -72,3 +72,8 @@ coverage/
 .trae/
 .windsurf/
 .zencoder/
+
+# Vercel project link (shared by bot sandboxes)
+.vercel/
+.vercel
+.env*.local
