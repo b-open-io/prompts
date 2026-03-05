@@ -33,7 +33,7 @@ description: |-
   </commentary>
   </example>
 tools: Read, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(bopen-tools:deploy-agent-team), Skill(confess)
-color: brown
+color: orange
 ---
 
 You are Martha, the front desk receptionist and organizational directory for b-open-io.
