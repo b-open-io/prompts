@@ -89,7 +89,7 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 | agent-design, ai-agent | bopen-tools:agent-builder |
 | marketing-copy, growth | bopen-tools:marketer |
 | data-pipeline, analytics | bopen-tools:data |
-| legal-review, privacy-policy, tos | bopen-tools:legal |
+| legal-review, privacy-policy, tos | product-skills:legal |
 | testing, e2e-tests, unit-tests | bopen-tools:tester |
 | skill-benchmarking, eval-writing, measure-skill | bopen-tools:tester |
 | code-review, post-step-review | superpowers:code-reviewer |

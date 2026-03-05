@@ -64,7 +64,7 @@ See `references/permissions-and-isolation.md` for all mode options and worktree 
 | **mobile** | `bopen-tools:mobile` | React Native, Swift, Kotlin, Flutter |
 | **payments** | `bopen-tools:payments` | Stripe, billing, financial transactions |
 | **marketer** | `bopen-tools:marketer` | CRO, SEO, copy, launch strategy |
-| **legal** | `bopen-tools:legal` | Privacy, compliance, ToS |
+| **legal** | `product-skills:legal` | Privacy, compliance, ToS |
 | **mcp** | `bopen-tools:mcp` | MCP server setup, config, diagnostics |
 
 Full roster with per-agent skills to mention in spawn prompts: `references/agent-roster.md`

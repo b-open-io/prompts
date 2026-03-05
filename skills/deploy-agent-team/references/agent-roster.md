@@ -25,7 +25,7 @@ Full bopen-tools agent roster with `subagent_type` identifiers and the skills to
 | **payments** | `bopen-tools:payments` | sonnet | Stripe, billing, financial transactions |
 | **mcp** | `bopen-tools:mcp` | sonnet | MCP server setup, config, diagnostics |
 | **marketer** | `bopen-tools:marketer` | sonnet | CRO, SEO, copy, launch strategy |
-| **legal** | `bopen-tools:legal` | opus | Privacy, compliance, ToS, data protection |
+| **legal** | `product-skills:legal` | opus | Privacy, compliance, ToS, data protection |
 | **audio-specialist** | `bopen-tools:audio-specialist` | sonnet | Audio, xAI/Grok generation, ElevenLabs |
 | **prompt-engineer** | `bopen-tools:prompt-engineer` | sonnet | Slash commands, skills, hooks, YAML frontmatter |
 | **consolidator** | `bopen-tools:consolidator` | sonnet | File structure cleanup, deduplication, organization |
