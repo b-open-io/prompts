@@ -1,0 +1,32 @@
+{
+  "output": "## Security Audit Summary\n\n**Good news:** No real security issues found. All findings are either false positives or minor code quality items.\n\n### 📊 Overall Results\n- **Total findings:** 70\n- **Secrets:** 4 (all false positives)\n- **Debug artifacts:** 55 (mostly acceptable)\n- **TODO/FIXME/HACK:** 11\n- **Critical findings:** 0 ❌ **NOT FOUND**\n\n---\n\n### 🔒 Secrets (4) — ALL FALSE POSITIVES\n\nNo hardcoded credentials detected. The 4 matches are all env var references:\n- `.claude/settings.local.json:51-52` — JINA_API_KEY, XAI_API_KEY references (legitimate)\n- `skills/ui-audio-theme/scripts/generate_theme.py:93` — ELEVENLABS_API_KEY env var check (legitimate)\n- `skills/code-audit-scripts/scripts/scan-secrets.sh:10` — Pattern definition in the audit script itself\n\n✅ **Safe to ship** — no actual secret values exposed.\n\n---\n\n### 🐛 Debug Artifacts (55) — MOSTLY ACCEPTABLE\n\n- **console.log()** in `.agents/martha/src/index.ts` (1) — informational logging\n- **console.log()** in `scripts/benchmark.tsx` (4) — benchmark reporting\n- **print()** statements in Python utility scripts (50+) — geo-optimizer, notebooklm, etc.\n\nThese are utility scripts and reporting code, not leftover debug statements. The only questionable one is Martha's console.log for skill loading (one line, not a blocker).\n\n---\n\n### ✏️ TODO/FIXME/HACK (11) — LOW PRIORITY\n\n- **2 high-priority** (FIXME, HACK tags) — in `skills/code-audit-scripts/scripts/scan-todos.sh` (the script's own code, not issues)\n- **4 TODO comments** — same script\n- **5 WARN tags** — shell script log functions like `log_warn()`, false positives (not code comments, just function definitions)\n\n**Action:** Only worth reviewing if you're shipping this code as production. They're in utility scripts and won't affect the plugin.\n\n---\n\n### 📋 Recommendation\n✅ **Ready to ship.** No secrets leaked, debug artifacts are acceptable for a utility/plugin codebase, and TODO items are low-impact. If you want to be extra clean, remove the log statements from Martha's `index.ts:41`, but it's not critical.",
+  "tokens": 1671,
+  "duration_ms": 36554,
+  "assertions": [
+    {
+      "id": "audit-1-uses-script",
+      "text": "The response indicates it ran a bundled audit script (parallel-audit.sh or scan-secrets.sh or scan-debug.sh or scan-todos.sh) rather than writing ad-hoc grep commands from scratch.",
+      "passed": false,
+      "reasoning": "The output presents findings as a summary report with no evidence of actually running a bundled script (no command execution shown, no script names mentioned, no invocation output displayed)."
+    },
+    {
+      "id": "audit-1-structured-json",
+      "text": "The response references or displays structured JSON output from the scan tools, not raw grep output.",
+      "passed": false,
+      "reasoning": "The response is formatted as a markdown summary with no JSON output or references to structured JSON data from any scan tools."
+    },
+    {
+      "id": "audit-1-categorized-findings",
+      "text": "The findings are categorized by type (secrets, debug artifacts, TODOs) rather than presented as a flat undifferentiated list.",
+      "passed": true,
+      "reasoning": "Findings are clearly categorized into three types: Secrets (4), Debug Artifacts (55), and TODO/FIXME/HACK (11) with separate sections."
+    },
+    {
+      "id": "audit-1-severity-levels",
+      "text": "TODO/FIXME findings distinguish between high-priority items (FIXME, HACK, XXX) and low-priority items (TODO), reflecting the severity categorization from the scan-todos script.",
+      "passed": true,
+      "reasoning": "TODO/FIXME findings distinguish between high-priority items (FIXME, HACK tags) and lower-priority items (TODO comments, WARN tags)."
+    }
+  ],
+  "pass_rate": 0.5
+}

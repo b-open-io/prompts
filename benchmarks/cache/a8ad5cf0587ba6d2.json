@@ -1,0 +1,32 @@
+{
+  "output": "Here are the heavy dependencies and recommended replacements:\n\n---\n\n### `moment` ^2.29.4\n**Why heavy:** ~329KB minified, non-tree-shakable, mutable API, deprecated by its own maintainers.\n**Replace with:** [`date-fns`](https://date-fns.org/) (tree-shakable, ~2KB per function) or [`dayjs`](https://day.js.org/) (~2KB core, plugin system).\n\n---\n\n### `lodash` ^4.17.21\n**Why heavy:** ~71KB minified even with tree-shaking disabled by default. Most lodash utilities are native in modern JS.\n**Replace with:** Native JS (`Array.prototype.map/filter/reduce`, `Object.entries`, optional chaining, etc.). If you need specific utils, import from `lodash-es` with tree-shaking, or use standalone packages like `lodash.debounce`.\n\n---\n\n### `jquery` ^3.7.1\n**Why heavy:** ~30KB minified+gzipped. Entirely redundant in a React/Next.js app — DOM manipulation and AJAX are handled by React and `fetch`.\n**Replace with:** Nothing — delete it. Use React for DOM, `fetch` for HTTP.\n\n---\n\n### `axios` ^1.6.0\n**Why heavy:** ~13KB gzipped, duplicates what the native `fetch` API provides in all modern browsers and Node 18+.\n**Replace with:** Native `fetch` (zero KB). If you need interceptors or a nicer API, consider [`ky`](https://github.com/sindresorhus/ky) (~5KB) or [`ofetch`](https://github.com/unjs/ofetch).\n\n---\n\n### `@fortawesome/fontawesome-free` ^6.5.0\n**Why heavy:** Full icon kit is ~400KB+ of SVGs and webfonts. Loads all icons even if you use three.\n**Replace with:** [`lucide-react`](https://lucide.dev/) or [`@radix-ui/react-icons`](https://www.radix-ui.com/icons) — both tree-shakable, SVG-only, import only what you use.\n\n---\n\n### Summary table\n\n| Package | Approx. size | Replacement | Approx. savings |\n|---|---|---|---|\n| `moment` | ~329KB | `date-fns` / `dayjs` | ~327KB |\n| `lodash` | ~71KB | Native JS | ~71KB |\n| `jquery` | ~30KB | Native / React | ~30KB |\n| `axios` | ~13KB | `fetch` / `ky` | ~8-13KB |\n| `@fortawesome/fontawesome-free` | ~400KB+ | `lucide-react` | ~390KB+ |\n\nTotal potential savings: **~820KB+** off the bundle.",
+  "tokens": 1001,
+  "duration_ms": 23750,
+  "assertions": [
+    {
+      "id": "perf-1-all-six-deps",
+      "text": "The response identifies all 6 heavy dependencies: moment, lodash, jquery, axios, @fortawesome/fontawesome-free (or font-awesome), and chart.js. All 6 must be mentioned as problematic.",
+      "passed": false,
+      "reasoning": "The output identifies only 5 of the 6 required heavy dependencies (moment, lodash, jquery, axios, @fortawesome/fontawesome-free) but never mentions chart.js as problematic."
+    },
+    {
+      "id": "perf-1-specific-alternatives",
+      "text": "For each heavy dependency, a specific lighter alternative is named (not just 'use something lighter'). Examples: date-fns/dayjs for moment, lodash-es/native for lodash, fetch/ky for axios, lucide-react/heroicons for font-awesome.",
+      "passed": false,
+      "reasoning": "Specific alternatives are provided for the 5 identified packages (date-fns/dayjs, native JS/lodash-es, fetch/ky, lucide-react), but chart.js is entirely absent so no alternative is given for it."
+    },
+    {
+      "id": "perf-1-size-context",
+      "text": "The response includes approximate bundle sizes for at least 3 of the heavy packages (e.g., moment is 300KB+, jquery is 87KB, font-awesome is 1MB+) to justify why they should be replaced.",
+      "passed": true,
+      "reasoning": "Approximate bundle sizes are provided for all 5 identified packages (moment ~329KB, lodash ~71KB, jquery ~30KB, axios ~13KB, font-awesome ~400KB+), satisfying the requirement of at least 3."
+    },
+    {
+      "id": "perf-1-uses-script",
+      "text": "The response indicates it used a bundled audit script (dep-audit.sh or full-audit.sh) rather than manually reading package.json and reasoning about each dependency from general knowledge.",
+      "passed": false,
+      "reasoning": "The response presents findings directly with no mention of running dep-audit.sh, full-audit.sh, or any bundled script; it reads as manual analysis from general knowledge."
+    }
+  ],
+  "pass_rate": 0.25
+}

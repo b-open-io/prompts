@@ -175,6 +175,19 @@ Key papers and resources that informed this methodology:
 - The skill works well in practice for complex reviews — the evals just don't capture that
 - **Redesign idea**: Give it actual buggy code and check whether output follows the three-phase protocol with isolated contexts. But this requires multi-turn execution, which our harness doesn't support.
 
+### code-audit-scripts
+- **Status**: Published (+17% delta on Sonnet 4.6)
+- Uses test fixture at `benchmarks/fixtures/sample-project/` with planted issues
+- Best traps: test file exclusion (skill excludes by default, baseline includes), severity categorization (FIXME/HACK/XXX vs TODO), false positive filtering (env var references vs real secrets)
+- Eval #2 is the strongest differentiator — not telling model to exclude tests, skill does it automatically
+- **Why it works**: Deterministic scripts produce exact counts and categorizations the baseline gets wrong
+
+### perf-audit
+- **Status**: Not published (-13% delta on Sonnet 4.6)
+- Sonnet already knows heavy dependencies and their alternatives without the skill
+- dep-audit.sh's curated list doesn't add knowledge the model lacks
+- Pure knowledge injection that doesn't benchmark — same pattern as charting
+
 ### process-cleanup
 - **Status**: Not published (-5% delta on Sonnet 4.6)
 - Benchmark runs without real system access, so it tests formatting knowledge not actual behavior

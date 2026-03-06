@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-03-06T16:39:04.703Z",
+  "generated_at": "2026-03-06T19:22:52.335Z",
   "model": "claude-sonnet-4-6",
   "runner": "satchmo",
   "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
   "total_skills": 3,
-  "total_evals": 7,
-  "overall_pass_rate": 0.88,
-  "overall_baseline_pass_rate": 0.537,
+  "total_evals": 8,
+  "overall_pass_rate": 0.724,
+  "overall_baseline_pass_rate": 0.345,
   "skills": [
     {
       "generated_at": "2026-03-06T14:32:15.808Z",
@@ -357,146 +357,228 @@
       ]
     },
     {
-      "generated_at": "2026-03-06T16:39:04.697Z",
+      "generated_at": "2026-03-06T19:21:08.836Z",
       "model": "claude-sonnet-4-6",
       "runner": "satchmo",
       "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
-      "skill_name": "charting",
-      "skill_path": "skills/charting",
-      "eval_count": 2,
-      "pass_rate": 1,
-      "baseline_pass_rate": 1,
-      "avg_tokens_with_skill": 3658,
-      "avg_tokens_baseline": 2282,
-      "avg_duration_ms_with_skill": 70842,
-      "avg_duration_ms_baseline": 49525,
+      "skill_name": "code-audit-scripts",
+      "skill_path": "skills/code-audit-scripts",
+      "eval_count": 3,
+      "pass_rate": 0.583,
+      "baseline_pass_rate": 0.417,
+      "avg_tokens_with_skill": 1926,
+      "avg_tokens_baseline": 3940,
+      "avg_duration_ms_with_skill": 44505,
+      "avg_duration_ms_baseline": 71131,
       "evals": [
         {
           "eval_id": 1,
-          "prompt": "I have a database table with columns: user_id, signup_date, plan_type (free/pro/enterprise), monthly_revenue, and churn_date (nullable). I want to understand our revenue trends and churn patterns. What charts should I build and what data transformations do I need? Give me the full visualization plan.",
+          "prompt": "Audit the code at /Users/satchmo/code/prompts/benchmarks/fixtures/sample-project for security issues and ship-readiness. Which findings are ship-blockers that must be fixed before deploying, and which are nice-to-fix? Categorize everything by priority.",
           "with_skill": {
-            "output": "Using the charting skill to build your full visualization plan.\n\n---\n\n## Full Visualization Plan: Revenue & Churn Dashboard\n\n### Schema Analysis\n\n```\nuser_id        → identifier (high cardinality, no chart)\nsignup_date    → date → enables cohort/time-series analysis\nplan_type      → 3-category → color dimension, group-by axis\nmonthly_revenue → numeric → sum/avg aggregations\nchurn_date     → nullable date → NULL = active, non-null = churned\n```\n\n**Key insight:** This is a user snapshot table, not a time-series events table. Getting MRR over time requires reconstructing \"which users were active in each month\" via a date range join — most people get this wrong and just group by signup_date.\n\n---\n\n## Dashboard 1: Revenue\n\n### Chart 1 — MRR Over Time (Stacked Area)\n\n**Goal:** Trend over time, broken down by plan composition  \n**Chart:** Stacked Area — `plan_type` as color dimension, month on X, MRR on Y  \n**Why stacked area:** 3 categories + time series + parts-of-whole story\n\n```sql\nWITH months AS (\n  SELECT generate_series(\n    DATE_TRUNC('month', MIN(signup_date)),\n    DATE_TRUNC('month', CURRENT_DATE),\n    INTERVAL '1 month'\n  )::date AS month\n  FROM users\n)\nSELECT\n  m.month,\n  u.plan_type,\n  SUM(u.monthly_revenue)   AS mrr,\n  COUNT(u.user_id)         AS active_users\nFROM months m\nJOIN users u\n  ON u.signup_date < m.month + INTERVAL '1 month'\n  AND (u.churn_date IS NULL OR u.churn_date >= m.month)\nGROUP BY 1, 2\nORDER BY 1, 2;\n```\n\n**Output shape:** `month | plan_type | mrr | active_users`  \n**Pivot for chart:** rows → `{ month, free_mrr, pro_mrr, enterprise_mrr }`\n\n---\n\n### Chart 2 — MRR Waterfall (Net MRR Movement)\n\n**Goal:** Show new MRR vs churned MRR vs net each month  \n**Chart:** Waterfall / Grouped Bar with positive/negative bars  \n**Why:** Executives need to see if growth is outpacing churn\n\n```sql\nWITH months AS (\n  SELECT generate_series(\n    DATE_TRUNC('month', MIN(signup_date)),\n    DATE_TRUNC('month', CURRENT_DATE),\n    INTERVAL '1 month'\n  )::date AS mon",
-            "tokens": 5055,
-            "duration_ms": 81978,
+            "output": "Here's the full audit report.\n\n---\n\n## Security Audit: `sample-project`\n\n**23 total findings** · 3 secrets · 9 debug artifacts · 11 TODOs/FIXMEs\n\n---\n\n## 🚨 Ship-Blockers — Fix Before Deploying\n\n### 1. Hardcoded credentials in source (CRITICAL)\n**`src/config.ts:9-11`**\n\n```ts\nAPI_KEY: \"sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234\",\nDATABASE_URL: \"postgresql://admin:s3cretPassw0rd@db.example.com:5432/myapp\",\nJWT_SECRET: \"super-secret-jwt-signing-key-do-not-share-2024\",\n```\n\nThree real-looking credentials committed to source. **Assume all three are compromised.** Rotate immediately, move to `process.env.*`.\n\n---\n\n### 2. Config dump logged to stdout (CRITICAL)\n**`src/server.ts:10`**\n\n```ts\nconsole.log(\"Debug: config loaded\", JSON.stringify(config));\n```\n\n`config` contains all three hardcoded credentials above. This logs them to stdout on every server start — anyone with log access gets the keys. Remove this line.\n\n---\n\n### 3. `hashPassword` is not a hash (CRITICAL)\n**`src/utils.ts:25-28`**\n\n```ts\nexport function hashPassword(password: string): string {\n  return Buffer.from(password).toString(\"base64\");\n}\n```\n\nBase64 is **reversible encoding**, not a hash. If the DB is breached, every password is trivially decoded. Replace with bcrypt/argon2/scrypt.\n\n---\n\n### 4. JWT tokens are not signed or verified (CRITICAL)\n**`src/auth.ts:18-30`**\n\n```ts\nexport function generateToken(user: User): string {\n  return JSON.stringify(payload);        // no signature\n}\nexport function verifyToken(token: string) {\n  return JSON.parse(token);              // no verification\n}\n```\n\n`JWT_SECRET` is referenced in a comment but never used. Tokens are plain JSON — completely forgeable. Any caller can craft a valid-looking token. Use a real JWT library.\n\n---\n\n### 5. `debugger` statement in production code (HIGH)\n**`src/utils.ts:7`**\n\n```ts\ndebugger; // Left from debugging session\n```\n\nCalled on every request via `validateInput`. Will halt execution in any debug-attached Node.js process",
+            "tokens": 3341,
+            "duration_ms": 67227,
             "assertions": [
               {
-                "id": "ch-1-chart-type-rationale",
-                "text": "Each recommended chart type includes a rationale tied to the viewer's goal — e.g., 'line chart for revenue trend over time' or 'stacked bar for composition by plan type'. Charts are not just listed without explaining why that type fits the data.",
-                "passed": true,
-                "reasoning": "Every chart includes explicit rationale tied to viewer goals, e.g., 'Stacked Area — 3 categories + time series + parts-of-whole story' and 'Dual-axis Line — churn rate (%) on left, churned MRR ($) on right'."
+                "id": "audit-1-high-priority-count",
+                "text": "The response identifies exactly 5 high-priority/ship-blocker TODO-type items (the FIXME, BUG, HACK, and XXX tags), distinguishing them from the 5 regular TODO items. The specific count of 5 high-priority items must be stated or clearly derivable from the listing.",
+                "passed": false,
+                "reasoning": "The response does not identify exactly 5 high-priority FIXME/HACK/XXX/BUG items; it places XXX and FIXME in ship-blockers but demotes HACK to 'Low' in the nice-to-fix table, and the total count of such tag-based items is not stated or clearly derivable as 5."
               },
               {
-                "id": "ch-1-transform-code",
-                "text": "The response includes actual SQL queries or data transformation code (pandas, SQL, or pseudocode) for at least one of the recommended charts — not just a description of what to aggregate.",
-                "passed": true,
-                "reasoning": "The response includes multiple complete, production-ready SQL queries with CTEs for charts like MRR Over Time, Monthly Churn Rate, and Cohort Retention Heatmap."
+                "id": "audit-1-severity-system",
+                "text": "The response uses a two-tier or multi-tier severity system (like high/low, or critical/warning/info) where FIXME, BUG, HACK, and XXX are in the highest tier and plain TODO is in a lower tier. Not just a flat list of all TODO-like comments treated equally.",
+                "passed": false,
+                "reasoning": "While a two-tier system (Ship-Blockers vs Nice-to-Fix) exists, the HACK tag is placed in the lower tier rather than the highest tier, violating the assertion that FIXME, BUG, HACK, and XXX must all be in the highest severity tier."
               },
               {
-                "id": "ch-1-library-recommendation",
-                "text": "The response recommends a specific charting library (e.g., Recharts, ECharts, Chart.js, Plotly) with reasoning tied to the expected data scale or use case, not just 'use D3' or 'use any charting library'.",
-                "passed": true,
-                "reasoning": "The response recommends Recharts for React dashboards under 50k rows, Apache ECharts for heatmaps, Plotly Express for Python, and Matplotlib for PDF export — each with specific rationale tied to use case and scale."
+                "id": "audit-1-secrets-false-positive",
+                "text": "The response explicitly distinguishes between real hardcoded secrets (API_KEY with 'sk-proj-...' value, JWT_SECRET with 'super-secret-...' value) and env var references (STRIPE_KEY = process.env.STRIPE_SK, REDIS_URL = process.env.REDIS_URL) — noting the env var references are NOT secrets. Both the flagging of real secrets AND the clearing of env var references must be present.",
+                "passed": false,
+                "reasoning": "The response flags the real hardcoded secrets correctly but never explicitly mentions or clears the env var references (STRIPE_KEY = process.env.STRIPE_SK, REDIS_URL = process.env.REDIS_URL) as non-secrets; both halves of the assertion must be present."
               },
               {
-                "id": "ch-1-no-pie-for-plans",
-                "text": "The response does NOT recommend a pie chart for showing plan type distribution or revenue composition. It uses bar, stacked bar, stacked area, or treemap instead — following the principle that pie charts are poor for comparison.",
+                "id": "audit-1-database-url-reference",
+                "text": "The response correctly identifies that the DATABASE_URL finding at src/server.ts:13 is a reference to config.DATABASE_URL (not a new hardcoded secret) and treats it differently from the actual hardcoded value in config.ts. The response should NOT count this as an additional hardcoded credential.",
                 "passed": true,
-                "reasoning": "No pie chart is recommended anywhere; plan type composition uses stacked area (Chart 1) and horizontal bar (Chart 3 ARPU), explicitly avoiding pie charts."
+                "reasoning": "The response counts exactly three hardcoded credentials all located in config.ts and does not separately flag src/server.ts:13 as an additional hardcoded secret, satisfying the requirement to not double-count the config reference."
               }
             ],
-            "pass_rate": 1,
+            "pass_rate": 0.25,
             "cached": false
           },
           "baseline": {
-            "output": "## Full Visualization Plan: Revenue Trends & Churn\n\n---\n\n### Schema Inventory\n\n| Column | Type | Notes |\n|--------|------|-------|\n| `user_id` | identifier | ~high cardinality |\n| `signup_date` | date | cohort anchor |\n| `plan_type` | categorical (3 values) | low cardinality — good for series splits |\n| `monthly_revenue` | numeric | per-user snapshot (not cumulative) |\n| `churn_date` | nullable date | NULL = still active |\n\n**Key derived metrics you don't have yet** (need transforms):\n- Active users per month\n- MRR per month (aggregate)\n- Churn rate per month\n- Cohort retention\n- Time-to-churn (days)\n\n---\n\n### Chart 1 — Total MRR Over Time\n\n**Type:** Line chart\n**Goal:** Trend over time (1 numeric + time)\n\n**SQL:**\n```sql\nSELECT\n  DATE_TRUNC('month', d.month) AS month,\n  SUM(u.monthly_revenue) AS mrr\nFROM generate_series(\n  (SELECT MIN(signup_date) FROM users),\n  CURRENT_DATE,\n  INTERVAL '1 month'\n) AS d(month)\nJOIN users u\n  ON u.signup_date <= d.month\n  AND (u.churn_date IS NULL OR u.churn_date > d.month)\nGROUP BY 1\nORDER BY 1;\n```\n\n**Key insight this answers:** Is the business growing?\n\n---\n\n### Chart 2 — MRR by Plan Type (Stacked Area)\n\n**Type:** Stacked Area\n**Goal:** Composition over time — how does revenue mix shift?\n\n**SQL:**\n```sql\nSELECT\n  DATE_TRUNC('month', d.month) AS month,\n  u.plan_type,\n  SUM(u.monthly_revenue) AS mrr\nFROM generate_series(...) AS d(month)\nJOIN users u\n  ON u.signup_date <= d.month\n  AND (u.churn_date IS NULL OR u.churn_date > d.month)\nGROUP BY 1, 2\nORDER BY 1, 2;\n```\n\n**Key insight:** Enterprise revenue growing while free stays flat = healthy upsell motion.\n\n---\n\n### Chart 3 — MRR Waterfall (New / Expansion / Churned / Net)\n\n**Type:** Waterfall / grouped bar\n**Goal:** Understand the *components* of MRR change month-over-month\n\n**SQL (3 CTEs combined):**\n```sql\nWITH new_mrr AS (\n  SELECT DATE_TRUNC('month', signup_date) AS month,\n         SUM(monthly_revenue) AS value, 'new' AS category\n  FROM users GROUP BY 1\n),\nchurned_mrr AS (\n  SE",
-            "tokens": 2982,
-            "duration_ms": 55095,
+            "output": "I've read all 10 files. Here's my manual pre-analysis plus the proposed Semgrep scan plan.\n\n---\n\n## Pre-Analysis: Manual Findings\n\nI found significant issues already. Here's my categorized assessment before Semgrep runs:\n\n---\n\n### SHIP-BLOCKERS\n\n**1. Hardcoded secrets in source code — `src/config.ts:9-11`**\n```ts\nAPI_KEY: \"sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234\",\nDATABASE_URL: \"postgresql://admin:s3cretPassw0rd@db.example.com:5432/myapp\",\nJWT_SECRET: \"super-secret-jwt-signing-key-do-not-share-2024\",\n```\nThe code itself has a `FIXME` comment acknowledging this. All three must be rotated and moved to env vars before any commit hits a public repo, let alone production.\n\n**2. JWT is fake — `src/auth.ts:18-29`**\n`generateToken` is `JSON.stringify(payload)`. `verifyToken` is `JSON.parse(token)`. No signing, no verification. Any attacker can forge a token with any `sub`/`email`. The entire auth system is broken.\n\n**3. Password \"hashing\" is base64 — `src/utils.ts:28`**\n```ts\nreturn Buffer.from(password).toString(\"base64\");\n```\nBase64 is trivially reversible. This is not hashing. Passwords are stored in effectively plaintext. Use bcrypt/argon2/scrypt.\n\n**4. Config dumped to logs — `src/server.ts:10`**\n```ts\nconsole.log(\"Debug: config loaded\", JSON.stringify(config));\n```\nThis prints the full config — including all hardcoded secrets — to stdout on every server start.\n\n**5. `debugger` statement in production code — `src/utils.ts:7`**\nLeft from a debugging session. Will pause execution in Node inspector/debug mode.\n\n---\n\n### HIGH — Should Fix Before Ship\n\n**6. No rate limiting — `src/server.ts:35`**\nAcknowledged via TODO. Without rate limiting, auth endpoints are wide open to brute force.\n\n**7. Request size not validated — `cmd/main.go:31`**\nFIXME comment confirms it. The `dataHandler` reads the body with no size cap — trivial DoS vector.\n\n**8. Known race condition — `src/server.ts:25`**\nXXX comment: \"race condition under heavy load.\" Unaddressed concurrency b",
+            "tokens": 5055,
+            "duration_ms": 98201,
             "assertions": [
               {
-                "id": "ch-1-chart-type-rationale",
-                "text": "Each recommended chart type includes a rationale tied to the viewer's goal — e.g., 'line chart for revenue trend over time' or 'stacked bar for composition by plan type'. Charts are not just listed without explaining why that type fits the data.",
-                "passed": true,
-                "reasoning": "Every chart includes an explicit 'Goal' field tying the chart type to the viewer's objective, e.g., 'Line chart' for 'Trend over time' and 'Grouped bar' for 'Compare churn across free/pro/enterprise'."
+                "id": "audit-1-high-priority-count",
+                "text": "The response identifies exactly 5 high-priority/ship-blocker TODO-type items (the FIXME, BUG, HACK, and XXX tags), distinguishing them from the 5 regular TODO items. The specific count of 5 high-priority items must be stated or clearly derivable from the listing.",
+                "passed": false,
+                "reasoning": "The output lists 5 SHIP-BLOCKERS but these are general security issues (hardcoded secrets, broken JWT, etc.), not specifically a count of the 5 FIXME/BUG/HACK/XXX tag instances — the response never states or derives that there are exactly 5 such tagged comments as distinct from TODO comments."
               },
               {
-                "id": "ch-1-transform-code",
-                "text": "The response includes actual SQL queries or data transformation code (pandas, SQL, or pseudocode) for at least one of the recommended charts — not just a description of what to aggregate.",
-                "passed": true,
-                "reasoning": "The response includes multiple complete SQL queries with CTEs, JOINs, and aggregations for charts like MRR Over Time, Churn Rate by Plan, and others."
+                "id": "audit-1-severity-system",
+                "text": "The response uses a two-tier or multi-tier severity system (like high/low, or critical/warning/info) where FIXME, BUG, HACK, and XXX are in the highest tier and plain TODO is in a lower tier. Not just a flat list of all TODO-like comments treated equally.",
+                "passed": false,
+                "reasoning": "While the output uses multiple tiers (SHIP-BLOCKERS, HIGH, MEDIUM, LOW), plain TODO items (rate limiting, graceful shutdown) are placed in HIGH tier alongside XXX/FIXME items, so TODOs are not consistently in a lower tier than FIXME/BUG/HACK/XXX as required."
               },
               {
-                "id": "ch-1-library-recommendation",
-                "text": "The response recommends a specific charting library (e.g., Recharts, ECharts, Chart.js, Plotly) with reasoning tied to the expected data scale or use case, not just 'use D3' or 'use any charting library'.",
-                "passed": true,
-                "reasoning": "The response recommends Recharts for line/area/waterfall charts and ECharts specifically for the cohort heatmap, with reasoning tied to bundle size, simplicity, and ECharts' built-in heatmap renderer."
+                "id": "audit-1-secrets-false-positive",
+                "text": "The response explicitly distinguishes between real hardcoded secrets (API_KEY with 'sk-proj-...' value, JWT_SECRET with 'super-secret-...' value) and env var references (STRIPE_KEY = process.env.STRIPE_SK, REDIS_URL = process.env.REDIS_URL) — noting the env var references are NOT secrets. Both the flagging of real secrets AND the clearing of env var references must be present.",
+                "passed": false,
+                "reasoning": "The output correctly flags real hardcoded secrets in config.ts but never mentions STRIPE_KEY = process.env.STRIPE_SK or REDIS_URL = process.env.REDIS_URL as env var references that are NOT secrets — the clearing of false positives is entirely absent."
               },
               {
-                "id": "ch-1-no-pie-for-plans",
-                "text": "The response does NOT recommend a pie chart for showing plan type distribution or revenue composition. It uses bar, stacked bar, stacked area, or treemap instead — following the principle that pie charts are poor for comparison.",
-                "passed": true,
-                "reasoning": "No pie charts are recommended anywhere; plan type composition uses stacked area (Chart 2) and grouped bar (Chart 5) instead."
+                "id": "audit-1-database-url-reference",
+                "text": "The response correctly identifies that the DATABASE_URL finding at src/server.ts:13 is a reference to config.DATABASE_URL (not a new hardcoded secret) and treats it differently from the actual hardcoded value in config.ts. The response should NOT count this as an additional hardcoded credential.",
+                "passed": false,
+                "reasoning": "The output never addresses src/server.ts:13 as a reference to config.DATABASE_URL rather than a new hardcoded credential; it only mentions server.ts:10 (the console.log) and treats config.ts as the sole source of the DATABASE_URL secret without distinguishing the reference."
               }
             ],
-            "pass_rate": 1,
+            "pass_rate": 0,
             "cached": false
           }
         },
         {
           "eval_id": 2,
-          "prompt": "I need to visualize 500,000 data points showing sensor readings (temperature, humidity, pressure) over 6 months from 50 IoT devices. The dashboard needs to be interactive with zoom and pan. What's the right approach?",
+          "prompt": "Scan /Users/satchmo/code/prompts/benchmarks/fixtures/sample-project for leftover debug statements. How many are there? Give me an exact count and list them all.",
           "with_skill": {
-            "output": "## Full Stack Recommendation for 500k IoT Data Points\n\n### 1. Chart Types\n\n| Panel | Chart | Why |\n|-------|-------|-----|\n| Temperature / Humidity / Pressure over time | **Multi-line + area** (one panel per metric) | Time series >20 points → line, not column |\n| Per-device comparison | **Heatmap** (device × time bin) | 50 categories — bar fails, heatmap shines |\n| Distribution snapshots | **Box plot** per device or per hour | Catch anomalies that line charts hide |\n\nDon't try to show all 50 device lines simultaneously — that's 150 lines of noise. Use a device filter + aggregate view by default, drill to individual devices.\n\n---\n\n### 2. Library: Apache ECharts (not Recharts, not Chart.js)\n\n500k points puts you squarely in the **10k–500k interactive tier**:\n\n```\nScale        Library            Why\n─────────────────────────────────────────────────────\n<10k         Recharts/Chart.js  SVG fine, simple API\n10k–500k     Apache ECharts ✓   Canvas, LTTB built-in, 60fps zoom/pan\n500k–10M+    LightningChart     GPU/WebGL required — overkill here\n```\n\nECharts gives you:\n- `sampling: 'lttb'` — Largest Triangle Three Buckets downsampling (visually lossless)\n- Built-in `dataZoom` component (slider + scroll wheel + drag to pan)\n- Canvas renderer (not SVG) — handles 500k points without frame drops\n- `large: true` mode on line series for bulk rendering\n\n---\n\n### 3. Data Pipeline\n\n**Problem:** Sending 500k raw rows to the browser kills load time and memory.\n\n**Solution: Two-tier loading**\n\n```sql\n-- Tier 1: Overview (always loaded, ~2k rows)\nSELECT\n  device_id,\n  metric,\n  date_trunc('hour', ts) AS hour,\n  avg(value)             AS avg_val,\n  min(value)             AS min_val,\n  max(value)             AS max_val\nFROM sensor_readings\nWHERE ts >= now() - interval '6 months'\nGROUP BY 1, 2, 3\nORDER BY 3;\n\n-- Tier 2: Drill-down (loaded on zoom, scoped to window)\nSELECT device_id, metric, ts, value\nFROM sensor_readings\nWHERE ts BETWEEN :start AND :end\n  AND device_id = ANY(:device_ids)\nORD",
-            "tokens": 2260,
-            "duration_ms": 59706,
+            "output": "**12 debug artifacts total.**\n\n### Source files (`src/`, `cmd/`) — 9 findings\n\n| File | Line | Statement |\n|------|------|-----------|\n| `src/utils.ts` | 7 | `debugger;` — leftover from a debugging session |\n| `src/server.ts` | 9 | `console.log(\"Server starting on port\", config.port)` |\n| `src/server.ts` | 10 | `console.log(\"Debug: config loaded\", JSON.stringify(config))` |\n| `src/server.ts` | 17 | `console.log(\"Connection pool created\")` |\n| `src/server.ts` | 28 | `console.debug(\"Processing request:\", req.id)` |\n| `src/server.ts` | 31 | `console.warn(\"Invalid input received:\", input.errors)` |\n| `cmd/main.go` | 15 | `fmt.Println(\"Starting Go service on port\", port)` |\n| `cmd/main.go` | 16 | `fmt.Printf(\"Debug: environment = %s\\n\", ...)` |\n| `cmd/main.go` | 22 | `fmt.Println(\"Server ready\")` |\n\n### Test files — 3 findings\n\n| File | Line | Statement |\n|------|------|-----------|\n| `test/server.test.ts` | 10 | `console.log(\"Test result:\", result)` |\n| `test/server.test.ts` | 17 | `console.log(\"Test result:\", result)` |\n| `test/server.test.ts` | 22 | `console.debug(\"Running edge case tests\")` |\n\nThe `debugger;` statement in `src/utils.ts:7` is the highest-priority fix — it will pause execution in any environment with devtools attached.",
+            "tokens": 993,
+            "duration_ms": 31036,
             "assertions": [
               {
-                "id": "ch-2-canvas-not-svg",
-                "text": "The response explicitly recommends Canvas or WebGL rendering instead of SVG for this data volume, or explains why SVG would fail at 500k points.",
-                "passed": true,
-                "reasoning": "The response explicitly recommends Canvas renderer over SVG, states 'renderer: canvas // MUST be canvas at this scale', and notes ECharts uses 'Canvas renderer (not SVG) — handles 500k points without frame drops'."
+                "id": "audit-2-count-9-not-12",
+                "text": "The response states exactly 9 debug artifacts as the count. If it says 12, it included test files which should be excluded from production audit. The number must be 9, not 12 or any other number.",
+                "passed": false,
+                "reasoning": "The response states '12 debug artifacts total' as the headline count, not 9; it includes the 3 test-file findings in the total even though it separately categorizes them."
               },
               {
-                "id": "ch-2-downsampling",
-                "text": "The response mentions downsampling, data aggregation, or level-of-detail strategy — showing an overview with reduced points and full detail on zoom/drill-down.",
-                "passed": true,
-                "reasoning": "The response recommends LTTB downsampling via ECharts' built-in 'sampling: lttb', a two-tier data strategy with hourly aggregates for overview (~2k rows) and raw data on zoom/drill-down, and even provides the on-zoom data swap implementation."
+                "id": "audit-2-excludes-test-files",
+                "text": "The response does NOT list any findings from test/server.test.ts in the debug artifact results. Test file console.log statements must be excluded or explicitly noted as excluded.",
+                "passed": false,
+                "reasoning": "The response explicitly lists three findings from test/server.test.ts in a 'Test files — 3 findings' table rather than excluding them from the results."
               },
               {
-                "id": "ch-2-appropriate-library",
-                "text": "The response recommends a library capable of handling 500k+ points with interactive pan/zoom — such as ECharts, LightningChart, Plotly with WebGL, or similar high-performance option. Does not recommend Chart.js, Recharts, or basic D3 as the primary solution.",
+                "id": "audit-2-debugger-statement",
+                "text": "The response specifically identifies the 'debugger' statement in src/utils.ts:7 as a finding and flags it as particularly important (it's a breakpoint that would pause execution in debug mode, not just a log statement).",
                 "passed": true,
-                "reasoning": "The response recommends Apache ECharts as the primary solution for the 500k-point scale, explicitly dismisses Recharts and Chart.js as insufficient, and mentions LightningChart for even larger scales — all appropriate guidance."
+                "reasoning": "The response identifies the debugger statement at src/utils.ts:7 and flags it as the highest-priority fix, noting it will pause execution in any environment with devtools attached."
+              },
+              {
+                "id": "audit-2-go-artifacts",
+                "text": "The response identifies Go debug artifacts (fmt.Println and fmt.Printf in cmd/main.go) in addition to JavaScript/TypeScript ones, showing multi-language scanning capability.",
+                "passed": true,
+                "reasoning": "The response correctly identifies both fmt.Println and fmt.Printf calls in cmd/main.go as Go debug artifacts alongside the TypeScript findings."
               }
             ],
-            "pass_rate": 1,
-            "cached": false
+            "pass_rate": 0.5,
+            "cached": true
           },
           "baseline": {
-            "output": "## Architecture for 500k IoT Data Points\n\n### Chart Type Decision\n\n- **Primary view**: Multi-line time series (one line per device, or aggregated band)\n- **Distribution view**: Box plot or violin per device for spread/outlier analysis\n- **Correlation**: Scatter matrix (temp vs humidity vs pressure)\n- **Device comparison**: Heatmap (device × time, colored by value)\n\n### Library: Apache ECharts (not Recharts/Chart.js)\n\nAt 500k points, SVG-based libraries fail. ECharts uses Canvas + WebGL and handles this scale at 60fps with built-in downsampling (`sampling: 'lttb'` — Largest Triangle Three Buckets, which preserves visual shape).\n\n```\n500k points → ECharts with LTTB downsampling\n```\n\nAlternatives only if needed: LightningChart JS (expensive license) for 5M+, or Highcharts Stock.\n\n### Data Pipeline (Critical)\n\nDon't send 500k rows to the browser. Use tiered aggregation:\n\n```sql\n-- Default view: hourly averages per device\nSELECT\n  device_id,\n  date_trunc('hour', timestamp) AS ts,\n  AVG(temperature) AS temp_avg,\n  AVG(humidity)    AS hum_avg,\n  AVG(pressure)    AS pres_avg,\n  MIN(temperature) AS temp_min,\n  MAX(temperature) AS temp_max\nFROM sensor_readings\nWHERE timestamp BETWEEN :start AND :end\nGROUP BY device_id, date_trunc('hour', timestamp)\nORDER BY device_id, ts;\n```\n\nZoom levels → different aggregations:\n\n| Zoom Level | Aggregation | Rows Returned |\n|------------|-------------|---------------|\n| 6 months | Hourly | ~216,000 → LTTB to ~2,000 |\n| 1 month | 15-minute | ~144,000 → LTTB to ~2,000 |\n| 1 week | 5-minute | ~50,400 → LTTB to ~2,000 |\n| 1 day | 1-minute | ~72,000 raw → LTTB to ~2,000 |\n\nECharts `dataZoom` fires an event on zoom — use it to re-query at higher resolution:\n\n```js\nchart.on('datazoom', ({ start, end }) => {\n  const range = computeRange(start, end); // percent → timestamps\n  fetchAggregated(range.from, range.to, resolution(range));\n});\n```\n\n### Implementation Stack\n\n```\nFrontend:    ECharts (Apache) — Canvas renderer, LTTB sampling\nBackend:     Tim",
-            "tokens": 1582,
-            "duration_ms": 43955,
+            "output": "**Total: 13 debug statements**\n\n---\n\n### `src/server.ts` — 5 statements\n| Line | Statement |\n|------|-----------|\n| 9 | `console.log(\"Server starting on port\", config.port)` |\n| 10 | `console.log(\"Debug: config loaded\", JSON.stringify(config))` |\n| 17 | `console.log(\"Connection pool created\")` |\n| 28 | `console.debug(\"Processing request:\", req.id)` |\n| 31 | `console.warn(\"Invalid input received:\", input.errors)` |\n\n### `src/utils.ts` — 1 statement\n| Line | Statement |\n|------|-----------|\n| 7 | `debugger; // Left from debugging session` |\n\n### `cmd/main.go` — 3 statements\n| Line | Statement |\n|------|-----------|\n| 15 | `fmt.Println(\"Starting Go service on port\", port)` |\n| 16 | `fmt.Printf(\"Debug: environment = %s\\n\", os.Getenv(\"GO_ENV\"))` |\n| 22 | `fmt.Println(\"Server ready\")` |\n\n### `test/server.test.ts` — 3 statements\n| Line | Statement |\n|------|-----------|\n| 10 | `console.log(\"Test result:\", result)` |\n| 17 | `console.log(\"Test result:\", result)` |\n| 22 | `console.debug(\"Running edge case tests\")` |\n\n---\n\n**Note on the test file:** The 3 hits in `test/server.test.ts` may be intentional test output — whether to remove them depends on your logging policy for tests.",
+            "tokens": 1188,
+            "duration_ms": 26128,
             "assertions": [
               {
-                "id": "ch-2-canvas-not-svg",
-                "text": "The response explicitly recommends Canvas or WebGL rendering instead of SVG for this data volume, or explains why SVG would fail at 500k points.",
-                "passed": true,
-                "reasoning": "The response explicitly states 'At 500k points, SVG-based libraries fail. ECharts uses Canvas + WebGL' and explains SVG failure at this scale."
+                "id": "audit-2-count-9-not-12",
+                "text": "The response states exactly 9 debug artifacts as the count. If it says 12, it included test files which should be excluded from production audit. The number must be 9, not 12 or any other number.",
+                "passed": false,
+                "reasoning": "The response states a total of 13 debug statements, not 9; it failed to exclude test files and also miscounted production artifacts."
               },
               {
-                "id": "ch-2-downsampling",
-                "text": "The response mentions downsampling, data aggregation, or level-of-detail strategy — showing an overview with reduced points and full detail on zoom/drill-down.",
-                "passed": true,
-                "reasoning": "The response details LTTB downsampling, server-side aggregation at multiple zoom levels, and a dataZoom re-fetch strategy for detail-on-demand."
+                "id": "audit-2-excludes-test-files",
+                "text": "The response does NOT list any findings from test/server.test.ts in the debug artifact results. Test file console.log statements must be excluded or explicitly noted as excluded.",
+                "passed": false,
+                "reasoning": "The response explicitly lists 3 findings from test/server.test.ts rather than excluding them from the production audit results."
               },
               {
-                "id": "ch-2-appropriate-library",
-                "text": "The response recommends a library capable of handling 500k+ points with interactive pan/zoom — such as ECharts, LightningChart, Plotly with WebGL, or similar high-performance option. Does not recommend Chart.js, Recharts, or basic D3 as the primary solution.",
+                "id": "audit-2-debugger-statement",
+                "text": "The response specifically identifies the 'debugger' statement in src/utils.ts:7 as a finding and flags it as particularly important (it's a breakpoint that would pause execution in debug mode, not just a log statement).",
+                "passed": false,
+                "reasoning": "The response lists the debugger statement in src/utils.ts:7 in a table but does not flag it as particularly important or note that it would pause execution in debug mode."
+              },
+              {
+                "id": "audit-2-go-artifacts",
+                "text": "The response identifies Go debug artifacts (fmt.Println and fmt.Printf in cmd/main.go) in addition to JavaScript/TypeScript ones, showing multi-language scanning capability.",
                 "passed": true,
-                "reasoning": "ECharts is recommended as the primary solution with LightningChart and Highcharts Stock as alternatives; Chart.js and Recharts are implicitly excluded by explaining SVG-based libraries fail."
+                "reasoning": "The response correctly identifies all three Go debug artifacts (fmt.Println at lines 15 and 22, fmt.Printf at line 16) in cmd/main.go."
+              }
+            ],
+            "pass_rate": 0.25,
+            "cached": true
+          }
+        },
+        {
+          "eval_id": 3,
+          "prompt": "Run a comprehensive code audit on /Users/satchmo/code/prompts/benchmarks/fixtures/sample-project. I need the exact breakdown: how many secrets, how many debug artifacts, how many TODOs, and how many of those TODOs are high-priority (FIXME, BUG, HACK, XXX) vs low-priority (plain TODO)? Give me a category-by-category breakdown with exact counts.",
+          "with_skill": {
+            "output": "Here's the full breakdown:\n\n---\n\n## Audit Results: `sample-project`\n\n**Total findings: 23**\n\n---\n\n### Secrets — 3\n\n| File | Line | Pattern |\n|------|------|---------|\n| `src/config.ts` | 9 | `API_KEY` — hardcoded `sk-proj-abc123...` value |\n| `src/config.ts` | 11 | `JWT_SECRET` — hardcoded signing key |\n| `src/server.ts` | 13 | `DATABASE_URL` — connection string reference |\n\n> The first two are real hardcoded values and need to be rotated + moved to env vars immediately. The `DATABASE_URL` in `server.ts` is a reference (lower risk) but flagged by the pattern scanner.\n\n---\n\n### Debug Artifacts — 9\n\n| File | Count | Types |\n|------|-------|-------|\n| `src/server.ts` | 5 | `console.log`, `console.debug`, `console.warn` |\n| `cmd/main.go` | 3 | `fmt.Println`, `fmt.Printf` |\n| `src/utils.ts` | 1 | `debugger` statement |\n\n> The `debugger` statement in `utils.ts:7` is the most critical — it will pause execution in any JS debugger.\n\n---\n\n### TODOs — 11 total\n\n**High-priority (FIXME / BUG / HACK / XXX) — 5**\n\n| File | Line | Tag |\n|------|------|-----|\n| `src/config.ts` | 8 | `FIXME` — hardcoded credentials, must rotate |\n| `src/utils.ts` | 3 | `BUG` — regex doesn't handle unicode |\n| `src/server.ts` | 4 | `HACK` — temporary connection pooling workaround |\n| `src/server.ts` | 25 | `XXX` — race condition under heavy load |\n| `cmd/main.go` | 31 | `FIXME` — handler doesn't validate request size |\n\n**Low-priority (plain TODO) — 5**\n\n| File | Line | Note |\n|------|------|------|\n| `src/config.ts` | 2 | Move to env vars before prod |\n| `src/utils.ts` | 17 | Add phone number validation |\n| `src/server.ts` | 35 | Add rate limiting |\n| `cmd/main.go` | 21 | Add graceful shutdown |\n| `scripts/deploy.sh` | 11 | Replace with proper deployment tool |\n\n**Other — 1** (`DEPRECATED` tag in `scripts/deploy.sh:3`)\n\n---\n\n### Summary\n\n| Category | Count |\n|----------|-------|\n| Secrets | **3** |\n| Debug artifacts | **9** |\n| TODOs (total) | **11** |\n| → High-priority | **5** |\n| → Low-priority | *",
+            "tokens": 1445,
+            "duration_ms": 35252,
+            "assertions": [
+              {
+                "id": "audit-3-todo-subcategory-breakdown",
+                "text": "The response breaks down the 11 TODO-type findings into sub-categories: exactly 3 FIXME/BUG (high), 2 HACK/XXX (high), 5 TODO (low), and 1 DEPRECATED (other/medium). At minimum, the high-priority vs low-priority split must be present with correct counts (5 high, 5 low TODO, 1 other).",
+                "passed": true,
+                "reasoning": "The response breaks down the 11 TODOs into exactly 5 high-priority (3 FIXME/BUG + 2 HACK/XXX) and 5 low-priority TODO and 1 DEPRECATED other, matching the required subcategory counts."
+              },
+              {
+                "id": "audit-3-total-23",
+                "text": "The response states the total number of findings across all categories is 23 (3 secrets + 9 debug + 11 TODOs). The exact number 23 must appear.",
+                "passed": true,
+                "reasoning": "The response explicitly states 'Total findings: 23' and the summary table confirms 3+9+11=23."
+              },
+              {
+                "id": "audit-3-debug-excludes-tests",
+                "text": "The debug artifact count is 9 (not 12). The response did not count the 3 console.log/debug statements in test/server.test.ts as debug artifacts.",
+                "passed": true,
+                "reasoning": "The debug artifact count is exactly 9, not 12, indicating test files were correctly excluded from the count."
+              },
+              {
+                "id": "audit-3-deprecated-tag",
+                "text": "The response identifies the DEPRECATED tag in scripts/deploy.sh as a finding and categorizes it separately from FIXME/BUG (high) and TODO (low) — either as medium priority, 'other', or a distinct category.",
+                "passed": true,
+                "reasoning": "The DEPRECATED tag in scripts/deploy.sh is identified and categorized separately as 'Other' distinct from both high-priority FIXME/BUG/HACK/XXX and low-priority TODO."
               }
             ],
             "pass_rate": 1,
-            "cached": false
+            "cached": true
+          },
+          "baseline": {
+            "output": "Here is the comprehensive audit breakdown:\n\n---\n\n## Code Audit: `sample-project`\n\n### Secrets — **3**\n\nAll in `src/config.ts`, all hardcoded values (not env var references):\n\n| # | File | Line | Finding |\n|---|------|------|---------|\n| 1 | `src/config.ts` | 9 | `API_KEY: \"sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234\"` |\n| 2 | `src/config.ts` | 10 | `DATABASE_URL: \"postgresql://admin:s3cretPassw0rd@db.example.com:5432/myapp\"` |\n| 3 | `src/config.ts` | 11 | `JWT_SECRET: \"super-secret-jwt-signing-key-do-not-share-2024\"` |\n\n**Not counted:** `STRIPE_KEY = process.env.STRIPE_SK` and `REDIS_URL = process.env.REDIS_URL` are env var references, not secrets. `.env.example` is a template file. `server.ts:13` references `config.DATABASE_URL` — not a new hardcoded credential.\n\n---\n\n### Debug Artifacts — **9** (test files excluded)\n\n| # | File | Line | Type |\n|---|------|------|------|\n| 1 | `src/server.ts` | 9 | `console.log(\"Server starting on port\", ...)` |\n| 2 | `src/server.ts` | 10 | `console.log(\"Debug: config loaded\", JSON.stringify(config))` — also leaks full config including secrets |\n| 3 | `src/server.ts` | 17 | `console.log(\"Connection pool created\")` |\n| 4 | `src/server.ts` | 29 | `console.debug(\"Processing request:\", req.id)` |\n| 5 | `src/server.ts` | 31 | `console.warn(\"Invalid input received:\", ...)` |\n| 6 | `src/utils.ts` | 7 | `debugger;` — breakpoint left in production code |\n| 7 | `cmd/main.go` | 15 | `fmt.Println(\"Starting Go service on port\", ...)` |\n| 8 | `cmd/main.go` | 16 | `fmt.Printf(\"Debug: environment = %s\\n\", ...)` |\n| 9 | `cmd/main.go` | 22 | `fmt.Println(\"Server ready\")` |\n\n**Excluded:** 3 `console.log`/`console.debug` statements in `test/server.test.ts` — test file output is intentional.\n\n---\n\n### TODOs — **11 total**\n\n#### High-priority FIXME / BUG — **3**\n\n| # | File | Line | Tag | Comment |\n|---|------|------|-----|---------|\n| 1 | `src/config.ts` | 8 | `FIXME` | Hardcoded credentials — must rotate before launch |\n| 2 | `src/utils.t",
+            "tokens": 5578,
+            "duration_ms": 89063,
+            "assertions": [
+              {
+                "id": "audit-3-todo-subcategory-breakdown",
+                "text": "The response breaks down the 11 TODO-type findings into sub-categories: exactly 3 FIXME/BUG (high), 2 HACK/XXX (high), 5 TODO (low), and 1 DEPRECATED (other/medium). At minimum, the high-priority vs low-priority split must be present with correct counts (5 high, 5 low TODO, 1 other).",
+                "passed": true,
+                "reasoning": "The response explicitly breaks down 11 TODOs into 3 FIXME/BUG (high), 2 HACK/XXX (high), 5 plain TODO (low), and 1 DEPRECATED (medium/other), matching all required counts."
+              },
+              {
+                "id": "audit-3-total-23",
+                "text": "The response states the total number of findings across all categories is 23 (3 secrets + 9 debug + 11 TODOs). The exact number 23 must appear.",
+                "passed": true,
+                "reasoning": "The response explicitly states 'Grand Total: 23' and shows a summary table confirming the total is 23."
+              },
+              {
+                "id": "audit-3-debug-excludes-tests",
+                "text": "The debug artifact count is 9 (not 12). The response did not count the 3 console.log/debug statements in test/server.test.ts as debug artifacts.",
+                "passed": true,
+                "reasoning": "The response counts exactly 9 debug artifacts and explicitly states that 3 console.log/console.debug statements in test/server.test.ts were excluded as intentional test output."
+              },
+              {
+                "id": "audit-3-deprecated-tag",
+                "text": "The response identifies the DEPRECATED tag in scripts/deploy.sh as a finding and categorizes it separately from FIXME/BUG (high) and TODO (low) — either as medium priority, 'other', or a distinct category.",
+                "passed": true,
+                "reasoning": "The response identifies the DEPRECATED tag in scripts/deploy.sh line 3 as a distinct finding categorized separately under 'Medium / Other', separate from FIXME/BUG and plain TODO categories."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": true
           }
         }
       ]

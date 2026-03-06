@@ -1,0 +1,32 @@
+{
+  "output": "**Found 9 debug artifacts in production code** (excluding `test/`):\n\n| # | File | Line | Artifact |\n|---|------|------|----------|\n| 1 | `src/utils.ts` | 7 | `debugger` statement |\n| 2 | `src/server.ts` | 9 | `console.log(\"Server starting...\")` |\n| 3 | `src/server.ts` | 10 | `console.log(\"Debug: config loaded...\")` |\n| 4 | `src/server.ts` | 17 | `console.log(\"Connection pool created\")` |\n| 5 | `src/server.ts` | 28 | `console.debug(\"Processing request...\")` |\n| 6 | `src/server.ts` | 31 | `console.warn(\"Invalid input received...\")` |\n| 7 | `cmd/main.go` | 15 | `fmt.Println(\"Starting Go service...\")` |\n| 8 | `cmd/main.go` | 16 | `fmt.Printf(\"Debug: environment = ...\")` |\n| 9 | `cmd/main.go` | 22 | `fmt.Println(\"Server ready\")` |\n\n**Total: 9**\n\nThe 4 hits in `test/server.test.ts` were excluded as instructed. No debug artifacts found in `lib/helpers.ts`, `src/auth.ts`, `src/config.ts`, or `scripts/deploy.sh`.",
+  "tokens": 1606,
+  "duration_ms": 42496,
+  "assertions": [
+    {
+      "id": "audit-2-exact-count",
+      "text": "The response states exactly 9 debug artifacts (not 12, which would include test files). The number 9 must appear as the count of debug findings in production code.",
+      "passed": true,
+      "reasoning": "The response explicitly states 'Found 9 debug artifacts in production code' and 'Total: 9' at the end."
+    },
+    {
+      "id": "audit-2-test-exclusion",
+      "text": "The response explicitly mentions that test files (test/server.test.ts) were excluded from the count, or states that only production/source code was scanned. It does NOT count the 3 console.log/debug calls in the test file.",
+      "passed": true,
+      "reasoning": "The response explicitly states 'The 4 hits in test/server.test.ts were excluded as instructed.'"
+    },
+    {
+      "id": "audit-2-multi-language",
+      "text": "The response identifies debug artifacts across multiple languages — both JavaScript/TypeScript (console.log, console.debug, console.warn, debugger) AND Go (fmt.Println, fmt.Printf) — not just one language.",
+      "passed": true,
+      "reasoning": "The response identifies both TypeScript/JavaScript artifacts (console.log, console.debug, console.warn, debugger in src/utils.ts and src/server.ts) and Go artifacts (fmt.Println, fmt.Printf in cmd/main.go)."
+    },
+    {
+      "id": "audit-2-debugger-flagged",
+      "text": "The response specifically flags the 'debugger' statement in src/utils.ts as a finding (this is the most critical debug artifact — a breakpoint left in code).",
+      "passed": true,
+      "reasoning": "The response lists the 'debugger' statement in src/utils.ts line 7 as finding #1 in the table."
+    }
+  ],
+  "pass_rate": 1
+}

@@ -3,74 +3,84 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I need you to do a quick security scan of the code in /Users/satchmo/code/prompts. Check for any hardcoded secrets, leftover debug statements, and TODO/FIXME comments. Give me a summary report with counts and the most critical findings.",
-      "expected_output": "A structured report showing secret scan results, debug artifact counts, and TODO/FIXME findings with severity categorization. Should use the bundled parallel-audit script rather than manually running grep commands.",
+      "prompt": "Audit the code at /Users/satchmo/code/prompts/benchmarks/fixtures/sample-project for security issues and ship-readiness. Which findings are ship-blockers that must be fixed before deploying, and which are nice-to-fix? Categorize everything by priority.",
+      "expected_output": "A categorized report that distinguishes high-priority ship-blockers (FIXME, HACK, XXX, BUG tags and hardcoded secrets) from low-priority items (TODO comments). The skill's scan-todos.sh outputs severity levels that the baseline model won't know about.",
       "files": [],
       "assertions": [
         {
-          "id": "audit-1-uses-script",
-          "text": "The response indicates it ran a bundled audit script (parallel-audit.sh or scan-secrets.sh or scan-debug.sh or scan-todos.sh) rather than writing ad-hoc grep commands from scratch.",
+          "id": "audit-1-high-priority-count",
+          "text": "The response identifies exactly 5 high-priority/ship-blocker TODO-type items (the FIXME, BUG, HACK, and XXX tags), distinguishing them from the 5 regular TODO items. The specific count of 5 high-priority items must be stated or clearly derivable from the listing.",
           "type": "qualitative"
         },
         {
-          "id": "audit-1-structured-json",
-          "text": "The response references or displays structured JSON output from the scan tools, not raw grep output.",
+          "id": "audit-1-severity-system",
+          "text": "The response uses a two-tier or multi-tier severity system (like high/low, or critical/warning/info) where FIXME, BUG, HACK, and XXX are in the highest tier and plain TODO is in a lower tier. Not just a flat list of all TODO-like comments treated equally.",
           "type": "qualitative"
         },
         {
-          "id": "audit-1-categorized-findings",
-          "text": "The findings are categorized by type (secrets, debug artifacts, TODOs) rather than presented as a flat undifferentiated list.",
+          "id": "audit-1-secrets-false-positive",
+          "text": "The response explicitly distinguishes between real hardcoded secrets (API_KEY with 'sk-proj-...' value, JWT_SECRET with 'super-secret-...' value) and env var references (STRIPE_KEY = process.env.STRIPE_SK, REDIS_URL = process.env.REDIS_URL) — noting the env var references are NOT secrets. Both the flagging of real secrets AND the clearing of env var references must be present.",
           "type": "qualitative"
         },
         {
-          "id": "audit-1-severity-levels",
-          "text": "TODO/FIXME findings distinguish between high-priority items (FIXME, HACK, XXX) and low-priority items (TODO), reflecting the severity categorization from the scan-todos script.",
+          "id": "audit-1-database-url-reference",
+          "text": "The response correctly identifies that the DATABASE_URL finding at src/server.ts:13 is a reference to config.DATABASE_URL (not a new hardcoded secret) and treats it differently from the actual hardcoded value in config.ts. The response should NOT count this as an additional hardcoded credential.",
           "type": "qualitative"
         }
       ]
     },
     {
       "id": 2,
-      "prompt": "Before I ship this release, I need a pre-deploy audit of /Users/satchmo/code/prompts. Scan for anything that shouldn't go to production — hardcoded credentials, console.log statements, debug breakpoints. Report back with what you find and whether it's safe to ship.",
-      "expected_output": "A ship/no-ship recommendation backed by structured scan results. Should leverage the parallel-audit tooling to get comprehensive results quickly rather than manual file-by-file inspection.",
+      "prompt": "Scan /Users/satchmo/code/prompts/benchmarks/fixtures/sample-project for leftover debug statements. How many are there? Give me an exact count and list them all.",
+      "expected_output": "Exactly 9 debug artifacts in production code. The skill's scan-debug.sh excludes test files by default. The baseline, not told to exclude tests, may count 12 (including 3 from test/server.test.ts).",
       "files": [],
       "assertions": [
         {
-          "id": "audit-2-parallel-execution",
-          "text": "The response shows evidence of running multiple scans (secrets + debug + todos) rather than just checking one category.",
+          "id": "audit-2-count-9-not-12",
+          "text": "The response states exactly 9 debug artifacts as the count. If it says 12, it included test files which should be excluded from production audit. The number must be 9, not 12 or any other number.",
           "type": "qualitative"
         },
         {
-          "id": "audit-2-ship-decision",
-          "text": "The response provides a clear ship/no-ship recommendation or risk assessment based on the scan findings, not just a raw data dump.",
+          "id": "audit-2-excludes-test-files",
+          "text": "The response does NOT list any findings from test/server.test.ts in the debug artifact results. Test file console.log statements must be excluded or explicitly noted as excluded.",
           "type": "qualitative"
         },
         {
-          "id": "audit-2-actionable-findings",
-          "text": "For any issues found, the response identifies specific files and line numbers rather than vague descriptions like 'some files may contain secrets'.",
+          "id": "audit-2-debugger-statement",
+          "text": "The response specifically identifies the 'debugger' statement in src/utils.ts:7 as a finding and flags it as particularly important (it's a breakpoint that would pause execution in debug mode, not just a log statement).",
+          "type": "qualitative"
+        },
+        {
+          "id": "audit-2-go-artifacts",
+          "text": "The response identifies Go debug artifacts (fmt.Println and fmt.Printf in cmd/main.go) in addition to JavaScript/TypeScript ones, showing multi-language scanning capability.",
           "type": "qualitative"
         }
       ]
     },
     {
       "id": 3,
-      "prompt": "Run a code audit on /Users/satchmo/code/prompts and tell me the total number of findings across all categories. How many secrets, how many debug artifacts, and how many TODOs? Give me the exact counts.",
-      "expected_output": "Precise counts per category from structured scan output. The skill should produce exact numbers from JSON output, while baseline may give approximate or incomplete counts from manual scanning.",
+      "prompt": "Run a comprehensive code audit on /Users/satchmo/code/prompts/benchmarks/fixtures/sample-project. I need the exact breakdown: how many secrets, how many debug artifacts, how many TODOs, and how many of those TODOs are high-priority (FIXME, BUG, HACK, XXX) vs low-priority (plain TODO)? Give me a category-by-category breakdown with exact counts.",
+      "expected_output": "The skill produces exact JSON counts per category. Expected: 3 secrets, 9 debug, 11 TODOs (5 high-priority: 3 FIXME/BUG + 2 HACK/XXX, 5 low-priority TODO, 1 medium DEPRECATED). Total: 23.",
       "files": [],
       "assertions": [
         {
-          "id": "audit-3-exact-counts",
-          "text": "The response provides specific integer counts for each category (secrets, debug artifacts, TODOs) rather than approximations like 'several' or 'a few'.",
+          "id": "audit-3-todo-subcategory-breakdown",
+          "text": "The response breaks down the 11 TODO-type findings into sub-categories: exactly 3 FIXME/BUG (high), 2 HACK/XXX (high), 5 TODO (low), and 1 DEPRECATED (other/medium). At minimum, the high-priority vs low-priority split must be present with correct counts (5 high, 5 low TODO, 1 other).",
           "type": "qualitative"
         },
         {
-          "id": "audit-3-total-summary",
-          "text": "The response includes a total findings count that is the sum of the individual category counts.",
+          "id": "audit-3-total-23",
+          "text": "The response states the total number of findings across all categories is 23 (3 secrets + 9 debug + 11 TODOs). The exact number 23 must appear.",
           "type": "qualitative"
         },
         {
-          "id": "audit-3-high-priority-flag",
-          "text": "The response separately identifies the count of high-priority items (FIXME, HACK, XXX, BUG) distinct from regular TODOs.",
+          "id": "audit-3-debug-excludes-tests",
+          "text": "The debug artifact count is 9 (not 12). The response did not count the 3 console.log/debug statements in test/server.test.ts as debug artifacts.",
+          "type": "qualitative"
+        },
+        {
+          "id": "audit-3-deprecated-tag",
+          "text": "The response identifies the DEPRECATED tag in scripts/deploy.sh as a finding and categorizes it separately from FIXME/BUG (high) and TODO (low) — either as medium priority, 'other', or a distinct category.",
           "type": "qualitative"
         }
       ]

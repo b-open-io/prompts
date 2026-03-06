@@ -1,0 +1,26 @@
+{
+  "output": "## Audit Results for `/Users/satchmo/code/prompts`\n\n**Total findings: 70**\n\n| Category | Count |\n|----------|-------|\n| **Secrets** | 4 |\n| **Debug artifacts** | 55 |\n| **TODOs** | 11 |\n\n### Breakdown by Severity\n- **High priority** (FIXME/HACK): 2\n- **Medium/Low**: 68\n\n### Details\n\n**Secrets (4)** — All false positives (env var references, not real values):\n- `JINA_API_KEY` reference in `.claude/settings.local.json`\n- `XAI_API_KEY` reference in `.claude/settings.local.json`\n- `ELEVENLABS_API_KEY` reference in `skills/ui-audio-theme/scripts/generate_theme.py`\n- `API_KEY` pattern in the scan-secrets.sh script itself\n\n**Debug artifacts (55)** — Mostly legitimate utility print statements:\n- 4 console.log in `scripts/benchmark.tsx`\n- 1 console.log in `.agents/martha/src/index.ts`\n- 50 print statements across Python utility scripts (geo-optimizer, notebooklm)\n\n**TODOs (11)** — Mix of TODO, FIXME, HACK, WARN, and BUG tags:\n- 4 TODO items\n- 1 FIXME item (high priority)\n- 1 HACK item (high priority)\n- 5 WARN tags in shell scripts\n\nNo shipping blockers. The secrets are safe (env var references only), debug artifacts are in utility/benchmark scripts, and high-priority items are just the FIXME and HACK tags in the scan-todos.sh script itself (meta—the script scanning for these items).",
+  "tokens": 1426,
+  "duration_ms": 32204,
+  "assertions": [
+    {
+      "id": "audit-3-exact-counts",
+      "text": "The response provides specific integer counts for each category (secrets, debug artifacts, TODOs) rather than approximations like 'several' or 'a few'.",
+      "passed": true,
+      "reasoning": "The output provides specific integer counts for each category: Secrets (4), Debug artifacts (55), TODOs (11), with no approximations or vague language."
+    },
+    {
+      "id": "audit-3-total-summary",
+      "text": "The response includes a total findings count that is the sum of the individual category counts.",
+      "passed": true,
+      "reasoning": "The response includes 'Total findings: 70' which correctly sums the three category counts (4 + 55 + 11 = 70)."
+    },
+    {
+      "id": "audit-3-high-priority-flag",
+      "text": "The response separately identifies the count of high-priority items (FIXME, HACK, XXX, BUG) distinct from regular TODOs.",
+      "passed": true,
+      "reasoning": "The 'Breakdown by Severity' section separately identifies high-priority items (FIXME/HACK: 2) distinct from the overall counts and medium/low items (68)."
+    }
+  ],
+  "pass_rate": 1
+}

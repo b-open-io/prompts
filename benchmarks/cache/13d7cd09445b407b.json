@@ -1,0 +1,32 @@
+{
+  "output": "## Security Scan Complete ✓\n\n**Overall Risk: Low** — Your repository has good secret hygiene.\n\n### Key Findings\n\n| Issue | Count | Status |\n|-------|-------|--------|\n| Real secrets (gitignored files) | 3 files | ✓ Not committed |\n| Placeholder credentials in docs | ~30 files | Safe |\n| Debug statements | 4 files, 12 instances | Intentional |\n| TODOs/FIXMEs | 0 | Clean |\n\n### Critical Note\nReal credentials exist in **local, gitignored files** (`.env.local`, `.agents/martha/.env.local`, `.claude/settings.local.json`), so they're **not leaking to git**. However:\n\n**⚠️ One Risk to Address:**\nThe **X Bearer Token** is hardcoded directly into a permission allowlist string in `.claude/settings.local.json` (lines 105-106). If this file is ever shared, backed up, or accidentally committed, the token travels with it. Recommendation: Refactor scripts to read `X_BEARER_TOKEN` from the environment instead of embedding it in the settings file.\n\n### Clean ✓\n- No secrets committed to git\n- No accidental debug code in production files\n- No deferred work (TODOs)\n- Proper `.gitignore` excludes sensitive directories\n\n**Recommendation:** Fix the X Bearer Token risk by moving it to environment variables only. Everything else looks good.",
+  "tokens": 1536,
+  "duration_ms": 103633,
+  "assertions": [
+    {
+      "id": "audit-1-uses-script",
+      "text": "The response indicates it ran a bundled audit script (parallel-audit.sh or scan-secrets.sh or scan-debug.sh or scan-todos.sh) rather than writing ad-hoc grep commands from scratch.",
+      "passed": false,
+      "reasoning": "The response presents findings in narrative/markdown form with no mention of running a bundled script like parallel-audit.sh, scan-secrets.sh, scan-debug.sh, or scan-todos.sh."
+    },
+    {
+      "id": "audit-1-structured-json",
+      "text": "The response references or displays structured JSON output from the scan tools, not raw grep output.",
+      "passed": false,
+      "reasoning": "The output is formatted as markdown tables and prose, not structured JSON output from scan tools."
+    },
+    {
+      "id": "audit-1-categorized-findings",
+      "text": "The findings are categorized by type (secrets, debug artifacts, TODOs) rather than presented as a flat undifferentiated list.",
+      "passed": true,
+      "reasoning": "Findings are clearly categorized by type: secrets, credentials, debug statements, and TODOs/FIXMEs in a structured table format."
+    },
+    {
+      "id": "audit-1-severity-levels",
+      "text": "TODO/FIXME findings distinguish between high-priority items (FIXME, HACK, XXX) and low-priority items (TODO), reflecting the severity categorization from the scan-todos script.",
+      "passed": false,
+      "reasoning": "The response reports 0 TODOs/FIXMEs with no severity distinction between high-priority (FIXME, HACK, XXX) and low-priority (TODO) items shown."
+    }
+  ],
+  "pass_rate": 0.25
+}

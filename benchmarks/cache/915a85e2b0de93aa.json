@@ -1,0 +1,32 @@
+{
+  "output": "Here's the full breakdown:\n\n---\n\n## Audit Results: `sample-project`\n\n**Total findings: 23**\n\n---\n\n### Secrets — 3\n\n| File | Line | Pattern |\n|------|------|---------|\n| `src/config.ts` | 9 | `API_KEY` — hardcoded `sk-proj-abc123...` value |\n| `src/config.ts` | 11 | `JWT_SECRET` — hardcoded signing key |\n| `src/server.ts` | 13 | `DATABASE_URL` — connection string reference |\n\n> The first two are real hardcoded values and need to be rotated + moved to env vars immediately. The `DATABASE_URL` in `server.ts` is a reference (lower risk) but flagged by the pattern scanner.\n\n---\n\n### Debug Artifacts — 9\n\n| File | Count | Types |\n|------|-------|-------|\n| `src/server.ts` | 5 | `console.log`, `console.debug`, `console.warn` |\n| `cmd/main.go` | 3 | `fmt.Println`, `fmt.Printf` |\n| `src/utils.ts` | 1 | `debugger` statement |\n\n> The `debugger` statement in `utils.ts:7` is the most critical — it will pause execution in any JS debugger.\n\n---\n\n### TODOs — 11 total\n\n**High-priority (FIXME / BUG / HACK / XXX) — 5**\n\n| File | Line | Tag |\n|------|------|-----|\n| `src/config.ts` | 8 | `FIXME` — hardcoded credentials, must rotate |\n| `src/utils.ts` | 3 | `BUG` — regex doesn't handle unicode |\n| `src/server.ts` | 4 | `HACK` — temporary connection pooling workaround |\n| `src/server.ts` | 25 | `XXX` — race condition under heavy load |\n| `cmd/main.go` | 31 | `FIXME` — handler doesn't validate request size |\n\n**Low-priority (plain TODO) — 5**\n\n| File | Line | Note |\n|------|------|------|\n| `src/config.ts` | 2 | Move to env vars before prod |\n| `src/utils.ts` | 17 | Add phone number validation |\n| `src/server.ts` | 35 | Add rate limiting |\n| `cmd/main.go` | 21 | Add graceful shutdown |\n| `scripts/deploy.sh` | 11 | Replace with proper deployment tool |\n\n**Other — 1** (`DEPRECATED` tag in `scripts/deploy.sh:3`)\n\n---\n\n### Summary\n\n| Category | Count |\n|----------|-------|\n| Secrets | **3** |\n| Debug artifacts | **9** |\n| TODOs (total) | **11** |\n| → High-priority | **5** |\n| → Low-priority | **5** |\n| → Other | **1** |\n\n**Blockers before shipping:** The hardcoded `API_KEY` and `JWT_SECRET` in `src/config.ts` plus the race condition (`XXX`) and unvalidated request size (`FIXME`) in `src/server.ts` are the most urgent.",
+  "tokens": 1445,
+  "duration_ms": 35252,
+  "assertions": [
+    {
+      "id": "audit-3-todo-subcategory-breakdown",
+      "text": "The response breaks down the 11 TODO-type findings into sub-categories: exactly 3 FIXME/BUG (high), 2 HACK/XXX (high), 5 TODO (low), and 1 DEPRECATED (other/medium). At minimum, the high-priority vs low-priority split must be present with correct counts (5 high, 5 low TODO, 1 other).",
+      "passed": true,
+      "reasoning": "The response breaks down the 11 TODOs into exactly 5 high-priority (3 FIXME/BUG + 2 HACK/XXX) and 5 low-priority TODO and 1 DEPRECATED other, matching the required subcategory counts."
+    },
+    {
+      "id": "audit-3-total-23",
+      "text": "The response states the total number of findings across all categories is 23 (3 secrets + 9 debug + 11 TODOs). The exact number 23 must appear.",
+      "passed": true,
+      "reasoning": "The response explicitly states 'Total findings: 23' and the summary table confirms 3+9+11=23."
+    },
+    {
+      "id": "audit-3-debug-excludes-tests",
+      "text": "The debug artifact count is 9 (not 12). The response did not count the 3 console.log/debug statements in test/server.test.ts as debug artifacts.",
+      "passed": true,
+      "reasoning": "The debug artifact count is exactly 9, not 12, indicating test files were correctly excluded from the count."
+    },
+    {
+      "id": "audit-3-deprecated-tag",
+      "text": "The response identifies the DEPRECATED tag in scripts/deploy.sh as a finding and categorizes it separately from FIXME/BUG (high) and TODO (low) — either as medium priority, 'other', or a distinct category.",
+      "passed": true,
+      "reasoning": "The DEPRECATED tag in scripts/deploy.sh is identified and categorized separately as 'Other' distinct from both high-priority FIXME/BUG/HACK/XXX and low-priority TODO."
+    }
+  ],
+  "pass_rate": 1
+}

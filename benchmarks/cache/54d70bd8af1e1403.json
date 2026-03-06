@@ -1,0 +1,32 @@
+{
+  "output": "**12 debug artifacts total.**\n\n### Source files (`src/`, `cmd/`) — 9 findings\n\n| File | Line | Statement |\n|------|------|-----------|\n| `src/utils.ts` | 7 | `debugger;` — leftover from a debugging session |\n| `src/server.ts` | 9 | `console.log(\"Server starting on port\", config.port)` |\n| `src/server.ts` | 10 | `console.log(\"Debug: config loaded\", JSON.stringify(config))` |\n| `src/server.ts` | 17 | `console.log(\"Connection pool created\")` |\n| `src/server.ts` | 28 | `console.debug(\"Processing request:\", req.id)` |\n| `src/server.ts` | 31 | `console.warn(\"Invalid input received:\", input.errors)` |\n| `cmd/main.go` | 15 | `fmt.Println(\"Starting Go service on port\", port)` |\n| `cmd/main.go` | 16 | `fmt.Printf(\"Debug: environment = %s\\n\", ...)` |\n| `cmd/main.go` | 22 | `fmt.Println(\"Server ready\")` |\n\n### Test files — 3 findings\n\n| File | Line | Statement |\n|------|------|-----------|\n| `test/server.test.ts` | 10 | `console.log(\"Test result:\", result)` |\n| `test/server.test.ts` | 17 | `console.log(\"Test result:\", result)` |\n| `test/server.test.ts` | 22 | `console.debug(\"Running edge case tests\")` |\n\nThe `debugger;` statement in `src/utils.ts:7` is the highest-priority fix — it will pause execution in any environment with devtools attached.",
+  "tokens": 993,
+  "duration_ms": 31036,
+  "assertions": [
+    {
+      "id": "audit-2-count-9-not-12",
+      "text": "The response states exactly 9 debug artifacts as the count. If it says 12, it included test files which should be excluded from production audit. The number must be 9, not 12 or any other number.",
+      "passed": false,
+      "reasoning": "The response states '12 debug artifacts total' as the headline count, not 9; it includes the 3 test-file findings in the total even though it separately categorizes them."
+    },
+    {
+      "id": "audit-2-excludes-test-files",
+      "text": "The response does NOT list any findings from test/server.test.ts in the debug artifact results. Test file console.log statements must be excluded or explicitly noted as excluded.",
+      "passed": false,
+      "reasoning": "The response explicitly lists three findings from test/server.test.ts in a 'Test files — 3 findings' table rather than excluding them from the results."
+    },
+    {
+      "id": "audit-2-debugger-statement",
+      "text": "The response specifically identifies the 'debugger' statement in src/utils.ts:7 as a finding and flags it as particularly important (it's a breakpoint that would pause execution in debug mode, not just a log statement).",
+      "passed": true,
+      "reasoning": "The response identifies the debugger statement at src/utils.ts:7 and flags it as the highest-priority fix, noting it will pause execution in any environment with devtools attached."
+    },
+    {
+      "id": "audit-2-go-artifacts",
+      "text": "The response identifies Go debug artifacts (fmt.Println and fmt.Printf in cmd/main.go) in addition to JavaScript/TypeScript ones, showing multi-language scanning capability.",
+      "passed": true,
+      "reasoning": "The response correctly identifies both fmt.Println and fmt.Printf calls in cmd/main.go as Go debug artifacts alongside the TypeScript findings."
+    }
+  ],
+  "pass_rate": 0.5
+}

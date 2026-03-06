@@ -1,0 +1,26 @@
+{
+  "output": "---\n\n**Health Score: 80 / 100**\n\n### What's dragging it down (-20 points)\n\n**Heavy dependencies (major drag)** — 6 out of 9 production deps are known bundle killers:\n\n| Dep | Weight | Replace With | Savings |\n|-----|--------|-------------|---------|\n| `moment` | ~300KB | `date-fns` or `dayjs` | ~298KB |\n| `lodash` | ~70KB | `lodash-es` or native JS | tree-shakable |\n| `jquery` | ~87KB | native DOM APIs | 87KB |\n| `axios` | ~14KB | `fetch` (built-in) or `ky` | 11KB |\n| `chart.js` | ~200KB | `lightweight-charts` or `uPlot` | ~160KB |\n| `@fortawesome/fontawesome-free` | ~1MB+ | `lucide-react` or `heroicons` | ~1MB |\n\n### What's clean\n\n- **Images**: No images found — nothing to flag.\n- **Bundles**: No build output exists yet, so no source maps leaking into prod, no oversized chunks flagged.\n\n### Next steps\n\n1. Swap the 6 heavy deps above — this alone could cut 1.5–2MB from your bundle.\n2. Run a build (`bun run build`), then re-run the audit to get bundle-level analysis.\n3. Re-run after fixes to verify the score climbs (target: 95+).",
+  "tokens": 1118,
+  "duration_ms": 36580,
+  "assertions": [
+    {
+      "id": "perf-2-numeric-score",
+      "text": "The response provides a specific numeric health score between 0 and 100 (not a vague assessment like 'moderate' or 'needs improvement').",
+      "passed": true,
+      "reasoning": "The response provides a specific numeric score of 80/100."
+    },
+    {
+      "id": "perf-2-deduction-breakdown",
+      "text": "The response shows what contributed to score deductions — specific categories like heavy dependencies, missing images optimization, or bundle size issues — not just a single number with no explanation.",
+      "passed": true,
+      "reasoning": "The response breaks down deductions by category, showing heavy dependencies as the primary drag with specific deps listed."
+    },
+    {
+      "id": "perf-2-deps-flagged",
+      "text": "Heavy dependencies (moment, lodash, jquery, etc.) are identified as a major factor dragging down the score.",
+      "passed": true,
+      "reasoning": "moment, lodash, jquery, axios, chart.js, and fontawesome are explicitly identified as heavy dependencies dragging down the score."
+    }
+  ],
+  "pass_rate": 1
+}

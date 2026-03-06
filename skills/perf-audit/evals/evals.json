@@ -1,0 +1,56 @@
+{
+  "skill_name": "perf-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Check the dependencies in /Users/satchmo/code/prompts/benchmarks/fixtures/sample-project for heavy packages that should be replaced. List each heavy dependency, why it's heavy, and what to replace it with.",
+      "expected_output": "The skill's dep-audit.sh has a curated list of 21+ known-heavy packages with specific alternatives. It should identify moment, lodash, jquery, axios, @fortawesome/fontawesome-free, and chart.js as heavy with specific lighter alternatives.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "perf-1-all-six-deps",
+          "text": "The response identifies all 6 heavy dependencies: moment, lodash, jquery, axios, @fortawesome/fontawesome-free (or font-awesome), and chart.js. All 6 must be mentioned as problematic.",
+          "type": "qualitative"
+        },
+        {
+          "id": "perf-1-specific-alternatives",
+          "text": "For each heavy dependency, a specific lighter alternative is named (not just 'use something lighter'). Examples: date-fns/dayjs for moment, lodash-es/native for lodash, fetch/ky for axios, lucide-react/heroicons for font-awesome.",
+          "type": "qualitative"
+        },
+        {
+          "id": "perf-1-size-context",
+          "text": "The response includes approximate bundle sizes for at least 3 of the heavy packages (e.g., moment is 300KB+, jquery is 87KB, font-awesome is 1MB+) to justify why they should be replaced.",
+          "type": "qualitative"
+        },
+        {
+          "id": "perf-1-uses-script",
+          "text": "The response indicates it used a bundled audit script (dep-audit.sh or full-audit.sh) rather than manually reading package.json and reasoning about each dependency from general knowledge.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Give me a performance health score for the project at /Users/satchmo/code/prompts/benchmarks/fixtures/sample-project. I want a number from 0-100 with a breakdown of what's dragging the score down.",
+      "expected_output": "The skill's full-audit.sh computes a 0-100 health score with specific deduction rules (points off for heavy deps, oversized images, large bundles). The baseline will either refuse to give a numeric score or make one up without a systematic formula.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "perf-2-numeric-score",
+          "text": "The response provides a specific numeric health score between 0 and 100 (not a vague assessment like 'moderate' or 'needs improvement').",
+          "type": "qualitative"
+        },
+        {
+          "id": "perf-2-deduction-breakdown",
+          "text": "The response shows what contributed to score deductions — specific categories like heavy dependencies, missing images optimization, or bundle size issues — not just a single number with no explanation.",
+          "type": "qualitative"
+        },
+        {
+          "id": "perf-2-deps-flagged",
+          "text": "Heavy dependencies (moment, lodash, jquery, etc.) are identified as a major factor dragging down the score.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "output": "Here's the performance health score:\n\n---\n\n## Performance Health Score: **80 / 100**\n\nThe score is dragged down entirely by dependency bloat — no images or bundles exist to audit.\n\n---\n\n### What's hurting the score\n\n| Package | Problem | Weight |\n|---|---|---|\n| `@fortawesome/fontawesome-free` | 1MB+ icon font loaded wholesale | **Heaviest** |\n| `moment` | 300KB+, mutable, no tree-shaking | High |\n| `chart.js` | 200KB+; alternatives are ~40KB | High |\n| `jquery` | 87KB, redundant in a React/Next.js app | Medium |\n| `lodash` | 70KB+ when full bundle is loaded | Medium |\n| `axios` | ~13KB when `fetch` is built-in | Low |\n\n**6 of 9 production dependencies are heavy packages with lighter alternatives.**\n\n---\n\n### What's fine\n\n- **Images**: No images found — nothing to flag.\n- **Bundles**: No build output yet — no sourcemaps in prod, no oversized chunks to report.\n\n---\n\n### Top fixes (biggest wins first)\n\n1. **Replace `@fortawesome` → `lucide-react` or `heroicons`** — saves ~1MB\n2. **Replace `moment` → `dayjs`** — saves ~300KB, 2KB replacement\n3. **Replace `chart.js` → `uPlot` or `lightweight-charts`** — saves ~160KB\n4. **Replace `jquery` → native DOM APIs** — saves ~87KB, no modern app needs this\n5. **Replace `lodash` → `lodash-es`** — enables tree-shaking, only ships what you import\n6. **Replace `axios` → `fetch`** — built-in, zero cost\n\nFixing all six would realistically drop bundle weight by **1.5–2MB** and push the score into the **95+** range.",
+  "tokens": 1402,
+  "duration_ms": 36475,
+  "assertions": [
+    {
+      "id": "perf-2-numeric-score",
+      "text": "The response provides a specific numeric health score between 0 and 100 (not a vague assessment like 'moderate' or 'needs improvement').",
+      "passed": true,
+      "reasoning": "The response provides a specific numeric score of 80/100."
+    },
+    {
+      "id": "perf-2-deduction-breakdown",
+      "text": "The response shows what contributed to score deductions — specific categories like heavy dependencies, missing images optimization, or bundle size issues — not just a single number with no explanation.",
+      "passed": true,
+      "reasoning": "The response includes a detailed table breaking down which packages cause deductions and categorizes them by weight/impact."
+    },
+    {
+      "id": "perf-2-deps-flagged",
+      "text": "Heavy dependencies (moment, lodash, jquery, etc.) are identified as a major factor dragging down the score.",
+      "passed": true,
+      "reasoning": "Heavy dependencies moment, lodash, jquery, axios, chart.js, and @fortawesome are all explicitly identified as factors dragging down the score."
+    }
+  ],
+  "pass_rate": 1
+}

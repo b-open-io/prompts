@@ -1,0 +1,32 @@
+{
+  "output": "**9 debug artifacts** found in production code (test files excluded):\n\n| File | Line | Type |\n|------|------|------|\n| `src/utils.ts` | 7 | `debugger` statement |\n| `src/server.ts` | 9 | `console.log` |\n| `src/server.ts` | 10 | `console.log` (\"Debug: config loaded\") |\n| `src/server.ts` | 17 | `console.log` |\n| `src/server.ts` | 28 | `console.debug` |\n| `src/server.ts` | 31 | `console.warn` |\n| `cmd/main.go` | 15 | `fmt.Println` |\n| `cmd/main.go` | 16 | `fmt.Printf` (\"Debug: environment\") |\n| `cmd/main.go` | 22 | `fmt.Println` |\n\n**Breakdown by severity:**\n- 1 `debugger` statement (high priority — execution blocker)\n- 5 JS console calls (`log` ×3, `debug` ×1, `warn` ×1)\n- 3 Go `fmt.Print*` calls",
+  "tokens": 878,
+  "duration_ms": 27467,
+  "assertions": [
+    {
+      "id": "audit-2-exact-count",
+      "text": "The response states exactly 9 debug artifacts (not 12, which would include test files). The number 9 must appear as the count of debug findings in production code.",
+      "passed": true,
+      "reasoning": "The response explicitly states '9 debug artifacts found in production code' and lists exactly 9 items in the table."
+    },
+    {
+      "id": "audit-2-test-exclusion",
+      "text": "The response explicitly mentions that test files (test/server.test.ts) were excluded from the count, or states that only production/source code was scanned. It does NOT count the 3 console.log/debug calls in the test file.",
+      "passed": true,
+      "reasoning": "The response states 'test files excluded' in the header and the table contains no entries from test files, implying test files were excluded from the scan."
+    },
+    {
+      "id": "audit-2-multi-language",
+      "text": "The response identifies debug artifacts across multiple languages — both JavaScript/TypeScript (console.log, console.debug, console.warn, debugger) AND Go (fmt.Println, fmt.Printf) — not just one language.",
+      "passed": true,
+      "reasoning": "The response identifies both TypeScript/JavaScript artifacts (console.log, console.debug, console.warn, debugger) and Go artifacts (fmt.Println, fmt.Printf) across multiple files."
+    },
+    {
+      "id": "audit-2-debugger-flagged",
+      "text": "The response specifically flags the 'debugger' statement in src/utils.ts as a finding (this is the most critical debug artifact — a breakpoint left in code).",
+      "passed": true,
+      "reasoning": "The response explicitly flags the 'debugger' statement in src/utils.ts line 7 and notes it as 'high priority — execution blocker' in the severity breakdown."
+    }
+  ],
+  "pass_rate": 1
+}

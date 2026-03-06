@@ -1,0 +1,32 @@
+{
+  "output": "Here are the exact numbers:\n\n## Audit Results — `sample-project`\n\n| Category | Count |\n|---|---|\n| Secrets | 3 |\n| Debug artifacts | 9 |\n| TODOs / FIXMEs | 11 |\n| **Total findings** | **23** |\n| **High-priority** | **5** |\n\n---\n\n### The 5 High-Priority Items (need immediate attention)\n\n1. **`src/config.ts:8`** — `FIXME`: Hardcoded credentials must rotate before launch\n2. **`src/utils.ts:3`** — `BUG`: Regex doesn't handle unicode\n3. **`cmd/main.go:31`** — `FIXME`: Handler doesn't validate request size\n4. **`src/server.ts:4`** — `HACK`: Temporary workaround for connection pooling\n5. **`src/server.ts:25`** — `XXX`: Race condition under heavy load\n\n---\n\n### Also notable\nThe 3 secrets findings in `src/config.ts` include a hardcoded `API_KEY` (`sk-proj-abc123...`) and a `JWT_SECRET` — these should be treated as **compromised and rotated immediately**, not just moved to env vars.",
+  "tokens": 1044,
+  "duration_ms": 33521,
+  "assertions": [
+    {
+      "id": "audit-3-total-23",
+      "text": "The response states the total number of findings is 23 (3 secrets + 9 debug + 11 TODOs). The exact number 23 must appear.",
+      "passed": true,
+      "reasoning": "The response explicitly states '**Total findings** | **23**' in the table."
+    },
+    {
+      "id": "audit-3-per-category-counts",
+      "text": "The response provides a per-category breakdown showing 3 secrets, 9 debug artifacts, and 11 TODO-type items. All three numbers must be present and correct.",
+      "passed": true,
+      "reasoning": "The table clearly shows Secrets: 3, Debug artifacts: 9, TODOs/FIXMEs: 11 — all three correct counts are present."
+    },
+    {
+      "id": "audit-3-high-priority-5",
+      "text": "The response identifies exactly 5 high-priority items (3 FIXME/BUG + 2 HACK/XXX). The number 5 must be stated as the high-priority count.",
+      "passed": true,
+      "reasoning": "The response states '**High-priority** | **5**' in the table and lists exactly 5 high-priority items."
+    },
+    {
+      "id": "audit-3-parallel-execution",
+      "text": "The response shows evidence of running all three scans (secrets + debug + todos) in a single pass or parallel execution, not scanning for each type separately with manual grep commands.",
+      "passed": false,
+      "reasoning": "The output shows final results but contains no evidence of parallel execution or a single-pass scan; there is no mention of concurrent scanning, parallel tool calls, or methodology indicating all three scan types ran simultaneously."
+    }
+  ],
+  "pass_rate": 0.75
+}

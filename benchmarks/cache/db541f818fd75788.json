@@ -1,0 +1,26 @@
+{
+  "output": "## Code Audit Results for `/Users/satchmo/code/prompts`\n\n**Total findings: 70**\n\n### Exact Counts by Category\n\n| Category | Count |\n|----------|-------|\n| **Secrets** | 4 |\n| **Debug artifacts** | 55 |\n| **TODOs** | 11 |\n\n### High Priority Items\n- **High priority findings:** 2 (1 FIXME, 1 HACK)\n\n### Breakdown\n\n**Secrets (4):**\n- 2 references in `./.claude/settings.local.json` (checking for JINA_API_KEY and XAI_API_KEY env vars)\n- 1 reference in `./skills/ui-audio-theme/scripts/generate_theme.py` (ELEVENLABS_API_KEY env var check)\n- 1 reference in `./skills/code-audit-scripts/scripts/scan-secrets.sh` (pattern definition in the scanner itself)\n\nAll appear to be environment variable references rather than hardcoded secrets.\n\n**Debug artifacts (55):**\n- 4 console.log statements in `./scripts/benchmark.tsx`\n- 1 console.log in `./.agents/martha/src/index.ts`\n- 50 print statements across Python scripts in geo-optimizer and other skills (mostly legitimate output for user-facing commands)\n\n**TODOs (11):**\n- 4 TODO comments\n- 1 FIXME comment\n- 1 HACK comment\n- 5 WARN statements (logging tags, not actual TODOs)",
+  "tokens": 1018,
+  "duration_ms": 28853,
+  "assertions": [
+    {
+      "id": "audit-3-exact-counts",
+      "text": "The response provides specific integer counts for each category (secrets, debug artifacts, TODOs) rather than approximations like 'several' or 'a few'.",
+      "passed": true,
+      "reasoning": "Output provides specific integer counts for all categories: Secrets (4), Debug artifacts (55), TODOs (11)—no approximations used."
+    },
+    {
+      "id": "audit-3-total-summary",
+      "text": "The response includes a total findings count that is the sum of the individual category counts.",
+      "passed": true,
+      "reasoning": "Total findings count of 70 is provided and correctly equals the sum of category counts (4 + 55 + 11)."
+    },
+    {
+      "id": "audit-3-high-priority-flag",
+      "text": "The response separately identifies the count of high-priority items (FIXME, HACK, XXX, BUG) distinct from regular TODOs.",
+      "passed": true,
+      "reasoning": "High priority items are separately identified with count of 2 (1 FIXME, 1 HACK), distinct from the 11 general TODOs."
+    }
+  ],
+  "pass_rate": 1
+}
