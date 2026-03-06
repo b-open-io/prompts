@@ -2,6 +2,7 @@
 name: reinforce-skills
 version: 1.0.4
 description: "Invoke this skill when: modifying any CLAUDE.md file, adding a new skill or agent to a plugin, user says 'update the skill map', 'add this to the map', 'register this agent', 'skills keep getting forgotten', 'I keep forgetting which skill to use', 'agents keep getting forgotten', 'add skill map', 'update agent map', 'sync skills to CLAUDE.md', or when setting up a new project. This skill injects compressed SKILL-MAP and AGENT-MAP directive blocks into CLAUDE.md so skill names and agent IDs persist across the session without fading from context. Skipping this means agents will forget skill names mid-session, fail to invoke the right skill, and guess at agent IDs — causing silent capability loss that is hard to diagnose."
+user-invocable: false
 ---
 
 # Reinforce Skills & Agents

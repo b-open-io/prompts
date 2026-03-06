@@ -3,6 +3,7 @@ name: x-tweet-fetch
 version: 1.0.0
 description: Fetch a specific tweet by URL or ID. Use when user shares an X/Twitter URL (https://x.com/... or https://twitter.com/...), asks "get this tweet", "fetch tweet", "what does this tweet say", "read this X post". Requires X_BEARER_TOKEN.
 allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_PLUGIN_ROOT}:*)
+user-invocable: false
 ---
 
 # X Tweet Fetch

@@ -1,6 +1,7 @@
 ---
 name: process-cleanup
 description: "Finds stale and resource-hungry processes, scores them by waste, and presents a cleanup report with friendly names. Use this skill when the user says 'what's eating my RAM', 'kill stale processes', 'clean up my machine', 'free up memory', 'my computer is slow', 'what's running', 'too many things open', or asks to find/kill background processes. Also use proactively when you notice sluggishness, process spawn failures, or many duplicate processes during normal work."
+user-invocable: false
 allowed-tools:
   - Bash
 ---

@@ -2,6 +2,7 @@
 name: frontend-performance
 version: 1.0.0
 description: This skill should be used when the user wants to optimize Next.js frontend performance using Lighthouse, bundle analysis, and animation best practices. Use when diagnosing slow pages, optimizing bundle size, or improving Core Web Vitals (LCP, TBT, CLS).
+user-invocable: false
 ---
 
 # Frontend Performance Optimization

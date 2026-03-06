@@ -1,7 +1,7 @@
 ---
 name: prompt-engineer
 display_name: "Zack"
-version: 2.3.11
+version: 2.3.12
 description: Slash command creation, Agent Skills authoring, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, Skills, documentation.
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(copywriting), Skill(copy-editing), Skill(agent-browser)
 model: sonnet
@@ -915,6 +915,57 @@ allowed-tools: Read, Grep, Glob
 
 **Note:** If `allowed-tools` is not specified, Claude asks for permission normally.
 
+### Invocation Control Fields
+
+Two optional frontmatter fields control who can invoke a skill:
+
+| Field | Default | Effect |
+|---|---|---|
+| `user-invocable: false` | `true` | Hides from `/` menu; only agents/Claude can invoke |
+| `disable-model-invocation: true` | `false` | Claude cannot auto-load; user must invoke manually via `/skill-name` |
+
+**Invocation matrix:**
+
+| `user-invocable` | `disable-model-invocation` | Who can invoke |
+|---|---|---|
+| `true` (default) | `false` (default) | Both user and Claude |
+| `false` | `false` | Agent/Claude only (hidden from user menu) |
+| `true` | `true` | User only (Claude cannot auto-invoke) |
+
+**When to use `user-invocable: false`:**
+- Background reference skills (e.g., `bsv-standards`)
+- Internal agent mechanics (e.g., `reinforce-skills`, `runtime-context`, `confess`)
+- Skills always consumed by other skills/agents, never invoked directly by users
+
+**When to use `disable-model-invocation: true`:**
+- Skills requiring user interaction (OTP codes, subjective choices)
+- Publishing/deployment workflows with confirmations (e.g., `npm-publish`, `skill-publish`)
+- Skills that move money or have irreversible side effects (e.g., `wallet-send-bsv`, `broadcast-arc`)
+- User preference configuration (e.g., `statusline-setup`, `hook-manager`)
+
+**When to leave defaults (most skills):**
+- Both user and agent can invoke — the skill works autonomously and the user can also type `/skill-name`
+- No dangerous side effects from auto-invocation
+- No required user interaction
+
+```yaml
+---
+name: internal-routing
+description: Agent-internal routing logic for delegating tasks.
+user-invocable: false
+---
+```
+
+```yaml
+---
+name: npm-publish
+description: Publish npm packages with OTP verification.
+disable-model-invocation: true
+---
+```
+
+**Source:** These fields are part of the official Claude Code skills schema (documented at `code.claude.com/docs/en/skills`).
+
 ### Multi-File Skills with Progressive Disclosure
 
 Skills can include supporting files that Claude loads only when needed:
@@ -1252,6 +1303,7 @@ Explore more at: https://github.com/anthropics/skills
 - ✓ Clear instructions and examples
 - ✓ Dependencies documented
 - ✓ allowed-tools specified if restricting
+- ✓ Invocation control fields set if needed (`user-invocable`, `disable-model-invocation`) — see `agents/references/prompt-engineer/skill-invocation-fields.md`
 - ✓ Supporting files in organized structure
 - ✓ Version history (in content)
 - ✓ Tested with target use cases

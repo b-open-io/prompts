@@ -2,6 +2,7 @@
 name: hook-manager
 version: 1.0.0
 description: Discover and install automation hooks for Claude Code and Opencode. This skill should be used when users ask to "list hooks", "install a hook", "show available hooks", "enable hook", "what hooks are available", or need help managing agent automation hooks.
+disable-model-invocation: true
 ---
 
 # Hook Manager

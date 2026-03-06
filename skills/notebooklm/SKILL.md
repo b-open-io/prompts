@@ -2,6 +2,7 @@
 name: notebooklm
 version: 1.0.0
 description: This skill should be used when the user wants to query Google NotebookLM notebooks directly from Claude Code for source-grounded, citation-backed answers from Gemini. Provides browser automation, library management, and persistent auth. Drastically reduced hallucinations through document-only responses.
+disable-model-invocation: true
 ---
 
 # NotebookLM Research Assistant Skill

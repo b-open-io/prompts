@@ -1,6 +1,7 @@
 ---
 name: runtime-context
 description: Detects agent execution environment (Claude Code, Vercel Sandbox, or local dev) and adapts behavior accordingly. This skill should be used when an agent or bot needs to understand what runtime it is in, what tools are available, or how to adapt its behavior across different execution contexts. Use this skill when building agents that may run in Claude Code as subagents AND as hosted bots in Vercel Sandboxes, or when a SOUL.md/SKILL.md needs to work across runtimes.
+user-invocable: false
 ---
 
 # Runtime Context

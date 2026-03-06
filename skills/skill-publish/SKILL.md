@@ -1,6 +1,7 @@
 ---
 name: skill-publish
 description: This skill should be used when the user asks to "publish a plugin", "release a plugin", "bump plugin version", "update a Claude Code plugin", "publish skills", or mentions plugin publishing, plugin release, or skill distribution. Handles version bumping, changelog updates, git workflow, and publishing for both Claude Code plugins and standalone Agent Skills.
+disable-model-invocation: true
 metadata:
   author: b-open-io
   version: "1.0.0"

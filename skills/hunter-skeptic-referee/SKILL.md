@@ -2,6 +2,7 @@
 name: hunter-skeptic-referee
 description: "This skill should be used when the user asks to 'find bugs', 'do a thorough code review', 'run a security audit', 'hunt for bugs', 'check for correctness issues', or 'review this code for edge cases'. Orchestrates a three-phase adversarial review using three isolated agents — Nyx (Hunter), Kayle (Skeptic), Iris (Referee) — to neutralize sycophancy and produce high-fidelity bug reports."
 version: 1.1.0
+user-invocable: false
 ---
 
 # Hunter / Skeptic / Referee

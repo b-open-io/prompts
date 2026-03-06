@@ -1,6 +1,7 @@
 ---
 name: front-desk
 description: "This skill should be used when the user asks 'who handles X?', 'what agents are available?', 'how do I contact Y?', 'team roster', 'what services do we use?', 'who should I talk to about Z?', 'what skills are available?', 'where do I find skill X?', or needs help routing to the right agent or service provider. Also use when connecting to live agent instances, checking availability, finding/installing skills, sending emails on behalf of the org, or drafting communications."
+user-invocable: false
 ---
 
 # Front Desk
