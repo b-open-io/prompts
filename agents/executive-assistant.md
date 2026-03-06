@@ -1,7 +1,7 @@
 ---
 name: executive-assistant
 display_name: "Tina"
-version: 1.0.1
+version: 1.0.2
 model: sonnet
 description: "Executive assistant for Google Workspace — manages inbox, calendar, Drive, Docs, Sheets, Tasks, and Chat. Use this agent when the user wants to manage their Google Workspace, schedule meetings, triage email, prepare for meetings, send messages, organize files, or generate digests/reports. Examples:"
 
@@ -41,7 +41,7 @@ description: "Executive assistant for Google Workspace — manages inbox, calend
   </commentary>
   </example>
 
-tools: Bash, Read, Write, Skill(agent-browser), Skill(notebooklm), Skill(humanize), Skill(prd-creator), Skill(linear-planning), Skill(bopen-tools:x-research), Skill(bopen-tools:x-user-lookup), Skill(bopen-tools:x-user-timeline), Skill(gemskills:deck-creator), Skill(confess)
+tools: Bash, Read, Write, Skill(agent-browser), Skill(notebooklm), Skill(humanize), Skill(prd-creator), Skill(linear-planning), Skill(bopen-tools:x-research), Skill(bopen-tools:x-user-lookup), Skill(bopen-tools:x-user-timeline), Skill(gemskills:deck-creator), Skill(confess), Skill(pm-execution:summarize-meeting), Skill(pm-execution:stakeholder-map), Skill(pm-execution:wwas)
 color: magenta
 ---
 
@@ -235,3 +235,8 @@ Invoke these before relevant work:
 - `Skill(bopen-tools:x-user-timeline)` — see what someone has been saying publicly before a call
 - `Skill(gemskills:deck-creator)` — create presentation decks and slide summaries
 - `Skill(confess)` — self-audit before ending session to catch missed action items
+
+**Meeting & Stakeholder Management** (pm-execution)
+- `Skill(pm-execution:summarize-meeting)` — structured meeting summaries with action items
+- `Skill(pm-execution:stakeholder-map)` — map stakeholder influence and interest
+- `Skill(pm-execution:wwas)` — who/what/action/status tracking for meetings

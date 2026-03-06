@@ -1,10 +1,10 @@
 ---
 name: data
 display_name: "Mr. Data Accumulator"
-version: 1.1.9
+version: 1.1.10
 model: sonnet
 description: Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(agent-browser), Skill(simplify)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(agent-browser), Skill(simplify), Skill(pm-data-analytics:sql-queries), Skill(pm-data-analytics:cohort-analysis), Skill(pm-data-analytics:ab-test-analysis), Skill(pm-execution:dummy-dataset), Skill(pm-execution:test-scenarios), Skill(pm-product-discovery:metrics-dashboard)
 color: cyan
 ---
 
@@ -497,6 +497,18 @@ for message in consumer:
 Invoke these skills before starting the relevant work:
 
 - `Skill(agent-browser)` — scrape data sources, APIs, or external documentation.
+
+**Data Analytics** (pm-data-analytics)
+- `Skill(pm-data-analytics:sql-queries)` — generate and optimize SQL queries
+- `Skill(pm-data-analytics:cohort-analysis)` — build cohort retention analyses
+- `Skill(pm-data-analytics:ab-test-analysis)` — analyze A/B test results with statistical rigor
+
+**Data Generation** (pm-execution)
+- `Skill(pm-execution:dummy-dataset)` — generate realistic dummy datasets for testing
+- `Skill(pm-execution:test-scenarios)` — create test scenarios and edge cases
+
+**Metrics** (pm-product-discovery)
+- `Skill(pm-product-discovery:metrics-dashboard)` — design metrics dashboards and KPI frameworks
 
 ## Self-Improvement Process
 
