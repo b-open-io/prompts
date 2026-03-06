@@ -1,24 +1,30 @@
-import { gateway, streamText, type UIMessage, type CoreTool } from "ai";
-import {
-	experimental_createSkillTool as createSkillTool,
-	createBashTool,
-} from "bash-tool";
-import { Hono } from "hono";
 import { existsSync, readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+	convertToModelMessages,
+	gateway,
+	streamText,
+	type ToolSet,
+	type UIMessage,
+} from "ai";
+import {
+	createBashTool,
+	experimental_createSkillTool as createSkillTool,
+} from "bash-tool";
+import { Hono } from "hono";
+import {
+	deregisterAgent,
 	getDirectory,
 	lookupAgent,
 	registerAgent,
-	deregisterAgent,
 } from "./registry.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SOUL = readFileSync(join(__dirname, "..", "SOUL.md"), "utf-8");
 
 // Discover skills and create tools if skills/ directory exists
-let agentTools: Record<string, CoreTool> = {};
+let agentTools: ToolSet = {};
 let skillInstructions = "";
 
 const skillsDir = join(__dirname, "..", "skills");
@@ -36,6 +42,7 @@ if (existsSync(skillsDir)) {
 }
 
 const app = new Hono();
+const registrySecret = process.env.REGISTRY_SHARED_SECRET;
 
 const MAX_MESSAGE_LENGTH = 4000;
 
@@ -61,6 +68,11 @@ function parseMessage(value: unknown): ChatMessage | null {
 	const trimmed = content.trim();
 	if (!trimmed || trimmed.length > MAX_MESSAGE_LENGTH) return null;
 	return { role, content: trimmed };
+}
+
+function isAuthorizedRegistryRequest(headerValue: string | undefined): boolean {
+	if (!registrySecret) return true;
+	return headerValue === registrySecret;
 }
 
 // --- Health ---
@@ -113,10 +125,7 @@ app.post("/api/chat", async (c) => {
 	for (const raw of rawMessages) {
 		const msg = parseMessage(raw);
 		if (!msg) {
-			return c.json(
-				{ success: false, error: "Invalid message format." },
-				400,
-			);
+			return c.json({ success: false, error: "Invalid message format." }, 400);
 		}
 		messages.push(msg);
 	}
@@ -134,11 +143,15 @@ app.post("/api/chat", async (c) => {
 		(skillInstructions ? `\n\n${skillInstructions}` : "");
 
 	try {
+		const uiMessages = messages as unknown as UIMessage[];
+		const modelMessages = await convertToModelMessages(uiMessages, {
+			tools: agentTools,
+		});
 		const result = streamText({
 			model: gateway("anthropic/claude-sonnet-4.6"),
 			system: systemPrompt,
 			tools: agentTools,
-			messages: messages.map((m) => ({ role: m.role, content: m.content })),
+			messages: modelMessages,
 		});
 
 		return result.toUIMessageStreamResponse();
@@ -160,12 +173,19 @@ app.get("/lookup", (c) => {
 	}
 	const result = lookupAgent(query);
 	if (!result) {
-		return c.json({ success: false, error: `No agent found for "${query}".` }, 404);
+		return c.json(
+			{ success: false, error: `No agent found for "${query}".` },
+			404,
+		);
 	}
 	return c.json(result);
 });
 
 app.post("/register", async (c) => {
+	if (!isAuthorizedRegistryRequest(c.req.header("x-registry-secret"))) {
+		return c.json({ success: false, error: "Unauthorized." }, 401);
+	}
+
 	let body: unknown;
 	try {
 		body = await c.req.json();
@@ -186,7 +206,8 @@ app.post("/register", async (c) => {
 		return c.json(
 			{
 				success: false,
-				error: "Expected { id: string, displayName: string, endpoint: string }.",
+				error:
+					"Expected { id: string, displayName: string, endpoint: string }.",
 			},
 			400,
 		);
@@ -201,6 +222,10 @@ app.post("/register", async (c) => {
 });
 
 app.post("/deregister", async (c) => {
+	if (!isAuthorizedRegistryRequest(c.req.header("x-registry-secret"))) {
+		return c.json({ success: false, error: "Unauthorized." }, 401);
+	}
+
 	let body: unknown;
 	try {
 		body = await c.req.json();
@@ -210,10 +235,7 @@ app.post("/deregister", async (c) => {
 
 	const { id } = (body ?? {}) as Record<string, unknown>;
 	if (typeof id !== "string") {
-		return c.json(
-			{ success: false, error: "Expected { id: string }." },
-			400,
-		);
+		return c.json({ success: false, error: "Expected { id: string }." }, 400);
 	}
 
 	const success = deregisterAgent(id.trim());

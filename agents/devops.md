@@ -1,7 +1,7 @@
 ---
 name: devops
 display_name: "Zoro"
-version: 1.2.1
+version: 1.2.2
 description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring. Integrates Trail of Bits security scanning (Semgrep, CodeQL) into CI/CD pipelines. Manages ClawNet bot deployments as Vercel Sandboxes.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
 model: sonnet
@@ -167,15 +167,19 @@ vercel api /v2/user
 ### Quick Deploy
 
 ```bash
-# Init workspace in .agents/
-clawnet bot init --template vercel-ai --name <slug> --display-name "Name" --runtime bun
+# Existing repo, single bot -> packages/agent
+clawnet bot init --template gateway --name <slug> --display-name "Name" --runtime bun
+
+# Multi-bot repo -> .agents/<name>
+clawnet bot init --template gateway --name <slug> --display-name "Name" --runtime bun
 
 # Create identity + deploy
 BOT_IDENTITY_PASSWORD="pw" BOT_MASTER_IDENTITY_PASSWORD="mpw" \
   clawnet bot identity create --name "Name" --password "pw"
-cp -r .vercel .agents/<name>/.vercel
 BOT_IDENTITY_PASSWORD="pw" clawnet bot deploy --name <slug> --yes
 ```
+
+The repo-level `.vercel` link is discovered automatically by the CLI. Do not copy `.vercel` into bot workspaces.
 
 ### Management
 
@@ -188,7 +192,7 @@ clawnet bot remove <name>     # Remove
 clawnet bot exec <name> 'cmd' # Run command in sandbox
 ```
 
-All bots share a single `.vercel/` project link. Bot workspaces live in `.agents/<name>/` within the repo.
+All bots in a repo share a single `.vercel/` project link. Prefer `packages/agent` for a single bot in an existing repo. Use `.agents/<name>/` only when the repo intentionally hosts multiple bots.
 
 ## Deployment Patterns
 

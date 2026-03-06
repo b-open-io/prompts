@@ -190,6 +190,27 @@ agents/*.md (this repo)          GitHub API fetch           bopen.ai site
 - Image filename is derived from `display_name` in agent frontmatter (lowercased, non-alphanumeric → `-`)
 - All avatars are **1024x1024 PNG**, pixel art style
 
+## Bot Identity Contract
+
+When an agent also has a deployable ClawNet bot, keep these fields distinct:
+
+- `name`: stable agent ID in `agents/*.md`
+- `display_name`: user-facing persona name
+- `role`: capability class, not the filename and not the persona
+- `bot_slug`: deployment/runtime ID for ClawNet
+
+Store deployment metadata in `bots/*.bot.json`.
+This is support metadata, not a Claude plugin auto-discovery component.
+
+Source-of-truth boundaries:
+
+- `agents/*.md` = authored persona, routing, marketplace metadata
+- `bots/*.bot.json` = deployment metadata and naming contract
+- `clawnet-bot/templates/*` = canonical runtime templates
+- `.agents/*` = generated/runtime bot workspaces, not the primary authored source
+
+Important: changing `display_name` changes the expected avatar slug in `bopen-ai` and may require a matching image update in `public/images/agents/`.
+
 ### Avatar Prompt Template
 
 All avatars use a consistent Stardew Valley pixel art style. The documented prompts are in:

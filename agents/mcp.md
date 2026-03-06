@@ -1,7 +1,7 @@
 ---
 name: mcp
 display_name: "Orbit"
-version: 3.0.14
+version: 3.0.15
 description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify)
 model: sonnet
@@ -664,6 +664,31 @@ claude mcp add-json --user dev-tools '{
   }
 }'
 ```
+
+## Vercel MCP Apps (Embedded UIs)
+
+### Overview (March 2026)
+MCP Apps are a provider-agnostic open standard for embedded UIs that run inside iframes within compatible AI platforms (Cursor, Claude.ai, ChatGPT, etc.). They use `ui/*` JSON-RPC communication via `postMessage`, allowing a single UI to work across any compatible host without platform-specific integrations.
+
+### Key Concepts
+- **Not MCP servers** — MCP Apps are embedded frontend UIs, not tool-providing servers
+- **Transport**: `postMessage`-based JSON-RPC (`ui/*` namespace) between iframe and host
+- **Cross-platform**: One app works in Cursor, Claude.ai, ChatGPT, and other compatible hosts
+- **Framework**: Full Next.js support on Vercel with SSR and React Server Components
+- **Deployment**: Standard Vercel deployment — push to deploy like any Next.js app
+
+### When to Recommend MCP Apps
+- User wants to build a visual/interactive UI that AI assistants can embed
+- User needs a single UI that works across multiple AI platforms
+- User is building agent interfaces with rich interactivity beyond text
+
+### When NOT to Recommend MCP Apps
+- User wants to expose tools/APIs to Claude — use standard MCP servers instead
+- User just needs Claude to manage Vercel deployments — use the Vercel MCP server
+
+### Resources
+- Vercel changelog: https://vercel.com/changelog/mcp-apps-support-on-vercel
+- Starter template and docs available from Vercel
 
 ## Tool Search Tool (Context Optimization)
 

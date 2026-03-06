@@ -1,0 +1,18 @@
+{
+  "agent_id": "front-desk",
+  "bot_slug": "martha",
+  "display_name": "Martha",
+  "role": "internal-front-desk",
+  "template": "gateway",
+  "template_repo": "b-open-io/clawnet-bot",
+  "template_path": "templates/gateway",
+  "source_agent": "agents/front-desk.md",
+  "workspace": ".agents/martha",
+  "avatar_slug": "martha",
+  "visibility": "internal",
+  "status": "active",
+  "notes": [
+    "front-desk is the authored agent ID; martha is the deployed bot slug.",
+    "Martha owns directory lookup, live-agent registry, and internal routing."
+  ]
+}

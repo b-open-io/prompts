@@ -1,9 +1,9 @@
 [
-  {
-    "id": "bopen-tools:agent-builder",
-    "displayName": "Satchmo",
-    "endpoint": "https://satchmo.dev",
-    "status": "online",
-    "lastHeartbeat": "2025-01-01T00:00:00.000Z"
-  }
+	{
+		"id": "bopen-tools:agent-builder",
+		"displayName": "Satchmo",
+		"endpoint": "https://satchmo.dev",
+		"status": "online",
+		"lastHeartbeat": "2025-01-01T00:00:00.000Z"
+	}
 ]

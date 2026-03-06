@@ -1,0 +1,19 @@
+{
+  "agent_id": "account-manager",
+  "bot_slug": "account-manager",
+  "display_name": "Kurt",
+  "role": "public-account-manager",
+  "template": "gateway",
+  "template_repo": "b-open-io/clawnet-bot",
+  "template_path": "templates/gateway",
+  "source_agent": "agents/account-manager.md",
+  "workspace": ".agents/account-manager",
+  "avatar_slug": "kurt",
+  "visibility": "public",
+  "status": "active",
+  "notes": [
+    "Public-facing website bot for bOpen.io.",
+    "Keep Martha internal; do not expose her directly to visitors.",
+    "Avatar asset still needs to exist in bopen-ai under public/images/agents/kurt.png."
+  ]
+}

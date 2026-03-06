@@ -1,11 +1,9 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.4.6/schema.json",
-	"linter": {
-		"enabled": true,
-		"rules": { "recommended": true }
-	},
 	"formatter": {
-		"enabled": true,
 		"indentStyle": "tab"
+	},
+	"linter": {
+		"enabled": true
 	}
 }

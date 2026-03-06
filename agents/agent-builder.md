@@ -1,7 +1,7 @@
 ---
 name: agent-builder
 display_name: "Satchmo"
-version: 1.4.4
+version: 1.4.5
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(gemskills:visual-planner), Skill(simplify), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui)
@@ -1468,34 +1468,38 @@ skills/
 
 ## ClawNet — Live Agent Deployment
 
-**Invoke `Skill(clawnet:clawnet-cli)` before any ClawNet work.** ClawNet deploys agents as Vercel Sandboxes. Bot workspaces live in `.agents/<bot-name>/` within a repo.
+**Invoke `Skill(clawnet:clawnet-cli)` before any ClawNet work.** ClawNet deploys agents as Vercel Sandboxes. For existing single-bot repos, default to `packages/agent`. Use `.agents/<bot-name>/` only when the repo intentionally hosts multiple bot workspaces.
 
 ### Quick Deploy Flow
 
 ```bash
-# 1. Init bot workspace (creates .agents/<name>/)
-clawnet bot init --template vercel-ai --name <slug> --display-name "Name" --runtime bun
+# 1. Init bot workspace
+# Existing repo, single bot -> packages/agent
+clawnet bot init --template gateway --name <slug> --display-name "Name" --runtime bun
+
+# Existing repo, multi-bot -> .agents/<name>
+clawnet bot init --template gateway --name <slug> --display-name "Name" --runtime bun
 
 # 2. Create BAP identity
 BOT_IDENTITY_PASSWORD="pw" BOT_MASTER_IDENTITY_PASSWORD="mpw" \
   clawnet bot identity create --name "Name" --password "pw"
 
-# 3. Copy Vercel project link (all bots share the repo's project)
-cp -r .vercel .agents/<name>/.vercel
-
-# 4. Deploy
+# 3. Deploy
 BOT_IDENTITY_PASSWORD="pw" clawnet bot deploy --name <slug> --yes
 
-# 5. Verify
+# 4. Verify
 clawnet bot list
 curl https://<sandbox-url>/api/heartbeat
 ```
+
+The CLI resolves the repo-level `.vercel` link automatically. Do not copy `.vercel` into bot workspaces.
 
 ### Templates
 
 | Template | Use case |
 |----------|----------|
-| `vercel-ai` | AI SDK streaming chat — use for conversational agents |
+| `gateway` | AI Gateway + ai@6 streaming chat — preferred for new conversational bots |
+| `vercel-ai` | Legacy AI SDK chat template — keep for compatibility only |
 | `minimal` | Bare Hono HTTP server — use for registry/API bots |
 | `clark` | Backend chat adapter — headless agent endpoint |
 | `blockchain` | BSV monitoring with JungleBus |
@@ -1515,8 +1519,9 @@ curl https://<sandbox-url>/api/heartbeat
 To convert an agent `.md` file to a deployable bot:
 1. Strip YAML frontmatter → body becomes SOUL.md
 2. Extract `display_name` and `description` → populate IDENTITY.md
-3. Choose template based on agent type (chat = `vercel-ai`, API = `minimal`)
-4. Init workspace, customize `src/index.ts`, deploy
+3. Create or update `bots/<agent>.bot.json` with `agent_id`, `bot_slug`, `display_name`, `role`, `template`, and `workspace`
+4. Choose template based on agent type (chat = `gateway`, API = `minimal`)
+5. Init workspace, customize `src/index.ts`, deploy
 
 ## Anthropic API Built-In Tools (2025-2026)
 
