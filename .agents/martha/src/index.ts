@@ -1,6 +1,10 @@
-import { gateway, streamText, type UIMessage } from "ai";
+import { gateway, streamText, type UIMessage, type CoreTool } from "ai";
+import {
+	experimental_createSkillTool as createSkillTool,
+	createBashTool,
+} from "bash-tool";
 import { Hono } from "hono";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -12,6 +16,24 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SOUL = readFileSync(join(__dirname, "..", "SOUL.md"), "utf-8");
+
+// Discover skills and create tools if skills/ directory exists
+let agentTools: Record<string, CoreTool> = {};
+let skillInstructions = "";
+
+const skillsDir = join(__dirname, "..", "skills");
+if (existsSync(skillsDir)) {
+	const { skill, files, instructions } = await createSkillTool({
+		skillsDirectory: skillsDir,
+	});
+	const { tools } = await createBashTool({
+		files,
+		extraInstructions: instructions,
+	});
+	agentTools = { skill, ...tools };
+	skillInstructions = instructions;
+	console.log(`Loaded skills from ${skillsDir}`);
+}
 
 const app = new Hono();
 
@@ -106,12 +128,16 @@ app.post("/api/chat", async (c) => {
 			? `\n\n## Currently Online Agents\n${liveAgents.map((a) => `- **${a.displayName}** (${a.id}) — ${a.endpoint}`).join("\n")}`
 			: "";
 
-	const systemPrompt = SOUL + registryContext;
+	const systemPrompt =
+		SOUL +
+		registryContext +
+		(skillInstructions ? `\n\n${skillInstructions}` : "");
 
 	try {
 		const result = streamText({
 			model: gateway("anthropic/claude-sonnet-4.6"),
 			system: systemPrompt,
+			tools: agentTools,
 			messages: messages.map((m) => ({ role: m.role, content: m.content })),
 		});
 

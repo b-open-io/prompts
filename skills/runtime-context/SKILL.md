@@ -111,6 +111,70 @@ I cannot: spawn subagents, use Claude Code tools, access the host filesystem.
 
 This sets expectations immediately. Users and orchestrators know what to ask for.
 
+## bash-tool: Bridging Claude Code and Sandbox
+
+The `bash-tool` npm package gives AI SDK agents the same capabilities Claude Code
+provides natively. It creates `bash`, `readFile`, `writeFile`, and `skill` tools
+that work inside Vercel Sandboxes.
+
+### Tool Mapping
+
+| Claude Code Tool | bash-tool Equivalent | Notes |
+|-----------------|---------------------|-------|
+| `Bash` | `bash` | Shell execution |
+| `Read` | `readFile` | File reading |
+| `Write` | `writeFile` | File writing |
+| `Skill()` | `skill` | Skill discovery and use |
+| `Grep`, `Glob` | `bash` with grep/find | No dedicated tools |
+| `Agent()` | N/A | Sandboxes are single-agent |
+| `WebFetch` | `bash` with curl | No dedicated tool |
+
+### Skill Declaration Across Runtimes
+
+Skills are declared differently depending on the runtime:
+
+| Runtime | Declaration | How skills load |
+|---------|------------|----------------|
+| **Claude Code** | Agent frontmatter: `tools: Skill(clawnet-cli)` | Plugin system provides at runtime |
+| **Vercel Sandbox** | `bot.json`: `"skills": ["clawnet-cli"]` | `createSkillTool()` reads `./skills/` dir |
+| **Both** | Reference same `SKILL.md` files | Different loaders, same content |
+
+The `bot.json` `skills` array is the deployed bot's skill manifest — the sandbox
+equivalent of agent frontmatter's `Skill()` declarations.
+
+### Integration Pattern
+
+```typescript
+import {
+  experimental_createSkillTool as createSkillTool,
+  createBashTool,
+} from "bash-tool";
+import { existsSync } from "node:fs";
+
+let agentTools = {};
+let skillInstructions = "";
+
+if (existsSync("./skills")) {
+  const { skill, files, instructions } = await createSkillTool({
+    skillsDirectory: "./skills",
+  });
+  const { tools } = await createBashTool({
+    files,
+    extraInstructions: instructions,
+  });
+  agentTools = { skill, ...tools };
+  skillInstructions = instructions;
+}
+
+// Pass to streamText
+streamText({
+  model: gateway(MODEL_ID),
+  system: soulPrompt + skillInstructions,
+  tools: agentTools,
+  messages,
+});
+```
+
 ## When to Use Each Runtime's Strengths
 
 | Task | Claude Code | Sandbox | Text-only |
