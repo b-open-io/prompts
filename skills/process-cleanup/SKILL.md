@@ -14,104 +14,63 @@ This skill runs without user interaction. Gather everything, analyze, score, and
 
 ## Investigation
 
-Run these commands to build a complete picture. All three are needed — each reveals different context.
-
-### 1. Process snapshot
+Run the bundled script — it handles all data collection, scoring, and safety classification in one pass:
 
 ```bash
-ps -eo pid,ppid,rss,%cpu,lstart,tty,command -m | head -100
+bash ${CLAUDE_PLUGIN_ROOT}/skills/process-cleanup/scripts/cleanup-report.sh
 ```
 
-This gives top 100 processes by memory with start times, TTY (which terminal), and full commands.
+The script outputs structured JSON to stdout (progress messages go to stderr). Parse the JSON to build your report.
 
-### 2. Listening ports (dev servers)
+### What the script collects
 
-```bash
-lsof -iTCP -sTCP:LISTEN -P -n 2>/dev/null | grep -v "^COMMAND"
+- Process snapshot (`ps -eo pid,ppid,rss,%cpu,lstart,tty,command`)
+- Listening ports (`lsof -iTCP -sTCP:LISTEN`)
+- Working directories (`lsof -c node -c bun -c next -c python -c ruby -a -d cwd`)
+- Your own PID/PPID (never kills its own process tree)
+
+### Script output shape
+
+```json
+{
+  "my_pid": 12345,
+  "total_recoverable_mb": 4300,
+  "safe": [{"pid": 38585, "name": "Claude Code (resumed session, likely stale)", "memory_mb": 4300, "age_hours": 456, "score": 92, "port": null}],
+  "caution": [{"pid": 28755, "name": "Next.js dev -> agentcraft", "memory_mb": 156, "age_hours": 48, "score": 45, "port": "3000"}],
+  "protected": [{"pid": 76187, "name": "Claude Code -> prompts", "memory_mb": 553, "age_hours": 1, "score": 21, "port": null}],
+  "kill_command": "kill 38585 ..."
+}
 ```
 
-Maps PIDs to ports — critical for identifying dev servers and what they serve.
+The `score` field is already computed (0-100, resources + staleness + replaceability). Use it directly for sorting.
 
-### 3. Working directories (project context)
+### Friendly names reference
 
-```bash
-lsof -c node -c bun -c next -c python -c ruby -a -d cwd 2>/dev/null
-```
-
-Shows which project directory each process is serving. "Next.js dev → bopen-ai" is far more useful than "node next dev".
-
-### 4. Identify yourself
-
-```bash
-echo "My PID: $$, Parent: $PPID"
-```
-
-Never recommend killing your own process tree.
-
-## Analysis
-
-### Friendly Names
-
-Raw command lines are unreadable. Map them to names humans recognize:
+The script applies these mappings automatically. This table is for your reference when the script output looks unexpected:
 
 | Pattern in command | Friendly name |
 |---|---|
-| `claude` (bare or `-c`) | Claude Code — {project from cwd or tty} |
+| `claude` (bare or `-c`) | Claude Code -> {project} |
 | `claude --resume` | Claude Code (resumed session, likely stale) |
 | `claude.*--claude-in-chrome` | Claude Chrome bridge |
 | `opencode` | OpenCode session |
 | `codex` | Codex app |
-| `next dev` or `next-router-worker` | Next.js dev → {project} |
-| `bun dev` | Bun dev → {project} |
-| `vite` | Vite dev → {project} |
-| `convex dev` | Convex dev → {project} |
-| `portless` | Portless proxy → {project} |
+| `next dev` or `next-router-worker` | Next.js dev -> {project} |
+| `bun dev` | Bun dev -> {project} |
+| `vite` | Vite dev -> {project} |
+| `convex dev` | Convex dev -> {project} |
+| `portless` | Portless proxy -> {project} |
 | `turso` | Turso DB |
 | `postgres` | PostgreSQL |
 | `redis-server` | Redis |
 | `mongod` | MongoDB |
 | `node.*webpack\|esbuild\|turbopack` | Bundler watcher |
 | `tsc.*--watch` | TypeScript watcher |
-| `Google Chrome Helper` | Chrome (group all, sum memory) |
-| `Dia.*Helper` | Dia browser (group all) |
-| `Wispr Flow` | Wispr Flow voice (group all) |
+| `Google Chrome Helper` | Chrome (renderer) |
+| `Dia.*Helper` | Dia browser (renderer) |
+| `Wispr Flow` | Wispr Flow voice |
 | `iTerm2` | iTerm terminal |
 | `Electron\|Helper (Renderer)` | Derive app name from path |
-
-For anything else, extract the app name from the binary path. `/Applications/Foo.app/Contents/...` → "Foo".
-
-Derive the project name from `lsof` cwd data or from the command args (look for paths like `/Users/.../code/project-name`).
-
-### Waste Score (0-100)
-
-Score each process (or process group) on three axes:
-
-**Resources (0-40)**: Based on RSS memory
-- Under 100 MB: 0-5
-- 100-500 MB: 5-15
-- 500 MB - 1 GB: 15-25
-- 1-2 GB: 25-35
-- Over 2 GB: 35-40
-
-**Staleness (0-40)**: Based on how long it's been running. Parse the `lstart` column to calculate age.
-- Under 1 hour: 0
-- 1-24 hours: 5-10
-- 1-3 days: 10-20
-- 3-7 days: 20-30
-- Over 7 days: 30-40
-
-**Replaceability (0-20)**: How easy is it to restart?
-- Trivial to restart (AI CLIs, dev servers, watchers): 15-20
-- Moderate (databases, long builds): 5-10
-- Hard or risky (active user sessions, system services): 0-5
-
-Total waste = resources + staleness + replaceability.
-
-### Safety Classification
-
-- **SAFE**: Stale AI CLI sessions (not the current one), old `--resume` sessions, dev servers for projects unrelated to the current working directory, orphaned watchers, zombie MCP helpers, duplicate processes
-- **CAUTION**: Dev servers for nearby projects, databases, anything started today, anything the user might be actively using
-- **PROTECTED**: Your own process tree (PID/PPID), system processes (owner is not the user), the user's active browser
 
 ## Output Format
 
