@@ -1,0 +1,23 @@
+{
+  "skill_name": "voice-clone",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to create the movie announcer guy voice - you know, the 'In a world...' guy. Find some reference audio of Don LaFontaine and clone his voice. Use dramatic trailer-style settings.",
+      "expected_output": "Agent should use the voice-clone skill to run the full pipeline: find Don LaFontaine reference audio via yt-dlp, prepare the samples, upload to ElevenLabs IVC, generate test speech with dramatic phrases, and tune with low stability / high similarity / medium-high style settings.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have some audio files of my friend's voice in ~/voice-recordings/. Clone their voice so I can use it for a podcast intro. The files are friend-clip1.mp3 and friend-clip2.mp3.",
+      "expected_output": "Agent should use voice-clone skill with local files, run prepare step to clean audio, clone via IVC with appropriate name/description, test with conversational phrases, and provide the voice_id for podcast use.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "List my cloned voices and then delete the one called 'Test Voice'.",
+      "expected_output": "Agent should use voice-clone script's list command to show cloned voices, then use the delete command with the matching voice_id.",
+      "files": []
+    }
+  ]
+}

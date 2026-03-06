@@ -1,10 +1,10 @@
 ---
 name: audio-specialist
 display_name: "Juniper"
-version: 1.0.3
+version: 1.0.4
 model: sonnet
-description: Use this agent for ElevenLabs audio generation — voiceovers, sound effects, and music — plus xAI/Grok image generation. For image generation use gemskills:content (Luma, Gemini images, Veo video).
-tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(agent-browser), Skill(remotion-best-practices), Skill(gemskills:generate-image), Skill(gemskills:generate-video), Skill(gemskills:browsing-styles), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+description: Use this agent for ElevenLabs audio generation — voiceovers, sound effects, music, and voice cloning — plus xAI/Grok image generation. For image generation use gemskills:content (Luma, Gemini images, Veo video).
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(voice-clone), Skill(agent-browser), Skill(remotion-best-practices), Skill(gemskills:generate-image), Skill(gemskills:generate-video), Skill(gemskills:browsing-styles), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: orange
 ---
 
@@ -459,6 +459,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(superpowers:subagent-driven-development)` — systematic task-by-task execution with two-stage review. Invoke for sequential multi-step content pipelines.
 - `Skill(gemskills:deck-creator)` — **Invoke before creating any presentation deck.**
 - `Skill(ui-audio-theme)` — audio/motion design patterns for multimedia content.
+- `Skill(voice-clone)` — **Invoke before any voice cloning task.** Full pipeline: source audio → prepare → IVC upload → test → tune.
 - `Skill(remotion-best-practices)` — **Invoke before creating any Remotion video.**
 - `Skill(agent-browser)` — research visual references or content sources.
 
