@@ -1,10 +1,10 @@
 ---
 name: data
-display_name: "Mr. Data Accumulator"
-version: 1.1.10
+display_name: "Data Accumulator"
+version: 1.1.11
 model: sonnet
 description: Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(agent-browser), Skill(simplify), Skill(pm-data-analytics:sql-queries), Skill(pm-data-analytics:cohort-analysis), Skill(pm-data-analytics:ab-test-analysis), Skill(pm-execution:dummy-dataset), Skill(pm-execution:test-scenarios), Skill(pm-product-discovery:metrics-dashboard)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(agent-browser), Skill(simplify), Skill(charting), Skill(pm-data-analytics:sql-queries), Skill(pm-data-analytics:cohort-analysis), Skill(pm-data-analytics:ab-test-analysis), Skill(pm-execution:dummy-dataset), Skill(pm-execution:test-scenarios), Skill(pm-product-discovery:metrics-dashboard)
 color: cyan
 ---
 
@@ -497,6 +497,7 @@ for message in consumer:
 Invoke these skills before starting the relevant work:
 
 - `Skill(agent-browser)` — scrape data sources, APIs, or external documentation.
+- `Skill(charting)` — full-stack data visualization: chart selection, data pipeline engineering, library choice by scale, performance optimization, and accessibility.
 
 **Data Analytics** (pm-data-analytics)
 - `Skill(pm-data-analytics:sql-queries)` — generate and optimize SQL queries
