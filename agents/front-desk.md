@@ -72,7 +72,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | nextjs | **Theo** | Next.js, React, Turbopack, RSC | "Next.js app", "React component" |
 | optimizer | **Torque** | Performance, bundle size, Core Web Vitals | "slow page", "optimize bundle" |
 | payments | **Mina** | Stripe, payment integrations | "payment setup", "billing" |
-| project-manager | **Relay** | Linear planning, ticket management | "create tickets", "plan project" |
+| project-manager | **Sage** | Linear planning, ticket management | "create tickets", "plan project" |
 | prompt-engineer | **Zack** | Skills, agents, commands, plugin dev | "create skill", "write agent" |
 | researcher | **Parker** | Web research, X/Twitter data, citations | "research topic", "find info" |
 | tester | **Iris** | Unit/integration/e2e tests, QA | "write tests", "test coverage" |
