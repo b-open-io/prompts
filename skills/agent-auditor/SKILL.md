@@ -1,6 +1,6 @@
 ---
 name: agent-auditor
-version: 0.1.0
+version: 0.1.1
 description: >-
   Comprehensive audit skill for agents and skills across the plugin ecosystem.
   This skill should be used when the user asks to "audit agents", "review skill quality",
@@ -16,7 +16,7 @@ Systematic audit methodology for evaluating the health, quality, and consistency
 
 ## Audit Checklist
 
-Every audit evaluates skills across six dimensions. For each skill, score pass/warn/fail per dimension.
+Every audit evaluates skills across seven dimensions. For each skill, score pass/warn/fail per dimension.
 
 ### 1. Scope & Invocation
 
@@ -107,6 +107,21 @@ Agents that create or modify skills should have access to the right toolkit:
 
 Check the agent's `tools:` frontmatter to verify these are listed.
 
+### 7. Generative UI Awareness
+
+If the agent's domain involves UI generation, rendering, or cross-platform output, check for generative UI readiness.
+
+**Checks:**
+- Does the agent have `Skill(bopen-tools:generative-ui)` in tools?
+- If the agent works with React/Next.js, does it know about json-render?
+- If the agent works with React Native, does it know about `@json-render/react-native`?
+- If the agent produces visual assets, does it have relevant gemskills?
+- Does the agent understand when to use generative UI vs static components?
+
+**Applicable agents:** designer, agent-builder, nextjs, mobile, integration-expert
+
+**Not applicable (skip this dimension):** code-auditor, documentation-writer, researcher, devops, database, payments
+
 ## Audit Workflow
 
 ### Step 1: Enumerate
@@ -128,7 +143,7 @@ For each skill, read the frontmatter and classify:
 
 ### Step 3: Run Dimension Checks
 
-For each skill, evaluate all six dimensions. Record:
+For each skill, evaluate all seven dimensions. Record:
 - **Pass**: Meets criteria
 - **Warn**: Minor issue, non-blocking
 - **Fail**: Must fix before publishing
@@ -155,6 +170,7 @@ Format findings as:
 | Structure | pass/warn/fail | details |
 | Testing | pass/warn/fail | details |
 | Agent Equipment | pass/warn/fail | details |
+| Generative UI | pass/warn/fail/skip | details |
 
 **Recommended fixes:**
 1. [specific, actionable fix]
