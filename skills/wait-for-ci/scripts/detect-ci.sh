@@ -10,9 +10,10 @@ ci="unknown"
 config_file=""
 
 # Detect CI system from config files (most specific first)
-if [ -d ".github/workflows" ] && ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | head -1 >/dev/null 2>&1; then
+gh_workflow=$(find .github/workflows -maxdepth 1 -name '*.yml' -o -name '*.yaml' 2>/dev/null | head -1 || true)
+if [ -n "$gh_workflow" ]; then
   ci="github-actions"
-  config_file=$(ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | head -1)
+  config_file="$gh_workflow"
 elif [ -f ".gitlab-ci.yml" ]; then
   ci="gitlab-ci"
   config_file=".gitlab-ci.yml"
@@ -62,7 +63,7 @@ has_vercel=$(command -v vercel >/dev/null 2>&1 && echo "true" || echo "false")
 # Count workflow files for GitHub Actions
 workflow_count=0
 if [ "$ci" = "github-actions" ]; then
-  workflow_count=$(ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | wc -l | tr -d ' ')
+  workflow_count=$(find .github/workflows -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null | wc -l | tr -d ' ')
 fi
 
 cat <<EOF
