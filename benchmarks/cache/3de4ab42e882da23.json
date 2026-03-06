@@ -1,0 +1,26 @@
+{
+  "output": "## Architecture for 500k IoT Data Points\n\n### Chart Type Decision\n\n- **Primary view**: Multi-line time series (one line per device, or aggregated band)\n- **Distribution view**: Box plot or violin per device for spread/outlier analysis\n- **Correlation**: Scatter matrix (temp vs humidity vs pressure)\n- **Device comparison**: Heatmap (device × time, colored by value)\n\n### Library: Apache ECharts (not Recharts/Chart.js)\n\nAt 500k points, SVG-based libraries fail. ECharts uses Canvas + WebGL and handles this scale at 60fps with built-in downsampling (`sampling: 'lttb'` — Largest Triangle Three Buckets, which preserves visual shape).\n\n```\n500k points → ECharts with LTTB downsampling\n```\n\nAlternatives only if needed: LightningChart JS (expensive license) for 5M+, or Highcharts Stock.\n\n### Data Pipeline (Critical)\n\nDon't send 500k rows to the browser. Use tiered aggregation:\n\n```sql\n-- Default view: hourly averages per device\nSELECT\n  device_id,\n  date_trunc('hour', timestamp) AS ts,\n  AVG(temperature) AS temp_avg,\n  AVG(humidity)    AS hum_avg,\n  AVG(pressure)    AS pres_avg,\n  MIN(temperature) AS temp_min,\n  MAX(temperature) AS temp_max\nFROM sensor_readings\nWHERE timestamp BETWEEN :start AND :end\nGROUP BY device_id, date_trunc('hour', timestamp)\nORDER BY device_id, ts;\n```\n\nZoom levels → different aggregations:\n\n| Zoom Level | Aggregation | Rows Returned |\n|------------|-------------|---------------|\n| 6 months | Hourly | ~216,000 → LTTB to ~2,000 |\n| 1 month | 15-minute | ~144,000 → LTTB to ~2,000 |\n| 1 week | 5-minute | ~50,400 → LTTB to ~2,000 |\n| 1 day | 1-minute | ~72,000 raw → LTTB to ~2,000 |\n\nECharts `dataZoom` fires an event on zoom — use it to re-query at higher resolution:\n\n```js\nchart.on('datazoom', ({ start, end }) => {\n  const range = computeRange(start, end); // percent → timestamps\n  fetchAggregated(range.from, range.to, resolution(range));\n});\n```\n\n### Implementation Stack\n\n```\nFrontend:    ECharts (Apache) — Canvas renderer, LTTB sampling\nBackend:     TimescaleDB (if Postgres) or DuckDB for fast time aggregations\nAPI:         Single endpoint: GET /readings?from=&to=&device_ids=&metric=&resolution=\n```\n\n**If you already have Postgres without TimescaleDB**: add a materialized view with hourly pre-aggregates and refresh it every 15 minutes. This drops query time from seconds to milliseconds.\n\n### ECharts Config (Key Parts)\n\n```js\nconst option = {\n  dataset: { source: data },\n  xAxis: { type: 'time' },\n  yAxis: {},\n  dataZoom: [\n    { type: 'inside', realtime: false }, // triggers re-fetch on zoom end\n    { type: 'slider' }\n  ],\n  series: devices.map(id => ({\n    type: 'line',\n    name: id,\n    sampling: 'lttb',        // visual downsampling\n    large: true,             // Canvas fast path\n    largeThreshold: 2000,\n    encode: { x: 'ts', y: 'temp_avg' }\n  }))\n};\n```\n\n### Device Selection UX\n\n50 devices rendered simultaneously = visual noise. Add:\n- Device group selector (filter by device or device group)\n- Aggregate band (min/max shaded area + median line) as default\n- Click-to-highlight individual device\n\n### Summary\n\n| Concern | Solution |\n|---------|----------|\n| 500k points in browser | Never send them — LTTB + server aggregation |\n| Zoom/pan performance | ECharts Canvas + `dataZoom` re-fetch |\n| 3 metrics | Separate Y-axes or tabbed metric selector |\n| 50 devices | Aggregate by default, highlight on demand |\n| Query speed | TimescaleDB or materialized hourly views |\n\nThe biggest win is **pre-aggregation at the DB level** — that alone makes this feel instant regardless of library choice.",
+  "tokens": 1582,
+  "duration_ms": 43955,
+  "assertions": [
+    {
+      "id": "ch-2-canvas-not-svg",
+      "text": "The response explicitly recommends Canvas or WebGL rendering instead of SVG for this data volume, or explains why SVG would fail at 500k points.",
+      "passed": true,
+      "reasoning": "The response explicitly states 'At 500k points, SVG-based libraries fail. ECharts uses Canvas + WebGL' and explains SVG failure at this scale."
+    },
+    {
+      "id": "ch-2-downsampling",
+      "text": "The response mentions downsampling, data aggregation, or level-of-detail strategy — showing an overview with reduced points and full detail on zoom/drill-down.",
+      "passed": true,
+      "reasoning": "The response details LTTB downsampling, server-side aggregation at multiple zoom levels, and a dataZoom re-fetch strategy for detail-on-demand."
+    },
+    {
+      "id": "ch-2-appropriate-library",
+      "text": "The response recommends a library capable of handling 500k+ points with interactive pan/zoom — such as ECharts, LightningChart, Plotly with WebGL, or similar high-performance option. Does not recommend Chart.js, Recharts, or basic D3 as the primary solution.",
+      "passed": true,
+      "reasoning": "ECharts is recommended as the primary solution with LightningChart and Highcharts Stock as alternatives; Chart.js and Recharts are implicitly excluded by explaining SVG-based libraries fail."
+    }
+  ],
+  "pass_rate": 1
+}

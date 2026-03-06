@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-03-06T14:32:15.808Z",
+  "generated_at": "2026-03-06T16:39:04.703Z",
   "model": "claude-sonnet-4-6",
   "runner": "satchmo",
   "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
-  "total_skills": 2,
-  "total_evals": 5,
-  "overall_pass_rate": 0.82,
-  "overall_baseline_pass_rate": 0.305,
+  "total_skills": 3,
+  "total_evals": 7,
+  "overall_pass_rate": 0.88,
+  "overall_baseline_pass_rate": 0.537,
   "skills": [
     {
       "generated_at": "2026-03-06T14:32:15.808Z",
@@ -27,19 +27,19 @@
           "eval_id": 1,
           "prompt": "Write the 'Our Values' section for a fintech company's about page. The company builds payment infrastructure for developers. Include 4 values with short descriptions (2-3 sentences each). Just write the section directly, no preamble.",
           "with_skill": {
-            "output": "## Our Values\n\n**Reliability is the product.**\nPayment infrastructure works best when developers forget it's there. We run at 99.99% uptime across all regions because a single failed transaction can cost a merchant their customer's trust permanently.\n\n**Developer experience drives everything.**\nAPIs should behave exactly as documented, and error messages should tell you what went wrong and how to fix it. We invest as much in our documentation and SDK design as in the underlying infrastructure, because an API that takes a week to integrate \u2014 or one that surfaces opaque error codes at 2am \u2014 loses developer trust faster than almost any reliability issue could.\n\n**Transparency in failure.**\nWhen something breaks, we say what happened and what we changed. Our status page publishes raw uptime data and latency percentiles so you can see exactly what our systems are doing, and our post-mortems go public within 48 hours so the broader developer community can learn from what we got wrong.\n\n**Security built to hold.**\nPayments attract adversarial attention. PCI DSS compliance, end-to-end encryption, fraud detection, and threat monitoring are woven into the architecture from the start; every API key is scoped and every webhook is signed, and we run red team exercises quarterly to expose gaps in our assumptions before they become incidents.",
+            "output": "## Our Values\n\n**Reliability is the product.**\nPayment infrastructure works best when developers forget it's there. We run at 99.99% uptime across all regions because a single failed transaction can cost a merchant their customer's trust permanently.\n\n**Developer experience drives everything.**\nAPIs should behave exactly as documented, and error messages should tell you what went wrong and how to fix it. We invest as much in our documentation and SDK design as in the underlying infrastructure, because an API that takes a week to integrate — or one that surfaces opaque error codes at 2am — loses developer trust faster than almost any reliability issue could.\n\n**Transparency in failure.**\nWhen something breaks, we say what happened and what we changed. Our status page publishes raw uptime data and latency percentiles so you can see exactly what our systems are doing, and our post-mortems go public within 48 hours so the broader developer community can learn from what we got wrong.\n\n**Security built to hold.**\nPayments attract adversarial attention. PCI DSS compliance, end-to-end encryption, fraud detection, and threat monitoring are woven into the architecture from the start; every API key is scoped and every webhook is signed, and we run red team exercises quarterly to expose gaps in our assumptions before they become incidents.",
             "tokens": 3562,
             "duration_ms": 60087,
             "assertions": [
               {
                 "id": "hum-1-no-binary-contrast",
-                "text": "The output does not use binary contrast patterns such as 'not X \u2014 it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves \u2014 they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
                 "passed": true,
-                "reasoning": "None of the four value descriptions use binary contrast patterns like 'not X \u2014 it's Y'; each value is stated positively without an explicit contrast structure."
+                "reasoning": "None of the four value descriptions use binary contrast patterns like 'not X — it's Y'; each value is stated positively without an explicit contrast structure."
               },
               {
                 "id": "hum-1-varied-value-structure",
-                "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form \u2014 e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
+                "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
                 "passed": false,
                 "reasoning": "All four values follow the same structural pattern: a bold declarative title followed by exactly two sentences (the second being a long explanatory sentence with a 'because' or causal clause), with no value using a question, a single sentence, a leading example, or any other meaningfully different form."
               },
@@ -54,27 +54,27 @@
             "cached": false
           },
           "baseline": {
-            "output": "## Our Values\n\n**Reliability is a feature.**\nEvery payment that fails is a promise broken\u2014to your users, and to you. We build infrastructure you can stake your business on, because downtime and data loss aren't acceptable tradeoffs for anyone.\n\n**Developers deserve great tools.**\nGood infrastructure shouldn't require a support ticket to understand. We write clear documentation, design intuitive APIs, and sweat the details that turn frustrating integrations into afternoons well spent.\n\n**Transparency by default.**\nHidden fees, vague status pages, and opaque pricing erode trust. We show our work: real uptime numbers, honest error messages, and pricing that doesn't require a call with sales to decode.\n\n**Security without compromise.**\nCutting corners on security means cutting corners on the people whose money moves through your product. We treat compliance and data protection as a baseline, not a differentiator\u2014because that's what handling financial data demands.",
+            "output": "## Our Values\n\n**Reliability is a feature.**\nEvery payment that fails is a promise broken—to your users, and to you. We build infrastructure you can stake your business on, because downtime and data loss aren't acceptable tradeoffs for anyone.\n\n**Developers deserve great tools.**\nGood infrastructure shouldn't require a support ticket to understand. We write clear documentation, design intuitive APIs, and sweat the details that turn frustrating integrations into afternoons well spent.\n\n**Transparency by default.**\nHidden fees, vague status pages, and opaque pricing erode trust. We show our work: real uptime numbers, honest error messages, and pricing that doesn't require a call with sales to decode.\n\n**Security without compromise.**\nCutting corners on security means cutting corners on the people whose money moves through your product. We treat compliance and data protection as a baseline, not a differentiator—because that's what handling financial data demands.",
             "tokens": 594,
             "duration_ms": 25044,
             "assertions": [
               {
                 "id": "hum-1-no-binary-contrast",
-                "text": "The output does not use binary contrast patterns such as 'not X \u2014 it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves \u2014 they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
                 "passed": true,
-                "reasoning": "None of the four value descriptions use the listed binary contrast patterns ('not X \u2014 it's Y', 'X isn't the problem, Y is', etc.); 'as a baseline, not a differentiator' is a different construction and does not match any of the specified patterns."
+                "reasoning": "None of the four value descriptions use the listed binary contrast patterns ('not X — it's Y', 'X isn't the problem, Y is', etc.); 'as a baseline, not a differentiator' is a different construction and does not match any of the specified patterns."
               },
               {
                 "id": "hum-1-varied-value-structure",
-                "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form \u2014 e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
+                "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
                 "passed": false,
-                "reasoning": "All four values follow an identical structural pattern \u2014 bold title followed by exactly two sentences \u2014 with no variation such as questions, single long sentences, or example-first openings, which the assertion explicitly flags as a failure."
+                "reasoning": "All four values follow an identical structural pattern — bold title followed by exactly two sentences — with no variation such as questions, single long sentences, or example-first openings, which the assertion explicitly flags as a failure."
               },
               {
                 "id": "hum-1-no-tricolon-conclusions",
                 "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
                 "passed": false,
-                "reasoning": "Value 2 ends with three parallel items ('write clear documentation, design intuitive APIs, and sweat the details\u2026') and Value 3 ends with three parallel items ('real uptime numbers, honest error messages, and pricing that doesn't require a call with sales to decode'), both violating the no-tricolon-conclusion rule."
+                "reasoning": "Value 2 ends with three parallel items ('write clear documentation, design intuitive APIs, and sweat the details…') and Value 3 ends with three parallel items ('real uptime numbers, honest error messages, and pricing that doesn't require a call with sales to decode'), both violating the no-tricolon-conclusion rule."
               }
             ],
             "pass_rate": 0.3333333333333333,
@@ -85,15 +85,15 @@
           "eval_id": 2,
           "prompt": "Write a 2-paragraph section for a landing page explaining why your cloud hosting platform is better than the competition. Key differentiators: automatic scaling, pay-per-second billing, and built-in observability. Target audience is developers and CTOs. Tone should be confident and direct. Just write the copy, no questions.",
           "with_skill": {
-            "output": "Your app scales from 10 requests to 10 million without touching a config file. Capacity adjusts in under 30 seconds \u2014 new instances spin up, traffic routes automatically, and the moment the spike ends, you scale back down just as fast. Most platforms charge for reserved capacity you'll use twice a year; we bill per second of actual compute, so a function that runs for 400ms costs you 400ms. Teams migrating from fixed-instance providers typically cut monthly infrastructure spend by 40\u201360% in the first 90 days, without touching their architecture.\n\nEvery deployment ships with observability wired in from day one. Request traces, error rates, latency percentiles, and p99 breakdowns appear in your dashboard the moment traffic hits your service \u2014 the instrumentation is pre-configured and ready. When something breaks at 2am, you get a flame graph and a structured error log with full context, already correlated and pointing at the exact line of code that failed. Engineers we work with report spending 70% less time on incident diagnosis compared to their previous setup, because the relevant data is available immediately rather than scattered across four separate tools that each require their own query language.",
+            "output": "Your app scales from 10 requests to 10 million without touching a config file. Capacity adjusts in under 30 seconds — new instances spin up, traffic routes automatically, and the moment the spike ends, you scale back down just as fast. Most platforms charge for reserved capacity you'll use twice a year; we bill per second of actual compute, so a function that runs for 400ms costs you 400ms. Teams migrating from fixed-instance providers typically cut monthly infrastructure spend by 40–60% in the first 90 days, without touching their architecture.\n\nEvery deployment ships with observability wired in from day one. Request traces, error rates, latency percentiles, and p99 breakdowns appear in your dashboard the moment traffic hits your service — the instrumentation is pre-configured and ready. When something breaks at 2am, you get a flame graph and a structured error log with full context, already correlated and pointing at the exact line of code that failed. Engineers we work with report spending 70% less time on incident diagnosis compared to their previous setup, because the relevant data is available immediately rather than scattered across four separate tools that each require their own query language.",
             "tokens": 3171,
             "duration_ms": 59464,
             "assertions": [
               {
                 "id": "hum-2-no-binary-contrast",
-                "text": "The output does not use binary contrast patterns such as 'not X \u2014 it's Y', 'X isn't just Y \u2014 it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
                 "passed": true,
-                "reasoning": "The output makes direct claims without using 'not X \u2014 it's Y' or similar rhetorical binary contrast setups."
+                "reasoning": "The output makes direct claims without using 'not X — it's Y' or similar rhetorical binary contrast setups."
               },
               {
                 "id": "hum-2-no-parallel-tricolon",
@@ -118,15 +118,15 @@
             "cached": false
           },
           "baseline": {
-            "output": "---\n\nMost cloud platforms make you guess your traffic in advance, charge you for idle servers, and leave you debugging in the dark. We don't. Our infrastructure scales automatically the moment demand spikes\u2014no pre-warming, no capacity planning, no 3am pages because you under-provisioned. You ship, we handle the rest.\n\nYou also stop paying for compute you're not using. With per-second billing, your costs track actual usage\u2014not whatever estimate you punched into a calculator last quarter. And when something goes wrong, you won't be stitching together logs from three different tools. Built-in observability gives every team member\u2014from the engineer on-call to the CTO reviewing the post-mortem\u2014a single, complete picture of what happened and why. Less guessing, fewer war rooms, faster fixes.",
+            "output": "---\n\nMost cloud platforms make you guess your traffic in advance, charge you for idle servers, and leave you debugging in the dark. We don't. Our infrastructure scales automatically the moment demand spikes—no pre-warming, no capacity planning, no 3am pages because you under-provisioned. You ship, we handle the rest.\n\nYou also stop paying for compute you're not using. With per-second billing, your costs track actual usage—not whatever estimate you punched into a calculator last quarter. And when something goes wrong, you won't be stitching together logs from three different tools. Built-in observability gives every team member—from the engineer on-call to the CTO reviewing the post-mortem—a single, complete picture of what happened and why. Less guessing, fewer war rooms, faster fixes.",
             "tokens": 545,
             "duration_ms": 24588,
             "assertions": [
               {
                 "id": "hum-2-no-binary-contrast",
-                "text": "The output does not use binary contrast patterns such as 'not X \u2014 it's Y', 'X isn't just Y \u2014 it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
                 "passed": false,
-                "reasoning": "The output uses 'your costs track actual usage\u2014not whatever estimate you punched into a calculator last quarter,' which is a 'Y\u2014not X' binary contrast setup, and 'Most cloud platforms make you\u2026 We don't' is a direct binary contrast framing."
+                "reasoning": "The output uses 'your costs track actual usage—not whatever estimate you punched into a calculator last quarter,' which is a 'Y—not X' binary contrast setup, and 'Most cloud platforms make you… We don't' is a direct binary contrast framing."
               },
               {
                 "id": "hum-2-no-parallel-tricolon",
@@ -155,31 +155,31 @@
           "eval_id": 3,
           "prompt": "Write a short blog post (3 paragraphs) about why startups should invest in developer experience early. Target audience: CTOs and engineering leads. Just write the post directly.",
           "with_skill": {
-            "output": "**Developer Experience Debt Is Expensive, and You're Already Paying It**\n\nThe cost of a bad developer experience compounds faster than most CTOs expect. When engineers spend 45 minutes getting a dev environment running, or wait 20 minutes for a CI pipeline to report a broken test, that friction accumulates into real weeks of lost output. At a 10-person engineering team, even a 30-minute daily drag per developer equals roughly 65 engineer-days lost annually \u2014 time that isn't coming back.\n\nTeams that invest early in local environment setup and fast test feedback loops retain engineers longer than those that skip it. Onboarding a senior engineer costs north of $30K when you factor in recruiting fees and ramp-up time alone. That investment pays for itself the first time a frustrated engineer decides to stay because the work finally feels worth doing, because shipping a feature takes hours instead of days, and because a broken build surfaces in two minutes rather than two hours after the fact.\n\nThe real argument for early investment is that building good habits at 8 engineers is far cheaper than retrofitting them at 80. A team of 8 can agree on a deployment process in an afternoon; a team of 80 will spend months debating it while the old broken process stays in production. The workflows you establish in year one \u2014 CI discipline, local reproducibility, sensible runbooks, and clean infrastructure abstractions \u2014 tend to calcify into the culture, and that calcification works in your favor when you're trying to scale an engineering organization worth replicating.",
+            "output": "**Developer Experience Debt Is Expensive, and You're Already Paying It**\n\nThe cost of a bad developer experience compounds faster than most CTOs expect. When engineers spend 45 minutes getting a dev environment running, or wait 20 minutes for a CI pipeline to report a broken test, that friction accumulates into real weeks of lost output. At a 10-person engineering team, even a 30-minute daily drag per developer equals roughly 65 engineer-days lost annually — time that isn't coming back.\n\nTeams that invest early in local environment setup and fast test feedback loops retain engineers longer than those that skip it. Onboarding a senior engineer costs north of $30K when you factor in recruiting fees and ramp-up time alone. That investment pays for itself the first time a frustrated engineer decides to stay because the work finally feels worth doing, because shipping a feature takes hours instead of days, and because a broken build surfaces in two minutes rather than two hours after the fact.\n\nThe real argument for early investment is that building good habits at 8 engineers is far cheaper than retrofitting them at 80. A team of 8 can agree on a deployment process in an afternoon; a team of 80 will spend months debating it while the old broken process stays in production. The workflows you establish in year one — CI discipline, local reproducibility, sensible runbooks, and clean infrastructure abstractions — tend to calcify into the culture, and that calcification works in your favor when you're trying to scale an engineering organization worth replicating.",
             "tokens": 2347,
             "duration_ms": 42992,
             "assertions": [
               {
                 "id": "hum-3-no-binary-contrast",
-                "text": "The output does not use binary contrast patterns such as 'not X \u2014 it's Y', 'X isn't a nice-to-have \u2014 it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
                 "passed": true,
-                "reasoning": "The output makes direct claims throughout without using any 'not X \u2014 it's Y' or similar binary contrast constructions."
+                "reasoning": "The output makes direct claims throughout without using any 'not X — it's Y' or similar binary contrast constructions."
               },
               {
                 "id": "hum-3-no-punchline-endings",
                 "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
                 "passed": true,
-                "reasoning": "Only paragraph 1 ends with a short punchy line ('time that isn't coming back' \u2014 6 words); paragraphs 2 and 3 both end with longer sentences well over 15 words."
+                "reasoning": "Only paragraph 1 ends with a short punchy line ('time that isn't coming back' — 6 words); paragraphs 2 and 3 both end with longer sentences well over 15 words."
               },
               {
                 "id": "hum-3-no-ai-business-vocab",
                 "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
                 "passed": true,
-                "reasoning": "None of the banned phrases \u2014 'highest-leverage', 'compound returns', 'first-class', 'false economy', 'force multiplier', 'table stakes', or 'nice-to-have' \u2014 appear in the output."
+                "reasoning": "None of the banned phrases — 'highest-leverage', 'compound returns', 'first-class', 'false economy', 'force multiplier', 'table stakes', or 'nice-to-have' — appear in the output."
               },
               {
                 "id": "hum-3-no-tricolon-lists",
-                "text": "The output does not contain tricolon lists \u2014 three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
+                "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
                 "passed": false,
                 "reasoning": "Paragraph 2 contains a tricolon of three parallel 'because' clauses: 'because the work finally feels worth doing, because shipping a feature takes hours instead of days, and because a broken build surfaces in two minutes rather than two hours after the fact.'"
               }
@@ -188,15 +188,15 @@
             "cached": false
           },
           "baseline": {
-            "output": "## Developer Experience Is a Business Decision, Not a Luxury\n\nEarly-stage startups often treat developer experience (DX) as something to optimize later\u2014after product-market fit, after the Series A, after the team grows. This is exactly backwards. The decisions you make in the first 18 months about tooling, local development speed, CI/CD pipelines, and documentation compound relentlessly. A codebase that takes 20 minutes to build locally doesn't just frustrate your five engineers\u2014it quietly erodes their focus, their willingness to experiment, and their ability to ship with confidence. Every friction point you tolerate early becomes load-bearing technical debt that costs ten times more to fix once your team is 30 people deep.\n\nThe return on investing in DX early is asymmetric. Fast feedback loops\u2014sub-minute test suites, reliable hot reload, clear error messages\u2014directly translate into faster iteration cycles. When engineers can confidently make a change and know within seconds whether it's correct, they take smarter risks. They refactor when they should instead of leaving things alone out of fear. They onboard faster. You spend less time in debugging purgatory and more time in product conversations. For a startup, where iteration speed is your primary competitive advantage over incumbents, this is not a nice-to-have.\n\nThe CTO's job is to make good engineering culture a structural property of the system, not a personal virtue. That means setting standards early: reproducible builds, a single command to get the dev environment running, automated linting and formatting so reviews focus on logic not style, and deployment pipelines engineers actually trust. None of this requires a platform team or months of investment. It requires intentionality and a willingness to protect engineering time now. The startups that wait until they're \"big enough\" to care about DX are the ones that spend their growth stage paying down the bill.",
+            "output": "## Developer Experience Is a Business Decision, Not a Luxury\n\nEarly-stage startups often treat developer experience (DX) as something to optimize later—after product-market fit, after the Series A, after the team grows. This is exactly backwards. The decisions you make in the first 18 months about tooling, local development speed, CI/CD pipelines, and documentation compound relentlessly. A codebase that takes 20 minutes to build locally doesn't just frustrate your five engineers—it quietly erodes their focus, their willingness to experiment, and their ability to ship with confidence. Every friction point you tolerate early becomes load-bearing technical debt that costs ten times more to fix once your team is 30 people deep.\n\nThe return on investing in DX early is asymmetric. Fast feedback loops—sub-minute test suites, reliable hot reload, clear error messages—directly translate into faster iteration cycles. When engineers can confidently make a change and know within seconds whether it's correct, they take smarter risks. They refactor when they should instead of leaving things alone out of fear. They onboard faster. You spend less time in debugging purgatory and more time in product conversations. For a startup, where iteration speed is your primary competitive advantage over incumbents, this is not a nice-to-have.\n\nThe CTO's job is to make good engineering culture a structural property of the system, not a personal virtue. That means setting standards early: reproducible builds, a single command to get the dev environment running, automated linting and formatting so reviews focus on logic not style, and deployment pipelines engineers actually trust. None of this requires a platform team or months of investment. It requires intentionality and a willingness to protect engineering time now. The startups that wait until they're \"big enough\" to care about DX are the ones that spend their growth stage paying down the bill.",
             "tokens": 609,
             "duration_ms": 24441,
             "assertions": [
               {
                 "id": "hum-3-no-binary-contrast",
-                "text": "The output does not use binary contrast patterns such as 'not X \u2014 it's Y', 'X isn't a nice-to-have \u2014 it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
                 "passed": true,
-                "reasoning": "The output uses 'this is not a nice-to-have' but never completes the binary contrast with '\u2014 it's Y', and no other instances of the listed patterns appear."
+                "reasoning": "The output uses 'this is not a nice-to-have' but never completes the binary contrast with '— it's Y', and no other instances of the listed patterns appear."
               },
               {
                 "id": "hum-3-no-punchline-endings",
@@ -212,9 +212,9 @@
               },
               {
                 "id": "hum-3-no-tricolon-lists",
-                "text": "The output does not contain tricolon lists \u2014 three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
+                "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
                 "passed": false,
-                "reasoning": "Paragraph one contains a tricolon: 'their focus, their willingness to experiment, and their ability to ship with confidence' \u2014 three parallel items joined with commas and 'and'."
+                "reasoning": "Paragraph one contains a tricolon: 'their focus, their willingness to experiment, and their ability to ship with confidence' — three parallel items joined with commas and 'and'."
               }
             ],
             "pass_rate": 0.5,
@@ -242,7 +242,7 @@
           "eval_id": 1,
           "prompt": "Audit https://example.com for AI search visibility. Check the HTML size, JavaScript dependency, and hedge density. Provide a GEO readiness report with scores for technical visibility and content authority.",
           "with_skill": {
-            "output": "All data collected. Here's the full GEO readiness report:\n\n---\n\n## GEO Readiness Report \u2014 example.com\n\n---\n\n### Technical Visibility \u2014 Score: 95/100\n\n| Check | Result | Status |\n|---|---|---|\n| HTML payload size | **528 bytes** (limit: 1MB) | \u2705 Excellent |\n| JavaScript dependency | **None** \u2014 pure static HTML + inline CSS | \u2705 No risk |\n| Server-side rendering | Full content in raw HTML | \u2705 Crawler-safe |\n| robots.txt | **404 Not Found** | \u26a0\ufe0f Missing |\n| CDN/delivery | Cloudflare | \u2705 Fast |\n\nThe page is essentially a perfect technical target for AI crawlers. At 528 bytes it's ~2,000x under the danger threshold, and every byte of content is in the raw HTML \u2014 no JavaScript rendering required. ClaudeBot, GPTBot, PerplexityBot, and all others will see exactly what a human sees.\n\n**Only issue:** No `robots.txt` means no explicit crawler directives. Not harmful, but a gap.\n\n---\n\n### Content Authority \u2014 Score: 72/100\n\n```\nWord Count:   15 words\nHedge Words:  0\nHedge Density: 0.0%  \u2192  EXCELLENT (target: <0.2%)\n```\n\n| Check | Result | Status |\n|---|---|---|\n| Hedge density | **0.0%** | \u2705 Excellent |\n| Tone | Declarative, imperative | \u2705 Confident |\n| Content depth | 2 sentences, 15 words | \u274c Extremely thin |\n| Structured data (JSON-LD) | None | \u274c Missing |\n| Entity density | Near-zero | \u274c No named entities |\n\nThe existing content is assertive and hedge-free \u2014 but there's almost nothing there. AI systems need substance to cite. A 15-word page with no named entities, dates, facts, or schema markup offers very little for an LLM to quote authoritatively.\n\n---\n\n### Agent Infrastructure \u2014 Score: 10/100\n\n| Check | Result | Status |\n|---|---|---|\n| `/.well-known/agent-facts` | **404** | \u274c Missing |\n| NANDA/AgentFacts schema | None | \u274c Missing |\n| Structured data | None | \u274c Missing |\n| Sitemap | Not checked (no robots.txt to reference) | \u26a0\ufe0f Unknown |\n\nNo machine-readable metadata for AI agent discovery whatsoever.\n\n---\n\n### Discovery Strategy\n\nexample.com is operated by IANA \u2014 a decade",
+            "output": "All data collected. Here's the full GEO readiness report:\n\n---\n\n## GEO Readiness Report — example.com\n\n---\n\n### Technical Visibility — Score: 95/100\n\n| Check | Result | Status |\n|---|---|---|\n| HTML payload size | **528 bytes** (limit: 1MB) | ✅ Excellent |\n| JavaScript dependency | **None** — pure static HTML + inline CSS | ✅ No risk |\n| Server-side rendering | Full content in raw HTML | ✅ Crawler-safe |\n| robots.txt | **404 Not Found** | ⚠️ Missing |\n| CDN/delivery | Cloudflare | ✅ Fast |\n\nThe page is essentially a perfect technical target for AI crawlers. At 528 bytes it's ~2,000x under the danger threshold, and every byte of content is in the raw HTML — no JavaScript rendering required. ClaudeBot, GPTBot, PerplexityBot, and all others will see exactly what a human sees.\n\n**Only issue:** No `robots.txt` means no explicit crawler directives. Not harmful, but a gap.\n\n---\n\n### Content Authority — Score: 72/100\n\n```\nWord Count:   15 words\nHedge Words:  0\nHedge Density: 0.0%  →  EXCELLENT (target: <0.2%)\n```\n\n| Check | Result | Status |\n|---|---|---|\n| Hedge density | **0.0%** | ✅ Excellent |\n| Tone | Declarative, imperative | ✅ Confident |\n| Content depth | 2 sentences, 15 words | ❌ Extremely thin |\n| Structured data (JSON-LD) | None | ❌ Missing |\n| Entity density | Near-zero | ❌ No named entities |\n\nThe existing content is assertive and hedge-free — but there's almost nothing there. AI systems need substance to cite. A 15-word page with no named entities, dates, facts, or schema markup offers very little for an LLM to quote authoritatively.\n\n---\n\n### Agent Infrastructure — Score: 10/100\n\n| Check | Result | Status |\n|---|---|---|\n| `/.well-known/agent-facts` | **404** | ❌ Missing |\n| NANDA/AgentFacts schema | None | ❌ Missing |\n| Structured data | None | ❌ Missing |\n| Sitemap | Not checked (no robots.txt to reference) | ⚠️ Unknown |\n\nNo machine-readable metadata for AI agent discovery whatsoever.\n\n---\n\n### Discovery Strategy\n\nexample.com is operated by IANA — a decade",
             "tokens": 3878,
             "duration_ms": 80675,
             "assertions": [
@@ -269,7 +269,7 @@
             "cached": false
           },
           "baseline": {
-            "output": "Got what I need. Here's the full audit.\n\n---\n\n## GEO Readiness Report \u2014 example.com\n\n*Generative Engine Optimization (GEO) audit for AI search visibility*\n\n---\n\n### Page Overview\n\n| Signal | Finding |\n|--------|---------|\n| **H1** | \"Example Domain\" |\n| **Body text** | ~250 characters total |\n| **Script tags** | None |\n| **Structured data (JSON-LD)** | None |\n| **Meta description** | None |\n| **Author attribution** | None |\n| **Date / freshness signal** | None |\n| **Outbound link** | 1 (IANA) |\n| **robots.txt** | 404 \u2014 not found |\n\n---\n\n### Signal Analysis\n\n#### 1. HTML Size \u2014 `FAIL`\n\nAt ~250 characters of actual content, this page is effectively empty for GEO purposes. AI systems extract passages and answer blocks \u2014 there is nothing here to extract. A page needs **at minimum 500\u2013800 words** of structured, topically relevant content to have any chance of being cited.\n\n**Score: 0/10** \u2014 Far below the threshold for extractable content.\n\n---\n\n#### 2. JavaScript Dependency \u2014 `PASS`\n\nNo JavaScript detected. The page renders as pure static HTML, meaning AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended) can read it without a JS runtime. This is the only positive signal on the page.\n\n**Score: 10/10** \u2014 No JS barrier to crawling.\n\n---\n\n#### 3. Hedge Density \u2014 `N/A (but a deeper problem)`\n\nHedge density measures qualifiers like \"may,\" \"could,\" \"might,\" \"some argue\" \u2014 which reduce AI confidence in a passage and lower citation probability. Example.com has no hedges. It also has no claims of any kind. There is nothing to hedge. The content reads as a system notice, not as an authoritative source on any query.\n\n**Hedge density: 0%** \u2014 Not because of good writing; because there is no content.\n\n---\n\n### Scores\n\n#### Technical Visibility \u2014 `12 / 100`\n\n| Check | Score | Notes |\n|-------|:-----:|-------|\n| Crawlable (no JS dependency) | 10/10 | Clean static HTML |\n| robots.txt present & AI bots allowed | 0/10 | 404 \u2014 unknown bot access |\n| Structured data (JSON-LD / sche",
+            "output": "Got what I need. Here's the full audit.\n\n---\n\n## GEO Readiness Report — example.com\n\n*Generative Engine Optimization (GEO) audit for AI search visibility*\n\n---\n\n### Page Overview\n\n| Signal | Finding |\n|--------|---------|\n| **H1** | \"Example Domain\" |\n| **Body text** | ~250 characters total |\n| **Script tags** | None |\n| **Structured data (JSON-LD)** | None |\n| **Meta description** | None |\n| **Author attribution** | None |\n| **Date / freshness signal** | None |\n| **Outbound link** | 1 (IANA) |\n| **robots.txt** | 404 — not found |\n\n---\n\n### Signal Analysis\n\n#### 1. HTML Size — `FAIL`\n\nAt ~250 characters of actual content, this page is effectively empty for GEO purposes. AI systems extract passages and answer blocks — there is nothing here to extract. A page needs **at minimum 500–800 words** of structured, topically relevant content to have any chance of being cited.\n\n**Score: 0/10** — Far below the threshold for extractable content.\n\n---\n\n#### 2. JavaScript Dependency — `PASS`\n\nNo JavaScript detected. The page renders as pure static HTML, meaning AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended) can read it without a JS runtime. This is the only positive signal on the page.\n\n**Score: 10/10** — No JS barrier to crawling.\n\n---\n\n#### 3. Hedge Density — `N/A (but a deeper problem)`\n\nHedge density measures qualifiers like \"may,\" \"could,\" \"might,\" \"some argue\" — which reduce AI confidence in a passage and lower citation probability. Example.com has no hedges. It also has no claims of any kind. There is nothing to hedge. The content reads as a system notice, not as an authoritative source on any query.\n\n**Hedge density: 0%** — Not because of good writing; because there is no content.\n\n---\n\n### Scores\n\n#### Technical Visibility — `12 / 100`\n\n| Check | Score | Notes |\n|-------|:-----:|-------|\n| Crawlable (no JS dependency) | 10/10 | Clean static HTML |\n| robots.txt present & AI bots allowed | 0/10 | 404 — unknown bot access |\n| Structured data (JSON-LD / sche",
             "tokens": 2857,
             "duration_ms": 80086,
             "assertions": [
@@ -277,7 +277,7 @@
                 "id": "geo-1-html-size",
                 "text": "The response discusses HTML payload size and mentions the 1MB threshold for AI crawler compatibility.",
                 "passed": false,
-                "reasoning": "The response discusses HTML payload size and content sufficiency but never mentions the 1MB threshold for AI crawler compatibility \u2014 it focuses on word count minimums instead."
+                "reasoning": "The response discusses HTML payload size and content sufficiency but never mentions the 1MB threshold for AI crawler compatibility — it focuses on word count minimums instead."
               },
               {
                 "id": "geo-1-hedge-density",
@@ -351,6 +351,151 @@
               }
             ],
             "pass_rate": 0.3333333333333333,
+            "cached": false
+          }
+        }
+      ]
+    },
+    {
+      "generated_at": "2026-03-06T16:39:04.697Z",
+      "model": "claude-sonnet-4-6",
+      "runner": "satchmo",
+      "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+      "skill_name": "charting",
+      "skill_path": "skills/charting",
+      "eval_count": 2,
+      "pass_rate": 1,
+      "baseline_pass_rate": 1,
+      "avg_tokens_with_skill": 3658,
+      "avg_tokens_baseline": 2282,
+      "avg_duration_ms_with_skill": 70842,
+      "avg_duration_ms_baseline": 49525,
+      "evals": [
+        {
+          "eval_id": 1,
+          "prompt": "I have a database table with columns: user_id, signup_date, plan_type (free/pro/enterprise), monthly_revenue, and churn_date (nullable). I want to understand our revenue trends and churn patterns. What charts should I build and what data transformations do I need? Give me the full visualization plan.",
+          "with_skill": {
+            "output": "Using the charting skill to build your full visualization plan.\n\n---\n\n## Full Visualization Plan: Revenue & Churn Dashboard\n\n### Schema Analysis\n\n```\nuser_id        → identifier (high cardinality, no chart)\nsignup_date    → date → enables cohort/time-series analysis\nplan_type      → 3-category → color dimension, group-by axis\nmonthly_revenue → numeric → sum/avg aggregations\nchurn_date     → nullable date → NULL = active, non-null = churned\n```\n\n**Key insight:** This is a user snapshot table, not a time-series events table. Getting MRR over time requires reconstructing \"which users were active in each month\" via a date range join — most people get this wrong and just group by signup_date.\n\n---\n\n## Dashboard 1: Revenue\n\n### Chart 1 — MRR Over Time (Stacked Area)\n\n**Goal:** Trend over time, broken down by plan composition  \n**Chart:** Stacked Area — `plan_type` as color dimension, month on X, MRR on Y  \n**Why stacked area:** 3 categories + time series + parts-of-whole story\n\n```sql\nWITH months AS (\n  SELECT generate_series(\n    DATE_TRUNC('month', MIN(signup_date)),\n    DATE_TRUNC('month', CURRENT_DATE),\n    INTERVAL '1 month'\n  )::date AS month\n  FROM users\n)\nSELECT\n  m.month,\n  u.plan_type,\n  SUM(u.monthly_revenue)   AS mrr,\n  COUNT(u.user_id)         AS active_users\nFROM months m\nJOIN users u\n  ON u.signup_date < m.month + INTERVAL '1 month'\n  AND (u.churn_date IS NULL OR u.churn_date >= m.month)\nGROUP BY 1, 2\nORDER BY 1, 2;\n```\n\n**Output shape:** `month | plan_type | mrr | active_users`  \n**Pivot for chart:** rows → `{ month, free_mrr, pro_mrr, enterprise_mrr }`\n\n---\n\n### Chart 2 — MRR Waterfall (Net MRR Movement)\n\n**Goal:** Show new MRR vs churned MRR vs net each month  \n**Chart:** Waterfall / Grouped Bar with positive/negative bars  \n**Why:** Executives need to see if growth is outpacing churn\n\n```sql\nWITH months AS (\n  SELECT generate_series(\n    DATE_TRUNC('month', MIN(signup_date)),\n    DATE_TRUNC('month', CURRENT_DATE),\n    INTERVAL '1 month'\n  )::date AS mon",
+            "tokens": 5055,
+            "duration_ms": 81978,
+            "assertions": [
+              {
+                "id": "ch-1-chart-type-rationale",
+                "text": "Each recommended chart type includes a rationale tied to the viewer's goal — e.g., 'line chart for revenue trend over time' or 'stacked bar for composition by plan type'. Charts are not just listed without explaining why that type fits the data.",
+                "passed": true,
+                "reasoning": "Every chart includes explicit rationale tied to viewer goals, e.g., 'Stacked Area — 3 categories + time series + parts-of-whole story' and 'Dual-axis Line — churn rate (%) on left, churned MRR ($) on right'."
+              },
+              {
+                "id": "ch-1-transform-code",
+                "text": "The response includes actual SQL queries or data transformation code (pandas, SQL, or pseudocode) for at least one of the recommended charts — not just a description of what to aggregate.",
+                "passed": true,
+                "reasoning": "The response includes multiple complete, production-ready SQL queries with CTEs for charts like MRR Over Time, Monthly Churn Rate, and Cohort Retention Heatmap."
+              },
+              {
+                "id": "ch-1-library-recommendation",
+                "text": "The response recommends a specific charting library (e.g., Recharts, ECharts, Chart.js, Plotly) with reasoning tied to the expected data scale or use case, not just 'use D3' or 'use any charting library'.",
+                "passed": true,
+                "reasoning": "The response recommends Recharts for React dashboards under 50k rows, Apache ECharts for heatmaps, Plotly Express for Python, and Matplotlib for PDF export — each with specific rationale tied to use case and scale."
+              },
+              {
+                "id": "ch-1-no-pie-for-plans",
+                "text": "The response does NOT recommend a pie chart for showing plan type distribution or revenue composition. It uses bar, stacked bar, stacked area, or treemap instead — following the principle that pie charts are poor for comparison.",
+                "passed": true,
+                "reasoning": "No pie chart is recommended anywhere; plan type composition uses stacked area (Chart 1) and horizontal bar (Chart 3 ARPU), explicitly avoiding pie charts."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "## Full Visualization Plan: Revenue Trends & Churn\n\n---\n\n### Schema Inventory\n\n| Column | Type | Notes |\n|--------|------|-------|\n| `user_id` | identifier | ~high cardinality |\n| `signup_date` | date | cohort anchor |\n| `plan_type` | categorical (3 values) | low cardinality — good for series splits |\n| `monthly_revenue` | numeric | per-user snapshot (not cumulative) |\n| `churn_date` | nullable date | NULL = still active |\n\n**Key derived metrics you don't have yet** (need transforms):\n- Active users per month\n- MRR per month (aggregate)\n- Churn rate per month\n- Cohort retention\n- Time-to-churn (days)\n\n---\n\n### Chart 1 — Total MRR Over Time\n\n**Type:** Line chart\n**Goal:** Trend over time (1 numeric + time)\n\n**SQL:**\n```sql\nSELECT\n  DATE_TRUNC('month', d.month) AS month,\n  SUM(u.monthly_revenue) AS mrr\nFROM generate_series(\n  (SELECT MIN(signup_date) FROM users),\n  CURRENT_DATE,\n  INTERVAL '1 month'\n) AS d(month)\nJOIN users u\n  ON u.signup_date <= d.month\n  AND (u.churn_date IS NULL OR u.churn_date > d.month)\nGROUP BY 1\nORDER BY 1;\n```\n\n**Key insight this answers:** Is the business growing?\n\n---\n\n### Chart 2 — MRR by Plan Type (Stacked Area)\n\n**Type:** Stacked Area\n**Goal:** Composition over time — how does revenue mix shift?\n\n**SQL:**\n```sql\nSELECT\n  DATE_TRUNC('month', d.month) AS month,\n  u.plan_type,\n  SUM(u.monthly_revenue) AS mrr\nFROM generate_series(...) AS d(month)\nJOIN users u\n  ON u.signup_date <= d.month\n  AND (u.churn_date IS NULL OR u.churn_date > d.month)\nGROUP BY 1, 2\nORDER BY 1, 2;\n```\n\n**Key insight:** Enterprise revenue growing while free stays flat = healthy upsell motion.\n\n---\n\n### Chart 3 — MRR Waterfall (New / Expansion / Churned / Net)\n\n**Type:** Waterfall / grouped bar\n**Goal:** Understand the *components* of MRR change month-over-month\n\n**SQL (3 CTEs combined):**\n```sql\nWITH new_mrr AS (\n  SELECT DATE_TRUNC('month', signup_date) AS month,\n         SUM(monthly_revenue) AS value, 'new' AS category\n  FROM users GROUP BY 1\n),\nchurned_mrr AS (\n  SE",
+            "tokens": 2982,
+            "duration_ms": 55095,
+            "assertions": [
+              {
+                "id": "ch-1-chart-type-rationale",
+                "text": "Each recommended chart type includes a rationale tied to the viewer's goal — e.g., 'line chart for revenue trend over time' or 'stacked bar for composition by plan type'. Charts are not just listed without explaining why that type fits the data.",
+                "passed": true,
+                "reasoning": "Every chart includes an explicit 'Goal' field tying the chart type to the viewer's objective, e.g., 'Line chart' for 'Trend over time' and 'Grouped bar' for 'Compare churn across free/pro/enterprise'."
+              },
+              {
+                "id": "ch-1-transform-code",
+                "text": "The response includes actual SQL queries or data transformation code (pandas, SQL, or pseudocode) for at least one of the recommended charts — not just a description of what to aggregate.",
+                "passed": true,
+                "reasoning": "The response includes multiple complete SQL queries with CTEs, JOINs, and aggregations for charts like MRR Over Time, Churn Rate by Plan, and others."
+              },
+              {
+                "id": "ch-1-library-recommendation",
+                "text": "The response recommends a specific charting library (e.g., Recharts, ECharts, Chart.js, Plotly) with reasoning tied to the expected data scale or use case, not just 'use D3' or 'use any charting library'.",
+                "passed": true,
+                "reasoning": "The response recommends Recharts for line/area/waterfall charts and ECharts specifically for the cohort heatmap, with reasoning tied to bundle size, simplicity, and ECharts' built-in heatmap renderer."
+              },
+              {
+                "id": "ch-1-no-pie-for-plans",
+                "text": "The response does NOT recommend a pie chart for showing plan type distribution or revenue composition. It uses bar, stacked bar, stacked area, or treemap instead — following the principle that pie charts are poor for comparison.",
+                "passed": true,
+                "reasoning": "No pie charts are recommended anywhere; plan type composition uses stacked area (Chart 2) and grouped bar (Chart 5) instead."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          }
+        },
+        {
+          "eval_id": 2,
+          "prompt": "I need to visualize 500,000 data points showing sensor readings (temperature, humidity, pressure) over 6 months from 50 IoT devices. The dashboard needs to be interactive with zoom and pan. What's the right approach?",
+          "with_skill": {
+            "output": "## Full Stack Recommendation for 500k IoT Data Points\n\n### 1. Chart Types\n\n| Panel | Chart | Why |\n|-------|-------|-----|\n| Temperature / Humidity / Pressure over time | **Multi-line + area** (one panel per metric) | Time series >20 points → line, not column |\n| Per-device comparison | **Heatmap** (device × time bin) | 50 categories — bar fails, heatmap shines |\n| Distribution snapshots | **Box plot** per device or per hour | Catch anomalies that line charts hide |\n\nDon't try to show all 50 device lines simultaneously — that's 150 lines of noise. Use a device filter + aggregate view by default, drill to individual devices.\n\n---\n\n### 2. Library: Apache ECharts (not Recharts, not Chart.js)\n\n500k points puts you squarely in the **10k–500k interactive tier**:\n\n```\nScale        Library            Why\n─────────────────────────────────────────────────────\n<10k         Recharts/Chart.js  SVG fine, simple API\n10k–500k     Apache ECharts ✓   Canvas, LTTB built-in, 60fps zoom/pan\n500k–10M+    LightningChart     GPU/WebGL required — overkill here\n```\n\nECharts gives you:\n- `sampling: 'lttb'` — Largest Triangle Three Buckets downsampling (visually lossless)\n- Built-in `dataZoom` component (slider + scroll wheel + drag to pan)\n- Canvas renderer (not SVG) — handles 500k points without frame drops\n- `large: true` mode on line series for bulk rendering\n\n---\n\n### 3. Data Pipeline\n\n**Problem:** Sending 500k raw rows to the browser kills load time and memory.\n\n**Solution: Two-tier loading**\n\n```sql\n-- Tier 1: Overview (always loaded, ~2k rows)\nSELECT\n  device_id,\n  metric,\n  date_trunc('hour', ts) AS hour,\n  avg(value)             AS avg_val,\n  min(value)             AS min_val,\n  max(value)             AS max_val\nFROM sensor_readings\nWHERE ts >= now() - interval '6 months'\nGROUP BY 1, 2, 3\nORDER BY 3;\n\n-- Tier 2: Drill-down (loaded on zoom, scoped to window)\nSELECT device_id, metric, ts, value\nFROM sensor_readings\nWHERE ts BETWEEN :start AND :end\n  AND device_id = ANY(:device_ids)\nORD",
+            "tokens": 2260,
+            "duration_ms": 59706,
+            "assertions": [
+              {
+                "id": "ch-2-canvas-not-svg",
+                "text": "The response explicitly recommends Canvas or WebGL rendering instead of SVG for this data volume, or explains why SVG would fail at 500k points.",
+                "passed": true,
+                "reasoning": "The response explicitly recommends Canvas renderer over SVG, states 'renderer: canvas // MUST be canvas at this scale', and notes ECharts uses 'Canvas renderer (not SVG) — handles 500k points without frame drops'."
+              },
+              {
+                "id": "ch-2-downsampling",
+                "text": "The response mentions downsampling, data aggregation, or level-of-detail strategy — showing an overview with reduced points and full detail on zoom/drill-down.",
+                "passed": true,
+                "reasoning": "The response recommends LTTB downsampling via ECharts' built-in 'sampling: lttb', a two-tier data strategy with hourly aggregates for overview (~2k rows) and raw data on zoom/drill-down, and even provides the on-zoom data swap implementation."
+              },
+              {
+                "id": "ch-2-appropriate-library",
+                "text": "The response recommends a library capable of handling 500k+ points with interactive pan/zoom — such as ECharts, LightningChart, Plotly with WebGL, or similar high-performance option. Does not recommend Chart.js, Recharts, or basic D3 as the primary solution.",
+                "passed": true,
+                "reasoning": "The response recommends Apache ECharts as the primary solution for the 500k-point scale, explicitly dismisses Recharts and Chart.js as insufficient, and mentions LightningChart for even larger scales — all appropriate guidance."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "## Architecture for 500k IoT Data Points\n\n### Chart Type Decision\n\n- **Primary view**: Multi-line time series (one line per device, or aggregated band)\n- **Distribution view**: Box plot or violin per device for spread/outlier analysis\n- **Correlation**: Scatter matrix (temp vs humidity vs pressure)\n- **Device comparison**: Heatmap (device × time, colored by value)\n\n### Library: Apache ECharts (not Recharts/Chart.js)\n\nAt 500k points, SVG-based libraries fail. ECharts uses Canvas + WebGL and handles this scale at 60fps with built-in downsampling (`sampling: 'lttb'` — Largest Triangle Three Buckets, which preserves visual shape).\n\n```\n500k points → ECharts with LTTB downsampling\n```\n\nAlternatives only if needed: LightningChart JS (expensive license) for 5M+, or Highcharts Stock.\n\n### Data Pipeline (Critical)\n\nDon't send 500k rows to the browser. Use tiered aggregation:\n\n```sql\n-- Default view: hourly averages per device\nSELECT\n  device_id,\n  date_trunc('hour', timestamp) AS ts,\n  AVG(temperature) AS temp_avg,\n  AVG(humidity)    AS hum_avg,\n  AVG(pressure)    AS pres_avg,\n  MIN(temperature) AS temp_min,\n  MAX(temperature) AS temp_max\nFROM sensor_readings\nWHERE timestamp BETWEEN :start AND :end\nGROUP BY device_id, date_trunc('hour', timestamp)\nORDER BY device_id, ts;\n```\n\nZoom levels → different aggregations:\n\n| Zoom Level | Aggregation | Rows Returned |\n|------------|-------------|---------------|\n| 6 months | Hourly | ~216,000 → LTTB to ~2,000 |\n| 1 month | 15-minute | ~144,000 → LTTB to ~2,000 |\n| 1 week | 5-minute | ~50,400 → LTTB to ~2,000 |\n| 1 day | 1-minute | ~72,000 raw → LTTB to ~2,000 |\n\nECharts `dataZoom` fires an event on zoom — use it to re-query at higher resolution:\n\n```js\nchart.on('datazoom', ({ start, end }) => {\n  const range = computeRange(start, end); // percent → timestamps\n  fetchAggregated(range.from, range.to, resolution(range));\n});\n```\n\n### Implementation Stack\n\n```\nFrontend:    ECharts (Apache) — Canvas renderer, LTTB sampling\nBackend:     Tim",
+            "tokens": 1582,
+            "duration_ms": 43955,
+            "assertions": [
+              {
+                "id": "ch-2-canvas-not-svg",
+                "text": "The response explicitly recommends Canvas or WebGL rendering instead of SVG for this data volume, or explains why SVG would fail at 500k points.",
+                "passed": true,
+                "reasoning": "The response explicitly states 'At 500k points, SVG-based libraries fail. ECharts uses Canvas + WebGL' and explains SVG failure at this scale."
+              },
+              {
+                "id": "ch-2-downsampling",
+                "text": "The response mentions downsampling, data aggregation, or level-of-detail strategy — showing an overview with reduced points and full detail on zoom/drill-down.",
+                "passed": true,
+                "reasoning": "The response details LTTB downsampling, server-side aggregation at multiple zoom levels, and a dataZoom re-fetch strategy for detail-on-demand."
+              },
+              {
+                "id": "ch-2-appropriate-library",
+                "text": "The response recommends a library capable of handling 500k+ points with interactive pan/zoom — such as ECharts, LightningChart, Plotly with WebGL, or similar high-performance option. Does not recommend Chart.js, Recharts, or basic D3 as the primary solution.",
+                "passed": true,
+                "reasoning": "ECharts is recommended as the primary solution with LightningChart and Highcharts Stock as alternatives; Chart.js and Recharts are implicitly excluded by explaining SVG-based libraries fail."
+              }
+            ],
+            "pass_rate": 1,
             "cached": false
           }
         }
