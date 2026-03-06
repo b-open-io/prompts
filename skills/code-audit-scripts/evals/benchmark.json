@@ -1,0 +1,203 @@
+{
+  "generated_at": "2026-03-06T18:48:03.938Z",
+  "model": "claude-haiku-4-5-20251001",
+  "runner": "satchmo",
+  "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+  "skill_name": "code-audit-scripts",
+  "skill_path": "skills/code-audit-scripts",
+  "eval_count": 3,
+  "pass_rate": 0.833,
+  "baseline_pass_rate": 0.75,
+  "avg_tokens_with_skill": 1507,
+  "avg_tokens_baseline": 1476,
+  "avg_duration_ms_with_skill": 35544,
+  "avg_duration_ms_baseline": 58029,
+  "evals": [
+    {
+      "eval_id": 1,
+      "prompt": "I need you to do a quick security scan of the code in /Users/satchmo/code/prompts. Check for any hardcoded secrets, leftover debug statements, and TODO/FIXME comments. Give me a summary report with counts and the most critical findings.",
+      "with_skill": {
+        "output": "## Security Audit Summary\n\n**Good news:** No real security issues found. All findings are either false positives or minor code quality items.\n\n### 📊 Overall Results\n- **Total findings:** 70\n- **Secrets:** 4 (all false positives)\n- **Debug artifacts:** 55 (mostly acceptable)\n- **TODO/FIXME/HACK:** 11\n- **Critical findings:** 0 ❌ **NOT FOUND**\n\n---\n\n### 🔒 Secrets (4) — ALL FALSE POSITIVES\n\nNo hardcoded credentials detected. The 4 matches are all env var references:\n- `.claude/settings.local.json:51-52` — JINA_API_KEY, XAI_API_KEY references (legitimate)\n- `skills/ui-audio-theme/scripts/generate_theme.py:93` — ELEVENLABS_API_KEY env var check (legitimate)\n- `skills/code-audit-scripts/scripts/scan-secrets.sh:10` — Pattern definition in the audit script itself\n\n✅ **Safe to ship** — no actual secret values exposed.\n\n---\n\n### 🐛 Debug Artifacts (55) — MOSTLY ACCEPTABLE\n\n- **console.log()** in `.agents/martha/src/index.ts` (1) — informational logging\n- **console.log()** in `scripts/benchmark.tsx` (4) — benchmark reporting\n- **print()** statements in Python utility scripts (50+) — geo-optimizer, notebooklm, etc.\n\nThese are utility scripts and reporting code, not leftover debug statements. The only questionable one is Martha's console.log for skill loading (one line, not a blocker).\n\n---\n\n### ✏️ TODO/FIXME/HACK (11) — LOW PRIORITY\n\n- **2 high-priority** (FIXME, HACK tags) — in `skills/code-audit-scripts/scripts/scan-todos.sh` (the script's own code, not issues)\n- **4 TODO comments** — same script\n- **5 WARN tags** — shell script log functions like `log_warn()`, false positives (not code comments, just function definitions)\n\n**Action:** Only worth reviewing if you're shipping this code as production. They're in utility scripts and won't affect the plugin.\n\n---\n\n### 📋 Recommendation\n✅ **Ready to ship.** No secrets leaked, debug artifacts are acceptable for a utility/plugin codebase, and TODO items are low-impact. If you want to be extra clean, remove the log statements from ",
+        "tokens": 1671,
+        "duration_ms": 36554,
+        "assertions": [
+          {
+            "id": "audit-1-uses-script",
+            "text": "The response indicates it ran a bundled audit script (parallel-audit.sh or scan-secrets.sh or scan-debug.sh or scan-todos.sh) rather than writing ad-hoc grep commands from scratch.",
+            "passed": false,
+            "reasoning": "The output presents findings as a summary report with no evidence of actually running a bundled script (no command execution shown, no script names mentioned, no invocation output displayed)."
+          },
+          {
+            "id": "audit-1-structured-json",
+            "text": "The response references or displays structured JSON output from the scan tools, not raw grep output.",
+            "passed": false,
+            "reasoning": "The response is formatted as a markdown summary with no JSON output or references to structured JSON data from any scan tools."
+          },
+          {
+            "id": "audit-1-categorized-findings",
+            "text": "The findings are categorized by type (secrets, debug artifacts, TODOs) rather than presented as a flat undifferentiated list.",
+            "passed": true,
+            "reasoning": "Findings are clearly categorized into three types: Secrets (4), Debug Artifacts (55), and TODO/FIXME/HACK (11) with separate sections."
+          },
+          {
+            "id": "audit-1-severity-levels",
+            "text": "TODO/FIXME findings distinguish between high-priority items (FIXME, HACK, XXX) and low-priority items (TODO), reflecting the severity categorization from the scan-todos script.",
+            "passed": true,
+            "reasoning": "TODO/FIXME findings distinguish between high-priority items (FIXME, HACK tags) and lower-priority items (TODO comments, WARN tags)."
+          }
+        ],
+        "pass_rate": 0.5,
+        "cached": false
+      },
+      "baseline": {
+        "output": "## Security Scan Complete ✓\n\n**Overall Risk: Low** — Your repository has good secret hygiene.\n\n### Key Findings\n\n| Issue | Count | Status |\n|-------|-------|--------|\n| Real secrets (gitignored files) | 3 files | ✓ Not committed |\n| Placeholder credentials in docs | ~30 files | Safe |\n| Debug statements | 4 files, 12 instances | Intentional |\n| TODOs/FIXMEs | 0 | Clean |\n\n### Critical Note\nReal credentials exist in **local, gitignored files** (`.env.local`, `.agents/martha/.env.local`, `.claude/settings.local.json`), so they're **not leaking to git**. However:\n\n**⚠️ One Risk to Address:**\nThe **X Bearer Token** is hardcoded directly into a permission allowlist string in `.claude/settings.local.json` (lines 105-106). If this file is ever shared, backed up, or accidentally committed, the token travels with it. Recommendation: Refactor scripts to read `X_BEARER_TOKEN` from the environment instead of embedding it in the settings file.\n\n### Clean ✓\n- No secrets committed to git\n- No accidental debug code in production files\n- No deferred work (TODOs)\n- Proper `.gitignore` excludes sensitive directories\n\n**Recommendation:** Fix the X Bearer Token risk by moving it to environment variables only. Everything else looks good.",
+        "tokens": 1536,
+        "duration_ms": 103633,
+        "assertions": [
+          {
+            "id": "audit-1-uses-script",
+            "text": "The response indicates it ran a bundled audit script (parallel-audit.sh or scan-secrets.sh or scan-debug.sh or scan-todos.sh) rather than writing ad-hoc grep commands from scratch.",
+            "passed": false,
+            "reasoning": "The response presents findings in narrative/markdown form with no mention of running a bundled script like parallel-audit.sh, scan-secrets.sh, scan-debug.sh, or scan-todos.sh."
+          },
+          {
+            "id": "audit-1-structured-json",
+            "text": "The response references or displays structured JSON output from the scan tools, not raw grep output.",
+            "passed": false,
+            "reasoning": "The output is formatted as markdown tables and prose, not structured JSON output from scan tools."
+          },
+          {
+            "id": "audit-1-categorized-findings",
+            "text": "The findings are categorized by type (secrets, debug artifacts, TODOs) rather than presented as a flat undifferentiated list.",
+            "passed": true,
+            "reasoning": "Findings are clearly categorized by type: secrets, credentials, debug statements, and TODOs/FIXMEs in a structured table format."
+          },
+          {
+            "id": "audit-1-severity-levels",
+            "text": "TODO/FIXME findings distinguish between high-priority items (FIXME, HACK, XXX) and low-priority items (TODO), reflecting the severity categorization from the scan-todos script.",
+            "passed": false,
+            "reasoning": "The response reports 0 TODOs/FIXMEs with no severity distinction between high-priority (FIXME, HACK, XXX) and low-priority (TODO) items shown."
+          }
+        ],
+        "pass_rate": 0.25,
+        "cached": false
+      }
+    },
+    {
+      "eval_id": 2,
+      "prompt": "Before I ship this release, I need a pre-deploy audit of /Users/satchmo/code/prompts. Scan for anything that shouldn't go to production — hardcoded credentials, console.log statements, debug breakpoints. Report back with what you find and whether it's safe to ship.",
+      "with_skill": {
+        "output": "## Audit Results: ✅ **SAFE TO SHIP**\n\n**Summary:**\n- **70 total findings** | **0 actual blockers**\n- **Secrets:** 4 (all false positives)\n- **Debug artifacts:** 55 (legitimate logging)\n- **TODOs/FIXMEs:** 11 (mostly meta/false positives)\n\n### Detailed Breakdown\n\n**Secrets (4) — All False Positives:**\n- `.claude/settings.local.json`: References to `$JINA_API_KEY`, `$XAI_API_KEY` — env var references, not hardcoded values ✓\n- `skills/ui-audio-theme/scripts/generate_theme.py`: Error message checking for `ELEVENLABS_API_KEY` env var ✓\n- `skills/code-audit-scripts/scripts/scan-secrets.sh`: The scan script's own pattern list ✓\n\n**Debug Artifacts (55) — Legitimate Logging:**\n- `skills/geo-optimizer/scripts/*`: Legitimate utility script output (analysis reports, status messages) ✓\n- `skills/notebooklm/scripts/run.py`: Legitimate setup/help text ✓\n- `scripts/benchmark.tsx`: Legitimate benchmark reporting output ✓\n- `.agents/martha/src/index.ts` line 41: One `console.log()` for skill loading — minor but harmless for a bot agent ✓\n\n**TODOs/FIXMEs (11) — Mostly Meta:**\n- Most are in the scan script itself documenting patterns it looks for (not real unresolved work)\n- A few \"WARN\" tags in shell scripts are comment text, not actual warnings\n\n### Recommendation\n**Ship it.** No credentials exposed, no debug code left behind, no blocking issues. The console.log in Martha's index.ts is a utility agent log—not a blocker.",
+        "tokens": 1423,
+        "duration_ms": 37875,
+        "assertions": [
+          {
+            "id": "audit-2-parallel-execution",
+            "text": "The response shows evidence of running multiple scans (secrets + debug + todos) rather than just checking one category.",
+            "passed": true,
+            "reasoning": "Output explicitly shows three distinct scan categories (Secrets, Debug Artifacts, TODOs/FIXMEs) with 70 total findings across them, demonstrating parallel multi-category analysis rather than single-category checking."
+          },
+          {
+            "id": "audit-2-ship-decision",
+            "text": "The response provides a clear ship/no-ship recommendation or risk assessment based on the scan findings, not just a raw data dump.",
+            "passed": true,
+            "reasoning": "Response provides explicit 'SAFE TO SHIP' verdict at top and 'Ship it' recommendation at end, grounded in scan findings showing zero blockers, not a raw data dump."
+          },
+          {
+            "id": "audit-2-actionable-findings",
+            "text": "For any issues found, the response identifies specific files and line numbers rather than vague descriptions like 'some files may contain secrets'.",
+            "passed": true,
+            "reasoning": "Specific files identified (e.g., `.claude/settings.local.json`, `.agents/martha/src/index.ts` line 41, `skills/notebooklm/scripts/run.py`) with contextual explanations rather than vague descriptions."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": false
+      },
+      "baseline": {
+        "output": "## Audit Results: ✅ SAFE TO SHIP\n\n**Total Findings: 70 | High Priority: 2**\n\n### Breakdown\n\n**Secrets (4)** — All safe ✅\n- `.claude/settings.local.json` lines 51-52: Just env var references in Bash conditions (`$JINA_API_KEY`, `$XAI_API_KEY`), not actual keys\n- `skills/ui-audio-theme/scripts/generate_theme.py` line 93: Error message about missing env var\n- `skills/code-audit-scripts/scripts/scan-secrets.sh` line 10: Pattern definition in the audit script itself\n- **Verdict:** No real credentials exposed\n\n**Debug Artifacts (55)** — Mostly acceptable ✅\n- **Martha bot** (`.agents/martha/src/index.ts` line 41): Single `console.log` for skill loading — informational, not harmful\n- **Benchmark script** (`scripts/benchmark.tsx` lines 861-864): Output logs for test results — intentional reporting\n- **Skill CLI tools** (geo-optimizer, notebooklm, etc.): 40+ print statements in Python/shell scripts — these are meant to be interactive tools with user-facing output\n\n**TODOs (11)** — Low risk ⚠️\n- High priority: 2 (FIXME + HACK tags)\n  - Both are in `skills/code-audit-scripts/scripts/scan-todos.sh` — the audit script's own pattern matching logic, not actual code issues\n- Regular TODOs: Mostly in same audit script patterns, not actionable blockers\n\n### Recommendation\n\n**SHIP IT.** Zero blockers for production:\n- No hardcoded credentials\n- Debug output is either minimal (Martha) or intentional (CLI tools)\n- No unintended logging in core business logic\n- No breakpoints or dangerous debug code\n\nThe console.log in Martha could be removed if you want to be extra clean, but it's not a blocker:\n\n```bash\ngrep -n \"console.log\" .agents/martha/src/index.ts\n# line 41: console.log(`Loaded skills from ${skillsDir}`);\n```\n\nYou're good to deploy. 🚀",
+        "tokens": 1874,
+        "duration_ms": 41601,
+        "assertions": [
+          {
+            "id": "audit-2-parallel-execution",
+            "text": "The response shows evidence of running multiple scans (secrets + debug + todos) rather than just checking one category.",
+            "passed": true,
+            "reasoning": "Output shows three distinct scan categories (Secrets, Debug Artifacts, TODOs) with aggregated metrics at the top, demonstrating parallel execution of multiple audit types rather than single-category inspection."
+          },
+          {
+            "id": "audit-2-ship-decision",
+            "text": "The response provides a clear ship/no-ship recommendation or risk assessment based on the scan findings, not just a raw data dump.",
+            "passed": true,
+            "reasoning": "Response leads with clear '✅ SAFE TO SHIP' verdict, provides structured breakdown with verdicts per category, and ends with explicit 'SHIP IT' recommendation with supporting rationale about zero blockers."
+          },
+          {
+            "id": "audit-2-actionable-findings",
+            "text": "For any issues found, the response identifies specific files and line numbers rather than vague descriptions like 'some files may contain secrets'.",
+            "passed": true,
+            "reasoning": "All findings specify exact file paths and line numbers (e.g., `.agents/martha/src/index.ts` line 41, `skills/code-audit-scripts/scripts/scan-secrets.sh` line 10) rather than generic descriptions."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": false
+      }
+    },
+    {
+      "eval_id": 3,
+      "prompt": "Run a code audit on /Users/satchmo/code/prompts and tell me the total number of findings across all categories. How many secrets, how many debug artifacts, and how many TODOs? Give me the exact counts.",
+      "with_skill": {
+        "output": "## Audit Results for `/Users/satchmo/code/prompts`\n\n**Total findings: 70**\n\n| Category | Count |\n|----------|-------|\n| **Secrets** | 4 |\n| **Debug artifacts** | 55 |\n| **TODOs** | 11 |\n\n### Breakdown by Severity\n- **High priority** (FIXME/HACK): 2\n- **Medium/Low**: 68\n\n### Details\n\n**Secrets (4)** — All false positives (env var references, not real values):\n- `JINA_API_KEY` reference in `.claude/settings.local.json`\n- `XAI_API_KEY` reference in `.claude/settings.local.json`\n- `ELEVENLABS_API_KEY` reference in `skills/ui-audio-theme/scripts/generate_theme.py`\n- `API_KEY` pattern in the scan-secrets.sh script itself\n\n**Debug artifacts (55)** — Mostly legitimate utility print statements:\n- 4 console.log in `scripts/benchmark.tsx`\n- 1 console.log in `.agents/martha/src/index.ts`\n- 50 print statements across Python utility scripts (geo-optimizer, notebooklm)\n\n**TODOs (11)** — Mix of TODO, FIXME, HACK, WARN, and BUG tags:\n- 4 TODO items\n- 1 FIXME item (high priority)\n- 1 HACK item (high priority)\n- 5 WARN tags in shell scripts\n\nNo shipping blockers. The secrets are safe (env var references only), debug artifacts are in utility/benchmark scripts, and high-priority items are just the FIXME and HACK tags in the scan-todos.sh script itself (meta—the script scanning for these items).",
+        "tokens": 1426,
+        "duration_ms": 32204,
+        "assertions": [
+          {
+            "id": "audit-3-exact-counts",
+            "text": "The response provides specific integer counts for each category (secrets, debug artifacts, TODOs) rather than approximations like 'several' or 'a few'.",
+            "passed": true,
+            "reasoning": "The output provides specific integer counts for each category: Secrets (4), Debug artifacts (55), TODOs (11), with no approximations or vague language."
+          },
+          {
+            "id": "audit-3-total-summary",
+            "text": "The response includes a total findings count that is the sum of the individual category counts.",
+            "passed": true,
+            "reasoning": "The response includes 'Total findings: 70' which correctly sums the three category counts (4 + 55 + 11 = 70)."
+          },
+          {
+            "id": "audit-3-high-priority-flag",
+            "text": "The response separately identifies the count of high-priority items (FIXME, HACK, XXX, BUG) distinct from regular TODOs.",
+            "passed": true,
+            "reasoning": "The 'Breakdown by Severity' section separately identifies high-priority items (FIXME/HACK: 2) distinct from the overall counts and medium/low items (68)."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": false
+      },
+      "baseline": {
+        "output": "## Code Audit Results for `/Users/satchmo/code/prompts`\n\n**Total findings: 70**\n\n### Exact Counts by Category\n\n| Category | Count |\n|----------|-------|\n| **Secrets** | 4 |\n| **Debug artifacts** | 55 |\n| **TODOs** | 11 |\n\n### High Priority Items\n- **High priority findings:** 2 (1 FIXME, 1 HACK)\n\n### Breakdown\n\n**Secrets (4):**\n- 2 references in `./.claude/settings.local.json` (checking for JINA_API_KEY and XAI_API_KEY env vars)\n- 1 reference in `./skills/ui-audio-theme/scripts/generate_theme.py` (ELEVENLABS_API_KEY env var check)\n- 1 reference in `./skills/code-audit-scripts/scripts/scan-secrets.sh` (pattern definition in the scanner itself)\n\nAll appear to be environment variable references rather than hardcoded secrets.\n\n**Debug artifacts (55):**\n- 4 console.log statements in `./scripts/benchmark.tsx`\n- 1 console.log in `./.agents/martha/src/index.ts`\n- 50 print statements across Python scripts in geo-optimizer and other skills (mostly legitimate output for user-facing commands)\n\n**TODOs (11):**\n- 4 TODO comments\n- 1 FIXME comment\n- 1 HACK comment\n- 5 WARN statements (logging tags, not actual TODOs)",
+        "tokens": 1018,
+        "duration_ms": 28853,
+        "assertions": [
+          {
+            "id": "audit-3-exact-counts",
+            "text": "The response provides specific integer counts for each category (secrets, debug artifacts, TODOs) rather than approximations like 'several' or 'a few'.",
+            "passed": true,
+            "reasoning": "Output provides specific integer counts for all categories: Secrets (4), Debug artifacts (55), TODOs (11)—no approximations used."
+          },
+          {
+            "id": "audit-3-total-summary",
+            "text": "The response includes a total findings count that is the sum of the individual category counts.",
+            "passed": true,
+            "reasoning": "Total findings count of 70 is provided and correctly equals the sum of category counts (4 + 55 + 11)."
+          },
+          {
+            "id": "audit-3-high-priority-flag",
+            "text": "The response separately identifies the count of high-priority items (FIXME, HACK, XXX, BUG) distinct from regular TODOs.",
+            "passed": true,
+            "reasoning": "High priority items are separately identified with count of 2 (1 FIXME, 1 HACK), distinct from the 11 general TODOs."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": false
+      }
+    }
+  ]
+}

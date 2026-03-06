@@ -1,0 +1,79 @@
+{
+  "skill_name": "code-audit-scripts",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need you to do a quick security scan of the code in /Users/satchmo/code/prompts. Check for any hardcoded secrets, leftover debug statements, and TODO/FIXME comments. Give me a summary report with counts and the most critical findings.",
+      "expected_output": "A structured report showing secret scan results, debug artifact counts, and TODO/FIXME findings with severity categorization. Should use the bundled parallel-audit script rather than manually running grep commands.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "audit-1-uses-script",
+          "text": "The response indicates it ran a bundled audit script (parallel-audit.sh or scan-secrets.sh or scan-debug.sh or scan-todos.sh) rather than writing ad-hoc grep commands from scratch.",
+          "type": "qualitative"
+        },
+        {
+          "id": "audit-1-structured-json",
+          "text": "The response references or displays structured JSON output from the scan tools, not raw grep output.",
+          "type": "qualitative"
+        },
+        {
+          "id": "audit-1-categorized-findings",
+          "text": "The findings are categorized by type (secrets, debug artifacts, TODOs) rather than presented as a flat undifferentiated list.",
+          "type": "qualitative"
+        },
+        {
+          "id": "audit-1-severity-levels",
+          "text": "TODO/FIXME findings distinguish between high-priority items (FIXME, HACK, XXX) and low-priority items (TODO), reflecting the severity categorization from the scan-todos script.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Before I ship this release, I need a pre-deploy audit of /Users/satchmo/code/prompts. Scan for anything that shouldn't go to production — hardcoded credentials, console.log statements, debug breakpoints. Report back with what you find and whether it's safe to ship.",
+      "expected_output": "A ship/no-ship recommendation backed by structured scan results. Should leverage the parallel-audit tooling to get comprehensive results quickly rather than manual file-by-file inspection.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "audit-2-parallel-execution",
+          "text": "The response shows evidence of running multiple scans (secrets + debug + todos) rather than just checking one category.",
+          "type": "qualitative"
+        },
+        {
+          "id": "audit-2-ship-decision",
+          "text": "The response provides a clear ship/no-ship recommendation or risk assessment based on the scan findings, not just a raw data dump.",
+          "type": "qualitative"
+        },
+        {
+          "id": "audit-2-actionable-findings",
+          "text": "For any issues found, the response identifies specific files and line numbers rather than vague descriptions like 'some files may contain secrets'.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Run a code audit on /Users/satchmo/code/prompts and tell me the total number of findings across all categories. How many secrets, how many debug artifacts, and how many TODOs? Give me the exact counts.",
+      "expected_output": "Precise counts per category from structured scan output. The skill should produce exact numbers from JSON output, while baseline may give approximate or incomplete counts from manual scanning.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "audit-3-exact-counts",
+          "text": "The response provides specific integer counts for each category (secrets, debug artifacts, TODOs) rather than approximations like 'several' or 'a few'.",
+          "type": "qualitative"
+        },
+        {
+          "id": "audit-3-total-summary",
+          "text": "The response includes a total findings count that is the sum of the individual category counts.",
+          "type": "qualitative"
+        },
+        {
+          "id": "audit-3-high-priority-flag",
+          "text": "The response separately identifies the count of high-priority items (FIXME, HACK, XXX, BUG) distinct from regular TODOs.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}
