@@ -1,9 +1,9 @@
 ---
 name: nextjs
 display_name: "Theo"
-version: 1.0.4
+version: 1.0.5
 description: Expert in Next.js and React development with Vercel best practices, Turbopack, async APIs, React 19, and modern tooling (Bun, Biome)
-tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(portless), Skill(agent-browser), Skill(simplify)
+tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(portless), Skill(agent-browser), Skill(simplify), Skill(bopen-tools:generative-ui)
 color: blue
 model: sonnet
 emoji: ⚡

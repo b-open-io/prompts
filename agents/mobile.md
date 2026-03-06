@@ -1,9 +1,9 @@
 ---
 name: mobile
 display_name: "Kira"
-version: 1.1.6
+version: 1.1.7
 description: Expert in mobile app development for React Native, Swift, Kotlin, and Flutter
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(vercel-react-native-skills), Skill(agent-browser), Skill(simplify)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(vercel-react-native-skills), Skill(agent-browser), Skill(simplify), Skill(bopen-tools:generative-ui)
 model: sonnet
 color: purple
 ---
