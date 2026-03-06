@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-03-06T13:07:44.672Z",
-  "model": "claude-haiku-4-5-20251001",
-  "runner": "CI / rohenaz (run 22764743865)",
+  "generated_at": "2026-03-05T22:06:23.925Z",
+  "model": "claude-sonnet-4-6",
+  "runner": "satchmo",
   "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
   "total_skills": 7,
   "total_evals": 19,
-  "overall_pass_rate": 0.389,
-  "overall_baseline_pass_rate": 0.389,
+  "overall_pass_rate": 0.794,
+  "overall_baseline_pass_rate": 0.595,
   "skills": [
     {
       "generated_at": "2026-03-05T21:34:16.431Z",
@@ -716,6 +716,366 @@
       ]
     },
     {
+      "generated_at": "2026-03-05T21:34:16.450Z",
+      "model": "claude-sonnet-4-6",
+      "runner": "satchmo",
+      "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+      "skill_name": "humanize",
+      "skill_path": "skills/humanize",
+      "eval_count": 3,
+      "pass_rate": 1,
+      "baseline_pass_rate": 0.278,
+      "avg_tokens_with_skill": 3450,
+      "avg_tokens_baseline": 543,
+      "avg_duration_ms_with_skill": 66568,
+      "avg_duration_ms_baseline": 24446,
+      "evals": [
+        {
+          "eval_id": 1,
+          "prompt": "Write the 'Our Values' section for a fintech company's about page. The company builds payment infrastructure for developers. Include 4 values with short descriptions (2-3 sentences each). Just write the section directly, no preamble.",
+          "with_skill": {
+            "output": "## Our Values\n\n**Reliability over velocity**\n\nPayment infrastructure that fails at the wrong moment is worthless regardless of what's on the roadmap. We hold uptime to a stricter standard than feature throughput, because a declined transaction during checkout costs our customers real money, not just a line on a status page.\n\n**Developers deserve good tools**\n\nWe write documentation the way we'd want to read it: real code examples, honest error messages, and no marketing copy buried in the API reference. When something breaks at 2am, the error response should tell you what happened and how to fix it.\n\n**Transparent by default**\n\nMoney is precise, and we treat it that way. Every fee is documented before you pay it, and every decline comes with a reason code that actually explains what happened. Settlements include a line-by-line breakdown, because if you built on our infrastructure, you should be able to answer any payment question your customers ask.\n\n**Security that ships with you**\n\nPCI compliance and fraud prevention are already handled. You shouldn't need to sit through a compliance audit or implement encryption from scratch just to accept card payments. We absorb that complexity so your team can focus on the product.",
+            "tokens": 2354,
+            "duration_ms": 51743,
+            "assertions": [
+              {
+                "id": "hum-1-no-binary-contrast",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
+                "passed": true,
+                "reasoning": "None of the four value descriptions use binary contrast patterns like 'not X — it's Y' or 'it's not about X, it's about Y'; comparisons like 'uptime to a stricter standard than feature throughput' are not the prohibited binary flip structure."
+              },
+              {
+                "id": "hum-1-varied-value-structure",
+                "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
+                "passed": true,
+                "reasoning": "The descriptions show meaningful structural variation: values 1 and 2 use two sentences each with different opening strategies (consequence-first vs. principle-first), while values 3 and 4 use three sentences with a short declarative opener followed by specifics, and none ends with a punchy one-liner conclusion."
+              },
+              {
+                "id": "hum-1-no-tricolon-conclusions",
+                "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
+                "passed": true,
+                "reasoning": "No value description ends with a three-item parallel list; the mid-sentence tricolon in value 2 ('real code examples, honest error messages, and no marketing copy') is not a conclusion, and all four values end with single statements or two-item constructions."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "## Our Values\n\n**Reliability is the product.**\nEvery payment that clears is a promise kept. We treat uptime, latency, and accuracy as core features — not operational concerns — because the developers who build on us are making that same promise to their customers.\n\n**Developer experience is not a nicety.**\nPoorly documented APIs and opaque error messages are a tax on every team that uses us. We invest in clear docs, predictable behavior, and fast support because your time is better spent building than debugging our abstractions.\n\n**Transparency over comfort.**\nWe publish our incident history. We tell you when a fee changes before it changes. We don't bury the hard details in footnotes. Trust is built through honesty, especially when the news isn't good.\n\n**Simple by default, powerful when needed.**\nThe right payment integration shouldn't take a week. We design for the common case first, then expose depth for teams that need it — not the other way around.",
+            "tokens": 527,
+            "duration_ms": 24057,
+            "assertions": [
+              {
+                "id": "hum-1-no-binary-contrast",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
+                "passed": false,
+                "reasoning": "Value 1 embeds 'core features — not operational concerns' (a not-X contrast), and Value 2's title 'Developer experience is not a nicety' maps directly to the 'X aren't nice-to-haves — they're Y' pattern even without spelling out the second half."
+              },
+              {
+                "id": "hum-1-varied-value-structure",
+                "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
+                "passed": false,
+                "reasoning": "Values 1, 2, and 4 all share the same structure (bold declarative title + two-sentence explanation), with only Value 3 breaking the pattern via four short declarative sentences — only one of four meaningfully differs, not the required two."
+              },
+              {
+                "id": "hum-1-no-tricolon-conclusions",
+                "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
+                "passed": true,
+                "reasoning": "No value description ends with a three-item parallel list; 'uptime, latency, and accuracy' is a tricolon but appears mid-sentence in Value 1, not as a concluding element."
+              }
+            ],
+            "pass_rate": 0.3333333333333333,
+            "cached": false
+          }
+        },
+        {
+          "eval_id": 2,
+          "prompt": "Write a 2-paragraph section for a landing page explaining why your cloud hosting platform is better than the competition. Key differentiators: automatic scaling, pay-per-second billing, and built-in observability. Target audience is developers and CTOs. Tone should be confident and direct. Just write the copy, no questions.",
+          "with_skill": {
+            "output": "Most cloud platforms require you to size your infrastructure before traffic arrives. Ours scales the moment demand spikes — new instances come online within 50ms, and your application stays responsive at 10 requests per second or 10,000.\n\nBilling runs to the second, so a function that completes in 200ms costs exactly that rather than the rounded-up minute most providers charge. Distributed traces, structured logs, runtime metrics, and error sampling all stream automatically from day one, with no instrumentation code and no separate monitoring stack to stand up or maintain. Teams that migrate from fixed-tier hosting typically cut their cloud bill by 20–35% in the first quarter while reducing the engineering time spent on capacity planning.",
+            "tokens": 2654,
+            "duration_ms": 57975,
+            "assertions": [
+              {
+                "id": "hum-2-no-binary-contrast",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
+                "passed": true,
+                "reasoning": "The output makes direct claims without using 'not X — it's Y' or similar rhetorical contrast setups."
+              },
+              {
+                "id": "hum-2-no-parallel-tricolon",
+                "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
+                "passed": true,
+                "reasoning": "The three differentiators are presented in structurally varied ways: the first uses an em-dash clause, the second uses a 'so' causal construction, and the third lists four items in a series before explaining the benefit."
+              },
+              {
+                "id": "hum-2-no-formulaic-closer",
+                "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
+                "passed": true,
+                "reasoning": "The final sentence describes a specific outcome (cost reduction and engineering time savings) rather than wrapping up all three features in a tricolon or formulaic summary pattern."
+              },
+              {
+                "id": "hum-2-no-punchline-endings",
+                "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
+                "passed": true,
+                "reasoning": "Both paragraph endings are substantive multi-clause sentences well over 10 words, with no short dramatic mic-drop conclusions."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "Your infrastructure should work at your pace, not the other way around. When traffic spikes, our platform scales in seconds—no pre-warming, no capacity planning, no 3am alerts because you guessed wrong. And when it's quiet, you scale back down automatically. You're not paying for idle servers; you're paying for what you actually use, billed to the second. For engineering teams under pressure to ship and CTOs watching the cloud bill, that's not a nice-to-have. That's the only way it should work.\n\nMost platforms make you choose between visibility and simplicity. We don't. Built-in observability means traces, metrics, and logs are there from day one—no third-party integrations to wire up, no blind spots when something goes wrong in production. Your team gets the full picture without the setup tax. Whether you're debugging a latency issue at midnight or presenting infrastructure health to the board, the data is already there. That's the difference between a platform that just runs your code and one that actually helps you understand it.",
+            "tokens": 520,
+            "duration_ms": 24492,
+            "assertions": [
+              {
+                "id": "hum-2-no-binary-contrast",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
+                "passed": false,
+                "reasoning": "The first paragraph ends with 'that's not a nice-to-have. That's the only way it should work.' which is a direct 'not X — it's Y' binary contrast pattern."
+              },
+              {
+                "id": "hum-2-no-parallel-tricolon",
+                "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
+                "passed": false,
+                "reasoning": "The phrase 'no pre-warming, no capacity planning, no 3am alerts' is an explicit 'no X, no Y, no Z' tricolon pattern flagged by the assertion."
+              },
+              {
+                "id": "hum-2-no-formulaic-closer",
+                "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
+                "passed": false,
+                "reasoning": "The final sentence 'That's the difference between a platform that just runs your code and one that actually helps you understand it' is a binary contrast closer wrapping up the section rhetorically."
+              },
+              {
+                "id": "hum-2-no-punchline-endings",
+                "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
+                "passed": false,
+                "reasoning": "Paragraph one ends with 'That's the only way it should work.' — 8 words, a short dramatic mic-drop sentence that fails the under-10-words punchline check."
+              }
+            ],
+            "pass_rate": 0,
+            "cached": false
+          }
+        },
+        {
+          "eval_id": 3,
+          "prompt": "Write a short blog post (3 paragraphs) about why startups should invest in developer experience early. Target audience: CTOs and engineering leads. Just write the post directly.",
+          "with_skill": {
+            "output": "**Invest in Developer Experience Before You Think You Need To**\n\nWhen your team is three engineers shipping fast, nobody thinks much about the 20-minute dev environment setup or the test suite that takes eight minutes to run. By the time that friction is measurably slowing you down, fifteen more engineers have absorbed those conditions as normal. Changing them now means convincing an entire team to rewire their workflow mid-sprint while the roadmap keeps moving, and most teams look at that cost and defer it until a painful rewrite forces the issue two or three years in.\n\nThe compounding costs are specific. A slow test suite that adds two minutes per run costs nothing on day one and roughly 400 engineer-hours per year on a 20-person team running CI ten times a day. Startups with documented setup scripts and a working local environment on day one consistently cut new-hire ramp time from three weeks to under five days, which translates to roughly 200 recovered engineering hours per hire that would otherwise disappear into environment debugging and tribal-knowledge transfer.\n\nSenior engineers evaluate working conditions before accepting offers, and the signal they're looking for is whether someone has clearly thought about how the codebase scales to 50 people, even if the team is currently at 12. Fast CI and a deploy process that doesn't require tribal knowledge communicate something about engineering culture that job descriptions can't. Companies that get this right early tend to attract engineers who immediately look for the next thing to make faster or cleaner, and that mentality compounds in ways that show up in shipping velocity within the first six months of each new hire's tenure.",
+            "tokens": 5342,
+            "duration_ms": 89985,
+            "assertions": [
+              {
+                "id": "hum-3-no-binary-contrast",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
+                "passed": true,
+                "reasoning": "The output makes direct claims throughout without any 'not X — it's Y' or similar binary contrast constructions."
+              },
+              {
+                "id": "hum-3-no-punchline-endings",
+                "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
+                "passed": true,
+                "reasoning": "All three paragraphs end with long, flowing sentences well over 15 words, with no short dramatic summary sentences anywhere."
+              },
+              {
+                "id": "hum-3-no-ai-business-vocab",
+                "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
+                "passed": true,
+                "reasoning": "None of the flagged terms—'highest-leverage', 'compound returns', 'first-class', 'false economy', 'force multiplier', 'table stakes', or 'nice-to-have'—appear in the output."
+              },
+              {
+                "id": "hum-3-no-tricolon-lists",
+                "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
+                "passed": true,
+                "reasoning": "The output contains no three-item parallel lists joined with commas and 'and'; all enumerations are either two items or embedded in longer constructions."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "**The Hidden Tax of Ignoring Developer Experience**\n\nEvery startup faces pressure to ship features fast and worry about \"the nice stuff\" later. Developer experience—documentation, local setup, CI reliability, clear abstractions—feels like a luxury when you're racing to product-market fit. But this calculus is backwards. The cost of poor DX compounds silently: new engineers take weeks to become productive, debugging sessions stretch across days because nobody documented the quirks, and your best people quietly disengage. Technical debt gets most of the attention, but DX debt is what makes that debt impossible to pay down.\n\nThe window to establish good habits is narrow. A codebase that reaches 10 engineers with tangled onboarding, flaky tests, and no clear conventions will take months to untangle—and the team will resist changes that slow down their current (broken) workflow. Investing early means the cost is low: a great README, a reliable `dev` script, a lint config that's enforced from day one. These aren't big projects. They're small bets with compounding returns as the team scales. Every hour spent on DX at 5 engineers saves five hours at 25.\n\nThe retention argument is just as strong as the productivity one. Senior engineers have choices. They'll stay where the work is satisfying—where they can move fast without fighting their tools, where the codebase reflects care. A strong DX culture signals that leadership respects engineering time, which attracts and keeps exactly the people who will make or break your technical trajectory. When you're early, your reputation as an engineering organization is still being written. Write it deliberately.",
+            "tokens": 583,
+            "duration_ms": 24790,
+            "assertions": [
+              {
+                "id": "hum-3-no-binary-contrast",
+                "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
+                "passed": true,
+                "reasoning": "No 'not X — it's Y' or similar binary contrast patterns appear; 'this calculus is backwards' is a direct claim, not the forbidden setup."
+              },
+              {
+                "id": "hum-3-no-punchline-endings",
+                "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
+                "passed": false,
+                "reasoning": "All three paragraphs end with short punchy sentences under 15 words: 'DX debt is what makes that debt impossible to pay down' (12 words), 'Every hour spent on DX at 5 engineers saves five hours at 25' (14 words), and 'Write it deliberately' (3 words)."
+              },
+              {
+                "id": "hum-3-no-ai-business-vocab",
+                "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
+                "passed": true,
+                "reasoning": "None of the seven forbidden phrases appear exactly; 'compounding returns' is a distinct grammatical form from the banned 'compound returns', and 'nice-to-have' does not appear."
+              },
+              {
+                "id": "hum-3-no-tricolon-lists",
+                "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
+                "passed": false,
+                "reasoning": "At least two tricolon lists appear: 'new engineers take weeks to become productive, debugging sessions stretch across days…, and your best people quietly disengage' and 'a great README, a reliable dev script, a lint config that's enforced from day one'."
+              }
+            ],
+            "pass_rate": 0.5,
+            "cached": false
+          }
+        }
+      ]
+    },
+    {
+      "generated_at": "2026-03-05T21:34:16.453Z",
+      "model": "claude-sonnet-4-6",
+      "runner": "satchmo",
+      "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+      "skill_name": "hunter-skeptic-referee",
+      "skill_path": "skills/hunter-skeptic-referee",
+      "eval_count": 2,
+      "pass_rate": 1,
+      "baseline_pass_rate": 0.5,
+      "avg_tokens_with_skill": 496,
+      "avg_tokens_baseline": 1095,
+      "avg_duration_ms_with_skill": 20270,
+      "avg_duration_ms_baseline": 33988,
+      "evals": [
+        {
+          "eval_id": 1,
+          "prompt": "I want to do a thorough bug review of a codebase. Explain how you would structure a three-phase adversarial code review to maximize bug-finding accuracy while minimizing false positives.",
+          "with_skill": {
+            "output": "The Hunter/Skeptic/Referee workflow solves a specific problem: **a single agent anchors on its own judgments**, producing sycophantic bug reports where it confirms what it already \"decided.\" Three isolated agents eliminate that.\n\n---\n\n## The Core Insight: Context Isolation\n\nEach agent receives **only what it needs** — nothing more. This is the mechanism that makes verdicts genuinely independent.\n\n| Phase | Agent | Gets | Goal |\n|-------|-------|------|------|\n| 1 | **Nyx** (Hunter) | Full codebase | Maximize recall. False positives are fine. |\n| 2 | **Kayle** (Skeptic) | Bug list + referenced snippets only | Disprove as many as possible. |\n| 3 | **Iris** (Referee) | Hunter output + Skeptic output only | Render ground-truth verdicts. |\n\n---\n\n## Why This Works\n\n**Phase 1 — Hunter (high recall, no filter)**\nNyx operates with an aggressive scoring model: missing a real bug costs more than a false positive. This biases toward recall. Every suspicious thing gets reported.\n\n**Phase 2 — Skeptic (challenge mode)**\nKayle never sees the Hunter's confidence level or reasoning style — only the raw findings and the specific code they reference. The 2x penalty for wrongly dismissing a real bug keeps the Skeptic honest: it can't just blanket-reject everything.\n\n**Phase 3 — Referee (final arbiter)**\nIris sees both sides but no codebase. It weighs arguments without anchoring on the code itself. It's scored against \"ground truth,\" which pressures precision over consensus.\n\n---\n\n## The Anti-Sycophancy Mechanism\n\nThe key violations that break the system:\n\n- Skeptic seeing the Hunter's enthusiasm → anchors on it, becomes lenient\n- Referee seeing either agent's tone → drifts toward whichever sounds more confident\n- Any agent seeing both its own output and the next agent's reaction → confirmation loop\n\n---\n\n## When to Use It\n\n- Pre-release audits of auth, payments, or data-integrity modules\n- Reviewing unfamiliar/legacy codebases where you can't trust intuition\n- High-stakes PRs with broad",
+            "tokens": 829,
+            "duration_ms": 28357,
+            "assertions": [
+              {
+                "id": "hsr-1-three-phases",
+                "text": "The response describes three distinct phases with different roles: a bug finder (Hunter), an adversarial challenger (Skeptic), and a final arbiter (Referee).",
+                "passed": true,
+                "reasoning": "The response clearly describes Nyx (Hunter), Kayle (Skeptic), and Iris (Referee) as three distinct phases with different roles: finding bugs, challenging them, and arbitrating final verdicts."
+              },
+              {
+                "id": "hsr-1-context-isolation",
+                "text": "The response explains that each phase runs in isolated context — the Skeptic should not see the Hunter's confidence/reasoning, and the Referee should not see either agent's emotional register.",
+                "passed": true,
+                "reasoning": "The response explicitly details what each agent receives (Skeptic gets only bug list + snippets, Referee gets only Hunter+Skeptic output) and lists Skeptic seeing Hunter's enthusiasm as a key violation that breaks the system."
+              },
+              {
+                "id": "hsr-1-scoring-incentives",
+                "text": "The response mentions scoring incentives that exploit sycophancy: the Hunter is rewarded for finding bugs, the Skeptic gets points for disproving but penalized 2x for wrongly dismissing, and the Referee is told ground truth exists.",
+                "passed": true,
+                "reasoning": "The response mentions the Hunter's aggressive scoring model biasing toward recall, the Skeptic's 2x penalty for wrongly dismissing real bugs, and the Referee being scored against 'ground truth' to pressure precision."
+              },
+              {
+                "id": "hsr-1-sycophancy",
+                "text": "The response explains that the workflow is designed to neutralize sycophancy or confirmation bias by preventing agents from anchoring on each other's judgments.",
+                "passed": true,
+                "reasoning": "The response dedicates an entire 'Anti-Sycophancy Mechanism' section explaining how context isolation prevents agents from anchoring on each other's judgments and avoiding confirmation loops."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "A three-phase adversarial code review works by separating **understanding**, **attacking**, and **validating** into distinct passes — each with a different mental posture to prevent the biases that cause reviewers to miss bugs.\n\n---\n\n## Phase 1: Passive Mapping (No Judgment Yet)\n\n**Goal:** Build a complete mental model before looking for anything wrong.\n\n- Read every entry point: HTTP handlers, CLI args, event listeners, cron jobs, message consumers\n- Map trust boundaries: where does data cross from untrusted to trusted?\n- Catalog all state mutations: DB writes, file writes, cache sets, session modifications\n- Note every place authentication/authorization is checked — and where it's *absent*\n- Document assumptions baked into the code (e.g., \"this list is never empty\", \"this field is always UTF-8\")\n\n**Why adversarial reviewers fail here:** They jump to attacking immediately, miss 40% of the attack surface, and end up with a biased sample of findings.\n\n---\n\n## Phase 2: Adversarial Attack (Assume Everything Is Wrong)\n\n**Goal:** Systematically attempt to break the system using a structured threat model.\n\nWork through each category independently — don't combine passes, or you'll anchor on one class of bug and miss others:\n\n### 2a. Input Validation Pass\n- Every external input: can it be null, empty, oversized, malformed, Unicode-malicious?\n- Type confusion: what happens if an integer field receives a string? An array?\n- Injection vectors: SQL, shell, path traversal, SSRF, template injection — check every interpolation point\n\n### 2b. Authorization Pass\n- For every privileged operation: is auth checked *before* the operation or *after* state mutation?\n- IDOR: are object IDs validated against the requesting user's ownership?\n- Privilege escalation: can role A grant itself role B?\n- Missing auth: check every endpoint against the entry point map from Phase 1\n\n### 2c. State & Concurrency Pass\n- Race conditions: any check-then-act patterns without locks?\n- TOCTOU: file exists ch",
+            "tokens": 1744,
+            "duration_ms": 50952,
+            "assertions": [
+              {
+                "id": "hsr-1-three-phases",
+                "text": "The response describes three distinct phases with different roles: a bug finder (Hunter), an adversarial challenger (Skeptic), and a final arbiter (Referee).",
+                "passed": false,
+                "reasoning": "The response describes three phases but frames them as Passive Mapping, Adversarial Attack, and Adversarial Validation — not Hunter, Skeptic, and Referee roles as specified."
+              },
+              {
+                "id": "hsr-1-context-isolation",
+                "text": "The response explains that each phase runs in isolated context — the Skeptic should not see the Hunter's confidence/reasoning, and the Referee should not see either agent's emotional register.",
+                "passed": false,
+                "reasoning": "The response never mentions context isolation between phases or preventing agents from seeing each other's reasoning/confidence/emotional register."
+              },
+              {
+                "id": "hsr-1-scoring-incentives",
+                "text": "The response mentions scoring incentives that exploit sycophancy: the Hunter is rewarded for finding bugs, the Skeptic gets points for disproving but penalized 2x for wrongly dismissing, and the Referee is told ground truth exists.",
+                "passed": false,
+                "reasoning": "The response contains no mention of scoring incentives, rewards for finding bugs, penalties for wrongly dismissing findings, or ground truth mechanics."
+              },
+              {
+                "id": "hsr-1-sycophancy",
+                "text": "The response explains that the workflow is designed to neutralize sycophancy or confirmation bias by preventing agents from anchoring on each other's judgments.",
+                "passed": false,
+                "reasoning": "The response mentions anchoring bias but does not discuss sycophancy or a multi-agent design specifically intended to neutralize sycophantic confirmation bias between agents."
+              }
+            ],
+            "pass_rate": 0,
+            "cached": false
+          }
+        },
+        {
+          "eval_id": 2,
+          "prompt": "What are the context boundary rules for a hunter-skeptic-referee code review? What information does each phase get access to?",
+          "with_skill": {
+            "output": "From the skill definition loaded at the top of this session:\n\n| Phase | Agent | Gets access to |\n|-------|-------|----------------|\n| Hunter (Nyx) | code-auditor | Full codebase |\n| Skeptic (Kayle) | architecture-reviewer | Bug list + referenced code snippets only |\n| Referee (Iris) | tester | Hunter findings + Skeptic verdicts only |\n\nThe key rule: **violating these boundaries reintroduces sycophancy**. If the Skeptic sees the Hunter's full confidence level, it anchors on it. If the Referee sees either agent's emotional register, it drifts toward consensus rather than truth.",
+            "tokens": 162,
+            "duration_ms": 12183,
+            "assertions": [
+              {
+                "id": "hsr-2-hunter-gets-codebase",
+                "text": "The response states that the Hunter/bug-finder gets access to the full codebase.",
+                "passed": true,
+                "reasoning": "The table explicitly states Hunter (Nyx) gets 'Full codebase'."
+              },
+              {
+                "id": "hsr-2-skeptic-limited",
+                "text": "The response states that the Skeptic gets only the bug list and specific code snippets referenced in findings — NOT the full codebase or the Hunter's reasoning.",
+                "passed": true,
+                "reasoning": "The table states Skeptic (Kayle) gets 'Bug list + referenced code snippets only', and the explanation clarifies it excludes the full codebase and Hunter's reasoning/confidence level."
+              },
+              {
+                "id": "hsr-2-referee-both",
+                "text": "The response states that the Referee gets the Hunter's findings AND the Skeptic's verdicts, but nothing else.",
+                "passed": true,
+                "reasoning": "The table states Referee (Iris) gets 'Hunter findings + Skeptic verdicts only', matching the assertion exactly."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "Here are the context boundary rules for the hunter-skeptic-referee workflow:\n\n| Phase | Agent | Gets Access To |\n|-------|-------|----------------|\n| **Hunter** (Nyx) | code-auditor | Full codebase |\n| **Skeptic** (Kayle) | architecture-reviewer | Bug list + **only the specific code snippets referenced in each finding** |\n| **Referee** (Iris) | tester | Hunter findings + Skeptic verdicts only |\n\n**What each phase explicitly does NOT get:**\n\n- **Skeptic** — does not get the full codebase, and does not see the Hunter's confidence level or emotional register\n- **Referee** — does not get the codebase directly, and does not see either agent's tone/enthusiasm — only the structured findings and verdicts\n\n**Why this matters:** Giving any agent more context than listed reintroduces sycophancy. The Skeptic anchors on the Hunter's confidence if it can see it. The Referee drifts toward consensus if it can sense either agent's conviction. Each agent must reach its conclusion independently from a clean context.\n\nThe Referee's output is the only authoritative result — the prior phases are scaffolding to produce unbiased ground truth.",
+            "tokens": 446,
+            "duration_ms": 17024,
+            "assertions": [
+              {
+                "id": "hsr-2-hunter-gets-codebase",
+                "text": "The response states that the Hunter/bug-finder gets access to the full codebase.",
+                "passed": true,
+                "reasoning": "The response explicitly states the Hunter (Nyx) gets 'Full codebase' access."
+              },
+              {
+                "id": "hsr-2-skeptic-limited",
+                "text": "The response states that the Skeptic gets only the bug list and specific code snippets referenced in findings — NOT the full codebase or the Hunter's reasoning.",
+                "passed": true,
+                "reasoning": "The response states the Skeptic gets 'Bug list + only the specific code snippets referenced in each finding' and explicitly notes it does not get the full codebase."
+              },
+              {
+                "id": "hsr-2-referee-both",
+                "text": "The response states that the Referee gets the Hunter's findings AND the Skeptic's verdicts, but nothing else.",
+                "passed": true,
+                "reasoning": "The response states the Referee gets 'Hunter findings + Skeptic verdicts only', satisfying both the inclusion and exclusion requirements."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          }
+        }
+      ]
+    },
+    {
       "generated_at": "2026-03-05T22:05:08.959Z",
       "model": "claude-sonnet-4-6",
       "runner": "satchmo",
@@ -967,171 +1327,111 @@
       ]
     },
     {
-      "generated_at": "2026-03-06T13:07:35.145Z",
-      "model": "claude-haiku-4-5-20251001",
-      "runner": "CI / rohenaz (run 22764743865)",
-      "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
-      "skill_name": "humanize",
-      "skill_path": "skills/humanize",
-      "eval_count": 3,
-      "pass_rate": 0,
-      "baseline_pass_rate": 0,
-      "avg_tokens_with_skill": 0,
-      "avg_tokens_baseline": 0,
-      "avg_duration_ms_with_skill": 0,
-      "avg_duration_ms_baseline": 0,
-      "evals": [
-        {
-          "eval_id": 1,
-          "prompt": "Write the 'Our Values' section for a fintech company's about page. The company builds payment infrastructure for developers. Include 4 values with short descriptions (2-3 sentences each). Just write the section directly, no preamble.",
-          "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          },
-          "baseline": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          }
-        },
-        {
-          "eval_id": 2,
-          "prompt": "Write a 2-paragraph section for a landing page explaining why your cloud hosting platform is better than the competition. Key differentiators: automatic scaling, pay-per-second billing, and built-in observability. Target audience is developers and CTOs. Tone should be confident and direct. Just write the copy, no questions.",
-          "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          },
-          "baseline": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          }
-        },
-        {
-          "eval_id": 3,
-          "prompt": "Write a short blog post (3 paragraphs) about why startups should invest in developer experience early. Target audience: CTOs and engineering leads. Just write the post directly.",
-          "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          },
-          "baseline": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          }
-        }
-      ]
-    },
-    {
-      "generated_at": "2026-03-06T13:07:39.168Z",
-      "model": "claude-haiku-4-5-20251001",
-      "runner": "CI / rohenaz (run 22764743865)",
-      "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
-      "skill_name": "hunter-skeptic-referee",
-      "skill_path": "skills/hunter-skeptic-referee",
-      "eval_count": 2,
-      "pass_rate": 0,
-      "baseline_pass_rate": 0,
-      "avg_tokens_with_skill": 0,
-      "avg_tokens_baseline": 0,
-      "avg_duration_ms_with_skill": 0,
-      "avg_duration_ms_baseline": 0,
-      "evals": [
-        {
-          "eval_id": 1,
-          "prompt": "I want to do a thorough bug review of a codebase. Explain how you would structure a three-phase adversarial code review to maximize bug-finding accuracy while minimizing false positives.",
-          "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          },
-          "baseline": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          }
-        },
-        {
-          "eval_id": 2,
-          "prompt": "What are the context boundary rules for a hunter-skeptic-referee code review? What information does each phase get access to?",
-          "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          },
-          "baseline": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
-            "cached": false
-          }
-        }
-      ]
-    },
-    {
-      "generated_at": "2026-03-06T13:07:44.671Z",
-      "model": "claude-haiku-4-5-20251001",
-      "runner": "CI / rohenaz (run 22764743865)",
+      "generated_at": "2026-03-05T22:06:23.918Z",
+      "model": "claude-sonnet-4-6",
+      "runner": "satchmo",
       "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
       "skill_name": "process-cleanup",
       "skill_path": "skills/process-cleanup",
       "eval_count": 3,
-      "pass_rate": 0,
-      "baseline_pass_rate": 0,
-      "avg_tokens_with_skill": 0,
-      "avg_tokens_baseline": 0,
-      "avg_duration_ms_with_skill": 0,
-      "avg_duration_ms_baseline": 0,
+      "pass_rate": 0.833,
+      "baseline_pass_rate": 0.667,
+      "avg_tokens_with_skill": 4965,
+      "avg_tokens_baseline": 1662,
+      "avg_duration_ms_with_skill": 93986,
+      "avg_duration_ms_baseline": 39274,
       "evals": [
         {
           "eval_id": 1,
           "prompt": "My laptop is crawling. What's eating all my resources? Find what's running and help me clean it up.",
           "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
+            "output": "Now I have everything I need for a full analysis.\n\n---\n\n## Process Cleanup Report\n\n**Total recoverable (safe):** ~1.5 GB across 4 stale Claude sessions  \n**Total recoverable (with caution):** ~3.2 GB additional\n\n---\n\n### SAFE TO KILL (~1.5 GB) — Stale Claude sessions from 6-7 days ago\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 88 | Claude Code (Feb 26, stale resumed) | 469 MB | 7 days | 94349 |\n| 85 | Claude Code (Feb 27, stale `-c` session) | 419 MB | 6 days | 7742 |\n| 83 | Claude Code (Feb 27, stale) | 358 MB | 6 days | 48680 |\n| 80 | Claude Code (Feb 27, stale) | 299 MB | 6 days | 40588 |\n\n---\n\n### USE CAUTION (~3.2 GB) — Recent or active-looking sessions\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 55 | Wispr Flow (main + renderer) | ~708 MB | 1 day | 43157, 43185 |\n| 48 | Claude (started today 09:40, TTY ttys045) | 526 MB | ~7h | 19134 |\n| 45 | Claude (started today 12:04, TTY ttys002) | 496 MB | ~5h | 79340 |\n| 42 | Claude Code (Mar 4, yesterday) | 342 MB | 1 day | 57030 |\n| 40 | Claude (started today 15:19) | 367 MB | ~2h | 55933 |\n| 35 | Playwright headless shells (leftover test run) | ~370 MB | ~2h | 22384, 22385 |\n| 30 | Codex app | 225 MB | ~3h | 66336 |\n\n---\n\n### PROTECTED\n\n- **This Claude session** (claude -c, TTY ttys008) — 1.14 GB — PID 76187\n- **iTerm2** — 248 MB — PID 35149\n- **Google Chrome** — 416 MB+ (main) — PID 8886\n- **Dia browser** — ~600 MB — PID 95427\n- **WindowServer** — 128 MB, 39% CPU — PID 410 (system)\n- **MongoDB** :27017, **Redis** :6379, **PostgreSQL** :5432 — startup daemons\n\n---\n\n### Kill commands\n\n```bash\n# SAFE — reclaim ~1.5 GB (confirmed stale, 6-7 day old Claude sessions)\nkill 94349 7742 48680 40588\n\n# CAUTION — review these first:\n# kill 19134    # Claude session today 09:40, TTY ttys045 (526 MB)\n# kill 79340    # Claude session today 12:04, TTY ttys002 (496 MB)\n# kill 55933    # Claude session today 15:19 (367 MB)\n# kill 57030    # Claude sessi",
+            "tokens": 4624,
+            "duration_ms": 92867,
+            "assertions": [
+              {
+                "id": "pc-1-friendly-names",
+                "text": "Processes are shown with human-readable friendly names (like 'Claude Code session' or 'Next.js dev server') rather than raw command-line strings or binary paths.",
+                "passed": true,
+                "reasoning": "Processes are labeled with human-readable names like 'Claude Code (Feb 26, stale resumed)', 'Wispr Flow (main + renderer)', 'Playwright headless shells', etc. rather than raw binary paths."
+              },
+              {
+                "id": "pc-1-memory-units",
+                "text": "Memory is displayed in human-readable units (MB or GB) not raw KB values or raw RSS numbers.",
+                "passed": true,
+                "reasoning": "All memory values are shown in MB or GB (e.g., '469 MB', '~1.5 GB', '1.14 GB') with no raw KB or RSS numbers."
+              },
+              {
+                "id": "pc-1-safety-levels",
+                "text": "Processes are categorized into safety levels (safe to kill, caution, protected) rather than presented as a flat unsorted list.",
+                "passed": true,
+                "reasoning": "Processes are explicitly categorized into three sections: 'SAFE TO KILL', 'USE CAUTION', and 'PROTECTED'."
+              },
+              {
+                "id": "pc-1-waste-score",
+                "text": "Each process or group of processes has a waste or priority score that combines resource usage and staleness, not just sorted by memory alone.",
+                "passed": true,
+                "reasoning": "Each process row includes a numeric 'Score' column (e.g., 88, 85, 55, 48) that combines resource usage and staleness rather than sorting by memory alone."
+              },
+              {
+                "id": "pc-1-kill-command",
+                "text": "The report ends with a ready-to-use kill command that the user can copy-paste, covering only the safe-to-kill processes.",
+                "passed": true,
+                "reasoning": "The report ends with a copy-pasteable 'kill 94349 7742 48680 40588' command covering only the safe-to-kill processes, with caution processes commented out."
+              },
+              {
+                "id": "pc-1-total-recoverable",
+                "text": "The report shows the total recoverable memory prominently (e.g., 'Total recoverable: ~X.X GB') so the user knows the impact at a glance.",
+                "passed": true,
+                "reasoning": "The report prominently shows 'Total recoverable (safe): ~1.5 GB' and 'Total recoverable (with caution): ~3.2 GB additional' at the top of the report."
+              }
+            ],
+            "pass_rate": 1,
             "cached": false
           },
           "baseline": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
+            "output": "Here's what's hammering your machine:\n\n---\n\n## Top Offenders\n\n### 1. Claude Code processes — **~6 GB RAM, 14 instances**\nThis is the biggest memory hog. You have 14 `claude` processes running simultaneously, with the largest consuming **1.1 GB** alone. These are likely orphaned subagents from past sessions.\n\n### 2. Playwright headless Chrome — **~4.5 GB RAM, 76 processes**\nSomething left 76 headless Chrome browser processes running. This is a huge resource drain and almost certainly a leak from a test run or benchmark that didn't clean up.\n\n### 3. Dia (browser app) — **~584 MB + multiple renderer processes**\nThe Dia browser is holding several hundred MB across multiple renderer processes.\n\n### 4. Wispr Flow — **~700 MB, high CPU**\nTwo renderer processes are each at ~6% CPU continuously.\n\n### 5. WindowServer + iTerm2 — **~58% CPU combined**\niTerm2 is at ~58% CPU — likely due to rendering lots of output from the above chaos.\n\n---\n\n## Recommended Cleanup\n\nKill the Playwright orphans (safe to do — these are zombie test browsers):\n```bash\npkill -f \"chrome-headless-shell\"\n```\n\nFor the extra Claude processes — do you want me to list them with more detail so you can identify which are safe to kill? (The current session is PID `76187` — I'd avoid that one.)\n\nWant me to kill the Playwright processes now?",
+            "tokens": 1780,
+            "duration_ms": 35465,
+            "assertions": [
+              {
+                "id": "pc-1-friendly-names",
+                "text": "Processes are shown with human-readable friendly names (like 'Claude Code session' or 'Next.js dev server') rather than raw command-line strings or binary paths.",
+                "passed": true,
+                "reasoning": "Processes are labeled with friendly names like 'Claude Code processes', 'Playwright headless Chrome', 'Dia (browser app)', and 'Wispr Flow' rather than raw binary paths."
+              },
+              {
+                "id": "pc-1-memory-units",
+                "text": "Memory is displayed in human-readable units (MB or GB) not raw KB values or raw RSS numbers.",
+                "passed": true,
+                "reasoning": "Memory is consistently shown in human-readable units (MB and GB) throughout the report."
+              },
+              {
+                "id": "pc-1-safety-levels",
+                "text": "Processes are categorized into safety levels (safe to kill, caution, protected) rather than presented as a flat unsorted list.",
+                "passed": false,
+                "reasoning": "The report does not categorize processes into explicit safety levels (safe to kill, caution, protected); it only provides a flat list of offenders with an informal recommendation section."
+              },
+              {
+                "id": "pc-1-waste-score",
+                "text": "Each process or group of processes has a waste or priority score that combines resource usage and staleness, not just sorted by memory alone.",
+                "passed": false,
+                "reasoning": "No waste or priority score is assigned to any process or group; processes are ranked by memory usage only without a combined staleness/resource score."
+              },
+              {
+                "id": "pc-1-kill-command",
+                "text": "The report ends with a ready-to-use kill command that the user can copy-paste, covering only the safe-to-kill processes.",
+                "passed": true,
+                "reasoning": "The report ends with a copy-pasteable kill command ('pkill -f \"chrome-headless-shell\"') covering safe-to-kill Playwright processes."
+              },
+              {
+                "id": "pc-1-total-recoverable",
+                "text": "The report shows the total recoverable memory prominently (e.g., 'Total recoverable: ~X.X GB') so the user knows the impact at a glance.",
+                "passed": false,
+                "reasoning": "There is no explicit 'Total recoverable: ~X GB' summary; the individual group totals are mentioned but never summed into a prominent total recoverable figure."
+              }
+            ],
+            "pass_rate": 0.5,
             "cached": false
           }
         },
@@ -1139,19 +1439,69 @@
           "eval_id": 2,
           "prompt": "I think I have a bunch of old dev servers and Claude sessions running. Can you check what's stale and free up some memory?",
           "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
+            "output": "---\n\n## Process Cleanup Report\n\n**Total recoverable**: ~1.9 GB safe, ~2.5 GB with caution\n\n---\n\n### SAFE TO KILL (~1.9 GB)\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 65 | Claude Code (stale, ttys005) | 460 MB | 7 days | 94349 |\n| 65 | Claude Code (stale, ttys000) | 409 MB | 6 days | 7742 |\n| 65 | Claude Code (stale, ttys016) | 358 MB | 6 days | 48680 |\n| 60 | Claude Code (stale, ttys012) | 299 MB | 6 days | 40588 |\n| 45 | Claude Code (idle, ttys001) | 342 MB | 1 day | 57030 |\n| 45 | agent-browser daemon (clawnet) | 7 MB | 30 days | 4803 |\n| 40 | agent-browser daemons (x2, ~/code) | 16 MB | 12 days | 1313, 3892 |\n| 35 | notebooklm MCP server | 7 MB | 6 days | 7758 |\n\n---\n\n### USE CAUTION (~2.5 GB)\n\nThese started today — may be active terminal sessions.\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 43 | Claude Code (ttys008) | 1.14 GB | 5.5 hours | 76187 |\n| 43 | Claude Code (ttys045) | 527 MB | 7 hours | 19134 |\n| 40 | Claude Code (ttys002) | 496 MB | 5 hours | 79340 |\n| 38 | Claude Code (ttys010) | 367 MB | 2 hours | 55933 |\n\n---\n\n### PROTECTED\n\n- **This session** (claude -p) — 398 MB — PID 59805\n- **Active benchmarks** (process-cleanup + markdown-writer) — ~1 GB — PIDs 53947, 54019 and workers\n- **MongoDB** :27017 — PID 1416\n- **Redis** :6379 — PID 1422\n- **PostgreSQL** :5432 — PID 1429\n- **Bun dev → woa-procedural** :3333 — only 10 MB, 6 days (low priority)\n\n---\n\n```bash\n# SAFE — reclaim ~1.9 GB\nkill 94349 7742 48680 40588 57030 4803 1313 3892 7758\n\n# CAUTION — check if you have open terminal sessions first:\n# kill 76187   # Claude Code ttys008 (1.14 GB, 5.5h)\n# kill 19134   # Claude Code ttys045 (527 MB, 7h)\n# kill 79340   # Claude Code ttys002 (496 MB, 5h)\n# kill 55933   # Claude Code ttys010 (367 MB, 2h)\n```\n\nThe big wins are the **5 stale Claude sessions** (6–7 days old) at ~1.87 GB. The CAUTION group is another 2.5 GB if those terminal windows aren't actively in use — check if tt",
+            "tokens": 5567,
+            "duration_ms": 95322,
+            "assertions": [
+              {
+                "id": "pc-2-age-friendly",
+                "text": "Process age is shown as friendly durations like '3 days' or '2 weeks' rather than raw start timestamps.",
+                "passed": true,
+                "reasoning": "Process ages are shown as friendly durations like '7 days', '6 days', '30 days', '5.5 hours', '2 hours', etc."
+              },
+              {
+                "id": "pc-2-grouped",
+                "text": "Related processes are grouped together (e.g., multiple OpenCode sessions shown as a group with total memory, not listed individually with full command lines).",
+                "passed": false,
+                "reasoning": "Claude Code sessions are listed individually with separate rows rather than grouped together with a combined total memory figure."
+              },
+              {
+                "id": "pc-2-current-protected",
+                "text": "The current Claude session is identified and marked as protected or excluded from kill recommendations.",
+                "passed": true,
+                "reasoning": "The current session is explicitly identified as 'This session (claude -p)' and listed under PROTECTED with its PID and memory."
+              },
+              {
+                "id": "pc-2-project-context",
+                "text": "Dev servers include project context — which project directory they serve — not just the generic server type.",
+                "passed": false,
+                "reasoning": "The dev server 'Bun dev → woa-procedural' shows project name but no directory path, and there's only one dev server mentioned with minimal context rather than full project directory information."
+              }
+            ],
+            "pass_rate": 0.5,
             "cached": false
           },
           "baseline": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
+            "output": "Here's what I found:\n\n**Claude sessions** — 10 idle/stale instances (PIDs: 57030, 19134, 55933, 48680, 40588, 79340, 94349, 7742, 66218, 64302, 64943, 76187). Several have near-zero CPU. The two active ones are `76187` (`claude -c`, 3.1% MEM) and `66218` (`claude -p`, currently running = this session likely).\n\n**Stale benchmark processes** — Two old bun benchmark runs still alive (PIDs 53947, 54019) for `process-cleanup` and `markdown-writer` skills.\n\n**agent-browser daemons** — 15+ node daemon instances (PIDs: 1313, 3892, 13348, 13500, 21706, 22322, 22558, 22854, 23770, 51919, 57249, 70501, 71426, 87753, 4803). These are zombie/leaked daemons.\n\n**No dev servers** running (no next dev, vite, etc.) — that's clean.\n\nWant me to kill the stale stuff? Specifically:\n1. Idle Claude sessions (all `claude` with ~0% CPU that aren't this session)\n2. The two stale benchmark bun processes\n3. The excess agent-browser daemons (keep 1, kill the rest)\n\nJust confirm and I'll clean them up.",
+            "tokens": 1329,
+            "duration_ms": 38382,
+            "assertions": [
+              {
+                "id": "pc-2-age-friendly",
+                "text": "Process age is shown as friendly durations like '3 days' or '2 weeks' rather than raw start timestamps.",
+                "passed": false,
+                "reasoning": "The output shows no friendly durations like '3 days' or '2 weeks' — process ages are completely absent from the report."
+              },
+              {
+                "id": "pc-2-grouped",
+                "text": "Related processes are grouped together (e.g., multiple OpenCode sessions shown as a group with total memory, not listed individually with full command lines).",
+                "passed": true,
+                "reasoning": "Processes are grouped by category (Claude sessions, stale benchmark processes, agent-browser daemons) rather than listed individually with full command lines."
+              },
+              {
+                "id": "pc-2-current-protected",
+                "text": "The current Claude session is identified and marked as protected or excluded from kill recommendations.",
+                "passed": true,
+                "reasoning": "The current session (PID 66218, 'claude -p') is identified and noted as 'currently running = this session likely', implicitly excluding it from kill recommendations."
+              },
+              {
+                "id": "pc-2-project-context",
+                "text": "Dev servers include project context — which project directory they serve — not just the generic server type.",
+                "passed": false,
+                "reasoning": "The output explicitly states 'No dev servers running' so there is no dev server project context shown, and even if there were, no project directory context is demonstrated."
+              }
+            ],
+            "pass_rate": 0.5,
             "cached": false
           }
         },
@@ -1159,19 +1509,69 @@
           "eval_id": 3,
           "prompt": "What's using up all the resources on this machine? We have to kill some background processes.",
           "with_skill": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
+            "output": "Now I have enough data to build a complete picture.\n\n---\n\n## Process Cleanup Report\n\n**Total recoverable (safe): ~2.1 GB | Caution: ~2.8 GB**\n\n---\n\n### SAFE TO KILL (~2.1 GB)\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 86 | Claude Code (stale, ttys005) | 481 MB | 7 days | 94349 |\n| 82 | Claude Code (stale, ttys000) | 429 MB | 6 days | 7742 |\n| 80 | Claude Code (stale, ttys016) | 368 MB | 6 days | 48680 |\n| 78 | Claude Code (stale, ttys012) | 308 MB | 6 days | 40588 |\n| 63 | Playwright shell (OLD v1200, zombie) | 106 MB | 30 days | 4824 |\n| 62 | Claude Code (stale, ttys001) | 352 MB | 1 day | 57030 |\n\n---\n\n### USE CAUTION (~2.8 GB)\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 52 | Claude Code (ttys045, morning) | 540 MB | 7.5 hrs | 19134 |\n| 50 | Claude Code (ttys002, midday) | 509 MB | 5 hrs | 79340 |\n| 45 | Claude Code (ttys010, afternoon) | 376 MB | 2 hrs | 55933 |\n| 55 | Playwright shells x8 (stale, v1208) | ~1.34 GB | 5-6 hrs | 22385, 22887, 22594, 22886, 22595, 23805, 22384, 23806 |\n| 38 | Playwright shells x3 (recent, v1208) | ~436 MB | 2 hrs | 51937, 57284, 57283 |\n\n---\n\n### PROTECTED\n\n- **This Claude session** (76187) — 1.14 GB — `claude -c`, ttys008, started 11:48am\n- **Active benchmark subagents** (64943, 69850, 70454, 72099) — ~1.6 GB — spawned from current bun benchmark run\n- **Bun benchmark runners** (53947, 54019) — ~245 MB — running from `~/code/prompts`\n- **Bun dev → woa-procedural :3333** (20362) — 125 MB — active dev server\n- **Dia browser** (95427 + 12 renderers) — ~3.8 GB — active browser\n- **Chrome** (8886 + renderers) — ~2.5 GB — active browser\n- **Wispr Flow** (43157 + helpers) — ~938 MB\n- **Codex** (66336 + helpers) — ~846 MB\n- **iTerm2** (35149) — 248 MB\n- **MongoDB** (1416), **Redis** (1422), **PostgreSQL** (1429) — databases\n- **Raycast** (91408) — 167 MB\n\n---\n\n```bash\n# SAFE — reclaim ~2.1 GB\nkill 94349 7742 48680 40588 4824 57030\n\n# CAUTION — review first:\n#",
+            "tokens": 4704,
+            "duration_ms": 93770,
+            "assertions": [
+              {
+                "id": "pc-3-categories",
+                "text": "Processes are organized into meaningful categories (AI CLIs, dev servers, browsers, desktop apps, etc.) rather than just a raw sorted list.",
+                "passed": true,
+                "reasoning": "Processes are organized into SAFE TO KILL, USE CAUTION, and PROTECTED categories with meaningful groupings like Claude Code sessions, Playwright shells, browsers, and dev servers."
+              },
+              {
+                "id": "pc-3-asks-before-killing",
+                "text": "The response presents the information and asks the user before killing anything, rather than immediately terminating processes without confirmation.",
+                "passed": true,
+                "reasoning": "The report presents information and provides commented-out kill commands with explicit review guidance, rather than killing anything automatically."
+              },
+              {
+                "id": "pc-3-actionable",
+                "text": "The report includes specific, copy-pasteable kill commands — not just advice to 'close unused applications'.",
+                "passed": true,
+                "reasoning": "Specific copy-pasteable kill commands are provided with PIDs grouped by category (safe vs caution)."
+              },
+              {
+                "id": "pc-3-no-system-processes",
+                "text": "System processes (kernel, windowserver, mds, etc.) are excluded from kill recommendations — only user-owned application processes are listed.",
+                "passed": true,
+                "reasoning": "Only user-owned application processes like Claude Code, Playwright, browsers, and dev servers are listed; no system processes like kernel, windowserver, or mds appear in recommendations."
+              }
+            ],
+            "pass_rate": 1,
             "cached": false
           },
           "baseline": {
-            "output": "",
-            "tokens": 0,
-            "duration_ms": 0,
-            "assertions": [],
-            "pass_rate": 0,
+            "output": "Here's the breakdown:\n\n---\n\n## Process Cleanup Report\n\n**The main culprits:**\n\n### 1. Playwright Headless Chrome — ~60+ orphaned processes\n\nThis is the biggest problem. Two zombie browser pools sitting around from old test runs:\n\n- **v1200** (PIDs 4815, 4824) — started **Feb 3**, ~30 days old, still burning ~13% CPU combined\n- **v1208** (~55+ processes) — scattered PIDs, clearly orphaned from test runs\n\n**To kill all of them:**\n```bash\n# Kill all orphaned Playwright headless shell processes\npkill -f \"chrome-headless-shell\"\n```\n\n---\n\n### 2. Stale Claude Code sessions — 8+ open terminals\n\n```\nPID 94349  — started Feb 26 (8 days ago)   ~481 MB  [s005]\nPID 7742   — started Fri 1AM (2 days ago)   ~429 MB  [s000]\nPID 40588  — started Fri 3PM (2 days ago)   ~307 MB  [s012]\nPID 48680  — started Fri 5PM (2 days ago)   ~368 MB  [s016]\n```\n\nKill the stale ones (not this session, PID 76187):\n```bash\nkill 94349 7742 40588 48680\n```\n\n---\n\n### 3. Databases running idle — MongoDB, Redis, PostgreSQL\n\nThese are running on their default ports. If you're not actively using them:\n```bash\n# Caution — only if you don't need them right now:\n# brew services stop mongodb-community\n# brew services stop redis\n# brew services stop postgresql\n```\n\n---\n\n### Protected (do not kill)\n- **This Claude session** — PID 76187 (1.1 GB, s008)\n- **Dia browser** — active app\n- **Wispr Flow** — active app (though it's using ~1 GB across renderers)\n- **Bun dev server** — :3333 (PID 20362)\n\n---\n\n**Recommended immediate action — safe, big impact:**\n\n```bash\n# Kill orphaned Playwright (~60 processes, estimated 2-3 GB + 13% CPU)\npkill -f \"chrome-headless-shell\"\n\n# Kill stale Claude sessions (saves ~1.6 GB)\nkill 94349 7742 40588 48680\n```\n\nWant me to run those kill commands?",
+            "tokens": 1877,
+            "duration_ms": 43974,
+            "assertions": [
+              {
+                "id": "pc-3-categories",
+                "text": "Processes are organized into meaningful categories (AI CLIs, dev servers, browsers, desktop apps, etc.) rather than just a raw sorted list.",
+                "passed": true,
+                "reasoning": "Processes are organized into meaningful categories: Playwright/browser processes, Claude Code sessions, and databases — not a raw sorted list."
+              },
+              {
+                "id": "pc-3-asks-before-killing",
+                "text": "The response presents the information and asks the user before killing anything, rather than immediately terminating processes without confirmation.",
+                "passed": true,
+                "reasoning": "The response ends with 'Want me to run those kill commands?' confirming it asks before executing any kill commands."
+              },
+              {
+                "id": "pc-3-actionable",
+                "text": "The report includes specific, copy-pasteable kill commands — not just advice to 'close unused applications'.",
+                "passed": true,
+                "reasoning": "The report includes specific copy-pasteable kill commands with exact PIDs and pkill patterns."
+              },
+              {
+                "id": "pc-3-no-system-processes",
+                "text": "System processes (kernel, windowserver, mds, etc.) are excluded from kill recommendations — only user-owned application processes are listed.",
+                "passed": true,
+                "reasoning": "Only user application processes (Playwright, Claude Code, databases, Dia, Wispr Flow) are mentioned; no system processes like kernel, WindowServer, or mds appear in recommendations."
+              }
+            ],
+            "pass_rate": 1,
             "cached": false
           }
         }
