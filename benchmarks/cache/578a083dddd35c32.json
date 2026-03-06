@@ -1,26 +1,26 @@
 {
-  "output": "## Our Values\n\n**Reliability over velocity**\n\nPayment infrastructure that fails at the wrong moment is worthless regardless of what's on the roadmap. We hold uptime to a stricter standard than feature throughput, because a declined transaction during checkout costs our customers real money, not just a line on a status page.\n\n**Developers deserve good tools**\n\nWe write documentation the way we'd want to read it: real code examples, honest error messages, and no marketing copy buried in the API reference. When something breaks at 2am, the error response should tell you what happened and how to fix it.\n\n**Transparent by default**\n\nMoney is precise, and we treat it that way. Every fee is documented before you pay it, and every decline comes with a reason code that actually explains what happened. Settlements include a line-by-line breakdown, because if you built on our infrastructure, you should be able to answer any payment question your customers ask.\n\n**Security that ships with you**\n\nPCI compliance and fraud prevention are already handled. You shouldn't need to sit through a compliance audit or implement encryption from scratch just to accept card payments. We absorb that complexity so your team can focus on the product.",
-  "tokens": 2354,
-  "duration_ms": 51743,
+  "output": "## Our Values\n\n**Reliability is the product.**\nPayment infrastructure works best when developers forget it's there. We run at 99.99% uptime across all regions because a single failed transaction can cost a merchant their customer's trust permanently.\n\n**Developer experience drives everything.**\nAPIs should behave exactly as documented, and error messages should tell you what went wrong and how to fix it. We invest as much in our documentation and SDK design as in the underlying infrastructure, because an API that takes a week to integrate — or one that surfaces opaque error codes at 2am — loses developer trust faster than almost any reliability issue could.\n\n**Transparency in failure.**\nWhen something breaks, we say what happened and what we changed. Our status page publishes raw uptime data and latency percentiles so you can see exactly what our systems are doing, and our post-mortems go public within 48 hours so the broader developer community can learn from what we got wrong.\n\n**Security built to hold.**\nPayments attract adversarial attention. PCI DSS compliance, end-to-end encryption, fraud detection, and threat monitoring are woven into the architecture from the start; every API key is scoped and every webhook is signed, and we run red team exercises quarterly to expose gaps in our assumptions before they become incidents.",
+  "tokens": 3562,
+  "duration_ms": 60087,
   "assertions": [
     {
       "id": "hum-1-no-binary-contrast",
       "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
       "passed": true,
-      "reasoning": "None of the four value descriptions use binary contrast patterns like 'not X — it's Y' or 'it's not about X, it's about Y'; comparisons like 'uptime to a stricter standard than feature throughput' are not the prohibited binary flip structure."
+      "reasoning": "None of the four value descriptions use binary contrast patterns like 'not X — it's Y'; each value is stated positively without an explicit contrast structure."
     },
     {
       "id": "hum-1-varied-value-structure",
       "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
-      "passed": true,
-      "reasoning": "The descriptions show meaningful structural variation: values 1 and 2 use two sentences each with different opening strategies (consequence-first vs. principle-first), while values 3 and 4 use three sentences with a short declarative opener followed by specifics, and none ends with a punchy one-liner conclusion."
+      "passed": false,
+      "reasoning": "All four values follow the same structural pattern: a bold declarative title followed by exactly two sentences (the second being a long explanatory sentence with a 'because' or causal clause), with no value using a question, a single sentence, a leading example, or any other meaningfully different form."
     },
     {
       "id": "hum-1-no-tricolon-conclusions",
       "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
       "passed": true,
-      "reasoning": "No value description ends with a three-item parallel list; the mid-sentence tricolon in value 2 ('real code examples, honest error messages, and no marketing copy') is not a conclusion, and all four values end with single statements or two-item constructions."
+      "reasoning": "No value description ends with a three-item parallel list; Value 4 contains a four-item list mid-sentence ('PCI DSS compliance, end-to-end encryption, fraud detection, and threat monitoring'), which is explicitly permitted."
     }
   ],
-  "pass_rate": 1
+  "pass_rate": 0.6666666666666666
 }

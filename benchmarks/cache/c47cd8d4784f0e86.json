@@ -1,31 +1,31 @@
 {
-  "output": "**The Hidden Tax of Ignoring Developer Experience**\n\nEvery startup faces pressure to ship features fast and worry about \"the nice stuff\" later. Developer experience—documentation, local setup, CI reliability, clear abstractions—feels like a luxury when you're racing to product-market fit. But this calculus is backwards. The cost of poor DX compounds silently: new engineers take weeks to become productive, debugging sessions stretch across days because nobody documented the quirks, and your best people quietly disengage. Technical debt gets most of the attention, but DX debt is what makes that debt impossible to pay down.\n\nThe window to establish good habits is narrow. A codebase that reaches 10 engineers with tangled onboarding, flaky tests, and no clear conventions will take months to untangle—and the team will resist changes that slow down their current (broken) workflow. Investing early means the cost is low: a great README, a reliable `dev` script, a lint config that's enforced from day one. These aren't big projects. They're small bets with compounding returns as the team scales. Every hour spent on DX at 5 engineers saves five hours at 25.\n\nThe retention argument is just as strong as the productivity one. Senior engineers have choices. They'll stay where the work is satisfying—where they can move fast without fighting their tools, where the codebase reflects care. A strong DX culture signals that leadership respects engineering time, which attracts and keeps exactly the people who will make or break your technical trajectory. When you're early, your reputation as an engineering organization is still being written. Write it deliberately.",
-  "tokens": 583,
-  "duration_ms": 24790,
+  "output": "## Developer Experience Is a Business Decision, Not a Luxury\n\nEarly-stage startups often treat developer experience (DX) as something to optimize later—after product-market fit, after the Series A, after the team grows. This is exactly backwards. The decisions you make in the first 18 months about tooling, local development speed, CI/CD pipelines, and documentation compound relentlessly. A codebase that takes 20 minutes to build locally doesn't just frustrate your five engineers—it quietly erodes their focus, their willingness to experiment, and their ability to ship with confidence. Every friction point you tolerate early becomes load-bearing technical debt that costs ten times more to fix once your team is 30 people deep.\n\nThe return on investing in DX early is asymmetric. Fast feedback loops—sub-minute test suites, reliable hot reload, clear error messages—directly translate into faster iteration cycles. When engineers can confidently make a change and know within seconds whether it's correct, they take smarter risks. They refactor when they should instead of leaving things alone out of fear. They onboard faster. You spend less time in debugging purgatory and more time in product conversations. For a startup, where iteration speed is your primary competitive advantage over incumbents, this is not a nice-to-have.\n\nThe CTO's job is to make good engineering culture a structural property of the system, not a personal virtue. That means setting standards early: reproducible builds, a single command to get the dev environment running, automated linting and formatting so reviews focus on logic not style, and deployment pipelines engineers actually trust. None of this requires a platform team or months of investment. It requires intentionality and a willingness to protect engineering time now. The startups that wait until they're \"big enough\" to care about DX are the ones that spend their growth stage paying down the bill.",
+  "tokens": 609,
+  "duration_ms": 24441,
   "assertions": [
     {
       "id": "hum-3-no-binary-contrast",
       "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
       "passed": true,
-      "reasoning": "No 'not X — it's Y' or similar binary contrast patterns appear; 'this calculus is backwards' is a direct claim, not the forbidden setup."
+      "reasoning": "The output uses 'this is not a nice-to-have' but never completes the binary contrast with '— it's Y', and no other instances of the listed patterns appear."
     },
     {
       "id": "hum-3-no-punchline-endings",
       "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
-      "passed": false,
-      "reasoning": "All three paragraphs end with short punchy sentences under 15 words: 'DX debt is what makes that debt impossible to pay down' (12 words), 'Every hour spent on DX at 5 engineers saves five hours at 25' (14 words), and 'Write it deliberately' (3 words)."
+      "passed": true,
+      "reasoning": "All three paragraph-ending sentences are long (22+ words) and none qualify as a short dramatic one-liner under 15 words."
     },
     {
       "id": "hum-3-no-ai-business-vocab",
       "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
-      "passed": true,
-      "reasoning": "None of the seven forbidden phrases appear exactly; 'compounding returns' is a distinct grammatical form from the banned 'compound returns', and 'nice-to-have' does not appear."
+      "passed": false,
+      "reasoning": "The phrase 'nice-to-have' appears explicitly in paragraph two: 'this is not a nice-to-have'."
     },
     {
       "id": "hum-3-no-tricolon-lists",
       "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
       "passed": false,
-      "reasoning": "At least two tricolon lists appear: 'new engineers take weeks to become productive, debugging sessions stretch across days…, and your best people quietly disengage' and 'a great README, a reliable dev script, a lint config that's enforced from day one'."
+      "reasoning": "Paragraph one contains a tricolon: 'their focus, their willingness to experiment, and their ability to ship with confidence' — three parallel items joined with commas and 'and'."
     }
   ],
   "pass_rate": 0.5

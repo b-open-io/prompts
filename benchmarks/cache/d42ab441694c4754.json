@@ -1,31 +1,31 @@
 {
-  "output": "Your infrastructure should work at your pace, not the other way around. When traffic spikes, our platform scales in seconds—no pre-warming, no capacity planning, no 3am alerts because you guessed wrong. And when it's quiet, you scale back down automatically. You're not paying for idle servers; you're paying for what you actually use, billed to the second. For engineering teams under pressure to ship and CTOs watching the cloud bill, that's not a nice-to-have. That's the only way it should work.\n\nMost platforms make you choose between visibility and simplicity. We don't. Built-in observability means traces, metrics, and logs are there from day one—no third-party integrations to wire up, no blind spots when something goes wrong in production. Your team gets the full picture without the setup tax. Whether you're debugging a latency issue at midnight or presenting infrastructure health to the board, the data is already there. That's the difference between a platform that just runs your code and one that actually helps you understand it.",
-  "tokens": 520,
-  "duration_ms": 24492,
+  "output": "---\n\nMost cloud platforms make you guess your traffic in advance, charge you for idle servers, and leave you debugging in the dark. We don't. Our infrastructure scales automatically the moment demand spikes—no pre-warming, no capacity planning, no 3am pages because you under-provisioned. You ship, we handle the rest.\n\nYou also stop paying for compute you're not using. With per-second billing, your costs track actual usage—not whatever estimate you punched into a calculator last quarter. And when something goes wrong, you won't be stitching together logs from three different tools. Built-in observability gives every team member—from the engineer on-call to the CTO reviewing the post-mortem—a single, complete picture of what happened and why. Less guessing, fewer war rooms, faster fixes.",
+  "tokens": 545,
+  "duration_ms": 24588,
   "assertions": [
     {
       "id": "hum-2-no-binary-contrast",
       "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
       "passed": false,
-      "reasoning": "The first paragraph ends with 'that's not a nice-to-have. That's the only way it should work.' which is a direct 'not X — it's Y' binary contrast pattern."
+      "reasoning": "The output uses 'your costs track actual usage—not whatever estimate you punched into a calculator last quarter,' which is a 'Y—not X' binary contrast setup, and 'Most cloud platforms make you… We don't' is a direct binary contrast framing."
     },
     {
       "id": "hum-2-no-parallel-tricolon",
       "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
       "passed": false,
-      "reasoning": "The phrase 'no pre-warming, no capacity planning, no 3am alerts' is an explicit 'no X, no Y, no Z' tricolon pattern flagged by the assertion."
+      "reasoning": "The phrase 'no pre-warming, no capacity planning, no 3am pages' is explicitly a 'no X, no Y, no Z' tricolon pattern, which the assertion flags as prohibited."
     },
     {
       "id": "hum-2-no-formulaic-closer",
       "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
       "passed": false,
-      "reasoning": "The final sentence 'That's the difference between a platform that just runs your code and one that actually helps you understand it' is a binary contrast closer wrapping up the section rhetorically."
+      "reasoning": "The final sentence 'Less guessing, fewer war rooms, faster fixes.' is a tricolon wrap-up of three benefit phrases, which matches the formulaic summary closer pattern the assertion prohibits."
     },
     {
       "id": "hum-2-no-punchline-endings",
       "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
       "passed": false,
-      "reasoning": "Paragraph one ends with 'That's the only way it should work.' — 8 words, a short dramatic mic-drop sentence that fails the under-10-words punchline check."
+      "reasoning": "Paragraph one ends with 'You ship, we handle the rest.' (7 words) and paragraph two ends with 'Less guessing, fewer war rooms, faster fixes.' (7 words), both short dramatic mic-drop sentences under 10 words."
     }
   ],
   "pass_rate": 0

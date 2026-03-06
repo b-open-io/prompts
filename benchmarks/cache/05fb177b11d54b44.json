@@ -1,7 +1,7 @@
 {
-  "output": "Here's your NANDA-compliant AgentFacts schema for `myapp.io`:\n\n```json\n{\n  \"@context\": \"https://nanda.dev/ns/agent-facts/v1\",\n  \"id\": \"nanda:myapp.io\",\n  \"agent_name\": \"urn:agent:myapp:io\",\n  \"version\": \"1.0.0\",\n  \"description\": \"SaaS platform with text and image processing capabilities\",\n  \"homepage\": \"https://myapp.io\",\n  \"endpoints\": {\n    \"static\": [\n      \"https://api.myapp.io/v1/agent\"\n    ]\n  },\n  \"capabilities\": {\n    \"modalities\": [\"text\", \"image\"],\n    \"authentication\": {\n      \"methods\": [\"oauth2\"]\n    }\n  },\n  \"trust\": {\n    \"certification\": \"self-attested\",\n    \"human_oversight\": \"true\"\n  },\n  \"metadata\": {\n    \"created\": \"2026-03-05T16:28:52Z\",\n    \"modified\": \"2026-03-05T16:28:52Z\",\n    \"ttl\": 86400\n  }\n}\n```\n\n**Deploy it** at `https://myapp.io/.well-known/agent-facts` so AI crawlers can discover it automatically.\n\nKey fields:\n- `modalities` — declares `text` and `image` support so AI agents know what your app can handle\n- `authentication.methods` — signals OAuth2 is required before interacting\n- `ttl: 86400` — crawlers re-fetch every 24 hours\n- `human_oversight: true` — important trust signal for AI agent directories",
-  "tokens": 1205,
-  "duration_ms": 32179,
+  "output": "Here's your NANDA-compliant AgentFacts schema:\n\n```json\n{\n  \"@context\": \"https://nanda.dev/ns/agent-facts/v1\",\n  \"id\": \"nanda:myapp.io\",\n  \"agent_name\": \"urn:agent:myapp:io\",\n  \"version\": \"1.0.0\",\n  \"description\": \"SaaS platform providing AI-powered text and image processing capabilities\",\n  \"homepage\": \"https://myapp.io\",\n  \"endpoints\": {\n    \"static\": [\n      \"https://api.myapp.io/v1/agent\"\n    ]\n  },\n  \"capabilities\": {\n    \"modalities\": [\n      \"text\",\n      \"image\"\n    ],\n    \"authentication\": {\n      \"methods\": [\n        \"oauth2\"\n      ]\n    }\n  },\n  \"trust\": {\n    \"certification\": \"self-attested\",\n    \"human_oversight\": \"true\"\n  },\n  \"metadata\": {\n    \"created\": \"2026-03-06T09:29:17Z\",\n    \"modified\": \"2026-03-06T09:29:17Z\",\n    \"ttl\": 86400\n  }\n}\n```\n\n**Deploy this at:** `https://myapp.io/.well-known/agent-facts`\n\nKey fields to customize before deploying:\n\n| Field | Current Value | Action Needed |\n|---|---|---|\n| `endpoints.static` | `https://api.myapp.io/v1/agent` | Update to your real API endpoint |\n| `trust.certification` | `self-attested` | Upgrade to `verified` once you get third-party certification |\n| `metadata.ttl` | `86400` (24h) | Tune based on how often your schema changes |\n| `version` | `1.0.0` | Bump when capabilities change |\n\n**Serve it with the correct content type:**\n```\nContent-Type: application/json\nCache-Control: max-age=86400\n```\n\nThis makes your SaaS discoverable by AI agents (ChatGPT, Perplexity, Claude) that respect the NANDA protocol.",
+  "tokens": 1438,
+  "duration_ms": 39628,
   "assertions": [
     {
       "id": "geo-2-nanda-context",
@@ -13,13 +13,13 @@
       "id": "geo-2-capabilities",
       "text": "The schema specifies both text and image modalities in the capabilities section.",
       "passed": true,
-      "reasoning": "The schema specifies `\"modalities\": [\"text\", \"image\"]` in the capabilities section, covering both required modalities."
+      "reasoning": "The capabilities section includes `\"modalities\": [\"text\", \"image\"]` specifying both text and image capabilities."
     },
     {
       "id": "geo-2-wellknown",
       "text": "The response indicates the schema should be placed at /.well-known/agent-facts path.",
       "passed": true,
-      "reasoning": "The response explicitly instructs deploying at `https://myapp.io/.well-known/agent-facts` and references that path multiple times."
+      "reasoning": "The response explicitly states 'Deploy this at: `https://myapp.io/.well-known/agent-facts`' indicating the correct path."
     }
   ],
   "pass_rate": 1

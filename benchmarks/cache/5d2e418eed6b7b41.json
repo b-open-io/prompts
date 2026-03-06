@@ -1,25 +1,25 @@
 {
-  "output": "Here are the context boundary rules for the hunter-skeptic-referee workflow:\n\n| Phase | Agent | Gets Access To |\n|-------|-------|----------------|\n| **Hunter** (Nyx) | code-auditor | Full codebase |\n| **Skeptic** (Kayle) | architecture-reviewer | Bug list + **only the specific code snippets referenced in each finding** |\n| **Referee** (Iris) | tester | Hunter findings + Skeptic verdicts only |\n\n**What each phase explicitly does NOT get:**\n\n- **Skeptic** — does not get the full codebase, and does not see the Hunter's confidence level or emotional register\n- **Referee** — does not get the codebase directly, and does not see either agent's tone/enthusiasm — only the structured findings and verdicts\n\n**Why this matters:** Giving any agent more context than listed reintroduces sycophancy. The Skeptic anchors on the Hunter's confidence if it can see it. The Referee drifts toward consensus if it can sense either agent's conviction. Each agent must reach its conclusion independently from a clean context.\n\nThe Referee's output is the only authoritative result — the prior phases are scaffolding to produce unbiased ground truth.",
-  "tokens": 446,
-  "duration_ms": 17024,
+  "output": "Here are the context boundary rules from the skill:\n\n| Phase | Agent | Gets Access To |\n|-------|-------|----------------|\n| **Hunter** (Nyx) | code-auditor | Full codebase |\n| **Skeptic** (Kayle) | architecture-reviewer | Bug list + **only the specific code snippets referenced** in each finding |\n| **Referee** (Iris) | tester | Hunter's findings + Skeptic's verdicts only |\n\nThe key principle: **no agent sees what any other agent \"wants\" to hear.**\n\n- The Skeptic does **not** get the full codebase — only the bug list and the exact code snippets cited. This forces it to evaluate the Hunter's claims on their own merits without wandering the codebase looking for justifications.\n- The Referee does **not** get the codebase at all — only the two prior outputs. It arbitrates based on arguments, not raw source.\n- Neither the Skeptic nor the Referee sees the other agent's **emotional register or confidence framing** — which is why paste order matters (don't include agent commentary, just findings and verdicts).\n\nViolating these boundaries reintroduces the sycophancy problem the workflow is designed to eliminate: the Skeptic anchors on the Hunter's enthusiasm, the Referee drifts toward consensus rather than truth.",
+  "tokens": 537,
+  "duration_ms": 21612,
   "assertions": [
     {
       "id": "hsr-2-hunter-gets-codebase",
       "text": "The response states that the Hunter/bug-finder gets access to the full codebase.",
       "passed": true,
-      "reasoning": "The response explicitly states the Hunter (Nyx) gets 'Full codebase' access."
+      "reasoning": "The response explicitly states Hunter (Nyx) gets 'Full codebase' in the table and prose."
     },
     {
       "id": "hsr-2-skeptic-limited",
       "text": "The response states that the Skeptic gets only the bug list and specific code snippets referenced in findings — NOT the full codebase or the Hunter's reasoning.",
       "passed": true,
-      "reasoning": "The response states the Skeptic gets 'Bug list + only the specific code snippets referenced in each finding' and explicitly notes it does not get the full codebase."
+      "reasoning": "The response clearly states the Skeptic gets only 'Bug list + only the specific code snippets referenced' and explicitly says it does NOT get the full codebase."
     },
     {
       "id": "hsr-2-referee-both",
       "text": "The response states that the Referee gets the Hunter's findings AND the Skeptic's verdicts, but nothing else.",
       "passed": true,
-      "reasoning": "The response states the Referee gets 'Hunter findings + Skeptic verdicts only', satisfying both the inclusion and exclusion requirements."
+      "reasoning": "The response states the Referee gets 'Hunter's findings + Skeptic's verdicts only' and explicitly says it does not get the codebase at all."
     }
   ],
   "pass_rate": 1

@@ -1,31 +1,31 @@
 {
-  "output": "Most cloud platforms require you to size your infrastructure before traffic arrives. Ours scales the moment demand spikes — new instances come online within 50ms, and your application stays responsive at 10 requests per second or 10,000.\n\nBilling runs to the second, so a function that completes in 200ms costs exactly that rather than the rounded-up minute most providers charge. Distributed traces, structured logs, runtime metrics, and error sampling all stream automatically from day one, with no instrumentation code and no separate monitoring stack to stand up or maintain. Teams that migrate from fixed-tier hosting typically cut their cloud bill by 20–35% in the first quarter while reducing the engineering time spent on capacity planning.",
-  "tokens": 2654,
-  "duration_ms": 57975,
+  "output": "Your app scales from 10 requests to 10 million without touching a config file. Capacity adjusts in under 30 seconds — new instances spin up, traffic routes automatically, and the moment the spike ends, you scale back down just as fast. Most platforms charge for reserved capacity you'll use twice a year; we bill per second of actual compute, so a function that runs for 400ms costs you 400ms. Teams migrating from fixed-instance providers typically cut monthly infrastructure spend by 40–60% in the first 90 days, without touching their architecture.\n\nEvery deployment ships with observability wired in from day one. Request traces, error rates, latency percentiles, and p99 breakdowns appear in your dashboard the moment traffic hits your service — the instrumentation is pre-configured and ready. When something breaks at 2am, you get a flame graph and a structured error log with full context, already correlated and pointing at the exact line of code that failed. Engineers we work with report spending 70% less time on incident diagnosis compared to their previous setup, because the relevant data is available immediately rather than scattered across four separate tools that each require their own query language.",
+  "tokens": 3171,
+  "duration_ms": 59464,
   "assertions": [
     {
       "id": "hum-2-no-binary-contrast",
       "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
       "passed": true,
-      "reasoning": "The output makes direct claims without using 'not X — it's Y' or similar rhetorical contrast setups."
+      "reasoning": "The output makes direct claims without using 'not X — it's Y' or similar rhetorical binary contrast setups."
     },
     {
       "id": "hum-2-no-parallel-tricolon",
       "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
       "passed": true,
-      "reasoning": "The three differentiators are presented in structurally varied ways: the first uses an em-dash clause, the second uses a 'so' causal construction, and the third lists four items in a series before explaining the benefit."
+      "reasoning": "Only two paragraphs are present in the output, and they differ structurally; no three-sentence parallel tricolon pattern appears."
     },
     {
       "id": "hum-2-no-formulaic-closer",
       "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
       "passed": true,
-      "reasoning": "The final sentence describes a specific outcome (cost reduction and engineering time savings) rather than wrapping up all three features in a tricolon or formulaic summary pattern."
+      "reasoning": "The final sentence is a substantive comparative claim about incident diagnosis time, not a tricolon wrap-up or binary contrast closer."
     },
     {
       "id": "hum-2-no-punchline-endings",
       "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
       "passed": true,
-      "reasoning": "Both paragraph endings are substantive multi-clause sentences well over 10 words, with no short dramatic mic-drop conclusions."
+      "reasoning": "Both paragraphs end with long, substantive sentences that provide data or context rather than short dramatic mic-drop statements."
     }
   ],
   "pass_rate": 1

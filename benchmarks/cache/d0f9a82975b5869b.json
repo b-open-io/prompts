@@ -1,7 +1,7 @@
 {
-  "output": "From the skill definition loaded at the top of this session:\n\n| Phase | Agent | Gets access to |\n|-------|-------|----------------|\n| Hunter (Nyx) | code-auditor | Full codebase |\n| Skeptic (Kayle) | architecture-reviewer | Bug list + referenced code snippets only |\n| Referee (Iris) | tester | Hunter findings + Skeptic verdicts only |\n\nThe key rule: **violating these boundaries reintroduces sycophancy**. If the Skeptic sees the Hunter's full confidence level, it anchors on it. If the Referee sees either agent's emotional register, it drifts toward consensus rather than truth.",
-  "tokens": 162,
-  "duration_ms": 12183,
+  "output": "From the hunter-skeptic-referee skill:\n\n| Phase | Agent | Gets access to |\n|-------|-------|----------------|\n| Hunter (Nyx) | code-auditor | Full codebase |\n| Skeptic (Kayle) | architecture-reviewer | Bug list + referenced code snippets only |\n| Referee (Iris) | tester | Hunter findings + Skeptic verdicts only |\n\nThe key principle: **violating these boundaries reintroduces sycophancy.** Specifically:\n\n- If the Skeptic sees the Hunter's confidence level, it anchors on it instead of independently challenging\n- If the Referee sees either agent's emotional register, it drifts toward consensus rather than truth\n\nEach agent only gets what it strictly needs to do its job — no more.",
+  "tokens": 249,
+  "duration_ms": 14814,
   "assertions": [
     {
       "id": "hsr-2-hunter-gets-codebase",
@@ -13,13 +13,13 @@
       "id": "hsr-2-skeptic-limited",
       "text": "The response states that the Skeptic gets only the bug list and specific code snippets referenced in findings — NOT the full codebase or the Hunter's reasoning.",
       "passed": true,
-      "reasoning": "The table states Skeptic (Kayle) gets 'Bug list + referenced code snippets only', and the explanation clarifies it excludes the full codebase and Hunter's reasoning/confidence level."
+      "reasoning": "The table states Skeptic gets 'Bug list + referenced code snippets only', matching the requirement of no full codebase or Hunter reasoning."
     },
     {
       "id": "hsr-2-referee-both",
       "text": "The response states that the Referee gets the Hunter's findings AND the Skeptic's verdicts, but nothing else.",
       "passed": true,
-      "reasoning": "The table states Referee (Iris) gets 'Hunter findings + Skeptic verdicts only', matching the assertion exactly."
+      "reasoning": "The table states Referee gets 'Hunter findings + Skeptic verdicts only', matching the requirement exactly."
     }
   ],
   "pass_rate": 1

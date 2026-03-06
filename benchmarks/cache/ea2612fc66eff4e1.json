@@ -1,31 +1,31 @@
 {
-  "output": "Here's what I found:\n\n**Claude sessions** — 10 idle/stale instances (PIDs: 57030, 19134, 55933, 48680, 40588, 79340, 94349, 7742, 66218, 64302, 64943, 76187). Several have near-zero CPU. The two active ones are `76187` (`claude -c`, 3.1% MEM) and `66218` (`claude -p`, currently running = this session likely).\n\n**Stale benchmark processes** — Two old bun benchmark runs still alive (PIDs 53947, 54019) for `process-cleanup` and `markdown-writer` skills.\n\n**agent-browser daemons** — 15+ node daemon instances (PIDs: 1313, 3892, 13348, 13500, 21706, 22322, 22558, 22854, 23770, 51919, 57249, 70501, 71426, 87753, 4803). These are zombie/leaked daemons.\n\n**No dev servers** running (no next dev, vite, etc.) — that's clean.\n\nWant me to kill the stale stuff? Specifically:\n1. Idle Claude sessions (all `claude` with ~0% CPU that aren't this session)\n2. The two stale benchmark bun processes\n3. The excess agent-browser daemons (keep 1, kill the rest)\n\nJust confirm and I'll clean them up.",
-  "tokens": 1329,
-  "duration_ms": 38382,
+  "output": "Here's the full report:\n\n---\n\n## Process Cleanup Report\n\n**Total recoverable**: ~1.1 GB safe · ~2.4 GB with caution  \n**No dev servers running** — nothing on Next.js, Vite, Bun dev, etc.\n\n---\n\n### SAFE TO KILL (~1.1 GB)\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 38 | Claude Code session (ttys000, `claude -c`) | 1.01 GB | 3 hrs | 7961 |\n| 21 | agent-browser daemon (stale duplicate — newer one at PID 98237) | 75 MB | 2.5 hrs | 10280 |\n\n---\n\n### USE CAUTION (~2.4 GB)\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|--------|-----|-----|\n| 36 | Claude Code session (ttys002, `claude`) | 712 MB | 22 min | 81428 |\n| 33 | Claude Code session (ttys001, `claude`) | 487 MB | 56 min | 17775 |\n| 28 | Claude Code session (ttys013, `claude`) | 400 MB | 9 min | 86509 |\n| — | claude -p headless: SaaS launch audit (orphaned, PPID=1) | 426 MB | 2 min | 16832 |\n| — | claude -p headless: PRD creator (orphaned, PPID=1) | 399 MB | 2 min | 15615 |\n\n> **Note on the two headless `-p` processes**: These are orphaned benchmark runs (PPID=1, parent already dead). They may still be computing — check if they're still writing output before killing.\n\n---\n\n### PROTECTED\n\n| Process | Memory | Notes |\n|---------|--------|-------|\n| This Claude session (ttys014, PID 83619) | 633 MB | Your current session tree |\n| MongoDB :27017 | — | System service |\n| Redis :6379 | — | System service |\n| PostgreSQL :5432 | — | System service |\n| Ollama :11434 | — | Running since 08:59, intentional |\n| Dia browser (PID 3029) | 688 MB | Active browser |\n| Discord, Raycast, Figma Agent | — | User apps |\n\n---\n\n### Kill Commands\n\n```bash\n# SAFE — reclaim ~1.1 GB\nkill 7961 10280\n\n# CAUTION — review first:\n# kill 16832  # claude -p headless: SaaS audit (426 MB) — check if still running\n# kill 15615  # claude -p headless: PRD creator (399 MB) — check if still running\n# kill 81428  # Claude session ttys002 (712 MB) — only if that terminal is idle\n# kill 17775  # Claude session ttys001 (487 MB) — only if that terminal is idle\n# kill 86509  # Claude session ttys013 (400 MB) — only if that terminal is idle\n```\n\n**My recommendation**: Start with `kill 7961 10280` — the 3-hour-old session and duplicate daemon are clearly stale. For the other Claude sessions, glance at each terminal to see if they're idle before killing. The two headless `-p` processes are orphaned and likely done, but are only 2 minutes old so they may still be finalizing output.",
+  "tokens": 4985,
+  "duration_ms": 94727,
   "assertions": [
     {
       "id": "pc-2-age-friendly",
       "text": "Process age is shown as friendly durations like '3 days' or '2 weeks' rather than raw start timestamps.",
-      "passed": false,
-      "reasoning": "The output shows no friendly durations like '3 days' or '2 weeks' — process ages are completely absent from the report."
+      "passed": true,
+      "reasoning": "Process ages are shown as friendly durations like '3 hrs', '22 min', '56 min', '9 min', '2 min', and '2.5 hrs' rather than raw timestamps."
     },
     {
       "id": "pc-2-grouped",
       "text": "Related processes are grouped together (e.g., multiple OpenCode sessions shown as a group with total memory, not listed individually with full command lines).",
-      "passed": true,
-      "reasoning": "Processes are grouped by category (Claude sessions, stale benchmark processes, agent-browser daemons) rather than listed individually with full command lines."
+      "passed": false,
+      "reasoning": "Claude Code sessions are listed individually with separate rows rather than grouped together with a combined memory total."
     },
     {
       "id": "pc-2-current-protected",
       "text": "The current Claude session is identified and marked as protected or excluded from kill recommendations.",
       "passed": true,
-      "reasoning": "The current session (PID 66218, 'claude -p') is identified and noted as 'currently running = this session likely', implicitly excluding it from kill recommendations."
+      "reasoning": "The current Claude session (ttys014, PID 83619) is explicitly identified and placed in the PROTECTED section, excluded from kill recommendations."
     },
     {
       "id": "pc-2-project-context",
       "text": "Dev servers include project context — which project directory they serve — not just the generic server type.",
       "passed": false,
-      "reasoning": "The output explicitly states 'No dev servers running' so there is no dev server project context shown, and even if there were, no project directory context is demonstrated."
+      "reasoning": "No dev servers were found running, so project context cannot be shown, but more importantly the report notes 'No dev servers running' without any project context — this assertion is not satisfied even partially."
     }
   ],
   "pass_rate": 0.5

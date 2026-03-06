@@ -1,31 +1,31 @@
 {
-  "output": "Here's the breakdown:\n\n---\n\n## Process Cleanup Report\n\n**The main culprits:**\n\n### 1. Playwright Headless Chrome — ~60+ orphaned processes\n\nThis is the biggest problem. Two zombie browser pools sitting around from old test runs:\n\n- **v1200** (PIDs 4815, 4824) — started **Feb 3**, ~30 days old, still burning ~13% CPU combined\n- **v1208** (~55+ processes) — scattered PIDs, clearly orphaned from test runs\n\n**To kill all of them:**\n```bash\n# Kill all orphaned Playwright headless shell processes\npkill -f \"chrome-headless-shell\"\n```\n\n---\n\n### 2. Stale Claude Code sessions — 8+ open terminals\n\n```\nPID 94349  — started Feb 26 (8 days ago)   ~481 MB  [s005]\nPID 7742   — started Fri 1AM (2 days ago)   ~429 MB  [s000]\nPID 40588  — started Fri 3PM (2 days ago)   ~307 MB  [s012]\nPID 48680  — started Fri 5PM (2 days ago)   ~368 MB  [s016]\n```\n\nKill the stale ones (not this session, PID 76187):\n```bash\nkill 94349 7742 40588 48680\n```\n\n---\n\n### 3. Databases running idle — MongoDB, Redis, PostgreSQL\n\nThese are running on their default ports. If you're not actively using them:\n```bash\n# Caution — only if you don't need them right now:\n# brew services stop mongodb-community\n# brew services stop redis\n# brew services stop postgresql\n```\n\n---\n\n### Protected (do not kill)\n- **This Claude session** — PID 76187 (1.1 GB, s008)\n- **Dia browser** — active app\n- **Wispr Flow** — active app (though it's using ~1 GB across renderers)\n- **Bun dev server** — :3333 (PID 20362)\n\n---\n\n**Recommended immediate action — safe, big impact:**\n\n```bash\n# Kill orphaned Playwright (~60 processes, estimated 2-3 GB + 13% CPU)\npkill -f \"chrome-headless-shell\"\n\n# Kill stale Claude sessions (saves ~1.6 GB)\nkill 94349 7742 40588 48680\n```\n\nWant me to run those kill commands?",
-  "tokens": 1877,
-  "duration_ms": 43974,
+  "output": "Here's the full picture:\n\n---\n\n## Process Cleanup Report\n\n**Total recoverable** (conservative): ~3.5 GB across clearly wasteful processes  \n**Total recoverable** (aggressive, if closing Codex + stale Claude sessions): ~5+ GB\n\n---\n\n### SAFE TO KILL (~400 MB)\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|---------|-----|-----|\n| 72 | Playwright headless Chrome (orphan renderer) | 249 MB | 2.5 hrs | 10367 |\n| 55 | agent-browser daemon | 152 MB | 32 min | 98237 |\n\nThe Playwright renderer (PID 10367) started at 06:58 and has no active parent driving it — classic orphan. The agent-browser daemon is an MCP tool helper that restarts on demand.\n\n---\n\n### USE CAUTION (~4.6 GB)\n\n| Score | Process | Memory | Age | PID |\n|-------|---------|---------|-----|-----|\n| 65 | Claude Code session (`claude -c`, ttys000) | 1.01 GB | 3.1 hrs | 7961 |\n| 58 | Claude Code session (`claude`, ttys002) | 849 MB | 28 min | 81428 |\n| 55 | Claude Code session (`claude -c`, ttys014) | 674 MB | 21 min | 83619 |\n| 52 | Claude Code session (`claude`, no TTY) | 487 MB | 1 hr | 17775 |\n| 50 | Claude Code session (`claude`, no TTY) | 400 MB | 14 min | 86509 |\n| 48 | Codex app (idle?) | 699 MB | 47 min | 20953 + 21468 |\n| 42 | Ollama (local LLM server, :11434) | ~? | running | 32649 + 32665 |\n\n**Dia browser** is using **~5.6 GB** across 20+ tab renderers, with old tabs from yesterday (21:15 last night) still loaded:\n- Oldest tabs (12+ hrs): PIDs 3041, 3042, 3044, 3045, 3046, 3071, 3072, 3073, 3075 — ~1.6 GB combined\n- Closing tabs in Dia itself is safer than killing renderer PIDs\n\n---\n\n### PROTECTED\n\n- **This Claude session** — 385 MB — PID 28326 (+ bun parent 88179)\n- **Dia browser** (active browser) — ~5.6 GB total — PID 3029 + renderers\n- **Discord** — 897 MB — PID 4854\n- **Wispr Flow** — 694 MB — PID 15278\n- **iTerm2** — 505 MB — PID 5034\n- **MongoDB** :27017 — PID 1389\n- **Redis** :6379 — PID 1395\n- **PostgreSQL** :5432 — PID 1404\n\n---\n\n### Kill Commands\n\n```bash\n# SAFE — reclaim ~400 MB\nkill 10367 98237\n\n# CAUTION — stale Claude session (3+ hours old, ttys000):\n# kill 7961\n\n# CAUTION — other Claude sessions (review which are active first):\n# kill 81428 83619 17775 86509\n\n# CAUTION — Codex (if not using it):\n# kill 20953 21468\n\n# CAUTION — Ollama (if no local LLM work happening):\n# kill 32649 32665\n```\n\n---\n\n**My recommendation:** The safe kills (Playwright orphan + agent-browser) are a no-brainer. The **biggest wins** are the 4 extra Claude sessions — if you have 5 Claude windows open and only need 1-2, killing the idle ones recovers ~3 GB instantly. Check your terminal tabs first to see which sessions are actively doing something. Closing old Dia browser tabs is also high-yield since the old renderers from last night are sitting on ~1.6 GB.",
+  "tokens": 5259,
+  "duration_ms": 110067,
   "assertions": [
     {
       "id": "pc-3-categories",
       "text": "Processes are organized into meaningful categories (AI CLIs, dev servers, browsers, desktop apps, etc.) rather than just a raw sorted list.",
       "passed": true,
-      "reasoning": "Processes are organized into meaningful categories: Playwright/browser processes, Claude Code sessions, and databases — not a raw sorted list."
+      "reasoning": "Processes are organized into three meaningful categories: SAFE TO KILL, USE CAUTION, and PROTECTED, with sub-groupings by type (AI sessions, browsers, dev servers, desktop apps)."
     },
     {
       "id": "pc-3-asks-before-killing",
       "text": "The response presents the information and asks the user before killing anything, rather than immediately terminating processes without confirmation.",
       "passed": true,
-      "reasoning": "The response ends with 'Want me to run those kill commands?' confirming it asks before executing any kill commands."
+      "reasoning": "The report presents information and recommendations without killing anything, with caution commands commented out and an explicit recommendation to 'review which are active first'."
     },
     {
       "id": "pc-3-actionable",
       "text": "The report includes specific, copy-pasteable kill commands — not just advice to 'close unused applications'.",
       "passed": true,
-      "reasoning": "The report includes specific copy-pasteable kill commands with exact PIDs and pkill patterns."
+      "reasoning": "Specific copy-pasteable kill commands are provided with exact PIDs, clearly separated into safe and caution categories."
     },
     {
       "id": "pc-3-no-system-processes",
       "text": "System processes (kernel, windowserver, mds, etc.) are excluded from kill recommendations — only user-owned application processes are listed.",
       "passed": true,
-      "reasoning": "Only user application processes (Playwright, Claude Code, databases, Dia, Wispr Flow) are mentioned; no system processes like kernel, WindowServer, or mds appear in recommendations."
+      "reasoning": "Only user-owned application processes are listed; system processes like kernel, WindowServer, mds, etc. are entirely absent from all categories and kill commands."
     }
   ],
   "pass_rate": 1

@@ -1,70 +1,70 @@
 {
-  "generated_at": "2026-03-05T21:34:16.450Z",
+  "generated_at": "2026-03-06T14:32:15.808Z",
   "model": "claude-sonnet-4-6",
   "runner": "satchmo",
   "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
   "skill_name": "humanize",
   "skill_path": "skills/humanize",
   "eval_count": 3,
-  "pass_rate": 1,
+  "pass_rate": 0.806,
   "baseline_pass_rate": 0.278,
-  "avg_tokens_with_skill": 3450,
-  "avg_tokens_baseline": 543,
-  "avg_duration_ms_with_skill": 66568,
-  "avg_duration_ms_baseline": 24446,
+  "avg_tokens_with_skill": 3027,
+  "avg_tokens_baseline": 583,
+  "avg_duration_ms_with_skill": 54181,
+  "avg_duration_ms_baseline": 24691,
   "evals": [
     {
       "eval_id": 1,
       "prompt": "Write the 'Our Values' section for a fintech company's about page. The company builds payment infrastructure for developers. Include 4 values with short descriptions (2-3 sentences each). Just write the section directly, no preamble.",
       "with_skill": {
-        "output": "## Our Values\n\n**Reliability over velocity**\n\nPayment infrastructure that fails at the wrong moment is worthless regardless of what's on the roadmap. We hold uptime to a stricter standard than feature throughput, because a declined transaction during checkout costs our customers real money, not just a line on a status page.\n\n**Developers deserve good tools**\n\nWe write documentation the way we'd want to read it: real code examples, honest error messages, and no marketing copy buried in the API reference. When something breaks at 2am, the error response should tell you what happened and how to fix it.\n\n**Transparent by default**\n\nMoney is precise, and we treat it that way. Every fee is documented before you pay it, and every decline comes with a reason code that actually explains what happened. Settlements include a line-by-line breakdown, because if you built on our infrastructure, you should be able to answer any payment question your customers ask.\n\n**Security that ships with you**\n\nPCI compliance and fraud prevention are already handled. You shouldn't need to sit through a compliance audit or implement encryption from scratch just to accept card payments. We absorb that complexity so your team can focus on the product.",
-        "tokens": 2354,
-        "duration_ms": 51743,
+        "output": "## Our Values\n\n**Reliability is the product.**\nPayment infrastructure works best when developers forget it's there. We run at 99.99% uptime across all regions because a single failed transaction can cost a merchant their customer's trust permanently.\n\n**Developer experience drives everything.**\nAPIs should behave exactly as documented, and error messages should tell you what went wrong and how to fix it. We invest as much in our documentation and SDK design as in the underlying infrastructure, because an API that takes a week to integrate — or one that surfaces opaque error codes at 2am — loses developer trust faster than almost any reliability issue could.\n\n**Transparency in failure.**\nWhen something breaks, we say what happened and what we changed. Our status page publishes raw uptime data and latency percentiles so you can see exactly what our systems are doing, and our post-mortems go public within 48 hours so the broader developer community can learn from what we got wrong.\n\n**Security built to hold.**\nPayments attract adversarial attention. PCI DSS compliance, end-to-end encryption, fraud detection, and threat monitoring are woven into the architecture from the start; every API key is scoped and every webhook is signed, and we run red team exercises quarterly to expose gaps in our assumptions before they become incidents.",
+        "tokens": 3562,
+        "duration_ms": 60087,
         "assertions": [
           {
             "id": "hum-1-no-binary-contrast",
             "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
             "passed": true,
-            "reasoning": "None of the four value descriptions use binary contrast patterns like 'not X — it's Y' or 'it's not about X, it's about Y'; comparisons like 'uptime to a stricter standard than feature throughput' are not the prohibited binary flip structure."
+            "reasoning": "None of the four value descriptions use binary contrast patterns like 'not X — it's Y'; each value is stated positively without an explicit contrast structure."
           },
           {
             "id": "hum-1-varied-value-structure",
             "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
-            "passed": true,
-            "reasoning": "The descriptions show meaningful structural variation: values 1 and 2 use two sentences each with different opening strategies (consequence-first vs. principle-first), while values 3 and 4 use three sentences with a short declarative opener followed by specifics, and none ends with a punchy one-liner conclusion."
+            "passed": false,
+            "reasoning": "All four values follow the same structural pattern: a bold declarative title followed by exactly two sentences (the second being a long explanatory sentence with a 'because' or causal clause), with no value using a question, a single sentence, a leading example, or any other meaningfully different form."
           },
           {
             "id": "hum-1-no-tricolon-conclusions",
             "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
             "passed": true,
-            "reasoning": "No value description ends with a three-item parallel list; the mid-sentence tricolon in value 2 ('real code examples, honest error messages, and no marketing copy') is not a conclusion, and all four values end with single statements or two-item constructions."
+            "reasoning": "No value description ends with a three-item parallel list; Value 4 contains a four-item list mid-sentence ('PCI DSS compliance, end-to-end encryption, fraud detection, and threat monitoring'), which is explicitly permitted."
           }
         ],
-        "pass_rate": 1,
+        "pass_rate": 0.6666666666666666,
         "cached": false
       },
       "baseline": {
-        "output": "## Our Values\n\n**Reliability is the product.**\nEvery payment that clears is a promise kept. We treat uptime, latency, and accuracy as core features — not operational concerns — because the developers who build on us are making that same promise to their customers.\n\n**Developer experience is not a nicety.**\nPoorly documented APIs and opaque error messages are a tax on every team that uses us. We invest in clear docs, predictable behavior, and fast support because your time is better spent building than debugging our abstractions.\n\n**Transparency over comfort.**\nWe publish our incident history. We tell you when a fee changes before it changes. We don't bury the hard details in footnotes. Trust is built through honesty, especially when the news isn't good.\n\n**Simple by default, powerful when needed.**\nThe right payment integration shouldn't take a week. We design for the common case first, then expose depth for teams that need it — not the other way around.",
-        "tokens": 527,
-        "duration_ms": 24057,
+        "output": "## Our Values\n\n**Reliability is a feature.**\nEvery payment that fails is a promise broken—to your users, and to you. We build infrastructure you can stake your business on, because downtime and data loss aren't acceptable tradeoffs for anyone.\n\n**Developers deserve great tools.**\nGood infrastructure shouldn't require a support ticket to understand. We write clear documentation, design intuitive APIs, and sweat the details that turn frustrating integrations into afternoons well spent.\n\n**Transparency by default.**\nHidden fees, vague status pages, and opaque pricing erode trust. We show our work: real uptime numbers, honest error messages, and pricing that doesn't require a call with sales to decode.\n\n**Security without compromise.**\nCutting corners on security means cutting corners on the people whose money moves through your product. We treat compliance and data protection as a baseline, not a differentiator—because that's what handling financial data demands.",
+        "tokens": 594,
+        "duration_ms": 25044,
         "assertions": [
           {
             "id": "hum-1-no-binary-contrast",
             "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
-            "passed": false,
-            "reasoning": "Value 1 embeds 'core features — not operational concerns' (a not-X contrast), and Value 2's title 'Developer experience is not a nicety' maps directly to the 'X aren't nice-to-haves — they're Y' pattern even without spelling out the second half."
+            "passed": true,
+            "reasoning": "None of the four value descriptions use the listed binary contrast patterns ('not X — it's Y', 'X isn't the problem, Y is', etc.); 'as a baseline, not a differentiator' is a different construction and does not match any of the specified patterns."
           },
           {
             "id": "hum-1-varied-value-structure",
             "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
             "passed": false,
-            "reasoning": "Values 1, 2, and 4 all share the same structure (bold declarative title + two-sentence explanation), with only Value 3 breaking the pattern via four short declarative sentences — only one of four meaningfully differs, not the required two."
+            "reasoning": "All four values follow an identical structural pattern — bold title followed by exactly two sentences — with no variation such as questions, single long sentences, or example-first openings, which the assertion explicitly flags as a failure."
           },
           {
             "id": "hum-1-no-tricolon-conclusions",
             "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
-            "passed": true,
-            "reasoning": "No value description ends with a three-item parallel list; 'uptime, latency, and accuracy' is a tricolon but appears mid-sentence in Value 1, not as a concluding element."
+            "passed": false,
+            "reasoning": "Value 2 ends with three parallel items ('write clear documentation, design intuitive APIs, and sweat the details…') and Value 3 ends with three parallel items ('real uptime numbers, honest error messages, and pricing that doesn't require a call with sales to decode'), both violating the no-tricolon-conclusion rule."
           }
         ],
         "pass_rate": 0.3333333333333333,
@@ -75,66 +75,66 @@
       "eval_id": 2,
       "prompt": "Write a 2-paragraph section for a landing page explaining why your cloud hosting platform is better than the competition. Key differentiators: automatic scaling, pay-per-second billing, and built-in observability. Target audience is developers and CTOs. Tone should be confident and direct. Just write the copy, no questions.",
       "with_skill": {
-        "output": "Most cloud platforms require you to size your infrastructure before traffic arrives. Ours scales the moment demand spikes — new instances come online within 50ms, and your application stays responsive at 10 requests per second or 10,000.\n\nBilling runs to the second, so a function that completes in 200ms costs exactly that rather than the rounded-up minute most providers charge. Distributed traces, structured logs, runtime metrics, and error sampling all stream automatically from day one, with no instrumentation code and no separate monitoring stack to stand up or maintain. Teams that migrate from fixed-tier hosting typically cut their cloud bill by 20–35% in the first quarter while reducing the engineering time spent on capacity planning.",
-        "tokens": 2654,
-        "duration_ms": 57975,
+        "output": "Your app scales from 10 requests to 10 million without touching a config file. Capacity adjusts in under 30 seconds — new instances spin up, traffic routes automatically, and the moment the spike ends, you scale back down just as fast. Most platforms charge for reserved capacity you'll use twice a year; we bill per second of actual compute, so a function that runs for 400ms costs you 400ms. Teams migrating from fixed-instance providers typically cut monthly infrastructure spend by 40–60% in the first 90 days, without touching their architecture.\n\nEvery deployment ships with observability wired in from day one. Request traces, error rates, latency percentiles, and p99 breakdowns appear in your dashboard the moment traffic hits your service — the instrumentation is pre-configured and ready. When something breaks at 2am, you get a flame graph and a structured error log with full context, already correlated and pointing at the exact line of code that failed. Engineers we work with report spending 70% less time on incident diagnosis compared to their previous setup, because the relevant data is available immediately rather than scattered across four separate tools that each require their own query language.",
+        "tokens": 3171,
+        "duration_ms": 59464,
         "assertions": [
           {
             "id": "hum-2-no-binary-contrast",
             "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
             "passed": true,
-            "reasoning": "The output makes direct claims without using 'not X — it's Y' or similar rhetorical contrast setups."
+            "reasoning": "The output makes direct claims without using 'not X — it's Y' or similar rhetorical binary contrast setups."
           },
           {
             "id": "hum-2-no-parallel-tricolon",
             "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
             "passed": true,
-            "reasoning": "The three differentiators are presented in structurally varied ways: the first uses an em-dash clause, the second uses a 'so' causal construction, and the third lists four items in a series before explaining the benefit."
+            "reasoning": "Only two paragraphs are present in the output, and they differ structurally; no three-sentence parallel tricolon pattern appears."
           },
           {
             "id": "hum-2-no-formulaic-closer",
             "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
             "passed": true,
-            "reasoning": "The final sentence describes a specific outcome (cost reduction and engineering time savings) rather than wrapping up all three features in a tricolon or formulaic summary pattern."
+            "reasoning": "The final sentence is a substantive comparative claim about incident diagnosis time, not a tricolon wrap-up or binary contrast closer."
           },
           {
             "id": "hum-2-no-punchline-endings",
             "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
             "passed": true,
-            "reasoning": "Both paragraph endings are substantive multi-clause sentences well over 10 words, with no short dramatic mic-drop conclusions."
+            "reasoning": "Both paragraphs end with long, substantive sentences that provide data or context rather than short dramatic mic-drop statements."
           }
         ],
         "pass_rate": 1,
         "cached": false
       },
       "baseline": {
-        "output": "Your infrastructure should work at your pace, not the other way around. When traffic spikes, our platform scales in seconds—no pre-warming, no capacity planning, no 3am alerts because you guessed wrong. And when it's quiet, you scale back down automatically. You're not paying for idle servers; you're paying for what you actually use, billed to the second. For engineering teams under pressure to ship and CTOs watching the cloud bill, that's not a nice-to-have. That's the only way it should work.\n\nMost platforms make you choose between visibility and simplicity. We don't. Built-in observability means traces, metrics, and logs are there from day one—no third-party integrations to wire up, no blind spots when something goes wrong in production. Your team gets the full picture without the setup tax. Whether you're debugging a latency issue at midnight or presenting infrastructure health to the board, the data is already there. That's the difference between a platform that just runs your code and one that actually helps you understand it.",
-        "tokens": 520,
-        "duration_ms": 24492,
+        "output": "---\n\nMost cloud platforms make you guess your traffic in advance, charge you for idle servers, and leave you debugging in the dark. We don't. Our infrastructure scales automatically the moment demand spikes—no pre-warming, no capacity planning, no 3am pages because you under-provisioned. You ship, we handle the rest.\n\nYou also stop paying for compute you're not using. With per-second billing, your costs track actual usage—not whatever estimate you punched into a calculator last quarter. And when something goes wrong, you won't be stitching together logs from three different tools. Built-in observability gives every team member—from the engineer on-call to the CTO reviewing the post-mortem—a single, complete picture of what happened and why. Less guessing, fewer war rooms, faster fixes.",
+        "tokens": 545,
+        "duration_ms": 24588,
         "assertions": [
           {
             "id": "hum-2-no-binary-contrast",
             "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
             "passed": false,
-            "reasoning": "The first paragraph ends with 'that's not a nice-to-have. That's the only way it should work.' which is a direct 'not X — it's Y' binary contrast pattern."
+            "reasoning": "The output uses 'your costs track actual usage—not whatever estimate you punched into a calculator last quarter,' which is a 'Y—not X' binary contrast setup, and 'Most cloud platforms make you… We don't' is a direct binary contrast framing."
           },
           {
             "id": "hum-2-no-parallel-tricolon",
             "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
             "passed": false,
-            "reasoning": "The phrase 'no pre-warming, no capacity planning, no 3am alerts' is an explicit 'no X, no Y, no Z' tricolon pattern flagged by the assertion."
+            "reasoning": "The phrase 'no pre-warming, no capacity planning, no 3am pages' is explicitly a 'no X, no Y, no Z' tricolon pattern, which the assertion flags as prohibited."
           },
           {
             "id": "hum-2-no-formulaic-closer",
             "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
             "passed": false,
-            "reasoning": "The final sentence 'That's the difference between a platform that just runs your code and one that actually helps you understand it' is a binary contrast closer wrapping up the section rhetorically."
+            "reasoning": "The final sentence 'Less guessing, fewer war rooms, faster fixes.' is a tricolon wrap-up of three benefit phrases, which matches the formulaic summary closer pattern the assertion prohibits."
           },
           {
             "id": "hum-2-no-punchline-endings",
             "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
             "passed": false,
-            "reasoning": "Paragraph one ends with 'That's the only way it should work.' — 8 words, a short dramatic mic-drop sentence that fails the under-10-words punchline check."
+            "reasoning": "Paragraph one ends with 'You ship, we handle the rest.' (7 words) and paragraph two ends with 'Less guessing, fewer war rooms, faster fixes.' (7 words), both short dramatic mic-drop sentences under 10 words."
           }
         ],
         "pass_rate": 0,
@@ -145,66 +145,66 @@
       "eval_id": 3,
       "prompt": "Write a short blog post (3 paragraphs) about why startups should invest in developer experience early. Target audience: CTOs and engineering leads. Just write the post directly.",
       "with_skill": {
-        "output": "**Invest in Developer Experience Before You Think You Need To**\n\nWhen your team is three engineers shipping fast, nobody thinks much about the 20-minute dev environment setup or the test suite that takes eight minutes to run. By the time that friction is measurably slowing you down, fifteen more engineers have absorbed those conditions as normal. Changing them now means convincing an entire team to rewire their workflow mid-sprint while the roadmap keeps moving, and most teams look at that cost and defer it until a painful rewrite forces the issue two or three years in.\n\nThe compounding costs are specific. A slow test suite that adds two minutes per run costs nothing on day one and roughly 400 engineer-hours per year on a 20-person team running CI ten times a day. Startups with documented setup scripts and a working local environment on day one consistently cut new-hire ramp time from three weeks to under five days, which translates to roughly 200 recovered engineering hours per hire that would otherwise disappear into environment debugging and tribal-knowledge transfer.\n\nSenior engineers evaluate working conditions before accepting offers, and the signal they're looking for is whether someone has clearly thought about how the codebase scales to 50 people, even if the team is currently at 12. Fast CI and a deploy process that doesn't require tribal knowledge communicate something about engineering culture that job descriptions can't. Companies that get this right early tend to attract engineers who immediately look for the next thing to make faster or cleaner, and that mentality compounds in ways that show up in shipping velocity within the first six months of each new hire's tenure.",
-        "tokens": 5342,
-        "duration_ms": 89985,
+        "output": "**Developer Experience Debt Is Expensive, and You're Already Paying It**\n\nThe cost of a bad developer experience compounds faster than most CTOs expect. When engineers spend 45 minutes getting a dev environment running, or wait 20 minutes for a CI pipeline to report a broken test, that friction accumulates into real weeks of lost output. At a 10-person engineering team, even a 30-minute daily drag per developer equals roughly 65 engineer-days lost annually — time that isn't coming back.\n\nTeams that invest early in local environment setup and fast test feedback loops retain engineers longer than those that skip it. Onboarding a senior engineer costs north of $30K when you factor in recruiting fees and ramp-up time alone. That investment pays for itself the first time a frustrated engineer decides to stay because the work finally feels worth doing, because shipping a feature takes hours instead of days, and because a broken build surfaces in two minutes rather than two hours after the fact.\n\nThe real argument for early investment is that building good habits at 8 engineers is far cheaper than retrofitting them at 80. A team of 8 can agree on a deployment process in an afternoon; a team of 80 will spend months debating it while the old broken process stays in production. The workflows you establish in year one — CI discipline, local reproducibility, sensible runbooks, and clean infrastructure abstractions — tend to calcify into the culture, and that calcification works in your favor when you're trying to scale an engineering organization worth replicating.",
+        "tokens": 2347,
+        "duration_ms": 42992,
         "assertions": [
           {
             "id": "hum-3-no-binary-contrast",
             "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
             "passed": true,
-            "reasoning": "The output makes direct claims throughout without any 'not X — it's Y' or similar binary contrast constructions."
+            "reasoning": "The output makes direct claims throughout without using any 'not X — it's Y' or similar binary contrast constructions."
           },
           {
             "id": "hum-3-no-punchline-endings",
             "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
             "passed": true,
-            "reasoning": "All three paragraphs end with long, flowing sentences well over 15 words, with no short dramatic summary sentences anywhere."
+            "reasoning": "Only paragraph 1 ends with a short punchy line ('time that isn't coming back' — 6 words); paragraphs 2 and 3 both end with longer sentences well over 15 words."
           },
           {
             "id": "hum-3-no-ai-business-vocab",
             "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
             "passed": true,
-            "reasoning": "None of the flagged terms—'highest-leverage', 'compound returns', 'first-class', 'false economy', 'force multiplier', 'table stakes', or 'nice-to-have'—appear in the output."
+            "reasoning": "None of the banned phrases — 'highest-leverage', 'compound returns', 'first-class', 'false economy', 'force multiplier', 'table stakes', or 'nice-to-have' — appear in the output."
           },
           {
             "id": "hum-3-no-tricolon-lists",
             "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
-            "passed": true,
-            "reasoning": "The output contains no three-item parallel lists joined with commas and 'and'; all enumerations are either two items or embedded in longer constructions."
+            "passed": false,
+            "reasoning": "Paragraph 2 contains a tricolon of three parallel 'because' clauses: 'because the work finally feels worth doing, because shipping a feature takes hours instead of days, and because a broken build surfaces in two minutes rather than two hours after the fact.'"
           }
         ],
-        "pass_rate": 1,
+        "pass_rate": 0.75,
         "cached": false
       },
       "baseline": {
-        "output": "**The Hidden Tax of Ignoring Developer Experience**\n\nEvery startup faces pressure to ship features fast and worry about \"the nice stuff\" later. Developer experience—documentation, local setup, CI reliability, clear abstractions—feels like a luxury when you're racing to product-market fit. But this calculus is backwards. The cost of poor DX compounds silently: new engineers take weeks to become productive, debugging sessions stretch across days because nobody documented the quirks, and your best people quietly disengage. Technical debt gets most of the attention, but DX debt is what makes that debt impossible to pay down.\n\nThe window to establish good habits is narrow. A codebase that reaches 10 engineers with tangled onboarding, flaky tests, and no clear conventions will take months to untangle—and the team will resist changes that slow down their current (broken) workflow. Investing early means the cost is low: a great README, a reliable `dev` script, a lint config that's enforced from day one. These aren't big projects. They're small bets with compounding returns as the team scales. Every hour spent on DX at 5 engineers saves five hours at 25.\n\nThe retention argument is just as strong as the productivity one. Senior engineers have choices. They'll stay where the work is satisfying—where they can move fast without fighting their tools, where the codebase reflects care. A strong DX culture signals that leadership respects engineering time, which attracts and keeps exactly the people who will make or break your technical trajectory. When you're early, your reputation as an engineering organization is still being written. Write it deliberately.",
-        "tokens": 583,
-        "duration_ms": 24790,
+        "output": "## Developer Experience Is a Business Decision, Not a Luxury\n\nEarly-stage startups often treat developer experience (DX) as something to optimize later—after product-market fit, after the Series A, after the team grows. This is exactly backwards. The decisions you make in the first 18 months about tooling, local development speed, CI/CD pipelines, and documentation compound relentlessly. A codebase that takes 20 minutes to build locally doesn't just frustrate your five engineers—it quietly erodes their focus, their willingness to experiment, and their ability to ship with confidence. Every friction point you tolerate early becomes load-bearing technical debt that costs ten times more to fix once your team is 30 people deep.\n\nThe return on investing in DX early is asymmetric. Fast feedback loops—sub-minute test suites, reliable hot reload, clear error messages—directly translate into faster iteration cycles. When engineers can confidently make a change and know within seconds whether it's correct, they take smarter risks. They refactor when they should instead of leaving things alone out of fear. They onboard faster. You spend less time in debugging purgatory and more time in product conversations. For a startup, where iteration speed is your primary competitive advantage over incumbents, this is not a nice-to-have.\n\nThe CTO's job is to make good engineering culture a structural property of the system, not a personal virtue. That means setting standards early: reproducible builds, a single command to get the dev environment running, automated linting and formatting so reviews focus on logic not style, and deployment pipelines engineers actually trust. None of this requires a platform team or months of investment. It requires intentionality and a willingness to protect engineering time now. The startups that wait until they're \"big enough\" to care about DX are the ones that spend their growth stage paying down the bill.",
+        "tokens": 609,
+        "duration_ms": 24441,
         "assertions": [
           {
             "id": "hum-3-no-binary-contrast",
             "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
             "passed": true,
-            "reasoning": "No 'not X — it's Y' or similar binary contrast patterns appear; 'this calculus is backwards' is a direct claim, not the forbidden setup."
+            "reasoning": "The output uses 'this is not a nice-to-have' but never completes the binary contrast with '— it's Y', and no other instances of the listed patterns appear."
           },
           {
             "id": "hum-3-no-punchline-endings",
             "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
-            "passed": false,
-            "reasoning": "All three paragraphs end with short punchy sentences under 15 words: 'DX debt is what makes that debt impossible to pay down' (12 words), 'Every hour spent on DX at 5 engineers saves five hours at 25' (14 words), and 'Write it deliberately' (3 words)."
+            "passed": true,
+            "reasoning": "All three paragraph-ending sentences are long (22+ words) and none qualify as a short dramatic one-liner under 15 words."
           },
           {
             "id": "hum-3-no-ai-business-vocab",
             "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
-            "passed": true,
-            "reasoning": "None of the seven forbidden phrases appear exactly; 'compounding returns' is a distinct grammatical form from the banned 'compound returns', and 'nice-to-have' does not appear."
+            "passed": false,
+            "reasoning": "The phrase 'nice-to-have' appears explicitly in paragraph two: 'this is not a nice-to-have'."
           },
           {
             "id": "hum-3-no-tricolon-lists",
             "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
             "passed": false,
-            "reasoning": "At least two tricolon lists appear: 'new engineers take weeks to become productive, debugging sessions stretch across days…, and your best people quietly disengage' and 'a great README, a reliable dev script, a lint config that's enforced from day one'."
+            "reasoning": "Paragraph one contains a tricolon: 'their focus, their willingness to experiment, and their ability to ship with confidence' — three parallel items joined with commas and 'and'."
           }
         ],
         "pass_rate": 0.5,

@@ -1,32 +1,32 @@
 {
-  "output": "**Invest in Developer Experience Before You Think You Need To**\n\nWhen your team is three engineers shipping fast, nobody thinks much about the 20-minute dev environment setup or the test suite that takes eight minutes to run. By the time that friction is measurably slowing you down, fifteen more engineers have absorbed those conditions as normal. Changing them now means convincing an entire team to rewire their workflow mid-sprint while the roadmap keeps moving, and most teams look at that cost and defer it until a painful rewrite forces the issue two or three years in.\n\nThe compounding costs are specific. A slow test suite that adds two minutes per run costs nothing on day one and roughly 400 engineer-hours per year on a 20-person team running CI ten times a day. Startups with documented setup scripts and a working local environment on day one consistently cut new-hire ramp time from three weeks to under five days, which translates to roughly 200 recovered engineering hours per hire that would otherwise disappear into environment debugging and tribal-knowledge transfer.\n\nSenior engineers evaluate working conditions before accepting offers, and the signal they're looking for is whether someone has clearly thought about how the codebase scales to 50 people, even if the team is currently at 12. Fast CI and a deploy process that doesn't require tribal knowledge communicate something about engineering culture that job descriptions can't. Companies that get this right early tend to attract engineers who immediately look for the next thing to make faster or cleaner, and that mentality compounds in ways that show up in shipping velocity within the first six months of each new hire's tenure.",
-  "tokens": 5342,
-  "duration_ms": 89985,
+  "output": "**Developer Experience Debt Is Expensive, and You're Already Paying It**\n\nThe cost of a bad developer experience compounds faster than most CTOs expect. When engineers spend 45 minutes getting a dev environment running, or wait 20 minutes for a CI pipeline to report a broken test, that friction accumulates into real weeks of lost output. At a 10-person engineering team, even a 30-minute daily drag per developer equals roughly 65 engineer-days lost annually — time that isn't coming back.\n\nTeams that invest early in local environment setup and fast test feedback loops retain engineers longer than those that skip it. Onboarding a senior engineer costs north of $30K when you factor in recruiting fees and ramp-up time alone. That investment pays for itself the first time a frustrated engineer decides to stay because the work finally feels worth doing, because shipping a feature takes hours instead of days, and because a broken build surfaces in two minutes rather than two hours after the fact.\n\nThe real argument for early investment is that building good habits at 8 engineers is far cheaper than retrofitting them at 80. A team of 8 can agree on a deployment process in an afternoon; a team of 80 will spend months debating it while the old broken process stays in production. The workflows you establish in year one — CI discipline, local reproducibility, sensible runbooks, and clean infrastructure abstractions — tend to calcify into the culture, and that calcification works in your favor when you're trying to scale an engineering organization worth replicating.",
+  "tokens": 2347,
+  "duration_ms": 42992,
   "assertions": [
     {
       "id": "hum-3-no-binary-contrast",
       "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
       "passed": true,
-      "reasoning": "The output makes direct claims throughout without any 'not X — it's Y' or similar binary contrast constructions."
+      "reasoning": "The output makes direct claims throughout without using any 'not X — it's Y' or similar binary contrast constructions."
     },
     {
       "id": "hum-3-no-punchline-endings",
       "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
       "passed": true,
-      "reasoning": "All three paragraphs end with long, flowing sentences well over 15 words, with no short dramatic summary sentences anywhere."
+      "reasoning": "Only paragraph 1 ends with a short punchy line ('time that isn't coming back' — 6 words); paragraphs 2 and 3 both end with longer sentences well over 15 words."
     },
     {
       "id": "hum-3-no-ai-business-vocab",
       "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
       "passed": true,
-      "reasoning": "None of the flagged terms—'highest-leverage', 'compound returns', 'first-class', 'false economy', 'force multiplier', 'table stakes', or 'nice-to-have'—appear in the output."
+      "reasoning": "None of the banned phrases — 'highest-leverage', 'compound returns', 'first-class', 'false economy', 'force multiplier', 'table stakes', or 'nice-to-have' — appear in the output."
     },
     {
       "id": "hum-3-no-tricolon-lists",
       "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
-      "passed": true,
-      "reasoning": "The output contains no three-item parallel lists joined with commas and 'and'; all enumerations are either two items or embedded in longer constructions."
+      "passed": false,
+      "reasoning": "Paragraph 2 contains a tricolon of three parallel 'because' clauses: 'because the work finally feels worth doing, because shipping a feature takes hours instead of days, and because a broken build surfaces in two minutes rather than two hours after the fact.'"
     }
   ],
-  "pass_rate": 1
+  "pass_rate": 0.75
 }
