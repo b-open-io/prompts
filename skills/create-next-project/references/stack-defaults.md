@@ -99,6 +99,71 @@ Tailwind v4 is configured automatically by `create-next-app@latest` with `--tail
 
 shadcn/ui init will add CSS variables for theming. tweakcn themes (installed via `bunx shadcn@latest add <tweakcn-url>`) customize these.
 
+## shadcn/ui v4
+
+shadcn CLI v4 (March 2026) adds presets, safety flags, and structured output.
+
+### Presets
+Available built-in presets: `nova`, `vega`, `maia`, `lyra`, `mira`. Each encodes a full design system (base library, style, colors, fonts, radius).
+
+```bash
+# Init with a named preset
+bunx shadcn@latest init --preset nova --yes
+
+# Init with a custom preset code from ui.shadcn.com/create
+bunx shadcn@latest init --preset adtk27v --yes
+
+# Switch preset on existing project (re-init)
+bunx shadcn@latest init --preset maia --force --yes
+```
+
+### Base Library Choice
+`--base radix` (default) uses Radix UI primitives. `--base base` uses Base UI. The `style` field in `components.json` reflects both: e.g., `radix-nova` or `base-nova`.
+
+### Safety Flags (for agents and humans)
+```bash
+bunx shadcn@latest add button --dry-run        # Preview without writing
+bunx shadcn@latest add button --dry-run --diff  # Show exact diffs
+bunx shadcn@latest add button --view            # View file contents
+```
+
+### Project Inspection
+```bash
+bunx shadcn@latest info --json   # Structured project config (LLM-friendly)
+bunx shadcn@latest docs button --json  # Component API docs as JSON
+```
+
+### components.json (v4 shape)
+```json
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "radix-nova",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/app/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "rtl": false,
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "menuColor": "default",
+  "menuAccent": "subtle",
+  "registries": {}
+}
+```
+
+New v4 fields: `menuColor`, `menuAccent`, `registries` (for namespaced third-party registries).
+
 ## package.json Scripts
 
 ```json

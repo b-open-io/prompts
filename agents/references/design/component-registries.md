@@ -82,11 +82,11 @@ bunx shadcn@latest add "https://spell.sh/r/shimmer-text.json"
 **Registry:** Built-in to `npx shadcn@latest`
 **Source:** [github.com/shadcn-ui/ui](https://github.com/shadcn-ui/ui)
 **Docs:** [ui.shadcn.com](https://ui.shadcn.com)
-**Aesthetic:** Clean, minimal, accessible. The foundation everything else builds on.
+**Aesthetic:** Clean, minimal, accessible. The foundation everything else builds on. v4 supports Radix UI or Base UI via `--base radix` or `--base base`.
 
 ```bash
-npx shadcn@latest init
-npx shadcn@latest add button card dialog form table tabs
+bunx shadcn@latest init --preset nova --yes
+bunx shadcn@latest add button card dialog form table tabs
 ```
 
 ### Core Components
@@ -113,6 +113,39 @@ npx shadcn@latest add "https://magicui.design/r/shimmer-button.json"
 ```
 
 Components are copied into your project — you own the code. No lock-in.
+
+## shadcn CLI v4 Registry Features
+
+### Registry Management
+```bash
+# Add a namespaced third-party registry
+bunx shadcn@latest registry add @acme=https://acme.com/r
+
+# Search/browse registry items
+bunx shadcn@latest search @shadcn
+
+# Install from namespaced registry
+bunx shadcn@latest add @acme/hero-section
+```
+
+### Safety Flags (v4)
+```bash
+# Preview what will change before installing
+bunx shadcn@latest add button card --dry-run
+
+# See exact file diffs
+bunx shadcn@latest add dialog --dry-run --diff
+
+# View file contents without writing
+bunx shadcn@latest add form --view
+```
+
+### Component Docs
+```bash
+# Get docs and examples for a component
+bunx shadcn@latest docs button
+bunx shadcn@latest docs button --json  # LLM-friendly output
+```
 
 ## Quality Bar
 

@@ -137,7 +137,7 @@ Now that the scaffold exists, gather ALL requirements in one round. Use `AskUser
    - `resend` - Transactional email
    - None
 
-4. **Theme**: "Pick a theme at tweakcn.com and paste the registry URL, or skip to use the default shadcn theme."
+4. **Theme**: "Pick a preset (nova, vega, maia, lyra, mira), create a custom one at ui.shadcn.com/create, or pick a theme at tweakcn.com and paste the registry URL."
 
 5. **Skills to reference in CLAUDE.md** (multi-select from installed plugins):
    - List available skills
@@ -188,7 +188,12 @@ Create an agent team (using `TeamCreate`) with specialized agents. Provide each 
 
 **Agent 1: UI + Layout + Theme** (Phases 2-3)
 Responsibilities:
-- `bunx shadcn@latest init --defaults`
+- `bunx shadcn@latest init --preset nova --yes` (or use the user's chosen preset from Step 2)
+- If user provided a preset code from ui.shadcn.com/create, use `--preset <code>` instead
+- ```bash
+  # If user chose Base UI instead of Radix
+  bunx shadcn@latest init --base base --preset nova --yes
+  ```
 - `bunx shadcn@latest add dashboard-01`
 - Install tweakcn theme if URL provided
 - `bun add next-themes`
@@ -637,6 +642,7 @@ These stubs get overwritten on first `bunx convex dev`.
 - **Explicit return types on cron actions** -- avoids circular type references
 - **Convex replaces TanStack Query** -- when using Convex, use `useQuery`/`useMutation` from `convex/react`. Do NOT install TanStack Query.
 - **CLIs first** -- use `create-next-app`, `shadcn`, `biome`, `vercel`, `gh` CLIs
+- **shadcn v4 safety flags** -- use `--dry-run` and `--diff` when iterating on component additions to preview changes before applying
 - **Latest versions** -- always `@latest` for all installations
 - **Build verification** -- run `bun run build` at every commit checkpoint
 - **No push before database** -- NEVER push to GitHub before the database is provisioned via Vercel Storage. Pushing triggers a Vercel deploy that will fail without a connected database, creating broken deployments and potentially duplicate disconnected database instances

@@ -1,9 +1,9 @@
 ---
 name: designer
 display_name: "Mira"
-version: 1.0.6
+version: 1.0.7
 model: sonnet
-description: Creates beautiful, accessible UI components using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "implement dark mode", "review UI accessibility", "design in pencil", "open a .pen file", "create a mockup", or needs help with Tailwind CSS, component libraries, Pencil.dev visual design, or visual design.
+description: Creates beautiful, accessible UI components using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "set up shadcn preset", "implement dark mode", "review UI accessibility", "design in pencil", "open a .pen file", "create a mockup", or needs help with Tailwind CSS, component libraries, Pencil.dev visual design, or visual design.
 tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob", "TodoWrite", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(gemskills:generate-image)", "Skill(gemskills:generate-svg)", "Skill(gemskills:generate-icon)", "Skill(gemskills:edit-image)", "Skill(gemskills:optimize-images)", "Skill(gemskills:section-dividers)", "Skill(gemskills:browsing-styles)", "Skill(gemskills:avatar-portrait)", "Skill(gemskills:ask-gemini)", "Skill(gemskills:generate-video)", "Skill(gemskills:upscale-image)", "Skill(gemskills:segment-image)", "Skill(bopen-tools:generative-ui)", "Skill(superpowers:dispatching-parallel-agents)", "Skill(superpowers:subagent-driven-development)", "Skill(agent-browser)", "mcp__pencil__get_editor_state", "mcp__pencil__open_document", "mcp__pencil__get_guidelines", "mcp__pencil__get_style_guide_tags", "mcp__pencil__get_style_guide", "mcp__pencil__batch_get", "mcp__pencil__batch_design", "mcp__pencil__snapshot_layout", "mcp__pencil__get_screenshot", "mcp__pencil__get_variables", "mcp__pencil__set_variables", "mcp__pencil__find_empty_space_on_canvas", "mcp__pencil__search_all_unique_properties", "mcp__pencil__replace_all_matching_properties"]
 color: magenta
 ---
@@ -38,7 +38,7 @@ cat tailwind.config.* 2>/dev/null | head -50
 
 ## Key Tools & Resources
 
-- **Component Library**: shadcn/ui (Radix UI + Tailwind)
+- **Component Library**: shadcn/ui v4 (Radix UI or Base UI + Tailwind). Presets: nova, vega, maia, lyra, mira. Use `bunx shadcn@latest info --json` to inspect a project's config.
 - **Styling**: Tailwind CSS v4 with CSS variables
 - **Theme Editor**: tweakcn.com for visual shadcn/ui theming
 - **Code Quality**: Biome formatter + Ultracite preset
@@ -156,58 +156,70 @@ Always implement: hover, focus, active, disabled, loading, error
 
 ## shadcn/ui Patterns
 
-### Installation
+### shadcn/ui CLI v4
+
+**Available presets:** nova, vega, maia, lyra, mira
+**Available bases:** radix (default), base (Base UI)
+
+#### Initialization
 ```bash
-# Initialize in Next.js project
-npx shadcn@latest init
+# Init with preset (recommended)
+bunx shadcn@latest init --preset nova --yes
 
-# Add components
-npx shadcn@latest add button card dialog form table
+# Init with Base UI instead of Radix
+bunx shadcn@latest init --base base --preset nova --yes
+
+# Init with RTL support
+bunx shadcn@latest init --preset nova --rtl --yes
+
+# Init monorepo
+bunx shadcn@latest init --template vite --monorepo --yes
+
+# Custom preset code from ui.shadcn.com/create
+bunx shadcn@latest init --preset adtk27v --yes
 ```
 
-### Theming with CSS Variables
-```css
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    /* Use tweakcn.com for visual editing */
-  }
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-  }
-}
+#### Adding Components (with safety flags)
+```bash
+# Preview before installing
+bunx shadcn@latest add button card --dry-run
+
+# See exact file diffs
+bunx shadcn@latest add dialog --dry-run --diff
+
+# View file contents without writing
+bunx shadcn@latest add form --view
+
+# Install from third-party registry
+bunx shadcn@latest add "https://spell.sh/r/blur-reveal.json"
 ```
 
-### Component Variants with CVA
-```tsx
-import { cva, type VariantProps } from "class-variance-authority"
+#### Project Info (LLM-friendly)
+```bash
+# Structured JSON output — use this to understand a project's shadcn setup
+bunx shadcn@latest info --json
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-      },
-      size: {
-        sm: "h-9 px-3 text-sm",
-        default: "h-10 px-4 py-2",
-        lg: "h-11 px-8",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
+# Component docs as JSON
+bunx shadcn@latest docs button --json
+```
+
+#### Registry Management
+```bash
+# Add a namespaced registry
+bunx shadcn@latest registry add @acme=https://acme.com/r
+
+# Search/browse registry items
+bunx shadcn@latest search @shadcn
+```
+
+#### Migrations
+```bash
+# List available migrations
+bunx shadcn@latest migrate --list
+
+# Available: icons, radix, rtl
+bunx shadcn@latest migrate rtl --yes
+bunx shadcn@latest migrate icons --yes
 ```
 
 ### Form Pattern (react-hook-form + zod)
