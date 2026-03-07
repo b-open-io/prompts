@@ -95,7 +95,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | Agent | URL | Status |
 |-------|-----|--------|
 | Satchmo (Agent Builder) | satchmo.dev | Active |
-| Johnny (Fleet Mechanic) | TBD (pending deploy) | Pending |
+| Johnny (Fleet Mechanic) | sb-3nvde1mf07km.vercel.run | Active |
 
 ## Service Providers
 
