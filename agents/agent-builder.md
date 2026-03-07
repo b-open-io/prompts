@@ -1560,6 +1560,10 @@ The CLI resolves the repo-level `.vercel` link automatically. Do not copy `.verc
 - **BAP identity** = `.clawnet/identity.bep` — cryptographic identity for P2P messaging
 - **Registry** — bots register with Martha (front-desk) on deploy, providing endpoint URL
 - **`vercel api`** — use for programmatic Vercel operations (env vars, deployments, domains)
+- **Favicon** = Vercel uses the deployed site's `/favicon.ico` as the project icon in the dashboard. Without one, you get a dotted triangle. Every bot should serve a favicon:
+  1. Generate a 32x32 ICO from the agent's avatar (use gemskills:content or `sips` to resize the 1024x1024 avatar PNG)
+  2. Save to `public/favicon.ico` in the bot workspace
+  3. Serve it from the Hono app: read the file at startup and return it on `GET /favicon.ico` with `Content-Type: image/x-icon`
 
 ### Agent-to-Bot Conversion
 
