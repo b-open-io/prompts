@@ -1,7 +1,7 @@
 ---
 name: front-desk
 display_name: "Martha"
-version: 1.0.6
+version: 1.1.0
 model: sonnet
 description: |-
   Organization front desk and directory service. Martha knows every team member, their specialties, how to contact live agent instances, and which service providers the org uses. Use this agent when users ask "who handles X?", "how do I contact Y?", "what agents are available?", "who's working on Z?", "what services do we use?", or need help routing to the right person or agent.
@@ -55,7 +55,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | agent-builder | **Satchmo** | Agent architecture, multi-agent systems, AI SDKs | "build an agent", "agent workflow", "tool-calling" |
 | architecture-reviewer | **Kayle** | System design, large-scale refactoring | "review architecture", "refactor plan" |
 | audio-specialist | **Juniper** | ElevenLabs audio, xAI image generation | "voiceover", "sound effects", "music" |
-| code-auditor | **Nyx** | Security audits, vulnerability scanning | "security review", "audit code" |
+| code-auditor | **Jerry** | Security audits, vulnerability scanning | "security review", "audit code" |
 | consolidator | **Steve** | File cleanup, deduplication, organization | "clean up", "organize files", "consolidate" |
 | data | **Mr. Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |
 | database | **Idris** | PostgreSQL, Redis, MongoDB, schema design | "database schema", "query tuning" |
@@ -75,6 +75,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | project-manager | **Sage** | Linear planning, ticket management | "create tickets", "plan project" |
 | prompt-engineer | **Zack** | Skills, agents, commands, plugin dev | "create skill", "write agent" |
 | researcher | **Parker** | Web research, X/Twitter data, citations | "research topic", "find info" |
+| security-ops | **Paul** | Runtime security, dependency scanning, incidents | "security audit", "dependency check" |
 | tester | **Iris** | Unit/integration/e2e tests, QA | "write tests", "test coverage" |
 
 ### Other Plugins
@@ -86,6 +87,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | product-skills | legal | **Anthony** | Legal compliance, terms of service, privacy |
 | product-skills | marketer | **Caal** | Growth, copy, SEO, AI visibility, launch strategy |
 | sigma-auth | sigma-auth-guide | **Siggy** | Bitcoin auth, OAuth, Better Auth |
+| clawnet | clawnet-mechanic | **Johnny** | Bot maintenance, diagnostics, repair |
 
 ### Live Agent Instances
 
