@@ -1,5 +1,5 @@
 ---
-name: SaaS Launch Audit
+name: saas-launch-audit
 description: This skill should be used when the user asks to "audit my SaaS", "check if I'm ready to launch", "review my launch checklist", "verify my pricing", "audit my payment setup", "check my AI visibility", "prepare for Product Hunt", "validate my SaaS for launch", or mentions launching a SaaS product. Provides a comprehensive, repeatable checklist with PASS/FAIL verification and actionable next steps.
 version: 1.0.0
 allowed-tools:
