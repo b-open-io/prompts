@@ -1,13 +1,14 @@
 ---
 name: generative-ui
-version: 0.1.0
+version: 0.2.0
 description: >-
   This skill should be used when the user asks about "generative UI", "dynamic UI",
   "AI-generated interfaces", "json-render", "render JSON as UI", "generate a dashboard",
-  "create dynamic components", "AI UI generation", or needs to decide whether to use
-  static components vs AI-generated UI. Covers the json-render framework, renderer selection,
-  catalog design, and integration with gemskills for visual asset generation.
-user-invocable: false
+  "create dynamic components", "AI UI generation", "MCP App UI", "deliver UI in chat",
+  "interactive chat interface", or needs to decide whether to use static components vs
+  AI-generated UI. Covers the json-render framework, renderer selection, catalog design,
+  MCP Apps delivery (ui:// resources for in-chat interactive UIs), and integration with
+  gemskills for visual asset generation.
 ---
 
 # Generative UI
@@ -100,6 +101,41 @@ Schema definition -> AI generates form spec from natural language -> Form render
 
 ### Cross-Platform Rendering
 Same catalog definition, different registries. One spec renders to web (React), mobile (React Native), and email (React Email).
+
+## MCP Apps Delivery
+
+Generative UI specs can be delivered directly inside chat hosts (Claude, ChatGPT, VS Code Copilot) via **MCP Apps**. The json-render React renderer runs inside a Vite-bundled single-file HTML served as a `ui://` resource.
+
+**Delivery path:**
+1. AI generates a json-render spec (JSON)
+2. MCP tool returns the spec as `structuredContent` (a structured JSON response the host renders in the UI, separate from the text the model sees)
+3. The MCP App View (sandboxed iframe) receives it via `ontoolresult`
+4. View's embedded `<Renderer>` component renders the spec as interactive UI
+5. User interacts — View calls server tools for fresh data, re-renders
+
+This combines generative UI's guardrailed output with MCP Apps' context preservation and bidirectional data flow. No tab switching, no separate web app.
+
+```
+AI generates spec → MCP tool returns structuredContent
+                  → Host renders ui:// resource in iframe
+                  → View renders spec with json-render <Renderer>
+                  → User interacts → View calls tools → fresh spec
+```
+
+For building MCP Apps that deliver generative UI, use Skill(bopen-tools:mcp-apps).
+
+## Delivery Channels
+
+| Renderer | Package | Delivery Channel |
+|----------|---------|-----------------|
+| Web | `@json-render/react` | Web app **or** MCP App (`ui://` resource) |
+| shadcn/ui | `@json-render/shadcn` | Web app **or** MCP App (`ui://` resource) |
+| Mobile | `@json-render/react-native` | React Native app |
+| Video | `@json-render/remotion` | Video file |
+| Email | `@json-render/react-email` | Email (HTML) |
+| Images | `@json-render/image` | Image file (PNG/SVG) |
+
+MCP Apps delivery is available for any renderer that targets the browser (React, shadcn). Bundle the renderer + catalog + registry into a single HTML file with Vite + `vite-plugin-singlefile`, serve it as a `ui://` resource.
 
 ## Reference Files
 

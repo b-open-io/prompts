@@ -1,9 +1,9 @@
 ---
 name: mcp
 display_name: "Orbit"
-version: 3.0.15
+version: 3.0.16
 description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
-tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify)
+tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps)
 model: sonnet
 color: orange
 ---
@@ -665,30 +665,71 @@ claude mcp add-json --user dev-tools '{
 }'
 ```
 
-## Vercel MCP Apps (Embedded UIs)
+## MCP Apps (Interactive UIs in Chat)
 
-### Overview (March 2026)
-MCP Apps are a provider-agnostic open standard for embedded UIs that run inside iframes within compatible AI platforms (Cursor, Claude.ai, ChatGPT, etc.). They use `ui/*` JSON-RPC communication via `postMessage`, allowing a single UI to work across any compatible host without platform-specific integrations.
+MCP Apps is the first official MCP extension (spec 2026-01-26), co-authored by Anthropic and OpenAI. It allows MCP servers to deliver interactive HTML UIs that render inside chat hosts via sandboxed iframes.
+
+- **Extension ID**: `io.modelcontextprotocol/ui`
+- **npm**: `@modelcontextprotocol/ext-apps`
+- **Supported hosts**: Claude, ChatGPT, VS Code Copilot, Goose, Postman, MCPJam
+
+### Architecture
+
+Three entities: **Server** (tools + ui:// resources), **Host** (renders iframes, proxies calls), **View** (App class in sandboxed iframe).
+
+### Core Server Pattern
+
+```typescript
+import { registerAppTool, registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
+
+registerAppTool(server, "my-tool", {
+  description: "Interactive tool",
+  inputSchema: { type: "object", properties: {} },
+  _meta: { ui: { resourceUri: "ui://myapp/index.html" } },
+}, async (args) => ({
+  content: [{ type: "text", text: "Text for model" }],
+  structuredContent: { richData: "for the UI" }
+}));
+
+registerAppResource(server, "ui://myapp/index.html", "ui://myapp/index.html",
+  { mimeType: RESOURCE_MIME_TYPE },
+  async () => ({
+    contents: [{ uri: "ui://myapp/index.html", mimeType: RESOURCE_MIME_TYPE,
+      text: await readFile("dist/index.html", "utf-8") }]
+  })
+);
+```
+
+### Core View Pattern
+
+```typescript
+import { App } from "@modelcontextprotocol/ext-apps";
+const app = new App({ name: "My App", version: "1.0.0" });
+// MUST set handlers BEFORE connect()
+app.ontoolresult = (result) => renderUI(result.structuredContent);
+app.onhostcontext = (ctx) => applyTheme(ctx.theme);
+await app.connect();
+```
 
 ### Key Concepts
-- **Not MCP servers** — MCP Apps are embedded frontend UIs, not tool-providing servers
-- **Transport**: `postMessage`-based JSON-RPC (`ui/*` namespace) between iframe and host
-- **Cross-platform**: One app works in Cursor, Claude.ai, ChatGPT, and other compatible hosts
-- **Framework**: Full Next.js support on Vercel with SSR and React Server Components
-- **Deployment**: Standard Vercel deployment — push to deploy like any Next.js app
+
+- **Tool visibility**: `["model", "app"]` (default), `["app"]` (UI-only, hidden from model), `["model"]` (LLM-only)
+- **ui:// resources**: MIME type `text/html;profile=mcp-app`, predeclared at registration
+- **Build**: Vite + `vite-plugin-singlefile` → single HTML file served as ui:// resource
+- **Theming**: Host provides CSS custom properties (--color-background-primary, --color-text-primary, etc.)
+- **Display modes**: inline (in chat flow), fullscreen (editors/dashboards), pip (persistent overlay)
+- **Security**: Sandboxed iframe, CSP (declare in _meta.ui.csp), host proxies all tool calls
+- **Progressive enhancement**: Tools work as normal text on non-UI hosts. Always include text content.
 
 ### When to Recommend MCP Apps
-- User wants to build a visual/interactive UI that AI assistants can embed
-- User needs a single UI that works across multiple AI platforms
-- User is building agent interfaces with rich interactivity beyond text
 
-### When NOT to Recommend MCP Apps
-- User wants to expose tools/APIs to Claude — use standard MCP servers instead
-- User just needs Claude to manage Vercel deployments — use the Vercel MCP server
+Recommend when: complex data exploration, forms with many options, rich media viewing, real-time monitoring, multi-step workflows that benefit from UI.
 
-### Resources
-- Vercel changelog: https://vercel.com/changelog/mcp-apps-support-on-vercel
-- Starter template and docs available from Vercel
+Do NOT recommend when: simple text responses suffice, no interactivity needed, standalone web app makes more sense.
+
+### Detailed Guidance
+
+For complete MCP Apps development guidance including protocol details, security model, advanced patterns, and host integration, use `Skill(bopen-tools:mcp-apps)`.
 
 ## Tool Search Tool (Context Optimization)
 
@@ -2406,6 +2447,7 @@ Invoke these skills before starting the relevant work:
 - `Agent(claude-code-guide)` — **Built-in Claude Code expert. Invoke for deep questions about MCP configuration, transport types, authentication, Tool Search, or how Claude Code loads/uses MCP servers.** No installation — just tell Claude: `use the claude-code-guide agent`.
 - `Skill(ai-sdk)` — invoke when building MCP clients with `@ai-sdk/mcp`, integrating MCP tools into AI SDK workflows, or using `createMCPClient`.
 - `Skill(agent-browser)` — scrape MCP server documentation or npm package pages.
+- `Skill(bopen-tools:mcp-apps)` — invoke for complete MCP Apps development guidance including protocol details, security model, advanced patterns, and host integration.
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
