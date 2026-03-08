@@ -2378,8 +2378,31 @@ claude mcp add <name> -e VAR=value -- command args
 2. **Never declare optional env vars** — if the code has a fallback (e.g., `process.env.KEY ?? "default"`), don't put it in .mcp.json. The code reads `process.env` directly regardless
 3. **Only declare vars that cause startup failure** if missing — vars the server cannot function without
 4. **The `env` block in .mcp.json is for injection, not documentation** — it's not a list of "supported" vars. Document optional vars in README instead
-5. **`${CLAUDE_PLUGIN_ROOT}` is always available** in `args` — it resolves to the plugin's root directory. No need to declare it in `env`
+5. **`${CLAUDE_PLUGIN_ROOT}` is always available** in `args` when loaded as a plugin — it resolves to the plugin's root directory. No need to declare it in `env`
 6. **Run `/doctor` after changes** to verify no false warnings remain
+
+### CLAUDE_PLUGIN_ROOT and the Dual-Context Problem
+
+`${CLAUDE_PLUGIN_ROOT}` is set **automatically by Claude Code** when loading a plugin — either from the marketplace cache or via `--plugin-dir`. Users never set it manually.
+
+**The dual-context issue**: A plugin's `.mcp.json` serves two roles:
+1. **As plugin config** (when installed) — `${CLAUDE_PLUGIN_ROOT}` resolves correctly
+2. **As project config** (when `cd`'d into the source repo) — `${CLAUDE_PLUGIN_ROOT}` is NOT set, causing `/doctor` warnings
+
+This is expected behavior, NOT a bug. When developing a plugin locally:
+```bash
+# CORRECT: Load as a plugin with CLAUDE_PLUGIN_ROOT set
+claude --plugin-dir /path/to/my-plugin
+
+# WRONG: Just cd into the repo — .mcp.json is read as project config
+cd /path/to/my-plugin && claude
+```
+
+**Rules:**
+- Use `${CLAUDE_PLUGIN_ROOT}` in plugin `.mcp.json` — it's the correct portable pattern
+- Do NOT replace it with relative paths — those may not resolve from the plugin cache
+- Do NOT add `CLAUDE_PLUGIN_ROOT` to shell profiles — Claude Code manages it
+- `/doctor` warnings about `CLAUDE_PLUGIN_ROOT` in a plugin source repo are expected — tell the user to test with `--plugin-dir`
 - Use input prompts for sensitive data
 - Regularly rotate access tokens
 - Monitor API rate limits
