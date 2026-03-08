@@ -2337,6 +2337,49 @@ claude mcp add <name> -e VAR=value -- command args
 - Document required env vars
 - Test after installation
 - Keep OAuth tokens secure
+
+## .mcp.json Environment Variable Rules
+
+**Only declare env vars in .mcp.json that are strictly required for the server to start.** Claude Code's `/doctor` command warns about ALL declared env vars that are missing, regardless of whether the code handles them gracefully.
+
+### The Problem
+```json
+// BAD: Declares optional env vars — causes /doctor warnings on every install
+{
+  "mcpServers": {
+    "my-server": {
+      "command": "bun",
+      "args": ["run", "${CLAUDE_PLUGIN_ROOT}/src/index.ts"],
+      "env": {
+        "REQUIRED_KEY": "${REQUIRED_KEY}",
+        "OPTIONAL_KEY": "${OPTIONAL_KEY}",
+        "UNUSED_KEY": "${UNUSED_KEY}"
+      }
+    }
+  }
+}
+```
+
+### The Fix
+```json
+// GOOD: Only required env vars declared — clean /doctor output
+{
+  "mcpServers": {
+    "my-server": {
+      "command": "bun",
+      "args": ["run", "${CLAUDE_PLUGIN_ROOT}/src/index.ts"]
+    }
+  }
+}
+```
+
+### Rules:
+1. **Never declare unused env vars** in .mcp.json — audit the source code to confirm each var is actually read
+2. **Never declare optional env vars** — if the code has a fallback (e.g., `process.env.KEY ?? "default"`), don't put it in .mcp.json. The code reads `process.env` directly regardless
+3. **Only declare vars that cause startup failure** if missing — vars the server cannot function without
+4. **The `env` block in .mcp.json is for injection, not documentation** — it's not a list of "supported" vars. Document optional vars in README instead
+5. **`${CLAUDE_PLUGIN_ROOT}` is always available** in `args` — it resolves to the plugin's root directory. No need to declare it in `env`
+6. **Run `/doctor` after changes** to verify no false warnings remain
 - Use input prompts for sensitive data
 - Regularly rotate access tokens
 - Monitor API rate limits

@@ -257,6 +257,14 @@ Key environment variables that can be set in settings.json:
 - `BASH_MAX_TIMEOUT_MS`: Max timeout for bash commands
 - `MAX_MCP_OUTPUT_TOKENS`: Limit MCP tool responses (default: 25000)
 
+### .mcp.json Environment Variable Best Practice
+**Only declare env vars in `.mcp.json` that are strictly required for the MCP server to start.** Claude Code's `/doctor` warns about ALL declared env vars that are missing — optional or unused vars create false warnings and a bad install experience.
+
+- **Never declare unused env vars** — audit source code to confirm each var is actually read
+- **Never declare optional env vars** — if code has a fallback (`process.env.KEY ?? "default"`), omit it from .mcp.json. The server reads `process.env` directly regardless of .mcp.json declarations
+- **The `env` block is for injection, not documentation** — document optional vars in README, not .mcp.json
+- **`${CLAUDE_PLUGIN_ROOT}`** is always available in `args` — no need to declare it in `env`
+
 ### Permission Syntax Examples
 ```json
 {
