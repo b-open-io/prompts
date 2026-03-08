@@ -137,6 +137,14 @@ Skills are context-triggered capabilities. They activate automatically or can be
   bunx skills add b-open-io/bopen-tools --skill humanize
   ```
 
+### MCP Apps
+- **mcp-apps** - Aggregated skill for building MCP Apps with interactive UIs
+- **create-mcp-app** - Build new MCP Apps from scratch
+- **add-app-to-server** - Add interactive UI to existing MCP servers
+- **convert-web-app** - Convert web applications to MCP Apps
+
+Based on the official [`modelcontextprotocol/ext-apps`](https://github.com/nichochar/ext-apps) repository. Third-party sources tracked in `skills-lock.json`.
+
 ### Development
 - **benchmark-skills** - Write evals for skills and measure their impact vs baseline
   ```bash
@@ -454,3 +462,10 @@ When adding new content:
 4. **Skills** go in `skills/`
 5. Use the prompt-engineer agent for creating commands
 6. Test thoroughly before committing
+
+## Skill Provenance
+
+Two layers track skill authorship and integrity:
+
+- **`skills-lock.json`** — Vercel Labs format recording third-party skill sources, versions, and SHA256 content hashes. Ensures reproducible installs and detects tampering.
+- **`.clawnet/` directories** — On-chain Bitcoin attestation (B + MAP + AIP + BAP ATTEST) for skills we author. Provides cryptographic proof of authorship anchored to the BSV blockchain.

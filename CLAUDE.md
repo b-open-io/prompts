@@ -435,6 +435,44 @@ For creating and maintaining skills, reference the official **skill-development*
 - `references/MODULAR_PROMPTS_GUIDE.md` - Comprehensive guide for modular prompt system
 - `templates/agent-update-template.md` - Template for updating agent configurations
 
+## Third-Party Skills & Provenance
+
+### skills-lock.json
+
+This repo uses the Vercel Labs `skills-lock.json` format to track third-party skills installed from external repos. Each entry records:
+- `source` — GitHub `org/repo` where the skill originates
+- `sourceType` — Always `github` currently
+- `computedHash` — SHA256 hash of the skill folder contents for integrity verification
+
+Third-party skills are installed into `.agents/skills/` and symlinked into `skills/` for plugin discovery. Our own authored skills live directly in `skills/`.
+
+Current sources:
+- `modelcontextprotocol/ext-apps` — MCP Apps SDK skills (create-mcp-app, add-app-to-server, convert-web-app)
+- `vercel-labs/json-render` — JSON rendering skills (json-render-core, json-render-react, etc.)
+
+To add a third-party skill:
+```bash
+npx skills add https://github.com/org/repo --skill skill-name
+```
+
+### ClawNet On-Chain Attestation
+
+Our own skills (in `skills/`) have `.clawnet/unsigned-skill.json` files containing on-chain attestation data:
+- `opReturnHex` — Skill content as Bitcoin OP_RETURN payload (B + MAP + AIP protocols)
+- `aipSignature` — ECDSA signature proving authorship
+- `signerAddress` — Publisher's Bitcoin address
+
+The attestation system uses BAP ATTEST for vouching/denouncing skills. Trust is computed from a 4-component score (attestation balance, auditor breadth, on-chain weight, version continuity).
+
+Two layers:
+- **Distribution**: `skills-lock.json` tracks where skills came from (compatible with Vercel ecosystem)
+- **Trust**: `.clawnet/` provides cryptographic proof of authorship on Bitcoin (additive layer)
+
+Key repos:
+- `~/code/clawnet` — Registry, CLI (`clawnet publish`, `clawnet vouch`), trust scoring
+- `~/code/clawnet-bot` — Bot templates that consume verified skills via `createSkillTool()`
+- `~/code/bap` — Bitcoin Attestation Protocol for identity and signing
+
 ## Workflow Orchestration Patterns
 
 Apply these systematic workflow patterns for effective task management:
