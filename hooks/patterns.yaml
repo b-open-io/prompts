@@ -1,0 +1,74 @@
+# Damage Control Patterns
+# Tiered path and command protection for Claude Code hooks.
+# Used by hooks/damage-control.sh
+
+# No read, write, or any access.
+zeroAccessPaths:
+  - ".env"
+  - ".env.local"
+  - ".env.production"
+  - ".env.development"
+  - ".env.staging"
+  - ".env.test"
+  # Match any .env.* but not .env.sample or .env.example
+  - ".env.*"
+  - "~/.ssh/"
+  - "~/.aws/"
+  - "*.pem"
+  - "*.key"
+  - "*.tfstate"
+  - "~/.clawnet/identity.master.bep"
+
+# These .env variants are explicitly allowed (overrides .env.* above)
+zeroAccessExceptions:
+  - ".env.sample"
+  - ".env.example"
+
+# Can read, cannot write or delete.
+readOnlyPaths:
+  - "/etc/"
+  - "~/.bashrc"
+  - "~/.zshrc"
+  - "~/.profile"
+  - "*.lock"
+  - "package-lock.json"
+  - "bun.lockb"
+  - "node_modules/"
+  - ".git/objects/"
+
+# Can read and write, cannot delete.
+noDeletePaths:
+  - "~/.claude/"
+  - "README.md"
+  - "LICENSE"
+  - ".git/"
+  - ".github/"
+  - "Dockerfile"
+  - "CLAUDE.md"
+  - "plugin.json"
+  - "skills-lock.json"
+
+# Bash command patterns that are hard-blocked (exit 2).
+destructiveCommands:
+  - "rm -rf /"
+  - "rm -fr /"
+  - "chmod 777"
+  - "git reset --hard"
+  - "git clean -fd"
+  - "git clean -df"
+  - "git push --force"
+  - "git push -f "
+  - "drop table"
+  - "drop database"
+  - "truncate table"
+  - "truncate "
+  - "npm unpublish"
+  - "vercel rm"
+  - "vercel remove"
+  - "railway delete"
+
+# Bash command patterns that require explicit user confirmation (ask, don't block).
+askConfirmation:
+  - "git checkout -- ."
+  - "git stash drop"
+  - "rm -rf node_modules"
