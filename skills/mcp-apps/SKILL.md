@@ -153,7 +153,7 @@ Use `["app"]` for tools that only make sense as UI interactions (pagination, sor
 MCP App Views must be compiled to a single self-contained HTML file. Use Vite with `vite-plugin-singlefile`:
 
 ```bash
-npm install -D vite vite-plugin-singlefile
+bun add -d vite vite-plugin-singlefile
 ```
 
 ```typescript
@@ -163,11 +163,35 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 
 export default defineConfig({
   plugins: [viteSingleFile()],
-  build: { outDir: "dist" },
+  build: {
+    rollupOptions: { input: "src/views/mcp-app.html" },
+    outDir: "dist",
+    emptyOutDir: false,
+  },
 });
 ```
 
 Any framework works: React, Vue, Svelte, Preact, Solid, or vanilla JS/HTML. The View is just HTML — no special runtime.
+
+### CRITICAL: Why bundling is mandatory
+
+Views render inside `srcdoc` iframes. This means:
+- **Bare module imports fail** — `import { App } from "@modelcontextprotocol/ext-apps"` cannot resolve without a bundler
+- **CDN `<script src="">` tags fail** — external script tags don't work in srcdoc iframes
+- **ALL dependencies must be inlined** — JS, CSS, everything bundled into one HTML file
+- Install deps as npm packages (e.g., `bun add leaflet`), import them in your view TS file, and let Vite bundle them
+
+### Tool result viewUUID
+
+Tool results MUST include `_meta.viewUUID` for the host to create a UI instance:
+
+```typescript
+return {
+  content: [{ type: "text", text: "Summary for the model" }],
+  structuredContent: { data: richData },
+  _meta: { viewUUID: randomUUID() },
+};
+```
 
 ## Theming
 

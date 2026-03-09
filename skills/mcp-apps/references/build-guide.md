@@ -58,11 +58,7 @@ my-mcp-app/
     "typescript": "latest",
     "vite": "latest",
     "vite-plugin-singlefile": "latest",
-    "express": "latest",
-    "cors": "latest",
-    "@types/express": "latest",
-    "@types/cors": "latest",
-    "tsx": "latest"
+    "@types/bun": "latest"
   }
 }
 ```
@@ -103,86 +99,101 @@ export default defineConfig({
 
 ## Complete Server Example
 
+**IMPORTANT:** Use a `createServer()` factory — each transport needs its own McpServer instance. A single McpServer cannot be shared across multiple transports.
+
 ```typescript
 // server.ts
+import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import {
   registerAppTool,
   registerAppResource,
   RESOURCE_MIME_TYPE,
 } from "@modelcontextprotocol/ext-apps/server";
-import cors from "cors";
-import express from "express";
-import fs from "node:fs/promises";
-import path from "node:path";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
 
-const server = new McpServer({
-  name: "My MCP App Server",
-  version: "1.0.0",
-});
-
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const resourceUri = "ui://get-time/mcp-app.html";
 
-// Register tool with UI metadata
-registerAppTool(
-  server,
-  "get-time",
-  {
-    title: "Get Time",
-    description: "Returns the current server time.",
-    inputSchema: {},
-    _meta: { ui: { resourceUri } },
-  },
-  async () => {
-    const time = new Date().toISOString();
-    return {
-      content: [{ type: "text", text: time }],
-    };
-  },
-);
+function createServer(): McpServer {
+  const server = new McpServer(
+    { name: "My MCP App Server", version: "1.0.0" },
+    {
+      capabilities: {
+        resources: {},
+        tools: {},
+        experimental: {
+          "io.modelcontextprotocol/ui": { version: "0.1" },
+        },
+      },
+    },
+  );
 
-// Serve bundled HTML as ui:// resource
-registerAppResource(
-  server,
-  resourceUri,
-  resourceUri,
-  { mimeType: RESOURCE_MIME_TYPE },
-  async () => {
-    const html = await fs.readFile(
-      path.join(import.meta.dirname, "dist", "mcp-app.html"),
-      "utf-8",
-    );
-    return {
-      contents: [
-        { uri: resourceUri, mimeType: RESOURCE_MIME_TYPE, text: html },
-      ],
-    };
-  },
-);
+  registerAppTool(
+    server,
+    "get-time",
+    {
+      title: "Get Time",
+      description: "Returns the current server time.",
+      inputSchema: {},
+      _meta: { ui: { resourceUri } },
+    },
+    async () => {
+      const time = new Date().toISOString();
+      return {
+        content: [{ type: "text", text: time }],
+        _meta: { viewUUID: randomUUID() }, // REQUIRED for host to create UI instance
+      };
+    },
+  );
 
-// Expose over HTTP with Express
-const expressApp = express();
-expressApp.use(cors());
-expressApp.use(express.json());
+  registerAppResource(
+    server,
+    resourceUri,
+    resourceUri,
+    { mimeType: RESOURCE_MIME_TYPE },
+    async () => {
+      const html = await readFile(join(__dirname, "dist", "mcp-app.html"), "utf-8");
+      return {
+        contents: [
+          { uri: resourceUri, mimeType: RESOURCE_MIME_TYPE, text: html },
+        ],
+      };
+    },
+  );
 
-expressApp.post("/mcp", async (req, res) => {
-  const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-    enableJsonResponse: true,
+  return server;
+}
+
+// Dual-mode: --stdio for Claude Code/Desktop, HTTP for web hosts
+if (process.argv.includes("--stdio")) {
+  const server = createServer();
+  await server.connect(new StdioServerTransport());
+} else {
+  const port = Number(process.env.PORT) || 3001;
+  const app = new Hono();
+  app.use("/*", cors());
+
+  app.all("/mcp", async (c) => {
+    const transport = new WebStandardStreamableHTTPServerTransport({
+      sessionIdGenerator: undefined,
+      enableJsonResponse: true,
+    });
+    const server = createServer();
+    await server.connect(transport);
+    return transport.handleRequest(c.req.raw);
   });
-  res.on("close", () => transport.close());
-  await server.connect(transport);
-  await transport.handleRequest(req, res, req.body);
-});
 
-expressApp.listen(3001, (err) => {
-  if (err) {
-    console.error("Error starting server:", err);
-    process.exit(1);
-  }
-  console.log("Server listening on http://localhost:3001/mcp");
-});
+  app.get("/", (c) => c.json({ status: "ok" }));
+  Bun.serve({ fetch: app.fetch, port });
+  console.log(`Server listening on http://localhost:${port}/mcp`);
+}
 ```
 
 ## Complete View Example
@@ -275,8 +286,23 @@ Navigate to `http://localhost:8080` to see the test interface. Select a tool, ca
 
 ## Transport Options
 
-The build guide uses `StreamableHTTPServerTransport` over Express. Other transport options:
+**Claude Desktop and Claude Code both use stdio.** HTTP is for web-based hosts (ChatGPT, Claude.ai web, basic-host).
 
-- **stdio** — for local MCP servers (Claude Desktop, Cursor)
-- **SSE** — Server-Sent Events transport
-- **StreamableHTTP** — recommended for remote/HTTP servers (used in build guide)
+| Host | Transport | Config |
+|------|-----------|--------|
+| Claude Desktop | stdio | `claude_desktop_config.json` `command`/`args` |
+| Claude Code CLI | stdio | `.mcp.json` or plugin `start.sh` |
+| ChatGPT | HTTP | Custom connector URL |
+| Claude.ai web | HTTP | Settings > Connectors |
+| basic-host (testing) | HTTP | `SERVERS='["http://localhost:3001/mcp"]'` |
+
+Use `--stdio` flag for dual-mode servers. Default to HTTP for easy testing with basic-host.
+
+## Common Mistakes
+
+1. **Using CDN `<script src="">` in view HTML** — doesn't work in srcdoc iframes. Install as npm packages and let Vite bundle them.
+2. **Bare module imports in view** — `import { App } from "@modelcontextprotocol/ext-apps"` fails without Vite bundling.
+3. **Missing `_meta.viewUUID`** — host won't create a UI instance without `randomUUID()` in the tool result.
+4. **Shared McpServer across transports** — each transport needs its own McpServer. Use a factory function.
+5. **Missing capability declaration** — server MUST declare `io.modelcontextprotocol/ui` in `capabilities.experimental`.
+6. **Using Express** — use Hono instead. Express is outdated. Use `WebStandardStreamableHTTPServerTransport` with Hono for HTTP mode.

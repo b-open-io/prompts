@@ -706,9 +706,9 @@ Four skills available from the ext-apps repo:
 
 ```bash
 # Runtime
-npm install @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk express cors
+npm install @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk hono
 # Dev
-npm install -D typescript vite vite-plugin-singlefile @types/express @types/cors tsx
+npm install -D typescript vite vite-plugin-singlefile tsx
 ```
 
 Package subpaths:
@@ -719,48 +719,56 @@ Package subpaths:
 
 ### Server Transport: Two Modes
 
-MCP Apps servers support two transport modes. **HTTP is the primary mode** for Claude Desktop and ChatGPT. Stdio is a fallback for Claude Code CLI.
+MCP Apps servers support two transport modes. Neither is "primary" — use the one that matches your host.
 
-**HTTP mode (production, Claude Desktop, ChatGPT):**
+- **Stdio** — used by Claude Code CLI and Claude Desktop (spawned via `command`/`args` in config). The default for local plugins.
+- **HTTP** — used by web-based hosts: ChatGPT, Claude.ai web custom connectors, and any remote client.
+
+**CRITICAL: Each transport needs its own McpServer instance.** Use a `createServer()` factory — you cannot share one McpServer across multiple transports.
+
+**HTTP mode (ChatGPT, Claude.ai web, remote hosts) — use Hono, not Express:**
 ```typescript
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { registerAppTool, registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
-import cors from "cors";
-import express from "express";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const server = new McpServer({ name: "my-app", version: "1.0.0" }, {
-  capabilities: {
-    resources: {}, tools: {},
-    experimental: { "io.modelcontextprotocol/ui": { version: "0.1" } },
-  },
-});
-
-// Register tools and resources (see below)...
+function createServer() {
+  const server = new McpServer({ name: "my-app", version: "1.0.0" }, {
+    capabilities: {
+      resources: {}, tools: {},
+      experimental: { "io.modelcontextprotocol/ui": { version: "0.1" } },
+    },
+  });
+  // Register tools and resources on this instance...
+  return server;
+}
 
 // HTTP transport — stateless, one McpServer instance per request
-const app = express();
-app.use(cors());
-app.use(express.json());
+const app = new Hono();
+app.use("*", cors());
 
-app.post("/mcp", async (req, res) => {
-  const transport = new StreamableHTTPServerTransport({
+app.post("/mcp", async (c) => {
+  const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
   });
-  res.on("close", () => transport.close());
+  const server = createServer();
   await server.connect(transport);
-  await transport.handleRequest(req, res, req.body);
+  return transport.handleRequest(c.req.raw);
 });
 
-app.listen(3001, () => console.log("MCP App server on http://localhost:3001/mcp"));
+Bun.serve({ fetch: app.fetch, port: 3001 });
+console.log("MCP App server on http://localhost:3001/mcp");
 ```
 
-**Stdio mode (Claude Code CLI, local dev):**
+**Stdio mode (Claude Code CLI, Claude Desktop):**
 ```typescript
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+const server = createServer();
 const transport = new StdioServerTransport();
 await server.connect(transport);
 ```
@@ -768,10 +776,11 @@ await server.connect(transport);
 **Dual-mode pattern** (support both):
 ```typescript
 if (process.argv.includes("--stdio")) {
+  const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
 } else {
-  // Express HTTP server as above
+  // Hono HTTP server as above
 }
 ```
 
@@ -839,23 +848,36 @@ registerAppTool(server, "refresh-data", {
 
 ### Connecting to Hosts
 
-**Claude Desktop / Claude.ai (HTTP — the primary mode):**
-1. Run server locally: `npm run build && npm run serve` (HTTP on port 3001)
-2. Expose via Cloudflare tunnel: `npx cloudflared tunnel --url http://localhost:3001`
-3. Copy the tunnel URL (e.g., `https://random-name.trycloudflare.com`)
-4. In Claude: Profile > Settings > Connectors > Add custom connector
-5. Paste the tunnel URL (it already includes `/mcp` from your Express route)
-6. **Requires a paid Claude plan** (Pro, Max, or Team) for custom connectors
+**Claude Desktop (stdio — spawned locally):**
+- Desktop spawns your server as a subprocess via `claude_desktop_config.json`, same as Claude Code CLI.
+- Uses `StdioServerTransport`. No HTTP tunnel required.
+- Example `claude_desktop_config.json`:
+  ```json
+  {
+    "mcpServers": {
+      "my-app": { "command": "bun", "args": ["run", "server.ts", "--stdio"] }
+    }
+  }
+  ```
+- MCP Apps UI rendering works over stdio — no HTTP connector needed.
 
 **Claude Code CLI (stdio):**
 - Stdio via `.mcp.json` works directly with `StdioServerTransport`
 - Use `--stdio` flag for dual-mode servers
 
+**Claude.ai web (HTTP custom connector):**
+1. Run server locally: `bun run build && bun run serve` (HTTP on port 3001)
+2. Expose via Cloudflare tunnel: `npx cloudflared tunnel --url http://localhost:3001`
+3. Copy the tunnel URL (e.g., `https://random-name.trycloudflare.com`)
+4. In Claude: Profile > Settings > Connectors > Add custom connector
+5. Paste the tunnel URL (append `/mcp` if your route requires it)
+6. **Requires a paid Claude plan** (Pro, Max, or Team) for custom connectors
+
 **ChatGPT and other remote-only hosts:**
 - Must use HTTP. Expose server via tunnel, add the URL.
 
-**IMPORTANT — Plugin `.mcp.json` vs Custom Connector:**
-A plugin's `.mcp.json` defines an MCP server for Claude Code CLI (stdio). But for Claude Desktop's MCP Apps UI rendering, the server must be connected as an **HTTP custom connector**. All official Claude Desktop plugins with MCP servers use `"type": "http"` with URLs, not local `command` + stdio. If your plugin's MCP tools aren't surfacing in Desktop, this is why — add it as a custom HTTP connector.
+**IMPORTANT — Stdio vs HTTP:**
+Plugin `.mcp.json` and `claude_desktop_config.json` both use stdio. HTTP is only needed for web-based hosts (Claude.ai web, ChatGPT). Do NOT add a local MCP server as a custom HTTP connector when it could be connected via stdio.
 
 ### Testing
 
@@ -891,11 +913,17 @@ Debug panels show tool input, results, messages, and model context updates. Test
 
 4. **Plugin agents need MCP tool access.** If an agent declares `tools:` in its frontmatter, it restricts the agent to ONLY those tools — MCP server tools will NOT be available. **Omit the `tools:` field entirely** to give agents access to all tools including MCP tools.
 
-5. **Bundle to a single file.** Use Vite + vite-plugin-singlefile. The entire UI ships as one resource. No CDN, no external assets.
+5. **Bundle to a single file — srcdoc iframes cannot resolve bare imports.** Use Vite + vite-plugin-singlefile. Views render in `srcdoc` iframes, so ALL JavaScript and CSS must be inlined. No CDN `<script src="">` tags — they do not work in srcdoc iframes. No external asset references of any kind.
 
-6. **Use the create-mcp-app skill.** Don't scaffold manually. It knows the architecture and gets the boilerplate right.
+6. **Tool results need `_meta: { viewUUID: randomUUID() }`** to tell the host to create a new UI instance per invocation.
 
-7. **Test with basic-host first.** The debug panels save you from guessing what's happening between app and host.
+7. **Use a `createServer()` factory.** Each transport needs its own McpServer instance. Never share one McpServer across multiple transports.
+
+8. **Use Hono, not Express.** For HTTP mode use `WebStandardStreamableHTTPServerTransport` with Hono and `Bun.serve()`.
+
+9. **Use the create-mcp-app skill.** Don't scaffold manually. It knows the architecture and gets the boilerplate right.
+
+10. **Test with basic-host first.** The debug panels save you from guessing what's happening between app and host.
 
 ### When to Recommend MCP Apps
 
