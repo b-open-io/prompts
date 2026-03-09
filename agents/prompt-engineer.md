@@ -258,12 +258,18 @@ Key environment variables that can be set in settings.json:
 - `MAX_MCP_OUTPUT_TOKENS`: Limit MCP tool responses (default: 25000)
 
 ### .mcp.json Environment Variable Best Practice
-**The `env` block in `.mcp.json` is a pass-through mechanism** — it injects shell env vars into the MCP server process. Without it, the server CANNOT see env vars set in the user's shell. MCP server processes do not inherit the shell environment automatically.
+**Do NOT use the `env` block in `.mcp.json` for API keys.** It causes `/doctor` warnings for every missing var and doesn't reliably interpolate. Users see yellow warnings every session.
 
-- **Declare ALL env vars the server code reads** via `process.env` — even optional ones with fallbacks. Without the `env` entry, the var is invisible to the server
-- **Never declare vars the code doesn't read** — audit source code to confirm each var is actually used
-- **`/doctor` warns about missing declared vars** — this is the expected tradeoff. Document which vars are optional in README
-- **`${CLAUDE_PLUGIN_ROOT}`** is always available in `args` — no need to declare it in `env`
+**Correct pattern: wrapper script.** Use a bash script as the MCP command that inherits exported shell vars and optionally sources `.env`:
+```json
+{ "mcpServers": { "my-server": { "command": "${CLAUDE_PLUGIN_ROOT}/start.sh" } } }
+```
+The `start.sh` script sources `.env` if present, then `exec`s the server. No env block needed.
+
+- **Never use the `env` block** — it causes doctor warnings and unreliable interpolation
+- **Always use a wrapper script** for MCP servers needing env vars
+- **Provide `.env.example`** documenting available vars with signup URLs
+- **`${CLAUDE_PLUGIN_ROOT}`** is always available in `.mcp.json` fields — no need to declare it in `env`
 
 ### Permission Syntax Examples
 ```json
@@ -833,6 +839,16 @@ Common permission patterns:
 - `Bash(echo:*)` - echo with any arguments
 - `Bash(pwd)` - pwd exactly (no arguments)
 - For pipes/complex commands, use the exact full command string
+
+## Critical Agent Development Rules
+
+### Agent `tools:` Field and MCP Access
+
+If an agent declares `tools:` in its frontmatter, it restricts the agent to ONLY those listed tools. **MCP server tools will NOT be available.** To give agents access to MCP tools (from plugin MCP servers), **omit the `tools:` field entirely** — this grants access to all tools. Never list specific tool names if the agent needs MCP tools unless you know the exact MCP tool permission token.
+
+### MCP Apps Render Inline
+
+When writing skills, commands, or agent prompts that reference MCP App tools (tools registered with `registerAppTool`), **never instruct the agent to save HTML to files** or tell users to open files in a browser. MCP Apps render inline automatically via sandboxed iframes in the host.
 
 ## Agent Skills Expertise
 

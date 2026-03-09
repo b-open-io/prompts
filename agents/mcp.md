@@ -3,7 +3,7 @@ name: mcp
 display_name: "Orbit"
 version: 3.0.16
 description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
-tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps)
+tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps), Skill(plugin-dev:mcp-integration)
 model: sonnet
 color: orange
 ---
@@ -667,35 +667,135 @@ claude mcp add-json --user dev-tools '{
 
 ## MCP Apps (Interactive UIs in Chat)
 
-MCP Apps is the first official MCP extension (spec 2026-01-26), co-authored by Anthropic and OpenAI. It allows MCP servers to deliver interactive HTML UIs that render inside chat hosts via sandboxed iframes.
+MCP Apps is the first official MCP extension (spec 2026-01-26), co-authored by Anthropic and OpenAI. It allows MCP servers to deliver interactive HTML UIs (widgets) that render inside chat hosts via sandboxed iframes. Instead of leaving it up to the LLM to decide how to show data, servers provide tailored visual experiences.
 
 - **Extension ID**: `io.modelcontextprotocol/ui`
 - **npm**: `@modelcontextprotocol/ext-apps`
-- **Supported hosts**: Claude, ChatGPT, VS Code Copilot, Goose, Postman, MCPJam
+- **Supported hosts**: Claude (web + desktop), ChatGPT, VS Code Copilot, Goose, Postman
+- **Scaffolding**: Use the `create-mcp-app` agent skill (recommended, don't scaffold manually)
+
+### How It Works
+
+MCP gave AI tools the ability to DO things. MCP Apps gives those tools the ability to SHOW things and let users interact without going through the model. Two MCP primitives working together:
+
+1. **A tool with UI metadata** — `_meta.ui.resourceUri` points to a UI resource
+2. **A UI resource** — server serves a bundled HTML file when the host requests it
+
+When the model calls the tool, the host fetches the UI resource, renders it in a sandboxed iframe, and pushes the tool result to the app. The user interacts directly with the UI. The UI can call tools back on the server and update the model's context. The model stays informed but is no longer the bottleneck for every click.
 
 ### Architecture
 
 Three entities: **Server** (tools + ui:// resources), **Host** (renders iframes, proxies calls), **View** (App class in sandboxed iframe).
 
-### Core Server Pattern
+### Scaffolding with create-mcp-app Skill
+
+The recommended approach — NOT a CLI tool, it's an AI agent skill:
+```bash
+# Via skills CLI (cross-platform)
+npx skills add modelcontextprotocol/ext-apps --skill create-mcp-app
+```
+Then ask: "Create an MCP App that displays [your use case]." The skill knows the architecture, patterns, and best practices. Works across agents: Claude Code, VS Code Copilot, Gemini CLI, Goose, Codex.
+
+Four skills available from the ext-apps repo:
+- `create-mcp-app` — scaffold new app from scratch
+- `migrate-oai-app` — convert OpenAI App to MCP Apps SDK
+- `add-app-to-server` — add UI to existing MCP server tools
+- `convert-web-app` — convert existing web app to MCP App
+
+### Dependencies
+
+```bash
+# Runtime
+npm install @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk express cors
+# Dev
+npm install -D typescript vite vite-plugin-singlefile @types/express @types/cors tsx
+```
+
+Package subpaths:
+- `@modelcontextprotocol/ext-apps` — client `App` class (postMessage transport for iframe)
+- `@modelcontextprotocol/ext-apps/server` — `registerAppTool`, `registerAppResource`, `RESOURCE_MIME_TYPE`
+- `@modelcontextprotocol/ext-apps/react` — React hooks for MCP Apps
+- `@modelcontextprotocol/ext-apps/app-bridge` — host embedding (for building custom clients)
+
+### Server Transport: Two Modes
+
+MCP Apps servers support two transport modes. **HTTP is the primary mode** for Claude Desktop and ChatGPT. Stdio is a fallback for Claude Code CLI.
+
+**HTTP mode (production, Claude Desktop, ChatGPT):**
+```typescript
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { registerAppTool, registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
+import cors from "cors";
+import express from "express";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+const server = new McpServer({ name: "my-app", version: "1.0.0" }, {
+  capabilities: {
+    resources: {}, tools: {},
+    experimental: { "io.modelcontextprotocol/ui": { version: "0.1" } },
+  },
+});
+
+// Register tools and resources (see below)...
+
+// HTTP transport — stateless, one McpServer instance per request
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.post("/mcp", async (req, res) => {
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true,
+  });
+  res.on("close", () => transport.close());
+  await server.connect(transport);
+  await transport.handleRequest(req, res, req.body);
+});
+
+app.listen(3001, () => console.log("MCP App server on http://localhost:3001/mcp"));
+```
+
+**Stdio mode (Claude Code CLI, local dev):**
+```typescript
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
+**Dual-mode pattern** (support both):
+```typescript
+if (process.argv.includes("--stdio")) {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+} else {
+  // Express HTTP server as above
+}
+```
+
+### Core Tool + Resource Pattern
 
 ```typescript
-import { registerAppTool, registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
+const resourceUri = "ui://myapp/index.html";
 
+// Tool with UI metadata — _meta.ui.resourceUri tells the host "this tool has a UI"
 registerAppTool(server, "my-tool", {
   description: "Interactive tool",
   inputSchema: { type: "object", properties: {} },
-  _meta: { ui: { resourceUri: "ui://myapp/index.html" } },
+  _meta: { ui: { resourceUri } },
 }, async (args) => ({
   content: [{ type: "text", text: "Text for model" }],
-  structuredContent: { richData: "for the UI" }
+  structuredContent: { richData: "for the UI" },
 }));
 
-registerAppResource(server, "ui://myapp/index.html", "ui://myapp/index.html",
+// UI resource — serves the bundled HTML file
+registerAppResource(server, resourceUri, resourceUri,
   { mimeType: RESOURCE_MIME_TYPE },
   async () => ({
-    contents: [{ uri: "ui://myapp/index.html", mimeType: RESOURCE_MIME_TYPE,
-      text: await readFile("dist/index.html", "utf-8") }]
+    contents: [{ uri: resourceUri, mimeType: RESOURCE_MIME_TYPE,
+      text: await fs.readFile(path.join(import.meta.dirname, "dist", "index.html"), "utf-8") }],
   })
 );
 ```
@@ -711,19 +811,95 @@ app.onhostcontext = (ctx) => applyTheme(ctx.theme);
 await app.connect();
 ```
 
+### Building the View
+
+Bundle the entire UI into a single self-contained HTML file using Vite + `vite-plugin-singlefile`. No CDN, no asset management. Any framework works: React, Vue, Svelte, Preact, Solid, vanilla JS.
+
+```bash
+npm install -D vite vite-plugin-singlefile
+```
+```typescript
+// vite.config.ts
+import { defineConfig } from "vite";
+import { viteSingleFile } from "vite-plugin-singlefile";
+export default defineConfig({ plugins: [viteSingleFile()], build: { outDir: "dist" } });
+```
+
+### App-Only Tools (UI-Driven Actions)
+
+Use `visibility: ["app"]` for tools that only the UI should call (refresh, pagination, filtering). This keeps them from cluttering the model's tool list.
+
+```typescript
+registerAppTool(server, "refresh-data", {
+  description: "Refresh data",
+  inputSchema: { type: "object", properties: {} },
+  _meta: { ui: { resourceUri: "ui://myapp/index.html", visibility: ["app"] } },
+}, async () => ({ content: [{ type: "text", text: "Refreshed" }], structuredContent: freshData }));
+```
+
+### Connecting to Hosts
+
+**Claude Desktop / Claude.ai (HTTP — the primary mode):**
+1. Run server locally: `npm run build && npm run serve` (HTTP on port 3001)
+2. Expose via Cloudflare tunnel: `npx cloudflared tunnel --url http://localhost:3001`
+3. Copy the tunnel URL (e.g., `https://random-name.trycloudflare.com`)
+4. In Claude: Profile > Settings > Connectors > Add custom connector
+5. Paste the tunnel URL (it already includes `/mcp` from your Express route)
+6. **Requires a paid Claude plan** (Pro, Max, or Team) for custom connectors
+
+**Claude Code CLI (stdio):**
+- Stdio via `.mcp.json` works directly with `StdioServerTransport`
+- Use `--stdio` flag for dual-mode servers
+
+**ChatGPT and other remote-only hosts:**
+- Must use HTTP. Expose server via tunnel, add the URL.
+
+**IMPORTANT — Plugin `.mcp.json` vs Custom Connector:**
+A plugin's `.mcp.json` defines an MCP server for Claude Code CLI (stdio). But for Claude Desktop's MCP Apps UI rendering, the server must be connected as an **HTTP custom connector**. All official Claude Desktop plugins with MCP servers use `"type": "http"` with URLs, not local `command` + stdio. If your plugin's MCP tools aren't surfacing in Desktop, this is why — add it as a custom HTTP connector.
+
+### Testing
+
+Use the **basic-host** reference implementation from the ext-apps repo for local testing:
+```bash
+git clone https://github.com/modelcontextprotocol/ext-apps.git
+cd ext-apps/examples/basic-host
+npm install
+SERVERS='["http://localhost:3001/mcp"]' npm start
+# Visit http://localhost:8080
+```
+Debug panels show tool input, results, messages, and model context updates. Test here BEFORE deploying to Claude Desktop.
+
 ### Key Concepts
 
 - **Tool visibility**: `["model", "app"]` (default), `["app"]` (UI-only, hidden from model), `["model"]` (LLM-only)
 - **ui:// resources**: MIME type `text/html;profile=mcp-app`, predeclared at registration
-- **Build**: Vite + `vite-plugin-singlefile` → single HTML file served as ui:// resource
-- **Theming**: Host provides CSS custom properties (--color-background-primary, --color-text-primary, etc.)
+- **Theming**: Host provides CSS custom properties (--color-background-primary, --color-text-primary, etc.). Always use with fallback defaults.
 - **Display modes**: inline (in chat flow), fullscreen (editors/dashboards), pip (persistent overlay)
-- **Security**: Sandboxed iframe, CSP (declare in _meta.ui.csp), host proxies all tool calls
-- **Progressive enhancement**: Tools work as normal text on non-UI hosts. Always include text content.
+- **Security**: Sandboxed iframe, CSP (declare in _meta.ui.csp on the content item), host proxies all tool calls
+- **Progressive enhancement**: Tools work as normal text on non-UI hosts. Always include text `content` alongside `structuredContent`.
+- **Model context updates**: UI can call `app.updateModelContext()` to keep the model informed about user interactions
+- **Bidirectional communication**: UI calls server tools, server returns data, UI updates — no new prompt needed, no context consumed
+- **Perceived latency reduction**: Handle partial streaming with `app.ontoolinputpartial` to show content before full input arrives
+
+### Critical Implementation Rules
+
+1. **Capability declaration is MANDATORY.** Servers MUST advertise `io.modelcontextprotocol/ui` in experimental capabilities or hosts will never render iframes. This is the #1 most common mistake.
+
+2. **CSP goes on the content item**, not the resource listing. Place `_meta.ui.csp` on the object inside the `contents` array returned by the resource callback.
+
+3. **MCP Apps render inline.** Tools using `registerAppTool` render via sandboxed iframes. NEVER instruct agents or skills to save HTML to files or tell users to open in a browser.
+
+4. **Plugin agents need MCP tool access.** If an agent declares `tools:` in its frontmatter, it restricts the agent to ONLY those tools — MCP server tools will NOT be available. **Omit the `tools:` field entirely** to give agents access to all tools including MCP tools.
+
+5. **Bundle to a single file.** Use Vite + vite-plugin-singlefile. The entire UI ships as one resource. No CDN, no external assets.
+
+6. **Use the create-mcp-app skill.** Don't scaffold manually. It knows the architecture and gets the boilerplate right.
+
+7. **Test with basic-host first.** The debug panels save you from guessing what's happening between app and host.
 
 ### When to Recommend MCP Apps
 
-Recommend when: complex data exploration, forms with many options, rich media viewing, real-time monitoring, multi-step workflows that benefit from UI.
+Recommend when: complex data exploration, forms with many options, rich media viewing, real-time monitoring/dashboards, maps, charts, multi-step workflows that benefit from UI, branded experiences.
 
 Do NOT recommend when: simple text responses suffice, no interactivity needed, standalone web app makes more sense.
 
@@ -2338,34 +2514,58 @@ claude mcp add <name> -e VAR=value -- command args
 - Test after installation
 - Keep OAuth tokens secure
 
-## .mcp.json Environment Variable Rules
+## .mcp.json Environment Variables: Wrapper Script Pattern
 
-**The `env` block in .mcp.json is a pass-through mechanism** — it forwards shell env vars into the MCP server process. Without it, `process.env.MY_KEY` inside the server is undefined even if `MY_KEY` is set in the user's shell. MCP server processes do NOT automatically inherit the user's shell environment.
+**Do NOT use the `env` block in .mcp.json for API keys.** The `env` block with `${VAR}` interpolation causes `/doctor` warnings for every undeclared or missing var, and doesn't reliably pass variables through. Users see yellow warnings every session — unacceptable for a published plugin.
 
-### Key Insight
+### The Correct Pattern: Wrapper Script
+
+Instead of an `env` block, use a wrapper script as the MCP server command. The script inherits the user's exported shell environment naturally and can also source a `.env` file.
+
+**`.mcp.json` (clean, no env block):**
 ```json
-// The env block INJECTS vars into the server process
-// Without this, the server cannot see FBI_API_KEY even if it's set in your shell
 {
   "mcpServers": {
     "my-server": {
-      "command": "bun",
-      "args": ["run", "${CLAUDE_PLUGIN_ROOT}/src/index.ts"],
-      "env": {
-        "FBI_API_KEY": "${FBI_API_KEY}",
-        "OPTIONAL_KEY": "${OPTIONAL_KEY}"
-      }
+      "command": "${CLAUDE_PLUGIN_ROOT}/start.sh"
     }
   }
 }
 ```
 
+**`start.sh` (at plugin root):**
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source .env if present (user-created, gitignored)
+if [[ -f "$SCRIPT_DIR/.env" ]]; then
+  set -a
+  source "$SCRIPT_DIR/.env"
+  set +a
+elif [[ -f "$HOME/.config/my-server/.env" ]]; then
+  set -a
+  source "$HOME/.config/my-server/.env"
+  set +a
+fi
+
+exec bun run "$SCRIPT_DIR/src/index.ts"
+```
+
+### Why This Works
+1. **No `/doctor` warnings** — no `env` block means nothing to warn about
+2. **Shell inheritance** — if the user has `export FBI_API_KEY=xxx` in `~/.zshrc`, the script's child process inherits it automatically
+3. **`.env` file support** — users who prefer `.env` files place one next to `start.sh` or at `~/.config/<server>/.env`
+4. **No interpolation bugs** — `${VAR}` expansion happens in bash, not in Claude Code's JSON parser
+
 ### Rules:
-1. **Declare ALL env vars the code reads** via `process.env` — even optional ones. Without the `env` block, the server process won't see them
-2. **Never declare vars the code doesn't read** — audit source code to confirm each var is actually used
-3. **`/doctor` will warn about missing vars** — this is expected for optional keys. The tradeoff is: `/doctor` warnings vs silently broken features
-4. **`${CLAUDE_PLUGIN_ROOT}` is always available** in `args` when loaded as a plugin — it resolves to the plugin's root directory. No need to declare it in `env`
-5. **Document which vars are optional vs required** in the README so users understand which `/doctor` warnings they can safely ignore
+1. **Always use a wrapper script** for MCP servers that need env vars
+2. **Never use the `env` block** in `.mcp.json` — it causes doctor warnings and unreliable interpolation
+3. **Provide `.env.example`** documenting available vars with signup URLs
+4. **Gitignore `.env`** — never commit secrets
+5. **Mark the script executable** — `chmod +x start.sh`
+6. **Use `exec`** to replace the shell process with the server (proper signal handling)
 
 ### CLAUDE_PLUGIN_ROOT and the Dual-Context Problem
 
