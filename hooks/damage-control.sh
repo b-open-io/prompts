@@ -25,7 +25,7 @@ tool_name=$(echo "$input" | jq -r '.tool_name // ""')
 # Usage: extract_section SECTION_NAME
 extract_section() {
   local section="$1"
-  awk "/^${section}:/{found=1; next} found && /^  - /{gsub(/^  - /, \"\"); print} found && /^[a-z]/{found=0}" "$PATTERNS_FILE"
+  awk "/^${section}:/{found=1; next} found && /^  - /{gsub(/^  - /, \"\"); print} found && /^[a-z]/{found=0}" "$PATTERNS_FILE" | sed 's/^"//;s/"$//'
 }
 
 # Return 0 (true) if the given path matches any pattern in the list.
