@@ -2340,46 +2340,32 @@ claude mcp add <name> -e VAR=value -- command args
 
 ## .mcp.json Environment Variable Rules
 
-**Only declare env vars in .mcp.json that are strictly required for the server to start.** Claude Code's `/doctor` command warns about ALL declared env vars that are missing, regardless of whether the code handles them gracefully.
+**The `env` block in .mcp.json is a pass-through mechanism** — it forwards shell env vars into the MCP server process. Without it, `process.env.MY_KEY` inside the server is undefined even if `MY_KEY` is set in the user's shell. MCP server processes do NOT automatically inherit the user's shell environment.
 
-### The Problem
+### Key Insight
 ```json
-// BAD: Declares optional env vars — causes /doctor warnings on every install
+// The env block INJECTS vars into the server process
+// Without this, the server cannot see FBI_API_KEY even if it's set in your shell
 {
   "mcpServers": {
     "my-server": {
       "command": "bun",
       "args": ["run", "${CLAUDE_PLUGIN_ROOT}/src/index.ts"],
       "env": {
-        "REQUIRED_KEY": "${REQUIRED_KEY}",
-        "OPTIONAL_KEY": "${OPTIONAL_KEY}",
-        "UNUSED_KEY": "${UNUSED_KEY}"
+        "FBI_API_KEY": "${FBI_API_KEY}",
+        "OPTIONAL_KEY": "${OPTIONAL_KEY}"
       }
     }
   }
 }
 ```
 
-### The Fix
-```json
-// GOOD: Only required env vars declared — clean /doctor output
-{
-  "mcpServers": {
-    "my-server": {
-      "command": "bun",
-      "args": ["run", "${CLAUDE_PLUGIN_ROOT}/src/index.ts"]
-    }
-  }
-}
-```
-
 ### Rules:
-1. **Never declare unused env vars** in .mcp.json — audit the source code to confirm each var is actually read
-2. **Never declare optional env vars** — if the code has a fallback (e.g., `process.env.KEY ?? "default"`), don't put it in .mcp.json. The code reads `process.env` directly regardless
-3. **Only declare vars that cause startup failure** if missing — vars the server cannot function without
-4. **The `env` block in .mcp.json is for injection, not documentation** — it's not a list of "supported" vars. Document optional vars in README instead
-5. **`${CLAUDE_PLUGIN_ROOT}` is always available** in `args` when loaded as a plugin — it resolves to the plugin's root directory. No need to declare it in `env`
-6. **Run `/doctor` after changes** to verify no false warnings remain
+1. **Declare ALL env vars the code reads** via `process.env` — even optional ones. Without the `env` block, the server process won't see them
+2. **Never declare vars the code doesn't read** — audit source code to confirm each var is actually used
+3. **`/doctor` will warn about missing vars** — this is expected for optional keys. The tradeoff is: `/doctor` warnings vs silently broken features
+4. **`${CLAUDE_PLUGIN_ROOT}` is always available** in `args` when loaded as a plugin — it resolves to the plugin's root directory. No need to declare it in `env`
+5. **Document which vars are optional vs required** in the README so users understand which `/doctor` warnings they can safely ignore
 
 ### CLAUDE_PLUGIN_ROOT and the Dual-Context Problem
 

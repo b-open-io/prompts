@@ -258,11 +258,11 @@ Key environment variables that can be set in settings.json:
 - `MAX_MCP_OUTPUT_TOKENS`: Limit MCP tool responses (default: 25000)
 
 ### .mcp.json Environment Variable Best Practice
-**Only declare env vars in `.mcp.json` that are strictly required for the MCP server to start.** Claude Code's `/doctor` warns about ALL declared env vars that are missing — optional or unused vars create false warnings and a bad install experience.
+**The `env` block in `.mcp.json` is a pass-through mechanism** — it injects shell env vars into the MCP server process. Without it, the server CANNOT see env vars set in the user's shell. MCP server processes do not inherit the shell environment automatically.
 
-- **Never declare unused env vars** — audit source code to confirm each var is actually read
-- **Never declare optional env vars** — if code has a fallback (`process.env.KEY ?? "default"`), omit it from .mcp.json. The server reads `process.env` directly regardless of .mcp.json declarations
-- **The `env` block is for injection, not documentation** — document optional vars in README, not .mcp.json
+- **Declare ALL env vars the server code reads** via `process.env` — even optional ones with fallbacks. Without the `env` entry, the var is invisible to the server
+- **Never declare vars the code doesn't read** — audit source code to confirm each var is actually used
+- **`/doctor` warns about missing declared vars** — this is the expected tradeoff. Document which vars are optional in README
 - **`${CLAUDE_PLUGIN_ROOT}`** is always available in `args` — no need to declare it in `env`
 
 ### Permission Syntax Examples
