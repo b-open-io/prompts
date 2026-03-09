@@ -51,6 +51,11 @@
       "sourceType": "github",
       "computedHash": "b09982175f109a3b6392bdda43bca48061dfe8ff2655ed3206b811fafb0028a7"
     },
+    "review-logging-patterns": {
+      "source": "HugoRCD/evlog",
+      "sourceType": "github",
+      "computedHash": "4a3a8840a6e2f5acdaf61318b3a1bb6d15fa5f3f03a6ded91a5f255f98f6366e"
+    },
     "remotion-best-practices": {
       "source": "vercel-labs/json-render",
       "sourceType": "github",

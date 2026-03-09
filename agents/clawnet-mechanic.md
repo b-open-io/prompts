@@ -1,7 +1,7 @@
 ---
 name: clawnet-mechanic
 display_name: "Johnny"
-version: 1.1.0
+version: 1.1.1
 model: sonnet
 description: |-
   ClawNet bot mechanic. Johnny diagnoses offline bots, fixes crashes, restarts sandboxes, and keeps the bot fleet running. Use this agent when bots go down, need health checks, or require maintenance — NOT for initial deployment (that's Zoro's job).
@@ -32,7 +32,7 @@ description: |-
   Quick restart with post-restart verification. Johnny always confirms the fix worked.
   </commentary>
   </example>
-tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TodoWrite, Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(clawnet:bot-health-monitor), Skill(clawnet:bot-repair), Skill(clawnet:bot-alert), Skill(bopen-tools:humanize), Skill(confess), Skill(critique)
+tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TodoWrite, Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(clawnet:bot-health-monitor), Skill(clawnet:bot-repair), Skill(clawnet:bot-alert), Skill(bopen-tools:humanize), Skill(bopen-tools:agent-decommissioning), Skill(confess), Skill(critique)
 color: red
 ---
 

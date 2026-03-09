@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import {
 	convertToModelMessages,
 	gateway,
+	generateText,
 	streamText,
 	type ToolSet,
 	type UIMessage,
@@ -243,6 +244,120 @@ app.post("/deregister", async (c) => {
 		return c.json({ success: false, error: `Agent "${id}" not found.` }, 404);
 	}
 	return c.json({ success: true });
+});
+
+// --- P2P Messages ---
+
+type P2PMessageRequest = {
+	from: { bapId: string; botName: string };
+	message: string;
+	conversationId?: string;
+	signature: string;
+	publicKey: string;
+	timestamp: number;
+};
+
+function parseP2PMessage(value: unknown): P2PMessageRequest | null {
+	if (typeof value !== "object" || value === null || Array.isArray(value))
+		return null;
+	const { from, message, conversationId, signature, publicKey, timestamp } =
+		value as Record<string, unknown>;
+	if (typeof from !== "object" || from === null || Array.isArray(from))
+		return null;
+	const fromObj = from as Record<string, unknown>;
+	if (typeof fromObj.bapId !== "string" || typeof fromObj.botName !== "string")
+		return null;
+	if (typeof message !== "string") return null;
+	if (typeof signature !== "string") return null;
+	if (typeof publicKey !== "string") return null;
+	if (typeof timestamp !== "number") return null;
+
+	const trimmedMessage = (message as string).trim();
+	if (!trimmedMessage || trimmedMessage.length > MAX_MESSAGE_LENGTH)
+		return null;
+
+	return {
+		from: {
+			bapId: fromObj.bapId as string,
+			botName: fromObj.botName as string,
+		},
+		message: trimmedMessage,
+		conversationId:
+			typeof conversationId === "string" ? conversationId : undefined,
+		signature: signature as string,
+		publicKey: publicKey as string,
+		timestamp: timestamp as number,
+	};
+}
+
+function hasValidSignature(req: P2PMessageRequest): boolean {
+	return (
+		typeof req.signature === "string" &&
+		req.signature.length > 0 &&
+		typeof req.publicKey === "string" &&
+		req.publicKey.length > 0 &&
+		typeof req.timestamp === "number" &&
+		req.timestamp > 0
+	);
+}
+
+app.post("/api/messages", async (c) => {
+	let payload: unknown;
+	try {
+		const raw = await c.req.text();
+		payload = JSON.parse(raw);
+	} catch (err) {
+		const detail = err instanceof Error ? err.message : "unknown";
+		return c.json(
+			{ success: false, error: `Invalid JSON body: ${detail}` },
+			400,
+		);
+	}
+
+	const request = parseP2PMessage(payload);
+	if (!request) {
+		return c.json(
+			{
+				success: false,
+				error:
+					"Expected { from: { bapId, botName }, message, signature, publicKey, timestamp }.",
+			},
+			400,
+		);
+	}
+
+	if (!hasValidSignature(request)) {
+		return c.json({ success: false, error: "Invalid signature." }, 401);
+	}
+
+	// Process via AI if available, otherwise acknowledge
+	let reply = `Message received from ${request.from.botName}. Martha acknowledges.`;
+
+	try {
+		const systemPrompt =
+			SOUL +
+			"\n\nYou are receiving a P2P message from another bot. Respond briefly and helpfully.";
+		const result = await generateText({
+			model: gateway("anthropic/claude-haiku-4.5"),
+			system: systemPrompt,
+			prompt: `[From ${request.from.botName}]: ${request.message}`,
+			maxTokens: 300,
+		});
+
+		if (result.text.trim()) {
+			reply = result.text.trim();
+		}
+	} catch (err) {
+		console.error("P2P message AI reply error:", err);
+	}
+
+	return c.json({
+		success: true,
+		from: { bapId: "martha", botName: "martha" },
+		reply,
+		conversationId: request.conversationId ?? null,
+		timestamp: Math.floor(Date.now() / 1000),
+	});
 });
 
 // --- Start ---
