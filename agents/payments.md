@@ -48,8 +48,7 @@ Core expertise:
   - BSV20/BSV21 token transactions
   - Wallet integration patterns
   - Yours Wallet: Browser extension for BSV/ordinals
-    - React: `npm i yours-wallet-provider`
-    - Auto-disconnect after 10 min
+    - React: `bun add yours-wallet-provider`
     - Supports paymail payments
 - **Payment Security**: PCI DSS compliance
   - Tokenization strategies
@@ -191,32 +190,26 @@ const paymentRequest = {
 // Broadcast transaction
 const broadcastResult = await whatsonchain.broadcast(tx.toHex());
 
-// Yours Wallet integration
-import { useYoursWallet } from 'yours-wallet-provider';
+// Yours Wallet / CWI integration
+// window.CWI is injected by the Yours Wallet browser extension
+// Use yours-wallet-provider for React: bun add yours-wallet-provider
+import { useCWI } from 'yours-wallet-provider';
 
-const wallet = useYoursWallet();
-if (!wallet?.isReady) {
+const cwi = useCWI();
+if (cwi.status !== 'available') {
   window.open("https://yours.org", "_blank");
   return;
 }
 
-// Simple BSV payment
-const { txid } = await wallet.sendBsv([{
-  satoshis: itemPrice,
-  address: sellerAddress
-}]);
-
-// Paymail payment
-const { txid: paymailTx } = await wallet.sendBsv([{
-  satoshis: amount,
-  paymail: "merchant@moneybutton.com"
-}]);
-
-// Get user's balance first
-const { satoshis } = await wallet.getBalance();
-if (satoshis < itemPrice) {
-  throw new Error("Insufficient funds");
-}
+// Send BSV via CWI (BRC-100 WalletInterface)
+const result = await cwi.wallet.createAction({
+  description: `Payment for order #${orderId}`,
+  outputs: [{
+    lockingScript: new P2PKH().lock(sellerAddress).toHex(),
+    satoshis: itemPrice,
+    basket: 'payment'
+  }]
+});
 ```
 
 Security best practices:
