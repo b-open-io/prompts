@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/b-open-io/linear-sync/main/schema/linear-sync.json",
+  "_warning": "AUTO-MANAGED by linear-sync. Manual edits may break issue sync, commit hooks, and branch naming.",
+  "workspace": "claude_ai_Linear",
+  "project": "bOpen tools plugin",
+  "team": "OPL",
+  "label": "repo:prompts",
+  "github_org": "b-open-io"
+}

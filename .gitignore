@@ -44,7 +44,8 @@ coverage/
 # Agent-specific directories (created on install, not committed)
 # NOTE: .agents/ is NOT gitignored — ClawNet bot workspaces live there and are committed
 .agent/
-.claude/
+.claude/*
+!.claude/linear-sync.json
 .cline/
 .codex/
 .cursor/
