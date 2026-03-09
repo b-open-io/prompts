@@ -225,11 +225,14 @@ map.addLayer({
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Map container has zero height | Container has no explicit height | Set `height: 600px` or `height: 100vh` on container element |
+| Map container has zero height | `flex: 1` alone can be 0 in srcdoc iframes | Always set `min-height: 400px` alongside `flex: 1` |
+| Black screen in MCP App iframe | CSP blocks tile/font/sprite requests | CSP must list ALL subdomains: style host, tile host, font host, sprite host (often different) |
 | Tiles load but map is blank | Style JSON glyphs/sprites unreachable | Use a style JSON that hosts its own glyphs (Carto styles do) |
+| `attributionControl` error in MapLibre v5 | v5 takes boolean, not `{ compact: true }` | Use `attributionControl: false` — not an object |
 | `map.addLayer` throws "source not found" | Adding layer before source is added | Always add source first, then layers |
 | Markers disappear on style change | `setStyle()` wipes all sources/layers | Re-add sources and layers in `map.once('style.load', ...)` |
 | CDN script fails in MCP App | srcdoc iframe blocks external scripts | Bundle with Vite + vite-plugin-singlefile |
+| Cluster count labels invisible | `text-font` doesn't match style's font stack | Check style JSON for available fonts before setting `text-font` |
 | Cluster click doesn't expand | Wrong event or missing source cast | Cast source to `GeoJSONSource` before calling `getClusterExpansionZoom` |
 | Map renders but popup offset is wrong | Default anchor mismatches marker | Set `anchor: 'bottom'` on popup or custom marker |
 
