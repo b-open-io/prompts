@@ -1,6 +1,7 @@
 #!/bin/bash
 # session-context.sh — SessionStart hook that injects repo context into Claude's memory.
 # Based on disler's additionalContext injection pattern.
+# No set -euo pipefail: partial failures are OK — missing git info should not block session start.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 

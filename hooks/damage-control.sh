@@ -89,8 +89,13 @@ is_exception() {
   return 1
 }
 
+json_escape() {
+  python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])' <<< "$1"
+}
+
 block() {
-  local reason="$1"
+  local reason
+  reason=$(json_escape "$1")
   printf '{"hookSpecificOutput":{"permissionDecision":"deny"},"systemMessage":"%s"}' \
     "$reason" >&2
   exit 2
@@ -126,8 +131,10 @@ if [[ "$tool_name" == "Bash" ]]; then
     [[ -z "$pattern" ]] && continue
     pattern_lower=$(echo "$pattern" | tr '[:upper:]' '[:lower:]')
     if echo "$command_lower" | grep -qF "$pattern_lower"; then
-      printf '{"continue":false,"stopReason":"damage-control: The command `%s` matches a confirmation-required pattern. You must ask the user for explicit permission before running: %s"}' \
-        "$pattern" "$command_str"
+      local escaped_cmd
+      escaped_cmd=$(json_escape "$command_str")
+      printf '{"continue":false,"stopReason":"damage-control: The command matches a confirmation-required pattern (%s). You must ask the user for explicit permission before running: %s"}' \
+        "$pattern" "$escaped_cmd"
       exit 0
     fi
   done < <(extract_section "askConfirmation")
@@ -138,7 +145,7 @@ if [[ "$tool_name" == "Bash" ]]; then
     expanded_pattern="${pattern//\~/$HOME}"
     basename_pattern=$(basename "$expanded_pattern")
 
-    if echo "$command_str" | grep -qE "(rm|unlink|rmdir)[[:space:]].*${basename_pattern}"; then
+    if echo "$command_str" | grep -qE '(rm|unlink|rmdir)[[:space:]]' && echo "$command_str" | grep -qF "$basename_pattern"; then
       block "BLOCKED by damage-control: attempting to delete protected path '${pattern}'. This file or directory must not be deleted."
     fi
   done < <(extract_section "noDeletePaths")

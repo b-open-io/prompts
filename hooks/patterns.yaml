@@ -51,13 +51,16 @@ noDeletePaths:
 # Bash command patterns that are hard-blocked (exit 2).
 destructiveCommands:
   - "rm -rf /"
+  - "rm -rf /*"
   - "rm -fr /"
+  - "rm -fr /*"
+  - "rm -r -f /"
   - "chmod 777"
   - "git reset --hard"
   - "git clean -fd"
   - "git clean -df"
   - "git push --force"
-  - "git push -f "
+  - "git push -f"
   - "drop table"
   - "drop database"
   - "truncate table"

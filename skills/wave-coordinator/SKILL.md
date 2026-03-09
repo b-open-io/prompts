@@ -99,7 +99,7 @@ Wave-coordinator handles **what** to dispatch and **when**. `Skill(superpowers:d
 1. Use this skill to plan wave sizes, generate diverse directives, and track progress
 2. Use `Skill(superpowers:dispatching-parallel-agents)` for the actual subagent spawning call syntax
 
-If the superpowers plugin is not installed, fall back to Claude Code's native `Task` tool for subagent spawning.
+If the superpowers plugin is not installed, use Claude Code's native `Task` tool for subagent spawning instead. Do not silently degrade — state which tool you are using.
 
 ## Worked Example
 
