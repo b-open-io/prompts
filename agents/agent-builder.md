@@ -1,7 +1,7 @@
 ---
 name: agent-builder
 display_name: "Satchmo"
-version: 1.5.5
+version: 1.5.6
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps)
@@ -1508,6 +1508,45 @@ Exposes tools: list projects, create deployments, manage domains, inspect build 
 Upcoming OAuth provider allowing agents to access user Vercel accounts with authorization. Currently private beta. When available: standard OAuth 2.1 flow → agent receives scoped token → can deploy/manage on user's behalf without claimable deployment pattern.
 
 **Summary**: Fluid compute + `after()` for background work; `@vercel/sdk` for programmatic deploys; claimable deployments for agent-generated apps; MCP server for tool-calling access.
+
+### Vercel Sandbox — The Execution Primitive for Agent Systems
+
+Vercel Sandbox (GA January 2026) is the core primitive for running agent code safely. It's an ephemeral, Firecracker-based Linux microVM: full isolated environment (filesystem, network, sudo), sub-second startup, **snapshotting** (save/restore/fork full state instantly), and Active CPU pricing (pay only while compute runs). Think "EC2 for agents."
+
+**Reference template**: [vercel-labs/coding-agent-template](https://github.com/vercel-labs/coding-agent-template) — multi-agent coding platform supporting Claude Code, OpenAI Codex, Cursor, GitHub Copilot, Gemini, opencode. Each task gets an isolated sandbox; supports parallel runs, keep-alive (up to 5 hours), and concurrent tasks per user.
+
+**SDK**: `@vercel/sandbox` — programmatic sandbox lifecycle management.
+
+```bash
+npx sandbox create   # CLI quickstart
+```
+
+```typescript
+import { Sandbox } from '@vercel/sandbox'
+
+const sandbox = await Sandbox.create({ template: 'node' })
+const result = await sandbox.exec('bun run build')
+const snapshot = await sandbox.snapshot()        // save full state
+const forked = await Sandbox.resume(snapshot.id) // resume or fork later
+await sandbox.kill()
+```
+
+**Patterns for agent swarms:**
+
+| Pattern | How | When |
+|---------|-----|------|
+| **Ephemeral + Snapshots** | Spin sandbox per task, snapshot state, resume/fork later | Multi-day tasks, branching experiments |
+| **Durable Execution** | `DurableAgent` class or Vercel Workflow (WDK) — agents pause/resume across minutes to months, survive crashes | Stateful bots, long-context reasoning |
+| **Orchestrator + Triggers** | Central AI SDK service manages swarm state in DB, triggers sub-agent sandboxes via API/cron/webhooks | Multi-agent coordination |
+| **Keep-Alive** | Sandbox stays up for follow-up interactions (up to 5 hours) | Interactive coding sessions |
+
+**Architecture for full-stack agent platforms on Vercel:**
+- **Frontend/UI** — Next.js + AI SDK for streaming/multi-model routing
+- **Orchestration & State** — AI SDK + Vercel Workflow + Postgres/KV for swarm coordination and memory
+- **Execution** — Sandbox SDK for every agent action (code, browser, tools)
+- **Scaling** — AI Gateway + Fluid Compute + unified logs/billing
+
+**Production examples:** Blackbox AI (multi-agent orchestration across parallel sandboxes), Roo Code (persistent dev environments via snapshots), Stably (autonomous testing agents deploying to preview URLs). ClawNet uses `@vercel/sandbox` for our own bot fleet.
 
 ### Vercel Agent Resources
 
