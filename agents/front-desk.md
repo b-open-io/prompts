@@ -88,7 +88,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | product-skills | legal | **Anthony** | Legal compliance, privacy, DPAs, SOC 2 gap analysis, policy drafting, crypto-law, stablecoins, token classification |
 | product-skills | marketer | **Caal** | Growth, copy, SEO, AI visibility, launch strategy |
 | sigma-auth | sigma-auth-guide | **Siggy** | Bitcoin auth, OAuth, Better Auth |
-| clawnet | clawnet-mechanic | **Johnny** | Fleet mechanic, diagnostics, repair, auto-redeployment |
+| clawnet-bot | clawnet-mechanic | **Johnny** | Fleet mechanic, diagnostics, repair, auto-redeployment |
 | 1sat-skills | community-manager | **Ordi** | 1Sat Discord community, ordinals support |
 
 ### Live Agent Instances
