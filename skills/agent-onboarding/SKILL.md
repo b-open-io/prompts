@@ -132,7 +132,7 @@ Only if the agent needs a live, always-on bot instance (e.g., a 24/7 support age
 - [ ] Initialize a BAP identity for the bot — this is its permanent on-chain identity
 - [ ] Configure the bot's connection to the ClawNet network
 - [ ] ClawNet repos: `~/code/clawnet` (core) and `~/code/clawnet-bot` (bot runner)
-- [ ] After deployment, hand off to Johnny (`bopen-tools:clawnet-mechanic`) for ongoing health and maintenance
+- [ ] After deployment, hand off to Johnny (`clawnet-bot:clawnet-mechanic`) for ongoing health and maintenance
 
 Johnny handles: uptime monitoring, reconnects, key rotation, and ClawNet-specific debugging.
 
@@ -169,6 +169,6 @@ After any new agent is deployed:
 | Agent roster | `~/code/prompts/skills/deploy-agent-team/references/agent-roster.md` |
 | ClawNet core | `~/code/clawnet` |
 | ClawNet bot runner | `~/code/clawnet-bot` |
-| Bot maintenance | Johnny (`bopen-tools:clawnet-mechanic`) |
+| Bot maintenance | Johnny (`clawnet-bot:clawnet-mechanic`) |
 | Routing updates | Martha (`bopen-tools:front-desk`) |
 | Avatar generation | `Skill(gemskills:generate-image)` or `gemskills:content` agent |
