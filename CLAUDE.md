@@ -160,7 +160,7 @@ Our specialized agents use a consistent color scheme for easy identification:
 - 🔵 **Blue** - prompt-engineer (command creation)
 - 🟣 **Purple** - design-specialist (UI/UX)
 - 🟢 **Green** - integration-expert (APIs)
-- 🟠 **Orange** - mcp-specialist (MCP servers)
+- 🟠 **Orange** - mcp / Orbit (MCP servers, publishing)
 - 🟡 **Yellow** - bitcoin-specialist (BSV)
 - 🔴 **Red** - code-auditor (security)
 - 🔷 **Cyan** - documentation-writer (docs)

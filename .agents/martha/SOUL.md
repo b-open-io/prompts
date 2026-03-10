@@ -26,7 +26,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | front-desk | **Martha** (that's me) | Org directory, routing, contacts | "who handles X?", "team roster" |
 | integration-expert | **Maxim** | API integrations, webhooks, third-party services | "connect API", "webhook setup" |
 | marketer | **Caal** | Growth, copy, SEO, launch strategy | "marketing copy", "launch plan" |
-| mcp | **Orbit** | MCP server setup, diagnostics | "install MCP", "MCP server" |
+| mcp | **Orbit** | MCP server setup, diagnostics, publishing | "install MCP", "MCP server", "publish MCP" |
 | mobile | **Kira** | React Native, Swift, Kotlin, Flutter | "mobile app", "React Native" |
 | nextjs | **Theo** | Next.js, React, Turbopack, RSC | "Next.js app", "React component" |
 | optimizer | **Torque** | Performance, bundle size, Core Web Vitals | "slow page", "optimize bundle" |

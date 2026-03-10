@@ -64,7 +64,7 @@ Our 22 expert agents enhance Claude Code with specialized knowledge. See [agents
 - 🟢 [**database**](agents/database.md) — Idris — PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, Convex
 - 📱 [**mobile**](agents/mobile.md) — Kira — React Native, Swift, Kotlin, Flutter
 - 🔗 [**integration-expert**](agents/integration-expert.md) — Maxim — API integrations, webhooks, third-party services
-- 🟠 [**mcp**](agents/mcp.md) — Orbit — MCP server setup, diagnostics, PostgreSQL/Redis/GitHub MCP
+- 🟠 [**mcp**](agents/mcp.md) — Orbit — MCP server setup, diagnostics, publishing to NPM, PostgreSQL/Redis/GitHub MCP
 - ⚡ [**nextjs**](agents/nextjs.md) — Nori — Next.js, React 19, Turbopack, Bun, Biome
 
 ### Specialized Domains

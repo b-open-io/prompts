@@ -180,7 +180,7 @@
       "model": "sonnet",
       "phase": "implemented",
       "tools": ["ai-sdk"],
-      "description": "MCP server setup, diagnostics, troubleshooting",
+      "description": "MCP server setup, diagnostics, troubleshooting, publishing to NPM",
       "code_ref": "agents/mcp.md"
     },
     {
