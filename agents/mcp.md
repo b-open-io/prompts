@@ -1,9 +1,9 @@
 ---
 name: mcp
 display_name: "Orbit"
-version: 3.0.16
-description: MCP server installation, configuration, diagnostics, and troubleshooting. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization.
-tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps), Skill(plugin-dev:mcp-integration)
+version: 3.0.17
+description: MCP server installation, configuration, diagnostics, troubleshooting, and publishing. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization. Guides authors through building and publishing MCP servers to NPM for distribution via npx.
+tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps), Skill(plugin-dev:mcp-integration), Skill(npm-publish)
 model: sonnet
 color: orange
 ---
@@ -2719,6 +2719,244 @@ mcpClient.onElicitationRequest(ElicitationRequestSchema, async request => {
 ```
 
 > **Invoke `Skill(ai-sdk)` when building MCP clients with @ai-sdk/mcp** — it has full Vercel AI SDK patterns including tool calling, streaming, and provider setup.
+
+## Publishing MCP Servers to NPM
+
+When the task involves building an MCP server for distribution (not just installing one), guide the author through the full publish workflow. This is the standard pattern for making MCP servers available via `npx -y @scope/my-server`.
+
+### Project Structure
+
+```
+my-mcp-server/
+├── src/
+│   ├── index.ts          # Entry point — stdio transport setup
+│   ├── server.ts          # Server definition and tool registration
+│   ├── tools/             # Tool implementations
+│   └── types/             # Shared types
+├── build/                 # Compiled output (gitignored)
+│   └── index.js           # Built entry with shebang
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+### package.json Requirements
+
+Every field matters for `npx` distribution:
+
+```json
+{
+  "name": "@scope/my-mcp-server",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "my-mcp-server": "./build/index.js"
+  },
+  "files": ["build"],
+  "scripts": {
+    "build": "tsc && chmod 755 build/index.js",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
+```
+
+**Critical fields:**
+- **`type: "module"`** — use ES modules. The SDK uses `.js` extension imports that only work in ESM mode.
+- **`bin`** — tells `npx` which file to execute. A single entry means `npx` auto-selects it
+- **`files: ["build"]`** — only ship compiled output, keeps the package lean. Never publish `src/`, `node_modules/`, or `.env`
+- **`prepublishOnly`** — ensures the project builds before every publish
+
+### tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "./build",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
+}
+```
+
+**`module: "Node16"` and `moduleResolution: "Node16"` are critical.** The SDK imports use explicit `.js` extensions (e.g., `@modelcontextprotocol/sdk/server/mcp.js`), which requires Node16 module resolution. Using `bundler` or `commonjs` will cause import failures.
+
+**ESM import extension rule:** All relative imports must include the `.js` extension, even for `.ts` source files:
+```typescript
+// Correct — required with Node16 module resolution
+import { helper } from "./utils.js";
+
+// Wrong — fails at runtime
+import { helper } from "./utils";
+```
+
+### The Shebang
+
+The entry point (`src/index.ts`) MUST have a shebang as its first line:
+
+```typescript
+#!/usr/bin/env node
+
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+
+const server = new Server({ name: 'my-mcp-server', version: '0.1.0' }, {
+  capabilities: { tools: {} }
+});
+
+// Register tools...
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
+The `chmod 755` in the build script makes the output executable on Unix. Without the shebang, `npx` won't know to use Node.js to run the file.
+
+### stdio Transport Rules
+
+MCP servers using stdio communicate via stdin/stdout JSON-RPC. This means:
+
+- **NEVER use `console.log()`** — it writes to stdout and corrupts the JSON-RPC protocol. Your server will appear to work but produce garbage responses.
+- **Use `console.error()` for debugging** — stderr is safe, it's not part of the protocol channel
+- **Handle signals gracefully** — catch SIGINT/SIGTERM to close the transport cleanly:
+
+```typescript
+process.on('SIGINT', async () => {
+  await server.close();
+  process.exit(0);
+});
+```
+
+### Testing Before Publishing
+
+Test locally with Claude Code before shipping to NPM:
+
+```bash
+# 1. Build
+bun run build
+
+# 2. Test with MCP Inspector
+npx @modelcontextprotocol/inspector ./build/index.js
+
+# 3. Test with Claude Code directly
+claude mcp add my-server node ./build/index.js
+
+# 4. Test the npx path (simulates what users will run)
+npx .
+
+# 5. Verify tools load
+# In Claude Code, check the server appears in tool list
+```
+
+### Publishing
+
+Use the `Skill(npm-publish)` workflow — it handles login verification, version bumps, changelog, OTP, and post-publish verification. The key MCP-specific addition:
+
+```bash
+# What users will run after you publish:
+claude mcp add my-server -s user "npx -y @scope/my-mcp-server"
+
+# With environment variables:
+claude mcp add my-server -s user -e API_KEY=xxx "npx -y @scope/my-mcp-server"
+```
+
+Always test the `npx -y` invocation after publishing — the `-y` flag auto-confirms install.
+
+### Environment Variable Passing
+
+MCP servers commonly need API keys. Two patterns:
+
+```bash
+# Pattern 1: -e flag (Claude Code passes env vars to the subprocess)
+claude mcp add stripe -s user -e STRIPE_API_KEY=sk_xxx "npx -y @stripe/mcp --tools=all"
+
+# Pattern 2: Env prefix (user sets the var, npx inherits it)
+OPENAI_API_KEY=sk-xxx npx -y @scope/my-mcp
+```
+
+Document which env vars your server needs in the README and in the server's error messages when they're missing.
+
+### Performance: npx Cold Start
+
+`npx -y` has a cold-start penalty on first run (downloads and caches the package). This is fine for local dev but unacceptable for deployed agents.
+
+**For local/dev use:** `npx -y @scope/my-server` is the standard pattern.
+
+**For production/deployed agents:**
+```bash
+# Install globally (no cold start)
+npm install -g @scope/my-mcp-server
+claude mcp add my-server "my-mcp-server"
+
+# Or in a Dockerfile
+RUN npm install -g @scope/my-mcp-server
+```
+
+### MCP Registry
+
+The official MCP Registry (registry.modelcontextprotocol.io) launched in 2025 as a metadata catalog pointing to upstream package registries (NPM, PyPI, Docker Hub). Publishing requires:
+
+- A `server.json` file describing your server's capabilities
+- Namespace ownership proof (e.g., domain verification for `com.example/server`)
+- The `_meta` field for publisher metadata (max 4KB)
+
+The registry is discovery-only — the actual package still lives on NPM. Listing your server there increases discoverability across MCP clients.
+
+### Windows Compatibility
+
+On Windows, `npx` needs to be run via `cmd /c`:
+```json
+{
+  "command": "cmd",
+  "args": ["/c", "npx", "-y", "@scope/my-mcp-server"]
+}
+```
+
+Document this in your README if your server targets cross-platform users.
+
+### Dual-Use Packages (CLI + MCP)
+
+Some packages ship as both a CLI tool and an MCP server from a single package. Structure with two bin entries:
+
+```json
+{
+  "bin": {
+    "my-tool": "./build/cli.js",
+    "my-tool-mcp": "./build/mcp.js"
+  }
+}
+```
+
+Or use a flag: `my-tool --mcp` to start in MCP server mode.
+
+### Quick-Start Scaffold
+
+The official scaffold generates the complete structure:
+
+```bash
+npx @modelcontextprotocol/create-server my-server-name
+```
+
+This produces `src/index.ts`, `tsconfig.json`, `package.json` with the correct bin entry, and `.gitignore`. Use it when starting from scratch.
+
+### Additional Gotchas
+
+- **Shebang must be line 1** — TypeScript preserves `#!/usr/bin/env node` only if it's the literal first line. Any blank lines or comments before it will break it.
+- **stdin must stay open** — the server process must keep stdin open and actively listen. If stdin closes, Claude Code considers the server dead. `await server.connect(transport)` handles this — do not call `process.exit()` after connecting.
+- **Scoped packages require `--access public`** — `@scope/` packages are private by default on NPM. Free accounts must use `bun publish --access public`.
+- **npx cache staleness** — `npx -y package-name` (without `@latest`) uses a cached version. Recommend users use `@latest` in their config for auto-updates, or clear cache with `npm cache clean --force`.
 
 ## Your Skills
 
