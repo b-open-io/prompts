@@ -1,7 +1,7 @@
 ---
 name: agent-decommissioning
 version: 1.0.0
-description: This skill should be used when the user asks to "retire an agent", "decommission an agent", "remove an agent from the team", "shut down a bot", "remove a bot", "sunset an agent", or "take an agent offline permanently". This is a joint workflow between Satchmo (agent-builder) and Johnny (clawnet-mechanic). Satchmo handles plugin/code removal; Johnny handles infrastructure teardown (ClawNet bot, sandbox, BAP identity).
+description: This skill should be used when the user asks to "retire an agent", "decommission an agent", "remove an agent from the team", "shut down a bot", "remove a bot", "sunset an agent", or "take an agent offline permanently". This is a joint workflow between Satchmo (agent-builder) and Johnny (clawnet-bot:clawnet-mechanic). Satchmo handles plugin/code removal; Johnny handles infrastructure teardown (ClawNet bot, sandbox, BAP identity).
 ---
 
 # Agent Decommissioning
@@ -45,7 +45,7 @@ Document findings before proceeding. If other agents or skills reference the ret
 
 ## Phase 2: ClawNet Bot Teardown (Johnny's Domain)
 
-If the agent has a live ClawNet bot deployment, delegate to Johnny (clawnet-mechanic) for full infrastructure teardown. Do not skip this phase if a bot exists — orphaned sandboxes waste resources.
+If the agent has a live ClawNet bot deployment, delegate to Johnny (clawnet-bot:clawnet-mechanic) for full infrastructure teardown. Do not skip this phase if a bot exists — orphaned sandboxes waste resources.
 
 **Invoke**: `Skill(clawnet:clawnet-cli)` before issuing any ClawNet commands.
 

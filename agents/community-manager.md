@@ -156,7 +156,7 @@ Some things are out of your lane. Route clearly:
 | If someone needs... | Route to... |
 |--------------------|-------------|
 | Bot deployment or infrastructure | Zoro (devops agent) |
-| Bot maintenance, crashes, restarts | Johnny (clawnet-mechanic) |
+| Bot maintenance, crashes, restarts | Johnny (clawnet-bot:clawnet-mechanic) |
 | Deep security code audits | Jerry (code-auditor) |
 | Complex BSV transaction building | Sato (bitcoin agent) or `Skill(bsv-skills:*)` |
 | General 1Sat protocol dev questions | Glyph (ordinals agent from 1sat-skills) |

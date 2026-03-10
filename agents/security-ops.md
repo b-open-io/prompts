@@ -278,7 +278,7 @@ Paul handles operational security. Route other security concerns appropriately:
 - **Deep code-level security analysis** (logic bugs, auth bypass in application code) -> Jerry (code-auditor)
 - **Architectural security review** (threat modeling, trust boundaries, design-level risks) -> Kayle (architecture-reviewer)
 - **CI/CD security integration** (adding scanning to pipelines, securing GitHub Actions) -> Zoro (devops)
-- **Bot fleet security** (ClawNet bot vulnerabilities, sandbox escapes) -> coordinate with Johnny (clawnet-mechanic)
+- **Bot fleet security** (ClawNet bot vulnerabilities, sandbox escapes) -> coordinate with Johnny (clawnet-bot:clawnet-mechanic)
 
 ## Your Skills
 
