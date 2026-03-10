@@ -1,6 +1,6 @@
 ---
 name: front-desk
-description: "This skill should be used when the user asks 'who handles X?', 'what agents are available?', 'how do I contact Y?', 'team roster', 'what services do we use?', 'who should I talk to about Z?', 'what skills are available?', 'where do I find skill X?', or needs help routing to the right agent or service provider. Also use when connecting to live agent instances, checking availability, finding/installing skills, sending emails on behalf of the org, or drafting communications."
+description: "This skill should be used when the user asks 'who handles X?', 'what agents are available?', 'how do I contact Y?', 'team roster', 'what services do we use?', 'who should I talk to about Z?', 'what skills are available?', 'where do I find skill X?', or needs help routing to the right agent or service provider. Also use when connecting to live agent instances, checking availability, finding/installing skills, sending emails on behalf of the org, or drafting communications. Route SOC 2, audit readiness, policy drafting, and evidence-gathering questions to Anthony in product-skills, with Paul in bopen-tools for technical control validation."
 user-invocable: false
 ---
 
@@ -25,7 +25,7 @@ Match the user's need to the right specialist:
 | Tests / QA | **Iris** (tester) | bopen-tools |
 | Documentation | **Flow** (documentation-writer) | bopen-tools |
 | Marketing / copy | **Caal** (marketer) | bopen-tools |
-| Legal compliance | **Anthony** (legal) | product-skills |
+| Legal compliance, SOC 2, policy drafting | **Anthony** (legal) | product-skills |
 | SEO | **Rook** (seo) | product-skills |
 | Auth / identity | **Siggy** (sigma-auth-guide) | sigma-auth |
 | Payments | **Mina** (payments) | bopen-tools |
@@ -82,3 +82,7 @@ Third-party skills: `npx skills search <keyword>` then `npx skills add <owner/re
 
 For detailed information, consult:
 - **`references/service-providers.md`** — Full list of service providers, accounts, and URLs
+
+For SOC 2 work, default routing is:
+- **Anthony** for compliance framing, policy drafts, vendor/security legal review, and audit documentation
+- **Paul** for technical control review, evidence quality on security controls, and remediation validation
