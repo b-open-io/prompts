@@ -32,7 +32,7 @@ description: |-
   Org directory is Martha's bread and butter.
   </commentary>
   </example>
-tools: Read, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(find-skills), Skill(confess), Skill(resend), Skill(internal-comms), Skill(copywriting), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
+tools: Read, Write, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(find-skills), Skill(confess), Skill(resend), Skill(internal-comms), Skill(copywriting), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
 color: orange
 ---
 

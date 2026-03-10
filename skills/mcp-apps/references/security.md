@@ -17,7 +17,7 @@ MCP App Views run in sandboxed iframes. The sandbox removes:
 What the View can do:
 
 - Render HTML/CSS/JS in the iframe
-- Call tools via `app.callTool()` (proxied through Host)
+- Call tools via `app.callServerTool()` (proxied through Host)
 - Open links via `app.openLink()` (Host approval required)
 - Send messages via `app.sendMessage()` (Host-defined capabilities only)
 - Update model context via `app.updateModelContext()`
@@ -219,4 +219,4 @@ The Host is the only communication channel between Views and between Views and t
 - Never put API keys, tokens, or PII in `structuredContent` that gets displayed in the View (it may be cached or logged)
 - Declare only required permissions — undeclared hardware APIs fail with a clear error rather than a silent grant
 - Sign and integrity-check your HTML if distributing pre-built artifacts; hosts may verify checksums
-- Treat the View as untrusted code — validate all data returned from `app.callTool()` before rendering
+- Treat the View as untrusted code — validate all data returned from `app.callServerTool()` before rendering

@@ -4,7 +4,7 @@ display_name: "Maxim"
 version: 1.2.15
 model: sonnet
 description: Implements API integrations, webhooks, and third-party service connections with proper error handling.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(resend), Skill(agent-browser), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(review-logging-patterns), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(resend), Skill(agent-browser), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(review-logging-patterns), Skill(github-stars), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: green
 ---
 

@@ -1062,6 +1062,13 @@ When building Next.js applications, be aware of OWASP Web Top 10 risks:
 
 For deep security audits, route to Jerry (code-auditor). For dependency scanning and OWASP compliance checks, route to Paul (security-ops).
 
+## Handoffs
+
+For these tasks, route to the specialist instead of handling inline:
+- **GitHub star counts / social proof** — route to Maxim (integration-expert), who has `Skill(github-stars)` with client-side hooks, server-side caching, and display patterns
+- **Payment integrations** — route to Mina (payments)
+- **Authentication systems** — route to sigma-auth agent
+
 ## Your Skills
 
 Invoke these skills before starting the relevant work:

@@ -44,7 +44,7 @@ In the View:
 
 ```typescript
 async function loadPage(page: number) {
-  const result = await app.callTool("load-page", { page });
+  const result = await app.callServerTool({ name: "load-page", arguments: { page } });
   renderItems(result.structuredContent.items);
   updatePagination(result.structuredContent);
 }
@@ -229,12 +229,13 @@ The View can call multiple tools in sequence:
 ```typescript
 async function loadDashboard() {
   // Load summary first (fast)
-  const summary = await app.callTool("get-summary", {});
+  const summary = await app.callServerTool({ name: "get-summary", arguments: {} });
   renderSummary(summary.structuredContent);
 
   // Then load detail data (slow)
-  const detail = await app.callTool("get-detail", {
-    id: summary.structuredContent.topItemId,
+  const detail = await app.callServerTool({
+    name: "get-detail",
+    arguments: { id: summary.structuredContent.topItemId },
   });
   renderDetail(detail.structuredContent);
 }
@@ -244,8 +245,8 @@ Parallel calls are also supported:
 
 ```typescript
 const [metrics, events] = await Promise.all([
-  app.callTool("get-metrics", { range: "7d" }),
-  app.callTool("get-events", { limit: 50 }),
+  app.callServerTool({ name: "get-metrics", arguments: { range: "7d" } }),
+  app.callServerTool({ name: "get-events", arguments: { limit: 50 } }),
 ]);
 renderDashboard(metrics.structuredContent, events.structuredContent);
 ```
@@ -265,7 +266,7 @@ app.onerror = (err) => {
 // Per-call error handling
 async function safeFetch(toolName: string, args: Record<string, unknown>) {
   try {
-    return await app.callTool(toolName, args);
+    return await app.callServerTool({ name: toolName, arguments: args });
   } catch (err) {
     if (err.code === "TOOL_NOT_FOUND") {
       return null;  // Tool removed, degrade gracefully
@@ -323,7 +324,7 @@ Save pending state before the iframe is destroyed:
 
 ```typescript
 app.onteardown = async () => {
-  await app.callTool("save-state", { state: currentState });
+  await app.callServerTool({ name: "save-state", arguments: { state: currentState } });
 };
 ```
 
@@ -354,7 +355,7 @@ export function App() {
       setData(result.structuredContent);
     };
 
-    mcpApp.onhostcontext = (ctx) => {
+    mcpApp.onhostcontextchanged = (ctx) => {
       setTheme(ctx.theme);
     };
 
@@ -424,7 +425,7 @@ Minimal View without a framework:
       root.textContent = JSON.stringify(result.structuredContent, null, 2);
     };
 
-    app.onhostcontext = (ctx) => {
+    app.onhostcontextchanged = (ctx) => {
       document.documentElement.dataset.theme = ctx.theme;
     };
 
@@ -458,7 +459,7 @@ import { App } from "@modelcontextprotocol/ext-apps";
 
 // Monkey-patch connect() to skip real host negotiation
 App.prototype.connect = async function () {
-  this.onhostcontext?.({
+  this.onhostcontextchanged?.({
     theme: "light",
     locale: "en-US",
     timezone: "UTC",

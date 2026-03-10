@@ -32,7 +32,7 @@ description: |-
   Kurt should know when to answer and when to hand off through Martha.
   </commentary>
   </example>
-tools: Read, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(confess), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
+tools: Read, Write, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(confess), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
 color: green
 ---
 

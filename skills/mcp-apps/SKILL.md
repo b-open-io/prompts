@@ -108,7 +108,7 @@ app.ontoolresult = (result) => {
   renderData(result.structuredContent ?? result.content);
 };
 
-app.onhostcontext = (ctx) => {
+app.onhostcontextchanged = (ctx) => {
   // Apply host theme, locale, timezone
   applyTheme(ctx.theme);
 };
@@ -124,7 +124,7 @@ Set `ontoolresult` before or immediately after `connect()`. The initial tool res
 1. **Discovery** — Host reads server manifest, finds `io.modelcontextprotocol/ui` in experimental capabilities.
 2. **Init** — Host sends `ui/initialize`. Server responds with supported UI version.
 3. **Data** — Model calls tool → Host forwards `ui/notifications/tool-input` to View → Tool executes → Host forwards `ui/notifications/tool-result` to View.
-4. **Interactive** — View calls tools via `app.callTool()`. Host proxies them. Results flow back via `ontoolresult`.
+4. **Interactive** — View calls tools via `app.callServerTool()`. Host proxies them. Results flow back via `ontoolresult`.
 5. **Teardown** — Host sends `ui/notifications/resource-teardown` when the iframe is destroyed.
 
 ## Tool Visibility
@@ -195,7 +195,7 @@ return {
 
 ## Theming
 
-The Host provides context via `app.onhostcontext`:
+The Host provides context via `app.onhostcontextchanged`:
 
 ```typescript
 interface HostContext {

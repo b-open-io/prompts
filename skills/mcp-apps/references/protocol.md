@@ -219,10 +219,10 @@ Sent when host context changes (e.g., user switches theme, resizes container).
 }
 ```
 
-Register handler via `app.onhostcontext`:
+Register handler via `app.onhostcontextchanged`:
 
 ```typescript
-app.onhostcontext = (ctx) => {
+app.onhostcontextchanged = (ctx) => {
   document.documentElement.setAttribute("data-theme", ctx.theme);
 };
 ```
@@ -357,7 +357,7 @@ Handle in the View:
 
 ```typescript
 try {
-  const result = await app.callTool("my-tool", args);
+  const result = await app.callServerTool({ name: "my-tool", arguments: args });
   render(result.structuredContent);
 } catch (err) {
   showError(err.message);
