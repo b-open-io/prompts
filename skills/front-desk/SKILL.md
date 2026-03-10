@@ -17,7 +17,7 @@ Match the user's need to the right specialist:
 | BSV transactions, wallets | **Sato** (bitcoin) | bsv-skills |
 | Ordinals, NFTs, tokens | **Glyph** (ordinals) | 1sat-skills |
 | Agent architecture | **Satchmo** (agent-builder) | bopen-tools |
-| UI/UX design | **Mira** (designer) | bopen-tools |
+| UI/UX design | **Ridd** (designer) | bopen-tools |
 | Performance | **Torque** (optimizer) | bopen-tools |
 | Security audit | **Nyx** (code-auditor) | bopen-tools |
 | Architecture review | **Kayle** (architecture-reviewer) | bopen-tools |

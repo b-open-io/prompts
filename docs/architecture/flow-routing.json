@@ -1,0 +1,31 @@
+[
+  { "_type": "rectangle", "shapeId": "flow", "w": 260, "h": 80, "color": "light-blue", "fill": "solid", "text": "Flow\n(Documentation Writer)" },
+
+  { "_type": "rectangle", "shapeId": "maxim", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Maxim\n(Integration Expert)", "note": "Fumadocs, MDX, doc site builds" },
+  { "_type": "rectangle", "shapeId": "mira", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Mira\n(Designer)", "note": "Diagrams, architecture visuals" },
+  { "_type": "rectangle", "shapeId": "theo", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Theo\n(Next.js)", "note": "API endpoint docs from source" },
+  { "_type": "rectangle", "shapeId": "parker", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Parker\n(Researcher)", "note": "Fact-checking, doc accuracy" },
+
+  { "_type": "rectangle", "shapeId": "anthony", "w": 240, "h": 80, "color": "grey", "fill": "solid", "text": "Anthony\n(Legal)", "note": "ToS, privacy policy" },
+  { "_type": "rectangle", "shapeId": "caal", "w": 240, "h": 80, "color": "grey", "fill": "solid", "text": "Caal\n(Marketer)", "note": "Landing page copy, SEO" },
+
+  { "_type": "diamond", "shapeId": "user", "w": 160, "h": 100, "color": "yellow", "fill": "solid", "text": "User" },
+
+  { "_type": "cloud", "shapeId": "readme", "w": 180, "h": 70, "color": "light-green", "fill": "solid", "text": "README" },
+  { "_type": "cloud", "shapeId": "docsite", "w": 180, "h": 70, "color": "light-green", "fill": "solid", "text": "Doc Site\n(Fumadocs)" },
+  { "_type": "cloud", "shapeId": "api_docs", "w": 180, "h": 70, "color": "light-green", "fill": "solid", "text": "API Docs\n(OpenAPI)" },
+
+  { "_type": "arrow", "shapeId": "a_user_flow", "fromId": "user", "toId": "flow", "color": "black", "text": "write docs" },
+
+  { "_type": "arrow", "shapeId": "a_flow_maxim", "fromId": "flow", "toId": "maxim", "color": "blue", "dash": "dashed", "text": "doc framework setup" },
+  { "_type": "arrow", "shapeId": "a_flow_mira", "fromId": "flow", "toId": "mira", "color": "blue", "dash": "dashed", "text": "visual assets" },
+  { "_type": "arrow", "shapeId": "a_flow_theo", "fromId": "flow", "toId": "theo", "color": "blue", "dash": "dashed", "text": "API source" },
+  { "_type": "arrow", "shapeId": "a_flow_parker", "fromId": "flow", "toId": "parker", "color": "blue", "dash": "dashed", "text": "research" },
+  { "_type": "arrow", "shapeId": "a_flow_anthony", "fromId": "flow", "toId": "anthony", "color": "grey", "dash": "dotted", "text": "legal docs" },
+  { "_type": "arrow", "shapeId": "a_flow_caal", "fromId": "flow", "toId": "caal", "color": "grey", "dash": "dotted", "text": "marketing copy" },
+
+  { "_type": "arrow", "shapeId": "a_flow_readme", "fromId": "flow", "toId": "readme", "color": "green", "text": "writes" },
+  { "_type": "arrow", "shapeId": "a_flow_docsite", "fromId": "flow", "toId": "docsite", "color": "green", "text": "writes" },
+  { "_type": "arrow", "shapeId": "a_flow_api", "fromId": "flow", "toId": "api_docs", "color": "green", "text": "writes" },
+  { "_type": "arrow", "shapeId": "a_maxim_docsite", "fromId": "maxim", "toId": "docsite", "color": "orange", "dash": "dashed", "text": "builds/deploys" }
+]

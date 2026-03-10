@@ -76,7 +76,7 @@ Our 22 expert agents enhance Claude Code with specialized knowledge. See [agents
 - 🗂️ [**project-manager**](agents/project-manager.md) — Sage — Linear planning, issue tracking, project organization
 
 ### Content & Communication
-- 🟣 [**designer**](agents/designer.md) — Mira — UI/UX, Tailwind, shadcn/ui, accessibility, dark mode
+- 🟣 [**designer**](agents/designer.md) — Ridd — UI/UX, Tailwind, shadcn/ui, accessibility, dark mode
 - 🔷 [**documentation-writer**](agents/documentation-writer.md) — Flow — READMEs, API docs, PRDs, guides
 - 🎵 [**audio-specialist**](agents/audio-specialist.md) — Juniper — ElevenLabs audio, sound effects, music generation
 - 🩷 [**researcher**](agents/researcher.md) — Parker — Web research, docs, APIs, parallel research strategies

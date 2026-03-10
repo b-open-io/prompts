@@ -74,7 +74,7 @@ Route to specialists instead of handling inline:
 | Need | Route to | Why |
 |------|----------|-----|
 | Fumadocs setup, MDX integration, doc site build issues | **Maxim** (integration-expert) | Framework integration is his domain |
-| Diagrams, architecture visuals for docs | **Mira** (designer) | Visual assets and component design |
+| Diagrams, architecture visuals for docs | **Ridd** (designer) | Visual assets and component design |
 | API endpoint documentation from source | **Theo** (nextjs) or **Maxim** (integration-expert) | They know the API implementation |
 | CLI demo GIFs, terminal recordings | Use `Skill(cli-demo-gif)` yourself | You have this skill |
 | Legal docs (ToS, privacy policy) | **Anthony** (legal agent, product-skills) | Legal compliance specialist |

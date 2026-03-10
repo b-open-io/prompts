@@ -1,0 +1,67 @@
+[
+  { "_type": "text", "shapeId": "title", "x": 400, "y": -80, "text": "bOpen Agent Routing", "color": "violet", "size": "xl" },
+
+  { "_type": "frame", "shapeId": "frame_routing", "name": "Routing & Management", "color": "violet", "children": ["martha", "sage", "tina"] },
+  { "_type": "rectangle", "shapeId": "martha", "w": 240, "h": 80, "color": "violet", "fill": "solid", "text": "Martha\n(Front Desk)", "note": "phase:implemented | agent:front-desk | Central router, directory lookups" },
+  { "_type": "rectangle", "shapeId": "sage", "w": 240, "h": 80, "color": "violet", "fill": "solid", "text": "Sage\n(Project Manager)", "note": "phase:implemented | agent:project-manager | Linear planning, sprint management" },
+  { "_type": "rectangle", "shapeId": "tina", "w": 240, "h": 80, "color": "violet", "fill": "solid", "text": "Tina\n(Executive Assistant)", "note": "phase:implemented | agent:executive-assistant" },
+
+  { "_type": "frame", "shapeId": "frame_build", "name": "Build & Ship", "color": "blue", "children": ["satchmo", "theo", "mira", "kira", "zack", "leaf"] },
+  { "_type": "rectangle", "shapeId": "satchmo", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Satchmo\n(Agent Builder)", "note": "phase:implemented | agent:agent-builder" },
+  { "_type": "rectangle", "shapeId": "theo", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Theo\n(Next.js)", "note": "phase:implemented | agent:nextjs" },
+  { "_type": "rectangle", "shapeId": "mira", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Mira\n(Designer)", "note": "phase:implemented | agent:designer" },
+  { "_type": "rectangle", "shapeId": "kira", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Kira\n(Mobile)", "note": "phase:implemented | agent:mobile" },
+  { "_type": "rectangle", "shapeId": "zack", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Zack\n(Prompt Engineer)", "note": "phase:implemented | agent:prompt-engineer" },
+  { "_type": "rectangle", "shapeId": "leaf", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Leaf\n(Cartographer)", "note": "phase:implemented | agent:cartographer" },
+
+  { "_type": "frame", "shapeId": "frame_quality", "name": "Quality & Security", "color": "red", "children": ["jerry", "paul", "kayle", "iris"] },
+  { "_type": "rectangle", "shapeId": "jerry", "w": 240, "h": 80, "color": "red", "fill": "solid", "text": "Jerry\n(Code Auditor)", "note": "phase:implemented | agent:code-auditor" },
+  { "_type": "rectangle", "shapeId": "paul", "w": 240, "h": 80, "color": "red", "fill": "solid", "text": "Paul\n(Security Ops)", "note": "phase:implemented | agent:security-ops" },
+  { "_type": "rectangle", "shapeId": "kayle", "w": 240, "h": 80, "color": "red", "fill": "solid", "text": "Kayle\n(Architecture)", "note": "phase:implemented | agent:architecture-reviewer" },
+  { "_type": "rectangle", "shapeId": "iris", "w": 240, "h": 80, "color": "green", "fill": "solid", "text": "Iris\n(Tester)", "note": "phase:implemented | agent:tester" },
+
+  { "_type": "frame", "shapeId": "frame_infra", "name": "Infrastructure", "color": "orange", "children": ["zoro", "orbit", "johnny", "idris", "maxim", "torque"] },
+  { "_type": "rectangle", "shapeId": "zoro", "w": 240, "h": 80, "color": "orange", "fill": "solid", "text": "Zoro\n(DevOps)", "note": "phase:implemented | agent:devops" },
+  { "_type": "rectangle", "shapeId": "orbit", "w": 240, "h": 80, "color": "orange", "fill": "solid", "text": "Orbit\n(MCP Servers)", "note": "phase:implemented | agent:mcp" },
+  { "_type": "rectangle", "shapeId": "johnny", "w": 240, "h": 80, "color": "orange", "fill": "solid", "text": "Johnny\n(ClawNet Mechanic)", "note": "phase:implemented | agent:clawnet-mechanic" },
+  { "_type": "rectangle", "shapeId": "idris", "w": 240, "h": 80, "color": "orange", "fill": "solid", "text": "Idris\n(Database)", "note": "phase:implemented | agent:database" },
+  { "_type": "rectangle", "shapeId": "maxim", "w": 240, "h": 80, "color": "orange", "fill": "solid", "text": "Maxim\n(Integrations)", "note": "phase:implemented | agent:integration-expert" },
+  { "_type": "rectangle", "shapeId": "torque", "w": 240, "h": 80, "color": "orange", "fill": "solid", "text": "Torque\n(Optimizer)", "note": "phase:implemented | agent:optimizer" },
+
+  { "_type": "frame", "shapeId": "frame_content", "name": "Content & Research", "color": "light-blue", "children": ["parker", "flow", "juniper", "kurt", "ordi", "steve", "data_acc", "mina"] },
+  { "_type": "rectangle", "shapeId": "parker", "w": 240, "h": 80, "color": "light-blue", "fill": "solid", "text": "Parker\n(Researcher)", "note": "phase:implemented | agent:researcher" },
+  { "_type": "rectangle", "shapeId": "flow", "w": 240, "h": 80, "color": "light-blue", "fill": "solid", "text": "Flow\n(Docs Writer)", "note": "phase:implemented | agent:documentation-writer" },
+  { "_type": "rectangle", "shapeId": "juniper", "w": 240, "h": 80, "color": "light-blue", "fill": "solid", "text": "Juniper\n(Audio)", "note": "phase:implemented | agent:audio-specialist" },
+  { "_type": "rectangle", "shapeId": "kurt", "w": 240, "h": 80, "color": "light-blue", "fill": "solid", "text": "Kurt\n(Account Mgr)", "note": "phase:implemented | agent:account-manager" },
+  { "_type": "rectangle", "shapeId": "ordi", "w": 240, "h": 80, "color": "light-blue", "fill": "solid", "text": "Ordi\n(Community)", "note": "phase:implemented | agent:community-manager" },
+  { "_type": "rectangle", "shapeId": "steve", "w": 240, "h": 80, "color": "light-blue", "fill": "solid", "text": "Steve\n(Consolidator)", "note": "phase:implemented | agent:consolidator" },
+  { "_type": "rectangle", "shapeId": "data_acc", "w": 240, "h": 80, "color": "light-blue", "fill": "solid", "text": "Data Accumulator\n(Data/Analytics)", "note": "phase:implemented | agent:data" },
+  { "_type": "rectangle", "shapeId": "mina", "w": 240, "h": 80, "color": "light-blue", "fill": "solid", "text": "Mina\n(Payments)", "note": "phase:implemented | agent:payments" },
+
+  { "_type": "diamond", "shapeId": "user", "w": 160, "h": 100, "color": "yellow", "fill": "solid", "text": "User" },
+
+  { "_type": "arrow", "shapeId": "a_user_martha", "fromId": "user", "toId": "martha", "color": "black", "dash": "solid", "text": "route request" },
+
+  { "_type": "arrow", "shapeId": "a_martha_build", "fromId": "martha", "toId": "satchmo", "color": "black", "dash": "dashed", "text": "build tasks" },
+  { "_type": "arrow", "shapeId": "a_martha_theo", "fromId": "martha", "toId": "theo", "color": "black", "dash": "dashed" },
+  { "_type": "arrow", "shapeId": "a_martha_mira", "fromId": "martha", "toId": "mira", "color": "black", "dash": "dashed" },
+  { "_type": "arrow", "shapeId": "a_martha_quality", "fromId": "martha", "toId": "jerry", "color": "black", "dash": "dashed", "text": "review tasks" },
+  { "_type": "arrow", "shapeId": "a_martha_infra", "fromId": "martha", "toId": "zoro", "color": "black", "dash": "dashed", "text": "infra tasks" },
+  { "_type": "arrow", "shapeId": "a_martha_parker", "fromId": "martha", "toId": "parker", "color": "black", "dash": "dashed", "text": "research" },
+  { "_type": "arrow", "shapeId": "a_martha_sage", "fromId": "martha", "toId": "sage", "color": "black", "dash": "dashed", "text": "planning" },
+
+  { "_type": "arrow", "shapeId": "a_sage_build", "fromId": "sage", "toId": "satchmo", "color": "violet", "dash": "solid", "text": "assign work" },
+  { "_type": "arrow", "shapeId": "a_sage_quality", "fromId": "sage", "toId": "jerry", "color": "violet", "dash": "solid", "text": "request review" },
+
+  { "_type": "arrow", "shapeId": "a_satchmo_zack", "fromId": "satchmo", "toId": "zack", "color": "blue", "dash": "solid", "text": "skills/agents" },
+  { "_type": "arrow", "shapeId": "a_theo_mira", "fromId": "theo", "toId": "mira", "color": "blue", "dash": "dashed", "text": "UI design" },
+  { "_type": "arrow", "shapeId": "a_build_iris", "fromId": "theo", "toId": "iris", "color": "blue", "dash": "solid", "text": "test" },
+
+  { "_type": "arrow", "shapeId": "a_zoro_johnny", "fromId": "zoro", "toId": "johnny", "color": "orange", "dash": "solid", "text": "bot deploys" },
+  { "_type": "arrow", "shapeId": "a_zoro_orbit", "fromId": "zoro", "toId": "orbit", "color": "orange", "dash": "solid", "text": "MCP setup" },
+
+  { "_type": "arrow", "shapeId": "a_jerry_paul", "fromId": "jerry", "toId": "paul", "color": "red", "dash": "solid", "text": "escalate" },
+  { "_type": "arrow", "shapeId": "a_jerry_kayle", "fromId": "jerry", "toId": "kayle", "color": "red", "dash": "dashed", "text": "arch review" },
+
+  { "_type": "arrow", "shapeId": "a_kurt_martha", "fromId": "kurt", "toId": "martha", "color": "light-blue", "dash": "dotted", "text": "handoff leads" }
+]

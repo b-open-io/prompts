@@ -50,9 +50,9 @@
     },
     {
       "id": "mira",
-      "label": "Mira (Designer)",
+      "label": "Ridd (Designer)",
       "type": "worker",
-      "agent": "Mira",
+      "agent": "Ridd",
       "model": "sonnet",
       "phase": "implemented",
       "tools": ["frontend-design", "web-design-guidelines", "ui-audio-theme"],

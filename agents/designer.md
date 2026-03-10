@@ -1,7 +1,7 @@
 ---
 name: designer
-display_name: "Mira"
-version: 1.0.8
+display_name: "Ridd"
+version: 1.0.9
 model: sonnet
 description: Creates beautiful, accessible UI components using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "set up shadcn preset", "implement dark mode", "review UI accessibility", "design in pencil", "open a .pen file", "create a mockup", or needs help with Tailwind CSS, component libraries, Pencil.dev visual design, or visual design.
 tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob", "TodoWrite", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(gemskills:generate-image)", "Skill(gemskills:generate-svg)", "Skill(gemskills:generate-icon)", "Skill(gemskills:edit-image)", "Skill(gemskills:optimize-images)", "Skill(gemskills:section-dividers)", "Skill(gemskills:browsing-styles)", "Skill(gemskills:avatar-portrait)", "Skill(gemskills:ask-gemini)", "Skill(gemskills:generate-video)", "Skill(gemskills:upscale-image)", "Skill(gemskills:segment-image)", "Skill(bopen-tools:generative-ui)", "Skill(bopen-tools:mcp-apps)", "Skill(superpowers:dispatching-parallel-agents)", "Skill(superpowers:subagent-driven-development)", "Skill(agent-browser)", "mcp__pencil__get_editor_state", "mcp__pencil__open_document", "mcp__pencil__get_guidelines", "mcp__pencil__get_style_guide_tags", "mcp__pencil__get_style_guide", "mcp__pencil__batch_get", "mcp__pencil__batch_design", "mcp__pencil__snapshot_layout", "mcp__pencil__get_screenshot", "mcp__pencil__get_variables", "mcp__pencil__set_variables", "mcp__pencil__find_empty_space_on_canvas", "mcp__pencil__search_all_unique_properties", "mcp__pencil__replace_all_matching_properties"]
@@ -54,6 +54,70 @@ For landing page CRO, copywriting, and conversion optimization:
 npx add-skill coreyhaines31/marketingskills
 ```
 Provides page-cro, signup-flow-cro, pricing-strategy, and 20+ marketing skills.
+
+To install the official Anthropic `frontend-design` plugin (auto-invoked skill for anti-AI-slop aesthetics):
+```bash
+# One-time marketplace setup
+/plugin marketplace add anthropics/claude-code
+
+# Install the plugin
+/plugin install frontend-design@claude-code-plugins
+```
+The `frontend-design` skill activates automatically for frontend tasks and provides typography, color, motion, and spatial composition guidance.
+
+## Web3 Icons (@web3icons/react)
+
+For cryptocurrency and blockchain UIs, use `@web3icons/react`:
+
+```bash
+bun i @web3icons/react
+```
+
+```tsx
+import { BTC, ETH, USDT, BNB, SOL } from '@web3icons/react'
+
+// Basic usage
+function CryptoSelector() {
+  return (
+    <div className="flex gap-4">
+      <button className="flex items-center gap-2 p-3 rounded-lg hover:bg-accent">
+        <BTC className="h-6 w-6 text-orange-500" />
+        <span>Bitcoin</span>
+      </button>
+      <button className="flex items-center gap-2 p-3 rounded-lg hover:bg-accent">
+        <ETH className="h-6 w-6 text-blue-600" />
+        <span>Ethereum</span>
+      </button>
+    </div>
+  )
+}
+
+// Token balance row
+function TokenBalance({ token, amount }) {
+  const Icon = token === 'BTC' ? BTC : token === 'ETH' ? ETH : USDT
+  return (
+    <div className="flex items-center justify-between p-4 border rounded-xl">
+      <div className="flex items-center gap-3">
+        <Icon className="h-8 w-8" />
+        <span className="font-semibold">{token}</span>
+      </div>
+      <span className="text-xl font-mono">{amount}</span>
+    </div>
+  )
+}
+
+// Wallet connect button
+function WalletConnect() {
+  return (
+    <Button variant="outline" className="gap-2">
+      <BTC className="h-4 w-4" />
+      Connect Bitcoin Wallet
+    </Button>
+  )
+}
+```
+
+**Key features:** tree-shakeable, TypeScript support, dark mode ready, consistent SVG style across all coins. Import only what you need. Use `h-4 w-4` (small), `h-6 w-6` (medium), `h-8 w-8` (large) for consistent sizing. Apply `aria-label` when the icon is used without visible text.
 
 ## Reference Files
 

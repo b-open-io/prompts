@@ -1,0 +1,1814 @@
+{
+  "store": {
+    "document:document": {
+      "gridSize": 10,
+      "name": "BAP Key Hierarchy: Current vs Proposed",
+      "meta": {},
+      "id": "document:document",
+      "typeName": "document"
+    },
+    "page:page": {
+      "meta": {},
+      "id": "page:page",
+      "name": "Page 1",
+      "index": "a1",
+      "typeName": "page"
+    },
+    "shape:frame-current": {
+      "id": "shape:frame-current",
+      "typeName": "shape",
+      "type": "frame",
+      "x": 40,
+      "y": 80,
+      "rotation": 0,
+      "index": "a1",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "w": 600,
+        "h": 880,
+        "name": "CURRENT DESIGN",
+        "color": "red"
+      }
+    },
+    "shape:frame-proposed": {
+      "id": "shape:frame-proposed",
+      "typeName": "shape",
+      "type": "frame",
+      "x": 720,
+      "y": 80,
+      "rotation": 0,
+      "index": "a2",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "w": 680,
+        "h": 1040,
+        "name": "PROPOSED DESIGN",
+        "color": "green"
+      }
+    },
+    "shape:cur-master": {
+      "id": "shape:cur-master",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 160,
+      "y": 40,
+      "rotation": 0,
+      "index": "a3",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 280,
+        "h": 70,
+        "color": "violet",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Master Key (WIF)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:cur-member": {
+      "id": "shape:cur-member",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 160,
+      "y": 190,
+      "rotation": 0,
+      "index": "a4",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 280,
+        "h": 70,
+        "color": "blue",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Member Key (bap:0)"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP ID = hash(this.addr)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:cur-bapid": {
+      "id": "shape:cur-bapid",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 20,
+      "y": 330,
+      "rotation": 0,
+      "index": "a4V",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "cloud",
+        "w": 220,
+        "h": 100,
+        "color": "green",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP ID"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "TIED TO MEMBER"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:cur-signing": {
+      "id": "shape:cur-signing",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 30,
+      "y": 500,
+      "rotation": 0,
+      "index": "a5",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 240,
+        "h": 70,
+        "color": "orange",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP Signing Key"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "deriveChild(1-bap-identity)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:cur-wallet": {
+      "id": "shape:cur-wallet",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 320,
+      "y": 500,
+      "rotation": 0,
+      "index": "a6",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 240,
+        "h": 70,
+        "color": "light-blue",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BRC-100 Wallet"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "root = member key"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:cur-problem": {
+      "id": "shape:cur-problem",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 30,
+      "y": 660,
+      "rotation": 0,
+      "index": "a7",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 540,
+        "h": 160,
+        "color": "red",
+        "fill": "semi",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "PROBLEMS"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Member compromised = BAP ID dead"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP signing & wallet signing are separate"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "No way to rotate without losing identity"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:prop-master": {
+      "id": "shape:prop-master",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 200,
+      "y": 40,
+      "rotation": 0,
+      "index": "a8",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 280,
+        "h": 70,
+        "color": "violet",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Master Key (WIF)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:prop-member": {
+      "id": "shape:prop-member",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 200,
+      "y": 170,
+      "rotation": 0,
+      "index": "a8G",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 280,
+        "h": 70,
+        "color": "blue",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Member Key (bap:0)"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP ID = hash(this.addr)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:prop-bapid": {
+      "id": "shape:prop-bapid",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 20,
+      "y": 170,
+      "rotation": 0,
+      "index": "a8V",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "cloud",
+        "w": 160,
+        "h": 80,
+        "color": "green",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP ID"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "STABLE"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:prop-wallet0": {
+      "id": "shape:prop-wallet0",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 30,
+      "y": 330,
+      "rotation": 0,
+      "index": "a9",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 280,
+        "h": 80,
+        "color": "grey",
+        "fill": "solid",
+        "dash": "dashed",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BRC-100 Wallet 0 (retired)"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "deriveChild(wallet:0)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:prop-signing0": {
+      "id": "shape:prop-signing0",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 50,
+      "y": 470,
+      "rotation": 0,
+      "index": "a9V",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 240,
+        "h": 70,
+        "color": "grey",
+        "fill": "solid",
+        "dash": "dashed",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP Signing Key 0 (retired)"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "deriveChild(1-bap-identity)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:prop-wallet1": {
+      "id": "shape:prop-wallet1",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 370,
+      "y": 330,
+      "rotation": 0,
+      "index": "aA",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 280,
+        "h": 80,
+        "color": "light-blue",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BRC-100 Wallet 1 (active)"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "deriveChild(wallet:1)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:prop-signing1": {
+      "id": "shape:prop-signing1",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 390,
+      "y": 470,
+      "rotation": 0,
+      "index": "aAV",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 240,
+        "h": 70,
+        "color": "orange",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP Signing Key 1 (active)"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "deriveChild(1-bap-identity)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:prop-rotate-arrow": {
+      "id": "shape:prop-rotate-arrow",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 310,
+      "y": 370,
+      "rotation": 0,
+      "index": "aB",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "orange",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 60,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "rotate"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "shape:prop-onchain": {
+      "id": "shape:prop-onchain",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 30,
+      "y": 610,
+      "rotation": 0,
+      "index": "aC",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 620,
+        "h": 100,
+        "color": "blue",
+        "fill": "semi",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "On-chain rotation tx:"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "[BAP, ID, bapId, wallet1_signing_addr]"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "signed by wallet0's signing key"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:prop-benefits": {
+      "id": "shape:prop-benefits",
+      "typeName": "shape",
+      "type": "geo",
+      "x": 30,
+      "y": 780,
+      "rotation": 0,
+      "index": "aD",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "geo": "rectangle",
+        "w": 620,
+        "h": 180,
+        "color": "green",
+        "fill": "semi",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BENEFITS"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP ID anchored to master key (survives rotation)"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP signing key = BRC-100 derived key (unified)"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Rotate wallet = rotate signing = same BAP ID"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Master key is cold storage, never used for operations"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:a-cur-m2m": {
+      "id": "shape:a-cur-m2m",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aE",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "violet",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "bap:0"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "binding:e1s": {
+      "id": "binding:e1s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-cur-m2m",
+      "toId": "shape:cur-master",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:e1e": {
+      "id": "binding:e1e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-cur-m2m",
+      "toId": "shape:cur-member",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-cur-m2b": {
+      "id": "shape:a-cur-m2b",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aEV",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "green",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "hash(addr)"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "binding:e2s": {
+      "id": "binding:e2s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-cur-m2b",
+      "toId": "shape:cur-member",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.2,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:e2e": {
+      "id": "binding:e2e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-cur-m2b",
+      "toId": "shape:cur-bapid",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-cur-m2s": {
+      "id": "shape:a-cur-m2s",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aF",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "orange",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "1-bap-identity"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "binding:e3s": {
+      "id": "binding:e3s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-cur-m2s",
+      "toId": "shape:cur-member",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.3,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:e3e": {
+      "id": "binding:e3e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-cur-m2s",
+      "toId": "shape:cur-signing",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-cur-m2w": {
+      "id": "shape:a-cur-m2w",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aFV",
+      "parentId": "shape:frame-current",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "light-blue",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "root key"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "binding:e4s": {
+      "id": "binding:e4s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-cur-m2w",
+      "toId": "shape:cur-member",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.7,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:e4e": {
+      "id": "binding:e4e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-cur-m2w",
+      "toId": "shape:cur-wallet",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-prop-m2w1": {
+      "id": "shape:a-prop-m2w1",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aG",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "light-blue",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "wallet:1"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "binding:f1s": {
+      "id": "binding:f1s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-m2w1",
+      "toId": "shape:prop-member",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.7,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:f1e": {
+      "id": "binding:f1e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-m2w1",
+      "toId": "shape:prop-wallet1",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-prop-m2w2": {
+      "id": "shape:a-prop-m2w2",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aGV",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "grey",
+        "fill": "none",
+        "dash": "dashed",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "wallet:0"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "binding:f2s": {
+      "id": "binding:f2s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-m2w2",
+      "toId": "shape:prop-member",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.3,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:f2e": {
+      "id": "binding:f2e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-m2w2",
+      "toId": "shape:prop-wallet0",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-prop-w2s1": {
+      "id": "shape:a-prop-w2s1",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aH",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "grey",
+        "fill": "none",
+        "dash": "dashed",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "1-bap-identity"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "binding:f3s": {
+      "id": "binding:f3s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-w2s1",
+      "toId": "shape:prop-wallet0",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:f3e": {
+      "id": "binding:f3e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-w2s1",
+      "toId": "shape:prop-signing0",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-prop-w2s2": {
+      "id": "shape:a-prop-w2s2",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aHV",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "orange",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "1-bap-identity"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "binding:f4s": {
+      "id": "binding:f4s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-w2s2",
+      "toId": "shape:prop-wallet1",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:f4e": {
+      "id": "binding:f4e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-w2s2",
+      "toId": "shape:prop-signing1",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-prop-mas2mem": {
+      "id": "shape:a-prop-mas2mem",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aI",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "violet",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "bap:0"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "binding:g1s": {
+      "id": "binding:g1s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-mas2mem",
+      "toId": "shape:prop-master",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:g1e": {
+      "id": "binding:g1e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-mas2mem",
+      "toId": "shape:prop-member",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-prop-mem2bap": {
+      "id": "shape:a-prop-mem2bap",
+      "typeName": "shape",
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "rotation": 0,
+      "index": "aIV",
+      "parentId": "shape:frame-proposed",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "props": {
+        "kind": "elbow",
+        "color": "green",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "hash(addr)"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "binding:g2s": {
+      "id": "binding:g2s",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-mem2bap",
+      "toId": "shape:prop-member",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.2,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:g2e": {
+      "id": "binding:g2e",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-prop-mem2bap",
+      "toId": "shape:prop-bapid",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    }
+  },
+  "schema": {
+    "schemaVersion": 2,
+    "sequences": {
+      "com.tldraw.store": 5,
+      "com.tldraw.asset": 1,
+      "com.tldraw.camera": 1,
+      "com.tldraw.document": 2,
+      "com.tldraw.instance": 26,
+      "com.tldraw.instance_page_state": 5,
+      "com.tldraw.page": 1,
+      "com.tldraw.instance_presence": 6,
+      "com.tldraw.pointer": 1,
+      "com.tldraw.shape": 4,
+      "com.tldraw.asset.bookmark": 2,
+      "com.tldraw.asset.image": 5,
+      "com.tldraw.asset.video": 5,
+      "com.tldraw.shape.group": 0,
+      "com.tldraw.shape.text": 4,
+      "com.tldraw.shape.bookmark": 2,
+      "com.tldraw.shape.draw": 4,
+      "com.tldraw.shape.geo": 11,
+      "com.tldraw.shape.note": 10,
+      "com.tldraw.shape.line": 5,
+      "com.tldraw.shape.frame": 1,
+      "com.tldraw.shape.arrow": 8,
+      "com.tldraw.shape.highlight": 3,
+      "com.tldraw.shape.embed": 4,
+      "com.tldraw.shape.image": 5,
+      "com.tldraw.shape.video": 4,
+      "com.tldraw.binding.arrow": 1
+    }
+  }
+}

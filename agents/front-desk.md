@@ -59,7 +59,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | consolidator | **Steve** | File cleanup, deduplication, organization | "clean up", "organize files", "consolidate" |
 | data | **Mr. Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |
 | database | **Idris** | PostgreSQL, Redis, MongoDB, schema design | "database schema", "query tuning" |
-| designer | **Mira** | UI components, Tailwind, shadcn, dark mode | "design component", "style page" |
+| designer | **Ridd** | UI components, Tailwind, shadcn, dark mode | "design component", "style page" |
 | devops | **Zoro** | Vercel, Railway, CI/CD, monitoring | "deploy", "CI/CD pipeline" |
 | documentation-writer | **Flow** | READMEs, API docs, PRDs, guides | "write docs", "create README" |
 | account-manager | **Kurt** | Public website chat, lead qualification, booking guidance | "website chat", "qualify lead", "book a call" |

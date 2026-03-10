@@ -1,0 +1,1252 @@
+{
+  "store": {
+    "shape:a-member-to-signing": {
+      "id": "shape:a-member-to-signing",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aCF4LNbV",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "kind": "arc",
+        "color": "orange",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "deriveChild(memberPub, \"1-bap-identity\")"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.4024271077057382,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "binding:a-member-to-brc100_start": {
+      "id": "binding:a-member-to-brc100_start",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-member-to-brc100",
+      "toId": "shape:bap-member",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:a-member-to-signing_end": {
+      "id": "binding:a-member-to-signing_end",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-member-to-signing",
+      "toId": "shape:bap-signing",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-member-to-brc100": {
+      "id": "shape:a-member-to-brc100",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aD6m8ZqV",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "kind": "arc",
+        "color": "light-blue",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "member key = wallet root"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.7849624495795847,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "shape:sigma-master": {
+      "id": "shape:sigma-master",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a2MUV9lG",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {
+        "note": "Top-level private key. This IS the BAP master key. One key rules the whole identity hierarchy."
+      },
+      "type": "geo",
+      "x": 250,
+      "y": 100,
+      "props": {
+        "geo": "rectangle",
+        "w": 280,
+        "h": 80,
+        "color": "violet",
+        "fill": "lined-fill",
+        "dash": "solid",
+        "size": "m",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Sigma Master Key (WIF)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "binding:a-master-to-member_start": {
+      "id": "binding:a-master-to-member_start",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-master-to-member",
+      "toId": "shape:sigma-master",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-master-to-member": {
+      "id": "shape:a-master-to-member",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aARdgyLV",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "kind": "arc",
+        "color": "violet",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "deriveChild(masterPub, \"bap:0\")"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "shape:note-correct": {
+      "id": "shape:note-correct",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a8Ks8ibV",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "text",
+      "x": 570.28515625,
+      "y": 300.0625,
+      "props": {
+        "color": "green",
+        "size": "s",
+        "font": "sans",
+        "textAlign": "start",
+        "w": 451.0234375,
+        "richText": {
+          "type": "doc",
+          "attrs": {
+            "dir": "auto"
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "dir": "auto"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pubkeyToBapId(memberPubkey) works "
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "attrs": {
+                "dir": "auto"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "because member pubkey.toAddress() === rootAddress"
+                }
+              ]
+            }
+          ]
+        },
+        "scale": 1,
+        "autoSize": true
+      }
+    },
+    "binding:a-member-to-signing_start": {
+      "id": "binding:a-member-to-signing_start",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-member-to-signing",
+      "toId": "shape:bap-member",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-member-to-bapid": {
+      "id": "shape:a-member-to-bapid",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aBDcmNJV",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "kind": "arc",
+        "color": "blue",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "base58(ripemd160(sha256(rootAddress)))"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.7652881491227884,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "binding:a-member-to-bapid_end": {
+      "id": "binding:a-member-to-bapid_end",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-member-to-bapid",
+      "toId": "shape:bap-id",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:a-brc100-to-brc31_end": {
+      "id": "binding:a-brc100-to-brc31_end",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-brc100-to-brc31",
+      "toId": "shape:brc31-auth",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-brc100-to-brc31": {
+      "id": "shape:a-brc100-to-brc31",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aEwhJCCV",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "kind": "arc",
+        "color": "light-blue",
+        "fill": "none",
+        "dash": "solid",
+        "size": "m",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "presents pubkey"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "shape:note-wrong": {
+      "id": "shape:note-wrong",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a9z1f0qG",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "text",
+      "x": 11.45703125,
+      "y": 580.48828125,
+      "props": {
+        "color": "red",
+        "size": "s",
+        "font": "sans",
+        "textAlign": "start",
+        "w": 366.53125,
+        "richText": {
+          "type": "doc",
+          "attrs": {
+            "dir": "auto"
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "dir": "auto"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pubkeyToBapId(signingPubkey) = "
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "attrs": {
+                "dir": "auto"
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "WRONG. Signing key address != rootAddress"
+                }
+              ]
+            }
+          ]
+        },
+        "scale": 1,
+        "autoSize": true
+      }
+    },
+    "binding:a-member-to-bapid_start": {
+      "id": "binding:a-member-to-bapid_start",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-member-to-bapid",
+      "toId": "shape:bap-member",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:bap-member": {
+      "id": "shape:bap-member",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a34F4XtV",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {
+        "note": "Path-derived key. rootAddress = this.toPublicKey().toAddress(). This key IS the BRC-100 wallet root."
+      },
+      "type": "geo",
+      "x": 250,
+      "y": 280,
+      "props": {
+        "geo": "rectangle",
+        "w": 280,
+        "h": 80,
+        "color": "blue",
+        "fill": "lined-fill",
+        "dash": "solid",
+        "size": "m",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP Member Key"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:brc100-wallet": {
+      "id": "shape:brc100-wallet",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a6BcJckV",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {
+        "note": "Uses member key as root. BRC-42/43 key derivation for wallet ops. BRC-31 identity key = member key pubkey."
+      },
+      "type": "geo",
+      "x": 420,
+      "y": 480,
+      "props": {
+        "geo": "rectangle",
+        "w": 250,
+        "h": 80,
+        "color": "light-blue",
+        "fill": "lined-fill",
+        "dash": "solid",
+        "size": "m",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BRC-100 Wallet"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:bap-signing": {
+      "id": "shape:bap-signing",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a53U8c9l",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {
+        "note": "Rotatable. signingAddress != rootAddress. Cannot derive BAP ID from this key!"
+      },
+      "type": "geo",
+      "x": 100,
+      "y": 480,
+      "props": {
+        "geo": "rectangle",
+        "w": 250,
+        "h": 80,
+        "color": "orange",
+        "fill": "lined-fill",
+        "dash": "solid",
+        "size": "m",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP Signing Key"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "binding:a-brc100-to-brc31_start": {
+      "id": "binding:a-brc100-to-brc31_start",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-brc100-to-brc31",
+      "toId": "shape:brc100-wallet",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:bap-id": {
+      "id": "shape:bap-id",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a4nQ6H0V",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {
+        "note": "Stable identifier. Derived from rootAddress (member key's address). Never changes even when signing keys rotate."
+      },
+      "type": "geo",
+      "x": 1006.1171875,
+      "y": 499.15234375,
+      "props": {
+        "geo": "cloud",
+        "w": 220,
+        "h": 100,
+        "color": "green",
+        "fill": "lined-fill",
+        "dash": "solid",
+        "size": "m",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BAP ID"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "binding:a-brc31-to-bapid_end": {
+      "id": "binding:a-brc31-to-bapid_end",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-brc31-to-bapid",
+      "toId": "shape:bap-id",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "page:page": {
+      "meta": {},
+      "id": "page:page",
+      "name": "Page 1",
+      "index": "a1",
+      "typeName": "page"
+    },
+    "document:document": {
+      "gridSize": 10,
+      "name": "Sigma-BAP-BRC100 Key Hierarchy",
+      "meta": {},
+      "id": "document:document",
+      "typeName": "document"
+    },
+    "binding:a-brc31-to-bapid_start": {
+      "id": "binding:a-brc31-to-bapid_start",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-brc31-to-bapid",
+      "toId": "shape:brc31-auth",
+      "props": {
+        "terminal": "start",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "binding:a-member-to-brc100_end": {
+      "id": "binding:a-member-to-brc100_end",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-member-to-brc100",
+      "toId": "shape:brc100-wallet",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:a-brc31-to-bapid": {
+      "id": "shape:a-brc31-to-bapid",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aFpMlP2V",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "arrow",
+      "x": 0,
+      "y": 0,
+      "props": {
+        "kind": "arc",
+        "color": "green",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "end": {
+          "x": 0,
+          "y": 0
+        },
+        "bend": 0,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "pubkeyToBapId(memberPubkey) = correct BAP ID"
+                }
+              ]
+            }
+          ]
+        },
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "shape:brc31-auth": {
+      "id": "shape:brc31-auth",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a784BzFG",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {
+        "note": "Identity key = compressed pubkey of member key (02/03... hex). This is the key in x-bsv-auth-identity-key header."
+      },
+      "type": "geo",
+      "x": 420,
+      "y": 660,
+      "props": {
+        "geo": "rectangle",
+        "w": 250,
+        "h": 80,
+        "color": "light-blue",
+        "fill": "lined-fill",
+        "dash": "solid",
+        "size": "m",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "BRC-31 Auth (Authrite)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "binding:a-master-to-member_end": {
+      "id": "binding:a-master-to-member_end",
+      "typeName": "binding",
+      "type": "arrow",
+      "fromId": "shape:a-master-to-member",
+      "toId": "shape:bap-member",
+      "props": {
+        "terminal": "end",
+        "normalizedAnchor": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "isExact": false,
+        "isPrecise": false,
+        "snap": "none"
+      },
+      "meta": {}
+    },
+    "shape:rotation-frame": {
+      "id": "shape:rotation-frame",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aG1",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "frame",
+      "x": -450,
+      "y": 420,
+      "props": {
+        "w": 500,
+        "h": 520,
+        "name": "On-Chain Signing Key Rotation",
+        "color": "black"
+      }
+    },
+    "shape:rotation-explain": {
+      "id": "shape:rotation-explain",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aG1a",
+      "parentId": "shape:rotation-frame",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "text",
+      "x": 20,
+      "y": 10,
+      "props": {
+        "color": "black",
+        "size": "s",
+        "font": "sans",
+        "textAlign": "start",
+        "w": 460,
+        "richText": { "type": "doc", "content": [
+          { "type": "paragraph", "content": [{ "type": "text", "text": "rootPath is FIXED. currentPath advances." }] },
+          { "type": "paragraph", "content": [{ "type": "text", "text": "Each path derives a new signing key." }] },
+          { "type": "paragraph", "content": [{ "type": "text", "text": "Chain of trust: each tx signed by PREVIOUS key." }] }
+        ]},
+        "scale": 1,
+        "autoSize": true
+      }
+    },
+    "shape:tx0": {
+      "id": "shape:tx0",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aG2",
+      "parentId": "shape:rotation-frame",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "geo",
+      "x": 20,
+      "y": 90,
+      "props": {
+        "geo": "rectangle",
+        "w": 460,
+        "h": 60,
+        "color": "blue",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": { "type": "doc", "content": [
+          { "type": "paragraph", "content": [{ "type": "text", "text": "Initial ID tx: [BAP, ID, bapId, addr_0]" }] },
+          { "type": "paragraph", "content": [{ "type": "text", "text": "signed by key at rootPath" }] }
+        ]},
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:tx1": {
+      "id": "shape:tx1",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aG3",
+      "parentId": "shape:rotation-frame",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "geo",
+      "x": 20,
+      "y": 210,
+      "props": {
+        "geo": "rectangle",
+        "w": 460,
+        "h": 60,
+        "color": "orange",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": { "type": "doc", "content": [
+          { "type": "paragraph", "content": [{ "type": "text", "text": "Rotation tx: [BAP, ID, bapId, addr_1]" }] },
+          { "type": "paragraph", "content": [{ "type": "text", "text": "signed by key at previousPath (addr_0)" }] }
+        ]},
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:tx2": {
+      "id": "shape:tx2",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aG4",
+      "parentId": "shape:rotation-frame",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "geo",
+      "x": 20,
+      "y": 330,
+      "props": {
+        "geo": "rectangle",
+        "w": 460,
+        "h": 60,
+        "color": "orange",
+        "fill": "solid",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": { "type": "doc", "content": [
+          { "type": "paragraph", "content": [{ "type": "text", "text": "Rotation tx: [BAP, ID, bapId, addr_2]" }] },
+          { "type": "paragraph", "content": [{ "type": "text", "text": "signed by key at previousPath (addr_1)" }] }
+        ]},
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:a-tx0-to-tx1": {
+      "id": "shape:a-tx0-to-tx1",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aG5",
+      "parentId": "shape:rotation-frame",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "arrow",
+      "x": 250,
+      "y": 150,
+      "props": {
+        "kind": "elbow",
+        "color": "orange",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": { "x": 0, "y": 0 },
+        "end": { "x": 0, "y": 60 },
+        "bend": 0,
+        "richText": { "type": "doc", "content": [
+          { "type": "paragraph", "content": [{ "type": "text", "text": "incrementPath()" }] }
+        ]},
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "shape:a-tx1-to-tx2": {
+      "id": "shape:a-tx1-to-tx2",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aG6",
+      "parentId": "shape:rotation-frame",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "arrow",
+      "x": 250,
+      "y": 270,
+      "props": {
+        "kind": "elbow",
+        "color": "orange",
+        "fill": "none",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "labelColor": "black",
+        "arrowheadStart": "none",
+        "arrowheadEnd": "triangle",
+        "start": { "x": 0, "y": 0 },
+        "end": { "x": 0, "y": 60 },
+        "bend": 0,
+        "richText": { "type": "doc", "content": [
+          { "type": "paragraph", "content": [{ "type": "text", "text": "incrementPath()" }] }
+        ]},
+        "labelPosition": 0.5,
+        "scale": 1,
+        "elbowMidPoint": 0.5
+      }
+    },
+    "shape:rotation-note-stable": {
+      "id": "shape:rotation-note-stable",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aG7",
+      "parentId": "shape:rotation-frame",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "text",
+      "x": 20,
+      "y": 420,
+      "props": {
+        "color": "green",
+        "size": "s",
+        "font": "sans",
+        "textAlign": "start",
+        "w": 460,
+        "richText": { "type": "doc", "content": [
+          { "type": "paragraph", "content": [{ "type": "text", "text": "bapId is the SAME in every tx (from rootPath)." }] },
+          { "type": "paragraph", "content": [{ "type": "text", "text": "addr changes. Chain of trust links them." }] },
+          { "type": "paragraph", "content": [{ "type": "text", "text": "If root key compromised = identity is dead." }] }
+        ]},
+        "scale": 1,
+        "autoSize": true
+      }
+    },
+    "shape:stable-note": {
+      "id": "shape:stable-note",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "aG8",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "geo",
+      "x": 780,
+      "y": 660,
+      "props": {
+        "geo": "rectangle",
+        "w": 340,
+        "h": 100,
+        "color": "green",
+        "fill": "semi",
+        "dash": "solid",
+        "size": "s",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": { "type": "doc", "content": [
+          { "type": "paragraph", "content": [{ "type": "text", "text": "BAP ID + BRC-31 Identity Key" }] },
+          { "type": "paragraph", "content": [{ "type": "text", "text": "STABLE across signing key rotations" }] },
+          { "type": "paragraph", "content": [{ "type": "text", "text": "(rootPath never changes)" }] }
+        ]},
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
+    "shape:title": {
+      "id": "shape:title",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a1",
+      "parentId": "page:page",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {},
+      "type": "text",
+      "x": 200,
+      "y": 20,
+      "props": {
+        "color": "black",
+        "size": "xl",
+        "font": "sans",
+        "textAlign": "start",
+        "w": 200,
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Sigma → BAP → BRC-100 Key Hierarchy"
+                }
+              ]
+            }
+          ]
+        },
+        "scale": 1,
+        "autoSize": true
+      }
+    }
+  },
+  "schema": {
+    "schemaVersion": 2,
+    "sequences": {
+      "com.tldraw.store": 5,
+      "com.tldraw.asset": 1,
+      "com.tldraw.camera": 1,
+      "com.tldraw.document": 2,
+      "com.tldraw.instance": 26,
+      "com.tldraw.instance_page_state": 5,
+      "com.tldraw.page": 1,
+      "com.tldraw.instance_presence": 6,
+      "com.tldraw.pointer": 1,
+      "com.tldraw.shape": 4,
+      "com.tldraw.asset.bookmark": 2,
+      "com.tldraw.asset.image": 5,
+      "com.tldraw.asset.video": 5,
+      "com.tldraw.shape.group": 0,
+      "com.tldraw.shape.text": 4,
+      "com.tldraw.shape.bookmark": 2,
+      "com.tldraw.shape.draw": 4,
+      "com.tldraw.shape.geo": 11,
+      "com.tldraw.shape.note": 10,
+      "com.tldraw.shape.line": 5,
+      "com.tldraw.shape.frame": 1,
+      "com.tldraw.shape.arrow": 8,
+      "com.tldraw.shape.highlight": 3,
+      "com.tldraw.shape.embed": 4,
+      "com.tldraw.shape.image": 5,
+      "com.tldraw.shape.video": 4,
+      "com.tldraw.binding.arrow": 1
+    }
+  }
+}
