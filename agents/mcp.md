@@ -1,7 +1,7 @@
 ---
 name: mcp
 display_name: "Orbit"
-version: 3.0.17
+version: 3.0.18
 description: MCP server installation, configuration, diagnostics, troubleshooting, and publishing. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization. Guides authors through building and publishing MCP servers to NPM for distribution via npx.
 tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps), Skill(plugin-dev:mcp-integration), Skill(npm-publish)
 model: sonnet
@@ -2957,6 +2957,79 @@ This produces `src/index.ts`, `tsconfig.json`, `package.json` with the correct b
 - **stdin must stay open** — the server process must keep stdin open and actively listen. If stdin closes, Claude Code considers the server dead. `await server.connect(transport)` handles this — do not call `process.exit()` after connecting.
 - **Scoped packages require `--access public`** — `@scope/` packages are private by default on NPM. Free accounts must use `bun publish --access public`.
 - **npx cache staleness** — `npx -y package-name` (without `@latest`) uses a cached version. Recommend users use `@latest` in their config for auto-updates, or clear cache with `npm cache clean --force`.
+
+## MCP Server Debugging
+
+When something is broken, work through this stack in order.
+
+### 1. MCP Inspector (start here, always)
+
+```bash
+# stdio server (local build)
+npx @modelcontextprotocol/inspector ./build/index.js
+
+# stdio server via npx
+npx @modelcontextprotocol/inspector "npx -y @scope/my-server"
+
+# Remote HTTP server
+npx @modelcontextprotocol/inspector http://localhost:8080
+```
+
+Think of it as Postman for MCP. The web UI lets you browse all registered tools, resources, and prompts; call any tool with real parameters; and inspect the raw JSON-RPC traffic in both directions. This catches the vast majority of bugs — wrong parameter names, missing capabilities, transport errors — before you ever involve a client.
+
+Key capabilities:
+- Live log viewer for server stdout/stderr
+- Test OAuth flows end-to-end
+- Works with both stdio and HTTP transports
+- See the exact wire format your server emits
+
+### 2. The stdio Logging Gotcha
+
+`console.log()` writes to stdout — the same channel used for JSON-RPC. It corrupts the protocol silently; the server appears connected but tools return garbage. The fix:
+
+```typescript
+// WRONG — corrupts stdio transport
+console.log("debug:", value);
+
+// RIGHT — stderr is outside the protocol channel
+console.error("debug:", value);
+
+// RIGHT — write to a log file and tail it in a separate terminal
+import { appendFileSync } from "node:fs";
+const log = (msg: string) => appendFileSync("mcp-server.log", msg + "\n");
+```
+
+While developing: `tail -f mcp-server.log` in a separate terminal. This gives you live output without touching the JSON-RPC channel.
+
+### 3. mcp-recorder (regression testing)
+
+[mcp-recorder](https://github.com/vlad-mokrousov/mcp-recorder) records live protocol exchanges into cassettes and replays them as mocks. Use it to catch regressions that are otherwise invisible — renamed parameters, changed descriptions, or tool removals that silently break agents. Works with pytest and any language, across stdio and HTTP.
+
+### 4. Context (macOS GUI)
+
+[Context](https://getcontext.app) is a polished macOS app for working with multiple MCP servers simultaneously. It provides a log viewer, resource browser, and full tool invocation UI. Useful when you need to debug interactions between servers or want a more visual workflow than Inspector's web UI.
+
+### 5. Live Testing in Claude Code / Cursor
+
+After Inspector passes, do a final validation in your actual client:
+
+```bash
+# Add locally for testing
+claude mcp add my-server node ./build/index.js
+
+# Check logs if tools don't appear
+tail -f ~/.claude/logs/claude.log
+```
+
+Invoke each tool from the chat. If a tool appears in Inspector but not in Claude Code, the issue is usually in the `inputSchema` (invalid JSON Schema) or in transport initialization timing.
+
+### Debugging Checklist
+
+1. Inspector: can you see all expected tools?
+2. Inspector: can you call each tool and get a valid response?
+3. Log file: any errors on startup?
+4. stdio servers: no `console.log()` calls anywhere in the callpath?
+5. Live client: tools appear and return correct results?
 
 ## Your Skills
 

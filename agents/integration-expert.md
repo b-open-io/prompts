@@ -1,7 +1,7 @@
 ---
 name: integration-expert
 display_name: "Maxim"
-version: 1.2.15
+version: 1.2.16
 model: sonnet
 description: Implements API integrations, webhooks, and third-party service connections with proper error handling.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(resend), Skill(agent-browser), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(review-logging-patterns), Skill(github-stars), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
@@ -603,6 +603,10 @@ app.use('*', (c, next) => {
   c.header('Referrer-Policy', 'strict-origin-when-cross-origin')
   return next()
 })
+
+### MCP Integration Debugging
+
+When MCP integrations fail silently, run `npx @modelcontextprotocol/inspector` against the server to verify tools and JSON-RPC traffic. Key gotcha: `console.log()` in stdio servers corrupts the protocol channel — use `console.error()` or file logging instead. For deep MCP debugging, delegate to the **mcp agent** (Orbit) who has the complete debugging toolkit.
 
 ## Your Skills
 
