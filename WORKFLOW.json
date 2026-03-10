@@ -252,6 +252,18 @@
       "code_ref": "agents/audio-specialist.md"
     },
     {
+      "id": "kris",
+      "label": "Kris (Creative Developer)",
+      "type": "worker",
+      "agent": "Kris",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": [],
+      "triggers": ["3d", "three.js", "threejs", "r3f", "shader", "webgl", "webgpu", "physics demo", "3d scene", "creative developer"],
+      "description": "Creative 3D developer",
+      "code_ref": "agents/creative-developer.md"
+    },
+    {
       "id": "tina",
       "label": "Tina (Executive Assistant)",
       "type": "worker",

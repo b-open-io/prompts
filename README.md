@@ -68,6 +68,7 @@ Our 22 expert agents enhance Claude Code with specialized knowledge. See [agents
 - ⚡ [**nextjs**](agents/nextjs.md) — Nori — Next.js, React 19, Turbopack, Bun, Biome
 
 ### Specialized Domains
+- 🔷 [**creative-developer**](agents/creative-developer.md) — Kris — Three.js, R3F, shaders, physics, interactive 3D prototypes
 - 💚 [**payments**](agents/payments.md) — Mina — Payment integrations, Plaid, financial operations
 - 🤖 [**agent-builder**](agents/agent-builder.md) — Rowan — AI agent systems, tool-calling, multi-agent orchestration
 - 📊 [**data**](agents/data.md) — Mr. Data Accumulator — Data processing, analytics, ETL pipelines

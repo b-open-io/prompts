@@ -68,6 +68,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | integration-expert | **Maxim** | API integrations, webhooks, third-party services | "connect API", "webhook setup" |
 | ~~marketer~~ | **Caal** | Moved to product-skills plugin | See product-skills:marketer |
 | mcp | **Orbit** | MCP server setup, diagnostics, publishing | "install MCP", "MCP server", "publish MCP" |
+| creative-developer | **Kris** | Three.js, R3F, shaders, physics, interactive 3D prototypes | "3d scene", "three.js", "shader", "webgl", "r3f" |
 | mobile | **Kira** | React Native, Swift, Kotlin, Flutter | "mobile app", "React Native" |
 | nextjs | **Theo** | Next.js, React, Turbopack, RSC | "Next.js app", "React component" |
 | optimizer | **Torque** | Performance, bundle size, Core Web Vitals | "slow page", "optimize bundle" |

@@ -33,6 +33,7 @@ Match the user's need to the right specialist:
 | Database | **Idris** (database) | bopen-tools |
 | MCP servers | **Orbit** (mcp) | bopen-tools |
 | Research | **Parker** (researcher) | bopen-tools |
+| 3D / creative dev | **Kris** (creative-developer) | bopen-tools |
 | Mobile | **Kira** (mobile) | bopen-tools |
 | Audio / media | **Juniper** (audio-specialist) | bopen-tools |
 | Data pipelines | **Mr. Data Accumulator** (data) | bopen-tools |
