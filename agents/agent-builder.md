@@ -1,7 +1,7 @@
 ---
 name: agent-builder
 display_name: "Satchmo"
-version: 1.5.6
+version: 1.5.7
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps)
@@ -1530,6 +1530,34 @@ const snapshot = await sandbox.snapshot()        // save full state
 const forked = await Sandbox.resume(snapshot.id) // resume or fork later
 await sandbox.kill()
 ```
+
+#### Credential Brokering via Network Policy (Pro/Enterprise)
+
+Sandboxes should never hold secrets. Use `networkPolicy` to inject credentials at the firewall level — Vercel's proxy intercepts matching outbound HTTPS requests and injects headers before forwarding. The secret never enters the sandbox's memory, env, or filesystem, eliminating exfiltration risk even from malicious code.
+
+```typescript
+const sandbox = await Sandbox.create({
+  networkPolicy: {
+    allow: {
+      "*.github.com": [
+        {
+          transform: [
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+});
+```
+
+The secret lives only in the host's `process.env`. The sandbox sees the request succeed but can never read the injected header. Use `updateNetworkPolicy()` to change policies on a running sandbox.
+
+Apply this pattern for any external API the sandbox needs — GitHub, OpenAI, database connections, etc. Each domain gets its own allow entry with transform rules.
 
 **Patterns for agent swarms:**
 
