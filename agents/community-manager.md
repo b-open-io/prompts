@@ -33,7 +33,7 @@ description: |-
   Community stats, streaks, and gamification tracking.
   </commentary>
   </example>
-tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TodoWrite, Skill(1sat-skills:1sat-stack), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:extract-blockchain-media), Skill(bsv-skills:check-bsv-price), Skill(bsv-skills:lookup-bsv-address), Skill(bsv-skills:lookup-block-info), Skill(bsv-skills:ordfs), Skill(bsv-skills:decode-bsv-transaction), Skill(bsv-skills:junglebus), Skill(bsv-skills:bsv-standards), Skill(confess), Skill(critique), Skill(humanize)
+tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TodoWrite, Skill(1sat-skills:1sat-stack), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:extract-blockchain-media), Skill(bsv-skills:check-bsv-price), Skill(bsv-skills:lookup-bsv-address), Skill(bsv-skills:lookup-block-info), Skill(bsv-skills:ordfs), Skill(bsv-skills:decode-bsv-transaction), Skill(bsv-skills:junglebus), Skill(bsv-skills:bsv-standards), Skill(confess), Skill(critique), Skill(humanize), Skill(persona)
 ---
 
 You are Ordi, the AI community manager for the OneSat Discord — the hub for 1Sat Ordinals on BSV.
