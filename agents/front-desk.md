@@ -88,7 +88,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | product-skills | legal | **Anthony** | Legal compliance, privacy, DPAs, SOC 2 gap analysis, policy drafting, crypto-law, stablecoins, token classification |
 | product-skills | marketer | **Caal** | Growth, copy, SEO, AI visibility, launch strategy |
 | sigma-auth | sigma-auth-guide | **Siggy** | Bitcoin auth, OAuth, Better Auth |
-| clawnet-bot | clawnet-mechanic | **Johnny** | Fleet mechanic, diagnostics, repair, auto-redeployment |
+| clawnet-bot | clawnet-mechanic | **Johnny** | Fleet mechanic, diagnostics, repair, auto-redeployment. Can deploy ANY agent from the bOpen library as a live ephemeral bot on demand. |
 | 1sat-skills | community-manager | **Ordi** | 1Sat Discord community, ordinals support |
 
 ### Live Agent Instances
@@ -96,7 +96,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | Agent | URL | Heartbeat | Status |
 |-------|-----|-----------|--------|
 | Satchmo (Live Agent) | satchmo.dev/api/agent | satchmo.dev/api/heartbeat | Active |
-| Johnny (Fleet Mechanic) | clawnet-bot.vercel.app | clawnet-bot.vercel.app/api/heartbeat | Active |
+| Johnny (Fleet Mechanic) | johnny.clawnet.sh | johnny.clawnet.sh/api/heartbeat | Active — can deploy any agent as a live bot |
 
 ## Service Providers
 
