@@ -61,28 +61,48 @@ Agent IDs use `plugin:agent-name` format matching the `subagent_type` parameter 
 
 ## Workflow
 
-### Step 1: Inventory available skills and agents
+### Step 1: Inventory available skills and agents (via subagent)
 
-**Skills** — two authoritative sources:
+Delegate the inventory gathering to a subagent to keep the main context window clean:
 
-1. **System-reminder skill list** — The Skill tool's available skills appear in system-reminder messages at conversation start. This is the definitive list of all skills including plugin skills.
-2. **Global skills directory** — `ls ~/.claude/skills/` shows user-installed skills (subset of the full list).
+```
+Agent(prompt: "Gather skill and agent inventories from all available sources.
 
-**Agents** — two authoritative sources:
+SKILLS — check two sources:
+1. The system-reminder skill list (from the Skill tool's available skills in system-reminder messages)
+2. ls ~/.claude/skills/ for user-installed skills
 
-1. **System-reminder agent list** — The Agent tool's available agent types appear in system-reminder messages. Look for entries like `bopen-tools:code-auditor`, `gemskills:designer`, etc.
-2. **Plugin agent directories** — `ls ~/.claude/plugins/cache/*/agents/` or check installed plugin repos.
+AGENTS — check two sources:
+1. The system-reminder agent list (Agent tool's available subagent types)
+2. ls ~/.claude/plugins/cache/*/agents/ for plugin agents
 
-Cross-reference both sources for each.
+Cross-reference both sources for each category.
 
-### Step 2: Identify project-relevant skills and agents
+Return two lists:
+- SKILLS: name, plugin (if any), one-line description
+- AGENTS: plugin:agent-id, one-line description",
+subagent_type: "general-purpose")
+```
 
-1. **Read CLAUDE.md** — Identify tech stack, frameworks, tools
-2. **Check package.json / go.mod / Cargo.toml** — Map dependencies to skills (e.g., `better-auth` → `better-auth-best-practices`, `ai` → `ai-sdk`, `remotion` → `remotion-best-practices`)
-3. **Scan recent git history** — Identify recurring work patterns and what types of tasks come up
-4. **Check conversation history** — Look for past `Skill()` and `Agent()` invocations if available
+### Step 2: Identify project-relevant skills and agents (via subagent)
 
-For a comprehensive trigger-to-skill and trigger-to-agent mapping table, consult **`references/common-mappings.md`**.
+Delegate project analysis to a subagent:
+
+```
+Agent(prompt: "Analyze this project and identify which skills and agents are relevant.
+
+1. Read CLAUDE.md — identify tech stack, frameworks, tools
+2. Check package.json / go.mod / Cargo.toml — map dependencies to skills
+3. Scan recent git history (git log --oneline -20) — identify recurring work patterns
+4. Check for past Skill() and Agent() invocations if conversation history is available
+
+Consult references/common-mappings.md for the trigger-to-skill and trigger-to-agent mapping table.
+
+Return two structured lists:
+- RELEVANT SKILLS: trigger phrase → Skill(exact-name)
+- RELEVANT AGENTS: trigger phrase → Agent(plugin:agent-id)",
+subagent_type: "general-purpose")
+```
 
 ### Step 3: Next.js codemod (conditional)
 

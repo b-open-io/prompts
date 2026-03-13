@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Grep, Bash
+allowed-tools: Agent
 description: Print a concise repository context snapshot for agents (git, pkg, dirs)
 argument-hint: [--full] - Include dependency tree and env
 ---
@@ -8,33 +8,46 @@ argument-hint: [--full] - Include dependency tree and env
 
 If the arguments contain "--help", show this help and exit.
 
-Otherwise, output a compact context snapshot to ground agents:
+Otherwise, delegate ALL context gathering to a subagent. Do not read files or run commands in the main context.
 
-```bash
-set -e
-echo "# Repo Context"
+Use the Agent tool with this prompt:
 
-echo "\n## Git"
-git rev-parse --show-toplevel 2>/dev/null || true
-git remote -v 2>/dev/null | sed 's/(fetch)//' || true
-git describe --tags --abbrev=0 2>/dev/null || echo "no-tags"
-git branch --show-current 2>/dev/null || true
+```
+Agent(prompt: "Gather repository context and return a compact snapshot.
 
-echo "\n## Package"
-if [ -f package.json ]; then
-  cat package.json | jq '{name, version, packageManager, scripts: (.scripts // {} | to_entries | map({key: .key}) | .[0:8])}'
-fi
+Run these and format the output:
 
-echo "\n## Dirs"
-ls -la | awk '{print $9}' | sed '/^$/d' | head -n 50
+1. Git: git rev-parse --show-toplevel, git remote -v (strip '(fetch)'), git describe --tags --abbrev=0 (or 'no-tags'), git branch --show-current
+2. Package: If package.json exists, extract name, version, packageManager, and first 8 script names using jq
+3. Dirs: ls -la (first 50 entries, strip blanks)
+4. If the arguments include '--full': Also run 'bun pm ls --depth=0' for top-level deps and show NODE_ENV and XAI_API_KEY status (set/unset, never show values)
 
-if [ "$1" = "--full" ]; then
-  echo "\n## Deps (top)"
-  bun pm ls --depth=0 || true
-  echo "\n## Env (selected)"
-  printf "NODE_ENV=%s\nXAI_API_KEY=%s\n" "${NODE_ENV:-unset}" "${XAI_API_KEY:+set}" | sed 's/set/[set]/; s/unset/[unset]/'
-fi
+ARGUMENTS: $ARGUMENTS
+
+Return ONLY this format:
+
+# Repo Context
+
+## Git
+<toplevel path>
+<remote url>
+<latest tag or 'no-tags'>
+<current branch>
+
+## Package
+<name, version, packageManager, scripts>
+
+## Dirs
+<directory listing>
+
+[Only if --full:]
+## Deps (top)
+<dependency list>
+
+## Env (selected)
+NODE_ENV=[set|unset]
+XAI_API_KEY=[set|unset]",
+subagent_type: "general-purpose")
 ```
 
-Then stop.
-
+Print the subagent's response directly to the user.

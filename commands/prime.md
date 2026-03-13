@@ -1,5 +1,5 @@
 ---
-allowed-tools: Read, Bash(git:*), Bash(ls:*), Bash(find:*), Bash(wc:*)
+allowed-tools: Agent
 description: Context warm-up — loads git state, plugin inventory, and project conventions before starting work
 argument-hint: [--help]
 ---
@@ -23,55 +23,48 @@ Front-loads current git state, plugin inventory (agents/skills/commands), and pr
 
 Then stop.
 
-Otherwise, execute the following steps in order and produce the report:
+Otherwise, delegate ALL context gathering to a subagent. Do not read files or run commands in the main context.
 
-**Step 1 — Git state**
-
-```bash
-echo "=== Branch ===" && git branch --show-current
-echo "=== Status ===" && git status --short
-echo "=== Recent commits ===" && git log --oneline -5
-echo "=== Recent changes ===" && git diff --stat HEAD~1 2>/dev/null || echo "(no previous commit)"
-```
-
-**Step 2 — Plugin inventory**
-
-```bash
-echo "=== Agents ===" && ls agents/
-echo "=== Skills ===" && ls skills/
-echo "=== Commands ===" && find commands -name "*.md" | sort
-```
-
-**Step 3 — Read project conventions**
-
-Read @CLAUDE.md.
-
-**Step 4 — Produce the priming report**
-
-Output a concise report with these sections:
+Use the Agent tool with this prompt:
 
 ```
+Agent(prompt: "Gather project context for the bopen-tools plugin and return a formatted priming report.
+
+Step 1 — Git state:
+Run: git branch --show-current, git status --short, git log --oneline -5, git diff --stat HEAD~1 (ignore errors if no previous commit)
+
+Step 2 — Plugin inventory:
+Run: ls agents/ | sort, ls skills/ | sort, find commands -name '*.md' | sort
+
+Step 3 — Read project conventions:
+Read CLAUDE.md in the project root. Extract the 5-8 most relevant bullet points for day-to-day editing of agents/skills/commands (version policy, naming conventions, directory rules, etc.)
+
+Step 4 — Return ONLY this formatted report:
+
 ## Plugin Context: bopen-tools
 
 ### Git State
 - Branch: <current branch>
 - Uncommitted changes: <none | list of files>
-- Last 5 commits: <list>
+- Last 5 commits: <one-line each>
 - Recently modified: <files from diff stat, or none>
 
 ### Work in Progress
-<Any uncommitted or recently touched files that suggest active work — call these out explicitly>
+<Any uncommitted or recently touched files that suggest active work — call these out explicitly so they are not accidentally overwritten>
 
 ### Inventory
-- Agents (<count>): <comma-separated list of names without .md>
-- Skills (<count>): <comma-separated list of directory names>
+- Agents (<count>): <comma-separated names without .md>
+- Skills (<count>): <comma-separated directory names>
 - Commands (<count>): <relative paths from commands/ root>
 
-### Project Conventions (key points)
-<5–8 bullet points extracted from CLAUDE.md that are most relevant to day-to-day editing of agents/skills/commands — version policy, naming conventions, directory rules, etc.>
+### Project Conventions
+<5-8 bullet points from CLAUDE.md>
 
 ### Ready
 Context loaded. What would you like to work on?
+
+Keep the report tight — no padding.",
+subagent_type: "general-purpose")
 ```
 
-Keep the report tight — no padding. Surface anything that looks like active work in progress so it is not accidentally overwritten.
+Print the subagent's response directly to the user.

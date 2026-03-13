@@ -124,26 +124,41 @@ If the agent's domain involves UI generation, rendering, or cross-platform outpu
 
 ## Audit Workflow
 
-### Step 1: Enumerate
+### Step 1: Enumerate & Classify (via subagent)
 
-```bash
-# List all skills in target plugin
-ls skills/*/SKILL.md
+Delegate enumeration and classification to a subagent to keep the main context clean:
 
-# Count total
-ls skills/*/SKILL.md | wc -l
+```
+Agent(prompt: "Enumerate and classify all skills in the target plugin.
+
+1. Run: ls skills/*/SKILL.md and count total
+2. For each skill, read the YAML frontmatter and classify:
+   - Type: agent-only (user-invocable: false), user-only (disable-model-invocation: true), or default
+   - Plugin it belongs in
+   - Which agents reference it (grep agents/*.md for Skill(name))
+3. Return a table: | Skill | Type | Referenced By | Notes |
+
+Target directory: skills/",
+subagent_type: "general-purpose")
 ```
 
-### Step 2: Read & Classify
+### Step 2: Run Dimension Checks (via parallel subagents)
 
-For each skill, read the frontmatter and classify:
-- What type: agent-only, user-only, or default?
-- What plugin does it belong in?
-- What agents reference it?
+For multi-plugin audits, dispatch one subagent per plugin in parallel. For single-plugin audits, dispatch one subagent per batch of 5-10 skills:
 
-### Step 3: Run Dimension Checks
+```
+Agent(prompt: "Audit these skills against the seven-dimension checklist:
+<list of skills from Step 1>
 
-For each skill, evaluate all seven dimensions. Record:
+For each skill, evaluate: Scope & Invocation, Location & Cross-Client, Description Quality, Structure, Testing, Agent Equipment, Generative UI.
+
+Score each dimension as pass/warn/fail. Return findings in the report format.",
+subagent_type: "general-purpose")
+```
+
+The main context receives only the formatted audit report, not raw skill file contents.
+
+Record per dimension:
 - **Pass**: Meets criteria
 - **Warn**: Minor issue, non-blocking
 - **Fail**: Must fix before publishing

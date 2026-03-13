@@ -16,7 +16,7 @@ This repository provides:
 
 ## Installation
 
-**Full Plugin** (recommended - includes 28 agents, 49 skills, 8 commands, 4 hooks):
+**Full Plugin** (recommended - includes 28 agents, 49 skills, 9 commands, 4 hooks):
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
@@ -212,13 +212,14 @@ Skills are context-triggered capabilities. They activate automatically or can be
 
 Commands use category subdirectories: `/category:command` or `/command` for root-level commands.
 
-- `/bug-hunt` - Adversarial bug hunt with 3 isolated agents (hunter, skeptic, referee)
+- `/prime` - Context warm-up — loads git state, plugin inventory, and project conventions
+- `/question` - Read-only Q&A mode — answers questions about the codebase without making changes
+- `/diagnose` - Fan out 3-5 agents to investigate a bug from every angle simultaneously
+- `/impact` - Map the full blast radius before changing a file or function
+- `/review-wave` - 4 specialized reviewers examine changes simultaneously (security, perf, correctness, style)
 - `/hammertime` - HammerTime behavioral rules — status dashboard (no args) or create a rule from a description
 - `/hammertime:status` - HammerTime status dashboard (alias for `/hammertime` with no args)
 - `/hammertime:manage` - Interactive rule management — enable, disable, remove, view, test rules
-- `/prime` - Prime Claude with project context and session setup
-- `/question` - Ask a focused question with structured research
-- `/docs:prd` - Create comprehensive PRDs with Shape Up + Working Backwards methodology
 - `/utils:context` - Generate repo context snapshot for agents
 
 ## Automation Hooks
