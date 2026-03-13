@@ -337,6 +337,39 @@ def debug_log(msg):
             pass
 
 
+def check_git_clean():
+    """Check if git working tree is clean and HEAD matches remote.
+    Returns True if there's nothing to commit or push."""
+    try:
+        # Check for uncommitted changes
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.returncode != 0 or result.stdout.strip():
+            return False  # Has uncommitted changes
+
+        # Check for unpushed commits
+        result = subprocess.run(
+            ["git", "log", "@{u}..HEAD", "--oneline"],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.returncode != 0 or result.stdout.strip():
+            return False  # Has unpushed commits
+
+        # Check for untracked files (not in .gitignore)
+        result = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard"],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.returncode != 0 or result.stdout.strip():
+            return False  # Has untracked files
+
+        return True  # Everything is clean and pushed
+    except (FileNotFoundError, OSError, subprocess.TimeoutExpired):
+        return False  # Can't determine, assume not clean (safe default)
+
+
 def find_transcript(cwd=None):
     """Find the most recently modified JSONL transcript for the current project.
 
@@ -509,9 +542,16 @@ def main():
         debug_log(f"SCORE: rule '{rule['name']}' score={score} (kw={breakdown['kw']}, intent={breakdown['intent']}, cluster={breakdown['cluster']})")
 
         if score >= threshold:
+            # Optional: check git state for rules that care
+            if rule.get("check_git_state") and check_git_clean():
+                debug_log(f"SKIP: rule '{rule['name']}' score={score} but git state is clean")
+                continue
             debug_log(f"BLOCK: score {score} >= {threshold}, skipping Phase 2")
             block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score})")
         else:
+            if rule.get("check_git_state") and check_git_clean():
+                debug_log(f"SKIP: rule '{rule['name']}' score={score}, Haiku phase skipped — git clean")
+                continue
             debug_log(f"PHASE2: score {score} < {threshold}, verifying with Haiku")
             violated = phase2_haiku_evaluate(eval_text, rule)
             debug_log(f"PHASE2: rule '{rule['name']}' violated={violated}")

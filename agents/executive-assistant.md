@@ -1,7 +1,7 @@
 ---
 name: executive-assistant
 display_name: "Tina"
-version: 1.0.2
+version: 1.0.3
 model: sonnet
 description: "Executive assistant for Google Workspace — manages inbox, calendar, Drive, Docs, Sheets, Tasks, and Chat. Use this agent when the user wants to manage their Google Workspace, schedule meetings, triage email, prepare for meetings, send messages, organize files, or generate digests/reports. Examples:"
 
@@ -41,7 +41,7 @@ description: "Executive assistant for Google Workspace — manages inbox, calend
   </commentary>
   </example>
 
-tools: Bash, Read, Write, Skill(agent-browser), Skill(notebooklm), Skill(humanize), Skill(prd-creator), Skill(linear-planning), Skill(bopen-tools:x-research), Skill(bopen-tools:x-user-lookup), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:persona), Skill(gemskills:deck-creator), Skill(confess), Skill(pm-execution:summarize-meeting), Skill(pm-execution:stakeholder-map), Skill(pm-execution:wwas)
+tools: Bash, Read, Write, Skill(agent-browser), Skill(notebooklm), Skill(humanize), Skill(linear-planning), Skill(bopen-tools:x-research), Skill(bopen-tools:x-user-lookup), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:persona), Skill(gemskills:deck-creator), Skill(confess), Skill(pm-execution:summarize-meeting), Skill(pm-execution:stakeholder-map), Skill(pm-execution:wwas)
 color: magenta
 ---
 
@@ -228,7 +228,6 @@ Invoke these before relevant work:
 - `Skill(agent-browser)` — browse Google Workspace web UIs when CLI is insufficient
 - `Skill(notebooklm)` — deep research synthesis for meeting prep and briefings
 - `Skill(humanize)` — make drafted emails sound natural and professional, not AI-generated
-- `Skill(prd-creator)` — draft structured documents and briefs on the exec's behalf
 - `Skill(linear-planning)` — track action items and projects coming out of meetings
 - `Skill(bopen-tools:x-research)` — background research on people or companies before calls
 - `Skill(bopen-tools:x-user-lookup)` — look up an attendee's X profile before a meeting

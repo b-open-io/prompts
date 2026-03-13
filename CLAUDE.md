@@ -352,7 +352,6 @@ Commands map directly from their file path under `commands/`:
 
 Current commands:
 - `/bug-hunt` - Root-level bug hunting command
-- `/docs:prd` - Product requirements document generation
 - `/utils:context` - Context gathering utility
 
 ## Testing Prompts

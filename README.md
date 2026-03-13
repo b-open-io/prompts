@@ -16,7 +16,7 @@ This repository provides:
 
 ## Installation
 
-**Full Plugin** (recommended - includes 28 agents, 49 skills, 10 commands, 4 hooks):
+**Full Plugin** (recommended - includes 28 agents, 48 skills, 10 commands, 4 hooks):
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
@@ -27,7 +27,7 @@ bunx skills add b-open-io/bopen-tools --skill <skill-name>
 ```
 
 <details>
-<summary><strong>All 49 skills — click to expand</strong></summary>
+<summary><strong>All 48 skills — click to expand</strong></summary>
 
 ```bash
 bunx skills add b-open-io/bopen-tools --skill agent-auditor
@@ -60,7 +60,6 @@ bunx skills add b-open-io/bopen-tools --skill npm-publish
 bunx skills add b-open-io/bopen-tools --skill perf-audit
 bunx skills add b-open-io/bopen-tools --skill persona
 bunx skills add b-open-io/bopen-tools --skill plaid-integration
-bunx skills add b-open-io/bopen-tools --skill prd-creator
 bunx skills add b-open-io/bopen-tools --skill process-cleanup
 bunx skills add b-open-io/bopen-tools --skill reinforce-skills
 bunx skills add b-open-io/bopen-tools --skill remind
@@ -149,7 +148,6 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `generative-ui` | Dynamic, AI-driven generative UI patterns |
 | `humanize` | Remove AI writing patterns and restore natural voice |
 | `persona` | Capture writing style profiles and social intelligence |
-| `prd-creator` | Create PRDs with Shape Up + Working Backwards methodology |
 | `ui-audio-theme` | Generate cohesive UI audio themes with subtle sound effects |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
@@ -442,7 +440,6 @@ Create project-specific automation by combining:
 
 ### Documentation
 ```bash
-/docs:prd "Project Name"
 "Have the documentation-writer create a comprehensive README"
 ```
 

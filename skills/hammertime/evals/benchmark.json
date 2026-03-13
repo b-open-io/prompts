@@ -1,35 +1,64 @@
 {
-  "rule": "project-owner",
-  "current": {
-    "date": "2026-03-13",
-    "corpus_size": 27,
-    "threshold": 5,
-    "precision": 0.80,
-    "recall": 1.00,
-    "f1": 0.89
-  },
-  "history": [
-    {
-      "date": "2026-03-13",
-      "version": "pre-corpus",
-      "corpus_size": 5,
-      "threshold": 5,
-      "f1": 0.14,
-      "notes": "Synthetic-only test cases, patterns based on hypothetical violations"
+  "rules": {
+    "project-owner": {
+      "current": {
+        "date": "2026-03-13",
+        "corpus_size": 27,
+        "threshold": 5,
+        "precision": 0.80,
+        "recall": 1.00,
+        "f1": 0.89
+      },
+      "history": [
+        {
+          "date": "2026-03-13",
+          "version": "pre-corpus",
+          "corpus_size": 5,
+          "threshold": 5,
+          "f1": 0.14,
+          "notes": "Synthetic-only test cases, patterns based on hypothetical violations"
+        },
+        {
+          "date": "2026-03-13",
+          "version": "post-corpus-v1",
+          "corpus_size": 27,
+          "threshold": 5,
+          "true_positives": 12,
+          "true_negatives": 12,
+          "false_positives": 3,
+          "false_negatives": 0,
+          "precision": 0.80,
+          "recall": 1.00,
+          "f1": 0.89,
+          "notes": "Production corpus from bopen-ai, bsv-mcp, clawnet, 1sat sessions. 3 FPs are meta-discussion edge cases."
+        }
+      ]
     },
-    {
-      "date": "2026-03-13",
-      "version": "post-corpus-v1",
-      "corpus_size": 27,
-      "threshold": 5,
-      "true_positives": 12,
-      "true_negatives": 12,
-      "false_positives": 3,
-      "false_negatives": 0,
-      "precision": 0.80,
-      "recall": 1.00,
-      "f1": 0.89,
-      "notes": "Production corpus from bopen-ai, bsv-mcp, clawnet, 1sat sessions. 3 FPs are meta-discussion edge cases."
+    "push-when-done": {
+      "current": {
+        "date": "2026-03-13",
+        "corpus_size": 13,
+        "threshold": 5,
+        "precision": 1.00,
+        "recall": 0.88,
+        "f1": 0.93
+      },
+      "history": [
+        {
+          "date": "2026-03-13",
+          "version": "corpus-driven-v1",
+          "corpus_size": 13,
+          "threshold": 5,
+          "true_positives": 7,
+          "true_negatives": 5,
+          "false_positives": 0,
+          "false_negatives": 1,
+          "precision": 1.00,
+          "recall": 0.88,
+          "f1": 0.93,
+          "notes": "Created with corpus-driven workflow using remind skill. 1 FN (score 3) caught by Haiku phase."
+        }
+      ]
     }
-  ]
+  }
 }

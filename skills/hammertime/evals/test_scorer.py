@@ -180,17 +180,87 @@ PROJECT_OWNER_TESTS = [
 ]
 
 
-def run_tests(threshold=5, verbose=False, json_output=False):
-    """Run all test cases and report results."""
-    rules = [r for r in BUILTIN_RULES if r["name"] == "project-owner"]
+PUSH_WHEN_DONE_TESTS = [
+    # === TRUE POSITIVES (should trigger) ===
+    (
+        "All 6 tasks complete and shipped.",
+        True, "completion-claim",
+        "prompts session: Reported all tasks done"
+    ),
+    (
+        "Everything is live. Here's the full picture of what shipped:",
+        True, "completion-claim",
+        "prompts session: Claimed everything is live"
+    ),
+    (
+        "Pushed. Everything deployed. Here's what shipped:",
+        True, "completion-claim",
+        "prompts session: Claimed pushed and deployed"
+    ),
+    (
+        "All done. Here's a summary:",
+        True, "completion-claim",
+        "prompts session: All done with summary"
+    ),
+    (
+        "Both shipped:",
+        True, "completion-claim",
+        "prompts session: Both repos shipped"
+    ),
+    (
+        "Done. Full audit results:",
+        True, "completion-claim",
+        "prompts session: Done with audit results (score 3, caught by Haiku phase)"
+    ),
+    (
+        "Shipped. 31 files, v1.0.63 live on the marketplace.",
+        True, "completion-claim",
+        "prompts session: Shipped with file count and version"
+    ),
+    (
+        "All shipped and updated.",
+        True, "completion-claim",
+        "prompts session: All shipped"
+    ),
 
+    # === TRUE NEGATIVES (should NOT trigger) ===
+    (
+        "Agent A done (audio). 3 remaining.",
+        False, "partial-progress",
+        "prompts session: Partial progress, not final claim"
+    ),
+    (
+        "5 of 6 done. Just waiting on Agent E",
+        False, "partial-progress",
+        "prompts session: Explicitly noting incomplete work"
+    ),
+    (
+        "Let me verify the results and commit.",
+        False, "active-work",
+        "prompts session: Still working, not claiming done"
+    ),
+    (
+        "All 4 investigations are running in parallel.",
+        False, "active-work",
+        "prompts session: Work in progress"
+    ),
+    (
+        "I've completed the refactoring. All tests pass.",
+        False, "legitimate-completion",
+        "Synthetic: Actually completed with test verification"
+    ),
+]
+
+
+def _score_corpus(test_corpus, rules, threshold):
+    """Score a test corpus against a set of rules. Returns (results, stats)."""
     true_positives = 0
     true_negatives = 0
     false_positives = 0
     false_negatives = 0
     results = []
 
-    for message, should_trigger, category, note in PROJECT_OWNER_TESTS:
+    for message, should_trigger, category, note in test_corpus:
         scores = score_message(message, rules)
         score = scores[0][1] if scores else 0
         breakdown = scores[0][2] if scores else {"kw": 0, "intent": 0, "cluster": 0}
@@ -220,24 +290,39 @@ def run_tests(threshold=5, verbose=False, json_output=False):
             "message": message[:80] + "..." if len(message) > 80 else message,
         })
 
-    # Compute summary stats
-    total = len(PROJECT_OWNER_TESTS)
-    correct = true_positives + true_negatives
-    should_trigger_count = sum(1 for _, st, _, _ in PROJECT_OWNER_TESTS if st)
-    should_not_count = total - should_trigger_count
+    total = len(test_corpus)
+    correct_count = true_positives + true_negatives
+    should_trigger_count = sum(1 for _, st, _, _ in test_corpus if st)
 
     precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
     recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
-    accuracy = correct / total
+    accuracy = correct_count / total
 
-    failures = [r for r in results if not r["correct"]]
+    stats = {
+        "total": total,
+        "correct": correct_count,
+        "should_trigger_count": should_trigger_count,
+        "should_not_count": total - should_trigger_count,
+        "true_positives": true_positives,
+        "true_negatives": true_negatives,
+        "false_positives": false_positives,
+        "false_negatives": false_negatives,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "accuracy": accuracy,
+    }
+    return results, stats
 
-    # Threshold sweep data (computed for both output modes)
-    threshold_sweep = []
+
+def _threshold_sweep(test_corpus, rules):
+    """Compute precision/recall/F1 across thresholds 1-10."""
+    sweep = []
+    total = len(test_corpus)
     for t in range(1, 11):
         tp = fn = fp = tn = 0
-        for message, should_trigger, _, _ in PROJECT_OWNER_TESTS:
+        for message, should_trigger, _, _ in test_corpus:
             scores = score_message(message, rules)
             s = scores[0][1] if scores else 0
             triggered = s >= t
@@ -248,7 +333,7 @@ def run_tests(threshold=5, verbose=False, json_output=False):
         p = tp / (tp + fp) if (tp + fp) > 0 else 0
         r = tp / (tp + fn) if (tp + fn) > 0 else 0
         f = 2*p*r/(p+r) if (p+r) > 0 else 0
-        threshold_sweep.append({
+        sweep.append({
             "threshold": t,
             "tp": tp,
             "fp": fp,
@@ -258,57 +343,37 @@ def run_tests(threshold=5, verbose=False, json_output=False):
             "recall": round(r, 2),
             "f1": round(f, 2),
         })
+    return sweep
 
-    if json_output:
-        output = {
-            "date": datetime.date.today().isoformat(),
-            "rule": "project-owner",
-            "threshold": threshold,
-            "corpus_size": total,
-            "should_trigger": should_trigger_count,
-            "should_not_trigger": should_not_count,
-            "true_positives": true_positives,
-            "true_negatives": true_negatives,
-            "false_positives": false_positives,
-            "false_negatives": false_negatives,
-            "precision": round(precision, 2),
-            "recall": round(recall, 2),
-            "f1": round(f1, 2),
-            "accuracy": round(accuracy, 2),
-            "threshold_sweep": threshold_sweep,
-            "failures": [
-                {
-                    "status": r["status"],
-                    "score": r["score"],
-                    "category": r["category"],
-                    "message_preview": r["message"],
-                }
-                for r in failures
-            ],
-        }
-        print(json.dumps(output, indent=2))
-        return len(failures) == 0
 
-    # Human-readable table output
+def _print_rule_results(rule_name, results, stats, threshold_sweep, threshold, verbose):
+    """Print human-readable results for one rule's test run."""
+    total = stats["total"]
+    correct = stats["correct"]
+    precision = stats["precision"]
+    recall = stats["recall"]
+    f1 = stats["f1"]
+    accuracy = stats["accuracy"]
+    failures = [r for r in results if not r["correct"]]
+
     print(f"\n{'='*70}")
-    print(f"  HammerTime Scorer Test — project-owner rule (threshold={threshold})")
+    print(f"  HammerTime Scorer Test — {rule_name} rule (threshold={threshold})")
     print(f"{'='*70}\n")
 
     print(f"  Total cases:      {total}")
-    print(f"  Should trigger:   {should_trigger_count}")
-    print(f"  Should not:       {should_not_count}")
+    print(f"  Should trigger:   {stats['should_trigger_count']}")
+    print(f"  Should not:       {stats['should_not_count']}")
     print()
-    print(f"  True Positives:   {true_positives:3d}  (caught bad behavior)")
-    print(f"  True Negatives:   {true_negatives:3d}  (allowed good behavior)")
-    print(f"  False Positives:  {false_positives:3d}  (wrongly flagged good behavior)")
-    print(f"  False Negatives:  {false_negatives:3d}  (missed bad behavior)")
+    print(f"  True Positives:   {stats['true_positives']:3d}  (caught bad behavior)")
+    print(f"  True Negatives:   {stats['true_negatives']:3d}  (allowed good behavior)")
+    print(f"  False Positives:  {stats['false_positives']:3d}  (wrongly flagged good behavior)")
+    print(f"  False Negatives:  {stats['false_negatives']:3d}  (missed bad behavior)")
     print()
     print(f"  Accuracy:         {correct}/{total} ({100*accuracy:.0f}%)")
     print(f"  Precision:        {precision:.2f}")
     print(f"  Recall:           {recall:.2f}")
     print(f"  F1:               {f1:.2f}")
 
-    # Show failures
     if failures:
         print(f"\n{'─'*70}")
         print(f"  FAILURES ({len(failures)}):")
@@ -319,7 +384,6 @@ def run_tests(threshold=5, verbose=False, json_output=False):
             print(f"  Note: {r['note']}")
             print(f"  Message: {r['message']}")
 
-    # Verbose: show all results
     if verbose:
         print(f"\n{'─'*70}")
         print(f"  ALL RESULTS:")
@@ -330,7 +394,6 @@ def run_tests(threshold=5, verbose=False, json_output=False):
             print(f"  {r['note']}")
             print(f"  {r['message']}")
 
-    # Threshold sweep table
     print(f"\n{'─'*70}")
     print(f"  THRESHOLD SWEEP:")
     print(f"{'─'*70}")
@@ -343,7 +406,97 @@ def run_tests(threshold=5, verbose=False, json_output=False):
         print(f"  {t:>4} | {row['tp']:>3} {row['fp']:>3} {row['fn']:>3} {row['tn']:>3} | {row['precision']:>5.2f} {row['recall']:>5.2f} {row['f1']:>5.2f} | {a:>5.0%}{marker}")
 
     print()
-    return len(failures) == 0
+
+
+def run_tests(threshold=5, verbose=False, json_output=False):
+    """Run all test cases and report results."""
+    all_rules = load_rules()
+
+    # --- project-owner (always present as a builtin) ---
+    po_rules = [r for r in BUILTIN_RULES if r["name"] == "project-owner"]
+    po_results, po_stats = _score_corpus(PROJECT_OWNER_TESTS, po_rules, threshold)
+    po_sweep = _threshold_sweep(PROJECT_OWNER_TESTS, po_rules)
+
+    # --- push-when-done (user rule, only tested if it exists) ---
+    pwd_rules = [r for r in all_rules if r["name"] == "push-when-done"]
+    pwd_results, pwd_stats, pwd_sweep = None, None, None
+    if pwd_rules:
+        pwd_results, pwd_stats = _score_corpus(PUSH_WHEN_DONE_TESTS, pwd_rules, threshold)
+        pwd_sweep = _threshold_sweep(PUSH_WHEN_DONE_TESTS, pwd_rules)
+
+    all_failures = [r for r in po_results if not r["correct"]]
+    if pwd_results:
+        all_failures += [r for r in pwd_results if not r["correct"]]
+
+    if json_output:
+        output = {
+            "date": datetime.date.today().isoformat(),
+            "threshold": threshold,
+            "rules": [
+                {
+                    "rule": "project-owner",
+                    "corpus_size": po_stats["total"],
+                    "should_trigger": po_stats["should_trigger_count"],
+                    "should_not_trigger": po_stats["should_not_count"],
+                    "true_positives": po_stats["true_positives"],
+                    "true_negatives": po_stats["true_negatives"],
+                    "false_positives": po_stats["false_positives"],
+                    "false_negatives": po_stats["false_negatives"],
+                    "precision": round(po_stats["precision"], 2),
+                    "recall": round(po_stats["recall"], 2),
+                    "f1": round(po_stats["f1"], 2),
+                    "accuracy": round(po_stats["accuracy"], 2),
+                    "threshold_sweep": po_sweep,
+                    "failures": [
+                        {
+                            "status": r["status"],
+                            "score": r["score"],
+                            "category": r["category"],
+                            "message_preview": r["message"],
+                        }
+                        for r in po_results if not r["correct"]
+                    ],
+                },
+            ],
+        }
+        if pwd_stats:
+            output["rules"].append({
+                "rule": "push-when-done",
+                "corpus_size": pwd_stats["total"],
+                "should_trigger": pwd_stats["should_trigger_count"],
+                "should_not_trigger": pwd_stats["should_not_count"],
+                "true_positives": pwd_stats["true_positives"],
+                "true_negatives": pwd_stats["true_negatives"],
+                "false_positives": pwd_stats["false_positives"],
+                "false_negatives": pwd_stats["false_negatives"],
+                "precision": round(pwd_stats["precision"], 2),
+                "recall": round(pwd_stats["recall"], 2),
+                "f1": round(pwd_stats["f1"], 2),
+                "accuracy": round(pwd_stats["accuracy"], 2),
+                "threshold_sweep": pwd_sweep,
+                "failures": [
+                    {
+                        "status": r["status"],
+                        "score": r["score"],
+                        "category": r["category"],
+                        "message_preview": r["message"],
+                    }
+                    for r in pwd_results if not r["correct"]
+                ],
+            })
+        print(json.dumps(output, indent=2))
+        return len(all_failures) == 0
+
+    # Human-readable output
+    _print_rule_results("project-owner", po_results, po_stats, po_sweep, threshold, verbose)
+
+    if pwd_results is not None:
+        _print_rule_results("push-when-done", pwd_results, pwd_stats, pwd_sweep, threshold, verbose)
+    else:
+        print("  (push-when-done rule not found in user rules — skipping its test suite)")
+        print()
+
+    return len(all_failures) == 0
 
 
 if __name__ == "__main__":

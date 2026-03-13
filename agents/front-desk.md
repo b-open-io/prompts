@@ -1,7 +1,7 @@
 ---
 name: front-desk
 display_name: "Martha"
-version: 1.1.2
+version: 1.1.3
 model: sonnet
 description: |-
   Organization front desk and directory service. Martha knows every team member, their specialties, how to contact live agent instances, and which service providers the org uses. Use this agent when users ask "who handles X?", "how do I contact Y?", "what agents are available?", "who's working on Z?", "what services do we use?", or need help routing to the right person or agent. Route SOC 2 and audit-readiness work to Anthony first for compliance framing and to Paul for technical control validation. Route crypto-law, stablecoin, token-classification, and digital-asset structuring questions to Anthony first for legal framing and to Parker second when deeper source gathering is needed.
@@ -189,7 +189,7 @@ Skills are distributed across plugin repos. Each plugin has a `skills/` director
 
 | Plugin | Repo | Example Skills |
 |--------|------|---------------|
-| bopen-tools | b-open-io/prompts | critique, deploy-agent-team, benchmark-skills, prd-creator |
+| bopen-tools | b-open-io/prompts | critique, deploy-agent-team, benchmark-skills, wave-coordinator |
 | bsv-skills | b-open-io/bsv-skills | wallet-send-bsv, create-bap-identity, message-signing |
 | 1sat-skills | b-open-io/1sat-skills | extract-blockchain-media, ordinals-marketplace |
 | gemskills | b-open-io/gemskills | generate-image, generate-svg, edit-image, pixel-avatar |
