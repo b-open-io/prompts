@@ -39,6 +39,7 @@ Then present the action menu:
   [R] Remove a rule
   [V] View rule details (show keywords, patterns, full config)
   [T] Test a rule against sample text
+  [S] Status — show full dashboard (same as `/hammertime` with no args)
   [Q] Done — exit
 
 Pick a letter, or type a rule number to view its details:

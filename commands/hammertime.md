@@ -1,17 +1,15 @@
 ---
 name: hammertime
-description: Create a HammerTime stop rule from a behavior description, or list rules when called with no arguments. See also /hammertime:status and /hammertime:manage
+description: Create a HammerTime stop rule from a behavior description, or show full status dashboard when called with no arguments. See also /hammertime:manage for interactive rule management
 allowed-tools: Read, Write, Bash
 user-invocable: true
 ---
 
-# HammerTime — Create Rule
+# HammerTime
 
-You create HammerTime rules — behavioral guardrails that run as a Stop hook to catch and correct bad model behaviors.
+You manage HammerTime rules — behavioral guardrails that run as a Stop hook to catch and correct bad model behaviors.
 
-**Related commands:**
-- `/hammertime:status` — View all rules, debug log, hook health
-- `/hammertime:manage` — Interactive management (enable, disable, remove, view, test)
+**Related command:** `/hammertime:manage` — Interactive management (enable, disable, remove, view, test rules)
 
 ## Rules File
 
@@ -19,49 +17,9 @@ User rules are stored at: `~/.claude/hammertime/rules.json`
 
 Read this file first. If it doesn't exist, that's fine — it gets created on first rule add.
 
-## Rule Format
-
-```json
-{
-  "name": "kebab-case-name",
-  "rule": "Natural language description of the rule",
-  "enabled": true,
-  "keywords": ["trigger", "words", "for", "fast", "scan"],
-  "intent_patterns": ["regex\\s+patterns?\\s+for\\s+structural\\s+matching"],
-  "dismissal_verbs": "\\b(?:dismiss|skip|ignore)\\b",
-  "qualifiers": "\\b(?:pre-?existing|scope|unrelated)\\b",
-  "confidence_threshold": 5,
-  "skill": null
-}
-```
-
-The file is a JSON array of rule objects.
-
-### Three-Layer Scoring
-
-Rules are evaluated with three detection layers that produce a score:
-
-- **Layer 1 — Keywords** (+1 each): Case-insensitive substring matches
-- **Layer 2 — Intent Patterns** (+2 each): Regex patterns matching structural dismissal
-- **Layer 3 — Sentence Co-occurrence** (+3): Dismissal verb + qualifier in the same sentence
-
-**Score → Decision:**
-- **0**: Exit immediately (no match)
-- **1–4**: Haiku verification (ambiguous signal)
-- **5+**: Block directly (obvious violation, skips Haiku)
-
-The `confidence_threshold` field (default: 5) controls the direct-block cutoff.
-
-### Optional Fields
-
-- `intent_patterns`: Array of regex strings for structural pattern matching. Compiled at load time.
-- `dismissal_verbs`: Regex string matching verbs that signal refusal to act.
-- `qualifiers`: Regex string matching terms that signal attribution/deflection.
-- `confidence_threshold`: Score at which to block without Haiku verification (default: 5).
-
 ## Built-in Rules (hardcoded in hook, not in the JSON file)
 
-- **project-owner**: "Fix all errors instead of dismissing them as pre-existing. The assistant has no session history and cannot know what is pre-existing."
+- **project-owner**: "Fix all errors instead of dismissing them as pre-existing. The assistant has no session history and cannot know what is pre-existing." (`evaluate_full_turn: true`)
 
 Built-in rules can be overridden by adding a user rule with the same name.
 
@@ -69,8 +27,33 @@ Built-in rules can be overridden by adding a user rule with the same name.
 
 The user's argument (after `/hammertime`) tells you what to do:
 
-### No argument → List all rules
-Show builtin rules and user rules with their enabled status.
+### No argument → Show full status dashboard
+
+Show the complete state of HammerTime:
+
+**1. Rules table** — Read builtin rules and user rules from `~/.claude/hammertime/rules.json`, then present ALL rules:
+
+```
+## HammerTime Rules
+
+| # | Rule | Status | Layers | Threshold | Full Turn | Skill |
+|---|------|--------|--------|-----------|-----------|-------|
+| 1 | project-owner (builtin) | enabled | kw:15 pat:8 co:yes | 5 | yes | - |
+| 2 | fix-lint-errors | enabled | kw:7 pat:2 co:yes | 5 | yes | - |
+```
+
+Where Layers = keyword count, pattern count, co-occurrence configured.
+
+**2. Debug log** — If `~/.claude/hammertime/debug.log` exists, show last 20 lines. Otherwise show: "Debug logging not enabled. Set `HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log` to enable."
+
+**3. Hook registration** — Check `~/.claude/settings.json` for `hooks.Stop` entries referencing `hammertime.py`. Report whether the hook is registered.
+
+**4. Quick actions:**
+```
+- `/hammertime <description>` — Create a new rule
+- `/hammertime:manage` — Interactive rule management
+- `export HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log` — Enable debug logging
+```
 
 ### Description of a behavior → Create a rule
 Example: `/hammertime always fix all pre-existing issues`
