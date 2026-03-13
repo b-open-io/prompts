@@ -1,7 +1,7 @@
 ---
 name: hammertime
 description: Create a HammerTime stop rule from a behavior description, or show full status dashboard when called with no arguments. See also /hammertime:manage for interactive rule management
-allowed-tools: Read, Write, Bash
+allowed-tools: Read, Write, Bash, Agent
 user-invocable: true
 ---
 
@@ -11,64 +11,55 @@ You manage HammerTime rules — behavioral guardrails that run as a Stop hook to
 
 **Related command:** `/hammertime:manage` — Interactive management (enable, disable, remove, view, test rules)
 
-## Rules File
-
-User rules are stored at: `~/.claude/hammertime/rules.json`
-
-Read this file first. If it doesn't exist, that's fine — it gets created on first rule add.
-
-## Built-in Rules (hardcoded in hook, not in the JSON file)
-
-- **project-owner**: "Fix all errors instead of dismissing them as pre-existing. The assistant has no session history and cannot know what is pre-existing." (`evaluate_full_turn: true`)
-
-Built-in rules can be overridden by adding a user rule with the same name.
-
 ## Interpret the User's Intent
 
 The user's argument (after `/hammertime`) tells you what to do:
 
 ### No argument → Show full status dashboard
 
-Show the complete state of HammerTime:
-
-**1. Rules table** — Read builtin rules and user rules from `~/.claude/hammertime/rules.json`, then present ALL rules:
+Delegate to a subagent to gather and format the dashboard. Use the Agent tool:
 
 ```
-## HammerTime Rules
+Agent(prompt: "Read the HammerTime state and return a formatted status dashboard.
 
-| # | Rule | Status | Layers | Threshold | Full Turn | Skill |
-|---|------|--------|--------|-----------|-----------|-------|
-| 1 | project-owner (builtin) | enabled | kw:15 pat:8 co:yes | 5 | yes | - |
-| 2 | fix-lint-errors | enabled | kw:7 pat:2 co:yes | 5 | yes | - |
+1. BUILTIN RULES (always present, hardcoded in hook):
+   - project-owner: 'Fix all errors instead of dismissing them as pre-existing.' (evaluate_full_turn: true, keywords: 15, patterns: 8, co-occurrence: yes, threshold: 5)
+
+2. Read user rules from ~/.claude/hammertime/rules.json (may not exist — report 'No user rules configured' if missing).
+   For each rule, count: keywords, intent_patterns, whether dismissal_verbs+qualifiers are set, confidence_threshold, evaluate_full_turn, skill.
+
+3. Check ~/.claude/hammertime/debug.log — if exists, show last 20 lines. If not, say: 'Debug logging not enabled. Set HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log to enable.'
+
+4. Check ~/.claude/settings.json for hooks.Stop entries referencing hammertime.py. Report if hook is registered there, or note it runs via the bopen-tools plugin.
+
+Return a formatted response with:
+- Rules table: | # | Rule | Status | Layers | Threshold | Full Turn | Skill |
+- Debug log section
+- Hook registration status
+- Quick actions: /hammertime <desc>, /hammertime:manage, HAMMERTIME_DEBUG env var",
+subagent_type: "general-purpose")
 ```
 
-Where Layers = keyword count, pattern count, co-occurrence configured.
-
-**2. Debug log** — If `~/.claude/hammertime/debug.log` exists, show last 20 lines. Otherwise show: "Debug logging not enabled. Set `HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log` to enable."
-
-**3. Hook registration** — Check `~/.claude/settings.json` for `hooks.Stop` entries referencing `hammertime.py`. Report whether the hook is registered.
-
-**4. Quick actions:**
-```
-- `/hammertime <description>` — Create a new rule
-- `/hammertime:manage` — Interactive rule management
-- `export HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log` — Enable debug logging
-```
+Print the subagent's response directly to the user.
 
 ### Description of a behavior → Create a rule
+
 Example: `/hammertime always fix all pre-existing issues`
 Example: `/hammertime when you find lint errors, invoke Skill(simplify) to clean them up`
 Example: `/hammertime never say everything looks good when there are warnings`
+
+Read `~/.claude/hammertime/rules.json` first (may not exist).
 
 Generate:
 - `name`: derive a kebab-case name from the description (short, descriptive)
 - `rule`: use the user's description directly (clean it up minimally)
 - `keywords`: extract 4-8 likely trigger words/phrases from the description
-- `intent_patterns`: write 2-4 regex patterns matching structural dismissal for this rule. These catch paraphrases that keywords miss. Use `\s+`, `(?:...|...)`, and `.*?` for flexible matching.
+- `intent_patterns`: write 2-4 regex patterns matching structural dismissal for this rule. Use `\s+`, `(?:...|...)`, and `.*?` for flexible matching.
 - `dismissal_verbs`: regex matching refusal verbs relevant to the rule (optional)
 - `qualifiers`: regex matching attribution/deflection terms relevant to the rule (optional)
-- `skill`: if the user mentions a Skill(), resolve informal names to fully-qualified IDs by reading the skills directory or using `find-skills`. E.g., "visual planner" → `gemskills:visual-planner`. If no skill mentioned, null.
+- `skill`: if the user mentions a Skill(), resolve informal names to fully-qualified IDs. If no skill mentioned, null.
 - `enabled`: true
+- `confidence_threshold`: 5
 
 Do NOT ask clarifying questions if the description is clear. Just make the rule.
 

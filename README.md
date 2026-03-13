@@ -16,7 +16,7 @@ This repository provides:
 
 ## Installation
 
-**Full Plugin** (recommended - includes 28 agents, 49 skills, 6 commands, 4 hooks):
+**Full Plugin** (recommended - includes 28 agents, 49 skills, 8 commands, 4 hooks):
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
@@ -213,7 +213,9 @@ Skills are context-triggered capabilities. They activate automatically or can be
 Commands use category subdirectories: `/category:command` or `/command` for root-level commands.
 
 - `/bug-hunt` - Adversarial bug hunt with 3 isolated agents (hunter, skeptic, referee)
-- `/hammertime` - Manage HammerTime behavioral rules (add, list, enable, disable, remove)
+- `/hammertime` - HammerTime behavioral rules — status dashboard (no args) or create a rule from a description
+- `/hammertime:status` - HammerTime status dashboard (alias for `/hammertime` with no args)
+- `/hammertime:manage` - Interactive rule management — enable, disable, remove, view, test rules
 - `/prime` - Prime Claude with project context and session setup
 - `/question` - Ask a focused question with structured research
 - `/docs:prd` - Create comprehensive PRDs with Shape Up + Working Backwards methodology
@@ -233,9 +235,44 @@ Hooks are distributed automatically with the plugin — no manual installation n
 
 ### HammerTime Stop Hook
 
-HammerTime is a behavioral guardrail system that runs on every assistant response. It uses three-layer scored detection (keywords, intent patterns, sentence co-occurrence) to catch rule violations. Ships with a built-in `project-owner` rule that prevents dismissing errors as "pre-existing."
+HammerTime is a behavioral guardrail system that runs on every assistant response. It catches rule violations using three-layer scored detection:
 
-Create custom rules with `/hammertime` or let agents create them autonomously via the `hammertime` skill when you mention behavioral preferences like "always fix lint errors" or "never skip tests."
+| Layer | Signal | Score | Purpose |
+|-------|--------|-------|---------|
+| Keywords | Case-insensitive substring match | +1 each | Broad detection |
+| Intent Patterns | Regex structural matching | +2 each | Paraphrase catching |
+| Co-occurrence | Dismissal verb + qualifier in same sentence | +3 | Highest confidence |
+
+**Score thresholds:** 0 = pass, 1-4 = Haiku verification (~500ms, ~$0.001), 5+ = direct block.
+
+**Full-turn evaluation:** Rules can opt into scoring ALL assistant messages since the user's last message (not just the final one). This catches violations in intermediate responses — e.g., the model dismisses an error mid-turn, then the final message just says "Done." Set `"evaluate_full_turn": true` on a rule to enable. The hook reads the session transcript JSONL backwards (last 2MB max).
+
+Ships with a built-in `project-owner` rule that prevents dismissing errors as "pre-existing" (full-turn enabled).
+
+#### Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/hammertime` | Status dashboard (no args) or create a rule from a description |
+| `/hammertime:manage` | Interactive management — enable, disable, remove, view, test |
+| `/hammertime:status` | Status dashboard (alias) |
+
+#### Debugging
+
+```bash
+export HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log
+```
+
+Debug log shows elapsed time, score breakdowns, transcript reads, and phase decisions:
+
+```
+[   1ms] LAST_MSG length: 2847 chars
+[   3ms] TRANSCRIPT: found 7d5d184f-...jsonl
+[   8ms] TRANSCRIPT: collected 3 assistant blocks, 4201 chars
+[   8ms] FULL_TURN: scoring 1 rules against 4201 chars
+[   9ms] SCORE: rule 'project-owner' score=7 (kw=3, intent=1, cluster=1)
+[   9ms] BLOCK: score 7 >= 5, skipping Phase 2
+```
 
 Rules live at `~/.claude/hammertime/rules.json`. See the [hammertime skill](skills/hammertime/SKILL.md) for the full rule authoring guide.
 
@@ -276,6 +313,8 @@ prompts/
 ├── agents/                 # Specialized AI agents
 ├── commands/               # Slash commands
 │   ├── bug-hunt.md         #   /bug-hunt
+│   ├── hammertime.md       #   /hammertime
+│   ├── hammertime/         #   /hammertime:status, /hammertime:manage
 │   ├── docs/               #   /docs:* commands
 │   └── utils/              #   /utils:* commands
 ├── hooks/                  # Automation hooks (copy to ~/.claude/hooks)
