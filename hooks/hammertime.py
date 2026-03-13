@@ -2,14 +2,18 @@
 """HammerTime — Stop hook that catches bad model behaviors via user-defined rules.
 
 Two-phase detection:
-  Phase 1 (free, <1s): Keyword scan on last ~8KB of transcript. No match = exit 0.
+  Phase 1 (free, <1s): Keyword scan on last_assistant_message. No match = exit 0.
   Phase 2 (cheap, ~3-5s): Haiku call for each triggered rule. Catches fuzzy variants.
 
 Rules come from two sources:
   1. BUILTIN_RULES (hardcoded below)
   2. User rules in ~/.claude/hammertime/rules.json
 
-Block message format:
+Stop hook input (from Claude Code):
+  - last_assistant_message: the model's final response text
+  - stop_hook_active: true if already continuing from a prior Stop hook
+
+Block output format:
   {"decision": "block", "reason": "...", "systemMessage": "..."}
 """
 
@@ -36,7 +40,6 @@ BUILTIN_RULES = [
 ]
 
 USER_RULES_PATH = os.path.expanduser("~/.claude/hammertime/rules.json")
-TRANSCRIPT_TAIL_BYTES = 8192
 
 
 def load_rules():
@@ -50,7 +53,6 @@ def load_rules():
                 builtin_names = {r["name"] for r in rules}
                 for ur in user_rules:
                     if ur.get("name") in builtin_names:
-                        # User override of builtin — replace it
                         rules = [r for r in rules if r["name"] != ur["name"]]
                     rules.append(ur)
         except (json.JSONDecodeError, OSError):
@@ -58,27 +60,13 @@ def load_rules():
     return [r for r in rules if r.get("enabled", True)]
 
 
-def read_transcript_tail(path):
-    """Read the last TRANSCRIPT_TAIL_BYTES of the transcript file."""
-    try:
-        size = os.path.getsize(path)
-        with open(path, "r", errors="replace") as f:
-            if size > TRANSCRIPT_TAIL_BYTES:
-                f.seek(size - TRANSCRIPT_TAIL_BYTES)
-                f.readline()  # skip partial line
-            return f.read()
-    except OSError:
-        return ""
-
-
 def phase1_keyword_scan(text, rules):
-    """Return rules whose keywords match in the transcript tail."""
+    """Return rules whose keywords match in the text."""
     text_lower = text.lower()
     triggered = []
     for rule in rules:
         keywords = rule.get("keywords", [])
         if not keywords:
-            # No keywords = always evaluate (expensive, but that's user's choice)
             triggered.append(rule)
             continue
         for kw in keywords:
@@ -92,16 +80,15 @@ def phase2_haiku_evaluate(text, rule):
     """Call Haiku to determine if the rule was actually violated. Returns True if violated."""
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
-        # No API key — fall back to keyword-only (Phase 1 match = block)
         return True
 
     prompt = (
-        "You are a compliance checker. Analyze the following conversation transcript tail "
-        "and determine if the assistant violated this rule:\n\n"
+        "You are a compliance checker. Analyze the assistant's final response "
+        "and determine if it violated this rule:\n\n"
         f"RULE: {rule['rule']}\n\n"
-        "TRANSCRIPT TAIL:\n"
+        "ASSISTANT'S RESPONSE:\n"
         f"{text[-4000:]}\n\n"
-        "Did the assistant violate this rule in its most recent response? "
+        "Did the assistant violate this rule? "
         "Answer ONLY 'yes' or 'no'. Nothing else."
     )
 
@@ -128,7 +115,6 @@ def phase2_haiku_evaluate(text, rule):
             answer = result.get("content", [{}])[0].get("text", "").strip().lower()
             return answer.startswith("yes")
     except (urllib.error.URLError, OSError, json.JSONDecodeError, KeyError, IndexError):
-        # Fail-open on API errors
         return False
 
 
@@ -160,32 +146,56 @@ def build_block_message(rule):
     return msg
 
 
+def debug_log(msg):
+    """Write to debug log if HAMMERTIME_DEBUG is set."""
+    debug_path = os.environ.get("HAMMERTIME_DEBUG", "")
+    if debug_path:
+        try:
+            with open(os.path.expanduser(debug_path), "a") as f:
+                f.write(f"{msg}\n")
+        except OSError:
+            pass
+
+
 def main():
     try:
-        hook_input = json.loads(sys.stdin.read())
+        raw = sys.stdin.read()
+        hook_input = json.loads(raw)
     except (json.JSONDecodeError, OSError):
+        debug_log("EXIT: failed to parse stdin")
         sys.exit(0)
 
-    transcript_path = hook_input.get("transcript_path", "")
-    if not transcript_path:
+    debug_log(f"INPUT keys: {list(hook_input.keys())}")
+
+    # Don't re-trigger if already in a stop hook continuation
+    if hook_input.get("stop_hook_active"):
+        debug_log("EXIT: stop_hook_active=true, skipping to avoid loop")
         sys.exit(0)
+
+    text = hook_input.get("last_assistant_message", "")
+    if not text:
+        debug_log("EXIT: no last_assistant_message")
+        sys.exit(0)
+
+    debug_log(f"MESSAGE length: {len(text)} chars")
 
     rules = load_rules()
     if not rules:
-        sys.exit(0)
-
-    text = read_transcript_tail(transcript_path)
-    if not text:
+        debug_log("EXIT: no enabled rules")
         sys.exit(0)
 
     # Phase 1: keyword scan
     triggered = phase1_keyword_scan(text, rules)
+    debug_log(f"PHASE1: {len(triggered)} rules triggered")
     if not triggered:
         sys.exit(0)
 
     # Phase 2: Haiku evaluation for each triggered rule
     for rule in triggered:
-        if phase2_haiku_evaluate(text, rule):
+        debug_log(f"PHASE2: evaluating rule '{rule['name']}'")
+        violated = phase2_haiku_evaluate(text, rule)
+        debug_log(f"PHASE2: rule '{rule['name']}' violated={violated}")
+        if violated:
             msg = build_block_message(rule)
             output = {
                 "decision": "block",
