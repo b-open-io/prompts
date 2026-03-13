@@ -53,7 +53,8 @@ Rules are JSON objects in an array. Required and optional fields:
   "dismissal_verbs": "\\b(?:skip|ignore|dismiss)\\b",
   "qualifiers": "\\b(?:pre-?existing|scope|unrelated)\\b",
   "confidence_threshold": 5,
-  "skill": null
+  "skill": null,
+  "evaluate_full_turn": true
 }
 ```
 
@@ -69,6 +70,7 @@ Rules are JSON objects in an array. Required and optional fields:
 - `qualifiers` — Single regex string matching attribution/deflection terms for Layer 3
 - `confidence_threshold` — Score at which to block without Haiku (default: 5)
 - `skill` — Fully-qualified skill ID to invoke when rule fires (e.g., `gemskills:visual-planner`)
+- `evaluate_full_turn` — Boolean. When `true`, scores ALL assistant messages since the user's last message (reads session transcript). When `false` or omitted, scores only the final assistant message. Default: `false`.
 
 ## Three-Layer Scoring
 
@@ -188,6 +190,26 @@ The hook infers whether to auto-fix or ask the user based on the rule text:
 - **Ask mode**: Everything else → block message says "Ask the user whether to fix"
 
 Write rule text accordingly to control the behavior.
+
+## Full-Turn vs Last-Message Evaluation
+
+By default, HammerTime scores only the final assistant message — the last text block before stopping. This is fast and catches most violations.
+
+But some violations happen in **intermediate messages** — the model dismisses an error in message 3, then the final message just says "Done. All changes committed." The final message alone wouldn't trigger the rule.
+
+Set `"evaluate_full_turn": true` on a rule to score ALL assistant text since the user's last message. The hook reads the session transcript (JSONL) backwards to collect the full turn.
+
+**When to use full-turn evaluation:**
+- Rules about dismissing or skipping work (the dismissal often happens mid-turn)
+- Rules about process violations (skipping tests, not running linter — happens during execution, not at the end)
+- Rules where the final message is typically a summary that hides the violation
+
+**When last-message is sufficient:**
+- Rules about response format (trailing summaries, emoji usage)
+- Rules about the final output (code style, naming)
+- Simple rules with specific trigger phrases
+
+**Performance:** Full-turn evaluation adds ~50-200ms of file I/O (reads last 2MB of transcript). Well within the 15-second hook timeout.
 
 ## Debug Logging
 

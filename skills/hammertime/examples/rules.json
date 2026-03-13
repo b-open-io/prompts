@@ -33,7 +33,8 @@
     "dismissal_verbs": "\\b(?:dismiss|skip|ignore|leave|defer|punt|won.t\\s+fix|not\\s+(?:going\\s+to\\s+)?(?:fix|address|resolve)|no\\s+need\\s+to\\s+(?:fix|address))\\b",
     "qualifiers": "\\b(?:pre-?existing|scope|before\\s+(?:our|my|this)|unrelated|legacy|already\\s+(?:there|present))\\b",
     "confidence_threshold": 5,
-    "skill": null
+    "skill": null,
+    "evaluate_full_turn": true
   },
   {
     "name": "fix-lint-errors",
@@ -55,7 +56,8 @@
     "dismissal_verbs": "\\b(?:skip|leave|defer|ignore|won't\\s+fix)\\b",
     "qualifiers": "\\b(?:non-?critical|cosmetic|minor|style|optional|trivial)\\b",
     "confidence_threshold": 5,
-    "skill": null
+    "skill": null,
+    "evaluate_full_turn": true
   },
   {
     "name": "use-tdd-for-testing",

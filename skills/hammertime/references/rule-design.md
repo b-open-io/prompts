@@ -252,6 +252,10 @@ Each pattern catches a *distinct structural paraphrase* of the violation.
 
 When "skip" and "pre-existing" appear in the same sentence, it's almost certainly a violation. This is why Layer 3 scores +3.
 
+### Full-Turn Evaluation
+
+The project-owner rule sets `"evaluate_full_turn": true` because dismissal typically happens mid-turn. The model encounters an error during tool use, says "this appears to predate our changes" in message 3, then the final message just summarizes what was done. Scoring only the final message would miss the violation entirely.
+
 ## Threshold Tuning
 
 | Threshold | Behavior | Use when |
