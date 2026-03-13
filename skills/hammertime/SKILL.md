@@ -10,13 +10,11 @@ description: >-
 
 # HammerTime — Behavioral Rule System
 
-HammerTime is a stop hook that catches bad model behaviors before they reach the user. It runs on every assistant response. Detection is two-phase: fast local scoring (free, <1ms) followed by optional Haiku verification (cheap, ~500ms) for ambiguous signals.
-
-Rules live at `~/.claude/hammertime/rules.json`. The hook is implemented in `hooks/hammertime.py` and distributed via the bopen-tools plugin.
+Rules live at `~/.claude/hammertime/rules.json`. The hook registers as a Stop hook and fires on every assistant turn. Scoring is two-phase: fast local scoring (<1ms) followed by optional Haiku verification (~500ms) for ambiguous signals.
 
 ## When to Create a Rule
 
-Recognize user intent even when they don't say "hammertime". These natural language patterns all signal "create a behavioral rule":
+Recognize rule intent even when the user doesn't say "hammertime":
 
 **Imperative patterns:**
 - "Always fix lint errors before stopping"
@@ -31,7 +29,7 @@ Recognize user intent even when they don't say "hammertime". These natural langu
 - "I've told you three times to check types" → rule to verify types
 - "Why do you always skip the tests?" → rule to never skip tests
 
-**Key insight:** If the user describes a behavioral expectation for future responses — not just this conversation — that's a rule. The distinction: "fix this lint error" is a one-time request. "Always fix lint errors" is a rule.
+**Rule vs one-time request:** "Fix this lint error" is a task. "Always fix lint errors" is a rule. Future behavioral expectations → rule.
 
 **When NOT to create a rule:**
 - One-time instructions for the current task
@@ -167,10 +165,6 @@ Rules are loaded at hook registration time. Tell the user: **"Restart Claude Cod
 
 The `skill` field triggers automatic skill invocation when a rule fires. The block message appends `Invoke Skill(<id>) to address this.`
 
-This is powerful for corrective workflows: a rule detects bad behavior, and the skill provides the structured fix.
-
-**Examples of rule → skill pairings:**
-
 | Rule detects | Skill invoked | Effect |
 |-------------|---------------|--------|
 | Model skips tests | `superpowers:test-driven-development` | Redirects to TDD workflow |
@@ -178,10 +172,7 @@ This is powerful for corrective workflows: a rule detects bad behavior, and the 
 | Model skips architecture planning | `gemskills:visual-planner` | Forces visual planning step |
 | Model writes insecure code | `bopen-tools:code-audit-scripts` | Runs security audit |
 
-**Resolving skill names:** Users often reference skills informally. Use `Skill(find-skills)` to resolve informal names to fully-qualified IDs. For example:
-- "visual planner" → `gemskills:visual-planner`
-- "TDD" → `superpowers:test-driven-development`
-- "simplify" → `bopen-tools:simplify` (prefix with plugin name if ambiguous)
+Resolve informal skill names with `Skill(find-skills)` before setting the `skill` field.
 
 ## Mode Inference
 
@@ -194,23 +185,9 @@ Write rule text accordingly to control the behavior.
 
 ## Full-Turn vs Last-Message Evaluation
 
-By default, HammerTime scores only the final assistant message — the last text block before stopping. This is fast and catches most violations.
+By default, HammerTime scores only the final assistant message. Set `"evaluate_full_turn": true` to score ALL assistant text since the user's last message — necessary for violations that occur in intermediate messages (dismissing an error in message 3, then finishing with "Done." in message 5).
 
-But some violations happen in **intermediate messages** — the model dismisses an error in message 3, then the final message just says "Done. All changes committed." The final message alone wouldn't trigger the rule.
-
-Set `"evaluate_full_turn": true` on a rule to score ALL assistant text since the user's last message. The hook reads the session transcript (JSONL) backwards to collect the full turn.
-
-**When to use full-turn evaluation:**
-- Rules about dismissing or skipping work (the dismissal often happens mid-turn)
-- Rules about process violations (skipping tests, not running linter — happens during execution, not at the end)
-- Rules where the final message is typically a summary that hides the violation
-
-**When last-message is sufficient:**
-- Rules about response format (trailing summaries, emoji usage)
-- Rules about the final output (code style, naming)
-- Simple rules with specific trigger phrases
-
-**Performance:** Full-turn evaluation adds ~50-200ms of file I/O (reads last 2MB of transcript). Well within the 15-second hook timeout.
+Use full-turn for rules about dismissing work, skipping process steps, or any violation that happens during execution rather than in the final summary. Last-message scoring is sufficient for format rules and output style rules.
 
 ## Debug Logging
 
@@ -219,8 +196,6 @@ Set the environment variable to enable score breakdowns:
 ```bash
 export HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log
 ```
-
-Log entries show elapsed time, score breakdowns, and phase decisions:
 
 ```
 [   2ms] SCORE: rule 'fix-lint-errors' score=4 (kw=2, intent=1, cluster=0)
@@ -249,13 +224,7 @@ This rule can be overridden by adding a user rule with `"name": "project-owner"`
 
 ## Corpus-Driven Rule Creation
 
-Synthetic keywords and patterns — derived from imagining what a violating message might look like — produce brittle rules with low recall. Rules grounded in real production messages are significantly more accurate.
-
-**Case study — project-owner builtin:**
-- Synthetic-only rule (keywords guessed from description): F1 = 0.14
-- After mining 10 real session logs for true positive phrases: F1 = 0.89
-
-The gap is because the model's actual dismissal language (`"this appears to be pre-existing"`, `"seems like it was there before I started"`) rarely matches the phrases a human would guess (`"pre-existing issue"`, `"not my fault"`).
+Always prefer keywords and patterns derived from real session logs over synthetic guesses. Real dismissal language (`"this appears to be pre-existing"`) rarely matches what a human would guess (`"pre-existing issue"`).
 
 ### The workflow
 
