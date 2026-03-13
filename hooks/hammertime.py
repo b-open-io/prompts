@@ -20,8 +20,11 @@ Block output format:
 import json
 import os
 import sys
+import time
 import urllib.request
 import urllib.error
+
+_start_time = time.monotonic()
 
 BUILTIN_RULES = [
     {
@@ -32,7 +35,8 @@ BUILTIN_RULES = [
             "pre-existing", "preexisting", "pre existing", "predate", "predates",
             "unrelated to our", "existed before", "not introduced by",
             "outside the scope", "nothing to do with our", "not caused by",
-            "was already", "these errors appear to", "not related to",
+            "were already there", "were already present", "already there before",
+            "these errors appear to",
         ],
         "skill": None,
         "builtin": True,
@@ -83,13 +87,16 @@ def phase2_haiku_evaluate(text, rule):
         return True
 
     prompt = (
-        "You are a compliance checker. Analyze the assistant's final response "
-        "and determine if it violated this rule:\n\n"
+        "You are a compliance checker for an AI coding assistant.\n\n"
         f"RULE: {rule['rule']}\n\n"
         "ASSISTANT'S RESPONSE:\n"
         f"{text[-4000:]}\n\n"
-        "Did the assistant violate this rule? "
-        "Answer ONLY 'yes' or 'no'. Nothing else."
+        "Did the assistant REFUSE TO FIX or DISMISS issues/errors by calling them "
+        "pre-existing, out of scope, or not its responsibility? "
+        "Merely mentioning the word 'pre-existing' in a factual or explanatory "
+        "context is NOT a violation. The violation is specifically REFUSING TO ACT "
+        "on problems by attributing them to something else.\n\n"
+        "Answer ONLY 'yes' or 'no'."
     )
 
     body = json.dumps({
@@ -147,17 +154,19 @@ def build_block_message(rule):
 
 
 def debug_log(msg):
-    """Write to debug log if HAMMERTIME_DEBUG is set."""
+    """Write to debug log if HAMMERTIME_DEBUG is set. Includes elapsed ms."""
     debug_path = os.environ.get("HAMMERTIME_DEBUG", "")
     if debug_path:
+        elapsed = int((time.monotonic() - _start_time) * 1000)
         try:
             with open(os.path.expanduser(debug_path), "a") as f:
-                f.write(f"{msg}\n")
+                f.write(f"[{elapsed:>5}ms] {msg}\n")
         except OSError:
             pass
 
 
 def main():
+    debug_log("--- HammerTime run ---")
     try:
         raw = sys.stdin.read()
         hook_input = json.loads(raw)
@@ -206,6 +215,7 @@ def main():
             sys.exit(0)
 
     # No violations confirmed
+    debug_log("PASS: no violations confirmed")
     sys.exit(0)
 
 
