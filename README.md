@@ -16,7 +16,7 @@ This repository provides:
 
 ## Installation
 
-**Full Plugin** (recommended - includes 28 agents, 61 skills, 6 commands, 4 hooks):
+**Full Plugin** (recommended - includes 28 agents, 49 skills, 6 commands, 4 hooks):
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
@@ -27,10 +27,9 @@ bunx skills add b-open-io/bopen-tools --skill <skill-name>
 ```
 
 <details>
-<summary><strong>All 61 skills — click to expand</strong></summary>
+<summary><strong>All 49 skills — click to expand</strong></summary>
 
 ```bash
-bunx skills add b-open-io/bopen-tools --skill add-app-to-server
 bunx skills add b-open-io/bopen-tools --skill agent-auditor
 bunx skills add b-open-io/bopen-tools --skill agent-decommissioning
 bunx skills add b-open-io/bopen-tools --skill agent-onboarding
@@ -40,8 +39,6 @@ bunx skills add b-open-io/bopen-tools --skill check-version
 bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
 bunx skills add b-open-io/bopen-tools --skill code-audit-scripts
 bunx skills add b-open-io/bopen-tools --skill confess
-bunx skills add b-open-io/bopen-tools --skill convert-web-app
-bunx skills add b-open-io/bopen-tools --skill create-mcp-app
 bunx skills add b-open-io/bopen-tools --skill create-next-project
 bunx skills add b-open-io/bopen-tools --skill critique
 bunx skills add b-open-io/bopen-tools --skill deploy-agent-team
@@ -55,13 +52,6 @@ bunx skills add b-open-io/bopen-tools --skill hammertime
 bunx skills add b-open-io/bopen-tools --skill hook-manager
 bunx skills add b-open-io/bopen-tools --skill humanize
 bunx skills add b-open-io/bopen-tools --skill hunter-skeptic-referee
-bunx skills add b-open-io/bopen-tools --skill json-render-core
-bunx skills add b-open-io/bopen-tools --skill json-render-image
-bunx skills add b-open-io/bopen-tools --skill json-render-react
-bunx skills add b-open-io/bopen-tools --skill json-render-react-email
-bunx skills add b-open-io/bopen-tools --skill json-render-react-native
-bunx skills add b-open-io/bopen-tools --skill json-render-remotion
-bunx skills add b-open-io/bopen-tools --skill json-render-shadcn
 bunx skills add b-open-io/bopen-tools --skill linear-planning
 bunx skills add b-open-io/bopen-tools --skill mcp-apps
 bunx skills add b-open-io/bopen-tools --skill nextjs-upgrade
@@ -74,7 +64,6 @@ bunx skills add b-open-io/bopen-tools --skill prd-creator
 bunx skills add b-open-io/bopen-tools --skill process-cleanup
 bunx skills add b-open-io/bopen-tools --skill reinforce-skills
 bunx skills add b-open-io/bopen-tools --skill remind
-bunx skills add b-open-io/bopen-tools --skill remotion-best-practices
 bunx skills add b-open-io/bopen-tools --skill runtime-context
 bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
 bunx skills add b-open-io/bopen-tools --skill shaders
@@ -164,27 +153,6 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `ui-audio-theme` | Generate cohesive UI audio themes with subtle sound effects |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
-### MCP Apps
-| Skill | Description |
-|-------|-------------|
-| `mcp-apps` | Aggregated skill for building MCP Apps with interactive UIs |
-| `create-mcp-app` | Build new MCP Apps from scratch |
-| `add-app-to-server` | Add interactive UI to existing MCP servers |
-| `convert-web-app` | Convert web applications to MCP Apps |
-
-Based on the official [`modelcontextprotocol/ext-apps`](https://github.com/nichochar/ext-apps) repository. Third-party sources tracked in `skills-lock.json`.
-
-### JSON Render
-| Skill | Description |
-|-------|-------------|
-| `json-render-core` | Core package for defining schemas, catalogs, and AI prompts |
-| `json-render-image` | Turns JSON specs into SVG and PNG images |
-| `json-render-react` | Turns JSON specs into React components |
-| `json-render-react-email` | Turns JSON specs into HTML/plain-text email |
-| `json-render-react-native` | Turns JSON specs into native mobile UI |
-| `json-render-remotion` | Turns JSON timeline specs into videos |
-| `json-render-shadcn` | Pre-built shadcn/ui components for json-render |
-
 ### Development & Quality
 | Skill | Description |
 |-------|-------------|
@@ -199,7 +167,6 @@ Based on the official [`modelcontextprotocol/ext-apps`](https://github.com/nicho
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm with changelog and version management |
 | `perf-audit` | Run local performance audits without network calls |
-| `remotion-best-practices` | Best practices for Remotion video creation in React |
 | `shaders` | Custom shaders for Three.js and WebGL |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |
 
