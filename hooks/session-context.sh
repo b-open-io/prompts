@@ -16,7 +16,7 @@ dirty_count=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
 agent_count=$(find agents -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
 skill_count=$(find skills -maxdepth 2 -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
 command_count=$(find commands -maxdepth 2 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-hook_count=$(find hooks -maxdepth 1 -name "*.sh" 2>/dev/null | wc -l | tr -d ' ')
+hook_count=$(find hooks -maxdepth 1 \( -name "*.sh" -o -name "*.py" \) 2>/dev/null | wc -l | tr -d ' ')
 
 # Recent changes (filenames only from last commit)
 recent_files=$(git diff-tree --no-commit-id -r --name-only HEAD 2>/dev/null | awk '{printf "  - %s\\n", $0}')

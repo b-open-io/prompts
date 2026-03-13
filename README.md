@@ -16,7 +16,7 @@ This repository provides:
 
 ## Installation
 
-**Full Plugin** (recommended - includes 28 agents, 48 skills, 10 commands, 4 hooks):
+**Full Plugin** (recommended - includes 28 agents, 48 skills, 10 commands, 5 hooks):
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
@@ -244,6 +244,8 @@ HammerTime is a behavioral guardrail system that runs on every assistant respons
 | Co-occurrence | Dismissal verb + qualifier in same sentence | +3 | Highest confidence |
 
 **Score thresholds:** 0 = pass, 1-4 = Haiku verification (~500ms, ~$0.001), 5+ = direct block.
+
+**Loop safety:** Each rule has a `max_iterations` field (default: 3). The hook tracks blocks per session and auto-allows exit when the limit is hit. Counters reset on new sessions. Set `0` for unlimited. State stored in `~/.claude/hammertime/state.json`.
 
 **Full-turn evaluation:** Rules can opt into scoring ALL assistant messages since the user's last message (not just the final one). This catches violations in intermediate responses — e.g., the model dismisses an error mid-turn, then the final message just says "Done." Set `"evaluate_full_turn": true` on a rule to enable. The hook reads the session transcript JSONL backwards (last 2MB max).
 

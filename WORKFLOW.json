@@ -1,6 +1,6 @@
 {
   "name": "bopen-tools Agent Ecosystem",
-  "description": "23 agents across 5 functional teams — routing, dispatch, and skill dependencies",
+  "description": "28 agents across 5 functional teams — routing, dispatch, and skill dependencies",
   "version": "0.1.0",
   "nodes": [
     {
