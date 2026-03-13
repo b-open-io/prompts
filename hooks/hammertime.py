@@ -93,7 +93,8 @@ USER_RULES_PATH = os.path.expanduser("~/.claude/hammertime/rules.json")
 
 
 def compile_user_rule(rule):
-    """Compile raw pattern strings in a user rule into regex objects."""
+    """Compile raw pattern strings in a user rule into regex objects.
+    Also pre-lowercases keywords for faster scoring."""
     if "intent_patterns" in rule and rule["intent_patterns"]:
         raw = rule["intent_patterns"]
         if isinstance(raw, list) and raw and isinstance(raw[0], str):
@@ -102,6 +103,8 @@ def compile_user_rule(rule):
         rule["dismissal_verbs"] = re.compile(rule["dismissal_verbs"], re.IGNORECASE)
     if "qualifiers" in rule and isinstance(rule["qualifiers"], str):
         rule["qualifiers"] = re.compile(rule["qualifiers"], re.IGNORECASE)
+    if "keywords" in rule:
+        rule["keywords"] = [kw.lower() for kw in rule["keywords"]]
     return rule
 
 
@@ -131,6 +134,7 @@ def score_message(text, rules):
     breakdown is a dict with kw, intent, cluster counts.
     """
     text_lower = text.lower()
+    sentences = None  # Lazy-split for Layer 3, cached across rules
     results = []
 
     for rule in rules:
@@ -138,10 +142,9 @@ def score_message(text, rules):
         intent_count = 0
         cluster_count = 0
 
-        # Layer 1: Keyword hits (+1 each)
-        keywords = rule.get("keywords", [])
-        for kw in keywords:
-            if kw.lower() in text_lower:
+        # Layer 1: Keyword hits (+1 each, keywords pre-lowercased at load time)
+        for kw in rule.get("keywords", []):
+            if kw in text_lower:
                 kw_count += 1
 
         # Layer 2: Intent pattern hits (+2 each)
@@ -154,7 +157,8 @@ def score_message(text, rules):
         dismissal_re = rule.get("dismissal_verbs")
         qualifier_re = rule.get("qualifiers")
         if dismissal_re and qualifier_re:
-            sentences = SENT_SPLIT.split(text)
+            if sentences is None:
+                sentences = SENT_SPLIT.split(text)
             for sent in sentences:
                 if dismissal_re.search(sent) and qualifier_re.search(sent):
                     cluster_count = 1
@@ -240,6 +244,14 @@ def build_block_message(rule):
     return msg
 
 
+def block_and_exit(rule, reason):
+    """Print block output JSON and exit. Called when a rule violation is confirmed."""
+    msg = build_block_message(rule)
+    output = {"decision": "block", "reason": reason, "systemMessage": msg}
+    print(json.dumps(output))
+    sys.exit(0)
+
+
 def debug_log(msg):
     """Write to debug log if HAMMERTIME_DEBUG is set. Includes elapsed ms."""
     debug_path = os.environ.get("HAMMERTIME_DEBUG", "")
@@ -304,8 +316,6 @@ def collect_turn_messages(transcript_path):
         return None
 
     # Read from the end — we only need the last turn
-    # Read in chunks to handle large files efficiently
-    CHUNK_SIZE = 256 * 1024  # 256KB chunks — enough for most turns
     MAX_READ = 2 * 1024 * 1024  # 2MB max — safety cap
 
     try:
@@ -385,16 +395,17 @@ def main():
 
     debug_log(f"LAST_MSG length: {len(last_msg)} chars")
 
-    # Attempt to collect full turn from transcript
-    full_turn_text = None
-    transcript_path = find_transcript()
-    if transcript_path:
-        full_turn_text = collect_turn_messages(transcript_path)
-
     rules = load_rules()
     if not rules:
         debug_log("EXIT: no enabled rules")
         sys.exit(0)
+
+    # Only read transcript if at least one rule needs full-turn evaluation
+    full_turn_text = None
+    if any(r.get("evaluate_full_turn") for r in rules):
+        transcript_path = find_transcript()
+        if transcript_path:
+            full_turn_text = collect_turn_messages(transcript_path)
 
     # Split rules by evaluation mode
     full_turn_rules = []
@@ -426,27 +437,13 @@ def main():
 
         if score >= threshold:
             debug_log(f"BLOCK: score {score} >= {threshold}, skipping Phase 2")
-            msg = build_block_message(rule)
-            output = {
-                "decision": "block",
-                "reason": f"HammerTime rule '{rule['name']}' violated (score={score})",
-                "systemMessage": msg,
-            }
-            print(json.dumps(output))
-            sys.exit(0)
+            block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score})")
         else:
             debug_log(f"PHASE2: score {score} < {threshold}, verifying with Haiku")
             violated = phase2_haiku_evaluate(eval_text, rule)
             debug_log(f"PHASE2: rule '{rule['name']}' violated={violated}")
             if violated:
-                msg = build_block_message(rule)
-                output = {
-                    "decision": "block",
-                    "reason": f"HammerTime rule '{rule['name']}' violated (score={score}, haiku=yes)",
-                    "systemMessage": msg,
-                }
-                print(json.dumps(output))
-                sys.exit(0)
+                block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score}, haiku=yes)")
 
     # No violations confirmed
     debug_log("PASS: no violations confirmed")
