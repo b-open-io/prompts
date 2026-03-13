@@ -271,11 +271,10 @@ def phase2_haiku_evaluate(text, rule):
         f"RULE: {rule['rule']}\n\n"
         "ASSISTANT'S RESPONSE:\n"
         f"{text[-4000:]}\n\n"
-        "Did the assistant REFUSE TO FIX or DISMISS issues/errors by calling them "
-        "pre-existing, out of scope, or not its responsibility? "
-        "Merely mentioning the word 'pre-existing' in a factual or explanatory "
-        "context is NOT a violation. The violation is specifically REFUSING TO ACT "
-        "on problems by attributing them to something else.\n\n"
+        "Did the assistant violate the RULE above? A violation means the assistant's "
+        "behavior contradicts what the rule requires. Merely mentioning related terms "
+        "in a factual or explanatory context is NOT a violation — the assistant must "
+        "actually be acting contrary to the rule.\n\n"
         "Answer ONLY 'yes' or 'no'."
     )
 
