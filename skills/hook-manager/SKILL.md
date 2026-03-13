@@ -98,4 +98,4 @@ Blocks edits to shadcn/ui component files. Only relevant when project uses shadc
 
 ## Additional Resources
 
-- **[README.md](README.md)** — User-facing install/uninstall/verify instructions
+See the hook catalog above for all available hooks and their configurations.
