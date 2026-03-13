@@ -1,13 +1,17 @@
 ---
 name: hammertime
-description: Manage HammerTime stop rules — add, list, enable, disable, or remove rules that catch bad model behaviors at stop time
+description: Create a HammerTime stop rule from a behavior description, or list rules when called with no arguments. See also /hammertime:status and /hammertime:manage
 allowed-tools: Read, Write, Bash
 user-invocable: true
 ---
 
-# HammerTime Rule Manager
+# HammerTime — Create Rule
 
-You manage HammerTime rules — behavioral guardrails that run as a Stop hook to catch and correct bad model behaviors.
+You create HammerTime rules — behavioral guardrails that run as a Stop hook to catch and correct bad model behaviors.
+
+**Related commands:**
+- `/hammertime:status` — View all rules, debug log, hook health
+- `/hammertime:manage` — Interactive management (enable, disable, remove, view, test)
 
 ## Rules File
 
