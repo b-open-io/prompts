@@ -1,5 +1,4 @@
 ---
-name: status
 description: Show HammerTime status dashboard — alias for /hammertime with no arguments
 allowed-tools: Read, Bash
 user-invocable: true

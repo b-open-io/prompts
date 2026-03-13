@@ -1,5 +1,4 @@
 ---
-name: manage
 description: Interactive HammerTime rule management — enable, disable, remove, or edit rules with guided prompts
 allowed-tools: Read, Write, Bash
 user-invocable: true
