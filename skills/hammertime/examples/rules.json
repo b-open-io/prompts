@@ -1,0 +1,78 @@
+[
+  {
+    "name": "project-owner",
+    "rule": "Fix all errors instead of dismissing them as pre-existing. The assistant has no session history and cannot know what is pre-existing.",
+    "enabled": true,
+    "keywords": [
+      "pre-existing",
+      "preexisting",
+      "pre existing",
+      "predate",
+      "predates",
+      "unrelated to our",
+      "existed before",
+      "not introduced by",
+      "outside the scope",
+      "nothing to do with our",
+      "not caused by",
+      "were already there",
+      "were already present",
+      "already there before",
+      "these errors appear to"
+    ],
+    "intent_patterns": [
+      "not\\s+(?:caused|introduced|created|related|due).*?(?:by|to)\\s+(?:us|our|this|these|my)",
+      "(?:appear|seem|look)s?\\s+to\\s+(?:predate|pre-?date|have\\s+existed)",
+      "(?:already|previously)\\s+(?:there|present|existing|existed)\\s+(?:before|prior|when)",
+      "(?:outside|beyond|not\\s+within)\\s+(?:the\\s+)?scope",
+      "(?:did(?:n.t| not)|don.t|do not)\\s+(?:believe\\s+)?(?:I\\s+)?(?:introduc|caus)",
+      "(?:won't|will not|cannot|can't|not going to)\\s+(?:fix|address|resolve|handle)",
+      "(?:present|existing|there)\\s+in\\s+the\\s+(?:codebase|project|repo).*?before",
+      "(?:separate|different|another)\\s+(?:issue|task|ticket|PR|pull request)"
+    ],
+    "dismissal_verbs": "\\b(?:dismiss|skip|ignore|leave|defer|punt|won.t\\s+fix|not\\s+(?:going\\s+to\\s+)?(?:fix|address|resolve)|no\\s+need\\s+to\\s+(?:fix|address))\\b",
+    "qualifiers": "\\b(?:pre-?existing|scope|before\\s+(?:our|my|this)|unrelated|legacy|already\\s+(?:there|present))\\b",
+    "confidence_threshold": 5,
+    "skill": null
+  },
+  {
+    "name": "fix-lint-errors",
+    "rule": "Fix all lint errors and warnings before stopping. Do not report them without fixing.",
+    "enabled": true,
+    "keywords": [
+      "lint warnings remaining",
+      "lint errors remaining",
+      "linting issues",
+      "I'll leave these",
+      "you can fix these",
+      "not critical enough",
+      "cosmetic issues"
+    ],
+    "intent_patterns": [
+      "(?:lint|eslint|biome)\\s+(?:warnings?|errors?|issues?)\\s+(?:aren't|are\\s+not|don't|do\\s+not)\\s+(?:critical|important|blocking)",
+      "(?:leave|defer|skip)\\s+(?:these|them|this)\\s+(?:for|to)\\s+(?:you|the\\s+user|later)"
+    ],
+    "dismissal_verbs": "\\b(?:skip|leave|defer|ignore|won't\\s+fix)\\b",
+    "qualifiers": "\\b(?:non-?critical|cosmetic|minor|style|optional|trivial)\\b",
+    "confidence_threshold": 5,
+    "skill": null
+  },
+  {
+    "name": "use-tdd-for-testing",
+    "rule": "When writing tests, always follow the TDD workflow: write a failing test first, then implement the code to make it pass.",
+    "enabled": true,
+    "keywords": [
+      "wrote the implementation first",
+      "added tests after",
+      "tests for the code I wrote",
+      "retroactive tests",
+      "testing after the fact"
+    ],
+    "intent_patterns": [
+      "(?:wrote|implemented|built|created)\\s+(?:the\\s+)?(?:code|implementation|feature)\\s+(?:first|before).*?test",
+      "(?:now|then)\\s+(?:let me|I'll|let's)\\s+(?:add|write|create)\\s+(?:some\\s+)?tests?\\s+(?:for|to\\s+cover)"
+    ],
+    "confidence_threshold": 5,
+    "skill": "superpowers:test-driven-development"
+  }
+]

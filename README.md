@@ -16,45 +16,93 @@ This repository provides:
 
 ## Installation
 
-**Full Plugin** (recommended - includes 18 agents, 10 hooks, commands):
+**Full Plugin** (recommended - includes 28 agents, 61 skills, 6 commands, 4 hooks):
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
 
-**Skills Only** (for other agentic frameworks):
+**Skills Only** (for other agentic frameworks — install individually):
 ```bash
+bunx skills add b-open-io/bopen-tools --skill <skill-name>
+```
+
+<details>
+<summary><strong>All 61 skills — click to expand</strong></summary>
+
+```bash
+bunx skills add b-open-io/bopen-tools --skill add-app-to-server
+bunx skills add b-open-io/bopen-tools --skill agent-auditor
+bunx skills add b-open-io/bopen-tools --skill agent-decommissioning
+bunx skills add b-open-io/bopen-tools --skill agent-onboarding
+bunx skills add b-open-io/bopen-tools --skill benchmark-skills
+bunx skills add b-open-io/bopen-tools --skill charting
+bunx skills add b-open-io/bopen-tools --skill check-version
+bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
+bunx skills add b-open-io/bopen-tools --skill code-audit-scripts
+bunx skills add b-open-io/bopen-tools --skill confess
+bunx skills add b-open-io/bopen-tools --skill convert-web-app
+bunx skills add b-open-io/bopen-tools --skill create-mcp-app
+bunx skills add b-open-io/bopen-tools --skill create-next-project
+bunx skills add b-open-io/bopen-tools --skill critique
+bunx skills add b-open-io/bopen-tools --skill deploy-agent-team
+bunx skills add b-open-io/bopen-tools --skill devops-scripts
+bunx skills add b-open-io/bopen-tools --skill front-desk
+bunx skills add b-open-io/bopen-tools --skill frontend-performance
+bunx skills add b-open-io/bopen-tools --skill generative-ui
+bunx skills add b-open-io/bopen-tools --skill geo-optimizer
+bunx skills add b-open-io/bopen-tools --skill github-stars
+bunx skills add b-open-io/bopen-tools --skill hammertime
+bunx skills add b-open-io/bopen-tools --skill hook-manager
+bunx skills add b-open-io/bopen-tools --skill humanize
+bunx skills add b-open-io/bopen-tools --skill hunter-skeptic-referee
+bunx skills add b-open-io/bopen-tools --skill json-render-core
+bunx skills add b-open-io/bopen-tools --skill json-render-image
+bunx skills add b-open-io/bopen-tools --skill json-render-react
+bunx skills add b-open-io/bopen-tools --skill json-render-react-email
+bunx skills add b-open-io/bopen-tools --skill json-render-react-native
+bunx skills add b-open-io/bopen-tools --skill json-render-remotion
+bunx skills add b-open-io/bopen-tools --skill json-render-shadcn
+bunx skills add b-open-io/bopen-tools --skill linear-planning
+bunx skills add b-open-io/bopen-tools --skill mcp-apps
+bunx skills add b-open-io/bopen-tools --skill nextjs-upgrade
+bunx skills add b-open-io/bopen-tools --skill notebooklm
+bunx skills add b-open-io/bopen-tools --skill npm-publish
+bunx skills add b-open-io/bopen-tools --skill perf-audit
+bunx skills add b-open-io/bopen-tools --skill persona
+bunx skills add b-open-io/bopen-tools --skill plaid-integration
+bunx skills add b-open-io/bopen-tools --skill prd-creator
+bunx skills add b-open-io/bopen-tools --skill process-cleanup
+bunx skills add b-open-io/bopen-tools --skill reinforce-skills
+bunx skills add b-open-io/bopen-tools --skill remind
+bunx skills add b-open-io/bopen-tools --skill remotion-best-practices
+bunx skills add b-open-io/bopen-tools --skill runtime-context
+bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
+bunx skills add b-open-io/bopen-tools --skill shaders
+bunx skills add b-open-io/bopen-tools --skill skill-publish
+bunx skills add b-open-io/bopen-tools --skill statusline-setup
+bunx skills add b-open-io/bopen-tools --skill threejs-r3f
+bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
+bunx skills add b-open-io/bopen-tools --skill voice-clone
+bunx skills add b-open-io/bopen-tools --skill wait-for-ci
+bunx skills add b-open-io/bopen-tools --skill wave-coordinator
 bunx skills add b-open-io/bopen-tools --skill x-research
 bunx skills add b-open-io/bopen-tools --skill x-tweet-fetch
 bunx skills add b-open-io/bopen-tools --skill x-tweet-search
 bunx skills add b-open-io/bopen-tools --skill x-user-lookup
 bunx skills add b-open-io/bopen-tools --skill x-user-timeline
-bunx skills add b-open-io/bopen-tools --skill frontend-design
-bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
-bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
-bunx skills add b-open-io/bopen-tools --skill deck-creator
-bunx skills add b-open-io/bopen-tools --skill humanize
-bunx skills add b-open-io/bopen-tools --skill npm-publish
-bunx skills add b-open-io/bopen-tools --skill notebooklm
-bunx skills add b-open-io/bopen-tools --skill payload
-bunx skills add b-open-io/bopen-tools --skill plaid-integration
-bunx skills add b-open-io/bopen-tools --skill reinforce-skills
-bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
-bunx skills add b-open-io/bopen-tools --skill statusline-setup
-bunx skills add b-open-io/bopen-tools --skill workflow-orchestration
-bunx skills add b-open-io/bopen-tools --skill confess
-bunx skills add b-open-io/bopen-tools --skill critique
-bunx skills add b-open-io/bopen-tools --skill geo-optimizer
-bunx skills add b-open-io/bopen-tools --skill frontend-performance
 ```
+
+</details>
 
 ## Specialized AI Agents
 
-Our 22 expert agents enhance Claude Code with specialized knowledge. See [agents/](agents/) for full details.
+Our 28 expert agents enhance Claude Code with specialized knowledge. See [agents/](agents/) for full details.
 
 ### Development & Architecture
 - 🔵 [**prompt-engineer**](agents/prompt-engineer.md) — Zack — Slash commands, agent skills, YAML frontmatter, Claude Code config
 - 🏗️ [**architecture-reviewer**](agents/architecture-reviewer.md) — Kayle — Large-scale system design, refactoring, multi-file analysis
 - 🔴 [**code-auditor**](agents/code-auditor.md) — Nyx — Security vulnerabilities, comprehensive code audits
+- 🛡️ [**security-ops**](agents/security-ops.md) — Paul — Runtime security, dependency scanning, supply chain analysis, OWASP
 - 🚀 [**optimizer**](agents/optimizer.md) — Torque — Runtime performance, bundle analysis, Core Web Vitals
 - 🧪 [**tester**](agents/tester.md) — Iris — Testing strategies, evals, skill benchmarking, CI automation
 - 🧹 [**consolidator**](agents/consolidator.md) — Steve — File organization, deduplication, naming conventions
@@ -65,14 +113,14 @@ Our 22 expert agents enhance Claude Code with specialized knowledge. See [agents
 - 📱 [**mobile**](agents/mobile.md) — Kira — React Native, Swift, Kotlin, Flutter
 - 🔗 [**integration-expert**](agents/integration-expert.md) — Maxim — API integrations, webhooks, third-party services
 - 🟠 [**mcp**](agents/mcp.md) — Orbit — MCP server setup, diagnostics, publishing to NPM, PostgreSQL/Redis/GitHub MCP
-- ⚡ [**nextjs**](agents/nextjs.md) — Nori — Next.js, React 19, Turbopack, Bun, Biome
+- ⚡ [**nextjs**](agents/nextjs.md) — Theo — Next.js, React 19, Turbopack, Bun, Biome
 
 ### Specialized Domains
 - 🔷 [**creative-developer**](agents/creative-developer.md) — Kris — Three.js, R3F, shaders, physics, interactive 3D prototypes
+- 🗺️ [**cartographer**](agents/cartographer.md) — Leaf — MapLibre, Mapbox, Leaflet, CesiumJS, geospatial data
 - 💚 [**payments**](agents/payments.md) — Mina — Payment integrations, Plaid, financial operations
 - 🤖 [**agent-builder**](agents/agent-builder.md) — Rowan — AI agent systems, tool-calling, multi-agent orchestration
 - 📊 [**data**](agents/data.md) — Mr. Data Accumulator — Data processing, analytics, ETL pipelines
-- ⚖️ [**legal**](agents/legal.md) — Helena — Legal compliance, privacy regulations, terms of service
 - 📣 [**marketer**](agents/marketer.md) — Caal — CRO, copywriting, SEO, launch strategy, email sequences
 - 🗂️ [**project-manager**](agents/project-manager.md) — Sage — Linear planning, issue tracking, project organization
 
@@ -81,152 +129,148 @@ Our 22 expert agents enhance Claude Code with specialized knowledge. See [agents
 - 🔷 [**documentation-writer**](agents/documentation-writer.md) — Flow — READMEs, API docs, PRDs, guides
 - 🎵 [**audio-specialist**](agents/audio-specialist.md) — Juniper — ElevenLabs audio, sound effects, music generation
 - 🩷 [**researcher**](agents/researcher.md) — Parker — Web research, docs, APIs, parallel research strategies
+- 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
+
+### Organization & Operations
+- 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup
+- 💼 [**executive-assistant**](agents/executive-assistant.md) — Tina — Google Workspace, scheduling, communications
+- 🌐 [**account-manager**](agents/account-manager.md) — Kurt — Public-facing sales, visitor qualification, bOpen.io chat
+- 🔴 [**satchmo-live**](agents/satchmo-live.md) — Satchmo — Persistent agent at satchmo.dev, BSV knowledge base
 
 **Usage:** `"Use the [agent-name] to [specific task]"`
 
 ## Skills
 
-Skills are context-triggered capabilities. They activate automatically or can be invoked directly.
+Skills are context-triggered capabilities. They activate automatically or can be invoked directly. Install individually with `bunx skills add b-open-io/bopen-tools --skill <name>`.
 
 ### X/Twitter
-- **x-research** - Research X/Twitter trends and sentiment via xAI Grok (requires `XAI_API_KEY`)
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill x-research
-  ```
-- **x-tweet-fetch** - Fetch individual tweets by ID via X API v2
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill x-tweet-fetch
-  ```
-- **x-tweet-search** - Search X/Twitter for tweets via X API v2
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill x-tweet-search
-  ```
-- **x-user-lookup** - Look up X/Twitter user profiles via X API v2
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill x-user-lookup
-  ```
-- **x-user-timeline** - Fetch user timelines and recent tweets via X API v2
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill x-user-timeline
-  ```
+| Skill | Description |
+|-------|-------------|
+| `x-research` | AI-powered X/Twitter research via xAI Grok (requires `XAI_API_KEY`) |
+| `x-tweet-fetch` | Fetch individual tweets by ID via X API v2 |
+| `x-tweet-search` | Search recent X/Twitter posts by query (last 7 days) |
+| `x-user-lookup` | Look up X/Twitter user profiles by username |
+| `x-user-timeline` | Get recent tweets from an X/Twitter user |
 
 ### Content & Media
-- **frontend-design** - Bold UI designs that avoid generic AI aesthetics
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill frontend-design
-  ```
-- **prd-creator** - Create comprehensive PRDs with Shape Up + Working Backwards methodology
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill prd-creator
-  ```
-- **ui-audio-theme** - Generate cohesive UI sound effects
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
-  ```
-- **cli-demo-gif** - Create terminal demo GIFs for documentation
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
-  ```
-  ```bash
-  ```
-- **deck-creator** - Create presentation decks and slide content
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill deck-creator
-  ```
-- **humanize** - Remove AI writing patterns and restore natural voice
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill humanize
-  ```
+| Skill | Description |
+|-------|-------------|
+| `charting` | Full-stack data visualization and charting |
+| `cli-demo-gif` | Generate CLI demo GIFs using vhs (Charmbracelet) |
+| `generative-ui` | Dynamic, AI-driven generative UI patterns |
+| `humanize` | Remove AI writing patterns and restore natural voice |
+| `persona` | Capture writing style profiles and social intelligence |
+| `prd-creator` | Create PRDs with Shape Up + Working Backwards methodology |
+| `ui-audio-theme` | Generate cohesive UI audio themes with subtle sound effects |
+| `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
 ### MCP Apps
-- **mcp-apps** - Aggregated skill for building MCP Apps with interactive UIs
-- **create-mcp-app** - Build new MCP Apps from scratch
-- **add-app-to-server** - Add interactive UI to existing MCP servers
-- **convert-web-app** - Convert web applications to MCP Apps
+| Skill | Description |
+|-------|-------------|
+| `mcp-apps` | Aggregated skill for building MCP Apps with interactive UIs |
+| `create-mcp-app` | Build new MCP Apps from scratch |
+| `add-app-to-server` | Add interactive UI to existing MCP servers |
+| `convert-web-app` | Convert web applications to MCP Apps |
 
 Based on the official [`modelcontextprotocol/ext-apps`](https://github.com/nichochar/ext-apps) repository. Third-party sources tracked in `skills-lock.json`.
 
-### Development
-- **benchmark-skills** - Write evals for skills and measure their impact vs baseline
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill benchmark-skills
-  ```
-- **npm-publish** - Publish packages with changelog and version management
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill npm-publish
-  ```
-- **notebooklm** - Query Google NotebookLM for source-grounded answers
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill notebooklm
-  ```
-- **frontend-performance** - Optimize frontend performance and loading speed
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill frontend-performance
-  ```
-- **confess** - Analyze and document code issues and technical debt
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill confess
-  ```
-- **critique** - Review and provide constructive feedback on code and design
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill critique
-  ```
-- **reinforce-skills** - Strengthen and reinforce installed skill behaviors
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill reinforce-skills
-  ```
-- **statusline-setup** - Configure custom statusline for Claude Code
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill statusline-setup
-  ```
+### JSON Render
+| Skill | Description |
+|-------|-------------|
+| `json-render-core` | Core package for defining schemas, catalogs, and AI prompts |
+| `json-render-image` | Turns JSON specs into SVG and PNG images |
+| `json-render-react` | Turns JSON specs into React components |
+| `json-render-react-email` | Turns JSON specs into HTML/plain-text email |
+| `json-render-react-native` | Turns JSON specs into native mobile UI |
+| `json-render-remotion` | Turns JSON timeline specs into videos |
+| `json-render-shadcn` | Pre-built shadcn/ui components for json-render |
+
+### Development & Quality
+| Skill | Description |
+|-------|-------------|
+| `benchmark-skills` | Write evals for skills and measure impact vs baseline |
+| `code-audit-scripts` | Deterministic security and quality scans (secrets, debug artifacts) |
+| `confess` | Analyze and document code issues and technical debt |
+| `critique` | Show diffs and provide constructive feedback on code changes |
+| `create-next-project` | Scaffold a new Next.js app with Bun and Biome |
+| `frontend-performance` | Optimize Next.js performance using Lighthouse and bundle analysis |
+| `github-stars` | Add GitHub star counts and social proof widgets |
+| `hunter-skeptic-referee` | Adversarial bug hunting with three isolated agents |
+| `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
+| `npm-publish` | Publish packages to npm with changelog and version management |
+| `perf-audit` | Run local performance audits without network calls |
+| `remotion-best-practices` | Best practices for Remotion video creation in React |
+| `shaders` | Custom shaders for Three.js and WebGL |
+| `threejs-r3f` | Building Three.js and React Three Fiber projects |
+
+### Agent & Plugin Management
+| Skill | Description |
+|-------|-------------|
+| `agent-auditor` | Comprehensive audit for agents and skills across the plugin ecosystem |
+| `agent-decommissioning` | Retire and remove agents from the team |
+| `agent-onboarding` | End-to-end checklist for adding a new agent |
+| `deploy-agent-team` | Spin up parallel agents to work on tasks |
+| `hammertime` | Write behavioral guardrail rules for the HammerTime stop hook |
+| `hook-manager` | Discover and install automation hooks |
+| `reinforce-skills` | Inject skill/agent routing maps into CLAUDE.md |
+| `skill-publish` | Publish and version bump plugins |
+| `wave-coordinator` | Dispatch 5+ parallel agents with context budget management |
+
+### Operations & DevOps
+| Skill | Description |
+|-------|-------------|
+| `check-version` | Check if bopen-tools plugin is up to date |
+| `devops-scripts` | Shell scripts for infrastructure health checks |
+| `linear-planning` | Plan projects and features using Linear |
+| `notebooklm` | Query Google NotebookLM for source-grounded answers |
+| `process-cleanup` | Find and clean up stale/resource-hungry processes |
+| `remind` | Search and recall previous Claude Code conversation sessions |
+| `runtime-context` | Detect agent execution environment (Claude Code, Vercel Sandbox, etc.) |
+| `saas-launch-audit` | Audit SaaS applications for launch readiness |
+| `statusline-setup` | Configure custom statusline for Claude Code |
+| `wait-for-ci` | Wait for CI/CD pipelines to complete and act on results |
 
 ### Integrations
-- **plaid-integration** - Banking data via Plaid API
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill plaid-integration
-  ```
-### Operations
-- **geo-optimizer** - Geographic and location-based optimizations
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill geo-optimizer
-  ```
-- **saas-launch-audit** - Audit SaaS applications for launch readiness
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
-  ```
-- **workflow-orchestration** - Orchestrate and automate complex workflows
-  ```bash
-  bunx skills add b-open-io/bopen-tools --skill workflow-orchestration
-  ```
+| Skill | Description |
+|-------|-------------|
+| `geo-optimizer` | Audit for AI visibility and optimize for ChatGPT/GEO |
+| `plaid-integration` | Banking data via Plaid API |
+
+### Organization
+| Skill | Description |
+|-------|-------------|
+| `front-desk` | Team directory, agent routing, and service provider lookup |
 
 ## Slash Commands
 
 Commands use category subdirectories: `/category:command` or `/command` for root-level commands.
 
 - `/bug-hunt` - Adversarial bug hunt with 3 isolated agents (hunter, skeptic, referee)
+- `/hammertime` - Manage HammerTime behavioral rules (add, list, enable, disable, remove)
+- `/prime` - Prime Claude with project context and session setup
+- `/question` - Ask a focused question with structured research
 - `/docs:prd` - Create comprehensive PRDs with Shape Up + Working Backwards methodology
 - `/utils:context` - Generate repo context snapshot for agents
 
 ## Automation Hooks
 
-Hooks are opt-in automation that runs in the background. Install manually:
+Hooks are distributed automatically with the plugin — no manual installation needed.
 
-| Hook | Description |
-|------|-------------|
-| `protect-env-files` | Blocks edits to .env files (security - recommended) |
-| `uncommitted-reminder` | Shows uncommitted changes when Claude stops |
-| `auto-git-add` | Auto-stages files after edits |
-| `time-dir-context` | Adds timestamp/dir/branch to prompts |
-| `lint-on-save` | Runs lint:fix after file edits |
-| `lint-on-start` | Runs linting on session start |
-| `auto-test-on-save` | Runs tests after file edits |
-| `protect-shadcn-components` | Protects shadcn UI components |
+| Hook | Event | Description |
+|------|-------|-------------|
+| `session-context` | SessionStart | Injects branch, commit history, and plugin inventory into session context |
+| `bouncer` | PreToolUse (Bash) | Validates Bash commands against safety rules |
+| `damage-control` | PreToolUse (Bash, Write, Edit, Read) | Prevents accidental destructive operations |
+| `agent-browser-solo` | PreToolUse (WebSearch, WebFetch) | Routes web operations through the agent browser |
+| `hammertime` | Stop | Catches bad model behaviors via scored rule matching with optional Haiku verification |
 
-**Install a hook:**
-```bash
-mkdir -p ~/.claude/hooks
-cp ~/.claude/plugins/cache/bopen-tools/hooks/<hook-name>.json ~/.claude/hooks/
-```
+### HammerTime Stop Hook
+
+HammerTime is a behavioral guardrail system that runs on every assistant response. It uses three-layer scored detection (keywords, intent patterns, sentence co-occurrence) to catch rule violations. Ships with a built-in `project-owner` rule that prevents dismissing errors as "pre-existing."
+
+Create custom rules with `/hammertime` or let agents create them autonomously via the `hammertime` skill when you mention behavioral preferences like "always fix lint errors" or "never skip tests."
+
+Rules live at `~/.claude/hammertime/rules.json`. See the [hammertime skill](skills/hammertime/SKILL.md) for the full rule authoring guide.
 
 ## Custom Statusline
 
