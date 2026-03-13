@@ -45,25 +45,77 @@ _start_time = time.monotonic()
 SENT_SPLIT = re.compile(r'[.!?\n]+')
 
 # --- Project-owner intent patterns (compiled once at import) ---
+# These were tuned against real production logs where Claude deflected errors.
+# Each pattern targets a specific deflection structure found in the wild.
 _PROJECT_OWNER_INTENT = [
     re.compile(p, re.IGNORECASE) for p in [
+        # Attribution deflections: "not caused by us", "not introduced by our changes"
         r"not\s+(?:caused|introduced|created|related|due).*?(?:by|to)\s+(?:us|our|this|these|my)",
+        # Pre-dating claims: "appears to predate", "seems to have existed"
         r"(?:appear|seem|look)s?\s+to\s+(?:predate|pre-?date|have\s+existed)",
+        # Already-there claims: "already present before", "previously existing when"
         r"(?:already|previously)\s+(?:there|present|existing|existed)\s+(?:before|prior|when)",
+        # Scope deflections: "outside the scope", "not within scope"
         r"(?:outside|beyond|not\s+within)\s+(?:the\s+)?scope",
+        # Denial: "didn't introduce", "did not cause"
         r"(?:did(?:n.t| not)|don.t|do not)\s+(?:believe\s+)?(?:I\s+)?(?:introduc|caus)",
+        # Refusal: "won't fix", "not going to resolve"
         r"(?:won't|will not|cannot|can't|not going to)\s+(?:fix|address|resolve|handle)",
+        # Location claims: "present in the codebase before"
         r"(?:present|existing|there)\s+in\s+the\s+(?:codebase|project|repo).*?before",
+        # Ticket deflections: "separate issue", "different task"
         r"(?:separate|different|another)\s+(?:issue|task|ticket|PR|pull request)",
+        # --- Patterns from real production logs ---
+        # "nothing new from my/our changes", "no new ones from our changes"
+        r"no(?:thing)?\s+new\s+(?:ones?\s+)?from\s+(?:my|our)\s+changes",
+        # "not from our changes", "not from my changes"
+        r"not\s+from\s+(?:my|our)\s+changes",
+        # "errors are unchanged", "TS errors are unchanged"
+        r"(?:errors?|issues?|warnings?|failures?)\s+(?:are|is|remain)\s+unchanged",
+        # "match baseline", "matches baseline", "match the baseline"
+        r"match(?:es)?\s+(?:the\s+)?baseline",
+        # "already failing before our changes", "was already broken before"
+        r"already\s+(?:failing|broken|erroring|present)\s+before\s+(?:our|my|this|the)",
+        # "unrelated to our work/changes/session"
+        r"unrelated\s+to\s+(?:our|my|this)\s+(?:work|changes|session|modifications)",
+        # Parenthetical pre-existing labeling: "1 fail (pre-existing", "1 pre-existing fail"
+        r"\d+\s+(?:pre-?existing\s+)?(?:fail|error|warning|issue)s?(?:\s*\(pre-?existing)?",
+        # Passive cataloguing: "many pre-existing errors", "several pre-existing warnings"
+        r"(?:many|several|multiple|numerous|various)\s+pre-?existing\s+(?:TS\s+)?(?:error|warning|issue|failure)s?",
+        # Labeling without action: "X issues are pre-existing formatting"
+        r"(?:issue|error|warning|lint)s?\s+(?:are|is|were)\s+pre-?existing",
+        # Speculative deflection: "might be a pre-existing issue", "could be pre-existing"
+        r"(?:might|could|may)\s+be\s+(?:a\s+)?pre-?existing",
     ]
 ]
 _PROJECT_OWNER_DISMISSAL = re.compile(
-    r'\b(?:dismiss|skip|ignore|leave|defer|punt|won.t\s+fix|'
-    r'not\s+(?:going\s+to\s+)?(?:fix|address|resolve)|no\s+need\s+to\s+(?:fix|address))\b',
+    r'(?:'
+    r'\b(?:dismiss|skip|ignore|leave|defer|punt|unchanged|nothing\s+new)\b|'
+    r'\bwon.t\s+fix\b|'
+    r'\bmatch(?:es)?\s+baseline\b|'
+    r'\bnot\s+(?:going\s+to\s+)?(?:fix|address|resolve)\b|'
+    r'\bno\s+need\s+to\s+(?:fix|address)\b|'
+    # Passive dismissals — real Claude labels problems and moves on
+    r'\bnot\s+from\s+(?:our|my)\s+changes\b|'
+    r'\bnot\s+(?:caused|introduced)\s+by\b|'
+    r'\bunrelated\s+to\b|'
+    r'\bmissing\s+exports?\s+from\b|'  # explains away without fixing
+    r'\bno\s+new\s+(?:ones?|errors?)\b'
+    r')',
     re.IGNORECASE
 )
 _PROJECT_OWNER_QUALIFIERS = re.compile(
-    r'\b(?:pre-?existing|scope|before\s+(?:our|my|this)|unrelated|legacy|already\s+(?:there|present))\b',
+    r'(?:'
+    r'\b(?:pre-?existing|scope|unrelated|legacy)\b|'
+    r'\bbefore\s+(?:our|my|this)\b|'
+    r'\balready\s+(?:there|present|failing|broken)\b|'
+    r'\bfrom\s+(?:our|my)\s+changes\b|'
+    r'\bbaseline\b|'
+    # Passive qualifier patterns from real logs
+    r'\bsibling\s+packages?\b|'  # "missing exports from sibling packages"
+    r'\b(?:TS|typescript|type)\s+errors?\b|'  # "pre-existing TS errors"
+    r'\bformatting\b'  # "pre-existing formatting"
+    r')',
     re.IGNORECASE
 )
 
@@ -78,6 +130,18 @@ BUILTIN_RULES = [
             "outside the scope", "nothing to do with our", "not caused by",
             "were already there", "were already present", "already there before",
             "these errors appear to",
+            # Real-world patterns from production logs
+            "nothing new from", "no new ones from", "not from our changes",
+            "not from my changes", "errors are unchanged", "match baseline",
+            "matches baseline", "already failing before", "unrelated to my",
+            "unrelated to this", "same exact errors",
+            # Passive deflection qualifiers — labeling without fixing
+            "many pre-existing", "several pre-existing",
+            "pre-existing ts error", "pre-existing typescript",
+            "pre-existing fail", "pre-existing warning",
+            "pre-existing lint", "pre-existing format",
+            "appear to predate", "appears to predate", "predate our changes",
+            "missing exports from",
         ],
         "intent_patterns": _PROJECT_OWNER_INTENT,
         "dismissal_verbs": _PROJECT_OWNER_DISMISSAL,
