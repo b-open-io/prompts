@@ -140,59 +140,10 @@ FILE_URL="vscode://file${LAST_FILE}"
 echo -e "\033]8;;${FILE_URL}\a${FILENAME}\033]8;;\a"
 ```
 
-## Best Practices
+## Reference Files
 
-1. **Keep it concise** - Status line should fit on one line
-2. **Use colors sparingly** - Make information scannable, not overwhelming
-3. **Cache expensive operations** - Git status can be slow on large repos
-4. **Test manually first** - Pipe mock JSON to script before configuring
-5. **Use jq for parsing** - Reliable JSON extraction in bash
-6. **Handle missing data** - Fields may be null or missing
-7. **Output to stdout only** - Status line reads first line of stdout
+For detailed implementation guidance, consult:
 
-## Testing
-
-Test scripts with mock JSON:
-
-```bash
-echo '{"model":{"display_name":"Opus"},"workspace":{"current_dir":"/test"}}' | ./statusline.sh
-```
-
-## Installation Script
-
-Use `scripts/install-statusline.sh` to:
-- Copy status line script to `~/.claude/`
-- Update settings.json
-- Create backup of existing configuration
-
-## Restore Previous Configuration
-
-Backups are created with timestamps in `~/.claude/`:
-
-```bash
-# List available backups
-ls -la ~/.claude/*.backup.*
-
-# Restore using restore script
-~/.claude/plugins/cache/.../scripts/restore-statusline.sh
-
-# Or manually
-LATEST=$(ls -t ~/.claude/settings.json.backup.* 2>/dev/null | head -1)
-if [[ -n "$LATEST" ]]; then
-    cp "$LATEST" ~/.claude/settings.json
-fi
-```
-
-## Additional Resources
-
-For detailed implementation guidance, see the references directory:
-
-- **`references/json-input-schema.md`** - Complete JSON input documentation with all fields, extraction examples in Bash/Python/Node.js, and handling null values
-- **`references/scripting-patterns.md`** - ANSI color codes (256-color and true color), Powerline separators, Git integration patterns, project detection, clickable links (OSC 8), terminal integration, and formatting helpers
-- **`references/ccstatusline-guide.md`** - Complete widget documentation, installation, configuration options, available widgets, multi-line setup, and troubleshooting
-
-## External Links
-
-- [Claude Code Status Line Docs](https://docs.anthropic.com/en/docs/claude-code/statusline)
-- [ccstatusline GitHub](https://github.com/sirmalloc/ccstatusline)
-- [Powerline Fonts](https://github.com/powerline/fonts)
+- **`references/json-input-schema.md`** — Complete JSON input documentation with all fields, extraction examples in Bash/Python/Node.js, and null-value handling
+- **`references/scripting-patterns.md`** — ANSI color codes (256-color and true color), Powerline separators, Git integration patterns, project detection, clickable links (OSC 8), terminal integration, and formatting helpers
+- **`references/ccstatusline-guide.md`** — Complete widget documentation, installation, configuration options, available widgets, multi-line setup, and troubleshooting

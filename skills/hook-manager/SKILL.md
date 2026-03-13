@@ -1,18 +1,18 @@
 ---
 name: hook-manager
-version: 1.0.0
+version: 1.0.1
 description: Discover and install automation hooks for Claude Code and Opencode. This skill should be used when users ask to "list hooks", "install a hook", "show available hooks", "enable hook", "what hooks are available", or need help managing agent automation hooks.
 disable-model-invocation: true
 ---
 
 # Hook Manager
 
-Discover, install, and manage automation hooks from the bopen-tools collection for Claude Code and Opencode.
+Help users discover, install, and diagnose automation hooks from the bopen-tools collection.
 
 ## Available Hooks
 
-| Hook | Event | Description | Auto-install |
-|------|-------|-------------|--------------|
+| Hook | Event | Description | Recommendation |
+|------|-------|-------------|----------------|
 | `protect-env-files` | PreToolUse | Blocks edits to .env files (security) | Recommended |
 | `uncommitted-reminder` | Stop | Shows uncommitted changes when agent stops | Optional |
 | `auto-git-add` | PostToolUse | Auto-stages files after edits | Optional |
@@ -22,161 +22,80 @@ Discover, install, and manage automation hooks from the bopen-tools collection f
 | `auto-test-on-save` | PostToolUse | Runs tests after file edits | Optional |
 | `protect-shadcn-components` | PreToolUse | Protects shadcn UI components | Optional |
 
-## Installing a Hook
+## Hook Source Paths
 
-Hooks are installed by copying the JSON config to your agent's hooks directory:
+Hooks live in the plugin cache. The exact version path segment varies; use a glob to locate them:
 
-### Claude Code
 ```bash
-# Create hooks directory if needed
-mkdir -p ~/.claude/hooks
+# Claude Code
+ls ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/
 
-# Copy hook from plugin cache
+# Opencode
+ls ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/
+```
+
+## Installing a Hook for the User
+
+To install a hook, copy its JSON file to the correct hooks directory and inform the user to restart their agent.
+
+**Claude Code:**
+```bash
+mkdir -p ~/.claude/hooks
 cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.claude/hooks/
 ```
 
-### Opencode
+**Opencode:**
 ```bash
-# Create hooks directory if needed
 mkdir -p ~/.opencode/hooks
-
-# Copy hook from plugin cache
 cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.opencode/hooks/
 ```
 
-Then restart your agent to load the hook.
+After copying, tell the user: restart Claude Code (or Opencode) for the hook to take effect.
 
-## Hook Details
-
-### protect-env-files (Recommended)
-
-**Security hook** - Prevents accidental edits to environment files containing secrets.
-
-- Blocks: `.env`, `.env.local`, `.env.production`, `.env.staging`
-- Prompts for confirmation if edit attempted
-- No performance impact
-
-### uncommitted-reminder
-
-Shows git status when Claude finishes responding if there are uncommitted changes.
-
-- Helps prevent forgotten commits
-- Exit code 2 feeds back to Claude
-
-### auto-git-add
-
-Automatically runs `git add -A` after Write/Edit/MultiEdit operations.
-
-- Only stages, never commits
-- 5 second timeout
-
-### time-dir-context
-
-Adds context line to every prompt: timestamp, working directory, git branch.
-
-- Example: `Context: 2025-01-24 14:32:15 | /Users/you/project | Branch: main`
-
-### lint-on-save
-
-Runs `bun lint:fix` after file edits.
-
-- Requires project with `lint:fix` script in package.json
-- Requires `bun` and `jq`
-- Works with statusline for lint count display
-
-### lint-on-start
-
-Runs linting when session starts.
-
-- Same requirements as lint-on-save
-
-### auto-test-on-save
-
-Runs tests after file edits.
-
-- Can be slow on large test suites
-- Consider project-specific setup
-
-### protect-shadcn-components
-
-Prevents edits to shadcn/ui component files.
-
-- Only relevant for projects using shadcn/ui
-
-## Installing This Skill
+## Checking Which Hooks Are Installed
 
 ```bash
-bunx skills add b-open-io/bopen-tools --skill hook-manager
-```
-
-## Uninstalling a Hook
-
-**Claude Code:**
-```bash
-rm ~/.claude/hooks/<hook-name>.json
-```
-
-**Opencode:**
-```bash
-rm ~/.opencode/hooks/<hook-name>.json
-```
-
-Restart your agent.
-
-## Listing Installed Hooks
-
-**Claude Code:**
-```bash
+# Claude Code
 ls ~/.claude/hooks/
-```
 
-**Opencode:**
-```bash
+# Opencode
 ls ~/.opencode/hooks/
 ```
 
-## Quick Install Commands
+## Recommending Hooks
 
-### Claude Code
-```bash
-# Security (recommended)
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/protect-env-files.json ~/.claude/hooks/
+When a user asks what hooks to install without specifying a use case:
 
-# Workflow helpers
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/uncommitted-reminder.json ~/.claude/hooks/
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/auto-git-add.json ~/.claude/hooks/
+1. Always recommend `protect-env-files` first — it is a security safeguard with no downsides.
+2. Ask about their workflow to recommend optional hooks:
+   - Git-heavy work: `auto-git-add`, `uncommitted-reminder`
+   - Linting setup with `bun lint:fix`: `lint-on-save`, `lint-on-start`
+   - shadcn/ui projects: `protect-shadcn-components`
+   - Wants richer context in every prompt: `time-dir-context`
 
-# Context enrichment
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/time-dir-context.json ~/.claude/hooks/
+## Hook Details for Diagnosis
 
-# Development automation
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-save.json ~/.claude/hooks/
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-start.json ~/.claude/hooks/
-```
+### protect-env-files
+Blocks Write/Edit on `.env*` files. No performance cost. Recommended universally.
 
-### Opencode
-```bash
-# Security (recommended)
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/protect-env-files.json ~/.opencode/hooks/
+### uncommitted-reminder
+Runs on Stop event; exits with code 2 if uncommitted changes exist, feeding the message back to the agent.
 
-# Workflow helpers
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/uncommitted-reminder.json ~/.opencode/hooks/
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/auto-git-add.json ~/.opencode/hooks/
+### auto-git-add
+Runs `git add -A` after Write/Edit/MultiEdit. Stages only; never commits. 5s timeout.
 
-# Context enrichment
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/time-dir-context.json ~/.opencode/hooks/
+### time-dir-context
+Injects `Context: <timestamp> | <cwd> | Branch: <branch>` into every UserPromptSubmit.
 
-# Development automation
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-save.json ~/.opencode/hooks/
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-start.json ~/.opencode/hooks/
-```
+### lint-on-save / lint-on-start
+Runs `bun lint:fix`. Requires `lint:fix` in package.json and `bun` + `jq` on PATH.
 
-## Verifying Installation
+### auto-test-on-save
+Runs tests after file edits. Can be slow on large suites — confirm user wants this before installing.
 
-After installing and restarting your agent:
+### protect-shadcn-components
+Blocks edits to shadcn/ui component files. Only relevant when project uses shadcn/ui.
 
-```bash
-claude --debug
-```
+## Additional Resources
 
-Look for hook registration messages in the debug output.
+- **[README.md](README.md)** — User-facing install/uninstall/verify instructions

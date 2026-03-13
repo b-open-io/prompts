@@ -1,33 +1,26 @@
 ---
 name: cli-demo-gif
-version: 1.0.0
+version: 1.0.1
 description: Generate CLI demo GIFs using vhs (Charmbracelet). Use when creating terminal recordings for README files or documentation.
 ---
 
 # CLI Demo GIF Generator
 
-Create polished terminal demo GIFs using [vhs](https://github.com/charmbracelet/vhs).
+Generate terminal demo GIFs using vhs. When asked to create a CLI demo GIF, produce a `.tape` file and render it.
 
-## Prerequisites
-
-```bash
-brew install vhs
-```
-
-## Usage
+## Steps
 
 ### 1. Create tape file
 
-Place in `docs/demo/` to keep root clean:
+Place tape files in `docs/demo/` to keep the project root clean:
 
 ```bash
 mkdir -p docs/demo
 ```
 
-### 2. Tape file structure
+Write the tape file with appropriate settings for the project's CLI:
 
 ```tape
-# Description comment
 Output docs/demo/demo.gif
 
 Set Shell "bash"
@@ -38,43 +31,40 @@ Set Padding 20
 Set Theme "Catppuccin Mocha"
 Set TypingSpeed 50ms
 
-# Commands here
 Type "command --help"
 Enter
 Sleep 2s
 ```
 
-### 3. For unpublished CLI packages
+### 2. For unpublished CLI packages
 
-Use Hide/Show to set up aliases silently before the visible demo:
+Use `Hide`/`Show` to configure aliases before the visible demo starts:
 
 ```tape
-# Set up alias without showing it
 Hide
 Type "alias mycli='bun run src/cli/index.ts'"
 Enter
 Sleep 500ms
 Show
 
-# Now show the demo with clean commands
 Type "mycli --help"
 Enter
 Sleep 2s
 ```
 
-### 4. Generate GIF
+### 3. Render the GIF
 
 ```bash
 vhs docs/demo/cli.tape
 ```
 
-## Tape Commands Reference
+## Tape Command Reference
 
 | Command | Description |
 |---------|-------------|
 | `Output <path>` | Output file path (.gif, .mp4, .webm) |
 | `Set Shell "bash"` | Shell to use |
-| `Set FontSize <n>` | Font size (16 recommended) |
+| `Set FontSize <n>` | Font size |
 | `Set Width <n>` | Terminal width in pixels |
 | `Set Height <n>` | Terminal height in pixels |
 | `Set Padding <n>` | Padding around terminal |
@@ -87,18 +77,12 @@ vhs docs/demo/cli.tape
 | `Show` | Resume recording |
 | `Ctrl+C` | Send interrupt |
 
-## Recommended Themes
+## Default Settings
 
-- `Catppuccin Mocha` - dark, modern
-- `Dracula` - dark purple
-- `Tokyo Night` - dark blue
-- `One Dark` - dark
-- `GitHub Dark` - GitHub's dark theme
+Use these defaults unless the user specifies otherwise:
 
-## Tips
-
-- Keep GIFs under 1MB for fast loading
-- Use `Sleep` generously so viewers can read output
-- 50ms typing speed looks natural
-- 900x500 works well for most CLIs
-- Show 3-5 commands max per GIF
+- **Theme**: `Catppuccin Mocha`
+- **TypingSpeed**: `50ms`
+- **Width**: `900`, **Height**: `500`
+- **FontSize**: `16`
+- **Output directory**: `docs/demo/`

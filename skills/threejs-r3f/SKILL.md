@@ -1,6 +1,6 @@
 ---
 name: threejs-r3f
-version: 1.0.0
+version: 1.0.1
 description: >-
   This skill should be used when building Three.js or React Three Fiber (R3F) projects,
   creating 3D scenes, animating meshes with useFrame, loading GLTF/GLB models, setting up physics with @react-three/rapier, using WebGPU with R3F,
@@ -14,7 +14,7 @@ metadata:
 
 Guide for building 3D web experiences with R3F v9 (React 19) and the pmndrs ecosystem.
 
-## Version Matrix
+## Version Constraints
 
 | Package | Version | React |
 |---------|---------|-------|
@@ -23,13 +23,11 @@ Guide for building 3D web experiences with R3F v9 (React 19) and the pmndrs ecos
 | `@react-three/rapier` | v2.x | 19.x |
 | `three` | r171+ | — |
 
-Use fiber v8 + rapier v1 for React 18 projects.
+Use fiber v8 + rapier v1 for React 18 projects. Never mix version lines.
 
 ---
 
-## Project Scaffolding
-
-Two modes depending on the goal.
+## Installation
 
 ### Standalone Vite + R3F app
 
@@ -41,68 +39,32 @@ bun add -d @types/three
 bun dev
 ```
 
-Add optional packages as needed:
-
-```bash
-bun add @react-three/rapier        # physics
-bun add zustand                    # state
-bun add leva                       # debug GUI
-```
-
-### Exportable R3F component (inside an existing project)
-
-Install into an existing React 19 project without scaffolding a new app:
+### Into an existing React 19 project
 
 ```bash
 bun add three @react-three/fiber @react-three/drei
 bun add -d @types/three
 ```
 
-Import `Canvas` where needed. No entry-point changes required.
+Optional packages: `bun add @react-three/rapier` (physics), `bun add zustand` (state), `bun add leva` (debug GUI).
 
 ---
 
 ## Scene Setup
 
-Minimal working scene with perspective camera, ambient + directional lighting, and orbit controls:
+For the minimal scene template, Canvas prop table, frameloop values, responsive canvas, and WebGPU renderer bootstrap, read **`references/scene-setup.md`**.
 
-```tsx
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
-
-export default function App() {
-  return (
-    <Canvas
-      camera={{ fov: 75, near: 0.1, far: 1000, position: [0, 2, 5] }}
-      shadows="soft"
-      dpr={[1, 2]}
-      frameloop="always"
-    >
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow />
-      <OrbitControls makeDefault />
-      <mesh castShadow>
-        <boxGeometry />
-        <meshStandardMaterial color="hotpink" />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[10, 10]} />
-        <meshStandardMaterial color="#555" />
-      </mesh>
-    </Canvas>
-  )
-}
-```
-
-**Canvas defaults applied automatically:** `antialias: true`, `alpha: true`, `outputColorSpace = SRGBColorSpace`, `toneMapping = ACESFilmicToneMapping`, `ColorManagement.enabled = true`.
-
-Key `frameloop` values: `"always"` (default), `"demand"` (render only on invalidate — use for static scenes), `"never"` (manual advance).
+Key facts to keep in mind without reading the reference:
+- `Canvas` defaults: `antialias: true`, `outputColorSpace = SRGBColorSpace`, `toneMapping = ACESFilmicToneMapping`, `ColorManagement.enabled = true`
+- Always set `dpr={[1, 2]}` to clamp device pixel ratio
+- Use `shadows="soft"` for shadow maps; add `castShadow`/`receiveShadow` to meshes
+- `frameloop="demand"` for static scenes that only need to re-render on interaction
 
 ---
 
 ## Drei Helpers — Top 15
 
-All import from `@react-three/drei`. Read `references/drei-helpers.md` for full inventory, props, and examples.
+All import from `@react-three/drei`. Read **`references/drei-helpers.md`** for full inventory, props, and examples.
 
 **Controls**
 - `OrbitControls` — rotate/zoom/pan; add `makeDefault` to expose via `useThree`
@@ -161,20 +123,17 @@ useGLTF.preload('/model.glb')
 </Canvas>
 ```
 
-### gltfjsx CLI — Convert models to components
+### gltfjsx CLI
 
 ```bash
 # Generate TypeScript component + Draco-compress the GLB
 npx gltfjsx model.glb --transform --types --shadows
-
-# Outputs:
-#   model-transformed.glb  → move to /public
-#   Model.tsx              → move to /src/components
+# Outputs: model-transformed.glb (move to /public) + Model.tsx (move to /src/components)
 ```
 
 `--transform` shrinks most models 70–90% via Draco geometry compression, 1024px texture resize, and WebP conversion.
 
-Read `references/r3f-patterns.md` for clone pattern, KTX2 textures, lazy loading, and parallel preloading.
+For clone pattern, KTX2 textures, lazy loading, and parallel preloading, read **`references/r3f-patterns.md`**.
 
 ---
 
@@ -184,7 +143,7 @@ Read `references/r3f-patterns.md` for clone pattern, KTX2 textures, lazy loading
 - Mobile: < 100 draw calls
 - Desktop: < 300 draw calls
 
-**The 7 anti-patterns to avoid (with correct alternatives):**
+**The 7 anti-patterns — never do these:**
 
 1. Never `setState` inside `useFrame` — mutate refs directly
 2. Always use `delta` for animation — never fixed increments
@@ -196,124 +155,27 @@ Read `references/r3f-patterns.md` for clone pattern, KTX2 textures, lazy loading
 
 **Disposal:** Always call `geometry.dispose()` and `material.dispose()` in `useEffect` cleanup for dynamically created Three.js objects.
 
-Read `references/performance.md` for the full guide with wrong/correct code pairs, texture optimization (KTX2 > WebP > PNG), frustum culling, stats tooling, and mobile-specific rules.
+Read **`references/performance.md`** for all 7 anti-patterns with wrong/correct code pairs, texture optimization, frustum culling, stats tooling, and mobile rules.
 
 ---
 
-## Physics Quick Start
+## State, Physics, Debug GUI, and WebGPU
 
-`@react-three/rapier` requires Suspense because it loads WASM lazily.
+For these topics, read **`references/extras.md`**:
+- Zustand imperative pattern (required for `useFrame` correctness)
+- Leva debug GUI setup
+- Rapier physics quick start
+- WebGPU renderer bootstrap
 
-```tsx
-import { Suspense } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { Physics, RigidBody } from '@react-three/rapier'
-
-function Scene() {
-  return (
-    <Canvas>
-      <Suspense>
-        <Physics gravity={[0, -9.81, 0]}>
-          {/* Falling ball */}
-          <RigidBody type="dynamic" restitution={0.5}>
-            <mesh castShadow>
-              <sphereGeometry />
-              <meshStandardMaterial color="orange" />
-            </mesh>
-          </RigidBody>
-
-          {/* Static floor */}
-          <RigidBody type="fixed">
-            <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-              <planeGeometry args={[20, 20]} />
-              <meshStandardMaterial color="#888" />
-            </mesh>
-          </RigidBody>
-        </Physics>
-      </Suspense>
-    </Canvas>
-  )
-}
-```
-
-Add `debug` prop to `<Physics>` to show collider wireframes during development.
-
-RigidBody types: `"dynamic"` (default), `"fixed"`, `"kinematicPosition"`, `"kinematicVelocity"`.
-
-Read `references/physics.md` for all collider types, collision events, sensors, all 6 joint hooks (Fixed, Spherical, Revolute, Prismatic, Rope, Spring), forces/impulses API, and `InstancedRigidBodies` for mass physics.
-
----
-
-## State Management
-
-For game state or shared 3D state, use zustand. The key pattern: read store imperatively inside `useFrame` to avoid triggering re-renders at 60 fps.
-
-```tsx
-import { create } from 'zustand'
-
-const useGameStore = create((set) => ({
-  score: 0,
-  addScore: (n) => set((s) => ({ score: s.score + n })),
-}))
-
-// In a useFrame callback — imperative, no re-render
-useFrame(() => {
-  const { score } = useGameStore.getState()
-  // drive 3D logic with score
-})
-```
-
----
-
-## Debug GUI
-
-Add `leva` for live parameter tweaking during development:
-
-```tsx
-import { useControls, Leva } from 'leva'
-
-function DebugMesh() {
-  const { color, scale } = useControls({ color: '#ff0080', scale: { value: 1, min: 0.1, max: 3 } })
-  return <mesh scale={scale}><boxGeometry /><meshStandardMaterial color={color} /></mesh>
-}
-
-// Hide in production
-<Leva hidden={process.env.NODE_ENV === 'production'} />
-```
-
----
-
-## WebGPU (Three.js r171+)
-
-WebGPU is production-ready as of r171 (September 2025). Safari 26 added WebGPU, enabling universal deployment with automatic WebGL 2 fallback.
-
-```tsx
-import * as THREE from 'three/webgpu'
-import { Canvas, extend } from '@react-three/fiber'
-import type { ThreeToJSXElements } from '@react-three/fiber'
-
-declare module '@react-three/fiber' {
-  interface ThreeElements extends ThreeToJSXElements<typeof THREE> {}
-}
-
-extend(THREE as any)
-
-<Canvas
-  gl={async (props) => {
-    const renderer = new THREE.WebGPURenderer(props as any)
-    await renderer.init()
-    return renderer
-  }}
->
-```
-
-Note: `RawShaderMaterial` GLSL does not work in WebGPU. Use TSL (`three/tsl`) for cross-renderer shaders.
+For the full Rapier v2 API (all collider types, collision events, sensors, joints, forces, `InstancedRigidBodies`), read **`references/physics.md`**.
 
 ---
 
 ## Reference Files
 
-- **`references/r3f-patterns.md`** — Canvas props, useFrame, useThree, event system, scroll-driven scenes, zustand imperative pattern, GLTF clone pattern, KTX2 textures, lazy loading, parallel preloading
-- **`references/drei-helpers.md`** — Full Drei inventory by category: every helper with import, key props, and working example
-- **`references/performance.md`** — All 7 anti-patterns with wrong/correct code, draw call budgets, instancing, LOD, texture compression, disposal checklist, frustum culling, r3f-perf, mobile rules
-- **`references/physics.md`** — Full Rapier v2 reference: all collider types, MeshCollider, collision events, contact forces, sensors, all 6 joints, forces/impulses, InstancedRigidBodies
+- **`references/scene-setup.md`** — Minimal scene template, Canvas defaults, frameloop, responsive canvas, WebGPU renderer
+- **`references/r3f-patterns.md`** — Canvas props, `useFrame`, `useThree`, event system, scroll-driven scenes, GLTF clone pattern, KTX2, lazy loading
+- **`references/drei-helpers.md`** — Full Drei inventory by category: every helper with import, key props, and example
+- **`references/performance.md`** — All 7 anti-patterns with wrong/correct code, instancing, LOD, texture compression, disposal checklist, mobile rules
+- **`references/physics.md`** — Full Rapier v2: colliders, collision events, sensors, 6 joints, forces/impulses, InstancedRigidBodies
+- **`references/extras.md`** — Zustand imperative pattern, Leva debug GUI, Rapier quick start, WebGPU bootstrap

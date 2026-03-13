@@ -1,5 +1,5 @@
 ---
-version: 1.0.0
+version: 1.0.1
 name: ui-audio-theme
 description: Generate cohesive UI audio themes with subtle, minimal sound effects for applications. This skill should be used when users want to create a set of coordinated interface sounds for wallet apps, dashboards, or web applications - generating sounds mapped to UI interaction constants like button clicks, notifications, and navigation transitions using ElevenLabs API.
 location: user
@@ -7,17 +7,9 @@ location: user
 
 # UI Audio Theme Generator
 
-Generate cohesive sets of subtle, minimal UI sound effects using ElevenLabs text-to-sound-effects API. Create "audio themes" - coordinated sets of sounds that share a common aesthetic and map to standard UI interaction constants.
+Generate cohesive sets of subtle, minimal UI sound effects using ElevenLabs text-to-sound-effects API. Create "audio themes" — coordinated sets of sounds that share a common aesthetic and map to standard UI interaction constants.
 
-## Prerequisites
-
-```bash
-# Verify ElevenLabs API key is configured
-echo $ELEVENLABS_API_KEY
-
-# If not set, get key from https://elevenlabs.io (Profile -> API Keys)
-# Add to shell profile: export ELEVENLABS_API_KEY="your-key"
-```
+Requires `ELEVENLABS_API_KEY` set in the environment. See README.md for setup instructions.
 
 ## Workflow
 
@@ -153,79 +145,6 @@ audio-theme/
 └── transactions/
 ```
 
-## Integration
-
-### TypeScript Usage
-
-The generated `constants.ts` exports ready-to-use constants:
-
-```typescript
-import { UI_SOUNDS } from './audio-theme/constants';
-
-const audio = new Audio(UI_SOUNDS.BUTTON_CLICK_PRIMARY);
-audio.volume = 0.3;
-audio.play();
-```
-
-### React Hook
-
-```typescript
-import { useCallback, useEffect, useRef } from 'react';
-
-export function useUISound(soundUrl: string, volume = 0.3) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    audioRef.current = new Audio(soundUrl);
-    audioRef.current.volume = volume;
-    audioRef.current.preload = 'auto';
-    return () => { audioRef.current = null; };
-  }, [soundUrl, volume]);
-
-  const play = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-    }
-  }, []);
-
-  return play;
-}
-
-// Usage
-function SendButton() {
-  const playClick = useUISound(UI_SOUNDS.BUTTON_CLICK_PRIMARY);
-  return <button onClick={() => { playClick(); sendTransaction(); }}>Send</button>;
-}
-```
-
-### Howler.js
-
-```typescript
-import { Howl } from 'howler';
-
-const sounds = {
-  click: new Howl({ src: [UI_SOUNDS.BUTTON_CLICK_PRIMARY], volume: 0.3 }),
-  success: new Howl({ src: [UI_SOUNDS.NOTIFICATION_SUCCESS], volume: 0.4 }),
-};
-
-// Play on interaction
-sounds.click.play();
-```
-
-## Best Practices
-
-### Volume Recommendations
-UI sounds should be mixed at 20-40% to remain unobtrusive.
-
-### Accessibility
-- Never rely solely on audio for critical information
-- Provide visual alternatives for all audio feedback
-- Allow users to disable sounds in settings
-
-### Subtlety Principle
-The more frequently a sound occurs, the subtler it should be. Button clicks should be nearly imperceptible; transaction confirmations can be more noticeable.
-
 ## Script Options
 
 ```
@@ -242,11 +161,8 @@ The more frequently a sound occurs, the subtler it should be. Button clicks shou
 
 ## Resources
 
-- `scripts/generate_theme.py` - CLI tool for generating themes
-- `references/sound-design-guide.md` - Detailed sound design best practices
-- `assets/vibe-presets.json` - Predefined vibe configurations
-- `assets/theme-template.json` - Example output manifest
-
-## Audio-Specialist Integration
-
-For custom sound generation beyond standard categories, use the audio-specialist agent which has full ElevenLabs API integration for sound effects, music, and voice generation.
+- `scripts/generate_theme.py` — CLI tool for generating themes
+- `references/sound-design-guide.md` — Detailed sound design best practices
+- `assets/vibe-presets.json` — Predefined vibe configurations
+- `assets/theme-template.json` — Example output manifest
+- `README.md` — Prerequisites, design philosophy, integration examples (React hook, Howler.js), accessibility guidance

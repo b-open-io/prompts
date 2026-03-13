@@ -34,7 +34,7 @@ Custom shaders for Three.js — from simple material overrides to full WebGPU no
 | **Built-in uniforms** | Auto-inferred | Manual declarations |
 | **Best for** | New projects, r163+, R3F | Legacy code, full manual control |
 
-**Default choice: TSL.** Production-ready since r163 (as of 2026-03-10, wiki updated 2026-02-28). Use GLSL only when targeting legacy environments or when `RawShaderMaterial` manual control is specifically required.
+**Default choice: TSL.** Production-ready since r163. Use GLSL only when targeting legacy environments or when `RawShaderMaterial` manual control is specifically required.
 
 Read `references/tsl-guide.md` for the full TSL API including all node types, built-ins, control flow, and material setup.
 
@@ -205,18 +205,6 @@ bun add @react-three/postprocessing # R3F wrapper
 **One EffectPass merges multiple effects into one draw call** — always prefer `<EffectPass camera={...} effects={[bloom, smaa, toneMap]} />` over separate passes.
 
 Read `references/postprocessing.md` for full R3F setup, all effect parameters, custom effect authoring, and the selective bloom pattern.
-
-## Resources
-
-- **Book of Shaders**: https://thebookofshaders.com — Chapters 05–13 (shaping, noise, FBM, SDF)
-- **Shadertoy**: https://shadertoy.com — Live GLSL examples, searchable by technique
-- **LYGIA shader library**: https://lygia.xyz — Cross-language modules (noise, SDF, color, filters)
-- **Inigo Quilez articles**: https://iquilezles.org/articles/ — Authoritative SDF, noise, and raymarching references
-- **Three.js TSL wiki**: https://github.com/mrdoob/three.js/wiki/Three.js-Shading-Language — Primary TSL reference
-- **Three.js examples**: https://threejs.org/examples/?q=webgpu — Interactive TSL examples
-- **tslfx library**: https://github.com/verekia/tslfx — Community VFX and SDF collection for TSL
-- **Maxime Heckel — Field Guide to TSL**: https://blog.maximeheckel.com/posts/field-guide-to-tsl-and-webgpu/
-- **webgl-noise**: https://github.com/stegu/webgl-noise — GLSL Simplex / Perlin / Worley implementations
 
 ## Reference Files
 

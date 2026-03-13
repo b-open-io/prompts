@@ -1,6 +1,6 @@
 ---
 name: geo-optimizer
-version: 1.0.0
+version: 1.0.1
 description: This skill should be used when the user asks to "audit for AI visibility", "optimize for ChatGPT", "check GEO readiness", "analyze hedge density", "generate agentfacts", "check if my site works with AI search", "test LLM crawlability", "check discovery gap", or mentions Generative Engine Optimization, AI crawlers, Perplexity discoverability, or NANDA protocol.
 ---
 
@@ -8,14 +8,7 @@ description: This skill should be used when the user asks to "audit for AI visib
 
 Generative Engine Optimization (GEO) for AI search visibility.
 
-## What is GEO?
-
-GEO is NOT traditional SEO. AI search engines (ChatGPT, Perplexity, Claude, Gemini) work fundamentally differently:
-
-1. **They fetch raw HTML** - Many don't render JavaScript
-2. **They have size limits** - Crawlers abandon pages >1MB HTML
-3. **They evaluate confidence** - Hedged language ("maybe", "possibly") ranks 3x lower than confident assertions
-4. **They need machine-readable metadata** - AgentFacts/NANDA protocol for AI agent discovery
+> For background on what GEO is, how it differs from SEO, and the research behind it, see `README.md`.
 
 ## Quick Audit Workflow
 
@@ -57,8 +50,6 @@ Measures uncertainty language in content. Target: <0.2%
 - however, although, it seems, arguably
 - some believe, it appears, potentially
 
-**Why it matters:** Research shows confident citations rank 3x higher in AI responses. Every hedge word signals uncertainty to LLMs.
-
 See: `references/hedge-density.md`
 
 ### HTML Size Budget
@@ -79,13 +70,6 @@ AI crawlers vary in JavaScript rendering:
 If your content requires JS to display, you're invisible to ~40% of AI crawlers.
 
 ### Discovery Gap
-Startups face a "recency wall" - 30:1 visibility disadvantage vs established domains:
-
-| Site Age | Visibility | Strategy |
-|----------|------------|----------|
-| <2 years | ~3.3% | Web-augmented: Reddit, referring domains |
-| 2+ years | ~99% | GEO content: entity density, hedge reduction |
-
 See: `references/discovery-strategies.md`
 
 ## AgentFacts Setup
@@ -173,11 +157,3 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/generate-agentfacts.py \
   --auth oauth2,apikey
 ```
 
-## Key Takeaways
-
-1. **GEO != SEO** - Different crawlers, different rules
-2. **Confidence wins** - Hedge density <0.2% is the target
-3. **Size matters** - Stay under 1MB HTML
-4. **JS is risky** - Content must work without rendering
-5. **Age affects strategy** - Startups need web-augmented signals
-6. **AgentFacts is future-proofing** - Implement NANDA now

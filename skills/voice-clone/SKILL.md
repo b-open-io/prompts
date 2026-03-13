@@ -1,26 +1,12 @@
 ---
 name: voice-clone
-version: 1.0.0
+version: 1.0.1
 description: Clone real or fictional voices using ElevenLabs Instant Voice Cloning (IVC). This skill chains together the full pipeline — finding reference audio, preparing samples, uploading to ElevenLabs IVC, testing the clone with text-to-speech, and tuning voice settings. Use this skill whenever the user wants to clone a voice, create a custom voice from audio samples, replicate a famous voice style, or build a voice for a character. Covers celebrity impressions, fictional characters, branded voices, and personal voice clones.
 ---
 
 # Voice Clone
 
-Clone voices end-to-end using ElevenLabs Instant Voice Cloning (IVC). This skill handles the full pipeline from finding reference audio to a tuned, ready-to-use voice.
-
-## Prerequisites
-
-```bash
-# ElevenLabs API key must be set
-echo $ELEVENLABS_API_KEY
-
-# If not set: https://elevenlabs.io → Profile → API Keys
-# Add to shell profile: export ELEVENLABS_API_KEY="your-key"
-
-# IVC requires Starter tier or above
-# Check your tier: curl -s https://api.elevenlabs.io/v1/user \
-#   -H "xi-api-key: $ELEVENLABS_API_KEY" | jq '.subscription.tier'
-```
+Clone voices end-to-end using ElevenLabs Instant Voice Cloning (IVC). This skill handles the full pipeline from finding reference audio to a tuned, ready-to-use voice. For user-facing setup guidance, audio quality advice, voice type tips, IVC limits, and example walkthroughs, see `README.md`.
 
 ## Pipeline Overview
 
@@ -32,23 +18,11 @@ echo $ELEVENLABS_API_KEY
 5. Tune           →  Adjust stability/similarity/style settings for best match
 ```
 
-Each step is handled by the `scripts/voice-clone.ts` script. You can run the full pipeline or individual steps.
+Each step is handled by `scripts/voice-clone.ts`. Run the full pipeline or individual steps.
 
 ## Step 1: Source Reference Audio
 
-Good clones start with good samples. The script can download audio from URLs or use local files.
-
-**What makes good reference audio:**
-- Clear speech with minimal background noise
-- 1-5 minutes total across all samples (more isn't always better for IVC)
-- Varied intonation — don't use monotone reads
-- Multiple clips are better than one long clip
-- MP3, WAV, or M4A format
-
-**For famous/iconic voices**, search for:
-- Interview clips, press junkets, behind-the-scenes footage
-- Isolated vocal tracks (search "voice isolated" or "acapella")
-- Podcast appearances (often cleanest audio)
+Verify `ELEVENLABS_API_KEY` is set before starting. Accept local file paths or URLs.
 
 ```bash
 # Download audio from a URL
@@ -62,15 +36,10 @@ bun run scripts/voice-clone.ts source \
   --output-dir ./voice-samples
 ```
 
-### Using yt-dlp for YouTube/Video Sources
-
-For YouTube interviews, speeches, or other video sources:
+### yt-dlp for YouTube/Video Sources
 
 ```bash
-# Install yt-dlp if needed
-brew install yt-dlp  # or: bun add -g yt-dlp
-
-# Download audio only from a video
+# Download audio only
 yt-dlp -x --audio-format mp3 --audio-quality 0 \
   -o "./voice-samples/%(title)s.%(ext)s" \
   "https://youtube.com/watch?v=VIDEO_ID"
@@ -84,7 +53,7 @@ yt-dlp -x --audio-format mp3 \
 
 ## Step 2: Prepare Samples
 
-Trim silence, normalize volume, and optionally remove background noise. Uses ffmpeg for processing.
+Trim silence, normalize volume, and optionally remove background noise. Requires ffmpeg.
 
 ```bash
 # Prepare all files in a directory
@@ -92,20 +61,20 @@ bun run scripts/voice-clone.ts prepare \
   --input-dir ./voice-samples \
   --output-dir ./voice-prepared
 
-# Options
+# With options
 bun run scripts/voice-clone.ts prepare \
   --input-dir ./voice-samples \
   --output-dir ./voice-prepared \
-  --trim-silence          # Remove leading/trailing silence
-  --normalize             # Normalize to -16 LUFS
-  --max-duration 60       # Trim clips to max 60 seconds each
+  --trim-silence \
+  --normalize \
+  --max-duration 60
 ```
 
-**ffmpeg must be installed** (`brew install ffmpeg`). The script validates this before proceeding.
+The script validates ffmpeg is installed and exits with an informative error if not.
 
 ## Step 3: Clone via IVC
 
-Upload prepared samples to ElevenLabs Instant Voice Cloning.
+Upload prepared samples to ElevenLabs IVC. The API key must be set in the environment.
 
 ```bash
 # Clone from prepared samples
@@ -123,11 +92,11 @@ bun run scripts/voice-clone.ts clone \
   --labels '{"accent":"american","age":"middle-aged","gender":"male","use_case":"trailer_narration"}'
 ```
 
-The script outputs the `voice_id` on success. Save this — you need it for testing and TTS.
+The script outputs the `voice_id` on success. Capture and surface this to the user — it is needed for all subsequent steps.
 
 ## Step 4: Test the Clone
 
-Generate test speech to compare against the reference. The script produces test audio files and prints the voice_id for further use.
+Generate test speech and output audio files so the user can compare against reference.
 
 ```bash
 # Quick test with default phrases
@@ -148,17 +117,13 @@ bun run scripts/voice-clone.ts test \
   --output-dir ./voice-tests
 ```
 
-**Listen to the output** and compare with reference audio. If the voice sounds off, try:
-- Different reference samples (quality matters more than quantity)
-- Enabling `--remove-background-noise` during clone step
-- Adjusting settings in Step 5
+Report the output file paths to the user after this step completes.
 
 ## Step 5: Tune Voice Settings
 
-Adjust stability, similarity boost, and style to dial in the voice.
+Adjust stability, similarity boost, and style to dial in the match.
 
 ```bash
-# Tune and regenerate test audio
 bun run scripts/voice-clone.ts tune \
   --voice-id "VOICE_ID_FROM_STEP_3" \
   --stability 0.3 \
@@ -168,23 +133,9 @@ bun run scripts/voice-clone.ts tune \
   --output-dir ./voice-tests
 ```
 
-**Settings guide:**
-
-| Setting | Low (0.0) | High (1.0) | Default |
-|---------|-----------|------------|---------|
-| `stability` | More expressive, varied | More consistent, monotone | 0.5 |
-| `similarity-boost` | More generic | Closer to original voice | 0.75 |
-| `style` | Neutral delivery | More stylistic/dramatic | 0.0 |
-
-**Tips for specific voice types:**
-- **Dramatic narrator**: stability 0.25-0.35, similarity 0.8, style 0.5-0.7
-- **Professional voiceover**: stability 0.5, similarity 0.75, style 0.2
-- **Character voice**: stability 0.3, similarity 0.85, style 0.6
-- **Natural conversational**: stability 0.5, similarity 0.7, style 0.3
+When the user does not specify settings, use these defaults: stability 0.5, similarity-boost 0.75, style 0.0. For voice type presets, refer to `README.md`.
 
 ## Full Pipeline (One Command)
-
-Run all steps in sequence:
 
 ```bash
 bun run scripts/voice-clone.ts pipeline \
@@ -196,12 +147,12 @@ bun run scripts/voice-clone.ts pipeline \
   --output-dir ./movie-announcer-voice
 ```
 
-This runs source → prepare → clone → test in sequence and outputs a summary with the voice_id and test audio paths.
+Runs source → prepare → clone → test in sequence. Output includes the voice_id and paths to test audio files.
 
 ## Managing Voices
 
 ```bash
-# List all your cloned voices
+# List all cloned voices
 bun run scripts/voice-clone.ts list
 
 # Delete a cloned voice
@@ -211,39 +162,9 @@ bun run scripts/voice-clone.ts delete --voice-id "VOICE_ID"
 bun run scripts/voice-clone.ts info --voice-id "VOICE_ID"
 ```
 
-## IVC Limitations
+## Error Handling
 
-- **Starter tier**: Up to 10 custom voices, 65 total voice add/edits
-- **Max samples**: 25 files per voice
-- **Max file size**: 10MB per file
-- **Supported formats**: MP3, WAV, M4A, FLAC, OGG, WEBM
-- **Best results**: 1-3 minutes of clean, varied speech
-- **No fine-tuning**: IVC is instant — what you get is what you get. If unhappy, try different samples or settings.
-
-## Example: Movie Trailer Voice
-
-```bash
-# 1. Download Don LaFontaine-style reference clips
-yt-dlp -x --audio-format mp3 --audio-quality 0 \
-  -o "./movie-voice/samples/%(title)s.%(ext)s" \
-  "https://youtube.com/watch?v=REFERENCE_VIDEO_ID"
-
-# 2. Run the full pipeline
-bun run scripts/voice-clone.ts pipeline \
-  --input-dir ./movie-voice/samples \
-  --name "Epic Trailer Voice" \
-  --description "Deep, dramatic movie trailer narrator. Gravelly baritone with commanding presence." \
-  --test-text "In a world where darkness threatens everything... one voice... will change it all." \
-  --remove-background-noise \
-  --labels '{"accent":"american","gender":"male","use_case":"trailer_narration"}' \
-  --output-dir ./movie-voice
-
-# 3. Fine-tune for maximum drama
-bun run scripts/voice-clone.ts tune \
-  --voice-id "VOICE_ID" \
-  --stability 0.25 \
-  --similarity-boost 0.85 \
-  --style 0.7 \
-  --text "This summer... prepare yourself... for the ride of a lifetime." \
-  --output-dir ./movie-voice/tuned
-```
+- If `ELEVENLABS_API_KEY` is unset, exit immediately with a message directing the user to `README.md` for setup instructions.
+- If ffmpeg is missing, exit with an install prompt (`brew install ffmpeg`).
+- If the IVC API returns a tier error, inform the user that IVC requires Starter tier or above and link to `README.md` for tier details.
+- If `voice_id` is needed but not yet obtained, prompt the user to complete Step 3 first.
