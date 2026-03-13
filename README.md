@@ -16,7 +16,7 @@ This repository provides:
 
 ## Installation
 
-**Full Plugin** (recommended - includes 28 agents, 49 skills, 9 commands, 4 hooks):
+**Full Plugin** (recommended - includes 28 agents, 49 skills, 10 commands, 4 hooks):
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
@@ -212,6 +212,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 
 Commands use category subdirectories: `/category:command` or `/command` for root-level commands.
 
+- `/bug-hunt` - Adversarial bug hunt with 3 isolated agents — supports path or branch diff mode
 - `/prime` - Context warm-up — loads git state, plugin inventory, and project conventions
 - `/question` - Read-only Q&A mode — answers questions about the codebase without making changes
 - `/diagnose` - Fan out 3-5 agents to investigate a bug from every angle simultaneously
