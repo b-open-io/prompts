@@ -246,6 +246,33 @@ The hook ships with one hardcoded rule:
 
 This rule can be overridden by adding a user rule with `"name": "project-owner"` to the JSON file.
 
+## Corpus-Driven Rule Creation
+
+Synthetic keywords and patterns — derived from imagining what a violating message might look like — produce brittle rules with low recall. Rules grounded in real production messages are significantly more accurate.
+
+**Case study — project-owner builtin:**
+- Synthetic-only rule (keywords guessed from description): F1 = 0.14
+- After mining 10 real session logs for true positive phrases: F1 = 0.89
+
+The gap is because the model's actual dismissal language (`"this appears to be pre-existing"`, `"seems like it was there before I started"`) rarely matches the phrases a human would guess (`"pre-existing issue"`, `"not my fault"`).
+
+### The workflow
+
+1. Extract 2-3 key terms from the user's behavior description.
+2. Call the remind search script with those terms and `--no-recency` to search the full corpus:
+   ```bash
+   python3 "${CLAUDE_PLUGIN_ROOT}/skills/remind/scripts/search.py" "TERMS" --limit 10 --no-recency
+   ```
+3. Scan returned assistant messages. Classify each as:
+   - **True positive** — message demonstrating the bad behavior. Extract the exact phrases used.
+   - **True negative** — message using similar vocabulary but NOT violating. These prevent keyword overfitting.
+4. Derive keywords and intent_patterns from the true positive phrases. Use true negative phrases to rule out overly broad matches.
+5. Present extracted test cases to the user as a table: message excerpt, should_trigger, category, source note.
+
+### Fallback
+
+If the remind script is absent, the Scribe DB is unavailable, or the search returns zero results, fall back to generating keywords and patterns from the description alone (the pre-corpus workflow). Note the fallback in the output so the user knows the rule is synthetic and may need tuning.
+
 ## Reference
 
 - `references/rule-design.md` — Deep guide on designing each scoring layer with annotated examples

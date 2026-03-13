@@ -34,6 +34,7 @@ Block output format:
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.request
@@ -310,6 +311,14 @@ def build_block_message(rule):
 
 def block_and_exit(rule, reason):
     """Print block output JSON and exit. Called when a rule violation is confirmed."""
+    # Play alert sound (macOS only, non-blocking, fail silently)
+    try:
+        subprocess.Popen(
+            ["afplay", "/System/Library/Sounds/Sosumi.aiff"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    except (FileNotFoundError, OSError):
+        pass  # Not macOS or afplay unavailable
     msg = build_block_message(rule)
     output = {"decision": "block", "reason": reason, "systemMessage": msg}
     print(json.dumps(output))

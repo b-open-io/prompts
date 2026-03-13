@@ -469,3 +469,95 @@ These patterns are fairly specific and unlikely to false-positive. Threshold 5 i
 ```
 
 Clean, focused, no unnecessary layers. This is a minimal viable rule that works.
+
+## Production Corpus Testing
+
+Synthetic test cases miss a critical class of violations: phrasing patterns the model uses that no rule designer would predict. The `project-owner` rule was tuned against a production corpus and improved F1 from 0.14 to 0.89. This section documents that end-to-end process.
+
+### End-to-End Process
+
+**Step 1: Mine Production Logs**
+
+Use the `remind` skill's search to pull assistant messages from real sessions. Cast a wide net — search for multiple terms in separate passes. Good starting terms for a dismissal rule: `"pre-existing"`, `"not caused by"`, `"before our changes"`, `"unrelated"`, `"outside the scope"`. Export the raw assistant turn text; don't filter aggressively at this stage.
+
+**Step 2: Build the Test Corpus**
+
+Each entry in the corpus is a four-tuple:
+
+```python
+(message, should_trigger, category, source_note)
+```
+
+- `message` — the full assistant turn text
+- `should_trigger` — `True` if this is a violation, `False` if it's acceptable
+- `category` — a short label grouping similar cases (`"dismissal"`, `"fixing"`, `"search-context"`)
+- `source_note` — provenance string: project name, session context, what happened
+
+Aim for a balanced corpus:
+- True positives (TP): 10–15 real violations
+- True negatives (TN): 8–12 real acceptable uses of the same vocabulary
+- Edge cases: 3–5 cases that could go either way
+
+**Step 3: Run the Test Scorer**
+
+```bash
+python3 skills/hammertime/evals/test_scorer.py
+python3 skills/hammertime/evals/test_scorer.py -v          # verbose: all cases
+python3 skills/hammertime/evals/test_scorer.py --threshold 3  # test at threshold 3
+```
+
+The scorer imports `score_message()` directly from `hooks/hammertime.py` and reports TP, TN, FP, FN, precision, recall, F1, and a full threshold sweep.
+
+**Step 4: Threshold Sweep**
+
+The scorer automatically sweeps thresholds 1–10. Read the table to find the optimal F1. For `project-owner`, the sweep data after corpus-tuning:
+
+| Threshold | Prec | Rec  | F1   | Notes |
+|-----------|------|------|------|-------|
+| 2–4       | 0.75 | 1.00 | 0.86 | Catches everything, 3 FPs |
+| 5         | 0.80 | 1.00 | 0.89 | Optimal — current setting |
+| 6+        | —    | <1.0 | drops | Recall degrades, FNs appear |
+
+The optimal threshold is where F1 peaks. When F1 is flat across a range, prefer the higher threshold (fewer interruptions to the user).
+
+**Step 5: Iterative Tuning**
+
+Read every failure case:
+
+- **False negative (FN)** — rule missed a real violation. Extract the phrasing. Ask: what keyword or pattern would have caught it? Add to rule. Most FNs from `project-owner` came from phrases like `"nothing new from my changes"`, `"errors are unchanged"`, `"matches baseline"`, `"missing exports from sibling packages"` — none of these were predicted synthetically.
+- **False positive (FP)** — rule flagged acceptable behavior. Identify which signal caused it. Tighten the keyword (add context words) or add a negative lookahead to the pattern.
+
+Re-run the scorer after each change. Iterate until F1 stabilizes or you've accepted the remaining failures.
+
+### Case Study: `project-owner` — F1 0.14 → 0.89
+
+The rule started with generic keywords (`"pre-existing"`, `"not caused by"`) and scored F1=0.14 on the initial synthetic corpus. After mining production logs, four categories of real violations were found that were never predicted synthetically:
+
+| Pattern found in logs | Example |
+|----------------------|---------|
+| Quantity-framing dismissal | `"All pre-existing errors — nothing new from my changes"` |
+| Test baseline normalization | `"Tests match baseline (14 pass, 1 pre-existing fail)"` |
+| Error equality claim | `"The pre-existing TS errors are unchanged"` |
+| Sibling package attribution | `"Build fails with pre-existing TS errors. These are missing exports from sibling packages."` |
+
+None of these phrases appear in textbook examples of dismissal behavior. They only emerged from real sessions where the model found a plausible-sounding excuse and used it. The corpus made them testable; iterative tuning made the rule catch them.
+
+## Known Limitations — Meta-Discussion False Positives
+
+After corpus-tuning, `project-owner` at threshold 5 has three remaining false positives. All three share the same root cause: they are meta-discussion about the rule itself, not actual violations.
+
+**The three FP cases:**
+
+1. Quoting bad examples — `"Here are real examples of bad behavior: 'All pre-existing errors — nothing new from my changes.'"` — contains the exact violation phrasing inside quotation marks
+2. Documenting the tool — `"The HammerTime rule catches phrases like 'pre-existing' and 'not from our changes'"` — describing what the rule does
+3. Describing search activity — `"I searched for messages containing 'pre-existing' and 'not caused by our changes'"` — reporting search terms
+
+All three score 7 or higher, bypassing Haiku verification entirely.
+
+**Options considered:**
+
+- **Option A: Quote detection** — Strip quoted strings before scoring. Fragile. Heuristics for quotation boundaries are unreliable; models don't always use standard quote characters.
+- **Option B: Widen Haiku routing** — Lower the bypass threshold so scores 6–7 still go to Haiku. Would add ~500ms latency for every borderline-high score, including genuine violations.
+- **Option C: Accept the limitation** — Meta-discussion about HammerTime is extremely rare in production sessions. The incremental harm from the occasional false block is low. (Chosen.)
+
+**Path forward if this becomes a real problem:** Option B, gated behind production data showing measurable user impact. The threshold would change from `score >= threshold → block` to `score >= (threshold + 3) → block`, routing the in-between band to Haiku. Implement only when false block frequency justifies the latency cost.

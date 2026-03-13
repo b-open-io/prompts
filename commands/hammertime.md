@@ -50,16 +50,44 @@ Example: `/hammertime never say everything looks good when there are warnings`
 
 Read `~/.claude/hammertime/rules.json` first (may not exist).
 
-Generate:
+#### Step 1: Mine real examples from production logs
+
+Before generating any keywords or patterns, search production conversation logs using the remind skill:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/remind/scripts/search.py" "<2-3 key terms from the user's description>" --limit 10 --no-recency
+```
+
+Scan the returned assistant messages for:
+- **True positives** (3-5): Messages that demonstrate the exact bad behavior described. Extract the specific phrases the model used.
+- **True negatives** (2-3): Messages using similar vocabulary that do NOT violate the rule. These guard against overfitting keywords.
+
+If the remind search returns no results (Scribe DB unavailable, no matches, or the script doesn't exist), skip to Step 2 and generate from the description alone.
+
+#### Step 2: Generate grounded fields from real examples
+
+Use the phrases extracted from real log examples — not hypothetical guesses — to populate:
+
 - `name`: derive a kebab-case name from the description (short, descriptive)
 - `rule`: use the user's description directly (clean it up minimally)
-- `keywords`: extract 4-8 likely trigger words/phrases from the description
-- `intent_patterns`: write 2-4 regex patterns matching structural dismissal for this rule. Use `\s+`, `(?:...|...)`, and `.*?` for flexible matching.
-- `dismissal_verbs`: regex matching refusal verbs relevant to the rule (optional)
-- `qualifiers`: regex matching attribution/deflection terms relevant to the rule (optional)
+- `keywords`: extract 4-8 trigger words/phrases that appear in the TRUE POSITIVE examples found. If no logs found, extract from the description.
+- `intent_patterns`: write 2-4 regex patterns matching the structural patterns seen in real violating messages. Use `\s+`, `(?:...|...)`, and `.*?` for flexible matching.
+- `dismissal_verbs`: regex matching refusal verbs that appeared in real examples (optional)
+- `qualifiers`: regex matching attribution/deflection terms that appeared in real examples (optional)
 - `skill`: if the user mentions a Skill(), resolve informal names to fully-qualified IDs. If no skill mentioned, null.
 - `enabled`: true
 - `confidence_threshold`: 5
+
+#### Step 3: Output test cases
+
+Show the user the test cases extracted from real logs, formatted as a table:
+
+| Message (excerpt) | Should trigger | Category | Source |
+|---|---|---|---|
+| "these lint errors aren't critical..." | yes | true positive | session log |
+| "I noticed some warnings but fixed..." | no | true negative | session log |
+
+If no logs were found, skip this table.
 
 Do NOT ask clarifying questions if the description is clear. Just make the rule.
 

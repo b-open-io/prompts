@@ -12,6 +12,8 @@ Usage:
 """
 
 import argparse
+import datetime
+import json
 import sys
 import os
 
@@ -178,7 +180,7 @@ PROJECT_OWNER_TESTS = [
 ]
 
 
-def run_tests(threshold=5, verbose=False):
+def run_tests(threshold=5, verbose=False, json_output=False):
     """Run all test cases and report results."""
     rules = [r for r in BUILTIN_RULES if r["name"] == "project-owner"]
 
@@ -218,20 +220,79 @@ def run_tests(threshold=5, verbose=False):
             "message": message[:80] + "..." if len(message) > 80 else message,
         })
 
-    # Print results
+    # Compute summary stats
     total = len(PROJECT_OWNER_TESTS)
     correct = true_positives + true_negatives
     should_trigger_count = sum(1 for _, st, _, _ in PROJECT_OWNER_TESTS if st)
     should_not_count = total - should_trigger_count
 
-    print(f"\n{'='*70}")
-    print(f"  HammerTime Scorer Test — project-owner rule (threshold={threshold})")
-    print(f"{'='*70}\n")
-
-    # Summary stats
     precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
     recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+    accuracy = correct / total
+
+    failures = [r for r in results if not r["correct"]]
+
+    # Threshold sweep data (computed for both output modes)
+    threshold_sweep = []
+    for t in range(1, 11):
+        tp = fn = fp = tn = 0
+        for message, should_trigger, _, _ in PROJECT_OWNER_TESTS:
+            scores = score_message(message, rules)
+            s = scores[0][1] if scores else 0
+            triggered = s >= t
+            if should_trigger and triggered: tp += 1
+            elif not should_trigger and not triggered: tn += 1
+            elif should_trigger and not triggered: fn += 1
+            else: fp += 1
+        p = tp / (tp + fp) if (tp + fp) > 0 else 0
+        r = tp / (tp + fn) if (tp + fn) > 0 else 0
+        f = 2*p*r/(p+r) if (p+r) > 0 else 0
+        threshold_sweep.append({
+            "threshold": t,
+            "tp": tp,
+            "fp": fp,
+            "fn": fn,
+            "tn": tn,
+            "precision": round(p, 2),
+            "recall": round(r, 2),
+            "f1": round(f, 2),
+        })
+
+    if json_output:
+        output = {
+            "date": datetime.date.today().isoformat(),
+            "rule": "project-owner",
+            "threshold": threshold,
+            "corpus_size": total,
+            "should_trigger": should_trigger_count,
+            "should_not_trigger": should_not_count,
+            "true_positives": true_positives,
+            "true_negatives": true_negatives,
+            "false_positives": false_positives,
+            "false_negatives": false_negatives,
+            "precision": round(precision, 2),
+            "recall": round(recall, 2),
+            "f1": round(f1, 2),
+            "accuracy": round(accuracy, 2),
+            "threshold_sweep": threshold_sweep,
+            "failures": [
+                {
+                    "status": r["status"],
+                    "score": r["score"],
+                    "category": r["category"],
+                    "message_preview": r["message"],
+                }
+                for r in failures
+            ],
+        }
+        print(json.dumps(output, indent=2))
+        return len(failures) == 0
+
+    # Human-readable table output
+    print(f"\n{'='*70}")
+    print(f"  HammerTime Scorer Test — project-owner rule (threshold={threshold})")
+    print(f"{'='*70}\n")
 
     print(f"  Total cases:      {total}")
     print(f"  Should trigger:   {should_trigger_count}")
@@ -242,13 +303,12 @@ def run_tests(threshold=5, verbose=False):
     print(f"  False Positives:  {false_positives:3d}  (wrongly flagged good behavior)")
     print(f"  False Negatives:  {false_negatives:3d}  (missed bad behavior)")
     print()
-    print(f"  Accuracy:         {correct}/{total} ({100*correct/total:.0f}%)")
+    print(f"  Accuracy:         {correct}/{total} ({100*accuracy:.0f}%)")
     print(f"  Precision:        {precision:.2f}")
     print(f"  Recall:           {recall:.2f}")
     print(f"  F1:               {f1:.2f}")
 
     # Show failures
-    failures = [r for r in results if not r["correct"]]
     if failures:
         print(f"\n{'─'*70}")
         print(f"  FAILURES ({len(failures)}):")
@@ -270,28 +330,17 @@ def run_tests(threshold=5, verbose=False):
             print(f"  {r['note']}")
             print(f"  {r['message']}")
 
-    # Threshold sweep
+    # Threshold sweep table
     print(f"\n{'─'*70}")
     print(f"  THRESHOLD SWEEP:")
     print(f"{'─'*70}")
     print(f"  {'Thr':>4} | {'TP':>3} {'FP':>3} {'FN':>3} {'TN':>3} | {'Prec':>5} {'Rec':>5} {'F1':>5} | {'Acc':>5}")
     print(f"  {'─'*4}-+-{'─'*15}-+-{'─'*17}-+-{'─'*5}")
-    for t in range(1, 11):
-        tp = fn = fp = tn = 0
-        for message, should_trigger, _, _ in PROJECT_OWNER_TESTS:
-            scores = score_message(message, rules)
-            s = scores[0][1] if scores else 0
-            triggered = s >= t
-            if should_trigger and triggered: tp += 1
-            elif not should_trigger and not triggered: tn += 1
-            elif should_trigger and not triggered: fn += 1
-            else: fp += 1
-        p = tp / (tp + fp) if (tp + fp) > 0 else 0
-        r = tp / (tp + fn) if (tp + fn) > 0 else 0
-        f = 2*p*r/(p+r) if (p+r) > 0 else 0
-        a = (tp+tn) / total
+    for row in threshold_sweep:
+        t = row["threshold"]
+        a = (row["tp"] + row["tn"]) / total
         marker = " <-- current" if t == threshold else ""
-        print(f"  {t:>4} | {tp:>3} {fp:>3} {fn:>3} {tn:>3} | {p:>5.2f} {r:>5.2f} {f:>5.2f} | {a:>5.0%}{marker}")
+        print(f"  {t:>4} | {row['tp']:>3} {row['fp']:>3} {row['fn']:>3} {row['tn']:>3} | {row['precision']:>5.2f} {row['recall']:>5.2f} {row['f1']:>5.2f} | {a:>5.0%}{marker}")
 
     print()
     return len(failures) == 0
@@ -301,7 +350,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="HammerTime scorer test harness")
     parser.add_argument("-v", "--verbose", action="store_true", help="Show all results")
     parser.add_argument("--threshold", type=int, default=5, help="Score threshold (default: 5)")
+    parser.add_argument("--json", action="store_true", help="Output structured JSON instead of human-readable table")
     args = parser.parse_args()
 
-    success = run_tests(threshold=args.threshold, verbose=args.verbose)
+    success = run_tests(threshold=args.threshold, verbose=args.verbose, json_output=args.json)
     sys.exit(0 if success else 1)
