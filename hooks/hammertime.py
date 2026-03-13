@@ -155,6 +155,7 @@ BUILTIN_RULES = [
 ]
 
 USER_RULES_PATH = os.path.expanduser("~/.claude/hammertime/rules.json")
+STATE_PATH = os.path.expanduser("~/.claude/hammertime/state.json")
 
 
 def compile_user_rule(rule):
@@ -190,6 +191,29 @@ def load_rules():
         except (json.JSONDecodeError, OSError):
             pass
     return [r for r in rules if r.get("enabled", True)]
+
+
+def load_state():
+    """Load iteration tracking state. Returns empty dict if missing or corrupt."""
+    if not os.path.exists(STATE_PATH):
+        return {}
+    try:
+        with open(STATE_PATH, "r") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def save_state(state):
+    """Atomically write iteration state (temp file + os.rename)."""
+    os.makedirs(os.path.dirname(STATE_PATH), exist_ok=True)
+    tmp_path = STATE_PATH + ".tmp"
+    try:
+        with open(tmp_path, "w") as f:
+            json.dump(state, f, indent=2)
+        os.rename(tmp_path, STATE_PATH)
+    except OSError:
+        pass
 
 
 def score_message(text, rules):
@@ -506,10 +530,19 @@ def main():
         debug_log("EXIT: no enabled rules")
         sys.exit(0)
 
-    # Only read transcript if at least one rule needs full-turn evaluation
+    # Determine session ID from transcript path (resets iteration counters on new session)
+    transcript_path = find_transcript()
+    session_id = os.path.basename(transcript_path).replace(".jsonl", "") if transcript_path else "unknown"
+
+    # Load iteration state for loop safety (max_iterations)
+    state = load_state()
+    if state.get("session_id") != session_id:
+        debug_log(f"STATE: new session {session_id[:8]}..., resetting iteration counters")
+        state = {"session_id": session_id, "rule_iterations": {}}
+
+    # Read transcript for full-turn evaluation if any rule needs it
     full_turn_text = None
     if any(r.get("evaluate_full_turn") for r in rules):
-        transcript_path = find_transcript()
         if transcript_path:
             full_turn_text = collect_turn_messages(transcript_path)
 
@@ -541,12 +574,22 @@ def main():
         eval_text = full_turn_text if rule.get("evaluate_full_turn") and full_turn_text else last_msg
         debug_log(f"SCORE: rule '{rule['name']}' score={score} (kw={breakdown['kw']}, intent={breakdown['intent']}, cluster={breakdown['cluster']})")
 
+        # Loop safety: check iteration limit before blocking
+        rule_name = rule["name"]
+        max_iter = rule.get("max_iterations", 3)
+        current_iter = state.get("rule_iterations", {}).get(rule_name, 0)
+        if max_iter > 0 and current_iter >= max_iter:
+            debug_log(f"SKIP: rule '{rule_name}' hit max iterations ({max_iter}), allowing exit")
+            continue
+
         if score >= threshold:
             # Optional: check git state for rules that care
             if rule.get("check_git_state") and check_git_clean():
                 debug_log(f"SKIP: rule '{rule['name']}' score={score} but git state is clean")
                 continue
             debug_log(f"BLOCK: score {score} >= {threshold}, skipping Phase 2")
+            state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
+            save_state(state)
             block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score})")
         else:
             if rule.get("check_git_state") and check_git_clean():
@@ -556,6 +599,8 @@ def main():
             violated = phase2_haiku_evaluate(eval_text, rule)
             debug_log(f"PHASE2: rule '{rule['name']}' violated={violated}")
             if violated:
+                state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
+                save_state(state)
                 block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score}, haiku=yes)")
 
     # No violations confirmed

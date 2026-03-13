@@ -1,4 +1,8 @@
 {
+  "metadata": {
+    "last_updated": "2026-03-13",
+    "notes": "Loop safety (max_iterations) added to hook. Scoring logic unchanged — benchmark results remain valid."
+  },
   "rules": {
     "project-owner": {
       "current": {

@@ -52,7 +52,8 @@ Rules are JSON objects in an array. Required and optional fields:
   "qualifiers": "\\b(?:pre-?existing|scope|unrelated)\\b",
   "confidence_threshold": 5,
   "skill": null,
-  "evaluate_full_turn": true
+  "evaluate_full_turn": true,
+  "max_iterations": 3
 }
 ```
 
@@ -69,6 +70,7 @@ Rules are JSON objects in an array. Required and optional fields:
 - `confidence_threshold` — Score at which to block without Haiku (default: 5)
 - `skill` — Fully-qualified skill ID to invoke when rule fires (e.g., `gemskills:visual-planner`)
 - `evaluate_full_turn` — Boolean. When `true`, scores ALL assistant messages since the user's last message (reads session transcript). When `false` or omitted, scores only the final assistant message. Default: `false`.
+- `max_iterations` — Maximum times this rule can block per session before auto-allowing exit (default: 3, set 0 for unlimited). Prevents infinite loops when a rule is too broad or can't be satisfied.
 - `check_git_state` — Boolean. When `true`, the hook runs `git status --porcelain`, `git log @{u}..HEAD`, and `git ls-files --others --exclude-standard` before blocking. If the working tree is clean and all commits are pushed, the rule is skipped entirely (both the direct-block and Haiku phase paths). Useful for rules about pushing or committing work, so they don't fire when there is genuinely nothing to push. Default: `false`.
 
 ## Three-Layer Scoring

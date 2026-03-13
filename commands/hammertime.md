@@ -77,6 +77,7 @@ Use the phrases extracted from real log examples â€” not hypothetical guesses â€
 - `skill`: if the user mentions a Skill(), resolve informal names to fully-qualified IDs. If no skill mentioned, null.
 - `enabled`: true
 - `confidence_threshold`: 5
+- `max_iterations`: 3
 
 #### Step 3: Output test cases
 

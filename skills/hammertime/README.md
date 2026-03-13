@@ -83,6 +83,19 @@ Three layers of scoring, each more specific than the last:
 
 A rule fires when any layer accumulates enough signal. The `confidence_threshold` field (default: 5) controls when Haiku is skipped and the response is blocked outright.
 
+## Safety: Loop Prevention
+
+Rules can create infinite loops if they're too broad or the model can't satisfy them -- the rule blocks exit, re-injects the prompt, and the model produces the same violation again.
+
+HammerTime prevents this with per-rule iteration tracking:
+
+- Each rule has a `max_iterations` field (default: 3)
+- The hook tracks how many times each rule has blocked in the current session
+- When a rule hits its limit, it's skipped with a debug log message
+- Counters reset automatically when a new Claude Code session starts
+
+State is stored in `~/.claude/hammertime/state.json` with atomic writes (temp file + rename) to prevent corruption. Set `"max_iterations": 0` to make a rule unlimited.
+
 ## The Corpus-Driven Advantage
 
 Rules derived by imagining what a violation might look like produce brittle results. Rules grounded in your actual session logs are dramatically more accurate.
@@ -150,6 +163,7 @@ Rules are JSON objects in `~/.claude/hammertime/rules.json`.
 | `confidence_threshold` | No | Score to block without Haiku (default: 5) |
 | `skill` | No | Fully-qualified skill ID to invoke when rule fires |
 | `evaluate_full_turn` | No | Score all assistant messages in the turn, not just the last (default: false) |
+| `max_iterations` | No | Max times this rule can block per session before allowing exit (default: 3, 0 = unlimited) |
 | `check_git_state` | No | Skip rule if working tree is clean and commits are pushed (default: false) |
 
 See `SKILL.md` for the full rule creation workflow and scoring details.
