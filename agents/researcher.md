@@ -249,98 +249,70 @@ If unavailable, fall back to traditional WebSearch + WebFetch and note freshness
 - General programming concepts
 - Tasks that WebSearch handles well
 
-#### Grok API Usage Pattern with Live Search
+#### Grok API Usage (Agentic Tool Calling)
+
+**Recommended Model**: `grok-4-1-fast` (specifically trained for agentic search)
+
+**Available Models**:
+- `grok-4-1-fast` - Recommended for agentic search (auto-selects reasoning mode)
+- `grok-4-1-fast-reasoning` - Explicit reasoning for complex research
+- `grok-4-1-fast-non-reasoning` - Faster responses, simpler queries
 
 **Basic usage with real-time data:**
 ```bash
-curl https://api.x.ai/v1/chat/completions \
+curl -s "https://api.x.ai/v1/responses" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -d '{
-    "messages": [
-      {
-        "role": "system",
-        "content": "You are Grok, a chatbot inspired by the Hitchhikers Guide to the Galaxy."
-      },
+    "model": "grok-4-1-fast",
+    "input": [
       {
         "role": "user",
         "content": "[RESEARCH QUERY]"
       }
     ],
-    "model": "grok-4-latest",
-    "search_parameters": {},
-    "stream": false,
-    "temperature": 0
-  }' | jq -r '.choices[0].message.content'
+    "tools": [{"type": "web_search"}, {"type": "x_search"}]
+  }' | jq -r '.output[-1].content[0].text'
 ```
 
-**Advanced search_parameters options:**
+**Available Search Tools:**
 
-1. **Mode Control** (when to search):
-   - `"mode": "auto"` (default) - Model decides whether to search
-   - `"mode": "on"` - Always search
-   - `"mode": "off"` - Never search
+1. **web_search** - Searches the internet and browses web pages
+   - `"allowed_domains": ["github.com", "stackoverflow.com"]` - Restrict to these domains (max 5)
+   - `"excluded_domains": ["pinterest.com"]` - Exclude these domains (max 5)
+   - `"enable_image_understanding": true` - Analyze images found during search
 
-2. **Data Sources** (where to search):
-   - `"web"` - Website search
-   - `"x"` - X/Twitter posts
-   - `"news"` - News sources
-   - `"rss"` - RSS feeds
-
-3. **Common Parameters**:
-   - `"return_citations": true` - Include source URLs (default: true)
-   - `"max_search_results": 20` - Limit sources (default: 20)
-   - `"from_date": "YYYY-MM-DD"` - Start date for results
-   - `"to_date": "YYYY-MM-DD"` - End date for results
+2. **x_search** - Semantic and keyword search across X posts
+   - `"allowed_x_handles": ["handle1", "handle2"]` - Only include posts from these accounts (max 10)
+   - `"excluded_x_handles": ["handle1"]` - Exclude posts from these accounts (max 10)
+   - `"from_date": "YYYY-MM-DD"` / `"to_date": "YYYY-MM-DD"` - Date range filter
+   - `"enable_image_understanding": true` - Analyze images in posts
+   - `"enable_video_understanding": true` - Analyze videos in posts
 
 **Example: X/Twitter trending topics with filters:**
 ```bash
-curl https://api.x.ai/v1/chat/completions \
+curl -s "https://api.x.ai/v1/responses" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -d '{
-    "messages": [
+    "model": "grok-4-1-fast",
+    "input": [
       {
         "role": "user",
         "content": "What is currently trending on X? Include viral posts and major discussions."
       }
     ],
-    "model": "grok-4-latest",
-    "search_parameters": {
-      "mode": "on",
-      "sources": [
-        {
-          "type": "x",
-          "post_favorite_count": 1000,
-          "post_view_count": 10000
-        }
-      ],
-      "max_search_results": 30,
-      "return_citations": true
-    },
-    "stream": false,
-    "temperature": 0
-  }' | jq -r '.choices[0].message.content'
+    "tools": [{
+      "type": "x_search",
+      "from_date": "2025-01-09",
+      "to_date": "2025-01-16"
+    }, {
+      "type": "web_search"
+    }]
+  }' | jq -r '.output[-1].content[0].text'
 ```
 
-**Source-specific parameters:**
-
-**Web & News**:
-- `"country": "US"` - ISO alpha-2 country code
-- `"excluded_websites": ["site1.com", "site2.com"]` - Max 5 sites
-- `"allowed_websites": ["site1.com"]` - Max 5 sites (web only)
-- `"safe_search": false` - Disable safe search
-
-**X/Twitter**:
-- `"included_x_handles": ["handle1", "handle2"]` - Max 10 handles
-- `"excluded_x_handles": ["handle1"]` - Max 10 handles
-- `"post_favorite_count": 1000` - Min favorites filter
-- `"post_view_count": 10000` - Min views filter
-
-**RSS**:
-- `"links": ["https://example.com/feed.xml"]` - RSS feed URL
-
-**Note**: Live Search costs $0.025 per source used. Check `response.usage.num_sources_used` for billing.
+**Note**: Search tools are currently free (promotional pricing). When active: $5 per 1,000 tool invocations. Track costs via `response.usage.cost_in_usd_ticks` (divide by 1,000,000,000 for USD).
 
 #### Research Workflow with Grok
 1. Check if query needs real-time data
@@ -353,17 +325,23 @@ curl https://api.x.ai/v1/chat/completions \
 **IMPORTANT: Always report research costs:**
 ```bash
 # Save response to extract both content and usage
-RESPONSE=$(curl -s https://api.x.ai/v1/chat/completions ... )
+RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $XAI_API_KEY" \
+  -d '{
+    "model": "grok-4-1-fast",
+    "input": [{"role": "user", "content": "[QUERY]"}],
+    "tools": [{"type": "web_search"}, {"type": "x_search"}]
+  }')
 
-# Extract sources used and calculate cost
-SOURCES_USED=$(echo "$RESPONSE" | jq -r '.usage.num_sources_used // 0')
-COST=$(echo "scale=3; $SOURCES_USED * 0.025" | bc)
-
-# Report cost to user
-echo "🔍 xAI Research Cost: $SOURCES_USED sources × \$0.025 = \$$COST"
+# Extract usage stats
+TOOL_CALLS=$(echo "$RESPONSE" | jq -r '.usage.num_server_side_tools_used // 0')
+COST_TICKS=$(echo "$RESPONSE" | jq -r '.usage.cost_in_usd_ticks // 0')
+COST_USD=$(echo "scale=4; $COST_TICKS / 1000000000" | bc)
+echo "xAI Research: $TOOL_CALLS tool calls | Estimated cost: \$$COST_USD"
 
 # Then show the actual content
-echo "$RESPONSE" | jq -r '.choices[0].message.content'
+echo "$RESPONSE" | jq -r '.output[-1].content[0].text'
 ```
 
 ### Archive & Freshness

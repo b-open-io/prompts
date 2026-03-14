@@ -11,7 +11,7 @@ Complete documentation of the JSON data passed to status line commands via stdin
   "transcript_path": "/path/to/transcript.json",
   "cwd": "/current/working/directory",
   "model": {
-    "id": "claude-opus-4-1",
+    "id": "claude-opus-4-6",
     "display_name": "Opus"
   },
   "workspace": {
@@ -59,7 +59,7 @@ Complete documentation of the JSON data passed to status line commands via stdin
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `model.id` | string | Model identifier (e.g., "claude-opus-4-1", "claude-sonnet-4-20250514") |
+| `model.id` | string | Model identifier (e.g., "claude-opus-4-6", "claude-sonnet-4-6") |
 | `model.display_name` | string | Human-readable name (e.g., "Opus", "Sonnet") |
 
 ### Workspace Object

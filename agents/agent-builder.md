@@ -872,7 +872,7 @@ import { GlobeIcon, CodeIcon, DatabaseIcon } from 'lucide-react';
 
 const models = [
   { name: 'GPT 4o', value: 'openai/gpt-4o' },
-  { name: 'Claude 3.5', value: 'anthropic/claude-3.5-sonnet' },
+  { name: 'Claude Sonnet', value: 'anthropic/claude-sonnet-4.6' },
   { name: 'Deepseek R1', value: 'deepseek/deepseek-r1' },
 ];
 

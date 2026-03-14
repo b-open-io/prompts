@@ -260,7 +260,7 @@ Use these to extend Claude Code with official and community plugins:
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "1"
   },
-  "model": "claude-opus-4-1",
+  "model": "claude-opus-4-6",
   "hooks": {
     "PreToolUse": {"Bash": "echo 'Running command...'"}
   }

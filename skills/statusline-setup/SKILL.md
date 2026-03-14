@@ -88,7 +88,7 @@ The status line command receives structured JSON via stdin:
 
 | Field | Description |
 |-------|-------------|
-| `model.id` | Model identifier (e.g., "claude-opus-4-1") |
+| `model.id` | Model identifier (e.g., "claude-opus-4-6") |
 | `model.display_name` | Human-readable name (e.g., "Opus") |
 | `workspace.current_dir` | Current working directory |
 | `workspace.project_dir` | Original project directory |

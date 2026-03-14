@@ -963,7 +963,7 @@ import anthropic
 client = anthropic.Anthropic()
 
 response = client.beta.messages.create(
-    model="claude-opus-4-5-20251001",  # or claude-sonnet-4-5-20250929
+    model="claude-opus-4-6",  # or claude-sonnet-4-6
     betas=["advanced-tool-use-2025-11-20", "mcp-client-2025-11-20"],
     max_tokens=4096,
     tools=[

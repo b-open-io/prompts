@@ -263,7 +263,7 @@ app.post("/api/chat", async (c) => {
 	try {
 		const modelMessages = await convertToModelMessages(parsedBody.messages);
 		const result = streamText({
-			model: gateway("anthropic/claude-sonnet-4.5"),
+			model: gateway("anthropic/claude-sonnet-4.6"),
 			system,
 			messages: modelMessages,
 			tools: createTools(context),

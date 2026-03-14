@@ -93,7 +93,7 @@ Test with fuller JSON to exercise all branches:
 
 ```bash
 echo '{
-  "model": {"id": "claude-opus-4-1", "display_name": "Opus"},
+  "model": {"id": "claude-opus-4-6", "display_name": "Opus"},
   "workspace": {"current_dir": "/Users/you/project", "project_dir": "/Users/you/project"},
   "cost": {"total_cost_usd": 0.05, "total_duration_ms": 120000},
   "context_window": {"context_window_size": 200000, "current_usage": {"input_tokens": 4500, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0}}
