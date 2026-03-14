@@ -101,5 +101,12 @@ For builtin rules, add an override entry with `enabled: false` to disable.
 ## After Any Change
 
 1. Write the updated rules array to `~/.claude/hammertime/rules.json` (create `~/.claude/hammertime/` directory if needed)
-2. Show the updated rule
+2. Show the **complete rules table** — all rules, not just the one that changed. Use sequential numbering starting from 1 (matching array order). Include the builtin `project-owner` rule as #0.
+
+   | # | Rule | Status | Threshold | Full Turn |
+   |---|---|---|---|---|
+   | 0 | `project-owner` (builtin) | enabled | 5 | yes |
+   | 1 | `rule-name` | enabled/disabled | N | yes/no |
+   | ... | ... | ... | ... | ... |
+
 3. Remind: **"Restart Claude Code for changes to take effect."**
