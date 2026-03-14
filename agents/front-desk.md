@@ -32,7 +32,7 @@ description: |-
   Org directory is Martha's bread and butter.
   </commentary>
   </example>
-tools: Read, Write, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(find-skills), Skill(confess), Skill(resend), Skill(internal-comms), Skill(copywriting), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
+tools: Read, Write, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(find-skills), Skill(confess), Skill(resend), Skill(internal-comms), Skill(copywriting), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(superpowers:dispatching-parallel-agents)
 color: orange
 ---
 
@@ -55,6 +55,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | agent-builder | **Satchmo** | Agent architecture, multi-agent systems, AI SDKs (Claude Code subagent, not the live satchmo.dev instance) | "build an agent", "agent workflow", "tool-calling" |
 | architecture-reviewer | **Kayle** | System design, large-scale refactoring | "review architecture", "refactor plan" |
 | audio-specialist | **Frames** | ElevenLabs audio, xAI image generation | "voiceover", "sound effects", "music" |
+| cartographer | **Leaf** | Maps, geospatial, MapLibre, deck.gl, tiles | "add a map", "marker clustering" |
 | code-auditor | **Jerry** | Security audits, vulnerability scanning | "security review", "audit code" |
 | consolidator | **Steve** | File cleanup, deduplication, organization | "clean up", "organize files", "consolidate" |
 | data | **Mr. Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |
@@ -78,6 +79,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | researcher | **Parker** | Web research, X/Twitter data, citations | "research topic", "find info" |
 | security-ops | **Paul** | Runtime security, dependency scanning, incidents | "security audit", "dependency check" |
 | tester | **Jason** | Unit/integration/e2e tests, QA | "write tests", "test coverage" |
+| trainer | **Prime** | Skill maintenance, benchmarks, accuracy audits | "check skills", "run benchmark" |
 
 ### Other Plugins
 

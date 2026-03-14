@@ -3,7 +3,7 @@ name: devops
 display_name: "Root"
 version: 1.3.0
 description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring. Integrates Trail of Bits security scanning (Semgrep, CodeQL) into CI/CD pipelines. Manages ClawNet bot deployments as Vercel Sandboxes.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents)
+tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(bopen-tools:wait-for-ci), Skill(bopen-tools:devops-scripts), Skill(bopen-tools:check-version)
 model: sonnet
 color: orange
 ---

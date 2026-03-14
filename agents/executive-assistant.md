@@ -41,7 +41,7 @@ description: "Executive assistant for Google Workspace — manages inbox, calend
   </commentary>
   </example>
 
-tools: Bash, Read, Write, Skill(agent-browser), Skill(notebooklm), Skill(humanize), Skill(linear-planning), Skill(bopen-tools:x-research), Skill(bopen-tools:x-user-lookup), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:persona), Skill(gemskills:deck-creator), Skill(confess), Skill(pm-execution:summarize-meeting), Skill(pm-execution:stakeholder-map), Skill(pm-execution:wwas)
+tools: Bash, Read, Write, Skill(agent-browser), Skill(notebooklm), Skill(humanize), Skill(linear-planning), Skill(bopen-tools:x-research), Skill(bopen-tools:x-user-lookup), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:persona), Skill(gemskills:deck-creator), Skill(confess), Skill(pm-execution:summarize-meeting), Skill(pm-execution:stakeholder-map), Skill(pm-execution:wwas), Skill(bopen-tools:remind)
 color: magenta
 ---
 
