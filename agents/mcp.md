@@ -2,7 +2,35 @@
 name: mcp
 display_name: "Orbit"
 version: 3.0.18
-description: MCP server installation, configuration, diagnostics, troubleshooting, and publishing. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization. Guides authors through building and publishing MCP servers to NPM for distribution via npx.
+description: |-
+  MCP server installation, configuration, diagnostics, troubleshooting, and publishing. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization. Guides authors through building and publishing MCP servers to NPM for distribution via npx.
+
+  <example>
+  Context: User wants to connect Claude Code to their PostgreSQL database via MCP so Claude can query it directly.
+  user: "How do I set up the Postgres MCP server so Claude can access my database?"
+  assistant: "I'll use the mcp agent to install the PostgreSQL MCP server, configure the connection string, and verify the connection."
+  <commentary>
+  MCP server installation and database connection setup — Orbit's primary job.
+  </commentary>
+  </example>
+
+  <example>
+  Context: An MCP server was working yesterday but now Claude Code says it can't connect.
+  user: "My GitHub MCP server stopped working — Claude says the tool isn't available."
+  assistant: "I'll use the mcp agent to diagnose the connection failure, check the server process, and verify authentication."
+  <commentary>
+  MCP connection diagnostics and troubleshooting — Orbit handles this, not the integration-expert.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User has built a custom MCP server and wants to publish it so others can install it via npx.
+  user: "I've built an MCP server for our internal tools. How do I publish it to npm so teams can use it?"
+  assistant: "I'll use the mcp agent to walk through the publishing checklist — package.json setup, npx compatibility, and npm publish."
+  <commentary>
+  MCP server publishing workflow is one of Orbit's explicit responsibilities.
+  </commentary>
+  </example>
 tools: Bash, Read, Write, Edit, Grep, TodoWrite, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps), Skill(plugin-dev:mcp-integration), Skill(npm-publish)
 model: sonnet
 color: orange

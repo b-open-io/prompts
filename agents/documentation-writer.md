@@ -3,7 +3,35 @@ name: documentation-writer
 display_name: "Flow"
 version: 1.2.0
 model: sonnet
-description: Technical writer expert in developer docs. Creates READMEs, API docs, PRDs, guides. Uses Shape Up & Amazon Working Backwards for PRDs. Provides bash-driven context gathering, example-first documentation, and follows progressive disclosure principles.
+description: |-
+  Technical writer expert in developer docs. Creates READMEs, API docs, PRDs, guides. Uses Shape Up & Amazon Working Backwards for PRDs. Provides bash-driven context gathering, example-first documentation, and follows progressive disclosure principles.
+
+  <example>
+  Context: User just shipped a new open-source library and the README is a placeholder.
+  user: "Our library has no real documentation. Can you write a proper README with install instructions and examples?"
+  assistant: "I'll use the documentation-writer agent to audit the codebase, write a README with quick start, API reference, and copy-paste examples."
+  <commentary>
+  README creation with example-first documentation is Flow's primary output format.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User needs a Product Requirements Document before starting a new feature.
+  user: "We're building a referral program. Can you write the PRD so the team knows what to build?"
+  assistant: "I'll use the documentation-writer agent to write the PRD using Amazon Working Backwards, starting with the press release and working back to requirements."
+  <commentary>
+  PRD writing using Shape Up or Amazon Working Backwards methodology — Flow's specialization.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User's API has endpoints but no developer documentation.
+  user: "We have a REST API but no docs. Developers keep asking us how to use it."
+  assistant: "I'll use the documentation-writer agent to generate API reference docs from the codebase with request/response examples for every endpoint."
+  <commentary>
+  API documentation from source code — Flow gathers bash context, then writes docs with real examples.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, MultiEdit, Grep, Glob, WebFetch, TodoWrite, Skill(cli-demo-gif), Skill(humanize), Skill(agent-browser), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: cyan
 ---

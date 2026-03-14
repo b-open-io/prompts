@@ -3,7 +3,35 @@ name: tester
 display_name: "Jason"
 version: 1.3.9
 model: sonnet
-description: Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
+description: |-
+  Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
+
+  <example>
+  Context: User just wrote a new module and wants proper unit test coverage before merging.
+  user: "Can you write tests for this utility module? It handles date parsing and formatting."
+  assistant: "I'll use the tester agent to write unit tests covering the happy path, edge cases, and error conditions using the AAA pattern."
+  <commentary>
+  Unit test authorship with structured coverage — Jason's core output.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User wants to add end-to-end tests for their checkout flow before a major release.
+  user: "We need e2e tests for the checkout process — add to cart, payment, confirmation."
+  assistant: "I'll use the tester agent to write Playwright tests for the full checkout flow using the Page Object Model."
+  <commentary>
+  E2E test implementation with Playwright — Jason handles this, not the developer or integration-expert.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User's CI pipeline has no test coverage reporting and they want visibility before adding a coverage gate.
+  user: "We have tests but no coverage metrics in CI. Can you wire that up?"
+  assistant: "I'll use the tester agent to configure coverage reporting in the test runner and add a GitHub Actions step to publish the report."
+  <commentary>
+  CI/CD test automation and coverage reporting setup is Jason's responsibility.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(portless), Skill(webapp-testing), Skill(agent-browser), Skill(chrome-cdp), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: green
 ---

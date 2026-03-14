@@ -2,7 +2,35 @@
 name: database
 display_name: "Idris"
 version: 1.2.11
-description: Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso (libSQL), and Convex expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
+description: |-
+  Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso (libSQL), and Convex expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
+
+  <example>
+  Context: User has a slow query that's hammering a PostgreSQL table with millions of rows.
+  user: "This query takes 8 seconds and it runs on every page load. Can you fix it?"
+  assistant: "I'll use the database agent to run EXPLAIN ANALYZE, identify missing indexes, and rewrite the query."
+  <commentary>
+  Query performance on a known database engine — Idris's core domain.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User is designing a schema for a multi-tenant SaaS app and isn't sure whether to use row-level security or separate schemas.
+  user: "Should we use RLS or schema-per-tenant for our Postgres setup?"
+  assistant: "I'll use the database agent to evaluate both approaches against your scale and isolation requirements."
+  <commentary>
+  Schema design and multi-tenancy strategy are exactly what Idris handles.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User needs to migrate a production table without downtime.
+  user: "We need to add a NOT NULL column to a 50M row table. How do we do that safely?"
+  assistant: "I'll use the database agent to write a zero-downtime migration using the expand-contract pattern."
+  <commentary>
+  Safe schema migrations with backfill logic — Idris's area of expertise.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(agent-browser), Skill(simplify), Skill(superpowers:dispatching-parallel-agents)
 color: green
 model: opus

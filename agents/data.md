@@ -3,7 +3,35 @@ name: data
 display_name: "Data Accumulator"
 version: 1.1.12
 model: sonnet
-description: Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
+description: |-
+  Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
+
+  <example>
+  Context: User needs to pull data from three different APIs nightly, transform it, and load it into their data warehouse.
+  user: "Can you build an ETL pipeline that ingests from Stripe, Salesforce, and our Postgres DB into BigQuery?"
+  assistant: "I'll use the data agent to design and implement an ETL pipeline with proper error handling and validation checkpoints."
+  <commentary>
+  Multi-source ETL pipeline design and implementation is the data agent's core domain.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User wants to understand which user cohorts are retaining best after a recent product change.
+  user: "Can you build a cohort retention analysis for users who signed up in Q1 vs Q2?"
+  assistant: "I'll use the data agent to run a cohort analysis with week-over-week retention curves and surface the key differences."
+  <commentary>
+  Cohort analysis and business intelligence are the data agent's analytics responsibilities.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User wants an interactive dashboard to track their key product metrics in real time.
+  user: "We need a dashboard showing DAU, revenue, and churn updated daily."
+  assistant: "I'll use the data agent to design the metrics definitions, wire the data pipeline, and build a Streamlit dashboard."
+  <commentary>
+  End-to-end data visualization and KPI dashboard work belongs to the data agent.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(charting), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(pm-data-analytics:sql-queries), Skill(pm-data-analytics:cohort-analysis), Skill(pm-data-analytics:ab-test-analysis), Skill(pm-execution:dummy-dataset), Skill(pm-execution:test-scenarios), Skill(pm-product-discovery:metrics-dashboard)
 color: cyan
 ---
