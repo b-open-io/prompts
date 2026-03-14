@@ -73,12 +73,19 @@ ${SKILL_DIR}/scripts/apply.sh --draft <path-or--> [--profile <path>] [--format t
 Open a local preview of a styled post in the browser. Fully offline — no external services.
 
 ```bash
+# Static preview (self-contained HTML, auto-opens browser)
 ${SKILL_DIR}/scripts/preview.sh --post <json-path> [--image <path>] [--username <handle>]
+
+# Interactive playground (live editing, image generation, approval workflow)
+bun run ${SKILL_DIR}/scripts/playground.ts --data <json-path> [--port 4747] [--open]
 ```
 
-- Renders a Twitter-like preview with character count, engagement buttons, media
-- Embeds attached images directly (base64, no uploads)
-- Opens in default browser automatically
+- **preview.sh**: Static HTML preview with base64-embedded images
+- **playground.ts**: Live editor with real-time preview, image upload/generation, approve/reject workflow
+  - `--open` flag opens browser automatically (default: no auto-open)
+  - Shows real X avatar when token is available or profile has been captured
+  - Generate Image button uses gemskills (requires `claude plugin install gemskills@b-open-io`)
+  - Auto-exits 30s after browser tab closes (heartbeat-based)
 
 ## Workflow: Draft a Post
 
@@ -111,7 +118,14 @@ All data lives in `.claude/persona/` in the project root:
 
 ## Environment Variables
 
-| Variable | Required For | Where to Get |
-|----------|-------------|--------------|
-| `X_BEARER_TOKEN` | capture, track (validation) | https://developer.x.com/en/portal/dashboard |
-| `XAI_API_KEY` | scan | https://x.ai/api |
+Token resolution is automatic — scripts try tokens in order and fall back gracefully.
+
+| Variable | Required For | Where to Get | Notes |
+|----------|-------------|--------------|-------|
+| `X_BEARER_TOKEN` | capture, track, playground | https://developer.x.com/en/portal/dashboard | App-only token (preferred, never expires) |
+| `X_ACCESS_TOKEN` | capture, track (fallback) | OAuth 2.0 flow | User token, works for reads too |
+| `X_REFRESH_TOKEN` | auto-refresh | OAuth 2.0 flow | Used with `X_CLIENT_SECRET_ID` |
+| `X_CLIENT_SECRET_ID` | auto-refresh | https://developer.x.com/en/portal/dashboard | OAuth client ID |
+| `XAI_API_KEY` | scan | https://x.ai/api | xAI Grok for social intelligence |
+
+**Token resolution order**: `X_BEARER_TOKEN` → `X_ACCESS_TOKEN` → OAuth refresh → fail with instructions.

@@ -7,6 +7,10 @@ PERSONA_DIR="${PERSONA_DIR:-.claude/persona}"
 POOL_FILE="$PERSONA_DIR/pool.json"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Source shared token resolution
+# shellcheck source=x-token.sh
+source "$SCRIPT_DIR/x-token.sh"
+
 ensure_pool() {
     mkdir -p "$PERSONA_DIR"
     if [ ! -f "$POOL_FILE" ]; then
@@ -41,11 +45,13 @@ cmd_add() {
         exit 0
     fi
 
-    # Validate username exists via X API (if token available)
-    if [ -n "$X_BEARER_TOKEN" ]; then
+    # Validate username exists via X API (if any token available)
+    local token
+    token=$(resolve_x_token 2>/dev/null) || true
+    if [ -n "$token" ]; then
         local user_check
         user_check=$(curl -s "https://api.x.com/2/users/by/username/${username}" \
-            -H "Authorization: Bearer $X_BEARER_TOKEN")
+            -H "Authorization: Bearer $token")
         local user_id
         user_id=$(echo "$user_check" | jq -r '.data.id // empty')
         if [ -z "$user_id" ]; then
@@ -55,7 +61,7 @@ cmd_add() {
         fi
         echo "Validated @$username (ID: $user_id)"
     else
-        echo "Warning: X_BEARER_TOKEN not set, skipping username validation"
+        echo "Warning: No X token available, skipping username validation"
     fi
 
     # Add to pool
@@ -68,8 +74,8 @@ cmd_add() {
     echo "Added @$username to pool"
     [ -n "$note" ] && echo "Note: $note"
 
-    # Optionally capture profile
-    if [ -n "$X_BEARER_TOKEN" ]; then
+    # Optionally capture profile (only if token is available — capture.sh resolves its own)
+    if [ -n "$token" ]; then
         echo ""
         echo "Capturing writing profile..."
         bash "$SCRIPT_DIR/capture.sh" --username "$username"

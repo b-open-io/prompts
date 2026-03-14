@@ -3,6 +3,7 @@
 # Usage: capture.sh --username <handle> [--count <n>] [--output <path>] [--refresh]
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PERSONA_DIR="${PERSONA_DIR:-.claude/persona}"
 USERNAME=""
 COUNT=50
@@ -25,14 +26,10 @@ if [ -z "$USERNAME" ]; then
     exit 1
 fi
 
-if [ -z "$X_BEARER_TOKEN" ]; then
-    echo "Error: X_BEARER_TOKEN is not set"
-    echo ""
-    echo "1. Get a bearer token from https://developer.x.com/en/portal/dashboard"
-    echo "2. Export it: export X_BEARER_TOKEN=\"your-token\""
-    echo "3. Run this script again"
-    exit 1
-fi
+# Resolve X API token (tries bearer → OAuth → refresh)
+# shellcheck source=x-token.sh
+source "$SCRIPT_DIR/x-token.sh"
+TOKEN=$(resolve_x_token) || exit 1
 
 # Determine output path
 if [ -z "$OUTPUT" ]; then
@@ -55,10 +52,10 @@ fi
 
 echo "Fetching posts for @$USERNAME..."
 
-# Step 1: Get user ID
+# Step 1: Get user ID + profile image
 http_code=$(curl -s -o /tmp/persona_user.json -w "%{http_code}" \
-    "https://api.x.com/2/users/by/username/${USERNAME}" \
-    -H "Authorization: Bearer $X_BEARER_TOKEN")
+    "https://api.x.com/2/users/by/username/${USERNAME}?user.fields=profile_image_url,name" \
+    -H "Authorization: Bearer $TOKEN")
 user_response=$(cat /tmp/persona_user.json)
 
 if [ "$http_code" -ge 400 ]; then
@@ -66,8 +63,7 @@ if [ "$http_code" -ge 400 ]; then
     echo "$user_response" | jq -r '.title // .detail // .errors[0].detail // .' 2>/dev/null
     if [ "$http_code" = "401" ]; then
         echo ""
-        echo "Your X_BEARER_TOKEN is expired or invalid."
-        echo "Get a new one at https://developer.x.com/en/portal/dashboard"
+        echo "Your token is expired or invalid. Re-run to try fallback tokens."
     fi
     exit 1
 fi
@@ -78,6 +74,10 @@ if [ -z "$USER_ID" ]; then
     echo "$user_response" | jq -r '.errors[0].detail // .' 2>/dev/null
     exit 1
 fi
+
+# Extract avatar URL (upgrade _normal to _400x400 for higher res)
+AVATAR_URL=$(echo "$user_response" | jq -r '.data.profile_image_url // empty' | sed 's/_normal\./\_400x400./')
+DISPLAY_NAME=$(echo "$user_response" | jq -r '.data.name // empty')
 
 echo "Resolved @$USERNAME -> $USER_ID"
 
@@ -95,7 +95,7 @@ while [ "$PAGES" -lt "$MAX_PAGES" ]; do
 
     tweet_http_code=$(curl -s -o /tmp/persona_tweets.json -w "%{http_code}" \
         "https://api.x.com/2/users/${USER_ID}/tweets?${params}" \
-        -H "Authorization: Bearer $X_BEARER_TOKEN")
+        -H "Authorization: Bearer $TOKEN")
     response=$(cat /tmp/persona_tweets.json)
 
     if [ "$tweet_http_code" = "429" ]; then
@@ -193,6 +193,8 @@ NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 PROFILE=$(jq -n \
     --arg username "$USERNAME" \
+    --arg avatar "$AVATAR_URL" \
+    --arg display_name "$DISPLAY_NAME" \
     --arg captured_at "$NOW" \
     --argjson post_count "$TOTAL" \
     --argjson sample_count "$SAMPLE_COUNT" \
@@ -200,6 +202,8 @@ PROFILE=$(jq -n \
     --argjson metrics "$METRICS" \
     '{
         username: $username,
+        avatar: $avatar,
+        display_name: $display_name,
         captured_at: $captured_at,
         post_count: $post_count,
         sample_count: $sample_count,
