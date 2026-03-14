@@ -4,7 +4,7 @@ display_name: "Jason"
 version: 1.3.9
 model: sonnet
 description: Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
-tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(portless), Skill(webapp-testing), Skill(agent-browser), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+tools: Read, Write, Edit, MultiEdit, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(portless), Skill(webapp-testing), Skill(agent-browser), Skill(chrome-cdp), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: green
 ---
 
