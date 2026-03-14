@@ -68,6 +68,18 @@ ${SKILL_DIR}/scripts/apply.sh --draft <path-or--> [--profile <path>] [--format t
 - Outputs JSON with `system`, `prompt`, and `output_schema` fields
 - Feed this to `generateText()` or your preferred model
 
+### 5. Preview Post
+
+Open a local preview of a styled post in the browser. Fully offline — no external services.
+
+```bash
+${SKILL_DIR}/scripts/preview.sh --post <json-path> [--image <path>] [--username <handle>]
+```
+
+- Renders a Twitter-like preview with character count, engagement buttons, media
+- Embeds attached images directly (base64, no uploads)
+- Opens in default browser automatically
+
 ## Workflow: Draft a Post
 
 1. Ensure a profile exists: `capture.sh --username <handle>`
@@ -75,6 +87,8 @@ ${SKILL_DIR}/scripts/apply.sh --draft <path-or--> [--profile <path>] [--format t
 3. Write a rough draft (or let the scan inform it)
 4. Run `apply.sh --draft <path> --profile .claude/persona/<handle>.json`
 5. Use the returned prompt payload with the LLM to generate the styled post
+6. Save the LLM output to a JSON file
+7. Preview: `preview.sh --post <output.json> --image <path>`
 
 ## Workflow: Set Up Tracking Pool
 
