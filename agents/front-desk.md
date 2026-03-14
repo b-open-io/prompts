@@ -54,7 +54,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 |-------|-------------|-----------|-------------------|
 | agent-builder | **Satchmo** | Agent architecture, multi-agent systems, AI SDKs (Claude Code subagent, not the live satchmo.dev instance) | "build an agent", "agent workflow", "tool-calling" |
 | architecture-reviewer | **Kayle** | System design, large-scale refactoring | "review architecture", "refactor plan" |
-| audio-specialist | **Juniper** | ElevenLabs audio, xAI image generation | "voiceover", "sound effects", "music" |
+| audio-specialist | **Frames** | ElevenLabs audio, xAI image generation | "voiceover", "sound effects", "music" |
 | code-auditor | **Jerry** | Security audits, vulnerability scanning | "security review", "audit code" |
 | consolidator | **Steve** | File cleanup, deduplication, organization | "clean up", "organize files", "consolidate" |
 | data | **Mr. Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |
