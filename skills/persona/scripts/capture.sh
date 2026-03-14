@@ -56,13 +56,26 @@ fi
 echo "Fetching posts for @$USERNAME..."
 
 # Step 1: Get user ID
-user_response=$(curl -s "https://api.x.com/2/users/by/username/${USERNAME}" \
+http_code=$(curl -s -o /tmp/persona_user.json -w "%{http_code}" \
+    "https://api.x.com/2/users/by/username/${USERNAME}" \
     -H "Authorization: Bearer $X_BEARER_TOKEN")
+user_response=$(cat /tmp/persona_user.json)
+
+if [ "$http_code" -ge 400 ]; then
+    echo "Error: X API returned HTTP $http_code"
+    echo "$user_response" | jq -r '.title // .detail // .errors[0].detail // .' 2>/dev/null
+    if [ "$http_code" = "401" ]; then
+        echo ""
+        echo "Your X_BEARER_TOKEN is expired or invalid."
+        echo "Get a new one at https://developer.x.com/en/portal/dashboard"
+    fi
+    exit 1
+fi
 
 USER_ID=$(echo "$user_response" | jq -r '.data.id // empty')
 if [ -z "$USER_ID" ]; then
-    echo "Error: Could not resolve @$USERNAME"
-    echo "$user_response" | jq -r '.errors[0].detail // "User lookup failed"' 2>/dev/null
+    echo "Error: User @$USERNAME not found"
+    echo "$user_response" | jq -r '.errors[0].detail // .' 2>/dev/null
     exit 1
 fi
 
@@ -80,18 +93,25 @@ while [ "$PAGES" -lt "$MAX_PAGES" ]; do
         params="${params}&pagination_token=${PAGINATION_TOKEN}"
     fi
 
-    response=$(curl -s "https://api.x.com/2/users/${USER_ID}/tweets?${params}" \
+    tweet_http_code=$(curl -s -o /tmp/persona_tweets.json -w "%{http_code}" \
+        "https://api.x.com/2/users/${USER_ID}/tweets?${params}" \
         -H "Authorization: Bearer $X_BEARER_TOKEN")
+    response=$(cat /tmp/persona_tweets.json)
 
-    # Check for rate limiting
+    if [ "$tweet_http_code" = "429" ]; then
+        echo "Rate limited after $PAGES pages"
+        break
+    fi
+
+    if [ "$tweet_http_code" -ge 400 ]; then
+        echo "Error: Tweet fetch returned HTTP $tweet_http_code"
+        echo "$response" | jq -r '.title // .detail // .' 2>/dev/null
+        break
+    fi
+
+    # Check for empty data
     http_data=$(echo "$response" | jq -r '.data // empty')
     if [ -z "$http_data" ] || [ "$http_data" = "null" ]; then
-        error_title=$(echo "$response" | jq -r '.title // .errors[0].title // empty' 2>/dev/null)
-        if [ "$error_title" = "Too Many Requests" ]; then
-            echo "Rate limited after $PAGES pages"
-            break
-        fi
-        # No more data
         break
     fi
 
