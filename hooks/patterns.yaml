@@ -75,3 +75,10 @@ askConfirmation:
   - "git checkout -- ."
   - "git stash drop"
   - "rm -rf node_modules"
+
+# Commands that require a Linear ticket in "Approved" state before execution.
+# git push to master/main is handled separately in publish-gate.sh (checks commit message).
+publishCommands:
+  - "bun publish"
+  - "npm publish"
+  - "clawnet publish --on-chain"
