@@ -56,9 +56,53 @@ ${SKILL_DIR}/scripts/scan.sh [--topics "Bitcoin SV, AI agents"] [--pool] [--save
 - `--save-topics` persists topics to `.claude/persona/topics.json`
 - Cached for 4 hours — pass `--refresh` to force
 
-### 4. Apply Style to Draft
+### 4. Generate Draft (Full Pipeline)
 
-Assemble a style-matching prompt from a profile and draft content. Does NOT call an LLM — outputs a prompt payload for you to use.
+Generate a styled draft post by combining all context layers — persona profile, body of work, git activity, social intelligence, and content strategy. Calls the Claude API directly.
+
+```bash
+${SKILL_DIR}/scripts/draft.sh [--profile <path>] [--scan <path>] [--topic "angle"] [--parts 3] [--output <path>] [--model claude-sonnet-4-6]
+```
+
+Context assembly (mirrors satchmo.dev pipeline):
+1. Voice examples from persona profile
+2. Body of work from `.claude/persona/work.json`
+3. Recent git commits from repos in work.json
+4. Social intelligence scan (cached or specify path)
+5. Content strategy rules
+
+The LLM cross-references all layers — connecting trending topics to your actual work and recent commits. Requires `ANTHROPIC_API_KEY`.
+
+### 5. Manage Body of Work
+
+Configure the projects/products you've built — gives the LLM context about what to connect trending topics to.
+
+```bash
+# Add a project
+${SKILL_DIR}/scripts/work.sh add --title "Project Name" --desc "What it does" --tags "tag1, tag2" [--repo owner/repo]
+
+# List projects
+${SKILL_DIR}/scripts/work.sh list
+
+# Remove a project
+${SKILL_DIR}/scripts/work.sh remove "Project Name"
+```
+
+Projects with a `--repo` field also feed into git activity fetching.
+
+### 6. Fetch Git Activity
+
+Fetch recent commits from configured repos (pulled from work.json `repo` fields + explicit repos).
+
+```bash
+${SKILL_DIR}/scripts/git-activity.sh [--repos "owner/repo1, owner/repo2"] [--per-repo 5] [--hours 48]
+```
+
+Uses `GITHUB_TOKEN` for private repos. Public repos work without auth.
+
+### 7. Apply Style to Draft (Manual)
+
+Assemble a style-matching prompt from a profile and draft content. Does NOT call an LLM — outputs a prompt payload for you to use. Use `draft.sh` instead for the full pipeline.
 
 ```bash
 ${SKILL_DIR}/scripts/apply.sh --draft <path-or--> [--profile <path>] [--format thread|single] [--max-chars 280]
@@ -68,7 +112,7 @@ ${SKILL_DIR}/scripts/apply.sh --draft <path-or--> [--profile <path>] [--format t
 - Outputs JSON with `system`, `prompt`, and `output_schema` fields
 - Feed this to `generateText()` or your preferred model
 
-### 5. Preview Post
+### 8. Preview Post
 
 Open a local preview of a styled post in the browser. Fully offline — no external services.
 
@@ -87,15 +131,25 @@ bun run ${SKILL_DIR}/scripts/playground.ts --data <json-path> [--port 4747] [--o
   - Generate Image button uses gemskills (requires `claude plugin install gemskills@b-open-io`)
   - Auto-exits 30s after browser tab closes (heartbeat-based)
 
-## Workflow: Draft a Post
+## Workflow: Generate a Post (Full Pipeline)
 
-1. Ensure a profile exists: `capture.sh --username <handle>`
-2. Optionally scan for context: `scan.sh --topics "..."`
-3. Write a rough draft (or let the scan inform it)
-4. Run `apply.sh --draft <path> --profile .claude/persona/<handle>.json`
-5. Use the returned prompt payload with the LLM to generate the styled post
-6. Save the LLM output to a JSON file
-7. Preview: `preview.sh --post <output.json> --image <path>`
+1. Set up body of work: `work.sh add --title "..." --desc "..." --tags "..." --repo "..."`
+2. Capture voice profile: `capture.sh --username <handle>`
+3. Scan for intelligence: `scan.sh --topics "..."`
+4. Generate draft: `draft.sh --parts 3 --output post.json`
+5. Preview and edit: `bun run playground.ts --data post.json --open`
+6. Approve in playground
+
+Or with a specific topic from the scan:
+
+4b. `draft.sh --topic "opportunity from scan" --parts 2 --output post.json`
+
+## Workflow: Restyle an Existing Draft (Manual)
+
+1. Write a rough draft
+2. Run `apply.sh --draft <path> --profile .claude/persona/<handle>.json`
+3. Use the returned prompt payload with your preferred LLM
+4. Preview: `preview.sh --post <output.json>`
 
 ## Workflow: Set Up Tracking Pool
 
@@ -112,6 +166,7 @@ All data lives in `.claude/persona/` in the project root:
 .claude/persona/
 ├── <username>.json    # Individual writing profiles
 ├── pool.json          # Tracked user roster
+├── work.json          # Body of work / projects config
 ├── topics.json        # Configured scan topics
 └── last-scan.json     # Cached social intelligence scan
 ```
@@ -127,5 +182,7 @@ Token resolution is automatic — scripts try tokens in order and fall back grac
 | `X_REFRESH_TOKEN` | auto-refresh | OAuth 2.0 flow | Used with `X_CLIENT_SECRET_ID` |
 | `X_CLIENT_SECRET_ID` | auto-refresh | https://developer.x.com/en/portal/dashboard | OAuth client ID |
 | `XAI_API_KEY` | scan | https://x.ai/api | xAI Grok for social intelligence |
+| `ANTHROPIC_API_KEY` | draft | https://console.anthropic.com/ | Claude API for draft generation |
+| `GITHUB_TOKEN` | git-activity | https://github.com/settings/tokens | For private repo commit fetching |
 
 **Token resolution order**: `X_BEARER_TOKEN` → `X_ACCESS_TOKEN` → OAuth refresh → fail with instructions.
