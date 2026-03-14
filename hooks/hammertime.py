@@ -27,6 +27,13 @@ Full-turn evaluation (opt-in per rule):
   final message. Falls back to last_assistant_message if transcript
   is unavailable.
 
+Pending agent awareness:
+  The hook scans the transcript for background Agent dispatches
+  (run_in_background=true) and checks for matching task-notification
+  completions. If agents are still pending, this context is passed to
+  the Haiku verifier so it can consider whether the assistant is pausing
+  to wait for background work rather than being truly finished.
+
 Block output format:
   {"decision": "block", "reason": "...", "systemMessage": "..."}
 """
@@ -260,15 +267,84 @@ def score_message(text, rules):
     return results
 
 
-def phase2_haiku_evaluate(text, rule):
+def count_pending_agents(transcript_path):
+    """Count background agents dispatched but not yet completed in this turn.
+
+    Scans the transcript for Agent tool_use with run_in_background=true,
+    then checks for matching task-notification completions by tool_use_id.
+    Returns the count of agents still pending.
+    """
+    if not transcript_path:
+        return 0
+
+    try:
+        file_size = os.path.getsize(transcript_path)
+    except OSError:
+        return 0
+
+    MAX_READ = 2 * 1024 * 1024
+    try:
+        with open(transcript_path, "rb") as f:
+            start_pos = max(0, file_size - MAX_READ)
+            f.seek(start_pos)
+            tail = f.read().decode("utf-8", errors="replace")
+    except (OSError, UnicodeDecodeError):
+        return 0
+
+    dispatched = set()
+    completed = set()
+
+    for line in tail.strip().split("\n"):
+        if not line.strip():
+            continue
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        msg = obj.get("message", {})
+        content = msg.get("content", "")
+
+        # Detect background Agent dispatches
+        if isinstance(content, list):
+            for block in content:
+                if (isinstance(block, dict)
+                        and block.get("type") == "tool_use"
+                        and block.get("name") == "Agent"
+                        and block.get("input", {}).get("run_in_background")):
+                    dispatched.add(block.get("id", ""))
+
+        # Detect task-notification completions
+        if isinstance(content, str) and "<task-notification>" in content:
+            match = re.search(r"<tool-use-id>(.*?)</tool-use-id>", content)
+            if match:
+                completed.add(match.group(1))
+
+    pending = dispatched - completed
+    if pending:
+        debug_log(f"PENDING_AGENTS: {len(pending)} still running")
+    return len(pending)
+
+
+def phase2_haiku_evaluate(text, rule, pending_agents=0):
     """Call Haiku to determine if the rule was actually violated. Returns True if violated."""
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
         return True
 
+    context_note = ""
+    if pending_agents > 0:
+        context_note = (
+            f"\nCONTEXT: The assistant currently has {pending_agents} background "
+            "agent(s) still running. The assistant may be pausing to wait for "
+            "these agents to complete before taking further action. Consider "
+            "whether the work is still in progress.\n"
+        )
+
     prompt = (
         "You are a compliance checker for an AI coding assistant.\n\n"
         f"RULE: {rule['rule']}\n\n"
+        f"{context_note}"
         "ASSISTANT'S RESPONSE:\n"
         f"{text[-4000:]}\n\n"
         "Did the assistant violate the RULE above? A violation means the assistant's "
@@ -539,6 +615,9 @@ def main():
         debug_log(f"STATE: new session {session_id[:8]}..., resetting iteration counters")
         state = {"session_id": session_id, "rule_iterations": {}}
 
+    # Count pending background agents for Haiku context
+    pending_agents = count_pending_agents(transcript_path)
+
     # Read transcript for full-turn evaluation if any rule needs it
     full_turn_text = None
     if any(r.get("evaluate_full_turn") for r in rules):
@@ -595,7 +674,7 @@ def main():
                 debug_log(f"SKIP: rule '{rule['name']}' score={score}, Haiku phase skipped — git clean")
                 continue
             debug_log(f"PHASE2: score {score} < {threshold}, verifying with Haiku")
-            violated = phase2_haiku_evaluate(eval_text, rule)
+            violated = phase2_haiku_evaluate(eval_text, rule, pending_agents)
             debug_log(f"PHASE2: rule '{rule['name']}' violated={violated}")
             if violated:
                 state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
