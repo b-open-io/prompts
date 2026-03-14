@@ -32,8 +32,14 @@ dist/
 build/
 out/
 
-# Dependencies
+# Dependencies — this is NOT an npm package
 node_modules/
+package.json
+bun.lock
+bun.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # Testing
 coverage/
