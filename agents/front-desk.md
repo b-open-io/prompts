@@ -60,7 +60,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | data | **Mr. Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |
 | database | **Idris** | PostgreSQL, Redis, MongoDB, schema design | "database schema", "query tuning" |
 | designer | **Ridd** | UI components, Tailwind, shadcn, dark mode | "design component", "style page" |
-| devops | **Zoro** | Vercel, Railway, CI/CD, monitoring | "deploy", "CI/CD pipeline" |
+| devops | **Root** | Vercel, Railway, CI/CD, monitoring | "deploy", "CI/CD pipeline" |
 | documentation-writer | **Flow** | READMEs, API docs, PRDs, guides | "write docs", "create README" |
 | account-manager | **Kurt** | Public website chat, lead qualification, booking guidance | "website chat", "qualify lead", "book a call" |
 | executive-assistant | **Tina** | Google Workspace, calendar, email, tasks | "check my calendar", "triage inbox" |
@@ -73,18 +73,18 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | nextjs | **Theo** | Next.js, React, Turbopack, RSC | "Next.js app", "React component" |
 | optimizer | **Torque** | Performance, bundle size, Core Web Vitals | "slow page", "optimize bundle" |
 | payments | **Mina** | Stripe, payment integrations | "payment setup", "billing" |
-| project-manager | **Sage** | Linear planning, ticket management | "create tickets", "plan project" |
+| project-manager | **Wags** | Linear planning, ticket management | "create tickets", "plan project" |
 | prompt-engineer | **Zack** | Skills, agents, commands, plugin dev | "create skill", "write agent" |
 | researcher | **Parker** | Web research, X/Twitter data, citations | "research topic", "find info" |
 | security-ops | **Paul** | Runtime security, dependency scanning, incidents | "security audit", "dependency check" |
-| tester | **Iris** | Unit/integration/e2e tests, QA | "write tests", "test coverage" |
+| tester | **Jason** | Unit/integration/e2e tests, QA | "write tests", "test coverage" |
 
 ### Other Plugins
 
 | Plugin | Agent | Display Name | Specialty |
 |--------|-------|-------------|-----------|
-| bsv-skills | bitcoin | **Sato** | BSV transactions, @bsv/sdk, wallets |
-| 1sat-skills | ordinals | **Glyph** | 1Sat Ordinals, NFTs, marketplace, tokens |
+| bsv-skills | bitcoin | **David** | BSV transactions, @bsv/sdk, wallets |
+| 1sat-skills | ordinals | **Uno Satoj** | 1Sat Ordinals, NFTs, marketplace, tokens |
 | product-skills | legal | **Anthony** | Legal compliance, privacy, DPAs, SOC 2 gap analysis, policy drafting, crypto-law, stablecoins, token classification |
 | product-skills | marketer | **Caal** | Growth, copy, SEO, AI visibility, launch strategy |
 | sigma-auth | sigma-auth-guide | **Siggy** | Bitcoin auth, OAuth, Better Auth |
