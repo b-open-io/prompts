@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Release: commit, push, publish, verify. Run after preflight + changelog.
+# Release: commit, push, publish. Run after preflight + changelog.
+# Delegates to publish.sh which handles auth automatically.
 # Usage: release.sh [--access public] [--dry-run]
 set -euo pipefail
 
+SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 EXTRA_FLAGS=""
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -15,17 +17,6 @@ done
 VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: *"\(.*\)".*/\1/')
 PKG_NAME=$(grep '"name"' package.json | head -1 | sed 's/.*: *"\(.*\)".*/\1/')
 BRANCH=$(git branch --show-current)
-
-# Check auth first — if expired, login via browser before publishing
-if ! npm whoami >/dev/null 2>&1; then
-  echo "npm token expired or missing. Opening browser for login..."
-  npm login --auth-type=web
-  if ! npm whoami >/dev/null 2>&1; then
-    echo "ERROR: npm login failed. Cannot publish." >&2
-    exit 1
-  fi
-  echo "Authenticated as: $(npm whoami)"
-fi
 
 # Stage and commit
 echo "Committing v$VERSION..."
@@ -40,11 +31,10 @@ git diff --cached --quiet && { echo "Nothing to commit."; } || \
 echo "Pushing to $BRANCH..."
 git push origin "$BRANCH"
 
-# Publish (pipes ENTER so browser auth opens automatically)
+# Publish — delegates to publish.sh which handles auth automatically
 echo "Publishing $PKG_NAME@$VERSION..."
-echo "" | bun publish $EXTRA_FLAGS
+bash "$SKILL_DIR/scripts/publish.sh" $EXTRA_FLAGS
 
-# Done — verification is handled separately by the agent as a background task
 echo ""
 echo "$PKG_NAME@$VERSION publish complete."
 echo "Run verify.sh in background to confirm registry propagation."
