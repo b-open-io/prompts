@@ -11,9 +11,11 @@ allowed-tools: Bash(agent-browser:*), Bash(npm:*), Bash(bun:*), Bash(git:*), Bas
 
 **NEVER ask the user for an OTP code.** Authentication is handled automatically by the scripts. When a token expires, `setup-token.sh` uses agent-browser to create a new granular access token via Chrome — the user just clicks "Generate token" once. No manual `.npmrc` editing, no `npm login`, no OTP codes.
 
-**NEVER run manual npm/bun commands** like `npm whoami`, `npm view`, `bun publish`, or `npm publish`. The scripts handle everything. If version info was already gathered before loading this skill, skip to the appropriate step — but always use the scripts.
+**NEVER run manual npm/bun commands** like `npm whoami`, `npm view`, `bun publish`, or `npm publish`. The scripts handle everything.
 
 **You MUST run these scripts. This is not guidance — it is the procedure.**
+
+**Do NOT skip steps or make decisions about what to skip.** Run Step 1 through Step 4 in order every time. The scripts are deterministic and handle all edge cases.
 
 ## How Auth Works
 
@@ -33,9 +35,11 @@ Run from the package directory:
 bash ${SKILL_DIR}/scripts/preflight.sh
 ```
 
-This script handles ALL of the following in one call:
+This script handles ALL of the following deterministically:
 - Checks npm registry version vs local `package.json` version
-- Bumps the version if local matches npm (patch by default)
+- If local == npm → bumps version (patch by default)
+- If local == npm+1 → no bump needed, ready to publish
+- If local > npm+1 → version gap detected (abandoned bumps), resets to npm+1
 - Updates `plugin.json` if present
 - Runs `bun run build`
 - Outputs the commit log for changelog writing
@@ -46,25 +50,35 @@ Pass `minor` or `major` to override the default patch bump:
 bash ${SKILL_DIR}/scripts/preflight.sh minor
 ```
 
-**If the version is already bumped and build is clean** (e.g. already handled), skip to Step 2 or Step 3.
+**Do NOT skip this step.** Even if the version looks correct, the script validates it against the npm registry.
 
-## Step 2: Write Changelog (only if CHANGELOG.md exists)
+## Step 2: Write Changelog
 
-Read the commit log from preflight output. Add an entry following the existing format:
+After preflight completes, write a changelog entry for the new version.
 
-```markdown
-## [X.X.X] - YYYY-MM-DD
+**If CHANGELOG.md exists:** Read the commit log from preflight output. Add an entry at the top (after the `# Changelog` heading), following the existing format in the file. Match the style — if existing entries use `### Added / Changed / Fixed` sections, use that. If they use bullet points, use those. Categorize changes appropriately:
 
-### Added / Changed / Fixed
-- Summarize commits
-```
+- **Breaking Changes** — API changes that require consumer code updates
+- **Added** — New features, new exports, new options
+- **Changed** — Behavior changes to existing features
+- **Fixed** — Bug fixes
+- **Security** — Security-related fixes
+- **Deprecated** — Features marked for future removal
 
-If no CHANGELOG.md exists, skip this step entirely.
+Use the version number from preflight output (not the one that was in package.json before preflight ran).
+
+**If CHANGELOG.md does not exist:** Create one with a `# Changelog` heading and the first entry.
 
 ## Step 3: Release
 
 ```bash
 bash ${SKILL_DIR}/scripts/release.sh
+```
+
+For scoped packages (@org/package), pass `--access public`:
+
+```bash
+bash ${SKILL_DIR}/scripts/release.sh --access public
 ```
 
 This script handles ALL of the following in one call:
@@ -73,24 +87,12 @@ This script handles ALL of the following in one call:
 - `git push origin <branch>`
 - Calls `publish.sh` which handles auth automatically
 
-For scoped packages (@org/package), pass `--access public`:
-
-```bash
-bash ${SKILL_DIR}/scripts/release.sh --access public
-```
-
-**If git is already clean and pushed** (e.g. version was bumped in a merged PR), use the standalone publish script instead:
-
-```bash
-bash ${SKILL_DIR}/scripts/publish.sh --access public
-```
-
 ### What happens during publish
 
 1. `publish.sh` runs `echo "" | bun publish` — the piped ENTER auto-opens the OTP checkbox page if the token is valid
 2. If publish succeeds → done. Tell the user: "Complete the OTP in your browser if prompted."
 3. If publish fails with 404/401 (expired token) → `setup-token.sh` runs automatically:
-   - Opens Chrome to npmjs.com/settings → detects username
+   - Opens Chrome to npmjs.com/settings → detects username from redirect
    - Navigates to granular token creation page
    - Fills form: "cli-publish", 7-day expiry, read+write, all packages
    - **Tells user**: "Review form in Chrome, click Generate token"
@@ -108,7 +110,7 @@ After the publish script completes, run verification as a **background Bash task
 bash ${SKILL_DIR}/scripts/verify.sh <package-name> <version>
 ```
 
-Run this with `run_in_background: true`. It uses exponential backoff (5s, 10s, 20s, 40s, 60s) and exits 0 when the version appears on the npm registry.
+Run this with `run_in_background: true`. It uses exponential backoff (5s, 10s, 20s, 40s, 60s) and exits 0 when the version appears on the npm registry. Do not poll or sleep — the background task notifies when complete.
 
 ## Troubleshooting
 
