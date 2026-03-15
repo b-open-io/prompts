@@ -196,17 +196,16 @@ setInterval(() => {
   }
 }, 5_000);
 
-// GET / — serve editor HTML (wrapped in layout if no --data, standalone otherwise for backward compat)
+// GET / — serve editor HTML in shared layout
 app.get("/", (c) => {
   if (!dataPath) {
-    // No data file — show welcome in layout
     return c.html(layoutHTML("editor", "Post Editor", `<div style="text-align:center;padding:64px 0;color:var(--muted-foreground)">
       <i data-lucide="pen-tool" style="width:40px;height:40px;margin-bottom:16px;opacity:0.4"></i>
       <p style="font-size:15px;max-width:400px;margin:0 auto;line-height:1.6">No draft loaded. Generate a draft with <code style="font-family:var(--font-mono);background:var(--card);padding:2px 6px;border-radius:4px">draft.sh</code> then open it with <code style="font-family:var(--font-mono);background:var(--card);padding:2px 6px;border-radius:4px">--data post.json</code></p>
       <div style="margin-top:24px"><a href="/pool" style="padding:10px 24px;background:var(--primary);color:var(--primary-foreground);border-radius:var(--radius);text-decoration:none;font-weight:600;font-size:14px">View Persona Pool</a></div>
     </div>`));
   }
-  return c.html(editorHTML());
+  return c.html(layoutHTML("editor", "Post Editor", editorContentHTML()));
 });
 
 // GET /data — return current post JSON
@@ -917,10 +916,13 @@ function intelHTML(data: IntelData): string {
     return `<div style="text-align:center;padding:64px 0;color:var(--muted-foreground)">
       <i data-lucide="radar" style="width:40px;height:40px;margin-bottom:16px;opacity:0.4"></i>
       <p style="font-size:15px;max-width:360px;margin:0 auto;line-height:1.6">No scan data yet. Run a social intelligence scan to populate this page.</p>
+      <button onclick="this.disabled=true;this.textContent='Scanning...';fetch('/api/intel/refresh',{method:'POST'}).then(r=>r.json()).then(d=>{if(d.error){alert(d.error)}else{location.reload()}}).catch(()=>{this.disabled=false;this.textContent='Run Scan'})" style="margin-top:20px;padding:10px 24px;background:var(--primary);color:var(--primary-foreground);border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-sans)">Run Scan</button>
     </div>`;
   }
 
-  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">${scanMeta}</div>${topicsBar}`;
+  const refreshBtn = `<button onclick="this.disabled=true;this.textContent='Scanning...';fetch('/api/intel/refresh',{method:'POST'}).then(r=>r.json()).then(d=>{if(d.error){alert(d.error)}else{location.reload()}}).catch(()=>{this.disabled=false;this.textContent='Refresh'})" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:9999px;border:1px solid var(--border);background:transparent;color:var(--muted-foreground);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans)"><i data-lucide="refresh-cw" style="width:13px;height:13px"></i>Refresh</button>`;
+
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">${scanMeta}${refreshBtn}</div>${topicsBar}`;
 
   for (const section of data.sections) {
     html += sectionHeader(section.title);
@@ -1083,20 +1085,14 @@ app.post("/api/work", async (c) => {
   return c.json({ ok: true });
 });
 
-// ── HTML template ───────────────────────────────────────────────────
-function editorHTML(): string {
-  return `<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Post Preview</title>
-<style>${themeCSS()}</style>
-</head><body>
-
-<div class="header">
-  <h1>Post Preview</h1>
+// ── Editor content template ──────────────────────────────────────────
+function editorContentHTML(): string {
+  return `
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
   <div class="status"><span class="status-dot"></span> Connected</div>
 </div>
 
-<div class="layout">
+<div class="layout" style="padding:0">
 <div class="editor-col">
 <div id="parts"></div>
 <div class="actions">
@@ -1580,8 +1576,7 @@ addBtn.addEventListener('click',()=>{
 
 // ── Start ───────────────────────────────────────────────────────────
 init();
-</script>
-</body></html>`;
+</script>`;
 }
 
 // ── Start server ────────────────────────────────────────────────────
