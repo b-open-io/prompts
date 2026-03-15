@@ -16,6 +16,17 @@ VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: *"\(.*\)".*/\1/')
 PKG_NAME=$(grep '"name"' package.json | head -1 | sed 's/.*: *"\(.*\)".*/\1/')
 BRANCH=$(git branch --show-current)
 
+# Check auth first — if expired, login via browser before publishing
+if ! npm whoami >/dev/null 2>&1; then
+  echo "npm token expired or missing. Opening browser for login..."
+  npm login --auth-type=web
+  if ! npm whoami >/dev/null 2>&1; then
+    echo "ERROR: npm login failed. Cannot publish." >&2
+    exit 1
+  fi
+  echo "Authenticated as: $(npm whoami)"
+fi
+
 # Stage and commit
 echo "Committing v$VERSION..."
 git add package.json

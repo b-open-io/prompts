@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# npm-publish: Runs bun publish with ENTER piped to stdin so the browser
-# auth prompt opens automatically. One command handles auth + OTP + publish.
+# npm-publish: Ensures npm auth is valid, then publishes.
+# If token is expired, auto-opens browser for web login.
 # Usage: publish.sh [--access public] [--dry-run]
 set -uo pipefail
 
@@ -12,6 +12,18 @@ while [ $# -gt 0 ]; do
     *) shift ;;
   esac
 done
+
+# Check auth first — if expired, login via browser before publishing
+if ! npm whoami >/dev/null 2>&1; then
+  echo "npm token expired or missing. Opening browser for login..."
+  npm login --auth-type=web
+  # Verify login succeeded
+  if ! npm whoami >/dev/null 2>&1; then
+    echo "ERROR: npm login failed. Cannot publish." >&2
+    exit 1
+  fi
+  echo "Authenticated as: $(npm whoami)"
+fi
 
 # Pipe ENTER so bun doesn't block on "press ENTER to open in browser"
 echo "" | bun publish $EXTRA_FLAGS
