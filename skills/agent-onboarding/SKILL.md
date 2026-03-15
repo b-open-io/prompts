@@ -31,7 +31,29 @@ Before writing a single file, define the agent's identity.
 
 ## Phase 2: Write the Agent File
 
-Create `agents/{name}.md` in `~/code/prompts`.
+Agents use a **folder-based package structure** with a symlink for Claude Code compatibility:
+
+```
+agents/
+  {name}.md → {name}/{name}.md   (symlink — Claude Code auto-discovers this)
+  {name}/
+    {name}.md                    (actual agent definition — source of truth)
+    SOUL.md                      (optional — personality/persona)
+    HEARTBEAT.md                 (optional — execution procedures for Paperclip)
+    TOOLS.md                     (optional — tool reference)
+    avatar.png                   (optional — agent portrait)
+```
+
+### Creating the folder and symlink
+
+```bash
+mkdir -p agents/{name}
+# Write the agent .md file inside the folder
+# Then create the symlink at the top level:
+ln -sf {name}/{name}.md agents/{name}.md
+```
+
+Claude Code discovers `agents/{name}.md` (the symlink). Paperclip and ClawNet can reference the folder for the full agent package.
 
 ### Frontmatter format
 
