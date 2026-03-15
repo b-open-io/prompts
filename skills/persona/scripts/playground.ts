@@ -646,7 +646,7 @@ function layoutHTML(currentPage: string, title: string, content: string): string
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)} — Persona</title>
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@0.469.0"></script>
 <style>${themeCSS()}</style>
 </head><body>
 <div class="app-shell">
@@ -734,7 +734,7 @@ function poolHTML(data: ReturnType<typeof readPoolData>): string {
         ${profile ? `<span style="font-size:11px;padding:2px 8px;border-radius:9999px;background:var(--accent);color:var(--foreground);font-family:var(--font-mono)">${profile.sample_count || 0} samples</span>` : ""}
         <div style="display:flex;gap:8px">
           <a href="/profile/${esc(user.username)}" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius);color:var(--foreground);text-decoration:none"><i data-lucide="user" style="width:13px;height:13px"></i>View</a>
-          <a href="/?persona=${esc(user.username)}" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:5px 10px;border:1px solid var(--primary);border-radius:var(--radius);color:var(--primary-foreground);text-decoration:none;background:var(--primary)"><i data-lucide="pen-line" style="width:13px;height:13px"></i>Draft</a>
+          <a href="/?persona=${encodeURIComponent(user.username)}" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:5px 10px;border:1px solid var(--primary);border-radius:var(--radius);color:var(--primary-foreground);text-decoration:none;background:var(--primary)"><i data-lucide="pen-line" style="width:13px;height:13px"></i>Draft</a>
         </div>
       </div>
     </div>`;
@@ -828,7 +828,8 @@ function profileHTML(data: any): string {
 }
 
 app.get("/profile/:user", (c) => {
-  const username = c.req.param("user");
+  const username = c.req.param("user").replace(/[^a-zA-Z0-9_-]/g, "");
+  if (!username) return c.text("Invalid username", 400);
   const data = readProfileDataFull(username);
   if (!data) return c.html(layoutHTML("pool", "Profile Not Found", `<p style="color:var(--muted-foreground)">No profile found for @${esc(username)}. Capture one with <code style="font-family:var(--font-mono);background:var(--card);padding:2px 6px;border-radius:4px">capture.sh --username ${esc(username)}</code></p>`));
   return c.html(layoutHTML("pool", `@${username}`, profileHTML(data)));
@@ -935,13 +936,13 @@ function intelHTML(data: IntelData): string {
         const cat = detectCategory(item);
         const draftTopic = encodeURIComponent(item.slice(0, 120));
         html += `<div style="display:flex;align-items:center;gap:12px;padding:11px 0;${border}">
-          <span style="padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:${cat.color}22;color:${cat.color};border:1px solid ${cat.color}44;flex-shrink:0">${cat.label}</span>
+          <span style="padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:color-mix(in oklch, ${cat.color} 13%, transparent);color:${cat.color};border:1px solid color-mix(in oklch, ${cat.color} 27%, transparent);flex-shrink:0">${cat.label}</span>
           <span style="flex:1;font-size:14px;line-height:1.5;color:var(--foreground)">${esc(item)}</span>
           <a href="/?topic=${draftTopic}" style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:9999px;border:1px solid var(--border);font-size:12px;font-weight:600;color:var(--muted-foreground);text-decoration:none;white-space:nowrap;flex-shrink:0"><i data-lucide="pencil" style="width:12px;height:12px"></i>Draft</a>
         </div>`;
       } else if (titleLower.includes("early signal")) {
         const dir = detectDirection(item);
-        const badge = dir ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:${dir.color}22;color:${dir.color};border:1px solid ${dir.color}44;flex-shrink:0"><i data-lucide="${dir.icon}" style="width:11px;height:11px"></i>${dir.label}</span>` : "";
+        const badge = dir ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:color-mix(in oklch, ${dir.color} 13%, transparent);color:${dir.color};border:1px solid color-mix(in oklch, ${dir.color} 27%, transparent);flex-shrink:0"><i data-lucide="${dir.icon}" style="width:11px;height:11px"></i>${dir.label}</span>` : "";
         html += `<div style="display:flex;align-items:center;gap:12px;padding:11px 0;${border}">${badge}<span style="flex:1;font-size:14px;line-height:1.5;color:var(--foreground)">${esc(item)}</span></div>`;
       } else {
         html += `<div style="padding:11px 0;${border}"><p style="font-size:14px;line-height:1.55;color:var(--foreground);margin:0">${highlightMentions(item)}</p></div>`;
@@ -961,7 +962,11 @@ app.post("/api/intel/refresh", async (c) => {
     stdout: "pipe", stderr: "pipe",
     env: { ...process.env, PERSONA_DIR: process.env.PERSONA_DIR || ".claude/persona" },
   });
-  await proc.exited;
+  const exitCode = await proc.exited;
+  if (exitCode !== 0) {
+    const stderr = await new Response(proc.stderr).text();
+    return c.json({ error: stderr.trim() || `scan.sh exited with code ${exitCode}` }, 500);
+  }
   return c.json({ ok: true });
 });
 
@@ -1017,7 +1022,7 @@ function settingsHTML(data: ReturnType<typeof readSettingsData>): string {
   const tokenRows = data.tokens.map((t, i) => {
     const isLast = i === data.tokens.length - 1;
     const pillStyle = t.set
-      ? "background:oklch(0.18 0.05 145);color:var(--chart-3);border:1px solid oklch(0.35 0.08 145)"
+      ? "background:color-mix(in oklch, var(--chart-3) 15%, transparent);color:var(--chart-3);border:1px solid color-mix(in oklch, var(--chart-3) 30%, transparent)"
       : "background:var(--card);color:var(--muted-foreground);border:1px solid var(--border)";
     return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;${isLast ? "" : "border-bottom:1px solid var(--border)"}">
       <i data-lucide="${esc(t.icon)}" style="width:16px;height:16px;flex-shrink:0;color:var(--muted-foreground)"></i>
