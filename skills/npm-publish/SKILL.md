@@ -2,7 +2,6 @@
 name: npm-publish
 version: 2.0.1
 description: This skill should be used when the user wants to publish a package to npm, bump a version, release a new version, or mentions "npm publish", "bun publish", "version bump", or "release to npm". Handles version bumping, changelog updates, git push, and npm publishing with automatic browser-based authentication. Do not trigger for unrelated uses of "release" (e.g. GitHub releases, press releases).
-disable-model-invocation: true
 ---
 
 # npm-publish
