@@ -1,6 +1,6 @@
 ---
 name: npm-publish
-version: 3.0.1
+version: 3.1.0
 description: This skill should be used when the user wants to publish a package to npm, bump a version, release a new version, or mentions "npm publish", "bun publish", "version bump", or "release to npm". Handles version bumping, changelog updates, git push, npm publishing, and automatic token rotation via agent-browser when auth expires. Do not trigger for unrelated uses of "release" (e.g. GitHub releases, press releases).
 allowed-tools: Bash(agent-browser:*), Bash(npm:*), Bash(bun:*), Bash(git:*), Bash(pbpaste:*), Bash(pbcopy:*), Bash(chmod:*), Bash(bash:*), Bash(grep:*), Bash(sed:*), Bash(sleep:*)
 ---
@@ -9,112 +9,79 @@ allowed-tools: Bash(agent-browser:*), Bash(npm:*), Bash(bun:*), Bash(git:*), Bas
 
 ## MANDATORY — Read Before Doing Anything
 
-**NEVER ask the user for an OTP code.** Authentication is handled automatically by the scripts. When a token expires, `setup-token.sh` uses agent-browser to create a new granular access token via Chrome — the user just clicks "Generate token" once. No manual `.npmrc` editing, no `npm login`, no OTP codes.
+**NEVER ask the user for an OTP code.** Auth is handled by scripts + agent-browser.
 
-**NEVER run manual npm/bun commands** like `npm whoami`, `npm view`, `bun publish`, or `npm publish`. The scripts handle everything.
+**NEVER run manual npm/bun commands** like `npm whoami`, `npm view`, `bun publish`, or `npm publish`.
 
-**You MUST run these scripts. This is not guidance — it is the procedure.**
-
-**Do NOT skip steps or make decisions about what to skip.** Run Step 1 through Step 4 in order every time. The scripts are deterministic and handle all edge cases.
-
-## How Auth Works
-
-The publish flow uses a **granular access token** stored in `~/.npmrc`. This token is created via npm's web UI using agent-browser automation:
-
-- **Happy path**: Token is valid → `bun publish` succeeds with one OTP checkbox click
-- **Expired token**: `publish.sh` detects 404/401 → calls `setup-token.sh` → agent-browser opens Chrome, fills the npm token form, user clicks Generate → token captured via clipboard → written to `~/.npmrc` → publish retries automatically
-- **Security**: Token never appears in terminal output. Captured via clipboard (`pbpaste`), clipboard cleared immediately after. 7-day expiration keeps tokens short-lived. Old tokens are flagged for cleanup.
-
-**Prerequisite**: `agent-browser` must be installed (`bun install -g agent-browser`) and the user must be logged into npmjs.com in Chrome.
+**You MUST run these scripts. Do NOT skip steps.**
 
 ## Step 1: Preflight
-
-Run from the package directory:
 
 ```bash
 bash ${SKILL_DIR}/scripts/preflight.sh
 ```
 
-This script handles ALL of the following deterministically:
-- Checks npm registry version vs local `package.json` version
-- If local == npm → bumps version (patch by default)
-- If local == npm+1 → no bump needed, ready to publish
-- If local > npm+1 → version gap detected (abandoned bumps), resets to npm+1
-- Updates `plugin.json` if present
-- Runs `bun run build`
-- Outputs the commit log for changelog writing
-
-Pass `minor` or `major` to override the default patch bump:
-
-```bash
-bash ${SKILL_DIR}/scripts/preflight.sh minor
-```
-
-**Do NOT skip this step.** Even if the version looks correct, the script validates it against the npm registry.
+Handles deterministically: version check against npm registry, bump if needed (resets gaps), build, commit log output. Pass `minor` or `major` to override default patch bump.
 
 ## Step 2: Write Changelog
 
-After preflight completes, write a changelog entry for the new version.
+Read the commit log from preflight output. If CHANGELOG.md exists, add entry at top matching existing format. If not, create one. Use the version from preflight output. Categorize: Breaking Changes, Added, Changed, Fixed, Security, Deprecated.
 
-**If CHANGELOG.md exists:** Read the commit log from preflight output. Add an entry at the top (after the `# Changelog` heading), following the existing format in the file. Match the style — if existing entries use `### Added / Changed / Fixed` sections, use that. If they use bullet points, use those. Categorize changes appropriately:
-
-- **Breaking Changes** — API changes that require consumer code updates
-- **Added** — New features, new exports, new options
-- **Changed** — Behavior changes to existing features
-- **Fixed** — Bug fixes
-- **Security** — Security-related fixes
-- **Deprecated** — Features marked for future removal
-
-Use the version number from preflight output (not the one that was in package.json before preflight ran).
-
-**If CHANGELOG.md does not exist:** Create one with a `# Changelog` heading and the first entry.
-
-## Step 3: Release
+## Step 3: Release (commit + push + publish)
 
 ```bash
-bash ${SKILL_DIR}/scripts/release.sh
+bash ${SKILL_DIR}/scripts/release.sh [--access public]
 ```
 
-For scoped packages (@org/package), pass `--access public`:
+Commits, pushes, then calls publish.sh. If publish.sh outputs `PUBLISH_SUCCESS` — done, go to Step 4.
+
+### If publish.sh outputs `AUTH_FAILED`
+
+The agent must orchestrate token setup. **Do NOT call setup-token.sh as one long command.** Run it in two phases with user communication between them.
+
+**Phase 1 — Fill the form:**
 
 ```bash
-bash ${SKILL_DIR}/scripts/release.sh --access public
+bash ${SKILL_DIR}/scripts/setup-token.sh fill
 ```
 
-This script handles ALL of the following in one call:
-- `git add` changed files (package.json, CHANGELOG.md, plugin.json, dist/)
-- `git commit -m "Release vX.X.X"`
-- `git push origin <branch>`
-- Calls `publish.sh` which handles auth automatically
+Status codes:
+- `FORM_READY:<username>` — form is filled in Chrome, proceed to tell user
+- `NOT_LOGGED_IN` — tell user: "Sign in to npmjs.com in Chrome, then I'll retry"
+- `FORM_NOT_FOUND` — tell user: "Could not find the token form. The page may have changed."
 
-### What happens during publish
+After getting `FORM_READY`, **tell the user directly** (not inside a bash command):
 
-1. `publish.sh` runs `echo "" | bun publish` — the piped ENTER auto-opens the OTP checkbox page if the token is valid
-2. If publish succeeds → done. Tell the user: "Complete the OTP in your browser if prompted."
-3. If publish fails with 404/401 (expired token) → `setup-token.sh` runs automatically:
-   - Opens Chrome to npmjs.com/settings → detects username from redirect
-   - Navigates to granular token creation page
-   - Fills form: "cli-publish", 7-day expiry, read+write, all packages
-   - **Tells user**: "Review form in Chrome, click Generate token"
-   - Waits for token to appear, captures via clipboard
-   - Writes to `~/.npmrc`, clears clipboard
-   - Retries publish — user gets OTP checkbox, clicks it, done
+> I've opened the npm token creation form in Chrome and filled it out (cli-publish, 7-day, read+write, all packages). Scroll down and click **Generate token** when ready.
 
-**The user's only interactions**: approve Chrome debugging (once per session), click "Generate token" (when token expires), click OTP checkbox (every publish).
+**Phase 2 — Capture the token:**
+
+```bash
+bash ${SKILL_DIR}/scripts/setup-token.sh capture
+```
+
+This polls until the token appears on the page, clicks the Copy button, reads from clipboard, writes to `~/.npmrc`, and clears clipboard. The token never appears in terminal output.
+
+Status codes:
+- `TOKEN_SAVED` — success, retry publish
+- `CAPTURE_TIMEOUT` — tell user: "Could not capture token. Copy it from Chrome and I'll write it to ~/.npmrc"
+
+**After TOKEN_SAVED, retry publish:**
+
+```bash
+bash ${SKILL_DIR}/scripts/publish.sh [--access public]
+```
+
+Tell user: "Complete the OTP checkbox in your browser if prompted."
 
 ## Step 4: Verify (background)
-
-After the publish script completes, run verification as a **background Bash task**:
 
 ```bash
 bash ${SKILL_DIR}/scripts/verify.sh <package-name> <version>
 ```
 
-Run this with `run_in_background: true`. It uses exponential backoff (5s, 10s, 20s, 40s, 60s) and exits 0 when the version appears on the npm registry. Do not poll or sleep — the background task notifies when complete.
+Run with `run_in_background: true`. Exponential backoff (5s, 10s, 20s, 40s, 60s).
 
-## Troubleshooting
+## Key Architecture Principle
 
-- **"Not logged into npmjs.com in Chrome"** — Open Chrome, go to npmjs.com, sign in. The setup script needs the browser session to detect the username and create tokens.
-- **"agent-browser not installed"** — Run `bun install -g agent-browser`.
-- **Clipboard doesn't contain valid token** — npm may have changed their UI. Copy the token manually from Chrome and run: `echo '//registry.npmjs.org/:_authToken=YOUR_TOKEN' > ~/.npmrc`
-- **Multiple cli-publish tokens accumulating** — Visit npmjs.com/settings/YOUR_USER/tokens and delete old ones. The script flags this but doesn't auto-delete for safety.
+**Scripts output status codes. The agent interprets them and talks to the user.** Script output is hidden inside collapsed bash commands — the user won't see it. All user-facing communication must be direct agent messages OUTSIDE of bash calls.
