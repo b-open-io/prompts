@@ -16,54 +16,79 @@ set -euo pipefail
 
 NPMRC="$HOME/.npmrc"
 
-# Check agent-browser is available and up to date (>= 0.20.0 for Chrome integration)
-MIN_VERSION="0.20.0"
+# All agent-browser commands use --auto-connect to attach to the user's
+# live Chrome session. The AB alias keeps commands readable.
+AB="agent-browser --auto-connect"
+
+# npm is slow — open commands may time out on load events even though
+# navigation succeeds. This helper navigates and verifies by URL.
+ab_nav() {
+  local URL="$1"
+  # Try open, ignore timeout errors (navigation still happens)
+  $AB open "$URL" 2>/dev/null || true
+  sleep 2
+  # Verify we actually navigated
+  local CURRENT
+  CURRENT=$($AB get url 2>/dev/null || true)
+  if [ -z "$CURRENT" ]; then
+    echo "ERROR: Could not connect to Chrome. Is remote debugging enabled?" >&2
+    return 1
+  fi
+}
+
+# Check agent-browser is available
 if ! command -v agent-browser >/dev/null 2>&1; then
   echo "agent-browser not installed. Installing..."
-  bun install -g agent-browser@latest
-elif [ "$(agent-browser --version 2>/dev/null | head -1 | sed 's/agent-browser //')" \< "$MIN_VERSION" ]; then
-  echo "agent-browser outdated (need >= $MIN_VERSION for Chrome integration). Upgrading..."
   bun install -g agent-browser@latest
 fi
 
 # --- Step 1: Detect npm username from browser session ---
+# npm doesn't redirect /settings to /settings/{username}, so we extract
+# the username from a settings link in the page DOM instead.
 echo "Detecting npm username from browser session..."
-agent-browser --auto-connect open "https://www.npmjs.com/settings" >/dev/null 2>&1
-agent-browser wait --load networkidle >/dev/null 2>&1
+ab_nav "https://www.npmjs.com"
 
-CURRENT_URL=$(agent-browser get url 2>/dev/null)
+# eval returns JSON-quoted strings — strip quotes with tr
+NPM_USER=$($AB eval 'var a = document.querySelector("a[href*=settings]"); a ? a.href.match(/settings\/([^/]+)/)?.[1] || "" : ""' 2>/dev/null | tr -d '"' || true)
 
-# Check if redirected to login (not authenticated in browser)
-if echo "$CURRENT_URL" | grep -q "/login"; then
-  echo "ERROR: Not logged into npmjs.com in Chrome." >&2
-  echo "Open https://www.npmjs.com/login in Chrome, sign in, then retry." >&2
-  exit 1
-fi
-
-# Extract username from URL: /settings/{username}
-NPM_USER=$(echo "$CURRENT_URL" | sed -n 's|.*/settings/\([^/]*\).*|\1|p')
 if [ -z "$NPM_USER" ]; then
-  echo "ERROR: Could not extract npm username from URL: $CURRENT_URL" >&2
-  exit 1
+  echo "Not logged into npmjs.com. Opening login page..."
+  ab_nav "https://www.npmjs.com/login"
+  echo "============================================================"
+  echo "  Sign in to npmjs.com in Chrome to continue."
+  echo "============================================================"
+
+  # Poll until user completes login (settings link appears in DOM)
+  for _ in $(seq 1 90); do
+    sleep 2
+    NPM_USER=$($AB eval 'var a = document.querySelector("a[href*=settings]"); a ? a.href.match(/settings\/([^/]+)/)?.[1] || "" : ""' 2>/dev/null | tr -d '"' || true)
+    if [ -n "$NPM_USER" ]; then
+      break
+    fi
+  done
+
+  if [ -z "$NPM_USER" ]; then
+    echo "ERROR: Timed out waiting for npm login." >&2
+    exit 1
+  fi
 fi
 echo "npm user: $NPM_USER"
 
 # --- Step 2: Navigate to token creation page ---
 echo "Opening token creation page..."
-agent-browser open "https://www.npmjs.com/settings/$NPM_USER/tokens/granular-access-tokens/new" >/dev/null 2>&1
-agent-browser wait --load networkidle >/dev/null 2>&1
+ab_nav "https://www.npmjs.com/settings/$NPM_USER/tokens/granular-access-tokens/new"
 
 # --- Step 3: Fill the form ---
 echo "Filling token form..."
 
 # Take snapshot to get element refs
-SNAPSHOT=$(agent-browser snapshot -i 2>/dev/null)
+SNAPSHOT=$($AB snapshot -i 2>/dev/null)
 
 # Find refs from snapshot
-TOKEN_NAME_REF=$(echo "$SNAPSHOT" | grep -i 'textbox "Token name"' | grep -o 'ref=e[0-9]*' | sed 's/ref=//')
-BYPASS_2FA_REF=$(echo "$SNAPSHOT" | grep -i 'checkbox.*Bypass' | grep -o 'ref=e[0-9]*' | sed 's/ref=//')
-ALL_PACKAGES_REF=$(echo "$SNAPSHOT" | grep -i 'radio "All packages"' | grep -o 'ref=e[0-9]*' | sed 's/ref=//')
-GENERATE_REF=$(echo "$SNAPSHOT" | grep -i 'button "Generate token"' | grep -o 'ref=e[0-9]*' | sed 's/ref=//')
+TOKEN_NAME_REF=$(echo "$SNAPSHOT" | grep -i 'textbox "Token name"' | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
+BYPASS_2FA_REF=$(echo "$SNAPSHOT" | grep -i 'checkbox.*Bypass' | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
+ALL_PACKAGES_REF=$(echo "$SNAPSHOT" | grep -i 'radio "All packages"' | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
+GENERATE_REF=$(echo "$SNAPSHOT" | grep -i 'button "Generate token"' | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
 
 if [ -z "$TOKEN_NAME_REF" ] || [ -z "$GENERATE_REF" ]; then
   echo "ERROR: Could not find form elements. Page may have changed." >&2
@@ -72,23 +97,23 @@ if [ -z "$TOKEN_NAME_REF" ] || [ -z "$GENERATE_REF" ]; then
   exit 1
 fi
 
-# Fill token name with timestamp for uniqueness
+# Fill token name
 TOKEN_LABEL="cli-publish"
-agent-browser fill "@$TOKEN_NAME_REF" "$TOKEN_LABEL" >/dev/null 2>&1
+$AB fill "@$TOKEN_NAME_REF" "$TOKEN_LABEL" >/dev/null 2>&1 || true
 
 # Ensure bypass 2FA is UNCHECKED (keep security)
 if echo "$SNAPSHOT" | grep -i 'checkbox.*Bypass' | grep -q 'checked=true'; then
-  agent-browser click "@$BYPASS_2FA_REF" >/dev/null 2>&1
+  $AB click "@$BYPASS_2FA_REF" >/dev/null 2>&1 || true
 fi
 
 # Select "All packages" radio
 if [ -n "$ALL_PACKAGES_REF" ]; then
-  agent-browser click "@$ALL_PACKAGES_REF" >/dev/null 2>&1
+  $AB click "@$ALL_PACKAGES_REF" >/dev/null 2>&1 || true
 fi
 
-# Set permissions to "Read and write" for packages
-# These are button-based dropdowns, not selects. Find and click.
-agent-browser eval --stdin >/dev/null 2>&1 <<'EVALEOF'
+# Set permissions to "Read and write" for packages and expiration to 7 days
+# These are button-based dropdowns, not selects.
+$AB eval --stdin >/dev/null 2>&1 <<'EVALEOF' || true
 (function() {
   var buttons = document.querySelectorAll('button');
   var rwClicked = 0;
@@ -98,7 +123,6 @@ agent-browser eval --stdin >/dev/null 2>&1 <<'EVALEOF'
       rwClicked++;
     }
   }
-  // Set expiration to 7 days
   for (var i = 0; i < buttons.length; i++) {
     if (buttons[i].textContent.trim() === '7 days') {
       buttons[i].click();
@@ -117,19 +141,13 @@ echo "============================================================"
 echo ""
 
 # --- Step 4: Wait for user to click Generate token ---
-# Poll the page until the token value appears.
-# After clicking Generate, npm shows the token string on a new page.
 echo "Waiting for token generation..."
 TOKEN_FOUND=false
 for i in $(seq 1 60); do
   sleep 2
 
-  # Check if the page now shows a token (npm displays it after generation)
-  PAGE_URL=$(agent-browser get url 2>/dev/null || true)
-
-  # After generation, npm redirects to the tokens list or shows token inline
-  # The token page has a "Copy" button and displays the token
-  PAGE_SNAP=$(agent-browser snapshot -i 2>/dev/null || true)
+  PAGE_URL=$($AB get url 2>/dev/null || true)
+  PAGE_SNAP=$($AB snapshot -i 2>/dev/null || true)
 
   # Look for the copy button that appears with the generated token
   if echo "$PAGE_SNAP" | grep -qi "copy.*token\|token.*copy\|npm_"; then
@@ -154,20 +172,17 @@ fi
 # --- Step 5: Capture token via clipboard ---
 echo "Capturing token via clipboard..."
 
-# Find and click the Copy button
-COPY_SNAP=$(agent-browser snapshot -i 2>/dev/null)
-COPY_REF=$(echo "$COPY_SNAP" | grep -i 'button.*copy' | head -1 | grep -o 'ref=e[0-9]*' | sed 's/ref=//')
+COPY_SNAP=$($AB snapshot -i 2>/dev/null || true)
+COPY_REF=$(echo "$COPY_SNAP" | grep -i 'button.*copy' | head -1 | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
 
 if [ -n "$COPY_REF" ]; then
-  agent-browser click "@$COPY_REF" >/dev/null 2>&1
+  $AB click "@$COPY_REF" >/dev/null 2>&1 || true
   sleep 1
 
-  # Read token from clipboard, write to .npmrc, clear clipboard
-  TOKEN=$(pbpaste 2>/dev/null)
+  TOKEN=$(pbpaste 2>/dev/null || true)
 
   if [ -n "$TOKEN" ] && echo "$TOKEN" | grep -q "^npm_"; then
     echo "//registry.npmjs.org/:_authToken=$TOKEN" > "$NPMRC"
-    # Clear clipboard immediately — token should not linger
     echo -n "" | pbcopy
     echo "Token written to ~/.npmrc"
   else
@@ -179,7 +194,7 @@ if [ -n "$COPY_REF" ]; then
 else
   # Fallback: try to extract token from page text
   echo "Could not find Copy button. Trying to extract from page..." >&2
-  TOKEN=$(echo "$COPY_SNAP" | grep -o 'npm_[A-Za-z0-9]*' | head -1)
+  TOKEN=$(echo "$COPY_SNAP" | grep -o 'npm_[A-Za-z0-9]*' | head -1 || true)
   if [ -n "$TOKEN" ]; then
     echo "//registry.npmjs.org/:_authToken=$TOKEN" > "$NPMRC"
     echo "Token written to ~/.npmrc"
@@ -194,24 +209,14 @@ fi
 # --- Step 6: Revoke old cli-publish tokens ---
 echo "Checking for old cli-publish tokens to revoke..."
 
-agent-browser open "https://www.npmjs.com/settings/$NPM_USER/tokens" >/dev/null 2>&1
-agent-browser wait --load networkidle >/dev/null 2>&1
-sleep 1
+ab_nav "https://www.npmjs.com/settings/$NPM_USER/tokens"
 
-# Snapshot the tokens page to find old cli-publish tokens
-TOKENS_SNAP=$(agent-browser snapshot -i 2>/dev/null)
-
-# Count cli-publish tokens — if more than 1, the older ones need revoking.
-# npm shows tokens in a list with delete buttons.
-# We look for delete buttons associated with "cli-publish" entries.
+TOKENS_SNAP=$($AB snapshot -i 2>/dev/null || true)
 CLI_PUBLISH_COUNT=$(echo "$TOKENS_SNAP" | grep -c "cli-publish" || true)
 
 if [ "$CLI_PUBLISH_COUNT" -gt 1 ]; then
   echo "Found $CLI_PUBLISH_COUNT cli-publish tokens. Old ones should be revoked."
   echo "Visit https://www.npmjs.com/settings/$NPM_USER/tokens to clean up."
-  # Note: Automated deletion is risky — we'd need to identify which token
-  # is the NEW one vs old ones. For safety, we flag it and let the user decide.
-  # Future improvement: parse token creation dates from the page.
 else
   echo "No old tokens to clean up."
 fi
