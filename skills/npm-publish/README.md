@@ -41,7 +41,9 @@ Version logic:
 
 ### release.sh
 
-Commits, pushes. Does NOT publish — returns `RELEASE_DONE` so the agent can call publish.sh separately and handle auth recovery.
+Stages all tracked changes (`git add -u`), commits, pushes. Does NOT publish — returns `RELEASE_DONE` so the agent can call publish.sh separately and handle auth recovery.
+
+Uses `git add -u` to catch all tracked file modifications (biome.json, source files, config changes) without the risk of `git add -A` pulling in untracked files like `.env` or credentials. Also explicitly adds `CHANGELOG.md` and `.claude-plugin/plugin.json` since those may be newly created. Reports staged files in output so the agent can confirm what's included.
 
 ```bash
 bash scripts/release.sh                  # standard
