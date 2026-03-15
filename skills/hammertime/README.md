@@ -4,14 +4,31 @@ Stop hook that catches bad model behaviors before they reach you. Runs on every 
 
 ## What It Does
 
-HammerTime uses two-phase detection to enforce behavioral rules:
+HammerTime enforces behavioral rules through two mechanisms:
 
+**Content rules** — Scored detection against response text:
 - **Phase 1 — Local scoring** (free, <1ms): Fast substring and regex matching against all enabled rules
 - **Phase 2 — Haiku verification** (~500ms, ~$0.001): Ambiguous scores get a second opinion from Haiku before blocking
+
+**Timer rules** — Time-based blocking:
+- Block all stop attempts until a deadline passes
+- No scoring, no Haiku — purely time-based
+- Auto-deleted from `rules.json` when the deadline expires
 
 Rules live at `~/.claude/hammertime/rules.json`. The hook registers as a Stop hook and fires on every assistant turn, before the response reaches you.
 
 ## Use Cases
+
+### Deep Focus Sessions (Timer Rules)
+
+```
+/hammertime 30m deep focus on this refactoring
+/hammertime 1h thorough security review — check every file
+/hammertime 45m finish this feature, triple-check everything
+/hammertime 2h massive migration task, keep iterating
+```
+
+Timer rules are perfect for large tasks where you want the agent to keep going, review its own work, look for edge cases, and not stop prematurely. The block message tells the agent how much time remains and prompts it to keep iterating.
 
 ### Workflow Enforcement
 
@@ -115,7 +132,9 @@ When you create a rule, HammerTime searches your conversation logs for real exam
 
 | Command | Purpose |
 |---|---|
-| `/hammertime` | Show status or create a rule from a description |
+| `/hammertime 30m <desc>` | Create a timer rule (blocks for 30 minutes) |
+| `/hammertime <desc>` | Create a content rule from a description |
+| `/hammertime` | Show status dashboard |
 | `/hammertime:status` | Dashboard showing all rules and their status |
 | `/hammertime:manage` | Interactive rule management |
 
@@ -165,5 +184,6 @@ Rules are JSON objects in `~/.claude/hammertime/rules.json`.
 | `evaluate_full_turn` | No | Score all assistant messages in the turn, not just the last (default: false) |
 | `max_iterations` | No | Max times this rule can block per session before allowing exit (default: 3, 0 = unlimited) |
 | `check_git_state` | No | Skip rule if working tree is clean and commits are pushed (default: false) |
+| `deadline` | No | ISO 8601 datetime. Makes the rule a timer — blocks until deadline, then auto-deletes |
 
 See `SKILL.md` for the full rule creation workflow and scoring details.

@@ -76,5 +76,13 @@
     ],
     "confidence_threshold": 5,
     "skill": "superpowers:test-driven-development"
+  },
+  {
+    "name": "timer-1742054400",
+    "rule": "Deep focus on the migration task. Triple-check everything, verify tests pass, look for edge cases.",
+    "enabled": true,
+    "deadline": "2026-03-15T15:00:00",
+    "keywords": [],
+    "max_iterations": 0
   }
 ]

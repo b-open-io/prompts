@@ -10,7 +10,11 @@ description: >-
 
 # HammerTime — Behavioral Rule System
 
-Rules live at `~/.claude/hammertime/rules.json`. The hook registers as a Stop hook and fires on every assistant turn. Scoring is two-phase: fast local scoring (<1ms) followed by optional Haiku verification (~500ms) for ambiguous signals.
+Rules live at `~/.claude/hammertime/rules.json`. The hook registers as a Stop hook and fires on every assistant turn.
+
+Two rule types:
+- **Content rules** — scored detection against response text (three-layer scoring + optional Haiku verification)
+- **Timer rules** — time-based blocking until a deadline passes (no scoring, no Haiku)
 
 ## When to Create a Rule
 
@@ -36,9 +40,38 @@ Recognize rule intent even when the user doesn't say "hammertime":
 - Preferences already handled by CLAUDE.md or settings
 - Rules that would fire on nearly every response (too broad)
 
-## Rule Schema
+## Timer Rules
 
-Rules are JSON objects in an array. Required and optional fields:
+Timer rules block all stop attempts until a deadline. No keywords, no scoring — purely time-based. Use them for deep focus sessions where you want the agent to keep iterating.
+
+```
+/hammertime 30m deep focus on this refactoring
+/hammertime 1h thorough security review of the codebase
+/hammertime 45m finish this feature completely
+```
+
+Timer rule schema:
+```json
+{
+  "name": "timer-1742054400",
+  "rule": "Deep focus on this refactoring task.",
+  "enabled": true,
+  "deadline": "2026-03-15T14:30:00",
+  "keywords": [],
+  "max_iterations": 0
+}
+```
+
+Key behaviors:
+- Timer rules bypass the `stop_hook_active` guard (safe because deadline provides termination)
+- `max_iterations: 0` means unlimited blocks until deadline (the deadline IS the guard)
+- When deadline passes, the rule is **auto-deleted** from `rules.json`
+- Block message includes remaining time and motivational prompt
+- Timer rules are evaluated before content rules — a timer block prevents content rule evaluation
+
+## Content Rule Schema
+
+Content rules are JSON objects in an array. Required and optional fields:
 
 ```json
 {
@@ -63,7 +96,7 @@ Rules are JSON objects in an array. Required and optional fields:
 - `enabled` — Boolean toggle
 - `keywords` — Array of 4-8 trigger strings for Layer 1 scoring
 
-**Optional fields:**
+**Optional fields (content rules):**
 - `intent_patterns` — Array of regex strings for Layer 2 structural matching (compiled at load time)
 - `dismissal_verbs` — Single regex string matching refusal/avoidance verbs for Layer 3
 - `qualifiers` — Single regex string matching attribution/deflection terms for Layer 3
@@ -72,6 +105,9 @@ Rules are JSON objects in an array. Required and optional fields:
 - `evaluate_full_turn` — Boolean. When `true`, scores ALL assistant messages since the user's last message (reads session transcript). When `false` or omitted, scores only the final assistant message. Default: `false`.
 - `max_iterations` — Maximum times this rule can block per session before auto-allowing exit (default: 3, set 0 for unlimited). Prevents infinite loops when a rule is too broad or can't be satisfied.
 - `check_git_state` — Boolean. When `true`, the hook runs `git status --porcelain`, `git log @{u}..HEAD`, and `git ls-files --others --exclude-standard` before blocking. If the working tree is clean and all commits are pushed, the rule is skipped entirely (both the direct-block and Haiku phase paths). Useful for rules about pushing or committing work, so they don't fire when there is genuinely nothing to push. Default: `false`.
+
+**Timer-specific field:**
+- `deadline` — ISO 8601 datetime string (e.g., `"2026-03-15T14:30:00"`). When present, the rule becomes a timer rule — it blocks all stop attempts until the deadline passes, bypassing content scoring entirely. Auto-deleted from `rules.json` when expired.
 
 ## Three-Layer Scoring
 

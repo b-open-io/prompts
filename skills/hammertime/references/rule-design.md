@@ -542,6 +542,47 @@ The rule started with generic keywords (`"pre-existing"`, `"not caused by"`) and
 
 None of these phrases appear in textbook examples of dismissal behavior. They only emerged from real sessions where the model found a plausible-sounding excuse and used it. The corpus made them testable; iterative tuning made the rule catch them.
 
+## Timer Rules
+
+Timer rules are fundamentally different from content rules. They don't use the three-layer scoring system at all — they simply check a clock.
+
+### When to Use Timer Rules
+
+Use timer rules when you want the agent to keep iterating for a set duration, regardless of what it says. Common scenarios:
+
+- **Large refactoring tasks** — "keep going for 30 minutes"
+- **Thorough reviews** — "spend at least 1 hour on this security audit"
+- **Deep focus sessions** — "don't stop until you've had 45 minutes to work"
+
+### Timer Rule Design
+
+Timer rules have no keywords, patterns, or co-occurrence. The only design decisions are:
+
+1. **Duration** — How long? Be realistic. A 30-minute timer on a 5-minute task wastes time.
+2. **Rule text** — What should the block message tell the agent to focus on? Be specific: "verify all edge cases in the auth module" is better than "keep working."
+3. **max_iterations** — Default is 0 (unlimited for timers). Set a positive value if you want a hard cap on blocks even before the deadline (e.g., `10` to allow at most 10 continuation cycles).
+
+### How Timer Rules Work in the Hook
+
+1. Timer rules are evaluated **before** content rules and **before** the `stop_hook_active` guard
+2. If `now < deadline` → block exit (with remaining time in the message)
+3. If `now >= deadline` → auto-delete the rule from `rules.json`
+4. The `max_iterations` safety valve still applies (defaults to 0/unlimited for timers)
+
+Timer rules bypass `stop_hook_active` because they have a guaranteed termination condition (the deadline). Content rules need `stop_hook_active` protection to prevent infinite re-triggering loops; timer rules don't because the clock always advances.
+
+### Block Message Format
+
+Timer block messages include remaining time and a motivational prompt:
+
+```
+[HammerTime] Timer 'deep-focus' — 24 minutes remaining. Stay focused on the refactoring task.
+You are NOT done yet. Review what you've completed, look for edge cases you missed,
+verify your work compiles and tests pass, and keep iterating.
+```
+
+This is different from content rule block messages, which reference the specific violation detected.
+
 ## Known Limitations — Meta-Discussion False Positives
 
 After corpus-tuning, `project-owner` at threshold 5 has three remaining false positives. All three share the same root cause: they are meta-discussion about the rule itself, not actual violations.

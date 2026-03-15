@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """HammerTime — Stop hook that catches bad model behaviors via user-defined rules.
 
-Three-layer scored detection:
+Two rule types:
+  1. Content rules — scored detection against response text
+  2. Timer rules — time-based blocking until a deadline passes
+
+Content rules use three-layer scored detection:
   Layer 1 (keywords): +1 per keyword hit
   Layer 2 (intent patterns): +2 per regex match on dismissal structure
   Layer 3 (sentence co-occurrence): +3 if dismissal verb + qualifier in same sentence
@@ -10,6 +14,12 @@ Score → decision:
   0     → EXIT (no match)
   1-4   → Phase 2 Haiku verification (ambiguous signal)
   5+    → BLOCK directly (skip Haiku, save ~500ms)
+
+Timer rules bypass scoring entirely:
+  If a rule has a "deadline" field and now < deadline → BLOCK.
+  If now >= deadline → auto-delete the rule from rules.json.
+  Timer rules also bypass the stop_hook_active guard since they
+  have deadline-based termination (no risk of infinite loops).
 
 Rules come from two sources:
   1. BUILTIN_RULES (hardcoded below)
@@ -46,6 +56,7 @@ import sys
 import time
 import urllib.request
 import urllib.error
+from datetime import datetime
 
 _start_time = time.monotonic()
 
@@ -390,10 +401,78 @@ def infer_mode(rule_text):
     return "ask"
 
 
+def cleanup_expired_timers():
+    """Remove expired timer rules from rules.json. Returns list of removed rule names."""
+    if not os.path.exists(USER_RULES_PATH):
+        return []
+
+    try:
+        with open(USER_RULES_PATH, "r") as f:
+            user_rules = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return []
+
+    if not isinstance(user_rules, list):
+        return []
+
+    now = datetime.now()
+    removed = []
+    kept = []
+    for rule in user_rules:
+        deadline_str = rule.get("deadline")
+        if deadline_str:
+            try:
+                if now >= datetime.fromisoformat(deadline_str):
+                    removed.append(rule.get("name", "unknown"))
+                    continue
+            except (ValueError, TypeError):
+                pass  # Invalid deadline, keep the rule
+        kept.append(rule)
+
+    if removed:
+        os.makedirs(os.path.dirname(USER_RULES_PATH), exist_ok=True)
+        tmp_path = USER_RULES_PATH + ".tmp"
+        try:
+            with open(tmp_path, "w") as f:
+                json.dump(kept, f, indent=2)
+            os.rename(tmp_path, USER_RULES_PATH)
+        except OSError:
+            pass
+        for name in removed:
+            debug_log(f"TIMER: expired rule '{name}' auto-deleted from rules.json")
+
+    return removed
+
+
 def build_block_message(rule):
     """Construct the systemMessage from rule text and inferred mode."""
     name = rule["name"]
     text = rule["rule"]
+
+    # Timer rules get a time-aware motivational message
+    deadline_str = rule.get("deadline")
+    if deadline_str:
+        try:
+            deadline_dt = datetime.fromisoformat(deadline_str)
+            remaining = deadline_dt - datetime.now()
+            total_secs = int(remaining.total_seconds())
+            if total_secs >= 120:
+                time_str = f"{total_secs // 60} minutes"
+            elif total_secs >= 60:
+                time_str = "1 minute"
+            else:
+                time_str = f"{max(1, total_secs)} seconds"
+            msg = (
+                f"[HammerTime] Timer '{name}' — {time_str} remaining. "
+                f"{text} "
+                "You are NOT done yet. Review what you've completed, look for edge cases "
+                "you missed, verify your work compiles and tests pass, and keep iterating."
+            )
+        except (ValueError, TypeError):
+            msg = f"[HammerTime] Timer '{name}' active. {text} Keep working."
+        return msg
+
+    # Content rules use mode inference
     mode = infer_mode(text)
     skill = rule.get("skill")
 
@@ -588,17 +667,17 @@ def main():
 
     debug_log(f"INPUT keys: {list(hook_input.keys())}")
 
-    # Don't re-trigger if already in a stop hook continuation
-    if hook_input.get("stop_hook_active"):
-        debug_log("EXIT: stop_hook_active=true, skipping to avoid loop")
-        sys.exit(0)
-
     last_msg = hook_input.get("last_assistant_message", "")
     if not last_msg:
         debug_log("EXIT: no last_assistant_message")
         sys.exit(0)
 
     debug_log(f"LAST_MSG length: {len(last_msg)} chars")
+
+    # Clean up expired timer rules (auto-delete from rules.json)
+    removed = cleanup_expired_timers()
+    if removed:
+        debug_log(f"TIMER: cleaned up {len(removed)} expired timer(s): {removed}")
 
     rules = load_rules()
     if not rules:
@@ -615,19 +694,61 @@ def main():
         debug_log(f"STATE: new session {session_id[:8]}..., resetting iteration counters")
         state = {"session_id": session_id, "rule_iterations": {}}
 
+    # --- Timer rules: evaluate BEFORE stop_hook_active guard ---
+    # Timer rules bypass stop_hook_active because they have deadline-based
+    # termination (no risk of infinite loops — the deadline always arrives).
+    now = datetime.now()
+    timer_rules = [r for r in rules if r.get("deadline")]
+    content_rules = [r for r in rules if not r.get("deadline")]
+
+    for rule in timer_rules:
+        rule_name = rule["name"]
+        deadline_str = rule["deadline"]
+        try:
+            deadline_dt = datetime.fromisoformat(deadline_str)
+        except (ValueError, TypeError):
+            debug_log(f"TIMER: rule '{rule_name}' has invalid deadline '{deadline_str}', skipping")
+            continue
+
+        if now < deadline_dt:
+            # Timer active — check iteration limit
+            max_iter = rule.get("max_iterations", 0)  # Default unlimited for timers
+            current_iter = state.get("rule_iterations", {}).get(rule_name, 0)
+            if max_iter > 0 and current_iter >= max_iter:
+                debug_log(f"TIMER: rule '{rule_name}' hit max iterations ({max_iter}), allowing exit")
+                continue
+
+            remaining_secs = int((deadline_dt - now).total_seconds())
+            remaining_mins = remaining_secs // 60
+            debug_log(f"TIMER: rule '{rule_name}' active, {remaining_mins}m {remaining_secs % 60}s remaining, blocking exit")
+            state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
+            save_state(state)
+            block_and_exit(rule, f"Timer rule '{rule_name}' active ({remaining_mins}m remaining)")
+        else:
+            debug_log(f"TIMER: rule '{rule_name}' expired (deadline was {deadline_str}), skipping")
+
+    # --- Content rules: stop_hook_active guard applies ---
+    if hook_input.get("stop_hook_active"):
+        debug_log("EXIT: stop_hook_active=true, skipping content rules")
+        sys.exit(0)
+
+    if not content_rules:
+        debug_log("EXIT: no content rules to evaluate")
+        sys.exit(0)
+
     # Count pending background agents for Haiku context
     pending_agents = count_pending_agents(transcript_path)
 
     # Read transcript for full-turn evaluation if any rule needs it
     full_turn_text = None
-    if any(r.get("evaluate_full_turn") for r in rules):
+    if any(r.get("evaluate_full_turn") for r in content_rules):
         if transcript_path:
             full_turn_text = collect_turn_messages(transcript_path)
 
     # Split rules by evaluation mode
     full_turn_rules = []
     last_msg_rules = []
-    for rule in rules:
+    for rule in content_rules:
         if rule.get("evaluate_full_turn") and full_turn_text:
             full_turn_rules.append(rule)
         else:

@@ -15,6 +15,46 @@ You manage HammerTime rules — behavioral guardrails that run as a Stop hook to
 
 The user's argument (after `/hammertime`) tells you what to do:
 
+### Duration prefix → Create a timer rule
+
+If the argument starts with a duration like `30m`, `1h`, `45m`, `2h`, `90m`:
+
+Example: `/hammertime 30m deep focus on this refactoring`
+Example: `/hammertime 1h thorough security review`
+Example: `/hammertime 45m finish this feature completely`
+
+Parse the duration and create a **timer rule**. Timer rules block ALL stop attempts until the deadline, with no keyword/pattern scoring needed.
+
+1. Parse the duration: extract number + unit (`m` = minutes, `h` = hours)
+2. Compute the absolute deadline: `now + duration` as ISO 8601 datetime
+3. Use the remaining text (after the duration) as the rule description. If no description, use "Stay focused and keep iterating on the current task."
+4. Generate a name: `timer-<unix-timestamp>` (e.g., `timer-1742054400`)
+
+The rule:
+```json
+{
+  "name": "timer-1742054400",
+  "rule": "<user's description>",
+  "enabled": true,
+  "deadline": "2026-03-15T14:30:00",
+  "keywords": [],
+  "max_iterations": 0
+}
+```
+
+Key properties of timer rules:
+- `deadline` is the ISO 8601 datetime when the timer expires
+- `keywords` is empty (no content scoring — purely time-based)
+- `max_iterations` is 0 (unlimited — the deadline is the only guard)
+- No `intent_patterns`, `dismissal_verbs`, or `qualifiers` needed
+- Timer rules bypass the `stop_hook_active` guard for maximum effectiveness
+- When the deadline passes, the rule is **auto-deleted** from `rules.json`
+
+After writing the rule:
+1. Show: "Timer set for **{duration}** — expires at **{deadline}**"
+2. Show the rule text that will be injected on each block
+3. Remind: **"Timer is active immediately — no restart needed."** (Timer rules are evaluated on every stop hook invocation and don't require a restart since they bypass content scoring.)
+
 ### No argument → Show full status dashboard
 
 Delegate to a subagent to gather and format the dashboard. Use the Agent tool:
@@ -26,17 +66,20 @@ Agent(prompt: "Read the HammerTime state and return a formatted status dashboard
    - project-owner: 'Fix all errors instead of dismissing them as pre-existing.' (evaluate_full_turn: true, keywords: 15, patterns: 8, co-occurrence: yes, threshold: 5)
 
 2. Read user rules from ~/.claude/hammertime/rules.json (may not exist — report 'No user rules configured' if missing).
-   For each rule, count: keywords, intent_patterns, whether dismissal_verbs+qualifiers are set, confidence_threshold, evaluate_full_turn, skill.
+   For each rule:
+   - If the rule has a 'deadline' field, it's a TIMER RULE. Show: name, rule text, deadline, time remaining (or 'EXPIRED' if past), max_iterations.
+   - Otherwise it's a CONTENT RULE. Show: keywords count, intent_patterns count, whether dismissal_verbs+qualifiers are set, confidence_threshold, evaluate_full_turn, skill.
 
 3. Check ~/.claude/hammertime/debug.log — if exists, show last 20 lines. If not, say: 'Debug logging not enabled. Set HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log to enable.'
 
 4. Check ~/.claude/settings.json for hooks.Stop entries referencing hammertime.py. Report if hook is registered there, or note it runs via the bopen-tools plugin.
 
 Return a formatted response with:
-- Rules table: | # | Rule | Status | Layers | Threshold | Full Turn | Skill |
+- Timer rules section (if any): | # | Name | Deadline | Remaining | Rule |
+- Content rules table: | # | Rule | Status | Layers | Threshold | Full Turn | Skill |
 - Debug log section
 - Hook registration status
-- Quick actions: /hammertime <desc>, /hammertime:manage, HAMMERTIME_DEBUG env var",
+- Quick actions: /hammertime 30m <desc>, /hammertime <desc>, /hammertime:manage, HAMMERTIME_DEBUG env var",
 subagent_type: "general-purpose")
 ```
 

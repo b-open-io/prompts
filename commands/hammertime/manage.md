@@ -20,6 +20,7 @@ BUILTIN RULES (always present):
 
 Read ~/.claude/hammertime/rules.json (may not exist — that means no user rules).
 For each user rule, show: number, name, enabled/disabled status, one-line rule text.
+For timer rules (rules with a 'deadline' field), also show the deadline and remaining time (or 'EXPIRED').
 
 Return ONLY the numbered list, nothing else.",
 subagent_type: "general-purpose")

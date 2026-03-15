@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "last_updated": "2026-03-13",
-    "notes": "Loop safety (max_iterations) added to hook. Scoring logic unchanged — benchmark results remain valid."
+    "last_updated": "2026-03-15",
+    "notes": "Timer rules added to hook (deadline-based blocking). Content rule scoring logic unchanged — benchmark results remain valid. Timer-specific tests in test_timer.py (11/11 pass)."
   },
   "rules": {
     "project-owner": {
