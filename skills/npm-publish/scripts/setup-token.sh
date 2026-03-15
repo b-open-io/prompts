@@ -5,9 +5,6 @@
 #   setup-token.sh fill    — detect user, navigate, fill form, exit
 #   setup-token.sh capture — poll for generated token, write to ~/.npmrc
 #
-# The agent orchestrates the flow between these two phases,
-# communicating with the user in between.
-#
 # Prerequisites: agent-browser installed, Chrome open, logged into npmjs.com
 # Usage: setup-token.sh <fill|capture>
 set -euo pipefail
@@ -18,6 +15,44 @@ AB="agent-browser --auto-connect"
 ab_nav() {
   $AB open "$1" 2>/dev/null || true
   sleep 3
+}
+
+# Helper: click a cursor-interactive dropdown, wait for menu, click option
+# Usage: ab_dropdown "No access" "Read and write"
+ab_dropdown() {
+  local TRIGGER_TEXT="$1"
+  local OPTION_TEXT="$2"
+
+  # Snapshot with -C to see cursor-interactive elements (custom dropdowns)
+  local SNAP
+  SNAP=$($AB snapshot -i -C 2>/dev/null || true)
+
+  # Find the first matching clickable element with the trigger text
+  local TRIGGER_REF
+  TRIGGER_REF=$(echo "$SNAP" | grep -F "(clickable) \"$TRIGGER_TEXT\"" | head -1 | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
+
+  if [ -z "$TRIGGER_REF" ]; then
+    return 1
+  fi
+
+  # Click to open dropdown
+  $AB click "@$TRIGGER_REF" >/dev/null 2>&1 || true
+  sleep 1
+
+  # Re-snapshot to see dropdown options
+  local SNAP2
+  SNAP2=$($AB snapshot -i -C 2>/dev/null || true)
+
+  # Find and click the option
+  local OPTION_REF
+  OPTION_REF=$(echo "$SNAP2" | grep -F "\"$OPTION_TEXT\"" | head -1 | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
+
+  if [ -z "$OPTION_REF" ]; then
+    return 1
+  fi
+
+  $AB click "@$OPTION_REF" >/dev/null 2>&1 || true
+  sleep 0.5
 }
 
 # Check agent-browser
@@ -44,9 +79,8 @@ if [ "$MODE" = "fill" ]; then
   # Navigate to token creation page
   ab_nav "https://www.npmjs.com/settings/$NPM_USER/tokens/granular-access-tokens/new"
 
-  # Snapshot and fill
+  # Snapshot to find form elements
   SNAPSHOT=$($AB snapshot -i 2>/dev/null || true)
-
   TOKEN_NAME_REF=$(echo "$SNAPSHOT" | grep -i 'textbox "Token name"' | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
 
   if [ -z "$TOKEN_NAME_REF" ]; then
@@ -57,39 +91,29 @@ if [ "$MODE" = "fill" ]; then
   # Fill token name
   $AB fill "@$TOKEN_NAME_REF" "cli-publish" >/dev/null 2>&1 || true
 
-  # Select All packages radio
+  # Ensure bypass 2FA is unchecked
+  BYPASS_REF=$(echo "$SNAPSHOT" | grep -i 'checkbox.*Bypass' | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
+  if [ -n "$BYPASS_REF" ] && echo "$SNAPSHOT" | grep -i 'checkbox.*Bypass' | grep -q 'checked=true'; then
+    $AB click "@$BYPASS_REF" >/dev/null 2>&1 || true
+  fi
+
+  # Select All packages radio (if not already selected)
   ALL_PKG_REF=$(echo "$SNAPSHOT" | grep -i 'radio "All packages"' | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
   if [ -n "$ALL_PKG_REF" ]; then
     $AB click "@$ALL_PKG_REF" >/dev/null 2>&1 || true
   fi
 
-  # Scroll down to make permissions and expiration visible
-  $AB scroll down 400 >/dev/null 2>&1 || true
-  sleep 1
+  # Set Packages permissions: click "No access" dropdown → select "Read and write"
+  ab_dropdown "No access" "Read and write" || true
 
-  # Re-snapshot after scroll to get fresh refs for buttons
-  SNAPSHOT2=$($AB snapshot -i 2>/dev/null || true)
+  # Set Organizations permissions: click remaining "No access" dropdown → select "Read and write"
+  ab_dropdown "No access" "Read and write" || true
 
-  # Click Read and Write for packages permissions
-  RW_REF=$(echo "$SNAPSHOT2" | grep -i 'button.*Read and write' | head -1 | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
-  if [ -n "$RW_REF" ]; then
-    $AB click "@$RW_REF" >/dev/null 2>&1 || true
-    sleep 0.5
-  fi
-
-  # Scroll more to see expiration
-  $AB scroll down 400 >/dev/null 2>&1 || true
-  sleep 1
-  SNAPSHOT3=$($AB snapshot -i 2>/dev/null || true)
-
-  # Click 7 days expiration
-  DAYS_REF=$(echo "$SNAPSHOT3" | grep -i 'button.*7 days' | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
-  if [ -n "$DAYS_REF" ]; then
-    $AB click "@$DAYS_REF" >/dev/null 2>&1 || true
-  fi
+  # Set Expiration: click "30 days" dropdown → select "7 days"
+  ab_dropdown "30 days" "7 days" || true
 
   # Scroll to bottom so Generate token button is visible
-  $AB scroll down 800 >/dev/null 2>&1 || true
+  $AB scroll down 9999 >/dev/null 2>&1 || true
 
   echo "FORM_READY:$NPM_USER"
 
@@ -99,13 +123,14 @@ elif [ "$MODE" = "capture" ]; then
   TOKEN_FOUND=false
   for i in $(seq 1 90); do
     sleep 2
-    SNAP=$($AB snapshot -i 2>/dev/null || true)
 
-    # After clicking Generate, npm shows the token with a Copy button
-    COPY_REF=$(echo "$SNAP" | grep -i 'button.*copy' | head -1 | grep -o 'ref=e[0-9]*' | sed 's/ref=//' || true)
+    # Snapshot with -C to catch any Copy button variant
+    SNAP=$($AB snapshot -i -C 2>/dev/null || true)
+
+    # Look for Copy button (standard button or clickable element)
+    COPY_REF=$(echo "$SNAP" | grep -i 'copy' | grep -o 'ref=e[0-9]*' | head -1 | sed 's/ref=//' || true)
 
     if [ -n "$COPY_REF" ]; then
-      # Found copy button — click it
       $AB click "@$COPY_REF" >/dev/null 2>&1 || true
       sleep 1
 
