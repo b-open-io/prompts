@@ -27,19 +27,7 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
-if (!dataPath) {
-  console.error(
-    "Usage: bun run playground.ts --data /path/to/post.json [--port 4747] [--open]"
-  );
-  process.exit(1);
-}
-
-if (!existsSync(dataPath)) {
-  console.error(`Data file not found: ${dataPath}`);
-  process.exit(1);
-}
-
-const eventsPath = dataPath + ".events";
+const eventsPath = dataPath ? dataPath + ".events" : "";
 
 // ── Data types ──────────────────────────────────────────────────────
 interface Part {
@@ -66,6 +54,9 @@ interface ProfileData {
 
 // ── Data helpers ────────────────────────────────────────────────────
 function readPostData(): ProfileData {
+  if (!dataPath || !existsSync(dataPath)) {
+    return { parts: [{ text: "" }], username: "wildsatchmo", image: "", avatar: "" };
+  }
   const raw = readFileSync(dataPath, "utf-8");
   const data: PostData = JSON.parse(raw);
 
@@ -205,8 +196,16 @@ setInterval(() => {
   }
 }, 5_000);
 
-// GET / — serve editor HTML
+// GET / — serve editor HTML (wrapped in layout if no --data, standalone otherwise for backward compat)
 app.get("/", (c) => {
+  if (!dataPath) {
+    // No data file — show welcome in layout
+    return c.html(layoutHTML("editor", "Post Editor", `<div style="text-align:center;padding:64px 0;color:var(--muted-foreground)">
+      <i data-lucide="pen-tool" style="width:40px;height:40px;margin-bottom:16px;opacity:0.4"></i>
+      <p style="font-size:15px;max-width:400px;margin:0 auto;line-height:1.6">No draft loaded. Generate a draft with <code style="font-family:var(--font-mono);background:var(--card);padding:2px 6px;border-radius:4px">draft.sh</code> then open it with <code style="font-family:var(--font-mono);background:var(--card);padding:2px 6px;border-radius:4px">--data post.json</code></p>
+      <div style="margin-top:24px"><a href="/pool" style="padding:10px 24px;background:var(--primary);color:var(--primary-foreground);border-radius:var(--radius);text-decoration:none;font-weight:600;font-size:14px">View Persona Pool</a></div>
+    </div>`));
+  }
   return c.html(editorHTML());
 });
 
@@ -312,6 +311,7 @@ app.post("/generate-image", async (c) => {
 
 // POST /events — append action to .events NDJSON file
 app.post("/events", async (c) => {
+  if (!eventsPath) return c.json({ error: "No data file loaded" }, 400);
   const body = await c.req.json();
   const event = {
     ...body,
@@ -321,32 +321,39 @@ app.post("/events", async (c) => {
   return c.json({ ok: true });
 });
 
-// ── CSS Theme ───────────────────────────────────────────────────────
+// ── CSS Theme (Twitter shadcn dark — exact oklch from tweakcn.com) ──
 function themeCSS(): string {
   return `
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  --background: oklch(0.145 0.02 250);
-  --foreground: oklch(0.92 0.01 250);
-  --card: oklch(0.205 0.025 250);
-  --card-foreground: oklch(0.92 0.01 250);
-  --popover: oklch(0.205 0.025 250);
-  --popover-foreground: oklch(0.92 0.01 250);
-  --primary: oklch(0.75 0.14 195);
-  --primary-foreground: oklch(0.145 0.02 250);
-  --secondary: oklch(0.26 0.025 250);
-  --secondary-foreground: oklch(0.92 0.01 250);
-  --muted: oklch(0.26 0.025 250);
-  --muted-foreground: oklch(0.65 0.02 250);
-  --accent: oklch(0.26 0.025 250);
-  --accent-foreground: oklch(0.92 0.01 250);
-  --destructive: oklch(0.55 0.2 25);
-  --border: oklch(0.3 0.02 250);
-  --input: oklch(0.3 0.02 250);
-  --ring: oklch(0.75 0.14 195);
-  --radius: 0.75rem;
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.9328 0.0025 228.7857);
+  --card: oklch(0.2097 0.0080 274.5332);
+  --card-foreground: oklch(0.9328 0.0025 228.7857);
+  --popover: oklch(0.2097 0.0080 274.5332);
+  --popover-foreground: oklch(0.9328 0.0025 228.7857);
+  --primary: oklch(0.6692 0.1607 245.0110);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.2097 0.0080 274.5332);
+  --secondary-foreground: oklch(0.9328 0.0025 228.7857);
+  --muted: oklch(0.2097 0.0080 274.5332);
+  --muted-foreground: oklch(0.5637 0.0078 247.9662);
+  --accent: oklch(0.1928 0.0331 242.5459);
+  --accent-foreground: oklch(0.9328 0.0025 228.7857);
+  --destructive: oklch(0.6188 0.2376 25.7658);
+  --border: oklch(0.2674 0.0047 248.0045);
+  --input: oklch(0.2674 0.0047 248.0045);
+  --ring: oklch(0.6692 0.1607 245.0110);
+  --radius: 1.3rem;
   --font-sans: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: Menlo, ui-monospace, monospace;
+  --chart-1: oklch(0.6692 0.1607 245.0110);
+  --chart-2: oklch(0.6188 0.2376 25.7658);
+  --chart-3: oklch(0.55 0.15 145);
+  --chart-4: oklch(0.65 0.15 80);
+  --chart-5: oklch(0.60 0.15 300);
+  --sidebar: oklch(0.2097 0.0080 274.5332);
 }
 
 * { box-sizing: border-box; margin: 0 }
@@ -578,8 +585,498 @@ div.avatar {
 /* Spinner */
 .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .6s linear infinite }
 @keyframes spin { to { transform: rotate(360deg) } }
+
+/* Layout shell */
+.app-shell { display: flex; height: 100vh }
+.sidebar { width: 240px; flex-shrink: 0; background: var(--sidebar); padding: 20px 16px; display: flex; flex-direction: column; gap: 24px }
+.sidebar-logo { display: flex; align-items: center; gap: 10px }
+.sidebar-logo img { width: 28px; height: 28px; border-radius: 8px }
+.sidebar-logo span { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--foreground) }
+.sidebar-new { display: flex; align-items: center; justify-content: center; height: 40px; border-radius: 10px; background: var(--primary); color: var(--primary-foreground); font-size: 14px; font-weight: 600; font-family: var(--font-sans); text-decoration: none }
+.sidebar-section { font-size: 10px; font-weight: 600; color: var(--muted-foreground); letter-spacing: 2px; font-family: var(--font-sans); margin-bottom: 4px }
+.nav-item { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 10px; border-radius: 8px; text-decoration: none; font-size: 13px; font-family: var(--font-sans); transition: background .1s }
+.nav-item:hover { background: var(--accent) }
+.nav-active { background: var(--accent); color: var(--primary); font-weight: 600 }
+.nav-inactive { color: var(--muted-foreground); font-weight: 400 }
+.main-area { flex: 1; display: flex; flex-direction: column; overflow: auto }
+.page-header { display: flex; align-items: center; justify-content: space-between; height: 64px; padding: 0 32px; flex-shrink: 0 }
+.page-header h1 { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--foreground) }
+.page-content { flex: 1; overflow: auto; padding: 24px 32px }
+.divider { height: 1px; background: var(--border); flex-shrink: 0 }
+.v-divider { width: 1px; background: var(--border); flex-shrink: 0 }
 `;
 }
+
+// ── HTML escape helper ───────────────────────────────────────────────
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// ── Sidebar + Layout ─────────────────────────────────────────────────
+function sidebarHTML(currentPage: string): string {
+  const nav = [
+    { id: "pool", label: "Persona Pool", icon: "users", href: "/pool" },
+    { id: "intel", label: "Social Intel", icon: "zap", href: "/intel" },
+    { id: "editor", label: "Post Editor", icon: "pen-tool", href: "/" },
+    { id: "settings", label: "Settings", icon: "settings", href: "/settings" },
+  ];
+  const items = nav
+    .map((n) => {
+      const cls = n.id === currentPage ? "nav-item nav-active" : "nav-item nav-inactive";
+      return `<a href="${n.href}" class="${cls}"><i data-lucide="${n.icon}" style="width:16px;height:16px"></i>${n.label}</a>`;
+    })
+    .join("");
+
+  return `<div class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/persona-icon" alt="">
+      <span>Persona</span>
+    </div>
+    <a href="/" class="sidebar-new">+ New Draft</a>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span class="sidebar-section">WORKSPACE</span>
+      ${items}
+    </div>
+    <div style="flex:1"></div>
+  </div>`;
+}
+
+function layoutHTML(currentPage: string, title: string, content: string): string {
+  return `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(title)} — Persona</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>${themeCSS()}</style>
+</head><body>
+<div class="app-shell">
+  ${sidebarHTML(currentPage)}
+  <div class="v-divider"></div>
+  <div class="main-area">
+    <div class="page-header"><h1>${esc(title)}</h1></div>
+    <div class="divider"></div>
+    <div class="page-content">
+      ${content}
+    </div>
+  </div>
+</div>
+<script>
+lucide.createIcons();
+setInterval(()=>fetch('/heartbeat').catch(()=>{}),10000);
+</script>
+</body></html>`;
+}
+
+// ── Persona icon route ───────────────────────────────────────────────
+app.get("/persona-icon", (c) => {
+  const iconPath = resolve(dirname(import.meta.dir), "images/persona-icon.png");
+  if (!existsSync(iconPath)) return c.text("", 404);
+  return new Response(readFileSync(iconPath), {
+    headers: { "Content-Type": "image/png", "Cache-Control": "max-age=3600" },
+  });
+});
+
+// ── Pool Page ────────────────────────────────────────────────────────
+interface PoolUser { username: string; added_at: string; note?: string }
+
+function readPoolData() {
+  const personaDir = resolve(process.env.PERSONA_DIR || ".claude/persona");
+  const poolPath = resolve(personaDir, "pool.json");
+  if (!existsSync(poolPath)) return { users: [] as Array<{ user: PoolUser; profile: any; status: string; }> };
+  const pool = JSON.parse(readFileSync(poolPath, "utf-8"));
+  const users = (pool.users || []).map((u: PoolUser) => {
+    const profilePath = resolve(personaDir, `${u.username}.json`);
+    if (!existsSync(profilePath)) return { user: u, profile: null, status: "missing" };
+    const profile = JSON.parse(readFileSync(profilePath, "utf-8"));
+    const ageDays = Math.floor((Date.now() - new Date(profile.captured_at).getTime()) / 86400000);
+    return { user: u, profile, status: ageDays < 7 ? "fresh" : "stale" };
+  });
+  return { users };
+}
+
+function poolHTML(data: ReturnType<typeof readPoolData>): string {
+  const statusDot = (status: string) => {
+    const [color, label] =
+      status === "fresh" ? ["var(--chart-3)", "Fresh"] :
+      status === "stale" ? ["var(--chart-4)", "Stale"] :
+      ["var(--muted-foreground)", "No Profile"];
+    return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:${color}"><span style="width:7px;height:7px;border-radius:50%;background:${color}"></span>${label}</span>`;
+  };
+
+  const avatarEl = (profile: any, username: string) => {
+    if (profile?.avatar) return `<img src="${esc(profile.avatar)}" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0">`;
+    const letter = username[0]?.toUpperCase() || "?";
+    return `<div style="width:40px;height:40px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--primary-foreground);flex-shrink:0">${letter}</div>`;
+  };
+
+  if (!data.users.length) {
+    return `<div style="text-align:center;padding:64px 0;color:var(--muted-foreground)">
+      <i data-lucide="users" style="width:40px;height:40px;margin-bottom:16px;opacity:0.4"></i>
+      <p style="font-size:15px">No users tracked yet. Use <code style="font-family:var(--font-mono);background:var(--card);padding:2px 6px;border-radius:4px">track.sh add &lt;username&gt;</code> to get started.</p>
+    </div>`;
+  }
+
+  const rows = data.users.map((entry, i) => {
+    const { user, profile, status } = entry;
+    const displayName = profile?.display_name || user.username;
+    const border = i < data.users.length - 1 ? "border-bottom:1px solid var(--border);" : "";
+    return `<div style="display:flex;align-items:center;gap:16px;padding:14px 0;${border}">
+      ${avatarEl(profile, user.username)}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:14px;font-weight:500;color:var(--foreground)">${esc(displayName)}</span>
+          <span style="font-size:12px;color:var(--muted-foreground);font-family:var(--font-mono)">@${esc(user.username)}</span>
+        </div>
+        ${user.note ? `<div style="font-size:12px;color:var(--muted-foreground);margin-top:2px">${esc(user.note)}</div>` : ""}
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-shrink:0">
+        ${statusDot(status)}
+        ${profile ? `<span style="font-size:11px;padding:2px 8px;border-radius:9999px;background:var(--accent);color:var(--foreground);font-family:var(--font-mono)">${profile.sample_count || 0} samples</span>` : ""}
+        <div style="display:flex;gap:8px">
+          <a href="/profile/${esc(user.username)}" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius);color:var(--foreground);text-decoration:none"><i data-lucide="user" style="width:13px;height:13px"></i>View</a>
+          <a href="/?persona=${esc(user.username)}" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:5px 10px;border:1px solid var(--primary);border-radius:var(--radius);color:var(--primary-foreground);text-decoration:none;background:var(--primary)"><i data-lucide="pen-line" style="width:13px;height:13px"></i>Draft</a>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <span style="font-size:13px;color:var(--muted-foreground)">${data.users.length} user${data.users.length !== 1 ? "s" : ""} tracked</span>
+  </div>
+  <div>${rows}</div>`;
+}
+
+app.get("/pool", (c) => {
+  const data = readPoolData();
+  return c.html(layoutHTML("pool", "Persona Pool", poolHTML(data)));
+});
+
+// ── Profile Viewer Page ──────────────────────────────────────────────
+function readProfileDataFull(username: string) {
+  const personaDir = resolve(process.env.PERSONA_DIR || ".claude/persona");
+  const filePath = resolve(personaDir, `${username}.json`);
+  if (!existsSync(filePath)) return null;
+  return JSON.parse(readFileSync(filePath, "utf-8"));
+}
+
+function profileHTML(data: any): string {
+  const capturedDate = new Date(data.captured_at);
+  const diffDays = Math.floor((Date.now() - capturedDate.getTime()) / 86400000);
+  const daysAgo = diffDays === 0 ? "today" : diffDays === 1 ? "1 day ago" : `${diffDays} days ago`;
+  const displayName = data.display_name || data.username;
+  const avatarSrc = data.avatar || "";
+
+  const avatarImg = avatarSrc
+    ? `<img src="${esc(avatarSrc)}" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+    : `<div style="width:80px;height:80px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:var(--primary-foreground);flex-shrink:0">${(displayName[0] || "?").toUpperCase()}</div>`;
+
+  const tweetCards = (data.examples || []).map((text: string, i: number) => `
+    <div data-tweet-idx="${i}" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;${i >= 10 ? "display:none" : "display:flex"};gap:12px;align-items:flex-start">
+      ${avatarSrc ? `<img src="${esc(avatarSrc)}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0">` : `<div style="width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--primary-foreground);flex-shrink:0">${(displayName[0] || "?").toUpperCase()}</div>`}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">
+          <span style="font-weight:600;font-size:14px;color:var(--foreground)">${esc(displayName)}</span>
+          <span style="color:var(--muted-foreground);font-size:13px">@${esc(data.username)}</span>
+        </div>
+        <p style="margin:0 0 8px;font-size:14px;line-height:1.5;color:var(--foreground);word-break:break-word">${esc(text)}</p>
+        <span style="font-size:11px;color:var(--muted-foreground);font-family:var(--font-mono)">${text.length} chars</span>
+      </div>
+    </div>`).join("\n");
+
+  const hiddenCount = Math.max(0, (data.examples || []).length - 10);
+
+  return `<div style="display:flex;gap:32px;align-items:flex-start">
+  <div style="width:40%;flex-shrink:0;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;align-items:center;gap:16px">
+      ${avatarImg}
+      <div>
+        <div style="font-size:20px;font-weight:700;color:var(--foreground)">${esc(displayName)}</div>
+        <div style="font-size:14px;color:var(--muted-foreground);margin-top:2px">@${esc(data.username)}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;color:var(--muted-foreground);font-size:13px">
+      <i data-lucide="calendar" style="width:14px;height:14px"></i>
+      Captured ${capturedDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })} — ${daysAgo}
+    </div>
+    <div style="display:flex;gap:24px">
+      <div><div style="font-size:22px;font-weight:700;color:var(--foreground)">${(data.post_count || 0).toLocaleString()}</div><div style="font-size:12px;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Posts</div></div>
+      <div><div style="font-size:22px;font-weight:700;color:var(--foreground)">${(data.sample_count || 0).toLocaleString()}</div><div style="font-size:12px;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Samples</div></div>
+      <div><div style="font-size:22px;font-weight:700;color:var(--foreground)">${data.metrics?.avg_length || 0}</div><div style="font-size:12px;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Avg Length</div></div>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:600;color:var(--foreground);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Style Metrics</div>
+      <div style="border-bottom:1px solid var(--border);padding:10px 0;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;color:var(--muted-foreground);display:flex;align-items:center;gap:6px"><i data-lucide="activity" style="width:13px;height:13px"></i>Median Engagement</span>
+        <span style="font-size:14px;font-weight:600;color:var(--foreground);font-family:var(--font-mono)">${(data.metrics?.median_engagement || 0).toLocaleString()}</span>
+      </div>
+      <div style="padding:10px 0;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;color:var(--muted-foreground);display:flex;align-items:center;gap:6px"><i data-lucide="trending-up" style="width:13px;height:13px"></i>Top Engagement</span>
+        <span style="font-size:14px;font-weight:600;color:var(--foreground);font-family:var(--font-mono)">${(data.metrics?.top_engagement || 0).toLocaleString()}</span>
+      </div>
+    </div>
+    <a href="/?persona=${encodeURIComponent(data.username)}" style="display:block;width:100%;padding:12px 0;background:var(--primary);color:var(--primary-foreground);text-align:center;border-radius:var(--radius);font-size:14px;font-weight:600;text-decoration:none">Draft as @${esc(data.username)}</a>
+  </div>
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:16px;font-weight:700;color:var(--foreground)">Sample Posts</span>
+      <span style="background:var(--accent);color:var(--foreground);font-size:11px;font-weight:600;padding:2px 8px;border-radius:9999px;font-family:var(--font-mono)">${(data.examples || []).length}</span>
+    </div>
+    <div id="tweet-list" style="display:flex;flex-direction:column;gap:12px">${tweetCards}</div>
+    ${hiddenCount > 0 ? `<button id="show-all-btn" onclick="document.querySelectorAll('[data-tweet-idx]').forEach(c=>c.style.display='flex');this.style.display='none'" style="background:transparent;border:1px solid var(--border);color:var(--muted-foreground);font-size:13px;padding:10px 16px;border-radius:var(--radius);cursor:pointer;width:100%">Show all ${(data.examples || []).length} posts</button>` : ""}
+  </div>
+</div>`;
+}
+
+app.get("/profile/:user", (c) => {
+  const username = c.req.param("user");
+  const data = readProfileDataFull(username);
+  if (!data) return c.html(layoutHTML("pool", "Profile Not Found", `<p style="color:var(--muted-foreground)">No profile found for @${esc(username)}. Capture one with <code style="font-family:var(--font-mono);background:var(--card);padding:2px 6px;border-radius:4px">capture.sh --username ${esc(username)}</code></p>`));
+  return c.html(layoutHTML("pool", `@${username}`, profileHTML(data)));
+});
+
+// ── Social Intelligence Page ─────────────────────────────────────────
+interface IntelSection { title: string; items: string[] }
+interface IntelData { sections: IntelSection[]; topics: string[]; hoursAgo: number | null }
+
+function readIntelData(): IntelData {
+  const personaDir = resolve(process.env.PERSONA_DIR || ".claude/persona");
+  const scanPath = resolve(personaDir, "last-scan.json");
+  const topicsPath = resolve(personaDir, "topics.json");
+
+  const topics: string[] = [];
+  if (existsSync(topicsPath)) {
+    try {
+      const raw = JSON.parse(readFileSync(topicsPath, "utf-8"));
+      if (Array.isArray(raw.topics)) topics.push(...raw.topics);
+    } catch {}
+  }
+
+  if (!existsSync(scanPath)) return { sections: [], topics, hoursAgo: null };
+
+  let scanText = "";
+  let hoursAgo: number | null = null;
+  try {
+    const raw = JSON.parse(readFileSync(scanPath, "utf-8"));
+    scanText = typeof raw === "string" ? raw : (raw.text ?? raw.content ?? raw.result ?? raw.scan ?? "");
+    const mtime = statSync(scanPath).mtimeMs;
+    hoursAgo = Math.round((Date.now() - mtime) / 3_600_000);
+  } catch { return { sections: [], topics, hoursAgo: null }; }
+
+  if (!scanText) return { sections: [], topics, hoursAgo };
+
+  const sections: IntelSection[] = [];
+  const parts = scanText.split(/\n(?=## )/);
+  for (const part of parts) {
+    const lines = part.trim().split("\n");
+    const title = lines[0].replace(/^##\s*/, "").trim();
+    if (!title) continue;
+    const items = lines.slice(1)
+      .map((l: string) => l.replace(/^[-*]\s+/, "").replace(/^\d+\.\s+/, "").trim())
+      .filter((l: string) => l.length > 0 && !l.startsWith("#"));
+    sections.push({ title, items });
+  }
+  return { sections, topics, hoursAgo };
+}
+
+function intelHTML(data: IntelData): string {
+  function sectionHeader(title: string): string {
+    return `<div style="display:flex;align-items:center;gap:12px;margin:32px 0 16px"><span style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground);white-space:nowrap">${esc(title)}</span><div style="flex:1;height:1px;background:var(--border)"></div></div>`;
+  }
+
+  function highlightMentions(text: string): string {
+    return esc(text).replace(/@(\w+)/g, '<span style="color:var(--primary);font-weight:600">@$1</span>');
+  }
+
+  function detectCategory(item: string): { label: string; color: string } {
+    const l = item.toLowerCase();
+    if (/\bgap\b|\bunder-covered\b/.test(l)) return { label: "Gap", color: "var(--chart-4)" };
+    if (/\bdebate\b|\bcontrovers\b/.test(l)) return { label: "Debate", color: "var(--chart-2)" };
+    if (/\btrend\b|\bviral\b/.test(l)) return { label: "Trending", color: "var(--chart-1)" };
+    if (/\bopportunit\b/.test(l)) return { label: "Opportunity", color: "var(--chart-3)" };
+    return { label: "Insight", color: "var(--muted-foreground)" };
+  }
+
+  function detectDirection(item: string): { label: string; color: string; icon: string } | null {
+    const l = item.toLowerCase();
+    if (/\brising\b|\bgrow\b|\bsurg\b/.test(l)) return { label: "Rising", color: "var(--chart-3)", icon: "trending-up" };
+    if (/\bemerging\b|\bnew\b|\bearly\b/.test(l)) return { label: "Emerging", color: "var(--chart-1)", icon: "radio" };
+    if (/\bdeclining\b|\bdrop\b|\bwaning\b/.test(l)) return { label: "Declining", color: "var(--chart-4)", icon: "trending-down" };
+    return null;
+  }
+
+  const scanMeta = data.hoursAgo !== null
+    ? `<span style="font-size:13px;color:var(--muted-foreground);display:flex;align-items:center;gap:6px"><i data-lucide="clock" style="width:14px;height:14px"></i>Last scanned: ${data.hoursAgo === 0 ? "just now" : `${data.hoursAgo}h ago`}</span>`
+    : "";
+
+  const topicsBar = data.topics.length > 0
+    ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px">${data.topics.map(t => `<span style="padding:3px 10px;border-radius:9999px;font-size:12px;background:var(--accent);color:var(--accent-foreground);border:1px solid var(--border)">${esc(t)}</span>`).join("")}</div>`
+    : "";
+
+  if (!data.sections.length) {
+    return `<div style="text-align:center;padding:64px 0;color:var(--muted-foreground)">
+      <i data-lucide="radar" style="width:40px;height:40px;margin-bottom:16px;opacity:0.4"></i>
+      <p style="font-size:15px;max-width:360px;margin:0 auto;line-height:1.6">No scan data yet. Run a social intelligence scan to populate this page.</p>
+    </div>`;
+  }
+
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">${scanMeta}</div>${topicsBar}`;
+
+  for (const section of data.sections) {
+    html += sectionHeader(section.title);
+    const titleLower = section.title.toLowerCase();
+
+    section.items.forEach((item, i) => {
+      const isLast = i === section.items.length - 1;
+      const border = !isLast ? "border-bottom:1px solid var(--border);" : "";
+
+      if (titleLower.includes("technical development")) {
+        html += `<div style="display:flex;${border}"><div style="width:3px;flex-shrink:0;background:var(--chart-1);border-radius:2px;margin:12px 0"></div><div style="padding:12px 16px;flex:1;font-size:14px;line-height:1.55;color:var(--foreground)">${esc(item)}</div></div>`;
+      } else if (titleLower.includes("content opportunit")) {
+        const cat = detectCategory(item);
+        const draftTopic = encodeURIComponent(item.slice(0, 120));
+        html += `<div style="display:flex;align-items:center;gap:12px;padding:11px 0;${border}">
+          <span style="padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:${cat.color}22;color:${cat.color};border:1px solid ${cat.color}44;flex-shrink:0">${cat.label}</span>
+          <span style="flex:1;font-size:14px;line-height:1.5;color:var(--foreground)">${esc(item)}</span>
+          <a href="/?topic=${draftTopic}" style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:9999px;border:1px solid var(--border);font-size:12px;font-weight:600;color:var(--muted-foreground);text-decoration:none;white-space:nowrap;flex-shrink:0"><i data-lucide="pencil" style="width:12px;height:12px"></i>Draft</a>
+        </div>`;
+      } else if (titleLower.includes("early signal")) {
+        const dir = detectDirection(item);
+        const badge = dir ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:${dir.color}22;color:${dir.color};border:1px solid ${dir.color}44;flex-shrink:0"><i data-lucide="${dir.icon}" style="width:11px;height:11px"></i>${dir.label}</span>` : "";
+        html += `<div style="display:flex;align-items:center;gap:12px;padding:11px 0;${border}">${badge}<span style="flex:1;font-size:14px;line-height:1.5;color:var(--foreground)">${esc(item)}</span></div>`;
+      } else {
+        html += `<div style="padding:11px 0;${border}"><p style="font-size:14px;line-height:1.55;color:var(--foreground);margin:0">${highlightMentions(item)}</p></div>`;
+      }
+    });
+  }
+  return html;
+}
+
+app.get("/intel", (c) => {
+  return c.html(layoutHTML("intel", "Social Intelligence", intelHTML(readIntelData())));
+});
+
+app.post("/api/intel/refresh", async (c) => {
+  const scriptDir = dirname(new URL(import.meta.url).pathname);
+  const proc = Bun.spawn(["bash", resolve(scriptDir, "scan.sh"), "--refresh"], {
+    stdout: "pipe", stderr: "pipe",
+    env: { ...process.env, PERSONA_DIR: process.env.PERSONA_DIR || ".claude/persona" },
+  });
+  await proc.exited;
+  return c.json({ ok: true });
+});
+
+// ── Settings Page ────────────────────────────────────────────────────
+function readSettingsData() {
+  const personaDir = resolve(process.env.PERSONA_DIR || ".claude/persona");
+  const tokens = [
+    { key: "X_BEARER_TOKEN", label: "X Bearer Token", icon: "twitter" },
+    { key: "X_ACCESS_TOKEN", label: "X Access Token", icon: "key-round" },
+    { key: "XAI_API_KEY", label: "xAI / Grok", icon: "cpu" },
+    { key: "ANTHROPIC_API_KEY", label: "Anthropic", icon: "bot" },
+    { key: "GITHUB_TOKEN", label: "GitHub", icon: "github" },
+    { key: "GEMINI_API_KEY", label: "Gemini", icon: "sparkles" },
+  ].map(({ key, label, icon }) => ({ label, icon, set: Boolean(process.env[key]) }));
+
+  let trackedUsers = 0, profileCount = 0, lastScanDate: Date | null = null;
+  if (existsSync(personaDir)) {
+    const poolPath = resolve(personaDir, "pool.json");
+    if (existsSync(poolPath)) {
+      try { trackedUsers = (JSON.parse(readFileSync(poolPath, "utf-8")).users || []).length; } catch {}
+    }
+    try { profileCount = readdirSync(personaDir).filter((f: string) => f.endsWith(".json") && !["pool.json", "work.json", "topics.json", "last-scan.json"].includes(f)).length; } catch {}
+    const scanPath = resolve(personaDir, "last-scan.json");
+    if (existsSync(scanPath)) try { lastScanDate = new Date(statSync(scanPath).mtimeMs); } catch {}
+  }
+
+  let topics: string[] = [];
+  const topicsPath = resolve(personaDir, "topics.json");
+  if (existsSync(topicsPath)) try { topics = JSON.parse(readFileSync(topicsPath, "utf-8")).topics || []; } catch {}
+
+  let projects: Array<{ title: string; desc: string; tags: string[]; repo?: string }> = [];
+  const workPath = resolve(personaDir, "work.json");
+  if (existsSync(workPath)) try { projects = JSON.parse(readFileSync(workPath, "utf-8")).projects || []; } catch {}
+
+  return { tokens, trackedUsers, profileCount, projects, topics, lastScanDate };
+}
+
+function settingsHTML(data: ReturnType<typeof readSettingsData>): string {
+  function timeAgo(d: Date | null): string {
+    if (!d) return "Never";
+    const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  }
+
+  function sectionHdr(icon: string, title: string): string {
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><i data-lucide="${esc(icon)}" style="width:16px;height:16px;color:var(--muted-foreground)"></i><span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-foreground)">${esc(title)}</span></div><div style="height:1px;background:var(--border);margin-bottom:4px"></div>`;
+  }
+
+  const tokenRows = data.tokens.map((t, i) => {
+    const isLast = i === data.tokens.length - 1;
+    const pillStyle = t.set
+      ? "background:oklch(0.18 0.05 145);color:var(--chart-3);border:1px solid oklch(0.35 0.08 145)"
+      : "background:var(--card);color:var(--muted-foreground);border:1px solid var(--border)";
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;${isLast ? "" : "border-bottom:1px solid var(--border)"}">
+      <i data-lucide="${esc(t.icon)}" style="width:16px;height:16px;flex-shrink:0;color:var(--muted-foreground)"></i>
+      <span style="flex:1;font-size:14px;color:var(--foreground)">${esc(t.label)}</span>
+      <span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:9999px;${pillStyle}">${t.set ? "Connected" : "Not Set"}</span>
+    </div>`;
+  }).join("");
+
+  const storageRows = [
+    { icon: "users", label: "Tracked Users", value: String(data.trackedUsers) },
+    { icon: "user", label: "Profiles", value: String(data.profileCount) },
+    { icon: "folder-open", label: "Projects", value: String(data.projects.length) },
+    { icon: "hash", label: "Topics", value: String(data.topics.length) },
+    { icon: "clock", label: "Last Scan", value: timeAgo(data.lastScanDate) },
+  ].map((r, i, arr) => `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;${i < arr.length - 1 ? "border-bottom:1px solid var(--border)" : ""}">
+    <i data-lucide="${esc(r.icon)}" style="width:16px;height:16px;flex-shrink:0;color:var(--muted-foreground)"></i>
+    <span style="flex:1;font-size:14px;color:var(--foreground)">${esc(r.label)}</span>
+    <span style="font-size:14px;font-weight:600;color:var(--foreground);font-family:var(--font-mono)">${esc(r.value)}</span>
+  </div>`).join("");
+
+  const topicPills = data.topics.map(t => `<span style="display:inline-flex;padding:4px 12px;border-radius:9999px;border:1px solid var(--border);background:var(--accent);color:var(--foreground);font-size:13px">${esc(t)}</span>`).join(" ");
+
+  const projectItems = data.projects.map((p, i) => {
+    const tags = (p.tags || []).map(t => `<span style="padding:2px 8px;border-radius:9999px;border:1px solid var(--border);font-size:11px;color:var(--muted-foreground)">${esc(t)}</span>`).join(" ");
+    return `<div style="padding:16px 0;${i < data.projects.length - 1 ? "border-bottom:1px solid var(--border)" : ""}">
+      <div style="font-size:15px;font-weight:600;color:var(--foreground);margin-bottom:4px">${esc(p.title)}</div>
+      <div style="font-size:14px;color:var(--muted-foreground);line-height:1.5;margin-bottom:8px">${esc(p.desc || "")}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${tags}</div>
+      ${p.repo ? `<a href="https://github.com/${esc(p.repo)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--primary);text-decoration:none;margin-top:6px"><i data-lucide="external-link" style="width:12px;height:12px"></i>${esc(p.repo)}</a>` : ""}
+    </div>`;
+  }).join("");
+
+  return `<div style="max-width:720px">
+  <section style="margin-bottom:40px">${sectionHdr("key", "API Tokens")}${tokenRows}</section>
+  <section style="margin-bottom:40px">${sectionHdr("database", "Data Storage")}${storageRows}</section>
+  <section style="margin-bottom:40px">${sectionHdr("tag", "Topics")}<div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:12px">${topicPills || '<span style="color:var(--muted-foreground);font-size:14px">No topics configured.</span>'}</div></section>
+  <section style="margin-bottom:40px">${sectionHdr("briefcase", "Body of Work")}${data.projects.length ? projectItems : '<p style="padding-top:12px;font-size:14px;color:var(--muted-foreground)">No projects in work.json.</p>'}</section>
+</div>`;
+}
+
+app.get("/settings", (c) => {
+  return c.html(layoutHTML("settings", "Settings", settingsHTML(readSettingsData())));
+});
+
+app.post("/api/work", async (c) => {
+  const body = await c.req.json() as { action: string; title?: string; desc?: string; tags?: string[]; repo?: string };
+  const personaDir = resolve(process.env.PERSONA_DIR || ".claude/persona");
+  const workPath = resolve(personaDir, "work.json");
+  let work = { projects: [] as any[] };
+  if (existsSync(workPath)) try { work = JSON.parse(readFileSync(workPath, "utf-8")); } catch {}
+  if (body.action === "add" && body.title) {
+    work.projects.push({ title: body.title, desc: body.desc || "", tags: body.tags || [], ...(body.repo ? { repo: body.repo } : {}) });
+    writeFileSync(workPath, JSON.stringify(work, null, 2));
+  } else if (body.action === "remove" && body.title) {
+    work.projects = work.projects.filter((p: any) => p.title !== body.title);
+    writeFileSync(workPath, JSON.stringify(work, null, 2));
+  }
+  return c.json({ ok: true });
+});
 
 // ── HTML template ───────────────────────────────────────────────────
 function editorHTML(): string {
@@ -1084,9 +1581,14 @@ init();
 
 // ── Start server ────────────────────────────────────────────────────
 const url = `http://localhost:${port}`;
-console.log(`Playground server running at ${url}`);
-console.log(`Data file: ${dataPath}`);
-console.log(`Events file: ${eventsPath}`);
+console.log(`Persona app running at ${url}`);
+if (dataPath) {
+  console.log(`Data file: ${dataPath}`);
+  console.log(`Events file: ${eventsPath}`);
+} else {
+  console.log(`No --data file — editor will show welcome page`);
+}
+console.log(`Pages: /pool, /intel, /settings, /profile/:user`);
 
 const server = Bun.serve({
   port,
