@@ -1,7 +1,7 @@
 ---
 name: agent-onboarding
-version: 1.0.0
-description: Complete end-to-end checklist for adding a new agent to the bOpen team. Use when creating a new agent, onboarding a new team member, or need to remember the full agent deployment pipeline — design, write, avatar, plugin, roster, and optional ClawNet bot deployment.
+version: 1.1.0
+description: Complete end-to-end checklist for adding a new agent to the bOpen team. Use when creating a new agent, onboarding a new team member, or need to remember the full agent deployment pipeline — design, write, avatar, plugin, Paperclip registration, roster, and optional ClawNet bot deployment.
 ---
 
 # Agent Onboarding
@@ -124,7 +124,79 @@ git push
 
 ---
 
-## Phase 6: Deploy as ClawNet Bot (Optional)
+## Phase 6: Register in Paperclip (When Applicable)
+
+If the agent will run inside bOpen's Paperclip instance (paperclip.bopen.io), register it there. Paperclip is the control plane — it manages heartbeats, budgets, task assignment, and org hierarchy.
+
+### Paperclip agent model
+
+Paperclip agents are NOT the same as Claude Code plugin agents. Key differences:
+
+| Concern | Claude Code Plugin | Paperclip |
+|---------|-------------------|-----------|
+| Identity | `.md` file in plugin repo | DB record via API/UI |
+| Personality/prompt | Body of `.md` file | Prompt template or instructionsFilePath |
+| Hierarchy | Flat peers | Strict tree (reportsTo) |
+| Budget | None | budgetMonthlyCents with auto-pause at 100% |
+| Execution | On-demand subagent | Heartbeat protocol (scheduled wakes) |
+| Roles | Freeform | 11 fixed: ceo, cto, cmo, cfo, engineer, designer, pm, qa, devops, researcher, general |
+
+### Registration via Paperclip UI
+
+1. Navigate to the Agents page, click "Create Agent"
+2. **Agent name** — use the display_name from the `.md` file (e.g., "Martha", "Jerry")
+3. **Adapter type** — `Claude Code` for all bOpen agents running Claude
+4. **Working directory** — `/paperclip/.agents/{slug}` where `{slug}` is the `name` from the agent `.md` frontmatter (e.g., `code-auditor`). On Railway persistent volume.
+5. **Model** — match the `model:` field from the `.md` frontmatter (`sonnet` → Claude Sonnet, `opus` → Claude Opus)
+6. **Role** — map to the closest Paperclip enum. Use `title` field for the actual job description
+7. **Reports to** — select the agent's manager in the org tree
+8. **Budget** — set monthly spend limit in cents. Guidelines:
+   - Opus agents: $50/month (5000 cents)
+   - Sonnet agents: $20/month (2000 cents)
+   - Haiku agents: $5/month (500 cents)
+   - CEO/CTO: higher budgets as needed
+9. **Capabilities** — paste the `description:` from the `.md` frontmatter
+10. **Environment check** — click "Test now" to verify adapter, API key, and working directory
+
+### Role mapping guide
+
+| bOpen Agent Type | Paperclip Role | Title (freeform) |
+|-----------------|---------------|------------------|
+| CEO / strategist | `ceo` | Chief Executive Officer |
+| Engineering lead | `cto` | Chief Technology Officer |
+| Directory/routing | `cmo` | Front Desk / Directory Service |
+| Financial oversight | `cfo` | Chief Financial Officer |
+| Most specialists | `engineer` | [Actual specialty] Specialist |
+| UI/UX agents | `designer` | UI/UX Designer |
+| Project coordinators | `pm` | Project Manager |
+| Testing/auditing | `qa` | [Code Auditor / Tester] |
+| Infra/CI/CD | `devops` | Infrastructure Lead |
+| Research agents | `researcher` | Lead Researcher |
+| Everything else | `general` | [Actual role description] |
+
+### Heartbeat protocol awareness
+
+Agents running in Paperclip must follow the heartbeat protocol defined in the Paperclip skill (see Quick Reference table for path). Reference that skill in the agent's system prompt or install it in their working directory.
+
+### Dual-ecosystem agents
+
+Most bOpen agents exist in BOTH ecosystems:
+- **Claude Code plugin**: personality, system prompt, tools, skills (source of truth)
+- **Paperclip**: runtime config, hierarchy, budget, heartbeat scheduling
+
+The `.md` file in the plugin repo is always the source of truth for who the agent IS. Paperclip owns HOW it runs (schedule, budget, reporting chain). Never duplicate the system prompt — reference it or paste it into Paperclip's prompt template field.
+
+### Environment requirements
+
+For Paperclip on Railway:
+- `ANTHROPIC_API_KEY` must be set as Railway env var
+- Working directories on `/paperclip/` volume persist across deploys
+- First Claude Code invocation is slow (cold start) — environment check may timeout but still works
+- Agents run as `node` user via gosu entrypoint (not root)
+
+---
+
+## Phase 7: Deploy as ClawNet Bot (Optional)
 
 Only if the agent needs a live, always-on bot instance (e.g., a 24/7 support agent, a monitoring bot).
 
@@ -138,7 +210,7 @@ Johnny handles: uptime monitoring, reconnects, key rotation, and ClawNet-specifi
 
 ---
 
-## Phase 7: Notify Martha
+## Phase 8: Notify Martha
 
 After any new agent is deployed:
 
@@ -148,7 +220,7 @@ After any new agent is deployed:
 
 ---
 
-## Phase 8: Verify
+## Phase 9: Verify
 
 - [ ] Spawn the new agent with a simple test task relevant to its domain
 - [ ] Confirm it announces itself correctly (name, version, specialization, mission)
@@ -172,3 +244,8 @@ After any new agent is deployed:
 | Bot maintenance | Johnny (`clawnet-bot:clawnet-mechanic`) |
 | Routing updates | Martha (`bopen-tools:front-desk`) |
 | Avatar generation | `Skill(gemskills:generate-image)` or `gemskills:content` agent |
+| Paperclip instance | https://paperclip.bopen.io |
+| Paperclip repo | `~/code/paperclip` (b-open-io/paperclip) |
+| Paperclip skill | `~/code/paperclip/skills/paperclip/SKILL.md` |
+| Tortuga plugin | `~/code/tortuga-plugin` (@bopen-io/tortuga-plugin) |
+| Agent working dirs | `/paperclip/.agents/{slug}` (Railway volume) |

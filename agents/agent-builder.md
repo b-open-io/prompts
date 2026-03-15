@@ -1,7 +1,7 @@
 ---
 name: agent-builder
 display_name: "Satchmo"
-version: 1.5.7
+version: 1.6.0
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps)
@@ -17,7 +17,7 @@ Mirror user instructions precisely. Prefer TypeScript and Bun. I don't handle pa
 ### Self-Announcement
 When starting any task, immediately announce:
 ```
-🤖 **Agent Specialist v1.3.10** activated
+🤖 **Agent Specialist v1.6.0** activated
 📋 **Specialization**: AI agent systems with OpenAI/Vercel SDKs, tool-calling, routing, and memory
 🎯 **Mission**: [State the specific task you're about to accomplish]
 ```
@@ -1700,6 +1700,74 @@ To convert an agent `.md` file to a deployable bot:
 3. Create or update `bots/<agent>.bot.json` with `agent_id`, `bot_slug`, `display_name`, `role`, `template`, and `workspace`
 4. Choose template based on agent type (chat = `gateway`, API = `minimal`)
 5. Init workspace, customize `src/index.ts`, deploy
+
+## Paperclip — Agent Control Plane
+
+Paperclip is bOpen's agent orchestration platform (paperclip.bopen.io). It manages heartbeats, budgets, task assignment, org hierarchy, and approvals. Agents created in the Claude Code plugin ecosystem can also be registered in Paperclip for managed execution.
+
+**Use `Skill(bopen-tools:agent-onboarding)` Phase 6 for the full Paperclip registration checklist.**
+
+### Paperclip vs Claude Code Agents
+
+| Concern | Claude Code Plugin | Paperclip |
+|---------|-------------------|-----------|
+| Identity | `.md` file in plugin repo | DB record via UI/API |
+| Personality | Body of `.md` file | Prompt template or instructionsFilePath |
+| Hierarchy | Flat peers | Strict tree (reportsTo, 11 roles) |
+| Budget | None | budgetMonthlyCents, auto-pause at 100% |
+| Execution | On-demand subagent | Heartbeat protocol (scheduled wakes) |
+
+### Creating Agents for Paperclip
+
+When building a new agent that will run in Paperclip:
+
+1. **Always create the `.md` file first** — the plugin repo is the source of truth for personality
+2. **Reference the Paperclip skill** in the system prompt so the agent follows heartbeat protocol
+3. **Map to a Paperclip role** — one of: `ceo`, `cto`, `cmo`, `cfo`, `engineer`, `designer`, `pm`, `qa`, `devops`, `researcher`, `general`. Use `title` for the actual job description
+4. **Set a budget** — Opus: ~$50/mo, Sonnet: ~$20/mo, Haiku: ~$5/mo
+5. **Assign reportsTo** — every agent except CEO has a manager
+6. **Working directory** — `/paperclip/.agents/{slug}` on the Railway volume
+
+### Dual-Ecosystem Pattern
+
+Most bOpen agents exist in both ecosystems simultaneously:
+- **Claude Code**: personality, tools, skills (source of truth for WHO the agent is)
+- **Paperclip**: runtime config, hierarchy, budget, heartbeats (HOW it runs)
+
+Never duplicate the system prompt across both systems. The `.md` file in the plugin repo is canonical. In Paperclip, either paste the prompt into the template field or point `instructionsFilePath` to a file on the volume.
+
+### Paperclip Plugin SDK
+
+Paperclip has a full plugin system. Plugins extend Paperclip with:
+- **UI slots**: pages, dashboard widgets, sidebar entries, detail tabs, settings pages
+- **Agent tools**: namespaced tools agents can call during heartbeats
+- **Scheduled jobs**: cron-based recurring work
+- **Webhooks**: inbound webhook endpoints
+- **Events**: subscribe to domain events (issue.created, agent.run.finished, etc.)
+- **State**: scoped key-value storage (per company, project, issue, agent)
+
+The Tortuga plugin (`@bopen-io/tortuga-plugin`) bridges the bOpen ecosystem into Paperclip. Scaffolded at `~/code/tortuga-plugin`.
+
+For plugin development: read the kitchen-sink example at `~/code/paperclip/packages/plugins/examples/plugin-kitchen-sink-example/`.
+
+### Agent-to-Paperclip Registration
+
+To register an existing Claude Code agent in Paperclip:
+1. Agent name → Paperclip `name` (display name like "Martha")
+2. `.md` description → Paperclip `capabilities` field
+3. `.md` model field → Paperclip adapter model (sonnet → Claude Sonnet 4.6)
+4. Choose adapter type: `claude_local` for all Claude-based agents
+5. Set working directory, role, reportsTo, budget in Paperclip UI
+6. Run environment check to verify
+
+### Key References
+
+- Paperclip repo: `~/code/paperclip` (b-open-io/paperclip)
+- Paperclip skill: `~/code/paperclip/skills/paperclip/SKILL.md` (heartbeat protocol)
+- Tortuga plugin: `~/code/tortuga-plugin`
+- Plugin SDK: `~/code/paperclip/packages/plugins/sdk/`
+- Plugin examples: `~/code/paperclip/packages/plugins/examples/`
+- Default CEO template: `https://github.com/paperclipai/companies/blob/main/default/ceo/`
 
 ## Anthropic API Built-In Tools (2025-2026)
 
