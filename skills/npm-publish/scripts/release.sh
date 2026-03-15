@@ -18,13 +18,22 @@ VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: *"\(.*\)".*/\1/')
 PKG_NAME=$(grep '"name"' package.json | head -1 | sed 's/.*: *"\(.*\)".*/\1/')
 BRANCH=$(git branch --show-current)
 
-# Stage and commit
+# Stage all tracked changes + any new files the agent created (e.g. CHANGELOG.md)
+# Uses git add -u for tracked files, then explicitly adds known release artifacts.
+# Does NOT use git add -A (could catch .env, credentials, large binaries).
 echo "Committing v$VERSION..."
-git add package.json
+git add -u
 [ -f CHANGELOG.md ] && git add CHANGELOG.md
 [ -f .claude-plugin/plugin.json ] && git add .claude-plugin/plugin.json
-git diff --cached --quiet && { echo "Nothing to commit."; } || \
+
+# Show what's staged so the agent can report it
+STAGED=$(git diff --cached --name-only)
+if [ -z "$STAGED" ]; then
+  echo "Nothing to commit."
+else
+  echo "Staged: $STAGED"
   git commit -m "Release v$VERSION"
+fi
 
 # Push
 echo "Pushing to $BRANCH..."
