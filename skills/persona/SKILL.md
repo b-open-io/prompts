@@ -200,14 +200,14 @@ All data lives in `.claude/persona/` in the project root:
 
 X API tokens are resolved in this order:
 
-1. **`tokens.json` by username** — Multi-account: each persona has its own token in `.claude/persona/tokens.json`
+1. **`tokens.json` by username** — Multi-account: each persona has its own token in `~/.claude/persona/tokens.json` (user-global, outside any repo)
 2. **`tokens.json` any account** — Falls back to any valid token from other accounts
 3. **`X_BEARER_TOKEN` env var** — App-only bearer token (legacy, single-account)
 4. **`X_ACCESS_TOKEN` env var** — OAuth 2.0 user token
 5. **OAuth refresh** — Using `X_REFRESH_TOKEN` + `X_CLIENT_SECRET_ID`
 6. **`TOKEN_SETUP_NEEDED`** — All methods exhausted, model should run setup-token.sh
 
-The `tokens.json` format:
+Stored at `~/.claude/persona/tokens.json` (user-global, never committed to any repo):
 ```json
 {
   "wildsatchmo": { "bearer": "AAA...", "added": "2026-03-16T19:00:00Z" },

@@ -12,11 +12,11 @@
 #   source x-token.sh
 #   RESOLVE_USERNAME="wildsatchmo" TOKEN=$(resolve_x_token) || exit 1
 #
-# Multi-account: tokens are stored in .claude/persona/tokens.json keyed by username.
-# The RESOLVE_USERNAME variable tells the resolver which account to check first.
+# Multi-account: tokens are stored in ~/.claude/persona/tokens.json (user-global,
+# outside any repo, never committed). The RESOLVE_USERNAME variable tells the
+# resolver which account to check first.
 
-PERSONA_DIR="${PERSONA_DIR:-.claude/persona}"
-TOKENS_FILE="$PERSONA_DIR/tokens.json"
+TOKENS_FILE="${HOME}/.claude/persona/tokens.json"
 
 _validate_token() {
     local token="$1"

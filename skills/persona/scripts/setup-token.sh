@@ -1,7 +1,7 @@
 #!/bin/bash
 # Interactive X API token setup via Chrome DevTools Protocol.
 # Opens the X developer portal in the user's browser, helps them grab a bearer token,
-# and saves it to .claude/persona/tokens.json keyed by username.
+# and saves it to ~/.claude/persona/tokens.json (user-global, never in a repo).
 #
 # Usage: setup-token.sh --username <handle> [--cdp-script <path>]
 #
@@ -9,8 +9,8 @@
 # If CDP isn't available, falls back to manual instructions.
 set -e
 
-PERSONA_DIR="${PERSONA_DIR:-.claude/persona}"
-TOKENS_FILE="$PERSONA_DIR/tokens.json"
+TOKENS_DIR="${HOME}/.claude/persona"
+TOKENS_FILE="$TOKENS_DIR/tokens.json"
 USERNAME=""
 CDP_SCRIPT=""
 
@@ -28,7 +28,7 @@ if [ -z "$USERNAME" ]; then
     exit 1
 fi
 
-mkdir -p "$PERSONA_DIR"
+mkdir -p "$TOKENS_DIR"
 
 # Initialize tokens file if missing
 if [ ! -f "$TOKENS_FILE" ]; then

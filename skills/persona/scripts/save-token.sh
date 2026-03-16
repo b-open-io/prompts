@@ -3,11 +3,11 @@
 # Usage: save-token.sh --username <handle> --token <bearer_token>
 #
 # Validates the token against the X API before saving.
-# Stores in .claude/persona/tokens.json keyed by username.
+# Stores in ~/.claude/persona/tokens.json (user-global, never in a repo).
 set -e
 
-PERSONA_DIR="${PERSONA_DIR:-.claude/persona}"
-TOKENS_FILE="$PERSONA_DIR/tokens.json"
+TOKENS_DIR="${HOME}/.claude/persona"
+TOKENS_FILE="$TOKENS_DIR/tokens.json"
 USERNAME=""
 TOKEN=""
 
@@ -42,7 +42,7 @@ response_username=$(cat /tmp/persona_token_check.json | jq -r '.data.username //
 echo "Token valid — resolved @$USERNAME (API returned: @${response_username:-unknown})"
 
 # Save to tokens.json
-mkdir -p "$PERSONA_DIR"
+mkdir -p "$TOKENS_DIR"
 if [ ! -f "$TOKENS_FILE" ]; then
     echo '{}' > "$TOKENS_FILE"
 fi
