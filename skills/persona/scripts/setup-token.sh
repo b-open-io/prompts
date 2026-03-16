@@ -1,24 +1,22 @@
 #!/bin/bash
-# X API token setup via browser automation.
-# Uses agent-browser to navigate the X developer portal, find the bearer token,
-# and save it to ~/.claude/persona/tokens.json.
+# X API token setup via Chrome DevTools Protocol.
+# Uses the chrome-cdp skill (bun cdp.ts) to navigate the X developer portal.
 #
-# Two-phase flow (matches npm-publish pattern):
+# Two-phase flow:
 #   setup-token.sh navigate --username <handle>   → opens portal, detects login state
-#   setup-token.sh capture  --username <handle>    → polls for token on Keys page
+#   setup-token.sh capture  --username <handle>    → extracts token from Keys page
 #
 # Status codes for model orchestration:
-#   ALREADY_VALID    — existing token works, nothing to do
-#   NAVIGATED        — portal is open, model should drive to Keys and tokens
-#   NOT_LOGGED_IN    — user needs to log into X in Chrome first
+#   ALREADY_VALID    — existing token works
+#   NAVIGATED        — portal is open, model drives navigation via CDP
+#   NOT_LOGGED_IN    — user needs to log into X in Chrome
 #   TOKEN_SAVED      — token extracted and saved
-#   CAPTURE_TIMEOUT  — polling timed out waiting for token
-#   NO_BROWSER       — agent-browser not available
+#   CAPTURE_TIMEOUT  — couldn't find token
+#   NO_BROWSER       — Chrome CDP not available
 set -e
 
 TOKENS_DIR="${HOME}/.claude/persona"
 TOKENS_FILE="$TOKENS_DIR/tokens.json"
-AB="agent-browser --auto-connect"
 USERNAME=""
 ACTION="${1:-navigate}"
 shift 2>/dev/null || true
@@ -37,8 +35,6 @@ if [ -z "$USERNAME" ]; then
 fi
 
 mkdir -p "$TOKENS_DIR"
-
-# Initialize tokens file if missing
 if [ ! -f "$TOKENS_FILE" ]; then
     echo '{}' > "$TOKENS_FILE"
 fi
@@ -57,51 +53,64 @@ if [ -n "$existing_token" ]; then
     echo "Existing token invalid (HTTP $http_code), setting up new one..." >&2
 fi
 
-# Check agent-browser is available
-if ! command -v agent-browser >/dev/null 2>&1; then
+# Find chrome-cdp script
+CDP_SCRIPT=$(ls "${HOME}"/.claude/plugins/cache/b-open-io/bopen-tools/*/skills/chrome-cdp/scripts/cdp.ts 2>/dev/null | sort -t/ -k9 -V | tail -1)
+if [ -z "$CDP_SCRIPT" ] || [ ! -f "$CDP_SCRIPT" ]; then
     echo "NO_BROWSER"
-    echo "agent-browser not found. Install with: bun install -g agent-browser"
-    echo "Or manually get your token at: https://developer.x.com/en/portal/dashboard"
+    echo "Chrome CDP skill not found."
+    echo "Manually get your token at: https://developer.x.com/en/portal/dashboard"
     echo "Then run: save-token.sh --username $USERNAME --token <bearer_token>"
     exit 1
 fi
 
-# Check Chrome is reachable
-if ! $AB snapshot -i >/dev/null 2>&1; then
+CDP="bun $CDP_SCRIPT"
+
+# Check Chrome is reachable (with timeout — cdp list is fast)
+if ! $CDP list >/dev/null 2>&1; then
     echo "NO_BROWSER"
-    echo "Cannot connect to Chrome. Make sure Chrome is running with remote debugging enabled."
-    echo "Or manually get your token at: https://developer.x.com/en/portal/dashboard"
+    echo "Chrome remote debugging not enabled."
+    echo "Run: $CDP enable"
+    echo "Then toggle the switch in Chrome and retry."
     exit 1
 fi
-
-ab_nav() {
-    $AB open "$1" 2>/dev/null || true
-    sleep 3
-}
 
 # ============================================================
 # Phase 1: Navigate to the developer portal
 # ============================================================
 if [ "$ACTION" = "navigate" ]; then
-    echo "Opening X Developer Portal..."
-    ab_nav "https://developer.x.com/en/portal/dashboard"
+    # Find a tab to use — prefer new tab, otherwise first data row (skip 2-line header)
+    TAB_ID=$($CDP list 2>/dev/null | grep -i "new tab\|chrome://newtab" | awk '{print $1}' | head -1)
+    if [ -z "$TAB_ID" ]; then
+        TAB_ID=$($CDP list 2>/dev/null | awk 'NR>2 && /^  [0-9A-F]/ {print $1; exit}')
+    fi
 
-    # Snapshot to check login state and find apps
-    SNAP=$($AB snapshot -i 2>/dev/null || true)
+    if [ -z "$TAB_ID" ]; then
+        echo "NO_BROWSER"
+        echo "No Chrome tabs available."
+        exit 1
+    fi
+
+    echo "Opening X Developer Portal..."
+    $CDP nav "$TAB_ID" "https://developer.x.com/en/portal/dashboard" 2>/dev/null || true
+    sleep 3
+
+    # Snapshot to check login state
+    SNAP=$($CDP snap "$TAB_ID" 2>/dev/null || true)
 
     # Check for login prompt
-    if echo "$SNAP" | grep -qi "log in\|sign in\|sign up\|username.*password"; then
+    if echo "$SNAP" | grep -qi "log in\|sign in\|username.*password\|Log in to X"; then
         echo "NOT_LOGGED_IN"
+        echo "TAB_ID=$TAB_ID"
         echo "You need to log into X in Chrome first."
-        echo "Log in at x.com, then run this again."
         exit 0
     fi
 
     # Look for project/app links
-    APPS=$($AB eval '[...document.querySelectorAll("a")].filter(a => a.href && a.href.includes("/portal/projects/")).map(a => ({text: a.textContent.trim(), href: a.href}))' 2>/dev/null || true)
+    APPS=$($CDP eval "$TAB_ID" '[...document.querySelectorAll("a")].filter(a => a.href && a.href.includes("/portal/projects/")).map(a => ({text: a.textContent.trim(), href: a.href}))' 2>/dev/null || true)
 
     echo "NAVIGATED"
-    echo "USERNAME=$USERNAME"
+    echo "TAB_ID=$TAB_ID"
+    echo "CDP_SCRIPT=$CDP_SCRIPT"
     echo ""
     echo "PAGE_SNAPSHOT:"
     echo "$SNAP"
@@ -115,51 +124,32 @@ fi
 # Phase 2: Capture the bearer token from Keys and tokens page
 # ============================================================
 if [ "$ACTION" = "capture" ]; then
-    echo "Looking for Bearer Token on the current page..."
+    # Find the tab on developer.x.com, or first data row
+    TAB_ID=$($CDP list 2>/dev/null | grep "developer.x.com" | awk '{print $1}' | head -1)
+    if [ -z "$TAB_ID" ]; then
+        TAB_ID=$($CDP list 2>/dev/null | awk 'NR>2 && /^  [0-9A-F]/ {print $1; exit}')
+    fi
 
-    # Poll for up to 120 seconds (60 iterations × 2 seconds)
-    for i in $(seq 1 60); do
-        SNAP=$($AB snapshot -i -C 2>/dev/null || true)
+    echo "Looking for Bearer Token on current page..."
 
-        # Look for a Copy button near Bearer Token
-        COPY_REF=$(echo "$SNAP" | grep -i 'copy' | grep -o 'ref=e[0-9]*' | head -1 | sed 's/ref=//' || true)
+    # Try to extract token from the page
+    # Bearer tokens from X start with "AAAA" and are long base64 strings
+    for i in $(seq 1 30); do
+        # Method 1: Look for token text directly on the page
+        BEARER=$($CDP eval "$TAB_ID" '
+            // Look in inputs, code blocks, and text elements
+            var els = document.querySelectorAll("input, code, pre, span, p, div");
+            var found = "";
+            for (var el of els) {
+                var text = el.value || el.textContent || "";
+                var match = text.match(/AAAA[A-Za-z0-9%+\/=]{50,}/);
+                if (match) { found = match[0]; break; }
+            }
+            found;
+        ' 2>/dev/null | tr -d '"' || true)
 
-        if [ -n "$COPY_REF" ]; then
-            # Click Copy to put token on clipboard
-            $AB click "@$COPY_REF" >/dev/null 2>&1 || true
-            sleep 1
-            TOKEN=$(pbpaste 2>/dev/null || true)
-
-            # Bearer tokens are long base64-ish strings
-            if [ -n "$TOKEN" ] && [ ${#TOKEN} -gt 50 ]; then
-                # Validate it actually works
-                http_code=$(curl -s -o /dev/null -w "%{http_code}" \
-                    "https://api.x.com/2/users/by/username/$USERNAME" \
-                    -H "Authorization: Bearer $TOKEN" 2>/dev/null || echo "000")
-
-                if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
-                    # Save it
-                    now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-                    jq --arg u "$USERNAME" --arg t "$TOKEN" --arg d "$now" \
-                        '.[$u] = {"bearer": $t, "added": $d}' \
-                        "$TOKENS_FILE" > "${TOKENS_FILE}.tmp" && mv "${TOKENS_FILE}.tmp" "$TOKENS_FILE"
-
-                    # Clear clipboard for security
-                    echo -n "" | pbcopy 2>/dev/null || true
-
-                    echo "TOKEN_SAVED"
-                    echo "Bearer token for @$USERNAME saved to $TOKENS_FILE"
-                    echo "Validated: HTTP $http_code"
-                    exit 0
-                else
-                    echo "Clipboard had a long string but it failed validation (HTTP $http_code), continuing..." >&2
-                fi
-            fi
-        fi
-
-        # Also try to find the token in the page text directly
-        BEARER=$($AB eval 'document.body.innerText' 2>/dev/null | grep -oE 'AAAA[A-Za-z0-9%]{50,}' | head -1 || true)
-        if [ -n "$BEARER" ]; then
+        if [ -n "$BEARER" ] && [ ${#BEARER} -gt 50 ]; then
+            # Validate it
             http_code=$(curl -s -o /dev/null -w "%{http_code}" \
                 "https://api.x.com/2/users/by/username/$USERNAME" \
                 -H "Authorization: Bearer $BEARER" 2>/dev/null || echo "000")
@@ -171,9 +161,50 @@ if [ "$ACTION" = "capture" ]; then
                     "$TOKENS_FILE" > "${TOKENS_FILE}.tmp" && mv "${TOKENS_FILE}.tmp" "$TOKENS_FILE"
 
                 echo "TOKEN_SAVED"
-                echo "Bearer token for @$USERNAME extracted from page and saved"
+                echo "Bearer token for @$USERNAME saved"
                 echo "Validated: HTTP $http_code"
                 exit 0
+            fi
+        fi
+
+        # Method 2: Try clicking a Copy/Reveal button if present
+        SNAP=$($CDP snap "$TAB_ID" 2>/dev/null || true)
+        # Look for buttons with copy/reveal/regenerate text
+        COPY_BTN=$($CDP eval "$TAB_ID" '
+            var btns = [...document.querySelectorAll("button")];
+            var copy = btns.find(b => /copy|reveal|show/i.test(b.textContent));
+            copy ? "found" : "";
+        ' 2>/dev/null | tr -d '"' || true)
+
+        if [ "$COPY_BTN" = "found" ]; then
+            $CDP eval "$TAB_ID" '
+                var btns = [...document.querySelectorAll("button")];
+                var copy = btns.find(b => /copy|reveal|show/i.test(b.textContent));
+                if (copy) copy.click();
+            ' 2>/dev/null || true
+            sleep 2
+
+            # Check clipboard
+            CLIP=$(pbpaste 2>/dev/null || true)
+            if [ -n "$CLIP" ] && [ ${#CLIP} -gt 50 ]; then
+                http_code=$(curl -s -o /dev/null -w "%{http_code}" \
+                    "https://api.x.com/2/users/by/username/$USERNAME" \
+                    -H "Authorization: Bearer $CLIP" 2>/dev/null || echo "000")
+
+                if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+                    now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                    jq --arg u "$USERNAME" --arg t "$CLIP" --arg d "$now" \
+                        '.[$u] = {"bearer": $t, "added": $d}' \
+                        "$TOKENS_FILE" > "${TOKENS_FILE}.tmp" && mv "${TOKENS_FILE}.tmp" "$TOKENS_FILE"
+
+                    # Clear clipboard
+                    echo -n "" | pbcopy 2>/dev/null || true
+
+                    echo "TOKEN_SAVED"
+                    echo "Bearer token for @$USERNAME saved (from clipboard)"
+                    echo "Validated: HTTP $http_code"
+                    exit 0
+                fi
             fi
         fi
 
@@ -181,7 +212,7 @@ if [ "$ACTION" = "capture" ]; then
     done
 
     echo "CAPTURE_TIMEOUT"
-    echo "Could not find Bearer Token after 120 seconds."
+    echo "Could not find Bearer Token after 60 seconds."
     echo "If you can see the token, copy it and run:"
     echo "  save-token.sh --username $USERNAME --token <token>"
     exit 1
