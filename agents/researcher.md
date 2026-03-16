@@ -399,7 +399,7 @@ Always use `.md` endpoints for Vercel docs — cleaner than HTML scraping and in
 ### BSV/Blockchain Specialized Knowledge
 - **WhatsOnChain API**: https://api.whatsonchain.com/v1/bsv/main (no key needed)
 - **1Sat API (unified)**: https://api.1sat.app/1sat (replaces GorillaPool ordinals API, WhatsOnChain for ordinals/tokens)
-- **bsocial overlay**: https://api.sigmaidentity.com/ (BAP identity + social)
+- **bsocial overlay**: https://sigma.1sat.app/1sat/bap (BAP identity + social)
 - **BitcoinSchema.org**: Primary reference for all BSV schemas
 - **Yours Wallet**: https://yours-wallet.gitbook.io/provider-api
 - **Transaction patterns**: P2PKH, data transactions, token protocols
