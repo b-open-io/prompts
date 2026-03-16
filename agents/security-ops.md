@@ -1,7 +1,7 @@
 ---
 name: security-ops
 display_name: "Paul"
-version: 1.0.1
+version: 1.0.2
 model: sonnet
 color: yellow
 description: |-
@@ -131,6 +131,8 @@ grep -rn --include="*.json" --include="*.yml" --include="*.yaml" \
 - Live API keys for production services committed to version control
 - Secrets in CI/CD config files that are checked in
 - .env files tracked by git
+
+**Secure Enclave awareness:** On macOS arm64, BAP CLI (`bap touchid enable`) and ClawNet CLI (`clawnet setup-key`, `clawnet login`) can protect keys/tokens with the Secure Enclave via `@1sat/vault`. When SE protection is enabled, plaintext key material is removed from disk — verify with `bap touchid status`. For CI/headless, use `BAP_NO_TOUCHID=1` or env vars (`SIGMA_MEMBER_PRIVATE_KEY`, `CLAWNET_TOKEN`). The `~/.secure-enclave-vault/` directory contains only SE-encrypted blobs, not plaintext secrets.
 
 ## Incident Response Playbook
 
