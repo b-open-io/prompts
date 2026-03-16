@@ -15,27 +15,71 @@ allowed-tools: Bash(${SKILL_DIR}/scripts:*), Bash(bun:*), Read, Write
 
 ### 0. Set Up X Token (when needed)
 
-**IMPORTANT:** If any script fails with `TOKEN_SETUP_NEEDED`, you MUST help the user set up a token before retrying. Do not just report the error — fix it.
+**IMPORTANT:** If any script fails with `TOKEN_SETUP_NEEDED`, you MUST run this setup flow before retrying. Do not just report the error — fix it.
+
+#### Step 1: Launch the portal
 
 ```bash
-# Open X developer portal and guide the user
-${SKILL_DIR}/scripts/setup-token.sh --username <handle> --cdp-script <path-to-cdp.ts>
+${SKILL_DIR}/scripts/setup-token.sh --username <handle>
 ```
 
-The Chrome CDP script path is: find it with `ls ~/.claude/plugins/cache/b-open-io/bopen-tools/*/skills/chrome-cdp/scripts/cdp.ts`
+The script auto-finds the Chrome CDP path. It outputs:
+- `ALREADY_VALID` — token works, nothing to do
+- `CDP_READY` + `TAB_ID` + `PAGE_SNAPSHOT` — portal is open, proceed to Step 2
+- `NO_CDP` / `NO_CHROME` — Chrome not available, ask user to open the URL manually
 
-After the user provides the bearer token, save it:
+#### Step 2: Drive the browser with CDP
+
+Use the `TAB_ID` and `CDP_SCRIPT` from Step 1. The X Developer Portal has this structure:
+
+```
+developer.x.com/en/portal/dashboard
+  └── Projects & Apps list
+       └── Click app name → App detail page
+            └── "Keys and tokens" tab
+                 └── Bearer Token section (may need "Regenerate")
+```
+
+**CDP playbook — follow these steps:**
+
+```bash
+CDP="bun <CDP_SCRIPT>"
+
+# 1. Check if logged in — look for app names or login prompt
+$CDP snap <TAB_ID>
+# If you see a login form → tell the user: "Please log into X in Chrome, then I'll continue."
+# If you see app/project names → proceed
+
+# 2. Find and click the app — look for clickable app name links
+$CDP eval <TAB_ID> "[...document.querySelectorAll('a')].filter(a => a.href.includes('/portal/projects/')).map(a => ({text: a.textContent.trim(), href: a.href}))"
+# Pick the right app and navigate to it
+$CDP nav <TAB_ID> "<app-url>"
+
+# 3. Navigate to Keys and tokens tab
+$CDP eval <TAB_ID> "[...document.querySelectorAll('a')].filter(a => a.textContent.includes('Keys and tokens')).map(a => a.href)"
+$CDP nav <TAB_ID> "<keys-and-tokens-url>"
+
+# 4. Look for the Bearer Token — it may be visible or behind a button
+$CDP snap <TAB_ID>
+# Look for text containing "Bearer Token" or a Regenerate/Reveal button
+
+# 5. Extract the token value
+$CDP eval <TAB_ID> "document.querySelector('[data-testid=\"bearer-token\"]')?.textContent"
+# OR look for input/code elements near "Bearer Token" text:
+$CDP eval <TAB_ID> "[...document.querySelectorAll('input, code, pre, [class*=token], [class*=key]')].map(el => ({tag: el.tagName, text: el.textContent?.substring(0,40), value: el.value?.substring(0,40)}))"
+```
+
+**Adapt to what you see.** The portal UI changes — use `snap` to understand the page, `eval` to query elements, and `click` to interact. The goal is to get the bearer token string.
+
+If you can't find the token automatically, ask the user: "I can see the Keys and tokens page. Can you copy the Bearer Token value for me?"
+
+#### Step 3: Save the token
+
 ```bash
 ${SKILL_DIR}/scripts/save-token.sh --username <handle> --token <bearer_token>
 ```
 
-This validates the token against the X API and stores it in `.claude/persona/tokens.json` keyed by username. Multiple accounts are supported — each username gets its own token.
-
-**Recovery flow when token fails:**
-1. Run `setup-token.sh` to open the developer portal in Chrome
-2. Ask the user to copy their Bearer Token from the Keys and Tokens page
-3. Run `save-token.sh` with the token they provide
-4. Retry the original operation
+This validates against the X API and stores in `~/.claude/persona/tokens.json`. Then retry the original operation.
 
 ### 1. Capture Writing Style
 
