@@ -26,10 +26,10 @@ if [ -z "$USERNAME" ]; then
     exit 1
 fi
 
-# Resolve X API token (tries bearer → OAuth → refresh)
+# Resolve X API token (tries tokens.json by username → env vars → OAuth → fail)
 # shellcheck source=x-token.sh
 source "$SCRIPT_DIR/x-token.sh"
-TOKEN=$(resolve_x_token) || exit 1
+RESOLVE_USERNAME="$USERNAME" TOKEN=$(resolve_x_token) || exit 1
 
 # Determine output path
 if [ -z "$OUTPUT" ]; then

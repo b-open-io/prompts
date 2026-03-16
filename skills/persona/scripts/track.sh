@@ -47,7 +47,7 @@ cmd_add() {
 
     # Validate username exists via X API (if any token available)
     local token
-    token=$(resolve_x_token 2>/dev/null) || true
+    RESOLVE_USERNAME="$username" token=$(resolve_x_token 2>/dev/null) || true
     if [ -n "$token" ]; then
         local user_check
         user_check=$(curl -s "https://api.x.com/2/users/by/username/${username}" \

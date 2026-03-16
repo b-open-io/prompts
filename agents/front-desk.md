@@ -1,6 +1,7 @@
 ---
 name: front-desk
 display_name: "Martha"
+icon: https://bopen.ai/images/agents/martha.png
 version: 1.1.3
 model: sonnet
 description: |-
