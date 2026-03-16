@@ -238,7 +238,7 @@ def score_message(text, rules):
     """Score message against all rules using three-layer detection.
 
     Returns list of (rule, score, breakdown) tuples where score > 0.
-    breakdown is a dict with kw, intent, cluster counts.
+    breakdown is a dict with kw, intent, cluster counts and matched_keywords list.
     """
     text_lower = text.lower()
     sentences = None  # Lazy-split for Layer 3, cached across rules
@@ -248,11 +248,13 @@ def score_message(text, rules):
         kw_count = 0
         intent_count = 0
         cluster_count = 0
+        matched_keywords = []
 
         # Layer 1: Keyword hits (+1 each, keywords pre-lowercased at load time)
         for kw in rule.get("keywords", []):
             if kw in text_lower:
                 kw_count += 1
+                matched_keywords.append(kw)
 
         # Layer 2: Intent pattern hits (+2 each)
         intent_patterns = rule.get("intent_patterns", [])
@@ -273,7 +275,7 @@ def score_message(text, rules):
 
         score = kw_count + (intent_count * 2) + (cluster_count * 3)
         if score > 0:
-            results.append((rule, score, {"kw": kw_count, "intent": intent_count, "cluster": cluster_count}))
+            results.append((rule, score, {"kw": kw_count, "intent": intent_count, "cluster": cluster_count, "matched_keywords": matched_keywords}))
 
     return results
 
@@ -444,8 +446,12 @@ def cleanup_expired_timers():
     return removed
 
 
-def build_block_message(rule):
-    """Construct the systemMessage from rule text and inferred mode."""
+def build_block_message(rule, matched_keywords=None):
+    """Construct the systemMessage from rule text and inferred mode.
+
+    For content rules, includes matched keywords so the agent knows
+    exactly what in its response triggered the rule.
+    """
     name = rule["name"]
     text = rule["rule"]
 
@@ -481,13 +487,18 @@ def build_block_message(rule):
     else:
         msg = f"[HammerTime] Rule '{name}' triggered. {text} Ask the user whether to fix these issues or skip them."
 
+    # Include matched keywords so the agent knows what it said that triggered the rule
+    if matched_keywords:
+        kw_list = ", ".join(f'"{kw}"' for kw in matched_keywords[:5])
+        msg += f" Your response contained these trigger phrases: {kw_list}."
+
     if skill:
         msg += f" Invoke Skill({skill}) to address this."
 
     return msg
 
 
-def block_and_exit(rule, reason):
+def block_and_exit(rule, reason, matched_keywords=None):
     """Print block output JSON and exit. Called when a rule violation is confirmed."""
     # Play alert sound (macOS only, non-blocking, fail silently)
     try:
@@ -497,7 +508,7 @@ def block_and_exit(rule, reason):
         )
     except (FileNotFoundError, OSError):
         pass  # Not macOS or afplay unavailable
-    msg = build_block_message(rule)
+    msg = build_block_message(rule, matched_keywords=matched_keywords)
     output = {"decision": "block", "reason": reason, "systemMessage": msg}
     print(json.dumps(output))
     sys.exit(0)
@@ -789,7 +800,7 @@ def main():
             debug_log(f"BLOCK: score {score} >= {threshold}, skipping Phase 2")
             state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
             save_state(state)
-            block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score})")
+            block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score})", matched_keywords=breakdown.get("matched_keywords"))
         else:
             if rule.get("check_git_state") and check_git_clean():
                 debug_log(f"SKIP: rule '{rule['name']}' score={score}, Haiku phase skipped — git clean")
@@ -800,7 +811,7 @@ def main():
             if violated:
                 state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
                 save_state(state)
-                block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score}, haiku=yes)")
+                block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score}, haiku=yes)", matched_keywords=breakdown.get("matched_keywords"))
 
     # No violations confirmed
     debug_log("PASS: no violations confirmed")
