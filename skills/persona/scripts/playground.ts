@@ -83,25 +83,51 @@ function readPostData(): ProfileData {
 }
 
 // ── Token resolution (mirrors x-token.sh logic) ────────────────────
-async function resolveXToken(): Promise<string> {
+const TOKENS_FILE = resolve(process.env.HOME || "", ".claude/persona/tokens.json");
+
+async function validateToken(token: string): Promise<boolean> {
+  try {
+    const res = await fetch(
+      "https://api.x.com/2/users/by/username/twitter",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function resolveXToken(username?: string): Promise<string> {
+  // 1. Try tokens.json lookup by username
+  let tokensData: Record<string, { bearer?: string; added?: string }> = {};
+  try {
+    if (existsSync(TOKENS_FILE)) {
+      tokensData = JSON.parse(readFileSync(TOKENS_FILE, "utf-8"));
+    }
+  } catch {}
+
+  if (username && tokensData[username]?.bearer) {
+    const stored = tokensData[username].bearer!;
+    if (await validateToken(stored)) return stored;
+  }
+
+  // 2. Try any other account in tokens.json
+  for (const [acct, entry] of Object.entries(tokensData)) {
+    if (acct === username) continue; // already tried
+    if (entry.bearer && (await validateToken(entry.bearer))) return entry.bearer;
+  }
+
+  // 3. Try X_BEARER_TOKEN env var, 4. Try X_ACCESS_TOKEN env var
   const candidates = [
     process.env.X_BEARER_TOKEN,
     process.env.X_ACCESS_TOKEN,
   ].filter(Boolean) as string[];
 
   for (const token of candidates) {
-    try {
-      const res = await fetch(
-        "https://api.x.com/2/users/by/username/twitter",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.ok) return token;
-    } catch {
-      continue;
-    }
+    if (await validateToken(token)) return token;
   }
 
-  // Try OAuth refresh
+  // 5. Try OAuth refresh
   const refreshToken = process.env.X_REFRESH_TOKEN;
   const clientId = process.env.X_CLIENT_SECRET_ID;
   if (refreshToken && clientId) {
@@ -146,7 +172,7 @@ async function fetchAvatar(username: string): Promise<string> {
   }
 
   // Fall back to API call with token resolution
-  const token = await resolveXToken();
+  const token = await resolveXToken(username);
   if (!token) return "";
   try {
     const res = await fetch(
@@ -853,18 +879,47 @@ function readIntelData(): IntelData {
 
   if (!existsSync(scanPath)) return { sections: [], topics, hoursAgo: null };
 
-  let scanText = "";
   let hoursAgo: number | null = null;
+  let raw: any;
   try {
-    const raw = JSON.parse(readFileSync(scanPath, "utf-8"));
-    scanText = typeof raw === "string" ? raw : (raw.text ?? raw.content ?? raw.result ?? raw.scan ?? "");
+    raw = JSON.parse(readFileSync(scanPath, "utf-8"));
     const mtime = statSync(scanPath).mtimeMs;
     hoursAgo = Math.round((Date.now() - mtime) / 3_600_000);
   } catch { return { sections: [], topics, hoursAgo: null }; }
 
-  if (!scanText) return { sections: [], topics, hoursAgo };
-
   const sections: IntelSection[] = [];
+
+  // Structured JSON format (keys like trending, opportunities, notable, early_signals)
+  const structuredKeys: [string, string][] = [
+    ["trending", "Trending"],
+    ["opportunities", "Content Opportunities"],
+    ["notable", "Notable Posts"],
+    ["early_signals", "Early Signals"],
+  ];
+  const hasStructuredKeys = structuredKeys.some(([key]) => typeof raw[key] === "string");
+
+  if (hasStructuredKeys) {
+    for (const [key, title] of structuredKeys) {
+      const val = raw[key];
+      if (typeof val !== "string" || !val.trim()) continue;
+      const items = val.split("\n")
+        .map((l: string) => l.replace(/^[-*]\s+/, "").replace(/^\d+\.\s+/, "").trim())
+        .filter((l: string) => l.length > 0);
+      if (items.length) sections.push({ title, items });
+    }
+    // Merge topics from scan JSON if present and not already loaded from topics.json
+    if (Array.isArray(raw.topics)) {
+      for (const t of raw.topics) {
+        if (typeof t === "string" && !topics.includes(t)) topics.push(t);
+      }
+    }
+    return { sections, topics, hoursAgo };
+  }
+
+  // Fallback: markdown text-blob format (legacy)
+  const scanText = typeof raw === "string" ? raw : (raw.text ?? raw.content ?? raw.result ?? raw.scan ?? "");
+  if (!scanText) return { sections, topics, hoursAgo };
+
   const parts = scanText.split(/\n(?=## )/);
   for (const part of parts) {
     const lines = part.trim().split("\n");
@@ -990,7 +1045,7 @@ function readSettingsData() {
     if (existsSync(poolPath)) {
       try { trackedUsers = (JSON.parse(readFileSync(poolPath, "utf-8")).users || []).length; } catch {}
     }
-    try { profileCount = readdirSync(personaDir).filter((f: string) => f.endsWith(".json") && !["pool.json", "work.json", "topics.json", "last-scan.json"].includes(f)).length; } catch {}
+    try { profileCount = readdirSync(personaDir).filter((f: string) => f.endsWith(".json") && !["pool.json", "work.json", "topics.json", "last-scan.json", "tokens.json"].includes(f)).length; } catch {}
     const scanPath = resolve(personaDir, "last-scan.json");
     if (existsSync(scanPath)) try { lastScanDate = new Date(statSync(scanPath).mtimeMs); } catch {}
   }
