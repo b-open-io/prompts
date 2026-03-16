@@ -23,37 +23,24 @@ Example: `/hammertime 30m deep focus on this refactoring`
 Example: `/hammertime 1h thorough security review`
 Example: `/hammertime 45m finish this feature completely`
 
-Parse the duration and create a **timer rule**. Timer rules block ALL stop attempts until the deadline, with no keyword/pattern scoring needed.
+**IMPORTANT:** Use the `create-timer.py` script to compute the deadline. Do NOT compute the deadline yourself — the model clock is unreliable.
 
-1. Parse the duration: extract number + unit (`m` = minutes, `h` = hours)
-2. Compute the absolute deadline: `now + duration` as ISO 8601 datetime
-3. Use the remaining text (after the duration) as the rule description. If no description, use "Stay focused and keep iterating on the current task."
-4. Generate a name: `timer-<unix-timestamp>` (e.g., `timer-1742054400`)
-
-The rule:
-```json
-{
-  "name": "timer-1742054400",
-  "rule": "<user's description>",
-  "enabled": true,
-  "deadline": "2026-03-15T14:30:00",
-  "keywords": [],
-  "max_iterations": 0
-}
+Run:
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/hammertime/scripts/create-timer.py" "<duration>" "<description>"
 ```
 
-Key properties of timer rules:
-- `deadline` is the ISO 8601 datetime when the timer expires
-- `keywords` is empty (no content scoring — purely time-based)
-- `max_iterations` is 0 (unlimited — the deadline is the only guard)
-- No `intent_patterns`, `dismissal_verbs`, or `qualifiers` needed
-- Timer rules bypass the `stop_hook_active` guard for maximum effectiveness
-- When the deadline passes, the rule is **auto-deleted** from `rules.json`
+The script:
+- Computes the correct deadline using the system clock
+- Writes the rule directly to `~/.claude/hammertime/rules.json`
+- Prints JSON with the timer details: `{"name": "...", "duration": "...", "deadline": "...", "rule": "..."}`
 
-After writing the rule:
-1. Show: "Timer set for **{duration}** — expires at **{deadline}**"
-2. Show the rule text that will be injected on each block
-3. Remind: **"Timer is active immediately — no restart needed."** (Timer rules are evaluated on every stop hook invocation and don't require a restart since they bypass content scoring.)
+If the user provides no description after the duration, omit the description argument (the script defaults to a generic focus message).
+
+After the script runs, show:
+1. "Timer set for **{duration}** — expires at **{deadline}**"
+2. The rule text that will be injected on each block
+3. **"Timer is active immediately — no restart needed."**
 
 ### No argument → Show full status dashboard
 
