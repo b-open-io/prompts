@@ -17,69 +17,71 @@ allowed-tools: Bash(${SKILL_DIR}/scripts:*), Bash(bun:*), Read, Write
 
 **IMPORTANT:** If any script fails with `TOKEN_SETUP_NEEDED`, you MUST run this setup flow before retrying. Do not just report the error — fix it.
 
-#### Step 1: Launch the portal
+Uses `agent-browser` for browser automation (same pattern as npm-publish skill).
+
+#### Step 1: Open the developer portal
 
 ```bash
-${SKILL_DIR}/scripts/setup-token.sh --username <handle>
+${SKILL_DIR}/scripts/setup-token.sh navigate --username <handle>
 ```
 
-The script auto-finds the Chrome CDP path. It outputs:
+Status codes:
 - `ALREADY_VALID` — token works, nothing to do
-- `CDP_READY` + `TAB_ID` + `PAGE_SNAPSHOT` — portal is open, proceed to Step 2
-- `NO_CDP` / `NO_CHROME` — Chrome not available, ask user to open the URL manually
+- `NAVIGATED` + `PAGE_SNAPSHOT` + `APPS_FOUND` — portal is open, proceed to Step 2
+- `NOT_LOGGED_IN` — tell user: "Log into X at x.com in Chrome, then I'll try again"
+- `NO_BROWSER` — agent-browser unavailable, fall back to manual instructions
 
-#### Step 2: Drive the browser with CDP
+#### Step 2: Navigate to Keys and tokens
 
-Use the `TAB_ID` and `CDP_SCRIPT` from Step 1. The X Developer Portal has this structure:
-
-```
-developer.x.com/en/portal/dashboard
-  └── Projects & Apps list
-       └── Click app name → App detail page
-            └── "Keys and tokens" tab
-                 └── Bearer Token section (may need "Regenerate")
-```
-
-**CDP playbook — follow these steps:**
+The script outputs a page snapshot and list of apps. Use `agent-browser` to navigate:
 
 ```bash
-CDP="bun <CDP_SCRIPT>"
+AB="agent-browser --auto-connect"
 
-# 1. Check if logged in — look for app names or login prompt
-$CDP snap <TAB_ID>
-# If you see a login form → tell the user: "Please log into X in Chrome, then I'll continue."
-# If you see app/project names → proceed
+# See the page structure
+$AB snapshot -i
 
-# 2. Find and click the app — look for clickable app name links
-$CDP eval <TAB_ID> "[...document.querySelectorAll('a')].filter(a => a.href.includes('/portal/projects/')).map(a => ({text: a.textContent.trim(), href: a.href}))"
-# Pick the right app and navigate to it
-$CDP nav <TAB_ID> "<app-url>"
+# Navigate to the app (use href from APPS_FOUND output)
+$AB open "<app-url>"
+sleep 3
 
-# 3. Navigate to Keys and tokens tab
-$CDP eval <TAB_ID> "[...document.querySelectorAll('a')].filter(a => a.textContent.includes('Keys and tokens')).map(a => a.href)"
-$CDP nav <TAB_ID> "<keys-and-tokens-url>"
-
-# 4. Look for the Bearer Token — it may be visible or behind a button
-$CDP snap <TAB_ID>
-# Look for text containing "Bearer Token" or a Regenerate/Reveal button
-
-# 5. Extract the token value
-$CDP eval <TAB_ID> "document.querySelector('[data-testid=\"bearer-token\"]')?.textContent"
-# OR look for input/code elements near "Bearer Token" text:
-$CDP eval <TAB_ID> "[...document.querySelectorAll('input, code, pre, [class*=token], [class*=key]')].map(el => ({tag: el.tagName, text: el.textContent?.substring(0,40), value: el.value?.substring(0,40)}))"
+# Find and click "Keys and tokens" tab
+$AB snapshot -i
+# Look for a link/tab containing "Keys and tokens" → get its ref
+$AB click "@<ref>"
+sleep 3
 ```
 
-**Adapt to what you see.** The portal UI changes — use `snap` to understand the page, `eval` to query elements, and `click` to interact. The goal is to get the bearer token string.
+Adapt to what you see on the page. The portal structure is:
+```
+Dashboard → Projects list → Click app → "Keys and tokens" tab → Bearer Token
+```
 
-If you can't find the token automatically, ask the user: "I can see the Keys and tokens page. Can you copy the Bearer Token value for me?"
+If the Bearer Token needs regenerating, find the Regenerate button and click it.
 
-#### Step 3: Save the token
+#### Step 3: Capture the token
 
+Once on the Keys and tokens page:
+
+```bash
+${SKILL_DIR}/scripts/setup-token.sh capture --username <handle>
+```
+
+The capture script:
+1. Polls for up to 120 seconds looking for a Copy button
+2. Clicks Copy → reads token from clipboard (`pbpaste`)
+3. Validates the token against the X API
+4. Saves to `~/.claude/persona/tokens.json`
+5. Clears clipboard for security
+
+Status codes:
+- `TOKEN_SAVED` — success, retry the original operation
+- `CAPTURE_TIMEOUT` — couldn't find token, ask user to copy it manually
+
+**Manual fallback:** If capture times out, ask the user to copy the Bearer Token value, then:
 ```bash
 ${SKILL_DIR}/scripts/save-token.sh --username <handle> --token <bearer_token>
 ```
-
-This validates against the X API and stores in `~/.claude/persona/tokens.json`. Then retry the original operation.
 
 ### 1. Capture Writing Style
 
