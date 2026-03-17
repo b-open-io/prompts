@@ -433,16 +433,20 @@ body {
 
 textarea {
   width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--foreground);
+  background: oklch(0.18 0.01 250);
+  border: 1px solid oklch(0.3 0.01 250);
+  border-radius: 8px;
+  padding: 12px;
+  color: oklch(0.92 0 0);
   font-size: 17px;
-  line-height: 1.4;
+  line-height: 1.5;
   resize: none;
   outline: none;
   font-family: inherit;
-  min-height: 60px;
+  min-height: 120px;
+  overflow: hidden;
 }
+textarea:focus { border-color: var(--primary); background: oklch(0.2 0.01 250) }
 textarea::placeholder { color: var(--muted-foreground) }
 
 .char-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px }
@@ -1217,6 +1221,8 @@ function loadData(d){
   HAS_DISK_IMAGE=!!d.image;
   partsEl.innerHTML='';
   PARTS.forEach((data,i)=>{partsEl.appendChild(makePart(data,i))});
+  // Auto-size all textareas to fit content on load
+  partsEl.querySelectorAll('textarea:not(.img-prompt)').forEach(ta=>autoResize(ta));
   updateAll();
   updatePreview();
 }
@@ -1231,7 +1237,7 @@ function makePart(data,idx){
       '<span class="part-num">PART '+(idx+1)+'</span>'+
       '<button type="button" class="remove-btn" style="display:none">Remove</button>'+
     '</div>'+
-    '<textarea maxlength="300" rows="3" placeholder="What\\u2019s happening?">'+escH(data.text)+'</textarea>'+
+    '<textarea maxlength="300" rows="6" placeholder="What\\u2019s happening?">'+escH(data.text)+'</textarea>'+
     '<div class="char-row"><span class="char-count">'+data.text.length+'/280</span></div>'+
     '<div class="img-gen">'+
       '<div class="img-attach-row">'+
@@ -1473,7 +1479,7 @@ function makePart(data,idx){
 }
 
 // ── Utilities ───────────────────────────────────────────────────────
-function autoResize(ta){ta.style.height='auto';ta.style.height=Math.max(60,ta.scrollHeight)+'px'}
+function autoResize(ta){ta.style.height='0';ta.style.height=Math.max(140,ta.scrollHeight+4)+'px'}
 function updateCharCount(ta,el){
   const len=ta.value.length;
   el.textContent=len+'/280';
