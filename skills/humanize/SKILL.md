@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 1.0.3
+version: 1.0.4
 description: Invoke this skill whenever producing text that a human will read — emails, messages, documentation, reports, blog posts, announcements, commit messages, or any prose draft. Trigger signals include: task is a writing or editing task, output will be sent or published, user says "humanize", "make this sound less AI", "de-AI this", "this sounds like ChatGPT", "make it sound more natural", or "edit this". Do not wait for the user to ask — apply this automatically before delivering any human-facing draft. Skipping this means delivering text with predictable AI patterns (filler openers, overused vocabulary, formulaic structure) that erodes trust and sounds generated.
 user-invocable: false
 ---
@@ -11,17 +11,19 @@ Strip AI writing patterns from prose. Follow these three rules exactly.
 
 ## The Three Rules
 
-### Rule 1: No negation-then-contrast
+### Rule 1: No negation-then-contrast, no straw men
 
-Before writing any sentence, check: does it say what something ISN'T before saying what it IS? If yes, delete the negative part. Keep only the positive claim.
+Before writing any sentence, check: does it say what something ISN'T before saying what it IS? Or does it append "not just X" to trash the alternative and prop up the claim? If either, delete the negative part. Keep only the positive claim. Let it stand on its own.
 
-- BANNED: "not X — it's Y", "isn't X, it's Y", "stop X, start Y", "no X, no Y, no Z", "aren't nice-to-haves — they're Y"
-- FIX: Just say Y. Delete everything before the dash, "but", or contrast.
+- BANNED: "not X — it's Y", "isn't X, it's Y", "stop X, start Y", "no X, no Y, no Z", "aren't nice-to-haves — they're Y", "Y, not just X", "Y, not merely X", "more than just X — it's Y"
+- FIX: Just say Y. Drop the comparison entirely.
 
 Examples:
 - BAD: "Uptime isn't optional — it's the foundation." → GOOD: "Uptime is the foundation."
 - BAD: "No setup, no config, no hassle." → GOOD: "Setup takes two minutes."
 - BAD: "Stop managing servers and start shipping." → GOOD: "Ship features while the infrastructure runs itself."
+- BAD: "We're building tools that make agents behave more like thoughtful collaborators, not just code generators." → GOOD: "We're building tools that make agents behave like thoughtful collaborators."
+- BAD: "This is a real product, not a toy." → GOOD: "This is a real product."
 
 ### Rule 2: Never list exactly three parallel items
 
