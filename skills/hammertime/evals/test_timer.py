@@ -123,6 +123,57 @@ def test_build_block_message_content(results):
     results.ok("content_block_message_unchanged")
 
 
+def test_build_block_message_with_triggers(results):
+    """Content rules include matched keywords and intent phrases in TRIGGERED BY section."""
+    rule = {
+        "name": "test-rule",
+        "rule": "Do not dismiss errors.",
+    }
+    msg = build_block_message(
+        rule,
+        matched_keywords=["pre-existing", "not caused by"],
+        matched_intents=["not caused by our changes"],
+    )
+
+    if "RULE: Do not dismiss errors." not in msg:
+        results.fail("trigger_msg_rule_section", f"Missing RULE section in: {msg}")
+        return
+    if "TRIGGERED BY:" not in msg:
+        results.fail("trigger_msg_triggered_by", f"Missing TRIGGERED BY section in: {msg}")
+        return
+    if '"pre-existing"' not in msg:
+        results.fail("trigger_msg_keyword", f"Missing keyword in TRIGGERED BY: {msg}")
+        return
+    if '"not caused by our changes"' not in msg:
+        results.fail("trigger_msg_intent", f"Missing intent match in TRIGGERED BY: {msg}")
+        return
+    if "ACTION:" not in msg:
+        results.fail("trigger_msg_action", f"Missing ACTION section in: {msg}")
+        return
+    results.ok("content_block_message_with_triggers")
+
+
+def test_build_block_message_intents_only(results):
+    """When only intent patterns fire (no keywords), TRIGGERED BY still shows what matched."""
+    rule = {
+        "name": "test-rule",
+        "rule": "Fix issues instead of deflecting.",
+    }
+    msg = build_block_message(
+        rule,
+        matched_keywords=[],
+        matched_intents=["appears to predate our changes"],
+    )
+
+    if "TRIGGERED BY:" not in msg:
+        results.fail("intents_only_triggered_by", f"Missing TRIGGERED BY when intents matched: {msg}")
+        return
+    if '"appears to predate our changes"' not in msg:
+        results.fail("intents_only_content", f"Missing intent text in TRIGGERED BY: {msg}")
+        return
+    results.ok("content_block_message_intents_only")
+
+
 def test_build_block_message_expired_timer(results):
     """Expired timer still produces a message (edge case — shouldn't normally happen)."""
     past = (datetime.now() - timedelta(minutes=5)).isoformat()
@@ -398,6 +449,8 @@ def run_tests(verbose=False):
     # Block message tests
     test_build_block_message_timer(results)
     test_build_block_message_content(results)
+    test_build_block_message_with_triggers(results)
+    test_build_block_message_intents_only(results)
     test_build_block_message_expired_timer(results)
     test_build_block_message_invalid_deadline(results)
     test_timer_minutes_display(results)

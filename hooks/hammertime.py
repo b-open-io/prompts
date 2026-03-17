@@ -257,10 +257,13 @@ def score_message(text, rules):
                 matched_keywords.append(kw)
 
         # Layer 2: Intent pattern hits (+2 each)
+        matched_intents = []
         intent_patterns = rule.get("intent_patterns", [])
         for pat in intent_patterns:
-            if pat.search(text):
+            m = pat.search(text)
+            if m:
                 intent_count += 1
+                matched_intents.append(m.group(0))
 
         # Layer 3: Sentence co-occurrence (+3)
         dismissal_re = rule.get("dismissal_verbs")
@@ -275,7 +278,7 @@ def score_message(text, rules):
 
         score = kw_count + (intent_count * 2) + (cluster_count * 3)
         if score > 0:
-            results.append((rule, score, {"kw": kw_count, "intent": intent_count, "cluster": cluster_count, "matched_keywords": matched_keywords}))
+            results.append((rule, score, {"kw": kw_count, "intent": intent_count, "cluster": cluster_count, "matched_keywords": matched_keywords, "matched_intents": matched_intents}))
 
     return results
 
@@ -446,11 +449,13 @@ def cleanup_expired_timers():
     return removed
 
 
-def build_block_message(rule, matched_keywords=None):
+def build_block_message(rule, matched_keywords=None, matched_intents=None):
     """Construct the systemMessage from rule text and inferred mode.
 
-    For content rules, includes matched keywords so the agent knows
-    exactly what in its response triggered the rule.
+    For content rules, includes matched keywords and intent pattern
+    matches so the agent knows exactly what in its response triggered
+    the rule. The message is structured with labeled sections so the
+    agent can parse it even without prior knowledge of the rule.
     """
     name = rule["name"]
     text = rule["rule"]
@@ -478,19 +483,28 @@ def build_block_message(rule, matched_keywords=None):
             msg = f"[HammerTime] Timer '{name}' active. {text} Keep working."
         return msg
 
-    # Content rules use mode inference
+    # Content rules: structured message with labeled sections
     mode = infer_mode(text)
     skill = rule.get("skill")
 
-    if mode == "fix":
-        msg = f"[HammerTime] Rule '{name}' triggered. {text} Fix these issues NOW before stopping."
-    else:
-        msg = f"[HammerTime] Rule '{name}' triggered. {text} Ask the user whether to fix these issues or skip them."
+    # Section 1: Rule identification and full text
+    msg = f"[HammerTime] Rule '{name}' triggered.\n"
+    msg += f"RULE: {text}\n"
 
-    # Include matched keywords so the agent knows what it said that triggered the rule
+    # Section 2: What triggered it (keywords + intent pattern matches)
+    triggers = []
     if matched_keywords:
-        kw_list = ", ".join(f'"{kw}"' for kw in matched_keywords[:5])
-        msg += f" Your response contained these trigger phrases: {kw_list}."
+        triggers.extend(f'"{kw}"' for kw in matched_keywords[:5])
+    if matched_intents:
+        triggers.extend(f'"{m.strip()}"' for m in matched_intents[:3])
+    if triggers:
+        msg += f"TRIGGERED BY: {', '.join(triggers)}\n"
+
+    # Section 3: What to do
+    if mode == "fix":
+        msg += "ACTION: Fix these issues NOW before stopping."
+    else:
+        msg += "ACTION: Ask the user whether to fix these issues or skip them."
 
     if skill:
         msg += f" Invoke Skill({skill}) to address this."
@@ -498,7 +512,7 @@ def build_block_message(rule, matched_keywords=None):
     return msg
 
 
-def block_and_exit(rule, reason, matched_keywords=None):
+def block_and_exit(rule, reason, matched_keywords=None, matched_intents=None):
     """Print block output JSON and exit. Called when a rule violation is confirmed."""
     # Play alert sound (macOS only, non-blocking, fail silently)
     try:
@@ -508,7 +522,7 @@ def block_and_exit(rule, reason, matched_keywords=None):
         )
     except (FileNotFoundError, OSError):
         pass  # Not macOS or afplay unavailable
-    msg = build_block_message(rule, matched_keywords=matched_keywords)
+    msg = build_block_message(rule, matched_keywords=matched_keywords, matched_intents=matched_intents)
     output = {"decision": "block", "reason": reason, "systemMessage": msg}
     print(json.dumps(output))
     sys.exit(0)
@@ -734,7 +748,7 @@ def main():
             debug_log(f"TIMER: rule '{rule_name}' active, {remaining_mins}m {remaining_secs % 60}s remaining, blocking exit")
             state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
             save_state(state)
-            block_and_exit(rule, f"Timer rule '{rule_name}' active ({remaining_mins}m remaining)")
+            block_and_exit(rule, f"Timer rule '{rule_name}': {rule.get('rule', '')[:150]} ({remaining_mins}m remaining)")
         else:
             debug_log(f"TIMER: rule '{rule_name}' expired (deadline was {deadline_str}), skipping")
 
@@ -800,7 +814,7 @@ def main():
             debug_log(f"BLOCK: score {score} >= {threshold}, skipping Phase 2")
             state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
             save_state(state)
-            block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score})", matched_keywords=breakdown.get("matched_keywords"))
+            block_and_exit(rule, f"HammerTime rule '{rule['name']}': {rule['rule'][:150]} (score={score})", matched_keywords=breakdown.get("matched_keywords"), matched_intents=breakdown.get("matched_intents"))
         else:
             if rule.get("check_git_state") and check_git_clean():
                 debug_log(f"SKIP: rule '{rule['name']}' score={score}, Haiku phase skipped — git clean")
@@ -811,7 +825,7 @@ def main():
             if violated:
                 state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
                 save_state(state)
-                block_and_exit(rule, f"HammerTime rule '{rule['name']}' violated (score={score}, haiku=yes)", matched_keywords=breakdown.get("matched_keywords"))
+                block_and_exit(rule, f"HammerTime rule '{rule['name']}': {rule['rule'][:150]} (score={score}, haiku=yes)", matched_keywords=breakdown.get("matched_keywords"), matched_intents=breakdown.get("matched_intents"))
 
     # No violations confirmed
     debug_log("PASS: no violations confirmed")

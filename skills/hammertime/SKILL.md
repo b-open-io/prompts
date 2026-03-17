@@ -134,10 +134,19 @@ Use a short kebab-case name: `fix-lint-errors`, `no-trailing-summaries`, `use-vi
 
 ### Step 2: Write the rule text
 
-The `rule` field is natural language that describes the expected behavior. It's shown to Haiku for verification and included in the block message. Be specific and actionable.
+The `rule` field is natural language that describes the expected behavior. **This text IS the error message the agent sees when the rule fires.** It's the only context the agent has to understand what went wrong and what to do. It also gets sent to Haiku for verification.
 
-Good: "Fix all lint errors before stopping. Do not report them without fixing."
+**Write the rule text as if you're explaining the problem to an agent that has never heard of this rule.** Include:
+1. **What to do** — the expected behavior (action-first)
+2. **What not to do** — the specific violation being caught
+3. **Why** — reasoning helps the agent (and Haiku) judge edge cases
+
+Good: "Fix all lint errors before stopping. Do not report them without fixing. The user expects all errors to be resolved, not catalogued."
 Bad: "Be better at linting."
+Bad: "Don't do that." (agent has no idea what "that" is)
+Bad: "Lint rule." (too terse — the error message would be useless)
+
+**Minimum 15 words.** If the rule text is shorter, the error message won't give the agent enough context to act.
 
 ### Step 3: Extract keywords (4-8)
 
@@ -187,7 +196,25 @@ If the rule should invoke a skill when it fires, resolve the informal name to a 
 
 Set the `skill` field to the resolved ID, or `null` if no skill is needed.
 
-### Step 8: Write the rules file
+### Step 8: Validate the error message
+
+Before writing the rule, preview what the agent will see when the rule fires. The block message follows this format:
+
+```
+[HammerTime] Rule '{name}' triggered.
+RULE: {rule text}
+TRIGGERED BY: {matched keywords and intent phrases}
+ACTION: Fix these issues NOW / Ask the user whether to fix...
+```
+
+**Checklist — would an agent seeing this message for the first time understand:**
+- [ ] What behavior is expected?
+- [ ] What it did wrong?
+- [ ] What action to take?
+
+If any answer is "no", rewrite the `rule` text. The rule text is the agent's only lifeline when the hook blocks it.
+
+### Step 9: Write the rules file
 
 Read the existing `~/.claude/hammertime/rules.json` (or start with `[]` if it doesn't exist). Append the new rule and write the file. Create the `~/.claude/hammertime/` directory if needed.
 
@@ -195,7 +222,7 @@ Read the existing `~/.claude/hammertime/rules.json` (or start with `[]` if it do
 mkdir -p ~/.claude/hammertime
 ```
 
-### Step 9: Remind about restart
+### Step 10: Remind about restart
 
 Rules are loaded at hook registration time. Tell the user: **"Restart Claude Code for the new rule to take effect."**
 
