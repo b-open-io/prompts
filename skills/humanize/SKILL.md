@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 1.0.2
+version: 1.0.3
 description: Invoke this skill whenever producing text that a human will read — emails, messages, documentation, reports, blog posts, announcements, commit messages, or any prose draft. Trigger signals include: task is a writing or editing task, output will be sent or published, user says "humanize", "make this sound less AI", "de-AI this", "this sounds like ChatGPT", "make it sound more natural", or "edit this". Do not wait for the user to ask — apply this automatically before delivering any human-facing draft. Skipping this means delivering text with predictable AI patterns (filler openers, overused vocabulary, formulaic structure) that erodes trust and sounds generated.
 user-invocable: false
 ---
@@ -35,7 +35,18 @@ When you write a list, count the items. If there are exactly 3 items in parallel
 
 This applies everywhere: adjective lists, verb lists, noun lists, parallel sentences.
 
-### Rule 3: Only one short paragraph ending per piece
+### Rule 3: No indirect repetition
+
+Never restate the same point in different words for emphasis. Say it once clearly and move on. If the first sentence already conveys the meaning, the restating sentence is dead weight.
+
+- BAD: "When the clock runs out, the rule deletes itself. No cleanup." → "No cleanup" just restates "deletes itself."
+- GOOD: "When the timer expires, the rule deletes itself."
+- BAD: "It's completely free. Zero cost to you." → "Zero cost" restates "completely free."
+- GOOD: "It's free."
+- BAD: "The data is encrypted at rest. Your information stays protected." → second sentence restates the first.
+- GOOD: "The data is encrypted at rest."
+
+### Rule 4: Only one short paragraph ending per piece
 
 After writing, check the last sentence of every paragraph. Count its words. At most ONE paragraph may end with a sentence under 15 words. All other paragraphs must end with a sentence of 20+ words that includes a specific detail, number, or example.
 
@@ -54,8 +65,9 @@ After writing any prose, you must do a concrete revision pass before delivering.
 
 1. **Find every "not" / "n't" / "isn't" / "aren't" / "stop".** For each one, check if it's followed by a contrast (a dash, "but", or a period introducing the opposite claim). If so, delete the negative clause and keep only the positive claim. "Observability isn't an afterthought" → "Observability is built in from the start."
 2. **Count every parallel list.** If you find exactly three items in parallel structure (X, Y, and Z), either drop one item or add a fourth.
-3. **Read the last sentence of each paragraph.** Count the words. If more than one ending is under 15 words, rewrite the short ones to be 20+ words with specific details.
-4. **Check for "nice-to-have", "table stakes", "false economy"** and the other AI vocabulary in rule 5. Replace with plain language.
+3. **Check for indirect repetition.** Read each pair of consecutive sentences. Does the second just restate the first in different words? Delete the restating sentence.
+4. **Read the last sentence of each paragraph.** Count the words. If more than one ending is under 15 words, rewrite the short ones to be 20+ words with specific details.
+5. **Check for "nice-to-have", "table stakes", "false economy"** and the other AI vocabulary. Replace with plain language.
 
 Do this revision pass silently — don't mention it in your output. Just deliver the cleaned text.
 
@@ -65,6 +77,7 @@ Before delivering revised prose:
 
 - Search for "not" / "n't" + contrast → rewrite as direct positive claim
 - Count every list: exactly 3 items → change to 2 or 4
+- Consecutive sentences saying the same thing differently → keep only the better one
 - Last sentence of each paragraph: are they all short? → lengthen all but one
 - "Stop X, start Y" → just say Y
 - Three sentences in a row the same length? Break one up.
