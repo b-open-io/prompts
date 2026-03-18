@@ -145,7 +145,7 @@ if [[ "$tool_name" == "Bash" ]]; then
     expanded_pattern="${pattern//\~/$HOME}"
     basename_pattern=$(basename "$expanded_pattern")
 
-    if echo "$command_str" | grep -qE '(rm|unlink|rmdir)[[:space:]]' && echo "$command_str" | grep -qF "$basename_pattern"; then
+    if echo "$command_str" | grep -qE '(^|[[:space:];|&])(rm|unlink|rmdir)[[:space:]]' && echo "$command_str" | grep -qF "$basename_pattern"; then
       block "BLOCKED by damage-control: attempting to delete protected path '${pattern}'. This file or directory must not be deleted."
     fi
   done < <(extract_section "noDeletePaths")
