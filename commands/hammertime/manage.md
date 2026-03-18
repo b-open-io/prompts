@@ -92,8 +92,9 @@ Say goodbye and exit.
 
 1. Write updated rules to `~/.claude/hammertime/rules.json` (create `~/.claude/hammertime/` if needed)
 2. Show the change
-3. Ask: "Want to do anything else?" — if yes, return to Step 2
-4. Remind: **"Restart Claude Code for changes to take effect."**
+3. Check if HammerTime is paused: `test -f ~/.claude/hammertime/disabled && echo "PAUSED"`. If paused, warn: **"Note: HammerTime is currently paused. This change has been saved but won't take effect until you run `/hammertime:start`."**
+4. Ask: "Want to do anything else?" — if yes, return to Step 2
+5. Remind: **"Restart Claude Code for changes to take effect."**
 
 ## Important
 

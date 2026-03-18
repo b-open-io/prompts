@@ -37,10 +37,17 @@ The script:
 
 If the user provides no description after the duration, omit the description argument (the script defaults to a generic focus message).
 
-After the script runs, show:
+After the script runs, check if HammerTime is paused: `test -f ~/.claude/hammertime/disabled && echo "PAUSED"`.
+
+If **not** paused, show:
 1. "Timer set for **{duration}** — expires at **{deadline}**"
 2. The rule text that will be injected on each block
 3. **"Timer is active immediately — no restart needed."**
+
+If **paused**, show:
+1. "Timer set for **{duration}** — expires at **{deadline}**"
+2. The rule text
+3. **"Warning: HammerTime is currently paused. This timer has been saved but won't fire until you run `/hammertime:start`."**
 
 ### No argument → Show full status dashboard
 
@@ -119,4 +126,5 @@ For builtin rules, add an override entry with `enabled: false` to disable.
    | 1 | `rule-name` | enabled/disabled | N | yes/no |
    | ... | ... | ... | ... | ... |
 
-3. Remind: **"Restart Claude Code for changes to take effect."**
+3. Check if HammerTime is paused: `test -f ~/.claude/hammertime/disabled && echo "PAUSED"`. If paused, warn: **"Note: HammerTime is currently paused. This rule has been saved but won't fire until you run `/hammertime:start`."**
+4. Remind: **"Restart Claude Code for changes to take effect."**

@@ -222,7 +222,17 @@ Read the existing `~/.claude/hammertime/rules.json` (or start with `[]` if it do
 mkdir -p ~/.claude/hammertime
 ```
 
-### Step 10: Remind about restart
+### Step 10: Check if HammerTime is paused
+
+After writing the rule, check for the disabled sentinel:
+
+```bash
+test -f ~/.claude/hammertime/disabled && echo "PAUSED"
+```
+
+If paused, warn: **"Note: HammerTime is currently paused. This rule has been saved but won't fire until you run `/hammertime:start`."**
+
+### Step 11: Remind about restart
 
 Rules are loaded at hook registration time. Tell the user: **"Restart Claude Code for the new rule to take effect."**
 
