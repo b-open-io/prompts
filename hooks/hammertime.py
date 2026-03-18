@@ -174,6 +174,7 @@ BUILTIN_RULES = [
 
 USER_RULES_PATH = os.path.expanduser("~/.claude/hammertime/rules.json")
 STATE_PATH = os.path.expanduser("~/.claude/hammertime/state.json")
+DISABLED_PATH = os.path.expanduser("~/.claude/hammertime/disabled")
 
 
 def compile_user_rule(rule):
@@ -682,6 +683,10 @@ def collect_turn_messages(transcript_path):
 
 
 def main():
+    # Global kill switch — if the sentinel file exists, skip all processing
+    if os.path.exists(DISABLED_PATH):
+        sys.exit(0)
+
     debug_log("--- HammerTime run ---")
     try:
         raw = sys.stdin.read()

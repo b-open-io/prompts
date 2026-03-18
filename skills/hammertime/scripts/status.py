@@ -9,6 +9,7 @@ from datetime import datetime
 RULES_PATH = os.path.expanduser("~/.claude/hammertime/rules.json")
 DEBUG_LOG = os.path.expanduser("~/.claude/hammertime/debug.log")
 STATE_PATH = os.path.expanduser("~/.claude/hammertime/state.json")
+DISABLED_PATH = os.path.expanduser("~/.claude/hammertime/disabled")
 
 BUILTIN_RULES = [
     {
@@ -27,6 +28,15 @@ BUILTIN_RULES = [
 
 def main():
     now = datetime.now()
+
+    # --- Global status ---
+    disabled = os.path.exists(DISABLED_PATH)
+    if disabled:
+        print("## Status: PAUSED\n")
+        print("HammerTime is currently **paused**. The stop hook will not fire.")
+        print("Run `/hammertime:start` to resume.\n")
+    else:
+        print("## Status: ACTIVE\n")
 
     # --- Timer rules ---
     timer_rules = []
@@ -126,6 +136,10 @@ def main():
 
     # --- Quick actions ---
     print("## Quick Actions\n")
+    if disabled:
+        print("- `/hammertime:start` — Resume HammerTime")
+    else:
+        print("- `/hammertime:stop` — Pause HammerTime")
     print("- `/hammertime 30m <desc>` — Start a focus timer")
     print("- `/hammertime <desc>` — Create a content rule")
     print("- `/hammertime:manage` — Interactive rule management")
