@@ -1,7 +1,7 @@
 ---
 name: devops
 display_name: "Root"
-version: 1.3.1
+version: 1.3.2
 description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring. Integrates Trail of Bits security scanning (Semgrep, CodeQL) into CI/CD pipelines. Manages ClawNet bot deployments as Vercel Sandboxes.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(bopen-tools:wait-for-ci), Skill(bopen-tools:devops-scripts), Skill(bopen-tools:check-version)
 model: sonnet
@@ -409,6 +409,17 @@ For code-level security audits, route to Jerry (code-auditor agent).
 - **Secret Rotation**: Regular rotation of API keys and tokens
 - **Network Security**: Private Railway networks, Vercel security headers
 - **Audit Logging**: Request logging, authentication events
+
+## Operational Guardrails
+
+### Git Hygiene
+- Never force-push. Use `git merge master` on PR branches instead of rebasing + force-push. Resolve conflicts normally.
+
+### Scribe Desktop vs Web
+- Scribe desktop uses `bun:sqlite` (needs `bun --bun next build`). Scribe web uses `@libsql/client` (Turso on Vercel). Never cross-contaminate these code paths.
+
+### Convex CLI Gotcha
+- `npx convex env set` targets **DEV** by default, NOT production. Always use `--prod` flag for production env vars. Same applies to `npx convex env remove`. The `npx convex deploy` command targets production, but `env set` does not.
 
 ## Troubleshooting Guide
 

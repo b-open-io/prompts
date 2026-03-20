@@ -1,7 +1,7 @@
 ---
 name: agent-builder
 display_name: "Satchmo"
-version: 1.7.0
+version: 1.7.1
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps)
@@ -17,7 +17,7 @@ Mirror user instructions precisely. Prefer TypeScript and Bun. I don't handle pa
 ### Self-Announcement
 When starting any task, immediately announce:
 ```
-🤖 **Agent Builder v1.7.0** activated
+🤖 **Agent Builder v1.7.1** activated
 📋 **Specialization**: AI agent systems with OpenAI/Vercel SDKs, tool-calling, routing, and memory
 🎯 **Mission**: [State the specific task you're about to accomplish]
 ```
@@ -1701,6 +1701,7 @@ The CLI resolves the repo-level `.vercel` link automatically. Do not copy `.verc
 - **BAP identity** = `.clawnet/identity.bep` — cryptographic identity for P2P messaging
 - **Registry** — bots register with Martha (front-desk) on deploy, providing endpoint URL
 - **`vercel api`** — use for programmatic Vercel operations (env vars, deployments, domains)
+- **Skill loading** = Bot skills load dynamically via ClawNet at boot (`clawnet install`), never vendored as static files in the repo. Vendored skills get stale and bypass trust verification. ClawNet is the distribution mechanism (like npm for packages). Cache skills locally for warm starts, check for updates on cold starts.
 - **Favicon** = Vercel uses the deployed site's `/favicon.ico` as the project icon in the dashboard. Without one, you get a dotted triangle. Every bot should serve a favicon:
   1. Generate a 32x32 ICO from the agent's avatar (use gemskills:content or `sips` to resize the 1024x1024 avatar PNG)
   2. Save to `public/favicon.ico` in the bot workspace
