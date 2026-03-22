@@ -1,7 +1,8 @@
 ---
 name: payments
 display_name: "Mina"
-version: 1.1.6
+icon: https://bopen.ai/images/agents/mina.png
+version: 1.1.7
 description: Handles payment integrations, transactions, and financial operations with security best practices.
 tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, TodoWrite, Skill(plaid-integration), Skill(x402:x402), Skill(agent-browser), Skill(simplify)
 model: sonnet

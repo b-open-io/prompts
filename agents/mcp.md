@@ -1,7 +1,8 @@
 ---
 name: mcp
 display_name: "Orbit"
-version: 3.0.18
+icon: https://bopen.ai/images/agents/orbit.png
+version: 3.0.19
 description: |-
   MCP server installation, configuration, diagnostics, troubleshooting, and publishing. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization. Guides authors through building and publishing MCP servers to NPM for distribution via npx.
 

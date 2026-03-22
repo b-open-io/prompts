@@ -1,7 +1,8 @@
 ---
 name: creative-developer
 display_name: "Kris"
-version: 1.0.0
+icon: https://bopen.ai/images/agents/kris.png
+version: 1.0.2
 model: sonnet
 description: >-
   Creative 3D web developer building Three.js and React Three Fiber experiences.

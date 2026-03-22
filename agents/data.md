@@ -1,7 +1,8 @@
 ---
 name: data
 display_name: "Data Accumulator"
-version: 1.1.12
+icon: https://bopen.ai/images/agents/data-accumulator.png
+version: 1.1.13
 model: sonnet
 description: |-
   Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.

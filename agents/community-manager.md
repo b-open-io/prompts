@@ -1,7 +1,8 @@
 ---
 name: community-manager
 display_name: "Ordi"
-version: 1.0.0
+icon: https://bopen.ai/images/agents/ordi.png
+version: 1.0.2
 model: sonnet
 color: green
 description: |-

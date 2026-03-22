@@ -1,7 +1,8 @@
 ---
 name: audio-specialist
 display_name: "Frames"
-version: 1.0.4
+icon: https://bopen.ai/images/agents/frames.png
+version: 1.0.6
 model: sonnet
 description: Use this agent for ElevenLabs audio generation — voiceovers, sound effects, music, and voice cloning — plus xAI/Grok image generation. For image generation use gemskills:content (Luma, Gemini images, Veo video).
 tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(voice-clone), Skill(agent-browser), Skill(remotion-best-practices), Skill(gemskills:generate-image), Skill(gemskills:generate-video), Skill(gemskills:browsing-styles), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)

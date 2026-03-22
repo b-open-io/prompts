@@ -1,7 +1,8 @@
 ---
 name: executive-assistant
 display_name: "Tina"
-version: 1.0.3
+icon: https://bopen.ai/images/agents/tina.png
+version: 1.0.4
 model: sonnet
 description: "Executive assistant for Google Workspace — manages inbox, calendar, Drive, Docs, Sheets, Tasks, and Chat. Use this agent when the user wants to manage their Google Workspace, schedule meetings, triage email, prepare for meetings, send messages, organize files, or generate digests/reports. Examples:"
 

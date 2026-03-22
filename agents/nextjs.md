@@ -1,7 +1,8 @@
 ---
 name: nextjs
 display_name: "Theo"
-version: 1.1.0
+icon: https://bopen.ai/images/agents/theo.png
+version: 1.1.1
 description: Expert in Next.js and React development with Vercel best practices, Turbopack, async APIs, React 19, and modern tooling (Bun, Biome)
 tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(portless), Skill(agent-browser), Skill(simplify), Skill(semgrep), Skill(bopen-tools:generative-ui), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:nextjs-upgrade), Skill(shadcn)
 color: blue

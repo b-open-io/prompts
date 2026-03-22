@@ -1,7 +1,8 @@
 ---
 name: database
 display_name: "Idris"
-version: 1.2.11
+icon: https://bopen.ai/images/agents/idris.png
+version: 1.2.13
 description: |-
   Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso (libSQL), and Convex expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
 

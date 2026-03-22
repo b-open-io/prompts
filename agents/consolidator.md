@@ -1,7 +1,8 @@
 ---
 name: consolidator
 display_name: "Steve"
-version: 1.2.0
+icon: https://bopen.ai/images/agents/steve.png
+version: 1.2.2
 description: |-
   Comprehensive system consolidation and organization specialist. Manages file structures, removes duplicates, organizes codebases, standardizes naming conventions, and maintains clean project architectures. Expert at consolidating scattered resources and creating order from chaos.
 
