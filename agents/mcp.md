@@ -1083,15 +1083,13 @@ fi
 ```
 
 #### Package Manager Installation
+
+If bun or uv are not installed, direct the user to install them:
+- **bun**: Visit https://bun.sh for installation instructions
+- **uv**: Visit https://docs.astral.sh/uv/ for installation instructions
+
+Verify availability before proceeding:
 ```bash
-# Install bun (recommended)
-curl -fsSL https://bun.sh/install | bash
-
-# Install uv (for Python MCP servers)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Verify installation
-source ~/.bashrc || source ~/.zshrc
 bunx --version
 uvx --version
 ```
@@ -1121,7 +1119,7 @@ elif command -v npx &> /dev/null; then
     claude mcp add postgres-local -s user "npx -y @modelcontextprotocol/server-postgres postgresql://localhost:5432/postgres"
 else
     echo "❌ Neither bun nor npm available. Install one first:"
-    echo "  Bun: curl -fsSL https://bun.sh/install | bash"
+    echo "  Bun: Visit https://bun.sh to install bun"
     echo "  npm: Install Node.js from nodejs.org"
 fi
 ```
@@ -1134,12 +1132,12 @@ if command -v uvx &> /dev/null; then
 # Fallback: pip install + direct execution
 elif command -v pip3 &> /dev/null; then
     echo "⚠️  uvx preferred for Redis MCP. Installing uv first:"
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    Visit https://docs.astral.sh/uv/ to install uv
     source ~/.bashrc || source ~/.zshrc
     claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
 else
     echo "❌ No Python package manager available. Install uv:"
-    echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+    echo "  Visit https://docs.astral.sh/uv/ to install uv"
 fi
 ```
 
@@ -1263,7 +1261,7 @@ if command -v uvx &> /dev/null; then
     claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
 else
     echo "❌ uvx not available. Installing uv..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    Visit https://docs.astral.sh/uv/ to install uv
     source ~/.bashrc || source ~/.zshrc
     # Retry after installation
     claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
@@ -1447,7 +1445,7 @@ if command -v uvx &> /dev/null; then
     claude mcp add redis-dev -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/1"
 else
     echo "Installing uv for Redis MCP..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh && source ~/.zshrc
+    Visit https://docs.astral.sh/uv/ to install uv && source ~/.zshrc
     claude mcp add redis-dev -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/1"
 fi
 
@@ -1513,14 +1511,14 @@ echo "  uvx:  $([[ $HAS_UVX == "true" ]] && echo "✅" || echo "❌")"
 # Install missing package managers
 if [[ $HAS_BUNX == "false" && $HAS_NPX == "false" ]]; then
     echo "⬇️  Installing bun for Node.js MCP servers..."
-    curl -fsSL https://bun.sh/install | bash
+    Visit https://bun.sh to install bun
     source ~/.bashrc 2>/dev/null || source ~/.zshrc 2>/dev/null
     HAS_BUNX="true"
 fi
 
 if [[ $HAS_UVX == "false" ]]; then
     echo "⬇️  Installing uv for Python MCP servers..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    Visit https://docs.astral.sh/uv/ to install uv
     source ~/.bashrc 2>/dev/null || source ~/.zshrc 2>/dev/null
     HAS_UVX="true"
 fi
@@ -1690,7 +1688,7 @@ if which uvx &>/dev/null; then
     echo "ℹ️  uvx functional test skipped (use manually: uvx cowsay 'uv works')"
 else
     echo "❌ uvx not found"
-    echo "  Install with: curl -LsSf https://astral.sh/uv/install.sh | sh"
+    echo "  Install with: Visit https://docs.astral.sh/uv/ to install uv"
 fi
 ```
 
@@ -1890,19 +1888,19 @@ echo -e "\n=== Solutions ==="
 if ! which node &>/dev/null; then
     echo "📝 Install Node.js:"
     echo "  - macOS: brew install node"  
-    echo "  - Linux: curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs"
-    echo "  - Via nvm: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash && nvm install node"
+    echo "  - Linux: sudo apt-get install -y nodejs (or visit https://nodejs.org)"
+    echo "  - Via nvm: visit https://github.com/nvm-sh/nvm#installing-and-updating"
 fi
 
 if ! which bunx &>/dev/null; then
     echo "📝 Install bun:"
-    echo "  curl -fsSL https://bun.sh/install | bash"
+    echo "  Visit https://bun.sh to install bun"
     echo "  source ~/.bashrc || source ~/.zshrc"
 fi
 
 if ! which uvx &>/dev/null; then
     echo "📝 Install uv:"
-    echo "  curl -LsSf https://astral.sh/uv/install.sh | sh"
+    echo "  Visit https://docs.astral.sh/uv/ to install uv"
     echo "  source ~/.bashrc || source ~/.zshrc"
 fi
 ```
@@ -2013,7 +2011,7 @@ echo "  bun pm cache rm"
 
 echo -e "\nUpdate package managers:"
 echo "  npm update -g npm"
-echo "  curl -fsSL https://bun.sh/install | bash  # Update bun"
+echo "  Visit https://bun.sh to install bun  # Update bun"
 
 echo -e "\nTry direct installation:"
 echo "  npm install -g @modelcontextprotocol/server-postgres"
@@ -2126,13 +2124,13 @@ fi
 # Installation recommendations
 if ! command -v bunx &>/dev/null && ! command -v npx &>/dev/null; then
     echo -e "${YELLOW}📝 Install Node.js package manager:${NC}"
-    echo "  • bun (recommended): curl -fsSL https://bun.sh/install | bash"
+    echo "  • bun (recommended): Visit https://bun.sh to install bun"
     echo "  • npm: Install Node.js from https://nodejs.org"
 fi
 
 if ! command -v uvx &>/dev/null; then
     echo -e "${YELLOW}📝 Install uv for Python MCP servers:${NC}"
-    echo "  • curl -LsSf https://astral.sh/uv/install.sh | sh"
+    echo "  • Visit https://docs.astral.sh/uv/ to install uv"
 fi
 
 # Database service recommendations
@@ -2248,7 +2246,7 @@ diagnose_redis() {
     # Test uv/uvx
     if ! command -v uvx &>/dev/null; then
         echo -e "${RED}❌ uvx not found (required for Redis MCP)${NC}"
-        echo -e "${YELLOW}💡 Install with: curl -LsSf https://astral.sh/uv/install.sh | sh${NC}"
+        echo -e "${YELLOW}💡 Install with: Visit https://docs.astral.sh/uv/ to install uv${NC}"
         return 1
     fi
     echo -e "${GREEN}✅ uvx available${NC}"
@@ -2554,7 +2552,7 @@ claude mcp add <name> -e VAR=value -- command args
 - **Network connectivity**: Test API endpoints directly
 - **Version conflicts**: Update to latest MCP packages
 - **OAuth token expiration**: Regenerate tokens
-- **Bun not installed**: Install via `curl -fsSL https://bun.sh/install | bash`
+- **Bun not installed**: Install via `Visit https://bun.sh to install bun`
 - **Docker not running**: Start Docker Desktop/daemon
 - **JSON parse errors**: Validate config with jq or online tools
 - **Authentication failures**: Verify token scopes and expiration
