@@ -3,6 +3,7 @@ name: satchmo-live
 display_name: "Satchmo"
 version: 1.0.0
 model: sonnet
+color: blue
 type: persistent
 url: https://satchmo.dev
 heartbeat: /api/heartbeat

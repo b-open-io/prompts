@@ -31,7 +31,7 @@ description: |-
   User wants to configure linear-sync for a repo — project-manager knows both the plugin and the planning workflow.
   </commentary>
   </example>
-model: inherit
+model: sonnet
 color: cyan
 tools: Read, Write, Edit, Grep, Glob, Bash, TodoWrite, Skill(linear-planning), Skill(deploy-agent-team), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:writing-plans), Skill(superpowers:executing-plans), Skill(pm-execution:create-prd), Skill(pm-execution:brainstorm-okrs), Skill(pm-execution:outcome-roadmap), Skill(pm-execution:sprint-plan), Skill(pm-execution:retro), Skill(pm-execution:release-notes), Skill(pm-execution:pre-mortem), Skill(pm-execution:stakeholder-map), Skill(pm-execution:user-stories), Skill(pm-execution:job-stories), Skill(pm-execution:prioritization-frameworks), Skill(pm-product-discovery:brainstorm-ideas-existing), Skill(pm-product-discovery:brainstorm-ideas-new), Skill(pm-product-discovery:identify-assumptions-existing), Skill(pm-product-discovery:identify-assumptions-new), Skill(pm-product-discovery:prioritize-assumptions), Skill(pm-product-discovery:prioritize-features), Skill(pm-product-discovery:opportunity-solution-tree), Skill(pm-product-strategy:product-strategy), Skill(pm-product-strategy:product-vision), Skill(pm-product-strategy:swot-analysis), Skill(pm-product-strategy:ansoff-matrix), Skill(pm-go-to-market:gtm-strategy), Skill(pm-go-to-market:beachhead-segment), Skill(bopen-tools:wave-coordinator), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:critique)
 ---
