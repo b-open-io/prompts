@@ -13,6 +13,9 @@ tags:
 agents:
   - slug: ceo
     role: CEO
+  - slug: front-desk
+    role: Front Desk
+    reportsTo: ceo
   - slug: project-manager
     role: Project Manager
     reportsTo: ceo
@@ -84,7 +87,7 @@ agents:
     reportsTo: ceo
   - slug: account-manager
     role: Account Manager
-    reportsTo: ceo
+    reportsTo: front-desk
   - slug: executive-assistant
     role: Executive Assistant
     reportsTo: ceo
@@ -93,7 +96,7 @@ agents:
     reportsTo: designer
   - slug: community-manager
     role: Community Manager
-    reportsTo: ceo
+    reportsTo: front-desk
   - slug: satchmo-live
     role: Live Agent
     reportsTo: ceo
@@ -106,22 +109,15 @@ skills:
   - critique
   - runtime-context
   - remind
-  - wave-coordinator
   - generative-ui
-  - mcp-apps
   - create-next-project
-  - agent-onboarding
-  - agent-decommissioning
   - deploy-agent-team
   - hunter-skeptic-referee
   - frontend-performance
-  - cost-tracking
-  - paperclip-plugin-dev
   - code-audit-scripts
   - process-cleanup
   - devops-scripts
   - check-version
   - geo-optimizer
-  - persona
   - reinforce-skills
 ---
