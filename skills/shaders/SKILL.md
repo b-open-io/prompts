@@ -8,7 +8,14 @@ description: >-
   custom materials. Covers shader workflow, TSL node system, GLSL patterns, debugging,
   performance optimization, and post-processing with pmndrs/postprocessing.
 metadata:
-  tags: shaders, glsl, tsl, webgl, webgpu, postprocessing, three.js
+  tags:
+    - shaders
+    - glsl
+    - tsl
+    - webgl
+    - webgpu
+    - postprocessing
+    - three.js
 ---
 
 # Three.js Shader Development

@@ -7,7 +7,14 @@ description: >-
   optimizing 3D performance, scaffolding Vite+R3F projects, or exporting R3F components.
   Covers scene setup, Drei helpers, asset pipeline, responsive canvas, and performance budgets.
 metadata:
-  tags: three.js, react-three-fiber, r3f, drei, 3d, webgl, webgpu
+  tags:
+    - three.js
+    - react-three-fiber
+    - r3f
+    - drei
+    - 3d
+    - webgl
+    - webgpu
 ---
 
 # Three.js / React Three Fiber
