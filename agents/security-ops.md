@@ -2,7 +2,7 @@
 name: security-ops
 display_name: "Paul"
 icon: https://bopen.ai/images/agents/paul.png
-version: 1.0.3
+version: 1.0.5
 model: sonnet
 color: yellow
 description: |-

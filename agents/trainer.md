@@ -2,7 +2,7 @@
 name: trainer
 display_name: "Satoshi"
 icon: https://bopen.ai/images/agents/satoshi.png
-version: 1.0.2
+version: 1.0.4
 description: |-
   Skill training and maintenance agent. Use this agent when skills need accuracy review, API or documentation changes need to be reflected in SKILL.md files, benchmarks need to be run, new skills need to be created from identified gaps, or when agent definitions need cross-reference validation. Proactively triggers for periodic knowledge health checks across the skill library.
 

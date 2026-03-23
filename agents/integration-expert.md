@@ -2,7 +2,7 @@
 name: integration-expert
 display_name: "Maxim"
 icon: https://bopen.ai/images/agents/maxim.png
-version: 1.2.17
+version: 1.2.19
 model: sonnet
 description: |-
   Implements API integrations, webhooks, and third-party service connections with proper error handling.

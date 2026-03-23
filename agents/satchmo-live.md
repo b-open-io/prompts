@@ -2,7 +2,7 @@
 name: satchmo-live
 display_name: "Satchmo"
 icon: https://bopen.ai/images/agents/satchmo.png
-version: 1.0.1
+version: 1.0.3
 model: sonnet
 color: blue
 type: persistent

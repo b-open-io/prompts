@@ -2,7 +2,7 @@
 name: architecture-reviewer
 display_name: "Kayle"
 icon: https://bopen.ai/images/agents/kayle.png
-version: 1.1.12
+version: 1.1.14
 model: opus
 color: gray
 description: |-

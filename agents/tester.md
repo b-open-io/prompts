@@ -2,7 +2,7 @@
 name: tester
 display_name: "Jason"
 icon: https://bopen.ai/images/agents/jason.png
-version: 1.3.11
+version: 1.3.13
 model: sonnet
 description: |-
   Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.

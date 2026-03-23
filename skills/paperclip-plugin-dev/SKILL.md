@@ -1,6 +1,6 @@
 ---
 name: paperclip-plugin-dev
-version: 1.0.0
+version: 1.1.0
 description: Build, publish, and install Paperclip plugins correctly. This skill should be used when scaffolding a new Paperclip plugin, writing a plugin manifest, implementing plugin worker logic, adding UI slots, publishing to npm, or installing a plugin into a Paperclip instance. Contains critical lessons from real publishing failures. Also invoke when working on plugin capabilities, jobs, webhooks, agent tools, or the plugin SDK.
 ---
 
@@ -45,6 +45,43 @@ Publishing a new version with additional capabilities puts the plugin in `upgrad
 ### 7. No `agents.create` in SDK
 
 The plugin SDK can read, pause, resume, invoke, and chat with agents — but cannot create or update them. For v1, present templates in the UI and let the operator create agents manually.
+
+### 8. ConvexError stores messages in `error.data`, NOT `error.message`
+
+When catching errors from Convex mutations in Next.js API routes, `error.message` is always the generic `"[Request ID: xxx] Server Error"`. The actual user-facing message is in `error.data`. Use this pattern:
+
+```typescript
+import { ConvexError } from "convex/values";
+
+function extractConvexErrorMessage(error: unknown): string {
+  if (error instanceof ConvexError) {
+    const data = error.data;
+    if (typeof data === "string") return data;
+    if (data && typeof data === "object" && "message" in data) {
+      return String((data as { message: unknown }).message);
+    }
+    return JSON.stringify(data);
+  }
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+```
+
+### 9. SDK tgz files go stale when upstream Paperclip changes shared types
+
+When upstream Paperclip adds new fields to shared types (like `originKind` on Issue), the plugin SDK tgz files become stale. To rebuild:
+
+```bash
+cd ~/code/paperclip/packages/shared && pnpm run build && pnpm pack
+cd ~/code/paperclip/packages/plugins/sdk && pnpm run build && pnpm pack
+# Copy both .tgz files to plugin's .paperclip-sdk/ directory
+# Delete pnpm-lock.yaml (integrity hashes are cached)
+bun install
+```
+
+### 10. `ctx.http.fetch` does NOT support relative URLs or private IPs
+
+Plugin workers cannot call the internal Paperclip API via `ctx.http.fetch` — it blocks private IPs and requires absolute URLs. Use the typed SDK clients instead: `ctx.issues.list`, `ctx.agents.list`, etc. There is no `ctx.routines` client.
 
 ---
 

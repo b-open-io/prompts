@@ -2,7 +2,7 @@
 name: mobile
 display_name: "Kira"
 icon: https://bopen.ai/images/agents/kira.png
-version: 1.1.9
+version: 1.1.11
 description: |-
   Expert in mobile app development for React Native, Swift, Kotlin, and Flutter.
 

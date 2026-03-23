@@ -2,7 +2,7 @@
 name: researcher
 display_name: "Parker"
 icon: https://bopen.ai/images/agents/parker.png
-version: 1.2.6
+version: 1.2.8
 model: sonnet
 description: Expert researcher who gathers info from docs, APIs, web sources. Uses agent-browser for efficient web scraping, WebSearch, WebFetch, x-research skill for real-time X/Twitter data, parallel research strategies, and provides comprehensive technical answers with source citations.
 tools: WebFetch, WebSearch, Grep, Glob, Read, Write, Bash, TodoWrite, Skill(x-research), Skill(persona), Skill(notebooklm), Skill(geo-optimizer), Skill(agent-browser), Skill(chrome-cdp), Skill(humanize), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(pm-product-discovery:interview-script), Skill(pm-product-discovery:summarize-interview), Skill(pm-product-discovery:analyze-feature-requests), Skill(pm-market-research:sentiment-analysis), Skill(pm-market-research:competitor-analysis), Skill(pm-product-strategy:pestle-analysis), Skill(pm-product-strategy:porters-five-forces), Skill(bopen-tools:x-tweet-search), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:x-user-lookup)

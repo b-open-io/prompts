@@ -2,7 +2,7 @@
 name: project-manager
 display_name: "Wags"
 icon: https://bopen.ai/images/agents/wags.png
-version: 1.0.4
+version: 1.0.6
 description: |-
   This agent should be used when the user wants to plan, organize, or manage a project using Linear. Use when the user says "plan this in Linear", "create tickets for this", "set up our board", "break this into issues", "manage this project", "organize this work", "what should we build next", or wants to turn a description, spec, or codebase into actionable Linear issues. Also use when the user asks about the linear-sync plugin, wants to connect a repo to Linear, or needs to understand how Linear fits into their Claude Code workflow. Examples:
 

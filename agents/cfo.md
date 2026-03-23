@@ -2,7 +2,7 @@
 name: cfo
 display_name: "Milton"
 icon: https://bopen.ai/images/agents/milton.png
-version: 1.0.2
+version: 1.0.4
 description: |-
   This agent should be used when the user wants to track, analyze, or optimize spending across the org's services and APIs. Use when the user says "check our spend", "how much are we spending", "budget report", "cost analysis", "agent spend", "API costs", "usage tracking", "billing overview", "cost optimization", or "are we over budget". Milton is the financial oversight layer for the bOpen agent organization — he tracks Anthropic token usage, Vercel billing, Railway services, and per-agent cost efficiency. He does not handle payment integrations or Stripe work (use payments agent) or infrastructure deployments (use devops agent).
 
