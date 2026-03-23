@@ -120,4 +120,11 @@ skills:
   - check-version
   - geo-optimizer
   - reinforce-skills
+  - wave-coordinator
+  - mcp-apps
+  - agent-onboarding
+  - agent-decommissioning
+  - cost-tracking
+  - paperclip-plugin-dev
+  - persona
 ---
