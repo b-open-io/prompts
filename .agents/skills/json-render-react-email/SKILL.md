@@ -2,7 +2,12 @@
 name: json-render-react-email
 description: React Email renderer for json-render that turns JSON specs into HTML or plain-text emails using @react-email/components and @react-email/render. Use when working with @json-render/react-email, building transactional or marketing emails from JSON, creating email catalogs, rendering AI-generated email specs, or when the user mentions react-email, HTML email, or transactional email.
 metadata:
-  tags: react-email, email, json-render, html email, transactional email
+  tags:
+    - react-email
+    - email
+    - json-render
+    - html email
+    - transactional email
 ---
 
 # @json-render/react-email
