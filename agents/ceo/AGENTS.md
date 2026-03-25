@@ -1,6 +1,18 @@
 ---
 name: ceo
 display_name: "Chief"
+title: "CEO"
+reportsTo: null
+skills:
+  - paperclip
+  - bopen-tools:agent-onboarding
+  - bopen-tools:front-desk
+  - bopen-tools:confess
+  - bopen-tools:remind
+  - bopen-tools:runtime-context
+  - bopen-tools:critique
+  - superpowers:dispatching-parallel-agents
+  - superpowers:writing-plans
 icon: https://bopen.ai/images/agents/chief.png
 version: 1.0.3
 model: sonnet

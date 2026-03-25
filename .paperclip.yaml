@@ -1,0 +1,152 @@
+schema: paperclip/v1
+agents:
+  account-manager:
+    adapter:
+      type: claude_local
+    role: "Account Manager"
+    icon: https://bopen.ai/images/agents/kurt.png
+  agent-builder:
+    adapter:
+      type: claude_local
+    role: "Agent Architect"
+    icon: https://bopen.ai/images/agents/satchmo.png
+  architecture-reviewer:
+    adapter:
+      type: claude_local
+    role: "Architecture Reviewer"
+    icon: https://bopen.ai/images/agents/kayle.png
+  audio-specialist:
+    adapter:
+      type: claude_local
+    role: "Audio Producer"
+    icon: https://bopen.ai/images/agents/frames.png
+  cartographer:
+    adapter:
+      type: claude_local
+    role: "Map Specialist"
+    icon: https://bopen.ai/images/agents/leaf.png
+  ceo:
+    adapter:
+      type: claude_local
+    role: "CEO"
+    icon: https://bopen.ai/images/agents/chief.png
+  cfo:
+    adapter:
+      type: claude_local
+    role: "CFO"
+    icon: https://bopen.ai/images/agents/milton.png
+  code-auditor:
+    adapter:
+      type: claude_local
+    role: "Security Auditor"
+    icon: https://bopen.ai/images/agents/jerry.png
+  community-manager:
+    adapter:
+      type: claude_local
+    role: "Community Manager"
+    icon: https://bopen.ai/images/agents/ordi.png
+  consolidator:
+    adapter:
+      type: claude_local
+    role: "Code Organizer"
+    icon: https://bopen.ai/images/agents/steve.png
+  creative-developer:
+    adapter:
+      type: claude_local
+    role: "3D Developer"
+    icon: https://bopen.ai/images/agents/kris.png
+  data:
+    adapter:
+      type: claude_local
+    role: "Data Engineer"
+    icon: https://bopen.ai/images/agents/data-accumulator.png
+  database:
+    adapter:
+      type: claude_local
+    role: "Database Engineer"
+    icon: https://bopen.ai/images/agents/idris.png
+  designer:
+    adapter:
+      type: claude_local
+    role: "UI Designer"
+    icon: https://bopen.ai/images/agents/ridd.png
+  devops:
+    adapter:
+      type: claude_local
+    role: "DevOps Engineer"
+    icon: https://bopen.ai/images/agents/root.png
+  documentation-writer:
+    adapter:
+      type: claude_local
+    role: "Technical Writer"
+    icon: https://bopen.ai/images/agents/flow.png
+  executive-assistant:
+    adapter:
+      type: claude_local
+    role: "Executive Assistant"
+    icon: https://bopen.ai/images/agents/tina.png
+  front-desk:
+    adapter:
+      type: claude_local
+    role: "Front Desk"
+    icon: https://bopen.ai/images/agents/martha.png
+  integration-expert:
+    adapter:
+      type: claude_local
+    role: "Integration Specialist"
+    icon: https://bopen.ai/images/agents/maxim.png
+  mobile:
+    adapter:
+      type: claude_local
+    role: "Mobile Developer"
+    icon: https://bopen.ai/images/agents/kira.png
+  nextjs:
+    adapter:
+      type: claude_local
+    role: "Frontend Developer"
+    icon: https://bopen.ai/images/agents/theo.png
+  optimizer:
+    adapter:
+      type: claude_local
+    role: "Performance Engineer"
+    icon: https://bopen.ai/images/agents/torque.png
+  payments:
+    adapter:
+      type: claude_local
+    role: "Payments Specialist"
+    icon: https://bopen.ai/images/agents/mina.png
+  project-manager:
+    adapter:
+      type: claude_local
+    role: "Project Manager"
+    icon: https://bopen.ai/images/agents/wags.png
+  prompt-engineer:
+    adapter:
+      type: claude_local
+    role: "Prompt Engineer"
+    icon: https://bopen.ai/images/agents/zack.png
+  researcher:
+    adapter:
+      type: claude_local
+    role: "Research Analyst"
+    icon: https://bopen.ai/images/agents/parker.png
+  satchmo-live:
+    adapter:
+      type: claude_local
+    role: "Live Agent"
+    icon: https://bopen.ai/images/agents/satchmo.png
+  security-ops:
+    adapter:
+      type: claude_local
+    role: "Security Operations"
+    icon: https://bopen.ai/images/agents/paul.png
+  tester:
+    adapter:
+      type: claude_local
+    role: "QA Engineer"
+    icon: https://bopen.ai/images/agents/jason.png
+  trainer:
+    adapter:
+      type: claude_local
+    role: "Skill Trainer"
+    icon: https://bopen.ai/images/agents/satoshi.png

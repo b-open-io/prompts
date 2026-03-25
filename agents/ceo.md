@@ -1,1 +1,1 @@
-ceo/ceo.md
+ceo/AGENTS.md
