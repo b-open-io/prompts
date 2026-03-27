@@ -139,8 +139,8 @@ date +%H:%M
 # Git commit hash
 git rev-parse --short HEAD
 
-# Custom usage metrics
-npx -y ccusage@latest statusline
+# Node.js version
+node --version
 ```
 
 ### Configuration
@@ -272,4 +272,3 @@ Settings are stored at: `~/.config/ccstatusline/settings.json`
 ## Related Projects
 
 - [tweakcc](https://github.com/Piebald-AI/tweakcc) - Claude Code theme customization
-- [ccusage](https://github.com/ryoppippi/ccusage) - Usage metrics tracker

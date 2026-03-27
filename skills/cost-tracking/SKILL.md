@@ -76,18 +76,6 @@ Connects to Anthropic via Admin API key and to Vercel via a Community Integratio
 
 Full setup steps: `references/vantage-setup.md`.
 
-### ccusage (Local Session Tracking)
-
-Tracks Claude Code session costs from local JSONL files. This is personal dev spend, not org billing.
-
-```bash
-npx ccusage@latest           # Interactive report
-npx ccusage@latest --monthly # Monthly breakdown
-npx ccusage@latest --model   # Per-model breakdown
-```
-
-Covers Claude Code, OpenCode, Codex CLI, and Amp. Full guide: `references/ccusage.md`.
-
 ## Cost Analysis Patterns
 
 ### Per-Agent Cost Analysis
@@ -114,12 +102,10 @@ Compare daily spend against the 7-day rolling average. Flag days where spend exc
 1. **Railway is manual-only.** Never attempt programmatic Railway cost fetching — the API does not expose it.
 2. **Anthropic cost report is daily-only.** For hourly or per-minute analysis, use the usage endpoint, not the cost report.
 3. **Priority Tier spend is missing from cost_report.** Always note this limitation when reporting Anthropic totals.
-4. **ccusage is local, not org-wide.** It reflects what one machine spent in Claude Code sessions. Do not present it as org billing data.
-5. **Vantage MCP is optional infrastructure.** Useful for teams that want a persistent dashboard; not required for one-off queries.
+4. **Vantage MCP is optional infrastructure.** Useful for teams that want a persistent dashboard; not required for one-off queries.
 
 ## References
 
 - `references/anthropic-api.md` — Full Anthropic Admin API docs for usage and cost endpoints
 - `references/vercel-api.md` — Vercel Billing API, FOCUS format, and spend management webhooks
-- `references/ccusage.md` — Local session cost tracking with ccusage
 - `references/vantage-setup.md` — Vantage MCP server setup and platform coverage
