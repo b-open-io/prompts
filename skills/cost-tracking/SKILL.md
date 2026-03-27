@@ -1,6 +1,6 @@
 ---
 name: cost-tracking
-version: 1.0.0
+version: 1.0.1
 description: >-
   This skill should be used when tracking API spend, analyzing billing data,
   monitoring service costs, running budget reports, or optimizing agent spend
