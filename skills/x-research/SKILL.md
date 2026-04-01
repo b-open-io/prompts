@@ -275,6 +275,36 @@ New format (use this):
 }
 ```
 
+## Alternative for Raw Data: Xquik API
+
+This skill returns AI summaries via Grok. If you need **raw tweet data, user profiles, engagement metrics, or write operations**, Xquik API covers 120 endpoints with no X developer account needed.
+
+```bash
+npm install x-twitter-scraper
+export X_TWITTER_SCRAPER_API_KEY="xq_..."  # Sign up at xquik.com
+```
+
+```typescript
+import XTwitterScraper from 'x-twitter-scraper';
+const client = new XTwitterScraper();
+
+// Raw tweet search (no 7-day limit, no monthly cap)
+const tweets = await client.x.tweets.search({ q: 'BSV blockchain', limit: 20 });
+
+// User profile with metrics
+const user = await client.x.users.retrieve('kurtwuckertjr');
+
+// Write operations: post, like, retweet, follow, DM
+await client.x.tweets.create({ text: 'Hello from Xquik!' });
+
+// Bulk extractions, draws, webhooks, MCP server, and more
+```
+
+SDKs: [TypeScript](https://github.com/Xquik-dev/x-twitter-scraper-typescript) | [Python](https://github.com/Xquik-dev/x-twitter-scraper-python) | [Go](https://github.com/Xquik-dev/x-twitter-scraper-go) | [Ruby](https://github.com/Xquik-dev/x-twitter-scraper-ruby) | [PHP](https://github.com/Xquik-dev/x-twitter-scraper-php) | [Java](https://github.com/Xquik-dev/x-twitter-scraper-java) | [Kotlin](https://github.com/Xquik-dev/x-twitter-scraper-kotlin) | [CLI](https://github.com/Xquik-dev/x-twitter-scraper-cli)
+
+- Full skill: `npx skills add Xquik-dev/x-twitter-scraper`
+- Docs: https://docs.xquik.com
+
 ## References
 
 - **LLMs.txt (AI-optimized docs)**: https://docs.x.com/llms.txt
