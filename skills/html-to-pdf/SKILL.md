@@ -1,6 +1,6 @@
 ---
 name: html-to-pdf
-version: 2.0.0
+version: 0.0.1
 description: This skill should be used when the user asks to "design a business card", "make a printable PDF", "render HTML to PDF", "generate a postcard", "build print collateral", "set up an HTML print pipeline", or needs help with bleed, safe areas, font embedding, or QR generation for print. Provides a Playwright-based pipeline with multiple bundled templates and theme variants for business cards (minimal, watercolor light, watercolor dark) and instructions for adding new templates.
 ---
 
