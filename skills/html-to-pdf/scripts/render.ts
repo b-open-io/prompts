@@ -2,6 +2,10 @@
 /**
  * Generic HTML → PDF renderer for the templates/ tree.
  *
+ * IMPORTANT: this script resolves all paths relative to process.cwd().
+ * Run from the directory that contains `node_modules/` and `templates/`
+ * (i.e. the skill copy at your project root), not from anywhere else.
+ *
  * Layout convention:
  *   templates/<template>/<style>/[<theme>/]card.html
  *   templates/<template>/<style>/[<theme>/]card-back.html
@@ -14,28 +18,24 @@
  *
  * Usage:
  *   bun render.ts --template business-cards --style minimal
- *   bun render.ts --template business-cards --style watercolor --theme light
- *   bun render.ts --template business-cards --style watercolor --theme dark
+ *   bun render.ts --template business-cards --style watercolor --theme light \
+ *     --photo templates/business-cards/employees/your-photo.png
+ *   bun render.ts --template business-cards --style watercolor --theme dark \
+ *     --photo path/to/portrait.png --logo path/to/your-logo.svg
  *
- * Add --employee <slug> and --photo <relative-path> to override defaults.
+ * Flags:
+ *   --template <name>     deliverable type (default: business-cards)
+ *   --style <name>        visual style (default: minimal)
+ *   --theme <name>        theme variant (omit for single-theme styles)
+ *   --employee <slug>     employees/<slug>.json (default: example)
+ *   --photo <path>        portrait path for templates with __PHOTO_SRC__
+ *   --logo <path>         SVG/PNG to overlay in the QR center (optional)
  */
 import { chromium, type Browser } from "playwright";
 import { readFileSync, mkdirSync, existsSync } from "node:fs";
-import { resolve, basename, dirname } from "node:path";
+import { resolve, basename } from "node:path";
 import { pathToFileURL } from "node:url";
 import { renderArtisticQR } from "./qr-artistic.ts";
-
-const BITCOIN_ICON = readFileSync(
-  resolve("node_modules/bootstrap-icons/icons/currency-bitcoin.svg"),
-  "utf8",
-);
-const BITCOIN_PATH = BITCOIN_ICON.match(/<path d="([^"]+)"/)?.[1] ?? "";
-const BOPEN_MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="50" fill="#0a0a0a"/>
-  <g transform="translate(18 18) scale(4.25)" fill="#ffffff">
-    <path d="${BITCOIN_PATH}"/>
-  </g>
-</svg>`;
 
 type Employee = {
   name: string; title: string; email: string;
@@ -66,6 +66,13 @@ const employeeSlug = args.employee ?? "example";
 // employee JSON. Defaults to an empty string so the substitution is silent
 // when the template doesn't need it.
 const photoRelative = args.photo ?? "";
+// QR center logo is optional and decoupled from any single brand. Pass
+// --logo <path> to overlay your own SVG/PNG mark in the center of the QR.
+// Without it, the QR renders without an overlay (still valid, just cleaner).
+const logoPath = args.logo;
+const logoSvg = logoPath && existsSync(resolve(logoPath))
+  ? readFileSync(resolve(logoPath), "utf8")
+  : undefined;
 
 const employeePath = resolve(`templates/${template}/employees/${employeeSlug}.json`);
 const styleDir = `templates/${template}/${style}`;
@@ -97,8 +104,8 @@ const qrSvg = await renderArtisticQR({
   bg: "#ffffff",
   quietZone: 2,
   dotShape: "circle",
-  logoSvg: BOPEN_MARK_SVG,
-  logoScale: 0.20,
+  logoSvg,
+  logoScale: logoSvg ? 0.20 : undefined,
 });
 
 function escape(s: string): string {

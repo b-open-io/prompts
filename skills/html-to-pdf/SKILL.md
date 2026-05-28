@@ -1,6 +1,5 @@
 ---
 name: html-to-pdf
-version: 0.0.1
 description: This skill should be used when the user asks to "design a business card", "make a printable PDF", "render HTML to PDF", "generate a postcard", "build print collateral", "set up an HTML print pipeline", or needs help with bleed, safe areas, font embedding, or QR generation for print. Provides a Playwright-based pipeline with multiple bundled templates and theme variants for business cards (minimal, watercolor light, watercolor dark) and instructions for adding new templates.
 ---
 
@@ -50,35 +49,46 @@ html-to-pdf/
 
 ## Quick start
 
-Copy the skill to a working directory and install dependencies:
+The renderer resolves all paths from the current working directory, so
+copy the skill files into a project root and run from there.
 
 ```bash
-SKILL_ROOT="$CLAUDE_PLUGIN_ROOT/skills/html-to-pdf"  # or wherever installed
+# Locate the skill — this varies by install method:
+#   - Plugin install:  ls "$CLAUDE_PLUGIN_ROOT/skills/html-to-pdf"
+#   - Cloned repo:     SKILL_ROOT="/path/to/prompts/skills/html-to-pdf"
+#   - npx skills add:  ls .claude/skills/html-to-pdf
+# Set SKILL_ROOT to whichever applies, then:
 mkdir -p /tmp/print-job && cd /tmp/print-job
 cp -R "$SKILL_ROOT/." .
+
+# Install deps once
 bun init -y
 bun add playwright qrcode @types/qrcode geist @fontsource-variable/inter \
        @fontsource-variable/fraunces bootstrap-icons
-bunx playwright install chromium   # one-time
+bunx playwright install chromium
 ```
 
-Render a business card:
+Render a business card (always run from `/tmp/print-job`):
 
 ```bash
-# Minimal style (no theme — single design)
-bun scripts/render.ts --template business-cards --style minimal
+# Minimal style — no theme, no photo needed
+bun scripts/render.ts --template business-cards --style minimal --employee example
 
-# Watercolor style with light theme (postcard / dream aesthetic)
+# Watercolor / light — needs a portrait
 bun scripts/render.ts --template business-cards --style watercolor --theme light \
-  --photo templates/business-cards/employees/your-photo.png
+  --employee example --photo path/to/your-portrait.png
 
-# Watercolor style with dark theme (nocturnal mountains)
+# Watercolor / dark — same template, same data, different theme
 bun scripts/render.ts --template business-cards --style watercolor --theme dark \
-  --photo templates/business-cards/employees/your-photo.png
+  --employee example --photo path/to/your-portrait.png
 
-# Custom employee data
-bun scripts/render.ts --template business-cards --style minimal --employee luke
+# Add a logo to the QR center (optional, any SVG or PNG)
+bun scripts/render.ts --template business-cards --style minimal --employee example \
+  --logo path/to/your-logo.svg
 ```
+
+Add a new employee by dropping `employees/<slug>.json` (use
+`employees/example.json` as the schema) and passing `--employee <slug>`.
 
 Output lands in `out/<slug>-<style>[-<theme>]-{front,back}.pdf`.
 
@@ -134,6 +144,8 @@ The template HTML can be moved to any project layout — the renderer fills in t
 
 Every employee data field is HTML-escaped in the substitution step so a hostile name field can't inject script into the rendered page.
 
+**Known limitation:** the substitution map in `scripts/render.ts` is currently hard-coded to the business-card field set. A new template that introduces fields like `__EVENT__` or `__VENUE__` requires extending the renderer. The clean refactor — looping the JSON object and substituting `__<KEY-UPPERCASED>__` for each value — is deferred until a second non-card template lands. See `references/creating-a-template.md`.
+
 ## Artistic QR codes
 
 The bundled `scripts/qr-artistic.ts` generator builds the QR SVG by hand from the matrix returned by `qrcode.create()`. It supports:
@@ -172,6 +184,6 @@ templates/
 
 The renderer auto-discovers from the directory structure. See `references/creating-a-template.md` for a step-by-step walkthrough including the file fields each template HTML needs.
 
-## Real-world usage
+## Provenance
 
-This skill backs `bopen.io`'s business cards. Each teammate has a JSON file in `employees/`. The QR on every card resolves to `bopen.io/meet/<teammate>?ev=<event>` which routes through `app/meet/[teammate]/page.tsx` into the booking flow with per-card attribution. The bopen-tools designer agent (Ridd) invokes this skill whenever the task is "design and render print collateral."
+This skill was extracted from the print pipeline behind `bopen.io`'s business cards, where each teammate's QR resolves through a per-card vanity URL into the site's booking flow with attribution. The templates and gotchas reflect what actually held up at a commercial print shop.

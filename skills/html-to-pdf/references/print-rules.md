@@ -3,6 +3,23 @@
 Detailed reference for getting Chromium-rendered PDFs through to a print
 shop intact. Read on demand — SKILL.md has the short version.
 
+## Validation prerequisites
+
+The diagnostic commands below (`pdffonts`, `pdfinfo`, `qpdf`, `gs`)
+are not installed by default. On macOS:
+
+```bash
+brew install poppler ghostscript qpdf
+```
+
+On Debian/Ubuntu:
+
+```bash
+apt-get install poppler-utils ghostscript qpdf
+```
+
+These are read-only inspection tools — they never modify your PDFs.
+
 ## Trim, bleed, safe area
 
 Print shops trim through the bleed area. Anything within `bleed` distance
