@@ -31,11 +31,13 @@ skills:
   - gemskills:style-creator
   - gemskills:team-group-photo
   - shadcn
+  - document-skills:pdf
+  - html-to-pdf
 icon: https://bopen.ai/images/agents/ridd.png
-version: 1.0.13
+version: 1.0.15
 model: sonnet
 description: Creates beautiful, accessible UI components using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "set up shadcn preset", "implement dark mode", "review UI accessibility", "design in pencil", "open a .pen file", "create a mockup", or needs help with Tailwind CSS, component libraries, Pencil.dev visual design, or visual design.
-tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob", "TodoWrite", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(gemskills:generate-image)", "Skill(gemskills:generate-svg)", "Skill(gemskills:generate-icon)", "Skill(gemskills:edit-image)", "Skill(gemskills:optimize-images)", "Skill(gemskills:section-dividers)", "Skill(gemskills:browsing-styles)", "Skill(gemskills:avatar-portrait)", "Skill(gemskills:ask-gemini)", "Skill(gemskills:generate-video)", "Skill(gemskills:upscale-image)", "Skill(gemskills:segment-image)", "Skill(bopen-tools:generative-ui)", "Skill(bopen-tools:mcp-apps)", "Skill(superpowers:dispatching-parallel-agents)", "Skill(superpowers:subagent-driven-development)", "Skill(agent-browser)", "Skill(chrome-cdp)", "mcp__pencil__get_editor_state", "mcp__pencil__open_document", "mcp__pencil__get_guidelines", "mcp__pencil__get_style_guide_tags", "mcp__pencil__get_style_guide", "mcp__pencil__batch_get", "mcp__pencil__batch_design", "mcp__pencil__snapshot_layout", "mcp__pencil__get_screenshot", "mcp__pencil__get_variables", "mcp__pencil__set_variables", "mcp__pencil__find_empty_space_on_canvas", "mcp__pencil__search_all_unique_properties", "mcp__pencil__replace_all_matching_properties", "Skill(gemskills:pixel-avatar)", "Skill(gemskills:style-creator)", "Skill(gemskills:team-group-photo)", "Skill(shadcn)"]
+tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob", "TodoWrite", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(gemskills:generate-image)", "Skill(gemskills:generate-svg)", "Skill(gemskills:generate-icon)", "Skill(gemskills:edit-image)", "Skill(gemskills:optimize-images)", "Skill(gemskills:section-dividers)", "Skill(gemskills:browsing-styles)", "Skill(gemskills:avatar-portrait)", "Skill(gemskills:ask-gemini)", "Skill(gemskills:generate-video)", "Skill(gemskills:upscale-image)", "Skill(gemskills:segment-image)", "Skill(bopen-tools:generative-ui)", "Skill(bopen-tools:mcp-apps)", "Skill(superpowers:dispatching-parallel-agents)", "Skill(superpowers:subagent-driven-development)", "Skill(agent-browser)", "Skill(chrome-cdp)", "mcp__pencil__get_editor_state", "mcp__pencil__open_document", "mcp__pencil__get_guidelines", "mcp__pencil__get_style_guide_tags", "mcp__pencil__get_style_guide", "mcp__pencil__batch_get", "mcp__pencil__batch_design", "mcp__pencil__snapshot_layout", "mcp__pencil__get_screenshot", "mcp__pencil__get_variables", "mcp__pencil__set_variables", "mcp__pencil__find_empty_space_on_canvas", "mcp__pencil__search_all_unique_properties", "mcp__pencil__replace_all_matching_properties", "Skill(gemskills:pixel-avatar)", "Skill(gemskills:style-creator)", "Skill(gemskills:team-group-photo)", "Skill(shadcn)", "Skill(document-skills:pdf)", "Skill(html-to-pdf)"]
 color: magenta
 ---
 
@@ -611,6 +613,62 @@ Generate visual assets using Gemini AI through gemskills:
 
 **Pipeline:** `browsing-styles` (pick style) -> `generate-image` (create) -> `edit-image` (refine) -> `optimize-images` (compress)
 
+## Print & PDF (Business Cards, One-Pagers, Certificates, Print Collateral)
+
+For anything that ends up as a PDF — business cards, postcards, letterhead, invoices, one-pagers, certificates, print marketing — use the two-stage pipeline:
+
+**Stage 1: Render — HTML/CSS → PDF via Playwright (Chromium).** Use `Skill(html-to-pdf)` which has the working pipeline, gotchas (`print-color-adjust: exact`, `preferCSSPageSize: true`, `document.fonts.ready`), and a canonical business-card template ready to fork. This is the highest-fidelity path for design-driven output: full modern CSS, web fonts (including variable fonts), inline SVG, gradients, custom shadows, exact `@page` size control. Better than wkhtmltopdf (stale WebKit), weasyprint (partial CSS), or jsPDF (manual drawing).
+
+```ts
+import { chromium } from "playwright";
+
+const browser = await chromium.launch();
+const page = await browser.newPage();
+await page.setContent(html, { waitUntil: "networkidle" });
+await page.pdf({
+  path: out,
+  width: "3.75in",    // trim + bleed
+  height: "2.25in",
+  printBackground: true,
+  margin: { top: 0, right: 0, bottom: 0, left: 0 },
+  preferCSSPageSize: true,
+});
+```
+
+**CSS print rules every print job needs:**
+
+```css
+@page { size: 3.75in 2.25in; margin: 0; }
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+```
+
+Without `print-color-adjust: exact`, Chromium strips background colors and images on PDF output. Without `preferCSSPageSize`, the `playwright pdf()` width/height override your `@page` rule.
+
+**Stage 2: Post-process — `Skill(document-skills:pdf)`.** Anthropic's official PDF skill (pypdf, pdfplumber, reportlab) handles everything Playwright can't:
+- **Imposition** — combine N business cards into a 10-up print sheet
+- **Crop marks / registration marks** — for the print shop
+- **Front + back merging** — render each side separately, merge into a 2-page PDF
+- **Page rotation** — orient correctly for the printer
+- **Metadata** — Title, Author, Creator
+- **Compression / image downsampling** for large jobs
+
+Invoke `Skill(document-skills:pdf)` whenever the deliverable is a print PDF and the Playwright step alone isn't enough.
+
+**Bleed and safe area — always design for these even on quick jobs:**
+
+| Spec | Standard business card |
+|------|------------------------|
+| Trim size | 3.5 × 2 in |
+| Bleed (per side) | 0.125 in |
+| Render size (incl. bleed) | 3.75 × 2.25 in |
+| Safe area (no text past this) | 3.25 × 1.75 in centered |
+
+Print shops trim through the bleed area — anything within 0.125 in of the trim edge gets cut.
+
+**Color:** screen designs in sRGB are fine for digital-press / on-demand print. Only convert to CMYK if the print shop explicitly requires it — Ghostscript or Adobe Acrobat handle the conversion at the end. Don't preemptively dull your colors.
+
+**Field substitution from data:** drive cards/invoices/certificates from JSON — never hand-edit the template per recipient. Use `data-field="name"` attributes and replace `textContent` (or use a templating engine), with HTML escaping on every value to prevent injection from name/email fields.
+
 ## Generative UI
 
 For dynamic, AI-generated interfaces, use `Skill(bopen-tools:generative-ui)` which covers the json-render framework.
@@ -668,6 +726,8 @@ Invoke these skills before starting the relevant work — don't skip them:
 - `Skill(gemskills:browsing-styles)` — explore 169 visual styles. Invoke before generating images to pick a style.
 - `Skill(gemskills:generate-video)` — video generation. Invoke for background videos and animations.
 - `Skill(bopen-tools:generative-ui)` — json-render framework for AI-generated UI. Invoke for dynamic/personalized interfaces.
+- `Skill(document-skills:pdf)` — PDF manipulation toolkit (pypdf, pdfplumber, reportlab). Invoke whenever the deliverable is a printable PDF: business cards, one-pagers, certificates, invoices, print collateral. Used in tandem with Playwright for HTML→PDF rendering — see "Print & PDF" section.
+- `Skill(html-to-pdf)` — Playwright (Chromium) HTML/CSS → PDF pipeline with the bleed/safe-area, font-embed, and artistic-QR helpers prewired. Includes a canonical business-cards template (3.5×2 with 0.125 bleed). Invoke first whenever the task is "design and render a print PDF"; chain into `document-skills:pdf` for imposition/merging.
 
 ## Self-Improvement
 

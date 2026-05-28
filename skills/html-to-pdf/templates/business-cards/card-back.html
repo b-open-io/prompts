@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>bOpen Business Card — Back</title>
+<style>
+  @font-face {
+    font-family: 'Geist';
+    src: url('node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2-variations');
+    font-weight: 100 900; font-style: normal; font-display: block;
+  }
+  @page { size: 3.75in 2.25in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { width: 3.75in; height: 2.25in; }
+  body { font-family: 'Geist', system-ui, sans-serif; color: #ffffff; background: #0a0a0a; }
+
+  .card {
+    width: 3.75in; height: 2.25in;
+    padding: 0.3125in;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.2in;
+    align-items: center;
+    background: #0a0a0a;
+  }
+
+  .left { display: flex; flex-direction: column; gap: 0.12in; }
+  .tagline { font-size: 14pt; font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; max-width: 2in; }
+  .tagline em { font-style: normal; opacity: 0.5; font-weight: 500; }
+  .pillars { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 0.05in; }
+  .pillar { font-size: 6.5pt; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 7px; border: 1px solid #2a2a2a; border-radius: 999px; color: #ccc; }
+  .url { font-size: 8pt; font-weight: 500; color: #999; letter-spacing: 0.04em; margin-top: auto; }
+  .url strong { color: #fff; font-weight: 600; }
+
+  .right { display: flex; flex-direction: column; align-items: center; gap: 0.06in; }
+  .qr { width: 1.25in; height: 1.25in; background: #fff; padding: 0.06in; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .qr svg { width: 100%; height: 100%; display: block; }
+  .qr-label { font-size: 6.5pt; font-weight: 500; color: #888; letter-spacing: 0.04em; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="left">
+      <div class="tagline">Builders First, <em>Consultants Second</em></div>
+      <div class="pillars">
+        <span class="pillar">Blockchain</span>
+        <span class="pillar">AI Agents</span>
+        <span class="pillar">Protocols</span>
+        <span class="pillar">Web3</span>
+      </div>
+      <div class="url" data-field="email"><strong>__EMAIL__</strong></div>
+    </div>
+    <div class="right">
+      <div class="qr" data-field="qr">__QR_SVG__</div>
+      <div class="qr-label" data-field="qrLabel">__QR_LABEL__</div>
+    </div>
+  </div>
+</body>
+</html>
