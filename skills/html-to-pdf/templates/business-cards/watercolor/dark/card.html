@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>bOpen Business Card — Watercolor Dark (Front)</title>
+<style>
+  @font-face {
+    font-family: 'Fraunces';
+    src: url('__NODE_MODULES__/@fontsource-variable/fraunces/files/fraunces-latin-full-normal.woff2') format('woff2-variations');
+    font-weight: 100 900; font-style: normal; font-display: block;
+  }
+  @font-face {
+    font-family: 'Geist';
+    src: url('__NODE_MODULES__/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2-variations');
+    font-weight: 100 900; font-style: normal; font-display: block;
+  }
+
+  @page { size: 3.75in 2.25in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { width: 3.75in; height: 2.25in; }
+
+  /* Palette: pulled from bopen.io's shadcn base-nova dark theme tokens
+     (app/globals.css .dark). OKLCH source values flattened to hex for
+     print fidelity.
+       bg-deep    --background  oklch(0.1763 0.014 258.35)
+       bg-card    --card        oklch(0.1993 0.0154 261.58)
+       bg-soft    --secondary   oklch(0.2935 0.0237 253.66)
+       fg         --foreground  oklch(0.9067 0 0)
+       fg-muted   --muted-fg    oklch(0.6625 0.0181 250.92)
+       cyan       --primary     oklch(0.76 0.13 207)  ← brand accent */
+  :root {
+    --bg-deep:  #13151e;
+    --bg-card:  #191c26;
+    --bg-soft:  #272d3a;
+    --fg:       #e2e2e2;
+    --fg-muted: #9aa3b8;
+    --fg-warm:  #ede4cf;
+    --cyan:     #5eb9d6;
+    --cyan-dim: rgba(94, 185, 214, 0.55);
+    --indigo:   #6d6bb3;
+    --plum:     #9a6db3;
+  }
+
+  body {
+    font-family: 'Geist', system-ui, sans-serif;
+    color: var(--fg);
+    background: var(--bg-deep);
+  }
+
+  .card {
+    width: 3.75in; height: 2.25in;
+    padding: 0.3125in;
+    background: var(--bg-card);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 0.78in 1fr auto;
+    column-gap: 0.18in;
+    grid-template-rows: auto 1fr auto;
+    height: 100%;
+  }
+
+  /* Pixel-photo "stamp" — on dark, use a warm-paper card rather than
+     pure white. The portrait's green/pink palette pops against the
+     warm tone, and the soft cyan glow ties to the brand accent. */
+  .stamp {
+    grid-row: 1 / 3;
+    grid-column: 1;
+    width: 0.78in;
+    height: 0.78in;
+    margin-top: 0.02in;
+    padding: 3px;
+    background: var(--fg-warm);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow:
+      0 0 0 1px rgba(94, 185, 214, 0.10),
+      0 6px 18px rgba(0, 0, 0, 0.45),
+      0 2px 4px rgba(94, 185, 214, 0.10);
+    transform: rotate(-1.2deg);
+    position: relative;
+  }
+  .stamp img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  .brand {
+    grid-column: 2 / 4;
+    grid-row: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.2in;
+    padding-top: 0.03in;
+  }
+  .brand .logo {
+    height: 0.28in;
+    width: auto;
+    color: var(--fg);
+  }
+  .brand .corner {
+    font-family: 'Geist', sans-serif;
+    font-size: 6.5pt;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--cyan);
+  }
+
+  .center {
+    grid-column: 2 / 4;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-right: 0.05in;
+  }
+  .name {
+    font-family: 'Fraunces', 'Geist', serif;
+    font-weight: 500;
+    font-size: 24pt;
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    color: var(--fg-warm);
+    font-variation-settings: "opsz" 144, "SOFT" 80, "WONK" 1;
+  }
+  .role {
+    font-family: 'Geist', sans-serif;
+    font-size: 7.5pt;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-top: 9px;
+  }
+
+  .divider {
+    display: block;
+    width: 1.55in;
+    height: 7px;
+    margin-top: 11px;
+    overflow: visible;
+  }
+
+  .footer {
+    grid-column: 1 / 4;
+    grid-row: 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-family: 'Geist', sans-serif;
+    font-size: 8pt;
+    font-weight: 500;
+    color: var(--fg);
+    gap: 0.2in;
+  }
+  .footer-left { display: flex; flex-direction: column; gap: 2px; }
+  .footer-left .email { color: var(--fg); }
+  .footer-left .phone { color: var(--fg-muted); }
+  .handle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--fg);
+  }
+  .handle svg { width: 10px; height: 10px; flex: 0 0 10px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="grid">
+      <div class="stamp">
+        <img src="__PHOTO_SRC__" alt="__NAME__">
+      </div>
+
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 436.5 192" xmlns="http://www.w3.org/2000/svg" aria-label="bOpen"><path d="M 45.83 61.09 C 49.75 59.03 54.23 58 59.27 58 C 65.13 58 70.44 59.44 75.19 62.33 C 79.93 65.22 83.7 69.32 86.46 74.64 C 89.23 79.97 90.62 86.14 90.62 93.15 C 90.62 100.17 89.23 106.38 86.46 111.79 C 83.7 117.19 79.94 121.38 75.19 124.35 C 70.44 127.32 65.13 128.81 59.27 128.81 C 54.14 128.81 49.67 127.8 45.83 125.77 C 41.99 123.75 38.91 121.13 36.6 117.91 L 36.6 127.69 L 19.25 127.69 L 19.25 36.08 L 36.6 36.08 L 36.6 69.13 C 38.83 65.83 41.91 63.15 45.83 61.09 Z M 74.57 82.45 C 72.88 79.44 70.64 77.15 67.88 75.58 C 65.11 74.01 62.11 73.22 58.89 73.22 C 55.68 73.22 52.8 74.03 50.04 75.64 C 47.27 77.25 45.04 79.58 43.35 82.63 C 41.65 85.69 40.81 89.28 40.81 93.4 C 40.81 97.52 41.65 101.12 43.35 104.17 C 45.04 107.23 47.27 109.55 50.04 111.16 C 52.8 112.77 55.75 113.58 58.89 113.58 C 62.04 113.58 65.11 112.75 67.88 111.1 C 70.64 109.45 72.88 107.1 74.57 104.04 C 76.26 100.99 77.11 97.36 77.11 93.15 C 77.11 88.94 76.26 85.45 74.57 82.44 Z" fill="currentColor"/><path d="M 222.8 61.15 C 226.73 59.05 231.21 58 236.25 58 C 242.11 58 247.42 59.44 252.17 62.33 C 256.92 65.22 260.68 69.32 263.45 74.64 C 266.21 79.97 267.6 86.14 267.6 93.15 C 267.6 100.17 266.21 106.38 263.45 111.79 C 260.68 117.19 256.92 121.38 252.17 124.35 C 247.42 127.32 242.11 128.81 236.25 128.81 C 231.21 128.81 226.77 127.77 222.93 125.71 C 219.09 123.65 215.96 121.05 213.57 117.91 L 213.57 160.38 L 196.23 160.38 L 196.23 59.11 L 213.57 59.11 L 213.57 69.01 C 215.8 65.88 218.88 63.25 222.8 61.15 Z M 251.55 82.45 C 249.86 79.44 247.62 77.15 244.86 75.58 C 242.09 74.01 239.1 73.22 235.88 73.22 C 232.66 73.22 229.79 74.03 227.02 75.64 C 224.25 77.25 222.02 79.58 220.33 82.63 C 218.63 85.69 217.79 89.28 217.79 93.4 C 217.79 97.52 218.63 101.12 220.33 104.17 C 222.02 107.23 224.25 109.55 227.02 111.16 C 229.79 112.77 232.73 113.58 235.88 113.58 C 239.02 113.58 242.09 112.75 244.86 111.1 C 247.62 109.45 249.86 107.1 251.55 104.04 C 253.24 100.99 254.09 97.36 254.09 93.15 C 254.09 88.94 253.24 85.45 251.55 82.44 Z" fill="currentColor"/><path d="M 341.02 98.6 L 290.84 98.6 C 291.25 103.56 292.99 107.44 296.04 110.24 C 299.1 113.05 302.86 114.45 307.32 114.45 C 313.76 114.45 318.35 111.69 321.07 106.16 L 339.78 106.16 C 337.8 112.76 333.99 118.19 328.38 122.44 C 322.77 126.69 315.87 128.82 307.69 128.82 C 301.08 128.82 295.16 127.35 289.91 124.42 C 284.66 121.49 280.57 117.34 277.64 111.98 C 274.71 106.61 273.25 100.42 273.25 93.41 C 273.25 86.39 274.69 80.08 277.58 74.71 C 280.47 69.35 284.52 65.23 289.72 62.33 C 294.92 59.45 300.91 58 307.69 58 C 314.46 58 320.06 59.41 325.22 62.21 C 330.38 65.02 334.39 69 337.24 74.16 C 340.09 79.32 341.51 85.24 341.51 91.93 C 341.51 94.4 341.35 96.63 341.02 98.61 Z M 323.55 86.96 C 323.47 82.51 321.86 78.94 318.71 76.26 C 315.57 73.58 311.73 72.23 307.19 72.23 C 302.9 72.23 299.28 73.54 296.35 76.14 C 293.42 78.74 291.62 82.35 290.96 86.97 L 323.55 86.97 Z" fill="currentColor"/><path d="M 406.12 65.86 C 411.15 71.02 413.67 78.22 413.67 87.46 L 413.67 127.7 L 396.33 127.7 L 396.33 89.82 C 396.33 84.37 394.96 80.18 392.24 77.25 C 389.52 74.32 385.8 72.86 381.09 72.86 C 376.38 72.86 372.52 74.32 369.75 77.25 C 366.98 80.19 365.6 84.38 365.6 89.82 L 365.6 127.7 L 348.25 127.7 L 348.25 59.12 L 365.6 59.12 L 365.6 67.66 C 367.91 64.69 370.87 62.36 374.46 60.66 C 378.05 58.97 382 58.13 386.29 58.13 C 394.47 58.13 401.08 60.71 406.12 65.87 Z" fill="currentColor"/><path d="M 119.48 123 C 112.38 119.02 106.74 113.5 102.58 106.44 C 98.43 99.39 96.34 91.4 96.34 82.48 C 96.34 73.57 98.42 65.71 102.58 58.66 C 106.74 51.61 112.37 46.09 119.48 42.1 C 126.58 38.12 134.38 36.13 142.87 36.13 C 151.36 36.13 159.26 38.12 166.32 42.1 C 173.38 46.09 178.97 51.61 183.09 58.66 C 187.2 65.71 189.26 73.65 189.26 82.48 C 189.26 91.32 187.2 99.39 183.09 106.44 C 178.97 113.5 173.36 119.02 166.26 123 C 159.16 126.98 151.36 128.97 142.87 128.97 C 134.38 128.97 126.58 126.98 119.48 123 Z M 157.29 109.04 C 161.45 106.57 164.7 103.05 167.04 98.46 C 169.38 93.87 170.55 88.54 170.55 82.48 C 170.55 76.42 169.38 71.12 167.04 66.58 C 164.7 62.04 161.45 58.55 157.29 56.13 C 153.14 53.7 148.32 52.49 142.87 52.49 C 137.42 52.49 132.59 53.7 128.39 56.13 C 124.18 58.55 120.91 62.04 118.57 66.58 C 116.24 71.12 115.07 76.43 115.07 82.48 C 115.07 88.54 116.24 93.87 118.57 98.46 C 120.91 103.05 124.18 106.57 128.39 109.04 C 132.59 111.5 137.42 112.74 142.87 112.74 C 148.32 112.74 153.14 111.5 157.29 109.04 Z" fill="currentColor"/></svg>
+        <span class="corner">bopen.io</span>
+      </div>
+
+      <div class="center">
+        <div class="name" data-field="name">__NAME__</div>
+        <div class="role" data-field="title">__TITLE__</div>
+        <svg class="divider" viewBox="0 0 155 7" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path d="M 0 3.5 Q 7 0.5, 14 3.5 T 28 3.5 T 42 3.5 T 56 3.5 T 70 3.5 T 84 3.5" stroke="#5eb9d6" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.95"/>
+          <circle cx="93"  cy="3.5" r="1.2" fill="#5eb9d6" opacity="0.8"/>
+          <circle cx="100" cy="3.5" r="1"   fill="#5eb9d6" opacity="0.6"/>
+          <circle cx="106" cy="3.5" r="0.85" fill="#5eb9d6" opacity="0.4"/>
+          <circle cx="111" cy="3.5" r="0.7" fill="#5eb9d6" opacity="0.28"/>
+          <circle cx="115" cy="3.5" r="0.55" fill="#5eb9d6" opacity="0.18"/>
+          <circle cx="118.5" cy="3.5" r="0.4" fill="#5eb9d6" opacity="0.1"/>
+        </svg>
+      </div>
+
+      <div class="footer">
+        <div class="footer-left">
+          <span class="email" data-field="email">__EMAIL__</span>
+          <span class="phone" data-field="phone">__PHONE__</span>
+        </div>
+        <span class="handle">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-label="X"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span data-field="handle">__HANDLE__</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

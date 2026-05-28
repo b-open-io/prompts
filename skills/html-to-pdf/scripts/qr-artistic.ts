@@ -20,6 +20,12 @@ export type ArtisticQROptions = {
   dotShape?: "circle" | "square" | "rounded";
   logoSvg?: string;         // inline <svg>…</svg> to render in center
   logoScale?: number;       // fraction of QR width occupied by logo (default 0.22)
+  /** Number of QR modules of clear margin around the data (the "quiet zone"
+   *  scanners need to reliably lock on). Default 0 assumes the parent
+   *  container provides the margin. Set to 2-4 when rendering the QR
+   *  directly onto a non-uniform surface (e.g. a watercolor) so it carries
+   *  its own white safe area. */
+  quietZone?: number;
 };
 
 export async function renderArtisticQR(opts: ArtisticQROptions): Promise<string> {
@@ -31,12 +37,18 @@ export async function renderArtisticQR(opts: ArtisticQROptions): Promise<string>
     dotShape = "circle",
     logoSvg,
     logoScale = 0.22,
+    quietZone = 0,
   } = opts;
 
   const qr = QRCode.create(url, { errorCorrectionLevel: "H" });
   const moduleCount: number = qr.modules.size;
   const data: Uint8Array = qr.modules.data;
-  const moduleSize = size / moduleCount;
+  // Data + quiet zone share the viewBox. moduleSize is calibrated against
+  // the data area only; the quiet zone sits outside the data via a translate.
+  const dataCount = moduleCount;
+  const totalCount = moduleCount + 2 * quietZone;
+  const moduleSize = size / totalCount;
+  const quietOffset = quietZone * moduleSize;
 
   // Identify finder-pattern regions (3 corners, 7×7 each).
   // We'll skip drawing data modules inside them and draw a custom "eye" instead.
@@ -137,9 +149,15 @@ export async function renderArtisticQR(opts: ArtisticQROptions): Promise<string>
     `;
   }
 
+  // The data modules + finder eyes are computed in their own coordinate
+  // space (data starts at 0,0). When a quiet zone is requested, shift the
+  // whole content inward by quietOffset so the bg fill is visible around
+  // the data. The center-logo block is in viewBox coords already (computed
+  // from `size`) and stays at the visual center, so it doesn't need the
+  // shift — keep it outside the translated group.
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="100%" height="100%">
     ${bgRect}
-    <g fill="${fg}">${shapes.join("")}</g>
+    <g fill="${fg}" transform="translate(${quietOffset} ${quietOffset})">${shapes.join("")}</g>
     ${logoBlock}
   </svg>`;
 }

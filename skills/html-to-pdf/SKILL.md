@@ -1,198 +1,177 @@
 ---
 name: html-to-pdf
-version: 1.0.0
-description: Render print-ready PDFs from HTML/CSS using Playwright (Chromium). Use when producing business cards, postcards, certificates, invoices, one-pagers, letterhead, or any other print collateral driven from structured data. Pairs with `document-skills:pdf` for imposition, crop marks, and front/back merging.
+version: 2.0.0
+description: This skill should be used when the user asks to "design a business card", "make a printable PDF", "render HTML to PDF", "generate a postcard", "build print collateral", "set up an HTML print pipeline", or needs help with bleed, safe areas, font embedding, or QR generation for print. Provides a Playwright-based pipeline with multiple bundled templates and theme variants for business cards (minimal, watercolor light, watercolor dark) and instructions for adding new templates.
 ---
 
 # HTML → PDF (Playwright pipeline)
 
-For any deliverable that ends up as a printable PDF — business cards, certificates, invoices, postcards, letterhead, one-pagers, ID cards — render with **Playwright (Chromium)** rather than wkhtmltopdf (stale WebKit), weasyprint (partial CSS), or jsPDF (manual drawing).
-
-Why Playwright wins:
-- Full modern CSS (grid, container queries, variable fonts, gradients, custom properties)
-- Inline SVG renders as vector (infinite print resolution)
-- Web fonts embed correctly when loaded from `file://` or via `@font-face`
-- Exact `@page { size: W H; margin: 0 }` honored when `preferCSSPageSize: true`
-
-For things Playwright can't do — combining N cards onto a 10-up sheet, adding crop marks, merging front+back into a 2-page PDF, embedding metadata — chain into `Skill(document-skills:pdf)` (pypdf + reportlab).
+Render print-ready PDFs from HTML/CSS via Playwright (Chromium). Use this for business cards, certificates, invoices, postcards, letterhead, one-pagers — anything that ends up as a printable PDF. The pipeline is template-driven so the same renderer produces minimal black-and-white cards, editorial watercolor cards, or any other style added later. For PDF post-processing (imposition, crop marks, front+back merging), chain into `Skill(document-skills:pdf)`.
 
 ## When to use
 
-Trigger this skill when the user says any of:
-- "design a business card", "print business cards"
-- "make me an invoice PDF", "generate a certificate"
-- "print-ready PDF", "one-pager PDF"
-- "render this HTML as PDF"
-- "set up an HTML print pipeline"
+Trigger when the user asks for:
+- "design a business card", "print business cards", "redesign Luke's card"
+- "render HTML as PDF", "set up an HTML print pipeline"
+- "make a printable PDF", "generate a one-pager / postcard / certificate"
+- Anything involving bleed, safe area, web fonts in print, or QR codes on cards
+
+## Layout
+
+```
+html-to-pdf/
+├── SKILL.md
+├── README.md
+├── scripts/
+│   ├── render.ts            # Playwright renderer with template/style/theme selection
+│   └── qr-artistic.ts       # Artistic QR generator (round dots, finder eyes, logo overlay)
+├── templates/
+│   └── business-cards/
+│       ├── employees/       # Per-person JSON + photos
+│       │   ├── example.json
+│       │   └── README.md
+│       ├── minimal/         # B/W editorial style — single theme
+│       │   ├── card.html
+│       │   └── card-back.html
+│       └── watercolor/      # Editorial style with pixel-photo + watercolor back
+│           ├── assets/      # Background images for both themes
+│           │   ├── sky.png
+│           │   └── mountains.png
+│           ├── light/
+│           │   ├── card.html
+│           │   └── card-back.html
+│           └── dark/
+│               ├── card.html
+│               └── card-back.html
+└── references/
+    ├── print-rules.md       # Bleed, font embed, color-profile gotchas
+    └── creating-a-template.md  # How to add a new template / style / theme
+```
 
 ## Quick start
 
-The canonical reference template lives in `templates/business-cards/`. Copy it into a working directory and replace the JSON inputs.
+Copy the skill to a working directory and install dependencies:
 
 ```bash
-SKILL_ROOT="$CLAUDE_PLUGIN_ROOT/skills/html-to-pdf"  # or wherever the skill is installed
+SKILL_ROOT="$CLAUDE_PLUGIN_ROOT/skills/html-to-pdf"  # or wherever installed
 mkdir -p /tmp/print-job && cd /tmp/print-job
-cp -R "$SKILL_ROOT/templates/business-cards/." .
-cp "$SKILL_ROOT/scripts/render.ts" .
-cp "$SKILL_ROOT/scripts/qr-artistic.ts" .
+cp -R "$SKILL_ROOT/." .
 bun init -y
-bun add playwright qrcode @types/qrcode geist @fontsource-variable/inter bootstrap-icons
-bunx playwright install chromium  # one-time
-bun render.ts employees/example.json
+bun add playwright qrcode @types/qrcode geist @fontsource-variable/inter \
+       @fontsource-variable/fraunces bootstrap-icons
+bunx playwright install chromium   # one-time
 ```
 
-Output: `out/<slug>-front.pdf` and `out/<slug>-back.pdf`.
+Render a business card:
+
+```bash
+# Minimal style (no theme — single design)
+bun scripts/render.ts --template business-cards --style minimal
+
+# Watercolor style with light theme (postcard / dream aesthetic)
+bun scripts/render.ts --template business-cards --style watercolor --theme light \
+  --photo templates/business-cards/employees/your-photo.png
+
+# Watercolor style with dark theme (nocturnal mountains)
+bun scripts/render.ts --template business-cards --style watercolor --theme dark \
+  --photo templates/business-cards/employees/your-photo.png
+
+# Custom employee data
+bun scripts/render.ts --template business-cards --style minimal --employee luke
+```
+
+Output lands in `out/<slug>-<style>[-<theme>]-{front,back}.pdf`.
+
+## Picking a style + theme
+
+| Style | Theme | Tone | When to use |
+|---|---|---|---|
+| `minimal` | (none) | Editorial black-on-white, ample whitespace, blocky fade-out accent | Default. Reads as serious, professional, formal. Print shop friendly. |
+| `watercolor` | `light` | Cream/parchment surface, Fraunces serif name, pixel-art portrait stamped on the card, watercolor sky back | When the recipient needs to remember the card. Editorial, warmer. |
+| `watercolor` | `dark` | Slate-indigo surface, cyan accents, watercolor mountain night-scene back | Brand-matched to dark-mode bopen.io. Distinctive at crypto conferences. |
+
+A new style is one directory. A new theme is one subdirectory inside a style. See `references/creating-a-template.md`.
 
 ## The non-obvious rules
 
-These are the things that break silently if you skip them:
+These are the gotchas that break silently if you skip them — full details in `references/print-rules.md`.
 
-### 1. `@page` size + `preferCSSPageSize`
+1. **`@page` size + `preferCSSPageSize: true`** — set the trim+bleed dimensions in BOTH the CSS `@page` rule and Playwright's `page.pdf({ width, height, preferCSSPageSize: true })`. Without `preferCSSPageSize`, Playwright silently falls back to US Letter.
 
-```css
-@page { size: 3.75in 2.25in; margin: 0; }
-```
+2. **`-webkit-print-color-adjust: exact`** — without this, Chromium strips background colors and images from the PDF. Black-background card backs come out white.
 
-```ts
-await page.pdf({
-  width: "3.75in",
-  height: "2.25in",
-  printBackground: true,
-  margin: { top: 0, right: 0, bottom: 0, left: 0 },
-  preferCSSPageSize: true,  // <-- without this, the @page rule is ignored
-});
-```
+3. **Always embed fonts via `@font-face`** — referencing only `font-family: 'Inter', system-ui` without an `@font-face` produces a PDF using whatever `system-ui` is on the build machine (SF Pro on macOS) embedded as Type 3 path glyphs. Different RIPs render Type 3 differently. Templates use `__NODE_MODULES__/...` placeholders so fonts always come from the installed npm package.
 
-Set the width/height in BOTH places. Otherwise Playwright defaults to Letter and your card prints onto an 8.5×11 sheet.
+4. **Wait for `document.fonts.ready` before `page.pdf()`** — capturing before fonts apply produces a PDF with system fallback glyphs.
 
-### 2. `print-color-adjust: exact`
+5. **Bleed** — render at trim + 2×0.125 in. The template HTMLs do this; new templates must too.
 
-```css
-* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-```
+Full bleed/safe-area table, ghostscript/CMYK conversion notes, and font-embed troubleshooting live in `references/print-rules.md`.
 
-Without this Chromium strips background colors and images on PDF output. Black-background card backs come out white.
+## Path placeholders in template HTML
 
-### 3. Bleed + safe area
+So templates aren't tied to a specific filesystem layout, the renderer substitutes two tokens at render time:
 
-Print shops trim through the bleed. Every value within 0.125 in of the visible edge gets cut. Always render at `trim + 2 × bleed` and keep text inside a `safe area` centered inside the trim.
-
-| Spec | Standard business card |
-|------|------------------------|
-| Trim | 3.5 × 2 in |
-| Bleed per side | 0.125 in |
-| Render size | 3.75 × 2.25 in |
-| Safe area | 3.25 × 1.75 in centered |
-
-For other formats:
-
-| Format | Trim | Render size (incl. bleed) |
+| Placeholder | Resolves to | Use for |
 |---|---|---|
-| US Letter one-pager | 8.5 × 11 in | 8.75 × 11.25 in |
-| Postcard 4×6 | 4 × 6 in | 4.25 × 6.25 in |
-| A4 certificate | 210 × 297 mm | 216 × 303 mm |
+| `__NODE_MODULES__/...` | `node_modules/...` (relative to working dir) | Web fonts, icon SVGs |
+| `__ASSETS__/...` | `templates/<template>/<style>/assets/...` | Style-specific background images |
 
-### 4. Fonts: `@font-face` with `format("woff2")`, NOT `system-ui` fallback
+The template HTML can be moved to any project layout — the renderer fills in the paths.
 
-```css
-@font-face {
-  font-family: 'Geist';
-  src: url('node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: block;
-}
-body { font-family: 'Geist', sans-serif; }
-```
+## Data-field placeholders (employee data)
 
-If you write `font-family: 'Inter', system-ui, sans-serif` without an `@font-face` for Inter, Chromium falls back to whatever system-ui is on the build machine (San Francisco on macOS), which embeds as Type 3 path glyphs and may render differently on the print shop's RIP. **Always declare the font and load it from `node_modules` via `file://`.**
+| Placeholder | From employee JSON | Notes |
+|---|---|---|
+| `__NAME__` | `name` | Display name |
+| `__TITLE__` | `title` | Role / subtitle |
+| `__EMAIL__` | `email` | HTML-escaped |
+| `__PHONE__` | `phone` | Optional |
+| `__HANDLE__` | `handle` | Optional, rendered with X glyph |
+| `__PHOTO_SRC__` | `--photo <path>` CLI arg | Required for templates that show a portrait |
+| `__QR_SVG__` | Generated from `qrUrl` | Artistic QR with optional logo overlay |
+| `__QR_LABEL__` | `qrLabel` (defaults to `qrUrl`) | Display text below the QR |
 
-Use `await page.evaluate(() => document.fonts.ready)` before `page.pdf()` to ensure fonts are fully applied before capture.
-
-### 5. Color profile
-
-Render in sRGB. Most modern digital presses (MOO, Vistaprint, Overnight, Printful) accept sRGB and convert internally. **Don't preemptively dull your colors to "CMYK-safe."** Convert with ghostscript only if your specific shop requires PDF/X-1a:
-
-```bash
-gs -dPDFX -dBATCH -dNOPAUSE -dNOOUTERSAVE -sDEVICE=pdfwrite \
-   -sColorConversionStrategy=CMYK -sOutputFile=out-cmyk.pdf in.pdf
-```
-
-### 6. Crop marks
-
-Most modern shops add their own crop marks from the bleed area. Only add marks in-file if the shop explicitly requires it — and use `Skill(document-skills:pdf)` (reportlab) for that, not the HTML layer.
-
-## Field substitution from JSON
-
-**Never hand-edit templates per recipient.** Drive everything from JSON via `data-field` attributes:
-
-```html
-<div class="name" data-field="name">__NAME__</div>
-<span data-field="email">__EMAIL__</span>
-```
-
-In `render.ts`, replace the `__TOKEN__`s using HTML escaping on every value:
-
-```ts
-function escape(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-const filled = template.replace("__NAME__", escape(employee.name));
-```
-
-This stops a `<script>` in someone's name field from injecting arbitrary content into the PDF (the chromium renderer would happily execute it during render).
+Every employee data field is HTML-escaped in the substitution step so a hostile name field can't inject script into the rendered page.
 
 ## Artistic QR codes
 
-The plain `qrcode` library produces blocky squares. For a designed QR — round dots, custom finder corners, centered logo — use the `qr-artistic.ts` script in this skill's `scripts/` directory. It builds the SVG by hand using the matrix from `qrcode.create()` (high error-correction level H lets you overlay a logo up to ~22% of the QR width without breaking scannability).
+The bundled `scripts/qr-artistic.ts` generator builds the QR SVG by hand from the matrix returned by `qrcode.create()`. It supports:
 
-Pattern:
+- Round, rounded-square, or square data modules
+- Custom rounded-square "eye" finder patterns
+- A centered logo overlay (uses error-correction level H — up to ~22% of the QR width is recoverable)
+- Configurable quiet zone (for cards where the QR sits directly on a non-uniform surface like a watercolor)
 
-```ts
-import { renderArtisticQR } from "./qr-artistic.ts";
-
-const qrSvg = await renderArtisticQR({
-  url: "https://bopen.io/meet/luke?ev=v1",
-  size: 1000,
-  fg: "#000000",
-  dotShape: "circle",       // "circle" | "rounded" | "square"
-  logoSvg: BOPEN_MARK_SVG,  // inline <svg> string
-  logoScale: 0.20,
-});
-```
-
-Always test the QR by scanning the rendered PDF with a phone camera before sending to print. Round-dot QRs with logo overlays sometimes fail on cheap scanners even at error level H.
+Always test the rendered QR by scanning the PDF with a phone camera before sending to print. Round-dot QRs with logo overlays can occasionally fail on cheap scanners even at level H.
 
 ## Chaining with `document-skills:pdf`
 
-After Playwright renders the per-page PDFs, invoke `Skill(document-skills:pdf)` for:
+After Playwright produces the per-page PDFs, invoke `Skill(document-skills:pdf)` for things HTML/CSS can't do:
 
-```python
-# Merge front + back into a single 2-page deliverable
-from pypdf import PdfWriter, PdfReader
-w = PdfWriter()
-for path in ["out/satchmo-front.pdf", "out/satchmo-back.pdf"]:
-    w.add_page(PdfReader(path).pages[0])
-w.add_metadata({"/Title": "bOpen Business Card - Luke Rohenaz",
-                "/Creator": "bOpen", "/Producer": "bOpen Print Pipeline"})
-with open("out/satchmo.pdf", "wb") as f:
-    w.write(f)
+- Merge front + back into a single 2-page deliverable
+- 10-up imposition on US Letter for in-house cutting
+- Crop marks / registration marks
+- Embed PDF metadata (Title, Author, Producer)
+- Compression / image downsampling
+
+## Adding new templates, styles, or themes
+
+A new template is one directory. A new style under an existing template is one subdirectory. A new theme is one subdirectory inside a style.
+
+```
+templates/
+└── <template>/                        # e.g. business-cards, postcards, certificates
+    └── <style>/                       # e.g. minimal, watercolor, brutalist
+        ├── card.html                  # if single-theme
+        ├── card-back.html
+        └── <theme>/                   # if multi-theme
+            ├── card.html
+            └── card-back.html
 ```
 
-For 10-up imposition (10 cards on a US Letter sheet for in-house cutting), reportlab gives finer control than pypdf — see the `pdf` skill's reference.md.
+The renderer auto-discovers from the directory structure. See `references/creating-a-template.md` for a step-by-step walkthrough including the file fields each template HTML needs.
 
-## Anti-patterns
+## Real-world usage
 
-- **Don't use `next/image` or `<img>` for the logo.** Inline SVG embeds as vector; raster PNG becomes pixelated when the print shop scales for bleed.
-- **Don't use CDN font URLs (`fonts.googleapis.com`).** Network flakes during render leave fonts unloaded and Chromium falls back silently. Always embed locally.
-- **Don't trust user input in `data-field` slots without escaping.** A name with `<script>` injects HTML into the render context.
-- **Don't render at the wrong DPI.** Chromium's `page.pdf()` outputs vector — there's no DPI dial. If you're rasterizing the PDF to PNG for previews, use `sips -s format png -Z 1600` (high resolution, preserves aspect).
-- **Don't skip `document.fonts.ready`.** Capturing before fonts apply produces a PDF with system fallback glyphs.
-
-## Files in this skill
-
-- `templates/business-cards/card.html` — front template (3.5 × 2 with bleed)
-- `templates/business-cards/card-back.html` — back template (dark, with QR slot)
-- `templates/business-cards/employees/example.json` — input data shape
-- `scripts/render.ts` — Playwright renderer, field substitution, font ready
-- `scripts/qr-artistic.ts` — artistic QR with round dots + logo overlay
+This skill backs `bopen.io`'s business cards. Each teammate has a JSON file in `employees/`. The QR on every card resolves to `bopen.io/meet/<teammate>?ev=<event>` which routes through `app/meet/[teammate]/page.tsx` into the booking flow with per-card attribution. The bopen-tools designer agent (Ridd) invokes this skill whenever the task is "design and render print collateral."

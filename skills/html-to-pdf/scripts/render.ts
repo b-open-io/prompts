@@ -1,28 +1,35 @@
 #!/usr/bin/env bun
 /**
- * HTML → PDF business card renderer.
+ * Generic HTML → PDF renderer for the templates/ tree.
  *
- * Default: renders BOTH fonts (inter + geist) × {front, back} → 4 PDFs in out/
- * Single: bun render.ts <font>  where font ∈ inter|geist
+ * Layout convention:
+ *   templates/<template>/<style>/[<theme>/]card.html
+ *   templates/<template>/<style>/[<theme>/]card-back.html
+ *   templates/<template>/<style>/assets/...        ← __ASSETS__
+ *   templates/<template>/employees/<slug>.json
+ *
+ * Path placeholders in the HTML are substituted at render time:
+ *   __NODE_MODULES__/... → ./node_modules/...       (fonts, icons)
+ *   __ASSETS__/...       → style-level assets dir
+ *
+ * Usage:
+ *   bun render.ts --template business-cards --style minimal
+ *   bun render.ts --template business-cards --style watercolor --theme light
+ *   bun render.ts --template business-cards --style watercolor --theme dark
+ *
+ * Add --employee <slug> and --photo <relative-path> to override defaults.
  */
 import { chromium, type Browser } from "playwright";
 import { readFileSync, mkdirSync, existsSync } from "node:fs";
-import { resolve, basename } from "node:path";
+import { resolve, basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { renderArtisticQR } from "./qr-artistic.ts";
 
-/**
- * QR center logo — black disc with the official Bootstrap Icons
- * `currency-bitcoin` glyph in white. Straight ₿ symbol, not the tilted
- * orange Bitcoin Core coin logo. Read from node_modules at render time so
- * any upstream icon revision flows through on the next bun install.
- */
 const BITCOIN_ICON = readFileSync(
   resolve("node_modules/bootstrap-icons/icons/currency-bitcoin.svg"),
   "utf8",
 );
 const BITCOIN_PATH = BITCOIN_ICON.match(/<path d="([^"]+)"/)?.[1] ?? "";
-
 const BOPEN_MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <circle cx="50" cy="50" r="50" fill="#0a0a0a"/>
   <g transform="translate(18 18) scale(4.25)" fill="#ffffff">
@@ -36,31 +43,59 @@ type Employee = {
   qrUrl: string; qrLabel?: string;
 };
 
-const FONTS = ["inter", "geist"] as const;
-type Font = typeof FONTS[number];
+// CLI argument parser — tiny and dependency-free
+function parseArgs(argv: string[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a.startsWith("--")) {
+      out[a.slice(2)] = argv[i + 1] ?? "true";
+      i++;
+    }
+  }
+  return out;
+}
 
-const fontArg = process.argv[2] as Font | undefined;
-const fonts: readonly Font[] = fontArg && FONTS.includes(fontArg) ? [fontArg] : FONTS;
+const args = parseArgs(process.argv.slice(2));
+const template = args.template ?? "business-cards";
+const style = args.style ?? "minimal";
+const theme = args.theme; // undefined OK
+const employeeSlug = args.employee ?? "example";
+// Photo is only used by templates that include __PHOTO_SRC__ (e.g. watercolor).
+// Pass --photo <relative-path> to point at a pixel-art portrait alongside the
+// employee JSON. Defaults to an empty string so the substitution is silent
+// when the template doesn't need it.
+const photoRelative = args.photo ?? "";
 
-const employeePath = resolve("employees/satchmo.json");
-const outDir = resolve("out");
-mkdirSync(outDir, { recursive: true });
+const employeePath = resolve(`templates/${template}/employees/${employeeSlug}.json`);
+const styleDir = `templates/${template}/${style}`;
+const themePath = theme ? `${styleDir}/${theme}` : styleDir;
+const frontPath = resolve(`${themePath}/card.html`);
+const backPath = resolve(`${themePath}/card-back.html`);
 
 if (!existsSync(employeePath)) {
   console.error(`[render] employee file not found: ${employeePath}`);
   process.exit(1);
 }
+if (!existsSync(frontPath) || !existsSync(backPath)) {
+  console.error(`[render] template files not found under ${themePath}`);
+  process.exit(1);
+}
+
+const outDir = resolve("out");
+mkdirSync(outDir, { recursive: true });
 
 const employee: Employee = JSON.parse(readFileSync(employeePath, "utf8"));
-const slug = basename(employeePath, ".json");
-const frontTemplate = readFileSync(resolve("card.html"), "utf8");
-const backTemplate = readFileSync(resolve("card-back.html"), "utf8");
+const frontTemplate = readFileSync(frontPath, "utf8");
+const backTemplate = readFileSync(backPath, "utf8");
 const baseUrl = pathToFileURL(resolve("./") + "/").toString();
 
 const qrSvg = await renderArtisticQR({
   url: employee.qrUrl,
   size: 1000,
-  fg: "#000000",
+  fg: "#0a0a0a",
+  bg: "#ffffff",
+  quietZone: 2,
   dotShape: "circle",
   logoSvg: BOPEN_MARK_SVG,
   logoScale: 0.20,
@@ -70,19 +105,24 @@ function escape(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function fillFront(html: string, font: Font): string {
+function applyPlaceholders(html: string): string {
   return html
-    .replace("__FONT__", font)
-    .replace("__NAME__", escape(employee.name))
+    .replace(/__NODE_MODULES__/g, "node_modules")
+    .replace(/__ASSETS__/g, `${styleDir}/assets`);
+}
+
+function fillFront(html: string): string {
+  return applyPlaceholders(html)
+    .replace("__PHOTO_SRC__", photoRelative)
+    .replace(/__NAME__/g, escape(employee.name))
     .replace("__TITLE__", escape(employee.title))
     .replace("__EMAIL__", escape(employee.email))
     .replace("__HANDLE__", escape(employee.handle ?? ""))
     .replace("__PHONE__", escape(employee.phone ?? ""));
 }
 
-function fillBack(html: string, font: Font): string {
-  return html
-    .replace("__FONT__", font)
+function fillBack(html: string): string {
+  return applyPlaceholders(html)
     .replace("__QR_SVG__", qrSvg)
     .replace("__QR_LABEL__", escape(employee.qrLabel ?? employee.qrUrl));
 }
@@ -104,12 +144,11 @@ async function renderSide(html: string, outPath: string): Promise<void> {
   });
 }
 
-for (const font of fonts) {
-  const frontOut = `${outDir}/${slug}-${font}-front.pdf`;
-  const backOut = `${outDir}/${slug}-${font}-back.pdf`;
-  await renderSide(fillFront(frontTemplate, font), frontOut);
-  await renderSide(fillBack(backTemplate, font), backOut);
-  console.log(`[render] ${font}: ${frontOut} + ${backOut}`);
-}
+const suffix = theme ? `${style}-${theme}` : style;
+const frontOut = `${outDir}/${employeeSlug}-${suffix}-front.pdf`;
+const backOut = `${outDir}/${employeeSlug}-${suffix}-back.pdf`;
+await renderSide(fillFront(frontTemplate), frontOut);
+await renderSide(fillBack(backTemplate), backOut);
 
 await browser.close();
+console.log(`[render:${suffix}] ${frontOut} + ${backOut}`);

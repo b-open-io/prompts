@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>bOpen Business Card — Watercolor (Back)</title>
+<style>
+  @font-face {
+    font-family: 'Fraunces';
+    src: url('__NODE_MODULES__/@fontsource-variable/fraunces/files/fraunces-latin-full-normal.woff2') format('woff2-variations');
+    font-weight: 100 900; font-style: normal; font-display: block;
+  }
+  @font-face {
+    font-family: 'Geist';
+    src: url('__NODE_MODULES__/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2-variations');
+    font-weight: 100 900; font-style: normal; font-display: block;
+  }
+
+  @page { size: 3.75in 2.25in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { width: 3.75in; height: 2.25in; }
+
+  :root {
+    --cream:  #fbf3df;
+    --cream-soft: rgba(251, 243, 223, 0.86);
+    --ink:    #1c1928;
+    --slate:  #6b6479;
+  }
+
+  body {
+    font-family: 'Geist', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--cream);
+  }
+
+  .card {
+    width: 3.75in; height: 2.25in;
+    background: var(--cream);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Full-bleed watercolor sky — covers the whole card edge-to-edge,
+     even through the bleed area, so the print shop trim falls inside
+     a continuous painterly surface. */
+  .watercolor {
+    position: absolute;
+    inset: -4%;
+    width: 108%;
+    height: 108%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  /* Soft cream haze near the bottom-left so the tagline lifts off
+     the painting without an obvious rectangle. Painted with a
+     radial gradient so the edge stays organic. */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        ellipse 2.4in 1.3in at 22% 78%,
+        rgba(251, 243, 223, 0.55) 0%,
+        rgba(251, 243, 223, 0.18) 55%,
+        rgba(251, 243, 223, 0) 80%
+      );
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .grid {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    padding: 0.3125in;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.25in;
+    align-items: stretch;
+  }
+
+  .tagline-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+  .tagline {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 18pt;
+    line-height: 1.08;
+    color: var(--ink);
+    max-width: 1.95in;
+    /* Variable axes — push for the warm display character at scale */
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+  }
+  .tagline em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--slate);
+    /* Italic axis on Fraunces — when present in the variable file —
+       gives a true cursive form rather than slanted. */
+  }
+  .tagline-meta {
+    font-family: 'Geist', sans-serif;
+    font-size: 7pt;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--slate);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+  .tagline-meta .dot {
+    color: rgba(28, 25, 40, 0.35);
+  }
+
+  /* QR carries its own white quiet zone (set via the renderer's
+     quietZone option), so we don't need a container — it sits
+     directly on the watercolor as a discrete white square. The
+     label sits just below in a darker color for readability against
+     the painting. */
+  .qr-col {
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.06in;
+  }
+  .qr {
+    width: 1.15in;
+    height: 1.15in;
+    display: block;
+  }
+  .qr svg { width: 100%; height: 100%; display: block; }
+  .qr-label {
+    font-family: 'Geist', sans-serif;
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    text-shadow: 0 0 4px rgba(251, 243, 223, 0.85);
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img class="watercolor" src="__ASSETS__/sky.png" alt="">
+    <div class="grid">
+      <div class="tagline-wrap">
+        <div class="tagline">
+          Builders First,<br>
+          <em>Consultants Second.</em>
+        </div>
+        <div class="tagline-meta">
+          <span>Blockchain</span>
+          <span class="dot">·</span>
+          <span>AI Agents</span>
+          <span class="dot">·</span>
+          <span>Protocols</span>
+          <span class="dot">·</span>
+          <span>Web3</span>
+        </div>
+      </div>
+      <div class="qr-col">
+        <div class="qr" data-field="qr">__QR_SVG__</div>
+        <div class="qr-label" data-field="qrLabel">__QR_LABEL__</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

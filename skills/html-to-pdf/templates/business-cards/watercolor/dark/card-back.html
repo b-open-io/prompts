@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>bOpen Business Card — Watercolor Dark (Back)</title>
+<style>
+  @font-face {
+    font-family: 'Fraunces';
+    src: url('__NODE_MODULES__/@fontsource-variable/fraunces/files/fraunces-latin-full-normal.woff2') format('woff2-variations');
+    font-weight: 100 900; font-style: normal; font-display: block;
+  }
+  @font-face {
+    font-family: 'Geist';
+    src: url('__NODE_MODULES__/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2-variations');
+    font-weight: 100 900; font-style: normal; font-display: block;
+  }
+
+  @page { size: 3.75in 2.25in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { width: 3.75in; height: 2.25in; }
+
+  :root {
+    --bg-deep:  #13151e;
+    --fg:       #e2e2e2;
+    --fg-warm:  #ede4cf;
+    --fg-muted: #9aa3b8;
+    --cyan:     #5eb9d6;
+  }
+
+  body {
+    font-family: 'Geist', system-ui, sans-serif;
+    color: var(--fg);
+    background: var(--bg-deep);
+  }
+
+  .card {
+    width: 3.75in; height: 2.25in;
+    background: var(--bg-deep);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Full-bleed nocturnal watercolor (mountains, stars, warm window
+     lights). Slightly oversized so the print trim falls inside a
+     continuous painted surface. */
+  .watercolor {
+    position: absolute;
+    inset: -4%;
+    width: 108%;
+    height: 108%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  /* Uniform darkening layer across the whole watercolor — drops the
+     painting a couple of stops so every text element reads against a
+     consistent value, no per-element backings or shadows needed.
+     Slightly stronger near the top so the moon highlight doesn't
+     burn through where the tagline lives. */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(13, 15, 22, 0.62) 0%,
+        rgba(13, 15, 22, 0.50) 60%,
+        rgba(13, 15, 22, 0.48) 100%
+      );
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .grid {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    padding: 0.3125in;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.25in;
+    align-items: stretch;
+  }
+
+  .tagline-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+
+  .tagline {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 18pt;
+    line-height: 1.08;
+    color: var(--fg-warm);
+    max-width: 1.95in;
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+  }
+  .tagline em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--cyan);
+  }
+  .tagline-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 6px;
+  }
+  /* Capability list — uniform dark-pill chips, same treatment as the
+     meet-link pill below the QR. Soft rounding (not full-circle) so
+     they read as labels, not buttons. */
+  .pill {
+    font-family: 'Geist', sans-serif;
+    font-size: 6.8pt;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-warm);
+    background: rgba(13, 15, 22, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .tagline-meta .dot {
+    color: rgba(94, 185, 214, 0.5);
+  }
+
+  /* QR carries its own white quiet zone — sits directly on the
+     watercolor as a discrete plate. Label sits below in warm cream. */
+  .qr-col {
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.06in;
+  }
+  .qr {
+    width: 1.15in;
+    height: 1.15in;
+    display: block;
+  }
+  .qr svg { width: 100%; height: 100%; display: block; }
+  .qr-label {
+    font-family: 'Geist', sans-serif;
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--fg-warm);
+    background: rgba(13, 15, 22, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    padding: 3px 9px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img class="watercolor" src="__ASSETS__/mountains.png" alt="">
+    <div class="grid">
+      <div class="tagline-wrap">
+        <div class="tagline">
+          Builders First,<br>
+          <em>Consultants Second.</em>
+        </div>
+        <div class="tagline-meta">
+          <span class="pill">Blockchain</span>
+          <span class="pill">AI Agents</span>
+          <span class="pill">Protocols</span>
+          <span class="pill">Web3</span>
+        </div>
+      </div>
+      <div class="qr-col">
+        <div class="qr" data-field="qr">__QR_SVG__</div>
+        <div class="qr-label" data-field="qrLabel">__QR_LABEL__</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
