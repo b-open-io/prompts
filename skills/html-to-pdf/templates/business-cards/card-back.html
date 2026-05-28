@@ -5,6 +5,11 @@
 <title>bOpen Business Card — Back</title>
 <style>
   @font-face {
+    font-family: 'Inter';
+    src: url('node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+    font-weight: 100 900; font-style: normal; font-display: block;
+  }
+  @font-face {
     font-family: 'Geist';
     src: url('node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2-variations');
     font-weight: 100 900; font-style: normal; font-display: block;
@@ -12,8 +17,17 @@
   @page { size: 3.75in 2.25in; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   html, body { width: 3.75in; height: 2.25in; }
-  body { font-family: 'Geist', system-ui, sans-serif; color: #ffffff; background: #0a0a0a; }
+  body {
+    font-family: var(--body-font, 'Geist'), system-ui, sans-serif;
+    color: #ffffff;
+    background: #0a0a0a;
+  }
+  body.font-inter { --body-font: 'Inter'; }
+  body.font-geist { --body-font: 'Geist'; }
 
+  /* Background:
+     Solid black base + ONE large architectural shape (SVG below) positioned
+     so its center is off-card. Only a sweeping fragment is visible. */
   .card {
     width: 3.75in; height: 2.25in;
     padding: 0.3125in;
@@ -22,33 +36,108 @@
     gap: 0.2in;
     align-items: center;
     background: #0a0a0a;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .bg-shape {
+    position: absolute;
+    /* Shape is 6in × 6in, but only a corner-quadrant pokes into the card
+       from the lower-left so it reads as something larger than the card. */
+    width: 6in;
+    height: 6in;
+    left: -3.6in;
+    top: -1.2in;
+    z-index: 0;
+    pointer-events: none;
+    user-select: none;
   }
 
-  .left { display: flex; flex-direction: column; gap: 0.12in; }
-  .tagline { font-size: 14pt; font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; max-width: 2in; }
+  .left { display: flex; flex-direction: column; gap: 0.14in; position: relative; z-index: 1; }
+  .tagline {
+    font-size: 14pt; font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.01em; max-width: 2in;
+  }
   .tagline em { font-style: normal; opacity: 0.5; font-weight: 500; }
-  .pillars { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 0.05in; }
-  .pillar { font-size: 6.5pt; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 7px; border: 1px solid #2a2a2a; border-radius: 999px; color: #ccc; }
-  .url { font-size: 8pt; font-weight: 500; color: #999; letter-spacing: 0.04em; margin-top: auto; }
-  .url strong { color: #fff; font-weight: 600; }
 
-  .right { display: flex; flex-direction: column; align-items: center; gap: 0.06in; }
-  .qr { width: 1.25in; height: 1.25in; background: #fff; padding: 0.06in; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .pillars { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+  .pillar {
+    font-size: 6.5pt; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 3px 7px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 999px;
+    color: #ddd;
+  }
+
+  /* Small accent line on the back too — matches the front's fade aesthetic */
+  .back-accent { display: block; margin-top: 0.04in; width: 1in; height: 3px; opacity: 0.55; }
+
+  .right {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.06in;
+    position: relative; z-index: 1;
+  }
+  .qr {
+    width: 1.25in; height: 1.25in;
+    background: #fff;
+    padding: 0.06in;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
   .qr svg { width: 100%; height: 100%; display: block; }
-  .qr-label { font-size: 6.5pt; font-weight: 500; color: #888; letter-spacing: 0.04em; text-align: center; }
+  .qr-label {
+    font-size: 6.5pt; font-weight: 500; color: #888;
+    letter-spacing: 0.04em; text-align: center;
+  }
 </style>
 </head>
-<body>
+<body class="font-__FONT__">
   <div class="card">
+    <!-- Architectural background — concentric polygon + center "node" form.
+         Positioned so the center sits off the card to the upper-left;
+         only a sweeping arc of the outermost rings shows on the visible area. -->
+    <svg class="bg-shape" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <radialGradient id="bg-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"  stop-color="#ffffff" stop-opacity="0.10"/>
+          <stop offset="55%" stop-color="#ffffff" stop-opacity="0.03"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- Soft glow filling the center area -->
+      <circle cx="300" cy="300" r="300" fill="url(#bg-glow)"/>
+      <!-- Concentric polygon outlines, rotated for an architectural / blueprint feel -->
+      <g fill="none" stroke="#ffffff" stroke-linejoin="round" transform="rotate(15 300 300)">
+        <polygon points="300,40 535,175 535,425 300,560 65,425 65,175" stroke-width="1.4" stroke-opacity="0.22"/>
+        <polygon points="300,90 490,200 490,400 300,510 110,400 110,200" stroke-width="1.2" stroke-opacity="0.16"/>
+        <polygon points="300,140 445,225 445,375 300,460 155,375 155,225" stroke-width="1.0" stroke-opacity="0.12"/>
+        <polygon points="300,190 400,250 400,350 300,410 200,350 200,250" stroke-width="0.9" stroke-opacity="0.09"/>
+        <polygon points="300,235 360,270 360,330 300,365 240,330 240,270" stroke-width="0.8" stroke-opacity="0.07"/>
+      </g>
+    </svg>
+
     <div class="left">
       <div class="tagline">Builders First, <em>Consultants Second</em></div>
+      <svg class="back-accent" viewBox="0 0 100 3" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <rect x="0" y="0.75" width="32" height="1.5" fill="#ffffff"/>
+        <rect x="36" y="0.75" width="7" height="1.5" fill="#ffffff"/>
+        <rect x="46" y="0.75" width="5" height="1.5" fill="#ffffff"/>
+        <rect x="54" y="0.75" width="3.5" height="1.5" fill="#ffffff"/>
+        <circle cx="62" cy="1.5" r="1" fill="#ffffff"/>
+        <circle cx="67" cy="1.5" r="0.85" fill="#ffffff" opacity="0.8"/>
+        <circle cx="71.5" cy="1.5" r="0.7" fill="#ffffff" opacity="0.6"/>
+        <circle cx="75.5" cy="1.5" r="0.55" fill="#ffffff" opacity="0.4"/>
+        <circle cx="79" cy="1.5" r="0.4" fill="#ffffff" opacity="0.22"/>
+        <circle cx="81.5" cy="1.5" r="0.3" fill="#ffffff" opacity="0.1"/>
+      </svg>
       <div class="pillars">
         <span class="pillar">Blockchain</span>
         <span class="pillar">AI Agents</span>
         <span class="pillar">Protocols</span>
         <span class="pillar">Web3</span>
       </div>
-      <div class="url" data-field="email"><strong>__EMAIL__</strong></div>
     </div>
     <div class="right">
       <div class="qr" data-field="qr">__QR_SVG__</div>

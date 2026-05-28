@@ -2,8 +2,8 @@
 /**
  * HTML → PDF business card renderer.
  *
- * Default: renders all 5 Geist Pixel variants × {front, back} → 10 PDFs in out/
- * Single: bun render.ts <variant>  where variant ∈ square|grid|circle|triangle|line
+ * Default: renders BOTH fonts (inter + geist) × {front, back} → 4 PDFs in out/
+ * Single: bun render.ts <font>  where font ∈ inter|geist
  */
 import { chromium, type Browser } from "playwright";
 import { readFileSync, mkdirSync, existsSync } from "node:fs";
@@ -11,11 +11,23 @@ import { resolve, basename } from "node:path";
 import { pathToFileURL } from "node:url";
 import { renderArtisticQR } from "./qr-artistic.ts";
 
-// Mini bOpen wordmark to embed in the QR center. Just the lowercase 'b' bowl
-// for compactness — the full wordmark is too wide for a square overlay.
+/**
+ * QR center logo — black disc with the official Bootstrap Icons
+ * `currency-bitcoin` glyph in white. Straight ₿ symbol, not the tilted
+ * orange Bitcoin Core coin logo. Read from node_modules at render time so
+ * any upstream icon revision flows through on the next bun install.
+ */
+const BITCOIN_ICON = readFileSync(
+  resolve("node_modules/bootstrap-icons/icons/currency-bitcoin.svg"),
+  "utf8",
+);
+const BITCOIN_PATH = BITCOIN_ICON.match(/<path d="([^"]+)"/)?.[1] ?? "";
+
 const BOPEN_MARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <circle cx="50" cy="50" r="50" fill="#0a0a0a"/>
-  <text x="50" y="68" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="60" fill="#ffffff">b</text>
+  <g transform="translate(18 18) scale(4.25)" fill="#ffffff">
+    <path d="${BITCOIN_PATH}"/>
+  </g>
 </svg>`;
 
 type Employee = {
@@ -24,13 +36,11 @@ type Employee = {
   qrUrl: string; qrLabel?: string;
 };
 
-const VARIANTS = ["square", "grid", "circle", "triangle", "line"] as const;
-type Variant = typeof VARIANTS[number];
+const FONTS = ["inter", "geist"] as const;
+type Font = typeof FONTS[number];
 
-const variantArg = process.argv[2] as Variant | undefined;
-const variants: readonly Variant[] = variantArg && VARIANTS.includes(variantArg)
-  ? [variantArg]
-  : VARIANTS;
+const fontArg = process.argv[2] as Font | undefined;
+const fonts: readonly Font[] = fontArg && FONTS.includes(fontArg) ? [fontArg] : FONTS;
 
 const employeePath = resolve("employees/satchmo.json");
 const outDir = resolve("out");
@@ -60,10 +70,9 @@ function escape(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function fillFront(html: string, variant: Variant): string {
+function fillFront(html: string, font: Font): string {
   return html
-    .replace("__VARIANT__", variant)
-    .replace("__VARIANT_LABEL__", `BOPEN.IO · ${variant}`)
+    .replace("__FONT__", font)
     .replace("__NAME__", escape(employee.name))
     .replace("__TITLE__", escape(employee.title))
     .replace("__EMAIL__", escape(employee.email))
@@ -71,21 +80,19 @@ function fillFront(html: string, variant: Variant): string {
     .replace("__PHONE__", escape(employee.phone ?? ""));
 }
 
-function fillBack(html: string): string {
+function fillBack(html: string, font: Font): string {
   return html
+    .replace("__FONT__", font)
     .replace("__QR_SVG__", qrSvg)
-    .replace("__QR_LABEL__", escape(employee.qrLabel ?? employee.qrUrl))
-    .replace("__EMAIL__", escape(employee.email));
+    .replace("__QR_LABEL__", escape(employee.qrLabel ?? employee.qrUrl));
 }
 
 const browser: Browser = await chromium.launch();
 const page = await browser.newPage();
 
 async function renderSide(html: string, outPath: string): Promise<void> {
-  // setContent with file:// base so relative font URLs resolve into node_modules
-  await page.goto(baseUrl); // sets the document base URL
+  await page.goto(baseUrl);
   await page.setContent(html, { waitUntil: "networkidle" });
-  // Brief settle for woff2 to fully apply before PDF capture
   await page.evaluate(() => document.fonts.ready);
   await page.pdf({
     path: outPath,
@@ -97,12 +104,12 @@ async function renderSide(html: string, outPath: string): Promise<void> {
   });
 }
 
-for (const variant of variants) {
-  const frontOut = `${outDir}/${slug}-${variant}-front.pdf`;
-  const backOut = `${outDir}/${slug}-${variant}-back.pdf`;
-  await renderSide(fillFront(frontTemplate, variant), frontOut);
-  await renderSide(fillBack(backTemplate), backOut);
-  console.log(`[render] ${variant}: ${frontOut} + ${backOut}`);
+for (const font of fonts) {
+  const frontOut = `${outDir}/${slug}-${font}-front.pdf`;
+  const backOut = `${outDir}/${slug}-${font}-back.pdf`;
+  await renderSide(fillFront(frontTemplate, font), frontOut);
+  await renderSide(fillBack(backTemplate, font), backOut);
+  console.log(`[render] ${font}: ${frontOut} + ${backOut}`);
 }
 
 await browser.close();

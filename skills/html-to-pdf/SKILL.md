@@ -35,9 +35,10 @@ mkdir -p /tmp/print-job && cd /tmp/print-job
 cp -R "$SKILL_ROOT/templates/business-cards/." .
 cp "$SKILL_ROOT/scripts/render.ts" .
 cp "$SKILL_ROOT/scripts/qr-artistic.ts" .
-bun init -y && bun add playwright qrcode @types/qrcode
+bun init -y
+bun add playwright qrcode @types/qrcode geist @fontsource-variable/inter bootstrap-icons
 bunx playwright install chromium  # one-time
-bun render.ts employees/satchmo.json
+bun render.ts employees/example.json
 ```
 
 Output: `out/<slug>-front.pdf` and `out/<slug>-back.pdf`.
