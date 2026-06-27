@@ -34,7 +34,7 @@ skills:
   - document-skills:pdf
   - html-to-pdf
 icon: https://bopen.ai/images/agents/ridd.png
-version: 1.0.15
+version: 1.0.16
 model: sonnet
 description: Creates beautiful, accessible UI components using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "set up shadcn preset", "implement dark mode", "review UI accessibility", "design in pencil", "open a .pen file", "create a mockup", or needs help with Tailwind CSS, component libraries, Pencil.dev visual design, or visual design.
 tools: ["Read", "Write", "Edit", "MultiEdit", "WebFetch", "Bash", "Grep", "Glob", "TodoWrite", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(gemskills:generate-image)", "Skill(gemskills:generate-svg)", "Skill(gemskills:generate-icon)", "Skill(gemskills:edit-image)", "Skill(gemskills:optimize-images)", "Skill(gemskills:section-dividers)", "Skill(gemskills:browsing-styles)", "Skill(gemskills:avatar-portrait)", "Skill(gemskills:ask-gemini)", "Skill(gemskills:generate-video)", "Skill(gemskills:upscale-image)", "Skill(gemskills:segment-image)", "Skill(bopen-tools:generative-ui)", "Skill(bopen-tools:mcp-apps)", "Skill(superpowers:dispatching-parallel-agents)", "Skill(superpowers:subagent-driven-development)", "Skill(agent-browser)", "Skill(chrome-cdp)", "mcp__pencil__get_editor_state", "mcp__pencil__open_document", "mcp__pencil__get_guidelines", "mcp__pencil__get_style_guide_tags", "mcp__pencil__get_style_guide", "mcp__pencil__batch_get", "mcp__pencil__batch_design", "mcp__pencil__snapshot_layout", "mcp__pencil__get_screenshot", "mcp__pencil__get_variables", "mcp__pencil__set_variables", "mcp__pencil__find_empty_space_on_canvas", "mcp__pencil__search_all_unique_properties", "mcp__pencil__replace_all_matching_properties", "Skill(gemskills:pixel-avatar)", "Skill(gemskills:style-creator)", "Skill(gemskills:team-group-photo)", "Skill(shadcn)", "Skill(document-skills:pdf)", "Skill(html-to-pdf)"]
@@ -97,6 +97,22 @@ To install the official Anthropic `frontend-design` plugin (auto-invoked skill f
 /plugin install frontend-design@claude-code-plugins
 ```
 The `frontend-design` skill activates automatically for frontend tasks and provides typography, color, motion, and spatial composition guidance.
+
+### Taste Skill (Anti-Slop Frontend Framework)
+
+The **taste skill** (`design-taste-frontend`) is an anti-slop framework that injects design rules to keep generated frontends distinctive instead of templated. It is the sharpest tool for landing pages, portfolios, and redesigns — brief inference, design-system mapping, dark-mode protocol, and pre-flight validation before shipping.
+
+**Check first — it may already be installed.** If `Skill(design-taste-frontend)` is available, just invoke it. If it is missing, install it from [tasteskill.dev](https://tasteskill.dev):
+
+```bash
+# Stable install
+npx skills add Leonxlnx/taste-skill
+
+# v2 (experimental, stricter rules — now the default direction)
+npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"
+```
+
+After installing, the skill name is `design-taste-frontend`. Invoke `Skill(design-taste-frontend)` **before** generating any landing page, portfolio, or redesign — it runs an audit-first pass on existing work and enforces output completeness. It works alongside (not instead of) `frontend-design` and the Anti-AI-Slop guidance below.
 
 ## Web3 Icons (@web3icons/react)
 
@@ -714,6 +730,7 @@ agent-browser diff screenshot state-a.png state-b.png
 Invoke these skills before starting the relevant work — don't skip them:
 
 - `Skill(frontend-design)` — UI component and layout guidance. **Invoke before designing any component.**
+- `Skill(design-taste-frontend)` — anti-slop taste framework for landing pages, portfolios, and redesigns. **Invoke before any landing page or redesign.** If unavailable, install it: `npx skills add Leonxlnx/taste-skill` (see "Taste Skill" under Related Plugins).
 - `Skill(web-design-guidelines)` — design system rules and patterns. Invoke for design system adherence.
 - `Skill(vercel-react-best-practices)` — React + Vercel performance rules. Invoke for RSC or performance-sensitive work.
 - `Skill(ui-audio-theme)` — audio/motion design patterns. Invoke for interactive or animated UIs.
