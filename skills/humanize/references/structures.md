@@ -4,7 +4,9 @@ These are recognizable sentence and paragraph patterns that AI models generate r
 
 ## Binary Contrasts
 
-Creating a false "not X, but Y" drama when you could just say Y.
+Creating a false "not X, but Y" drama when you could just say Y. This is the most common AI tell. **Blocking the literal phrase does not work** — the model substitutes a synonym structure and makes the identical move. Watch for the *move* (set up an alternative, knock it down, pivot to the real claim), not just the words.
+
+### With negation (obvious)
 
 | Pattern | Example | Problem |
 |---------|---------|---------|
@@ -14,9 +16,23 @@ Creating a false "not X, but Y" drama when you could just say Y.
 | "It feels like X. It's actually Y." | "It feels like chaos. It's actually a pattern." | Setup/reveal cliche |
 | "The question isn't X. It's Y." | "The question isn't when. It's whether." | Rhetorical misdirection |
 | "Not X. But Y." | "Not perfection. But consistency." | Mechanical contrast |
+| "Not only X but also Y" | "Not only fast but also secure." | Padded parallelism |
 | "stops being X and starts being Y" | "stops being work and starts being art" | False transformation arc |
 
-**Fix:** Say Y. "The problem is clarity." "Consistency matters more than perfection." State the claim directly.
+### Disguised — no "not" anywhere (these are how the pattern escapes review)
+
+| Pattern | Example | Problem |
+|---------|---------|---------|
+| "X rather than Y" / "rather than X, Y" | "We coach rather than command." | Same antithesis, no "not" to grep |
+| "instead of X, Y" | "Instead of dashboards, you get answers." | Strawman pivot |
+| "less X, more Y" | "Less meetings, more shipping." | Slogan contrast |
+| "While X…, Y" (concessive setup) | "While speed matters, accuracy is paramount." | Dialectical hedge that exists only to pivot |
+| "Where most/others X, we Y" | "Where most tools bury settings, we surface them." | Competitor-as-strawman |
+| "forget X" / "say goodbye to X" / "no more X" | "Forget manual exports." | Dismiss-then-sell |
+| "gone are the days of X" | "Gone are the days of brittle cron jobs." | Nostalgia-contrast cliche |
+| "beyond just X" / "more than just X" | "Analytics beyond just pageviews." | Inflation by negation |
+
+**Fix:** Say Y. "The problem is clarity." "We coach." "Accuracy is what we optimize for." State the claim directly and drop the discarded half — it carries no information, only fingerprint.
 
 ## Dramatic Fragmentation
 
@@ -119,6 +135,8 @@ Signs:
 | Three sentences same length in a row | Metronomic, robotic feel | Break one up or combine two |
 | Every paragraph ends with short punchy sentence | Predictable beat | Vary paragraph endings |
 | Em-dash before a reveal — [word] | Telegraphed payoff | Use period or comma, or rephrase |
+| Unspaced em-dash: "word—word" | AI default; humans usually write "word — word" with spaces, and use 2–3 per piece, not 20+ | Space them, and cut most |
+| "word — adj, adj, adj — word" cluster | Em-dash bracketing a tricolon = double tell | Rewrite as a plain sentence |
 | Paragraphs starting with "So," | Conversational filler | Start with content |
 | Sentences starting with "Look," | Confrontational filler | Remove and state the point |
 | Stacked short sentences | Exhausting fragmentation | Combine into one with appropriate clauses |
@@ -143,3 +161,52 @@ AI piles intensifiers to signal confidence.
 - deeply, truly, fundamentally, inherently, simply, literally, inevitably
 
 **Fix:** Remove. The claim is either true or it needs a different argument, not a stronger adverb.
+
+## Copula Avoidance
+
+A strong current tell (flagged in Wikipedia's "Signs of AI writing"): models dodge the plain verbs "is," "are," and "has," reaching instead for inflated substitutes that make ordinary facts sound momentous.
+
+| AI verb | Example | Fix |
+|---------|---------|-----|
+| serves as | "The cache serves as the backbone of the system." | "The cache stores every session." |
+| stands as | "It stands as a testament to good design." | Cut, or say what it does. |
+| represents | "This represents a major step forward." | "This ships 2x faster." |
+| boasts | "The app boasts a clean interface." | "The app has three screens." |
+| features | "The platform features real-time sync." | "The platform syncs in real time." |
+| marks (a shift) | "This marks a shift in how teams work." | State the actual change. |
+| is a testament to | "A testament to the team's effort." | Show the result instead. |
+
+**Fix:** Use "is" and "has." If the verb is doing rhetorical inflation rather than reporting an action, it's a tell.
+
+## Appended Participial Tail
+
+AI ends a sentence, then bolts on an "-ing" clause to simulate analytical depth. The tail almost always restates significance instead of adding a fact.
+
+- "The team shipped the redesign, highlighting their focus on usability."
+- "Adoption doubled, underscoring the demand for the feature."
+- "Regulations tightened, reflecting a broader industry shift."
+- "Revenue grew, contributing to a stronger market position."
+
+**Tell words in the tail:** highlighting, underscoring, reflecting, contributing to, signaling, demonstrating, emphasizing, marking.
+
+**Fix:** Stop at the fact, or make the tail carry new information. "Adoption doubled in six weeks" beats "Adoption doubled, underscoring the demand."
+
+## Invented Concept Labels
+
+AI coins an abstract compound — [domain word] + [problem noun] — and presents it as an established, defined term. One can be a useful coinage; several in one piece is a tell.
+
+- "the supervision paradox" / "the acceleration trap" / "workload creep"
+- "alignment vacuum" / "context collapse" / "the automation gap"
+
+**Fix:** Describe the actual phenomenon in plain words. If you genuinely need a label, define it once and earn it — don't sprinkle several.
+
+## False Range
+
+AI fakes comprehensiveness by spanning a fake spectrum. The range sounds inclusive but names nothing specific.
+
+- "from startups to enterprises"
+- "from X to Y" (when X and Y are just two ends picked for sweep)
+- "whether you're a solo dev or a Fortune 500"
+- "everyone from beginners to experts"
+
+**Fix:** Name the actual audience ("for teams of 5–50") or cut the range and make a concrete claim.

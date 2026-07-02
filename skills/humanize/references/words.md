@@ -29,6 +29,20 @@ These verbs sound like consultant-speak or corporate announcement language.
 - pivot (overused startup word)
 - scale (be specific: "grow the team" not "scale operations")
 
+### Copula substitutes (inflated stand-ins for "is" / "has")
+
+AI avoids plain "is/are/has" to sound weightier. When these verbs are doing the job of a copula, swap them back to "is" or "has", or replace with the real action verb.
+
+- serves as (say "is")
+- stands as (say "is", or cut)
+- represents (say "is")
+- boasts (say "has")
+- features (say "has", or name the action: "syncs", "exports")
+- offers / provides (often just "has" or "lets you")
+- marks / signals (a shift) (state the actual change)
+- is a testament to (show the result instead)
+- ventured into (say "started" or "added")
+
 ## Adjectives
 
 These modify nouns without adding information.
