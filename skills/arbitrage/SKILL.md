@@ -51,6 +51,20 @@ separate model to delegate judgment to.
    - The sandbox has **no network**. Anything that fetches at build time
      (Google fonts, installs, codegen) will fail inside codex even though it
      passes for you. That is expected — the spec's environment clause covers it.
+   - **If the task NEEDS external data, ship it offline.** Fetch the API
+     response/catalog/fixture yourself, save it into the workspace (e.g.
+     `SPEC-catalog-snapshot.json`), and spec an EXPLICIT override (env var or
+     flag) that reads the file — never a silent fallback. Codex develops and
+     tests against the snapshot; you re-verify live after review. A dispatch
+     whose acceptance requires live network is a wasted dispatch.
+   - **The project's bundler/build tool is sacrosanct.** Dev servers and some
+     bundlers (Next 16 Turbopack) bind a port, which the sandbox forbids —
+     builds then fail with `Operation not permitted`. Spec the fallback gate
+     explicitly: "gate on `tsc --noEmit` + lint and REPORT the port error."
+     Codex must never invoke or configure an alternative bundler (e.g.
+     `next build --webpack`) even as a probe: its errors are pure noise for a
+     Turbopack project, and 'fixing' them pollutes the diff. Treat any
+     bundler-switch in output or diff as a sandbox artifact to revert.
    - Go repos: the default build cache lives outside the workspace. Tell codex
      to use `GOCACHE=$PWD/.gocache` (and gitignore it) when the default is
      blocked.
@@ -106,6 +120,12 @@ bare idle notification instead of delivering their report:
 - In every background-agent prompt, end with: "Your final message is the
   deliverable — send the complete report; do not stop after an
   acknowledgment."
+- Stronger (belt and suspenders): also instruct "Before you finish or go
+  idle for any reason, SendMessage your complete report to `main`. An idle
+  notification is not a deliverable." Field data: even with the
+  final-message line, roughly half of researcher agents in a fan-out idle
+  without delivering; the explicit SendMessage instruction is what recovers
+  the other half without a nudge round-trip.
 - If an idle notification arrives without the report content, immediately
   SendMessage the agent: "Send your complete report to main now." One nudge
   recovers it; don't wait passively.
