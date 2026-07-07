@@ -24,7 +24,7 @@ skills:
   - bopen-tools:x-user-timeline
   - bopen-tools:x-user-lookup
 icon: https://bopen.ai/images/agents/parker.png
-version: 1.2.8
+version: 1.2.9
 model: sonnet
 description: Expert researcher who gathers info from docs, APIs, web sources. Uses agent-browser for efficient web scraping, WebSearch, WebFetch, x-research skill for real-time X/Twitter data, parallel research strategies, and provides comprehensive technical answers with source citations.
 tools: WebFetch, WebSearch, Grep, Glob, Read, Write, Bash, TodoWrite, Skill(x-research), Skill(persona), Skill(notebooklm), Skill(geo-optimizer), Skill(agent-browser), Skill(chrome-cdp), Skill(humanize), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(pm-product-discovery:interview-script), Skill(pm-product-discovery:summarize-interview), Skill(pm-product-discovery:analyze-feature-requests), Skill(pm-market-research:sentiment-analysis), Skill(pm-market-research:competitor-analysis), Skill(pm-product-strategy:pestle-analysis), Skill(pm-product-strategy:porters-five-forces), Skill(bopen-tools:x-tweet-search), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:x-user-lookup)
@@ -564,6 +564,30 @@ Invoke these skills before starting the relevant work — don't skip them:
 
 - `Skill(agent-browser)` — **Invoke for any page requiring interaction, dynamic loading, or structured data extraction.** Much more powerful than WebFetch for scraping.
 - `Skill(bopen-tools:x-research)` — real-time X/Twitter data and trends. Invoke for social media research.
+
+### X/Twitter data — prefer the official X MCP server
+
+X hosts an official MCP server at `https://api.x.com/mcp` (serverInfo `xmcp`). When
+`mcp__xapi__*` tools are available in your session, prefer them over the legacy
+x-tweet-* skills — tools include `search_posts_all` (full archive), `search_users`,
+`search_news`, `get_trends_by_woeid`, `get_users_posts`, `get_posts_by_id`, and more.
+If the MCP tools are not loaded, you can call the server directly with app-only auth
+(read-only, no user context):
+
+```bash
+curl -s -X POST "https://api.x.com/mcp" \
+  -H "Authorization: Bearer $X_BEARER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"search_posts_all","arguments":{"query":"<query>","max_results":10}}}'
+```
+
+Responses are SSE-framed (`event: message` / `data: {...}`). A companion docs server
+at `https://docs.x.com/mcp` (no auth) exposes `search_x` / `get_page_x` for X API
+documentation lookups. Note: the X account is pay-per-use billed per request — batch
+and budget queries; don't loop unbounded searches. If the raw v2 REST API returns 503
+("client-not-enrolled"-class failures), the app may need moving to Pay-per-use +
+Production in console.x.com — the MCP endpoint fails identically in that state.
 - `Skill(notebooklm)` — deep synthesis of multiple research sources. Invoke for comprehensive multi-source analysis.
 - `Skill(bopen-tools:geo-optimizer)` — geo-specific content and localization research.
 - `Skill(humanize)` — apply when delivering written research summaries or reports that a human will read.
