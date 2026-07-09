@@ -102,9 +102,13 @@ grok --prompt-file "$PROMPT_FILE" -m grok-4.5 --permission-mode acceptEdits \
   natively. `--best-of-n <N>` (headless) races N attempts *within* the lane
   and picks the best — in-lane redundancy; cross-vendor racing (below)
   remains the stronger diversity play.
-- Wrap dispatches in a timeout (`timeout`/`gtimeout` where available) so a
-  hung lane returns a status instead of stalling the barrier. If a flag
-  misbehaves, re-check `grok --help`.
+- Wrap dispatches in a timeout so a hung lane returns a status instead of
+  stalling the barrier — but **verify the binary during lane preflight**:
+  `command -v gtimeout || command -v timeout`. Stock macOS ships NEITHER
+  (both come with coreutils); a blind `gtimeout ... grok ...` dies with
+  exit 127 before the worker ever starts, and the failure reads like a lane
+  failure. No timeout binary? Dispatch unwrapped and rely on background-job
+  monitoring. If a flag misbehaves, re-check `grok --help`.
 
 Claude subagent workers get a fully self-contained prompt: they have no
 conversation history. Include the spec content (or its path), acceptance
