@@ -16,6 +16,11 @@ returns guidance, and the work continues here. If the plan is to have the
 premium model *do* the work, that is the `coordinator` skill's seat, not
 this one.
 
+The advisor's value is only partly the stronger model: a consult also
+arrives **context-clean**, free of this session's accumulated assumptions.
+That's why a consult can pay even between equal tiers — and why every
+consult package must stand alone.
+
 ## Choosing the Advisor Channel
 
 Two channels. Detect what exists before picking; never assume.
@@ -24,6 +29,7 @@ Two channels. Detect what exists before picking; never assume.
 |---------|-------------|-------------|
 | **codex as advisor** | Dispatch a read-only consult to codex (plugin or CLI) | A codex quota exists — subscription capacity is usually the cheapest premium intelligence available |
 | **Native advisor tool** | Claude Code's built-in advisor (`/advisor`, `advisorModel` setting, `--advisor` flag): the executor consults a stronger Claude model mid-turn, server-side | The advisor should be a Claude model and the account has capacity for it |
+| **Premium Claude subagent** | Spawn a read-only `Agent` (Read/Grep/Glob only) pinned to a stronger Claude model; it inspects the repo fresh and returns a verdict | The advisor should be Claude AND the question needs repo inspection the transcript doesn't carry |
 
 Passive detection, in order:
 
@@ -59,6 +65,19 @@ subscription capacity, which defeats the economics this skill exists for.
 - Advisor usage is billed/metered at the advisor model's own rates and counts
   against plan limits — a consult is never free. Budget accordingly.
 
+### Premium-subagent notes
+
+- Pin the model on the `Agent` call and keep the toolset read-only — the
+  advisor advises; it must not edit.
+- **Silent-downgrade footgun:** when a pinned Claude model isn't available
+  to the account, the subagent silently falls back to the session's model —
+  the "advisor" becomes the executor consulting itself, and nothing errors.
+  Require the advisor to state which model it is running as the first line
+  of its reply; treat a session-tier answer as no consult and switch
+  channels.
+- It does not see this conversation — package the consult fully (see below).
+  Like codex, it can read the repo, which the native advisor cannot.
+
 ### codex-as-advisor notes
 
 - **Read-only is correct here.** Never add write flags to a consult — the
@@ -76,12 +95,24 @@ subscription capacity, which defeats the economics this skill exists for.
   advisory thread that keeps context across consults is markedly better for
   follow-ups than a cold start each time.
 - Demand structure or risk silence — an uninstructed codex run can return
-  nothing. End every consult prompt with (verbatim or close):
-  > Reply with: (1) your recommendation, (2) the key reason, (3) the biggest
-  > risk with my current approach, (4) what you would check first. Keep it
-  > under 200 words unless the architecture demands more.
+  nothing. Use the advice contract below in every consult prompt.
+
+### The advice contract (all channels)
+
+End every consult prompt with (verbatim or close):
+
+> Give a verdict, not a survey: "do X, not Y, because Z" plus the single
+> risk that decides it. If the plan is sound, say so in one line — do not
+> manufacture objections to justify the consult. If missing information
+> would change the answer, name it precisely and say what each answer would
+> imply. Keep it under 200 words unless the architecture genuinely demands
+> more.
 
 ## When to Consult
+
+Consults happen at **commitment boundaries** — the decisions that determine
+whether the next hour of work is wasted: an architecture choice, a data
+migration, an API shape, a refactor strategy.
 
 Consult **before substantive work, not after**. Orientation — finding files,
 reading code, reproducing the bug — is not substantive work; do that first so
@@ -95,8 +126,10 @@ interpretation are substantive.
   Make the deliverable durable *first* (write the file, save the result): a
   consult takes time, and a durable result survives an interrupted session
   where an unwritten one doesn't.
-- **When stuck** — errors recurring, approach not converging, results that
-  don't fit the mental model.
+- **When the same problem has resisted two distinct attempts** — a third
+  attempt without new judgment is usually the first attempt again. Also when
+  stuck more generally: errors recurring, approach not converging, results
+  that don't fit the mental model.
 - **Before changing approach** — the consult is cheaper than the rewrite.
 
 Do NOT consult for mechanical steps, trivially verifiable facts, or anything
@@ -105,7 +138,7 @@ every turn has inverted the economics — and one that never consults on a
 hard task has wasted the safety net. A few consults per task, each at a real
 decision point, is the shape to aim for.
 
-## Packaging a Consult (codex channel)
+## Packaging a Consult (codex and premium-subagent channels)
 
 The advisor only knows what the consult carries. Include:
 
@@ -115,12 +148,13 @@ The advisor only knows what the consult carries. Include:
 4. **Evidence** — the failing output, the relevant snippet, or file paths
    for codex to read.
 5. **The question** — one specific decision to advise on, not "thoughts?".
-6. The structured-reply demand from the notes above.
+6. The advice contract from above.
 
 ## Weighing the Advice
 
-- Give the advice serious weight — the advisor is the stronger model, and it
-  was consulted for a reason.
+- **Act on the verdict or surface the disagreement — never silently ignore
+  it.** Give the advice serious weight: the advisor is the stronger model,
+  and it was consulted for a reason.
 - If a recommended step **fails empirically**, or primary evidence
   contradicts a specific claim (the file says X, the advisor assumed Y),
   adapt — but don't silently switch. Surface the conflict in one reconcile
