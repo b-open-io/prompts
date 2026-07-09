@@ -13,7 +13,6 @@ STEP 1: Go to the X Developer Portal
         https://developer.x.com/en/portal/dashboard
 
 STEP 2: Click the 🔑 key icon next to your existing app
-        (Free tier only allows 1 app - use your existing one)
 
 STEP 3: Scroll to "Bearer Token" section and click "Regenerate"
         Copy the token (starts with "AAAA...")
@@ -25,7 +24,7 @@ STEP 4: Add to your shell profile:
         source ~/.zshrc
 
 ────────────────────────────────────────────────────────────────────
-NO APP YET? (Free tier = 1 app only)
+NO APP YET?
 
 1. Left sidebar → "Projects & Apps"
 2. Click "+ Add App" under your project
@@ -34,10 +33,11 @@ NO APP YET? (Free tier = 1 app only)
 5. Scroll to "Bearer Token" → Generate
 
 ────────────────────────────────────────────────────────────────────
-FREE TIER LIMITS:
-• 1 app per project (can't create more)
-• 1,500 tweets per month
-• 10 requests per 15 minutes
+PRICING AND RATE LIMITS:
+• X API access is pay-per-use; review pricing before running bulk queries
+• Endpoint limits vary; read the rate-limit response headers
+• Do not assume an app-count, monthly-post, or requests-per-window quota
 
-Docs: https://developer.x.com/en/docs/x-api
+Pricing: https://docs.x.com/x-api/getting-started/pricing
+Rate limits: https://docs.x.com/x-api/fundamentals/rate-limits
 EOF

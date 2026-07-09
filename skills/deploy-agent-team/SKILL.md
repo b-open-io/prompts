@@ -1,6 +1,6 @@
 ---
 name: deploy-agent-team
-version: 1.0.1
+version: 1.0.2
 description: This skill should be used when the user says "deploy a team", "spin up agents to work on this", "use all our agents", "coordinate specialists", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full bopen-tools specialist roster.
 disable-model-invocation: true
 ---
@@ -28,23 +28,20 @@ Add to `~/.claude/settings.json`:
 
 Without this, `TeamCreate` will fail.
 
-## Critical: Set `mode` on Every Agent Spawn
+## Critical: Configure Permissions Before Spawning
 
-> **WARNING**: The default permission mode **will block teammates** waiting for permission prompts that never arrive, stalling the whole team.
+Start from the lead session's permission settings and inspect the installed
+`Agent` tool schema before spawning. Current builds can accept a per-spawn
+`mode`; use a safe non-interactive mode such as `dontAsk`/`auto` with narrow
+allow rules when available. If the host does not expose that field, the teammate
+inherits the lead. Permission requests may bubble up to the lead.
 
-Always set `mode: "bypassPermissions"` when spawning teammates:
+Do not launch the lead with `--dangerously-skip-permissions` merely to avoid team
+prompts. Reserve that mode for an explicitly trusted, externally sandboxed
+environment.
 
-```
-Agent(
-  subagent_type: "bopen-tools:designer",
-  team_name: "feature-billing",
-  name: "designer",
-  mode: "bypassPermissions",   # ← REQUIRED
-  prompt: "..."
-)
-```
-
-See `references/permissions-and-isolation.md` for all mode options and worktree isolation.
+See `references/permissions-and-isolation.md` for the permission and file-ownership
+model.
 
 ## Available Agent Roster (Abbreviated)
 
@@ -64,7 +61,7 @@ See `references/permissions-and-isolation.md` for all mode options and worktree 
 | **architecture-reviewer** | `bopen-tools:architecture-reviewer` | System design, refactoring strategy, tech debt |
 | **mobile** | `bopen-tools:mobile` | React Native, Swift, Kotlin, Flutter |
 | **payments** | `bopen-tools:payments` | Stripe, billing, financial transactions |
-| **marketer** | `bopen-tools:marketer` | CRO, SEO, copy, launch strategy |
+| **marketer** | `product-skills:marketer` | CRO, SEO, copy, launch strategy |
 | **legal** | `product-skills:legal` | Privacy, compliance, ToS |
 | **mcp** | `bopen-tools:mcp` | MCP server setup, config, diagnostics |
 
@@ -122,9 +119,8 @@ TaskUpdate(taskId: "3", addBlockedBy: ["2"])  # tests wait for Stripe impl
 ```
 Agent(
   subagent_type: "bopen-tools:designer",
-  team_name: "feature-billing",
   name: "designer",
-  mode: "bypassPermissions",
+  mode: "dontAsk",
   prompt: "..."  # see references/spawn-prompt-guide.md
 )
 ```
@@ -200,7 +196,7 @@ Blocked until all above complete:
 
 ## Key Rules
 
-- **`mode: "bypassPermissions"`** on every Agent spawn or teammates block
+- **Use the safest effective permission mode**: pre-approve only the operations teammates need; never default to bypass
 - **Self-contained prompts**: teammates get zero conversation history — include repo path, conventions, and full context
 - **Mention agent skills in spawn prompts** — each agent has specialized skills; tell them which to use
 - **One task at a time**: claim → complete → claim next. No parallel hoarding
@@ -215,7 +211,7 @@ Blocked until all above complete:
 | Problem | Fix |
 |---------|-----|
 | `TeamCreate` fails | Check `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set |
-| Teammate blocks/stalls | Missing `mode: "bypassPermissions"` — always set this |
+| Teammate hits permission prompts | Pre-approve the specific safe operation in the lead's settings, then retry |
 | Teammate not claiming tasks | Check `blockedBy` deps with `TaskGet` |
 | Teammate idle and unresponsive | Send a direct `SendMessage` — idle agents wake on receipt |
 | `TeamDelete` fails | Teammates still running. Send `shutdown_request` to each |
@@ -223,6 +219,6 @@ Blocked until all above complete:
 
 ## References
 
-- `references/permissions-and-isolation.md` — `mode` parameter options, worktree isolation for parallel edits
+- `references/permissions-and-isolation.md` — inherited permissions and safe file partitioning
 - `references/agent-roster.md` — full roster table + which skills to mention per agent in spawn prompts
 - `references/spawn-prompt-guide.md` — complete spawn prompt template with skills section

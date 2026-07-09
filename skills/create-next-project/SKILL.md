@@ -1,7 +1,7 @@
 ---
 name: create-next-project
 description: This skill should be used when the user asks to "create a new project", "scaffold a Next.js app", "initialize a new app", "start a new project", "set up a new Next.js project", or mentions "create-next-project". Provides a guided, opinionated full-stack Next.js project initialization with Biome, Tailwind v4, shadcn/ui, better-auth, and Vercel deployment. Uses agent teams for parallel execution.
-version: 2.0.0
+version: 2.0.1
 ---
 
 # Create Next.js Project
@@ -149,7 +149,7 @@ Record all answers -- they inform the research agents and build team.
 
 ## Step 3: Dispatch Research Agents
 
-Send **parallel research agents** (using the Task tool with `run_in_background: true`) to gather context for each build workstream. Each agent reads relevant source code, docs, or skills so the build agents have everything they need.
+Send **parallel research agents** (using the Agent tool with `run_in_background: true`) to gather context for each build workstream. Each agent reads relevant source code, docs, or skills so the build agents have everything they need.
 
 ### Agent assignments (run simultaneously):
 

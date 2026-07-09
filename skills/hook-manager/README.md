@@ -130,7 +130,7 @@ Shows git status when the agent finishes responding if there are uncommitted cha
 
 ### auto-git-add
 
-Automatically runs `git add -A` after Write/Edit/MultiEdit operations.
+Automatically runs `git add -A` after Write/Edit operations.
 
 - Only stages changes, never commits
 - 5 second timeout

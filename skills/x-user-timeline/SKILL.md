@@ -1,8 +1,8 @@
 ---
 name: x-user-timeline
-version: 1.0.0
+version: 1.0.1
 description: Get recent tweets from an X/Twitter user. Use when user asks "what has @username posted", "recent tweets from", "user's X posts", "show timeline for", "what is @user saying". Requires X_BEARER_TOKEN.
-allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_PLUGIN_ROOT}:*)
+allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_SKILL_DIR}:*)
 ---
 
 # X User Timeline
@@ -18,17 +18,17 @@ export X_BEARER_TOKEN="your-token"  # https://developer.x.com/en/portal/dashboar
 ## Usage
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/scripts/timeline.sh <username> [max_results]
+${CLAUDE_SKILL_DIR}/scripts/timeline.sh <username> [max_results]
 ```
 
 ## Examples
 
 ```bash
 # Get 10 recent tweets (default)
-${CLAUDE_PLUGIN_ROOT}/scripts/timeline.sh kurtwuckertjr
+${CLAUDE_SKILL_DIR}/scripts/timeline.sh kurtwuckertjr
 
 # Get 25 tweets
-${CLAUDE_PLUGIN_ROOT}/scripts/timeline.sh kurtwuckertjr 25
+${CLAUDE_SKILL_DIR}/scripts/timeline.sh kurtwuckertjr 25
 ```
 
 ## Response Fields
@@ -38,9 +38,11 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/timeline.sh kurtwuckertjr 25
 - `public_metrics` - Likes, retweets, replies, views
 - `author` - User info (expanded)
 
-## Rate Limits
+## Pricing and Rate Limits
 
-Free tier: 1,500 tweets/month, 10 requests per 15 minutes
+X API access is pay-per-use. Read the endpoint's rate-limit response headers and
+consult the current X API pricing and rate-limit documentation instead of
+assuming a fixed free-tier quota.
 
 ## References
 

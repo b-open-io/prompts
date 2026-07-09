@@ -1,6 +1,6 @@
 ---
 name: npm-publish
-version: 3.1.0
+version: 3.1.1
 description: This skill should be used when the user wants to publish a package to npm, bump a version, release a new version, or mentions "npm publish", "bun publish", "version bump", or "release to npm". Handles version bumping, changelog updates, git push, npm publishing, and automatic token rotation via agent-browser when auth expires. Do not trigger for unrelated uses of "release" (e.g. GitHub releases, press releases).
 allowed-tools: Bash(agent-browser:*), Bash(npm:*), Bash(bun:*), Bash(git:*), Bash(pbpaste:*), Bash(pbcopy:*), Bash(chmod:*), Bash(bash:*), Bash(grep:*), Bash(sed:*), Bash(sleep:*)
 ---
@@ -18,7 +18,7 @@ allowed-tools: Bash(agent-browser:*), Bash(npm:*), Bash(bun:*), Bash(git:*), Bas
 ## Step 1: Preflight
 
 ```bash
-bash ${SKILL_DIR}/scripts/preflight.sh
+bash ${CLAUDE_SKILL_DIR}/scripts/preflight.sh
 ```
 
 Handles deterministically: version check against npm registry, bump if needed (resets gaps), build, commit log output. Pass `minor` or `major` to override default patch bump.
@@ -30,7 +30,7 @@ Read the commit log from preflight output. If CHANGELOG.md exists, add entry at 
 ## Step 3: Release (commit + push + publish)
 
 ```bash
-bash ${SKILL_DIR}/scripts/release.sh [--access public]
+bash ${CLAUDE_SKILL_DIR}/scripts/release.sh [--access public]
 ```
 
 Commits, pushes, then calls publish.sh. If publish.sh outputs `PUBLISH_SUCCESS` — done, go to Step 4.
@@ -42,7 +42,7 @@ The agent must orchestrate token setup. **Do NOT call setup-token.sh as one long
 **Phase 1 — Fill the form:**
 
 ```bash
-bash ${SKILL_DIR}/scripts/setup-token.sh fill
+bash ${CLAUDE_SKILL_DIR}/scripts/setup-token.sh fill
 ```
 
 Status codes:
@@ -57,7 +57,7 @@ After getting `FORM_READY`, **tell the user directly** (not inside a bash comman
 **Phase 2 — Capture the token:**
 
 ```bash
-bash ${SKILL_DIR}/scripts/setup-token.sh capture
+bash ${CLAUDE_SKILL_DIR}/scripts/setup-token.sh capture
 ```
 
 This polls until the token appears on the page, clicks the Copy button, reads from clipboard, writes to `~/.npmrc`, and clears clipboard. The token never appears in terminal output.
@@ -69,7 +69,7 @@ Status codes:
 **After TOKEN_SAVED, retry publish:**
 
 ```bash
-bash ${SKILL_DIR}/scripts/publish.sh [--access public]
+bash ${CLAUDE_SKILL_DIR}/scripts/publish.sh [--access public]
 ```
 
 Tell user: "Complete the OTP checkbox in your browser if prompted."
@@ -77,7 +77,7 @@ Tell user: "Complete the OTP checkbox in your browser if prompted."
 ## Step 4: Verify (background)
 
 ```bash
-bash ${SKILL_DIR}/scripts/verify.sh <package-name> <version>
+bash ${CLAUDE_SKILL_DIR}/scripts/verify.sh <package-name> <version>
 ```
 
 Run with `run_in_background: true`. Exponential backoff (5s, 10s, 20s, 40s, 60s).

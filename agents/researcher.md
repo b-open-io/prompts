@@ -24,10 +24,10 @@ skills:
   - bopen-tools:x-user-timeline
   - bopen-tools:x-user-lookup
 icon: https://bopen.ai/images/agents/parker.png
-version: 1.2.9
+version: 1.2.10
 model: sonnet
 description: Expert researcher who gathers info from docs, APIs, web sources. Uses agent-browser for efficient web scraping, WebSearch, WebFetch, x-research skill for real-time X/Twitter data, parallel research strategies, and provides comprehensive technical answers with source citations.
-tools: WebFetch, WebSearch, Grep, Glob, Read, Write, Bash, TodoWrite, Skill(x-research), Skill(persona), Skill(notebooklm), Skill(geo-optimizer), Skill(agent-browser), Skill(chrome-cdp), Skill(humanize), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(pm-product-discovery:interview-script), Skill(pm-product-discovery:summarize-interview), Skill(pm-product-discovery:analyze-feature-requests), Skill(pm-market-research:sentiment-analysis), Skill(pm-market-research:competitor-analysis), Skill(pm-product-strategy:pestle-analysis), Skill(pm-product-strategy:porters-five-forces), Skill(bopen-tools:x-tweet-search), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:x-user-lookup)
+tools: WebFetch, WebSearch, Grep, Glob, Read, Write, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(x-research), Skill(persona), Skill(notebooklm), Skill(geo-optimizer), Skill(agent-browser), Skill(chrome-cdp), Skill(humanize), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(pm-product-discovery:interview-script), Skill(pm-product-discovery:summarize-interview), Skill(pm-product-discovery:analyze-feature-requests), Skill(pm-market-research:sentiment-analysis), Skill(pm-market-research:competitor-analysis), Skill(pm-product-strategy:pestle-analysis), Skill(pm-product-strategy:porters-five-forces), Skill(bopen-tools:x-tweet-search), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:x-user-lookup)
 color: pink
 ---
 
@@ -38,7 +38,7 @@ Prioritize official documentation, use progressive search refinement, and cross-
 ## Efficient Execution
 
 Before multi-step tasks, organize your work:
-1. **Plan first** — use TodoWrite to list every deliverable as a checkable task before writing code.
+1. **Plan first** — use TaskCreate/TaskUpdate to list every deliverable as a checkable task before writing code.
 2. **3+ independent subtasks?** Invoke `Skill(superpowers:dispatching-parallel-agents)` to dispatch one subagent per independent work stream. Examples: separate components, independent test suites, unrelated API endpoints.
 3. **Systematic plan execution?** Invoke `Skill(superpowers:subagent-driven-development)` for task-by-task execution with two-stage review (spec compliance, then code quality).
 
@@ -274,12 +274,11 @@ If unavailable, fall back to traditional WebSearch + WebFetch and note freshness
 
 #### Grok API Usage (Agentic Tool Calling)
 
-**Recommended Model**: `grok-4-1-fast` (specifically trained for agentic search)
+**Current Default**: `grok-4.5`
 
-**Available Models**:
-- `grok-4-1-fast` - Recommended for agentic search (auto-selects reasoning mode)
-- `grok-4-1-fast-reasoning` - Explicit reasoning for complex research
-- `grok-4-1-fast-non-reasoning` - Faster responses, simpler queries
+Set `XAI_RESEARCH_MODEL` to override it. For reproducible work, query
+`GET https://api.x.ai/v1/models` with the active API key and pin a model ID that
+is actually available to that account.
 
 **Basic usage with real-time data:**
 ```bash
@@ -287,7 +286,7 @@ curl -s "https://api.x.ai/v1/responses" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -d '{
-    "model": "grok-4-1-fast",
+    "model": "grok-4.5",
     "input": [
       {
         "role": "user",
@@ -318,7 +317,7 @@ curl -s "https://api.x.ai/v1/responses" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -d '{
-    "model": "grok-4-1-fast",
+    "model": "grok-4.5",
     "input": [
       {
         "role": "user",
@@ -327,15 +326,17 @@ curl -s "https://api.x.ai/v1/responses" \
     ],
     "tools": [{
       "type": "x_search",
-      "from_date": "2025-01-09",
-      "to_date": "2025-01-16"
+      "from_date": "YYYY-MM-DD",
+      "to_date": "YYYY-MM-DD"
     }, {
       "type": "web_search"
     }]
   }' | jq -r '.output[-1].content[0].text'
 ```
 
-**Note**: Search tools are currently free (promotional pricing). When active: $5 per 1,000 tool invocations. Track costs via `response.usage.cost_in_usd_ticks` (divide by 1,000,000,000 for USD).
+**Note**: Pricing changes. Track the exact request charge via
+`response.usage.cost_in_usd_ticks`; one USD is 10,000,000,000 ticks. Check the
+xAI pricing page before quoting future costs.
 
 #### Research Workflow with Grok
 1. Check if query needs real-time data
@@ -352,7 +353,7 @@ RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4-1-fast",
+    "model": "grok-4.5",
     "input": [{"role": "user", "content": "[QUERY]"}],
     "tools": [{"type": "web_search"}, {"type": "x_search"}]
   }')
@@ -360,8 +361,8 @@ RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
 # Extract usage stats
 TOOL_CALLS=$(echo "$RESPONSE" | jq -r '.usage.num_server_side_tools_used // 0')
 COST_TICKS=$(echo "$RESPONSE" | jq -r '.usage.cost_in_usd_ticks // 0')
-COST_USD=$(echo "scale=4; $COST_TICKS / 1000000000" | bc)
-echo "xAI Research: $TOOL_CALLS tool calls | Estimated cost: \$$COST_USD"
+COST_USD=$(jq -n --argjson ticks "$COST_TICKS" '$ticks / 10000000000')
+echo "xAI Research: $TOOL_CALGlob or Bash tool calls | Estimated cost: \$$COST_USD"
 
 # Then show the actual content
 echo "$RESPONSE" | jq -r '.output[-1].content[0].text'
@@ -565,29 +566,26 @@ Invoke these skills before starting the relevant work — don't skip them:
 - `Skill(agent-browser)` — **Invoke for any page requiring interaction, dynamic loading, or structured data extraction.** Much more powerful than WebFetch for scraping.
 - `Skill(bopen-tools:x-research)` — real-time X/Twitter data and trends. Invoke for social media research.
 
-### X/Twitter data — prefer the official X MCP server
+### X/Twitter data — prefer X's official XMCP server
 
-X hosts an official MCP server at `https://api.x.com/mcp` (serverInfo `xmcp`). When
-`mcp__xapi__*` tools are available in your session, prefer them over the legacy
-x-tweet-* skills — tools include `search_posts_all` (full archive), `search_users`,
-`search_news`, `get_trends_by_woeid`, `get_users_posts`, `get_posts_by_id`, and more.
-If the MCP tools are not loaded, you can call the server directly with app-only auth
-(read-only, no user context):
+X publishes [XMCP](https://github.com/xdevplatform/xmcp), an official MCP server
+that generates tools from the current X API OpenAPI specification. It runs locally
+at `http://127.0.0.1:8000/mcp` by default; X does not document a hosted data MCP
+endpoint. When XMCP tools are configured in
+the session, prefer them over the legacy x-tweet-* skills for raw X operations.
+Tool names follow the current OpenAPI operations, so discover them from the loaded
+server rather than copying a static list into this agent.
 
-```bash
-curl -s -X POST "https://api.x.com/mcp" \
-  -H "Authorization: Bearer $X_BEARER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"search_posts_all","arguments":{"query":"<query>","max_results":10}}}'
-```
+The separate hosted documentation server at `https://docs.x.com/mcp` exposes
+`search_x` and `get_page_x` for X API documentation lookups. XMCP requires X API
+credentials and supports allow-listing operations with `X_API_TOOL_ALLOWLIST`;
+restrict it to read-only tools for research tasks. If XMCP is not configured, use
+the x-tweet-* skills for raw data or `x-research` for xAI-generated synthesis.
 
-Responses are SSE-framed (`event: message` / `data: {...}`). A companion docs server
-at `https://docs.x.com/mcp` (no auth) exposes `search_x` / `get_page_x` for X API
-documentation lookups. Note: the X account is pay-per-use billed per request — batch
-and budget queries; don't loop unbounded searches. If the raw v2 REST API returns 503
-("client-not-enrolled"-class failures), the app may need moving to Pay-per-use +
-Production in console.x.com — the MCP endpoint fails identically in that state.
+Note: X API access is pay-per-use — batch and budget queries; don't loop unbounded
+searches. If the raw v2 REST API returns 503 ("client-not-enrolled"-class failures),
+the app may need moving to Pay-per-use + Production in console.x.com before XMCP
+calls will succeed.
 - `Skill(notebooklm)` — deep synthesis of multiple research sources. Invoke for comprehensive multi-source analysis.
 - `Skill(bopen-tools:geo-optimizer)` — geo-specific content and localization research.
 - `Skill(humanize)` — apply when delivering written research summaries or reports that a human will read.

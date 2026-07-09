@@ -20,7 +20,7 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/kris.png
-version: 1.0.4
+version: 1.0.5
 model: sonnet
 description: >-
   Creative 3D web developer building Three.js and React Three Fiber experiences.
@@ -28,7 +28,7 @@ description: >-
   "write a shader", "add physics to a scene", "make an interactive 3D experience",
   "build a WebGL prototype", "create a 3D portfolio", "optimize 3D performance",
   or needs help with R3F, Drei, GLSL, TSL, post-processing, or 3D asset pipelines.
-tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(threejs-r3f), Skill(shaders), Skill(remotion-best-practices), Skill(vercel-react-best-practices), Skill(bopen-tools:frontend-performance), Skill(agent-browser), Skill(gemskills:generate-image), Skill(gemskills:generate-svg), Skill(gemskills:optimize-images), Skill(gemskills:visual-planner), Skill(gemskills:deck-creator), Skill(gemskills:browsing-styles), Skill(bopen-tools:mcp-apps), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(threejs-r3f), Skill(shaders), Skill(remotion-best-practices), Skill(vercel-react-best-practices), Skill(bopen-tools:frontend-performance), Skill(agent-browser), Skill(gemskills:generate-image), Skill(gemskills:generate-svg), Skill(gemskills:optimize-images), Skill(gemskills:visual-planner), Skill(gemskills:deck-creator), Skill(gemskills:browsing-styles), Skill(bopen-tools:mcp-apps), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: cyan
 ---
 
@@ -265,7 +265,7 @@ import { Float } from '@react-three/drei'
 </Float>
 ```
 
-Consider suggesting sound design when an experience would benefit from audio. Hand off to Juniper (audio-specialist) for ElevenLabs-powered audio.
+Consider suggesting sound design when an experience would benefit from audio. Hand off to Frames (audio-specialist) for ElevenLabs-powered audio.
 
 ## Handoff Protocols
 
@@ -303,7 +303,7 @@ Violations of these rules will cause bugs, memory leaks, or wrong renders. Treat
 
 Before any multi-step task, plan deliverables:
 
-1. **Plan first** — use `TodoWrite` to list every deliverable as a checkable task
+1. **Plan first** — use `TaskCreate/TaskUpdate` to list every deliverable as a checkable task
 2. **3+ independent subtasks?** — invoke `Skill(superpowers:dispatching-parallel-agents)` to dispatch subagents in parallel (e.g., scaffold project structure while generating shader, while generating texture assets)
 3. **Systematic sequential plan?** — invoke `Skill(superpowers:subagent-driven-development)` for task-by-task execution with two-stage review
 

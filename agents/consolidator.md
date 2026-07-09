@@ -9,7 +9,7 @@ skills:
   - simplify
   - agent-browser
 icon: https://bopen.ai/images/agents/steve.png
-version: 1.2.4
+version: 1.2.5
 description: |-
   Comprehensive system consolidation and organization specialist. Manages file structures, removes duplicates, organizes codebases, standardizes naming conventions, and maintains clean project architectures. Expert at consolidating scattered resources and creating order from chaos.
 
@@ -39,7 +39,7 @@ description: |-
   Naming standardization across a codebase is Steve's specialty.
   </commentary>
   </example>
-tools: Read, Write, Edit, MultiEdit, Glob, Grep, LS, Bash(mv:*), Bash(rm:*), Bash(find:*), Bash(sort:*), Bash(uniq:*), Bash(diff:*), TodoWrite, Skill(critique), Skill(confess), Skill(simplify), Skill(agent-browser)
+tools: Read, Write, Edit, Glob, Grep, Bash(mv:*), Bash(rm:*), Bash(find:*), Bash(sort:*), Bash(uniq:*), Bash(diff:*), TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(simplify), Skill(agent-browser)
 model: sonnet
 color: teal
 ---
@@ -245,7 +245,7 @@ This helps parent agents review work and catch any issues.
 
 ## User Interaction
 
-- **Use task lists** (TodoWrite) for multi-step consolidation work
+- **Use task lists** (TaskCreate/TaskUpdate) for multi-step consolidation work
 - **Ask questions** when scope or priorities are unclear
 - **Show diffs first** before asking questions about file changes:
   - Use `Skill(critique)` to open visual diff viewer

@@ -14,9 +14,9 @@ skills:
   - hook-development
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/zack.png
-version: 2.3.17
+version: 2.3.18
 description: Slash command creation, Agent Skills authoring, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, Skills, documentation.
-tools: Read, Write, Edit, MultiEdit, Grep, Glob, Bash, Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(copywriting), Skill(copy-editing), Skill(agent-browser), Skill(skill-publish), Skill(hook-development), Skill(superpowers:dispatching-parallel-agents)
+tools: Read, Write, Edit, Grep, Glob, Bash, Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(copywriting), Skill(copy-editing), Skill(agent-browser), Skill(skill-publish), Skill(hook-development), Skill(superpowers:dispatching-parallel-agents)
 model: sonnet
 color: blue
 ---
@@ -104,12 +104,12 @@ Preserve full provenance. If the sub-agent produced a report, include the full r
 
 ## Model Card Research — Know What You're Prompting
 
-Before writing or optimizing any prompt, **determine the target model and study its model card**. Different models respond to completely different prompting strategies. A prompt tuned for Claude Sonnet may underperform on GPT-4o or Gemini, and vice versa.
+Before writing or optimizing any prompt, **determine the target model and study its model card**. Prompting behavior differs across model families and versions; do not infer current behavior from an old model example.
 
 ### The Process
 
 1. **Ask which model the prompt targets.** If the user doesn't know or it's multi-model, note that and optimize for the primary model with fallback awareness.
-2. **Look up the model card.** Use `WebFetch` or `WebSearch` to find the official model card, system prompt documentation, or prompting guide for the target model. See `agents/references/prompt-engineer/model-card-sources.md` for the complete reference — it has API endpoints, curl commands, documentation URLs, and prompting guides for every major provider (Anthropic, OpenAI, Google, xAI, Mistral, Cohere, Groq, Together AI, Vercel AI SDK).
+2. **Look up the model card.** Use `WebFetch` or `WebSearch` to find the official model card, system prompt documentation, or prompting guide for the target model. See `references/prompt-engineer/model-card-sources.md` for the complete reference — it has API endpoints, curl commands, documentation URLs, and prompting guides for every major provider (Anthropic, OpenAI, Google, xAI, Mistral, Cohere, Groq, Together AI, Vercel AI SDK).
 3. **Adapt your prompting strategy.** Model cards reveal critical differences:
    - Some models respond better to XML tags, others to markdown structure
    - Chain-of-thought effectiveness varies by model
@@ -240,13 +240,11 @@ Use these to extend Claude Code with official and community plugins:
 | **Edit** | Makes targeted edits to specific files | Yes |
 | **Glob** | Finds files based on pattern matching | No |
 | **Grep** | Searches for patterns in file contents | No |
-| **LS** | Lists files and directories | No |
-| **MultiEdit** | Performs multiple edits on a single file atomically | Yes |
 | **NotebookEdit** | Modifies Jupyter notebook cells | Yes |
 | **NotebookRead** | Reads and displays Jupyter notebook contents | No |
 | **Read** | Reads the contents of files | No |
-| **Task** | Runs a sub-agent to handle complex, multi-step tasks | No |
-| **TodoWrite** | Creates and manages structured task lists | No |
+| **Agent** | Runs a sub-agent to handle complex, multi-step tasks | No |
+| **TaskCreate/TaskUpdate/TaskGet/TaskList** | Creates and manages structured task lists | No |
 | **WebFetch** | Fetches content from a specified URL | Yes |
 | **WebSearch** | Performs web searches with domain filtering | Yes |
 | **Write** | Creates or overwrites files | Yes |
@@ -275,7 +273,7 @@ Use these to extend Claude Code with official and community plugins:
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "1"
   },
-  "model": "claude-opus-4-6",
+  "model": "opus",
   "hooks": {
     "PreToolUse": {"Bash": "echo 'Running command...'"}
   }
@@ -506,7 +504,7 @@ Read file_path=".claude/settings.json"
   }
 }
 ```
-Use Edit or MultiEdit to modify .claude/settings.json
+Use Edit to modify .claude/settings.json
 
 4. **ONLY after modifying settings, show restart notice:**
 ```
@@ -762,7 +760,7 @@ argument-hint: <file> [options] | --help
 
 3. **EDIT FILES DIRECTLY IN REPOSITORY**
    - NEVER use temp files or complex file operations
-   - Edit repository files directly using Edit/MultiEdit tools
+   - Edit repository files directly using Edit tool
    - Work within the prompts repository context
 
 4. **TEST COMMANDS BEFORE INCLUDING THEM**
@@ -772,7 +770,7 @@ argument-hint: <file> [options] | --help
 
 5. **FOR OPERATIONS OUTSIDE PROJECT - CONFIGURE DIRECTORY ACCESS**
    - **BEST APPROACH**: Agent should add directories to `permissions.additionalDirectories` in `.claude/settings.json`
-   - **Alternative**: Agent uses LS tool to trigger permission dialog (target ROOT directory like ~/.claude)
+   - **Alternative**: Agent uses Glob or Bash tool to trigger permission dialog (target ROOT directory like ~/.claude)
    - **CLI Option**: Agent runs `claude --add-dir ~/.claude` when needed
    - **After access configured, agent MUST display restart notice to user**
    - After user restarts, commands will work without permission errors
@@ -1391,7 +1389,7 @@ Explore more at: https://github.com/anthropics/skills
 - ✓ Clear instructions and examples
 - ✓ Dependencies documented
 - ✓ allowed-tools specified if restricting
-- ✓ Invocation control fields set if needed (`user-invocable`, `disable-model-invocation`) — see `agents/references/prompt-engineer/skill-invocation-fields.md`
+- ✓ Invocation control fields set if needed (`user-invocable`, `disable-model-invocation`) — see `references/prompt-engineer/skill-invocation-fields.md`
 - ✓ Supporting files in organized structure
 - ✓ Version history (in content)
 - ✓ Tested with target use cases
@@ -1590,7 +1588,7 @@ Add these permissions for TypeScript development.
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit",
         "hooks": [{
           "type": "command",
           "command": "if [[ \"$CLAUDE_TOOL_INPUT_PATH\" == *.py ]]; then black \"$CLAUDE_TOOL_INPUT_PATH\"; fi"
@@ -1685,7 +1683,7 @@ print(json.dumps(output))
   "events": {
     "PostToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit",
         "hooks": [{
           "type": "command",
           "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/format-python.sh"

@@ -14,7 +14,7 @@ skills:
   - clawnet:clawnet
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/martha.png
-version: 1.1.7
+version: 1.1.8
 model: sonnet
 description: |-
   Organization front desk and directory service. Martha knows every team member, their specialties, how to contact live agent instances, and which service providers the org uses. Use this agent when users ask "who handles X?", "how do I contact Y?", "what agents are available?", "who's working on Z?", "what services do we use?", or need help routing to the right person or agent. Route SOC 2 and audit-readiness work to Anthony first for compliance framing and to Paul for technical control validation. Route crypto-law, stablecoin, token-classification, and digital-asset structuring questions to Anthony first for legal framing and to Parker second when deeper source gathering is needed.
@@ -45,7 +45,7 @@ description: |-
   Org directory is Martha's bread and butter.
   </commentary>
   </example>
-tools: Read, Write, Grep, Glob, WebFetch, Bash, TodoWrite, Skill(find-skills), Skill(confess), Skill(resend), Skill(internal-comms), Skill(copywriting), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(superpowers:dispatching-parallel-agents)
+tools: Read, Write, Grep, Glob, WebFetch, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(find-skills), Skill(confess), Skill(resend), Skill(internal-comms), Skill(copywriting), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(superpowers:dispatching-parallel-agents)
 color: orange
 ---
 
@@ -71,7 +71,7 @@ Route people to the right specialist. Know the org inside and out. Track which a
 | cartographer | **Leaf** | Maps, geospatial, MapLibre, deck.gl, tiles | "add a map", "marker clustering" |
 | code-auditor | **Jerry** | Security audits, vulnerability scanning | "security review", "audit code" |
 | consolidator | **Steve** | File cleanup, deduplication, organization | "clean up", "organize files", "consolidate" |
-| data | **Mr. Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |
+| data | **Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |
 | database | **Idris** | PostgreSQL, Redis, MongoDB, schema design | "database schema", "query tuning" |
 | designer | **Ridd** | UI components, Tailwind, shadcn, dark mode | "design component", "style page" |
 | devops | **Root** | Vercel, Railway, CI/CD, monitoring | "deploy", "CI/CD pipeline" |

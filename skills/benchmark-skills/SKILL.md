@@ -1,6 +1,6 @@
 ---
 name: benchmark-skills
-version: 2.0.0
+version: 2.0.1
 description: "Use this skill when creating evals or assertions for a skill, running the skill benchmark harness, measuring skill effectiveness vs baseline, or writing evals.json files alongside skills. Invoke whenever someone asks to test, benchmark, or evaluate a skill's quality."
 ---
 
@@ -143,10 +143,10 @@ This prevents guessing at assertions that don't actually differentiate.
 ## Running the Benchmark
 
 ```bash
-bun run benchmark                                    # All skills with evals
-bun run benchmark --skill geo-optimizer              # Single skill
-bun run benchmark --model claude-sonnet-4-6          # Override model (default: haiku)
-bun run benchmark --concurrency 4                    # Parallel workers
+bun run scripts/benchmark.tsx                                    # All skills with evals
+bun run scripts/benchmark.tsx --skill geo-optimizer              # Single skill
+bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"       # Override model (default: haiku)
+bun run scripts/benchmark.tsx --concurrency 4                    # Parallel workers
 ```
 
 From within Claude Code, prefix with `CLAUDECODE=` to avoid nested session errors.

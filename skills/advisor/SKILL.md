@@ -1,6 +1,15 @@
 ---
 name: advisor
-description: Active when the session's main model is a cheaper executor (Sonnet/Haiku tier) doing non-trivial implementation work and premium intelligence is available to consult — a codex quota or a stronger Claude model. Triggers before substantive work begins on a hard task, when stuck or about to change approach, or when the user says "consult the advisor", "get a second opinion", "ask codex", "ask a bigger model", or wants an advisor set up. The reverse of the coordinator pattern: the cheap model executes everything; premium intelligence is consulted at decision points only.
+version: 0.0.1
+description: >-
+  Active when the session's main model is a cheaper executor (Sonnet/Haiku
+  tier) doing non-trivial implementation work and premium intelligence is
+  available to consult — a codex quota or a stronger Claude model. Triggers
+  before substantive work begins on a hard task, when stuck or about to change
+  approach, or when the user says "consult the advisor", "get a second
+  opinion", "ask codex", "ask a bigger model", or wants an advisor set up. The
+  reverse of the coordinator pattern: the cheap model executes everything;
+  premium intelligence is consulted at decision points only.
 ---
 
 # Advisor

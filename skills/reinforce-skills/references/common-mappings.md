@@ -87,7 +87,7 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 | mcp-server, mcp-config | bopen-tools:mcp |
 | research, gather-info, web-research | bopen-tools:researcher |
 | agent-design, ai-agent | bopen-tools:agent-builder |
-| marketing-copy, growth | bopen-tools:marketer |
+| marketing-copy, growth | product-skills:marketer |
 | data-pipeline, analytics | bopen-tools:data |
 | legal-review, privacy-policy, tos | product-skills:legal |
 | testing, e2e-tests, unit-tests | bopen-tools:tester |

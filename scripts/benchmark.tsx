@@ -13,10 +13,10 @@
  *   - Grading counted in progress (not invisible)
  *
  * Usage:
- *   bun run benchmark
- *   bun run benchmark --skill geo-optimizer
- *   bun run benchmark --model claude-sonnet-4-6
- *   bun run benchmark --concurrency 4
+ *   bun run scripts/benchmark.tsx
+ *   bun run scripts/benchmark.tsx --skill geo-optimizer
+ *   bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"
+ *   bun run scripts/benchmark.tsx --concurrency 4
  */
 
 import React, { useReducer } from "react";

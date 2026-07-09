@@ -1,7 +1,7 @@
 {
   "name": "bopen-tools Agent Ecosystem",
-  "description": "28 agents across 5 functional teams — routing, dispatch, and skill dependencies",
-  "version": "0.1.0",
+  "description": "31 agents across 5 functional teams — routing, dispatch, and skill dependencies",
+  "version": "0.1.1",
   "nodes": [
     {
       "id": "martha",
@@ -15,10 +15,10 @@
       "code_ref": "agents/front-desk.md"
     },
     {
-      "id": "sage",
-      "label": "Sage (Project Manager)",
+      "id": "wags",
+      "label": "Wags (Project Manager)",
       "type": "supervisor",
-      "agent": "Sage",
+      "agent": "Wags",
       "model": "inherit",
       "phase": "implemented",
       "tools": ["linear-planning", "deploy-agent-team"],
@@ -49,7 +49,7 @@
       "code_ref": "agents/nextjs.md"
     },
     {
-      "id": "mira",
+      "id": "ridd",
       "label": "Ridd (Designer)",
       "type": "worker",
       "agent": "Ridd",
@@ -72,10 +72,10 @@
     },
 
     {
-      "id": "nyx",
-      "label": "Nyx (Code Auditor)",
+      "id": "jerry",
+      "label": "Jerry (Code Auditor)",
       "type": "worker",
-      "agent": "Nyx",
+      "agent": "Jerry",
       "model": "opus",
       "phase": "implemented",
       "tools": ["semgrep", "codeql", "differential-review", "secure-workflow-guide"],
@@ -94,10 +94,10 @@
       "code_ref": "agents/architecture-reviewer.md"
     },
     {
-      "id": "zoro",
-      "label": "Zoro (DevOps)",
+      "id": "root",
+      "label": "Root (DevOps)",
       "type": "worker",
-      "agent": "Zoro",
+      "agent": "Root",
       "model": "sonnet",
       "phase": "implemented",
       "tools": ["npm-publish", "saas-launch-audit", "semgrep", "codeql"],
@@ -133,10 +133,11 @@
       "type": "worker",
       "agent": "Caal",
       "model": "sonnet",
-      "phase": "implemented",
+      "phase": "external",
+      "plugin": "product-skills",
+      "agent_ref": "product-skills:marketer",
       "tools": ["copywriting", "seo-audit", "launch-strategy"],
-      "description": "Growth marketing, CRO, copy, SEO, launch planning",
-      "code_ref": "agents/marketer.md"
+      "description": "Growth marketing, CRO, copy, SEO, launch planning"
     },
     {
       "id": "zack",
@@ -196,10 +197,10 @@
     },
 
     {
-      "id": "iris",
-      "label": "Iris (Tester)",
+      "id": "jason",
+      "label": "Jason (Tester)",
       "type": "worker",
-      "agent": "Iris",
+      "agent": "Jason",
       "model": "sonnet",
       "phase": "implemented",
       "tools": ["benchmark-skills", "skill-creator", "hunter-skeptic-referee"],
@@ -220,9 +221,9 @@
 
     {
       "id": "data",
-      "label": "Mr. Data (Data)",
+      "label": "Data Accumulator (Data)",
       "type": "worker",
-      "agent": "Mr. Data Accumulator",
+      "agent": "Data Accumulator",
       "model": "sonnet",
       "phase": "implemented",
       "tools": [],
@@ -241,10 +242,10 @@
       "code_ref": "agents/mobile.md"
     },
     {
-      "id": "juniper",
-      "label": "Juniper (Audio)",
+      "id": "frames",
+      "label": "Frames (Audio)",
       "type": "worker",
-      "agent": "Juniper",
+      "agent": "Frames",
       "model": "sonnet",
       "phase": "implemented",
       "tools": ["ui-audio-theme", "deck-creator", "remotion-best-practices"],
@@ -284,58 +285,58 @@
     }
   ],
   "edges": [
-    { "id": "entry-martha", "from": "martha", "to": "sage", "label": "project work", "type": "conditional" },
+    { "id": "entry-martha", "from": "martha", "to": "wags", "label": "project work", "type": "conditional" },
     { "id": "martha-satchmo", "from": "martha", "to": "satchmo", "label": "agent/AI work", "type": "conditional" },
     { "id": "martha-tina", "from": "martha", "to": "tina", "label": "calendar/email", "type": "conditional" },
     { "id": "martha-parker", "from": "martha", "to": "parker", "label": "research question", "type": "conditional" },
 
-    { "id": "sage-frontend", "from": "sage", "to": "theo", "label": "frontend task", "type": "conditional" },
-    { "id": "sage-design", "from": "sage", "to": "mira", "label": "design task", "type": "conditional" },
-    { "id": "sage-security", "from": "sage", "to": "nyx", "label": "audit needed", "type": "conditional" },
-    { "id": "sage-devops", "from": "sage", "to": "zoro", "label": "deploy/infra", "type": "conditional" },
-    { "id": "sage-content", "from": "sage", "to": "flow", "label": "docs needed", "type": "conditional" },
-    { "id": "sage-marketing", "from": "sage", "to": "caal", "label": "marketing task", "type": "conditional" },
-    { "id": "sage-db", "from": "sage", "to": "idris", "label": "schema/db work", "type": "conditional" },
-    { "id": "sage-return", "from": "sage", "to": "human", "label": "plan ready", "type": "default" },
+    { "id": "wags-frontend", "from": "wags", "to": "theo", "label": "frontend task", "type": "conditional" },
+    { "id": "wags-design", "from": "wags", "to": "ridd", "label": "design task", "type": "conditional" },
+    { "id": "wags-security", "from": "wags", "to": "jerry", "label": "audit needed", "type": "conditional" },
+    { "id": "wags-devops", "from": "wags", "to": "root", "label": "deploy/infra", "type": "conditional" },
+    { "id": "wags-content", "from": "wags", "to": "flow", "label": "docs needed", "type": "conditional" },
+    { "id": "wags-marketing", "from": "wags", "to": "caal", "label": "marketing task", "type": "conditional" },
+    { "id": "wags-db", "from": "wags", "to": "idris", "label": "schema/db work", "type": "conditional" },
+    { "id": "wags-return", "from": "wags", "to": "human", "label": "plan ready", "type": "default" },
 
     { "id": "satchmo-zack", "from": "satchmo", "to": "zack", "label": "write agent/skill", "type": "conditional" },
     { "id": "satchmo-theo", "from": "satchmo", "to": "theo", "label": "build playground", "type": "conditional" },
-    { "id": "satchmo-mira", "from": "satchmo", "to": "mira", "label": "design review", "type": "conditional" },
-    { "id": "satchmo-iris", "from": "satchmo", "to": "iris", "label": "test it", "type": "conditional" },
+    { "id": "satchmo-ridd", "from": "satchmo", "to": "ridd", "label": "design review", "type": "conditional" },
+    { "id": "satchmo-jason", "from": "satchmo", "to": "jason", "label": "test it", "type": "conditional" },
     { "id": "satchmo-kayle", "from": "satchmo", "to": "kayle", "label": "arch review", "type": "conditional" },
     { "id": "satchmo-return", "from": "satchmo", "to": "human", "label": "design proposal", "type": "default" },
 
-    { "id": "human-sage", "from": "human", "to": "sage", "label": "approved → execute", "type": "conditional" },
+    { "id": "human-wags", "from": "human", "to": "wags", "label": "approved → execute", "type": "conditional" },
     { "id": "human-satchmo", "from": "human", "to": "satchmo", "label": "revision needed", "type": "loop_back" },
     { "id": "human-martha", "from": "human", "to": "martha", "label": "new request", "type": "loop_back" },
 
-    { "id": "nyx-kayle", "from": "nyx", "to": "kayle", "label": "findings for arch review", "type": "default" },
+    { "id": "jerry-kayle", "from": "jerry", "to": "kayle", "label": "findings for arch review", "type": "default" },
     { "id": "kayle-return", "from": "kayle", "to": "satchmo", "label": "review complete", "type": "loop_back" },
-    { "id": "nyx-return", "from": "nyx", "to": "sage", "label": "audit report", "type": "loop_back" },
+    { "id": "jerry-return", "from": "jerry", "to": "wags", "label": "audit report", "type": "loop_back" },
 
     { "id": "parker-flow", "from": "parker", "to": "flow", "label": "research → write up", "type": "default" },
     { "id": "flow-caal", "from": "flow", "to": "caal", "label": "docs → marketing copy", "type": "conditional" },
 
     { "id": "theo-torque", "from": "theo", "to": "torque", "label": "perf check", "type": "default" },
-    { "id": "mira-theo", "from": "mira", "to": "theo", "label": "design → implement", "type": "default" },
+    { "id": "ridd-theo", "from": "ridd", "to": "theo", "label": "design → implement", "type": "default" },
 
     { "id": "idris-maxim", "from": "idris", "to": "maxim", "label": "schema → integrations", "type": "default" },
     { "id": "maxim-mina", "from": "maxim", "to": "mina", "label": "payment hooks", "type": "conditional" },
 
-    { "id": "zoro-orbit", "from": "zoro", "to": "orbit", "label": "MCP setup", "type": "conditional" }
+    { "id": "root-orbit", "from": "root", "to": "orbit", "label": "MCP setup", "type": "conditional" }
   ],
   "subgraphs": [
     {
       "id": "frontend-team",
       "name": "Frontend Team",
-      "nodes": ["theo", "mira", "torque"],
+      "nodes": ["theo", "ridd", "torque"],
       "supervisor": "theo"
     },
     {
       "id": "security-team",
       "name": "Security & Review",
-      "nodes": ["nyx", "kayle"],
-      "supervisor": "nyx"
+      "nodes": ["jerry", "kayle"],
+      "supervisor": "jerry"
     },
     {
       "id": "content-team",
@@ -346,13 +347,13 @@
     {
       "id": "infra-team",
       "name": "Infrastructure",
-      "nodes": ["idris", "maxim", "orbit", "zoro", "mina"],
+      "nodes": ["idris", "maxim", "orbit", "root", "mina"],
       "supervisor": "idris"
     },
     {
       "id": "agent-team",
       "name": "Agent Development",
-      "nodes": ["zack", "iris"],
+      "nodes": ["zack", "jason"],
       "supervisor": "zack"
     }
   ],
@@ -361,7 +362,7 @@
       "id": "ann-opus-tier",
       "target": "satchmo",
       "type": "info",
-      "text": "Opus tier: Satchmo, Kayle, Nyx, Torque, Idris — used for complex reasoning tasks"
+      "text": "Opus tier: Satchmo, Kayle, Jerry, Torque, Idris — used for complex reasoning tasks"
     },
     {
       "id": "ann-shared-skills",
@@ -371,15 +372,15 @@
     },
     {
       "id": "ann-missing",
-      "target": "sage",
+      "target": "wags",
       "type": "todo",
-      "text": "Sage uses model:inherit — needs explicit dispatch routing logic. Currently Linear-focused only."
+      "text": "Wags uses model:inherit — needs explicit dispatch routing logic. Currently Linear-focused only."
     },
     {
       "id": "ann-gap",
       "target": "data",
       "type": "todo",
-      "text": "Mr. Data + Kira + Juniper + Steve are standalone — no team or dispatch path reaches them directly"
+      "text": "Data Accumulator + Kira + Frames + Steve are standalone — no team or dispatch path reaches them directly"
     }
   ]
 }

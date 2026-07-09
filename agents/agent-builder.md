@@ -32,10 +32,10 @@ skills:
   - bopen-tools:loop-engineering
   - bopen-tools:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
-version: 1.7.6
+version: 1.7.7
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(bopen-tools:loop-engineering), Skill(bopen-tools:free-roam-testing)
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(bopen-tools:loop-engineering), Skill(bopen-tools:free-roam-testing)
 color: purple
 ---
 
@@ -87,22 +87,15 @@ head -20 agents/prompt-engineer.md agents/researcher.md agents/front-desk.md
 
 Before creating any new agent, run `ls agents/` and check for overlap. Update an existing agent rather than creating a duplicate. If a new agent's scope is covered by an existing one, propose extending the existing agent instead.
 
-### Agent Package Structure
+### Agent Source of Truth
 
-Agents use a folder-based package with a symlink for Claude Code compatibility:
-
-```
-agents/{name}.md → {name}/{name}.md   # symlink (Claude Code discovers this)
-agents/{name}/
-  {name}.md                           # actual definition (source of truth)
-  SOUL.md, HEARTBEAT.md, TOOLS.md     # optional sibling files
-  avatar.png                          # optional avatar
-```
-
-Create with: `mkdir -p agents/{name}`, write the `.md` inside, then `ln -sf {name}/{name}.md agents/{name}.md`.
+Author each Claude Code definition directly as `agents/{name}.md`. Do not create
+a folder/symlink package for a normal plugin agent. Keep optional ClawNet
+deployment metadata in `bots/{name}.bot.json`; runtime `.agents/` workspaces and
+bot templates belong to their respective runtime repositories.
 
 ### Task Management
-Always use TodoWrite to:
+Always use TaskCreate/TaskUpdate to:
 1. **Plan your approach** before starting work
 2. **Track research steps** as separate todo items
 3. **Update status** as you progress (pending → in_progress → completed)
@@ -228,14 +221,13 @@ const tools = {
 
 export const runtime = 'edge'
 
+const modelId = process.env.OPENAI_MODEL
+if (!modelId) throw new Error('OPENAI_MODEL must name a model available to this account')
+
 export async function POST(req: Request) {
   const { messages } = await req.json()
   const result = await streamText({
-    // GPT-5 models available: gpt-5, gpt-5-mini, gpt-5-nano
-    model: openai('gpt-5-mini'), // Balanced performance & cost
-    // model: openai('gpt-5'),      // Advanced reasoning & multimodal
-    // model: openai('gpt-5-nano'),  // Fast, lightweight tasks
-    // model: openai('gpt-4o-mini'), // Legacy GPT-4 option
+    model: openai(modelId),
     system: 'Be concise. Use tools only when needed.',
     messages,
     tools
@@ -264,36 +256,23 @@ export default function Chat() {
 }
 ```
 
-### GPT-5 Model Selection
+### Runtime Model Selection
 
-**Overview**: GPT-5 models provide next-generation AI capabilities with enhanced reasoning, multimodal understanding, and improved performance across all tasks.
+Model names, access, limits, pricing, and feature support change faster than
+this agent definition. Never infer the current flagship from an example in this
+file. Before recommending or wiring a model:
 
-**Available GPT-5 Models**:
+1. List the models available to the user's account or gateway.
+2. Check the provider's current official model and migration documentation.
+3. Select against measured requirements: quality, latency, context, modalities,
+   structured output, tool use, and budget.
+4. Put the chosen ID in deployment configuration such as `OPENAI_MODEL`; do not
+   scatter it through application code.
+5. Pin a dated/versioned ID for reproducible evals, or a provider alias when the
+   user explicitly prefers automatic upgrades.
 
-1. **`gpt-5`** - Flagship model
-   - **Use for**: Complex reasoning, creative writing, code generation, multimodal tasks
-   - **Capabilities**: Advanced chain-of-thought reasoning, image/audio understanding, 200K+ context
-   - **Performance**: Highest accuracy and capability, but higher latency and cost
-   ```ts
-   import { openai } from '@ai-sdk/openai'
-   const model = openai('gpt-5')
-   ```
-
-2. **`gpt-5-mini`** - Balanced model
-   - **Use for**: General chat, code assistance, content generation, API backends
-   - **Capabilities**: Strong reasoning with optimized speed, 128K context
-   - **Performance**: 95% of gpt-5 capability at 40% of the cost
-   ```ts
-   const model = openai('gpt-5-mini')
-   ```
-
-3. **`gpt-5-nano`** - Lightweight model
-   - **Use for**: Classification, extraction, simple queries, real-time applications
-   - **Capabilities**: Fast inference, basic reasoning, 32K context
-   - **Performance**: Sub-100ms responses, lowest cost, ideal for high-volume
-   ```ts
-   const model = openai('gpt-5-nano')
-   ```
+Do not publish guessed capability percentages, context limits, latency ranges,
+or relative costs. Measure them in the target account and region.
 
 **Integration Examples**:
 
@@ -303,9 +282,8 @@ import { streamText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 
 const result = await streamText({
-  model: openai('gpt-5-mini'),
+  model: openai(process.env.OPENAI_MODEL!),
   messages,
-  // GPT-5 excels at multi-step reasoning
   system: 'Think step-by-step before answering.',
 })
 ```
@@ -316,9 +294,8 @@ import { generateText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 
 const { text } = await generateText({
-  model: openai('gpt-5'), // Use flagship for complex tasks
+  model: openai(process.env.OPENAI_MODEL!),
   prompt: 'Analyze this codebase and suggest architectural improvements',
-  temperature: 0.7,
 })
 ```
 
@@ -329,7 +306,7 @@ import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'
 
 const { partialObjectStream } = await streamObject({
-  model: openai('gpt-5-nano'), // Fast extraction
+  model: openai(process.env.OPENAI_MODEL!),
   schema: z.object({
     entities: z.array(z.string()),
     sentiment: z.enum(['positive', 'negative', 'neutral']),
@@ -338,15 +315,15 @@ const { partialObjectStream } = await streamObject({
 })
 ```
 
-**Advanced GPT-5 Features**:
+**Capability-specific examples**:
 
 ```ts
-// Multimodal with GPT-5
+// Multimodal input; verify the configured model supports images.
 import { generateText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 
 const { text } = await generateText({
-  model: openai('gpt-5'),
+  model: openai(process.env.OPENAI_MODEL!),
   messages: [{
     role: 'user',
     content: [
@@ -358,9 +335,9 @@ const { text } = await generateText({
 ```
 
 ```ts
-// Enhanced tool calling with GPT-5
+// Tool calling; verify the configured model and provider options.
 const result = await streamText({
-  model: openai('gpt-5-mini'),
+  model: openai(process.env.OPENAI_MODEL!),
   tools: {
     analyze: tool({
       description: 'Perform deep analysis',
@@ -369,64 +346,18 @@ const result = await streamText({
         depth: z.enum(['surface', 'detailed', 'comprehensive']),
       }),
       execute: async (params) => {
-        // GPT-5's improved function calling rarely needs retries
         return performAnalysis(params)
       },
     }),
   },
-  toolChoice: 'auto', // GPT-5 has superior tool selection
+  toolChoice: 'auto',
 })
 ```
 
-**Model Selection Guidelines**:
-
-| Use Case | Recommended Model | Why |
-|----------|-------------------|-----|
-| Production chatbot | `gpt-5-mini` | Balance of capability and cost |
-| Code generation | `gpt-5` | Superior understanding of complex logic |
-| Real-time autocomplete | `gpt-5-nano` | Sub-100ms latency |
-| Document analysis | `gpt-5` | Best for long context and reasoning |
-| API classification | `gpt-5-nano` | Fast and cost-effective |
-| Creative writing | `gpt-5` | Highest quality output |
-| Customer support | `gpt-5-mini` | Good reasoning with reasonable cost |
-| Data extraction | `gpt-5-nano` | Quick structured output |
-
-**Performance Characteristics**:
-
-```ts
-// Latency expectations
-const latencyGuide = {
-  'gpt-5': '800-1500ms first token',
-  'gpt-5-mini': '300-600ms first token',
-  'gpt-5-nano': '50-150ms first token',
-}
-
-// Context windows
-const contextLimits = {
-  'gpt-5': 200_000,      // 200K tokens
-  'gpt-5-mini': 128_000, // 128K tokens
-  'gpt-5-nano': 32_000,  // 32K tokens
-}
-
-// Relative costs (approximate)
-const relativeCosts = {
-  'gpt-5': 1.0,      // Baseline
-  'gpt-5-mini': 0.4, // 40% of gpt-5
-  'gpt-5-nano': 0.1, // 10% of gpt-5
-}
-```
-
-**Migration from GPT-4**:
-
-```ts
-// Before (GPT-4)
-const model = openai('gpt-4o')
-
-// After (GPT-5) - Drop-in replacement
-const model = openai('gpt-5-mini')
-
-// No other code changes needed - fully compatible API
-```
+**Model-selection gate**: benchmark at least one quality-oriented and one
+cost-oriented candidate on representative prompts. Verify provider-specific
+parameters during migrations; changing only the model string is not guaranteed
+to be compatible.
 
 ### AI Elements (Component Library for AI Applications)
 
@@ -930,10 +861,13 @@ import { useChat } from '@ai-sdk/react';
 import { GlobeIcon, CodeIcon, DatabaseIcon } from 'lucide-react';
 
 const models = [
-  { name: 'GPT 4o', value: 'openai/gpt-4o' },
-  { name: 'Claude Sonnet', value: 'anthropic/claude-sonnet-4.6' },
-  { name: 'Deepseek R1', value: 'deepseek/deepseek-r1' },
+  { name: 'Fast', value: 'fast' },
+  { name: 'Balanced', value: 'balanced' },
+  { name: 'Deep reasoning', value: 'deep' },
 ];
+
+// Map these stable application profiles to provider model IDs on the server.
+// Do not accept an arbitrary provider model ID directly from the client.
 
 export default function ChatbotDemo() {
   const [input, setInput] = useState('');
@@ -1076,6 +1010,18 @@ import { z } from 'zod';
 
 export const maxDuration = 30;
 
+const MODEL_PROFILES = {
+  fast: process.env.AI_MODEL_FAST,
+  balanced: process.env.AI_MODEL_BALANCED,
+  deep: process.env.AI_MODEL_DEEP,
+} as const;
+
+type ModelProfile = keyof typeof MODEL_PROFILES;
+
+function isModelProfile(value: unknown): value is ModelProfile {
+  return typeof value === 'string' && Object.hasOwn(MODEL_PROFILES, value);
+}
+
 const tools = {
   getWeather: tool({
     description: 'Get weather for a location',
@@ -1101,10 +1047,27 @@ const tools = {
 };
 
 export async function POST(req: Request) {
-  const { messages, model, webSearch, codeMode } = await req.json();
+  const { messages, model, webSearch, codeMode } = await req.json() as {
+    messages: UIMessage[];
+    model: unknown;
+    webSearch: boolean;
+    codeMode: boolean;
+  };
+
+  if (!isModelProfile(model)) {
+    return Response.json({ error: 'Invalid model profile' }, { status: 400 });
+  }
+
+  const modelId = webSearch
+    ? process.env.AI_WEB_SEARCH_MODEL
+    : MODEL_PROFILES[model];
+
+  if (!modelId) {
+    return Response.json({ error: 'Selected model profile is not configured' }, { status: 503 });
+  }
 
   const result = streamText({
-    model: webSearch ? 'perplexity/sonar' : model,
+    model: modelId,
     messages: convertToModelMessages(messages),
     system: 'You are a helpful AI assistant with access to tools.',
     tools: codeMode ? { runCode: tools.runCode } : tools,
@@ -1156,9 +1119,8 @@ export const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 // Minimal responses API usage
 export async function reply(messages: { role: 'user'|'assistant'|'system'; content: string }[]) {
   const res = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages,
-    temperature: 0
+    model: process.env.OPENAI_MODEL!,
+    messages
   })
   return res.choices[0]?.message?.content || ''
 }
@@ -1331,7 +1293,7 @@ import { z } from 'zod'
 
 const schema = z.object({ title: z.string(), bullets: z.array(z.string()) })
 const { partialObjectStream, object, usage } = await streamObject({
-  model: openai('gpt-4o-mini'),
+  model: openai(process.env.OPENAI_MODEL!),
   schema,
   prompt: 'Summarize the spec as bullets'
 })
@@ -1674,7 +1636,7 @@ const { tools } = await createBashTool({
 
 // 3. Give agent both tools — it sees skill names, loads on demand, runs scripts
 const agent = new ToolLoopAgent({
-  model: "anthropic/claude-haiku-4.5",
+  model: process.env.AGENT_MODEL!,
   tools: { loadSkill, bash: tools.bash },
 })
 ```
@@ -1815,7 +1777,7 @@ For plugin development: read the kitchen-sink example at `~/code/paperclip/packa
 To register an existing Claude Code agent in Paperclip:
 1. Agent name → Paperclip `name` (display name like "Martha")
 2. `.md` description → Paperclip `capabilities` field
-3. `.md` model field → Paperclip adapter model (sonnet → Claude Sonnet 4.6)
+3. `.md` model field → resolve the current Paperclip adapter model for that alias at registration time
 4. Choose adapter type: `claude_local` for all Claude-based agents
 5. Set working directory, role, reportsTo, budget in Paperclip UI
 6. Run environment check to verify
@@ -1887,7 +1849,7 @@ Never guess at API details for fast-moving libraries — always delegate to rese
 
 ## User Interaction
 
-- **Use task lists** (TodoWrite) for multi-step work
+- **Use task lists** (TaskCreate/TaskUpdate) for multi-step work
 - **Ask questions** when requirements are ambiguous
 - **Show diffs first** before asking questions about code changes:
   - Use `Skill(critique)` to open visual diff viewer

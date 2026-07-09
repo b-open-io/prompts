@@ -1033,7 +1033,7 @@ Create `.claude/settings.json`:
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|MultiEdit|Write",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",

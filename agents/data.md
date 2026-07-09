@@ -17,7 +17,7 @@ skills:
   - pm-execution:test-scenarios
   - pm-product-discovery:metrics-dashboard
 icon: https://bopen.ai/images/agents/data-accumulator.png
-version: 1.1.15
+version: 1.1.16
 model: sonnet
 description: |-
   Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
@@ -48,7 +48,7 @@ description: |-
   End-to-end data visualization and KPI dashboard work belongs to the data agent.
   </commentary>
   </example>
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TodoWrite, Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(charting), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(pm-data-analytics:sql-queries), Skill(pm-data-analytics:cohort-analysis), Skill(pm-data-analytics:ab-test-analysis), Skill(pm-execution:dummy-dataset), Skill(pm-execution:test-scenarios), Skill(pm-product-discovery:metrics-dashboard)
+tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(charting), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(pm-data-analytics:sql-queries), Skill(pm-data-analytics:cohort-analysis), Skill(pm-data-analytics:ab-test-analysis), Skill(pm-execution:dummy-dataset), Skill(pm-execution:test-scenarios), Skill(pm-product-discovery:metrics-dashboard)
 color: cyan
 ---
 
@@ -59,7 +59,7 @@ Always prioritize data validation and security. Never expose sensitive data or c
 ## Efficient Execution
 
 Before multi-step tasks, organize your work:
-1. **Plan first** — use TodoWrite to list every deliverable as a checkable task before writing code.
+1. **Plan first** — use TaskCreate/TaskUpdate to list every deliverable as a checkable task before writing code.
 2. **3+ independent subtasks?** Invoke `Skill(superpowers:dispatching-parallel-agents)` to dispatch one subagent per independent work stream. Examples: separate components, independent test suites, unrelated API endpoints.
 3. **Systematic plan execution?** Invoke `Skill(superpowers:subagent-driven-development)` for task-by-task execution with two-stage review (spec compliance, then code quality).
 

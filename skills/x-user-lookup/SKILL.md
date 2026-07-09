@@ -1,8 +1,8 @@
 ---
 name: x-user-lookup
-version: 1.0.0
+version: 1.0.1
 description: Get X/Twitter user profile by username. Use when user asks "who is @username", "get X profile", "lookup Twitter user", "find X account", "user details", "follower count for". Requires X_BEARER_TOKEN.
-allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_PLUGIN_ROOT}:*)
+allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_SKILL_DIR}:*)
 ---
 
 # X User Lookup
@@ -18,13 +18,13 @@ export X_BEARER_TOKEN="your-token"  # https://developer.x.com/en/portal/dashboar
 ## Usage
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/scripts/lookup.sh <username>
+${CLAUDE_SKILL_DIR}/scripts/lookup.sh <username>
 ```
 
 ## Example
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/scripts/lookup.sh kurtwuckertjr
+${CLAUDE_SKILL_DIR}/scripts/lookup.sh kurtwuckertjr
 ```
 
 ## Response Fields

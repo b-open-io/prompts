@@ -1,7 +1,7 @@
 ---
 allowed-tools: Agent
 description: Print a concise repository context snapshot for agents (git, pkg, dirs)
-argument-hint: [--full] - Include dependency tree and env
+argument-hint: "[--full] - Include dependency tree and env"
 ---
 
 ## Your Task

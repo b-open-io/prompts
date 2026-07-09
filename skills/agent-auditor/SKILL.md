@@ -1,6 +1,6 @@
 ---
 name: agent-auditor
-version: 0.1.1
+version: 0.1.2
 description: >-
   Comprehensive audit skill for agents and skills across the plugin ecosystem.
   This skill should be used when the user asks to "audit agents", "review skill quality",

@@ -21,7 +21,7 @@ SCAN_PATH=""
 TOPIC=""
 PARTS=3
 OUTPUT=""
-MODEL="claude-sonnet-4-6"
+MODEL="${PERSONA_CLAUDE_MODEL:-claude-sonnet-5}"
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -161,14 +161,13 @@ RESPONSE=$(curl -s "https://api.anthropic.com/v1/messages" \
         --arg prompt "$PROMPT" \
         '{
             model: $model,
-            max_tokens: 2048,
-            temperature: 0.7,
+            max_tokens: 8192,
             system: $system,
             messages: [{"role": "user", "content": $prompt}]
         }')")
 
 # ── Parse response ───────────────────────────────────────────────
-TEXT=$(echo "$RESPONSE" | jq -r '.content[0].text // empty')
+TEXT=$(echo "$RESPONSE" | jq -r '[.content[]? | select(.type == "text") | .text] | join("\n")')
 
 if [ -z "$TEXT" ]; then
     echo "Error: No response from Claude API" >&2

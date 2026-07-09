@@ -1,7 +1,7 @@
 ---
 name: hunter-skeptic-referee
-description: "This skill should be used when the user asks to 'find bugs', 'do a thorough code review', 'run a security audit', 'hunt for bugs', 'check for correctness issues', or 'review this code for edge cases'. Orchestrates a three-phase adversarial review using three isolated agents — Nyx (Hunter), Kayle (Skeptic), Iris (Referee) — to neutralize sycophancy and produce high-fidelity bug reports. User-facing command: /bug-hunt"
-version: 1.1.1
+description: "This skill should be used when the user asks to 'find bugs', 'do a thorough code review', 'run a security audit', 'hunt for bugs', 'check for correctness issues', or 'review this code for edge cases'. Orchestrates a three-phase adversarial review using three isolated agents — Jerry (Hunter), Kayle (Skeptic), Jason (Referee) — to neutralize sycophancy and produce high-fidelity bug reports. User-facing command: /bug-hunt"
+version: 1.1.2
 user-invocable: false
 ---
 
@@ -19,9 +19,9 @@ When a single agent both finds bugs and evaluates them, it anchors on its own ea
 
 | Phase | Agent | Subagent Type | Role |
 |-------|-------|---------------|------|
-| 1. Hunter | **Nyx** | `bopen-tools:code-auditor` | Find every possible bug. Maximize recall. False positives OK. |
+| 1. Hunter | **Jerry** | `bopen-tools:code-auditor` | Find every possible bug. Maximize recall. False positives OK. |
 | 2. Skeptic | **Kayle** | `bopen-tools:architecture-reviewer` | Challenge every finding. Risk/EV calculation. 2x penalty for wrong dismissals. |
-| 3. Referee | **Iris** | `bopen-tools:tester` | Final arbiter. Read code independently. Produce ground truth. |
+| 3. Referee | **Jason** | `bopen-tools:tester` | Final arbiter. Read code independently. Produce ground truth. |
 
 ## Target Resolution
 
@@ -104,7 +104,7 @@ All three agents use a consistent BUG-ID format for cross-phase traceability:
 
 Parse arguments for path mode vs branch diff mode. In branch diff mode, run `git diff --name-only` to get the file list.
 
-### Step 2 — Spawn the Hunter (Nyx)
+### Step 2 — Spawn the Hunter (Jerry)
 
 Dispatch `bopen-tools:code-auditor` with the target scope. The Hunter uses Glob/Read/Grep to examine actual code. Must NOT speculate about unread files.
 
@@ -116,7 +116,7 @@ If Hunter reports **TOTAL FINDINGS: 0**, skip Skeptic and Referee. Present a cle
 
 Dispatch `bopen-tools:architecture-reviewer` with ONLY the structured bug list (BUG-IDs, files, lines, claims, evidence, severity). Do NOT pass the full codebase or any narrative text. The Skeptic reads code independently.
 
-### Step 4 — Spawn the Referee (Iris)
+### Step 4 — Spawn the Referee (Jason)
 
 Dispatch `bopen-tools:tester` with the Hunter's full report AND the Skeptic's full report. The Referee reads code independently.
 
@@ -134,9 +134,9 @@ A clean report (zero confirmed bugs) is a valid result — say so clearly.
 
 | Phase | Gets access to |
 |-------|---------------|
-| Hunter (Nyx) | Full codebase (or changed files in branch diff mode) |
+| Hunter (Jerry) | Full codebase (or changed files in branch diff mode) |
 | Skeptic (Kayle) | Structured bug list + referenced file paths only |
-| Referee (Iris) | Hunter findings + Skeptic verdicts only |
+| Referee (Jason) | Hunter findings + Skeptic verdicts only |
 
 **Violating these boundaries reintroduces the sycophancy problem.** If the Skeptic sees the Hunter's confidence, it anchors on it. If the Referee sees either agent's emotional register, it drifts toward consensus rather than truth.
 
@@ -148,4 +148,4 @@ A clean report (zero confirmed bugs) is a valid result — say so clearly.
 - Pull requests with broad scope or architectural changes
 - Branch review before merge (`-b` mode)
 
-For quick informal reviews, just use Nyx directly in normal mode.
+For quick informal reviews, just use Jerry directly in normal mode.

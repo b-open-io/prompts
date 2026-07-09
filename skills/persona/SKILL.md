@@ -1,12 +1,12 @@
 ---
 name: persona
-version: 1.0.1
+version: 1.0.2
 description: >-
   Capture writing style profiles, track a pool of users, scan social
   intelligence, and apply style-matching to draft content. Use when asked
   to "capture my writing style", "draft a post in my voice", "scan what's
   trending", "add someone to the pool", or "track @username".
-allowed-tools: Bash(${SKILL_DIR}/scripts:*), Bash(bun:*), Read, Write
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts:*), Bash(bun:*), Read, Write
 ---
 
 # Persona — Writing Style & Social Intelligence
@@ -22,7 +22,7 @@ Uses `agent-browser` for browser automation (same pattern as npm-publish skill).
 #### Step 1: Open the developer portal
 
 ```bash
-${SKILL_DIR}/scripts/setup-token.sh navigate --username <handle>
+${CLAUDE_SKILL_DIR}/scripts/setup-token.sh navigate --username <handle>
 ```
 
 Status codes:
@@ -64,7 +64,7 @@ If the Bearer Token needs regenerating, find the Regenerate button and click it.
 Once on the Keys and tokens page:
 
 ```bash
-${SKILL_DIR}/scripts/setup-token.sh capture --username <handle>
+${CLAUDE_SKILL_DIR}/scripts/setup-token.sh capture --username <handle>
 ```
 
 The capture script:
@@ -80,7 +80,7 @@ Status codes:
 
 **Manual fallback:** If capture times out, ask the user to copy the Bearer Token value, then:
 ```bash
-${SKILL_DIR}/scripts/save-token.sh --username <handle> --token <bearer_token>
+${CLAUDE_SKILL_DIR}/scripts/save-token.sh --username <handle> --token <bearer_token>
 ```
 
 ### 1. Capture Writing Style
@@ -88,7 +88,7 @@ ${SKILL_DIR}/scripts/save-token.sh --username <handle> --token <bearer_token>
 Build a writing profile from a user's X posts. Requires a valid X API token (stored in `tokens.json` or env var).
 
 ```bash
-${SKILL_DIR}/scripts/capture.sh --username <handle> [--count 50] [--output <path>] [--refresh]
+${CLAUDE_SKILL_DIR}/scripts/capture.sh --username <handle> [--count 50] [--output <path>] [--refresh]
 ```
 
 - Fetches original English posts, scores by 60% recency + 40% engagement
@@ -101,16 +101,16 @@ Manage a pool of X users to monitor. Pool stored in `.claude/persona/pool.json`.
 
 ```bash
 # Add a user (validates via X API, auto-captures profile)
-${SKILL_DIR}/scripts/track.sh add <username> [--note "reason"]
+${CLAUDE_SKILL_DIR}/scripts/track.sh add <username> [--note "reason"]
 
 # Remove a user
-${SKILL_DIR}/scripts/track.sh remove <username>
+${CLAUDE_SKILL_DIR}/scripts/track.sh remove <username>
 
 # List all tracked users with profile status
-${SKILL_DIR}/scripts/track.sh list
+${CLAUDE_SKILL_DIR}/scripts/track.sh list
 
 # Refresh profiles for one or all users
-${SKILL_DIR}/scripts/track.sh refresh [username]
+${CLAUDE_SKILL_DIR}/scripts/track.sh refresh [username]
 ```
 
 ### 3. Scan Social Intelligence
@@ -118,7 +118,7 @@ ${SKILL_DIR}/scripts/track.sh refresh [username]
 Run a social intelligence scan via xAI Grok. Requires `XAI_API_KEY`.
 
 ```bash
-${SKILL_DIR}/scripts/scan.sh [--topics "Bitcoin SV, AI agents"] [--pool] [--save-topics] [--refresh]
+${CLAUDE_SKILL_DIR}/scripts/scan.sh [--topics "Bitcoin SV, AI agents"] [--pool] [--save-topics] [--refresh]
 ```
 
 - Returns: Technical Developments, Content Opportunities, Notable Activity, Early Signals
@@ -131,7 +131,7 @@ ${SKILL_DIR}/scripts/scan.sh [--topics "Bitcoin SV, AI agents"] [--pool] [--save
 Generate a styled draft post by combining all context layers — persona profile, body of work, git activity, social intelligence, and content strategy. Calls the Claude API directly.
 
 ```bash
-${SKILL_DIR}/scripts/draft.sh [--profile <path>] [--scan <path>] [--topic "angle"] [--parts 3] [--output <path>] [--model claude-sonnet-4-6]
+${CLAUDE_SKILL_DIR}/scripts/draft.sh [--profile <path>] [--scan <path>] [--topic "angle"] [--parts 3] [--output <path>] [--model <model-id>]
 ```
 
 Context assembly (mirrors satchmo.dev pipeline):
@@ -149,13 +149,13 @@ Configure the projects/products you've built — gives the LLM context about wha
 
 ```bash
 # Add a project
-${SKILL_DIR}/scripts/work.sh add --title "Project Name" --desc "What it does" --tags "tag1, tag2" [--repo owner/repo]
+${CLAUDE_SKILL_DIR}/scripts/work.sh add --title "Project Name" --desc "What it does" --tags "tag1, tag2" [--repo owner/repo]
 
 # List projects
-${SKILL_DIR}/scripts/work.sh list
+${CLAUDE_SKILL_DIR}/scripts/work.sh list
 
 # Remove a project
-${SKILL_DIR}/scripts/work.sh remove "Project Name"
+${CLAUDE_SKILL_DIR}/scripts/work.sh remove "Project Name"
 ```
 
 Projects with a `--repo` field also feed into git activity fetching.
@@ -165,7 +165,7 @@ Projects with a `--repo` field also feed into git activity fetching.
 Fetch recent commits from configured repos (pulled from work.json `repo` fields + explicit repos).
 
 ```bash
-${SKILL_DIR}/scripts/git-activity.sh [--repos "owner/repo1, owner/repo2"] [--per-repo 5] [--hours 48]
+${CLAUDE_SKILL_DIR}/scripts/git-activity.sh [--repos "owner/repo1, owner/repo2"] [--per-repo 5] [--hours 48]
 ```
 
 Uses `GITHUB_TOKEN` for private repos. Public repos work without auth.
@@ -175,7 +175,7 @@ Uses `GITHUB_TOKEN` for private repos. Public repos work without auth.
 Assemble a style-matching prompt from a profile and draft content. Does NOT call an LLM — outputs a prompt payload for you to use. Use `draft.sh` instead for the full pipeline.
 
 ```bash
-${SKILL_DIR}/scripts/apply.sh --draft <path-or--> [--profile <path>] [--format thread|single] [--max-chars 280]
+${CLAUDE_SKILL_DIR}/scripts/apply.sh --draft <path-or--> [--profile <path>] [--format thread|single] [--max-chars 280]
 ```
 
 - Loads the persona profile, content strategy rules, and draft
@@ -188,10 +188,10 @@ Open a local preview of a styled post in the browser. Fully offline — no exter
 
 ```bash
 # Static preview (self-contained HTML, auto-opens browser)
-${SKILL_DIR}/scripts/preview.sh --post <json-path> [--image <path>] [--username <handle>]
+${CLAUDE_SKILL_DIR}/scripts/preview.sh --post <json-path> [--image <path>] [--username <handle>]
 
 # Interactive playground (live editing, image generation, approval workflow)
-bun run ${SKILL_DIR}/scripts/playground.ts --data <json-path> [--port 4747] [--open]
+bun run ${CLAUDE_SKILL_DIR}/scripts/playground.ts --data <json-path> [--port 4747] [--open]
 ```
 
 - **preview.sh**: Static HTML preview with base64-embedded images

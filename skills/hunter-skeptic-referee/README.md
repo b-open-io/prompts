@@ -15,7 +15,7 @@ Hunter / Skeptic / Referee breaks this by running three agents with **completely
                            │
                     ┌──────▼───────┐
                     │    Hunter    │  Find everything. Over-report.
-                    │    (Nyx)     │  Score: +1/+5/+10 per bug
+                    │   (Jerry)    │  Score: +1/+5/+10 per bug
                     └──────┬───────┘
                            │ structured bug list only
                     ┌──────▼───────┐
@@ -25,7 +25,7 @@ Hunter / Skeptic / Referee breaks this by running three agents with **completely
                            │ findings + challenges
                     ┌──────▼───────┐
                     │   Referee    │  Independent final verdict.
-                    │    (Iris)    │  Reads code independently.
+                    │   (Jason)    │  Reads code independently.
                     └──────┬───────┘
                            │
                     ┌──────▼───────┐
@@ -54,11 +54,11 @@ Each phase runs as a separate subagent with a specialized role:
 
 | Phase | Agent | Specialist | Bias |
 |-------|-------|-----------|------|
-| 1. Hunter | **Nyx** | Security auditor | Over-report. False positives cost nothing. |
+| 1. Hunter | **Jerry** | Security auditor | Over-report. False positives cost nothing. |
 | 2. Skeptic | **Kayle** | Architecture reviewer | Challenge aggressively, but wrong dismissals cost double. |
-| 3. Referee | **Iris** | Tester | No bias. Independent code reading. Ground truth. |
+| 3. Referee | **Jason** | Tester | No bias. Independent code reading. Ground truth. |
 
-Using specialized agents (not generic ones) means each phase brings domain expertise — Nyx thinks like a security auditor, Kayle thinks like an architect evaluating structural soundness, Iris thinks like a tester verifying behavior.
+Using specialized agents (not generic ones) means each phase brings domain expertise — Jerry thinks like a security auditor, Kayle thinks like an architect evaluating structural soundness, Jason thinks like a tester verifying behavior.
 
 ## Scoring System
 
@@ -100,9 +100,9 @@ The most important design constraint. Each agent gets access to only what it nee
 
 | Phase | Gets access to | Does NOT see |
 |-------|---------------|-------------|
-| Hunter (Nyx) | Full codebase | Nothing to anchor on — clean slate |
+| Hunter (Jerry) | Full codebase | Nothing to anchor on — clean slate |
 | Skeptic (Kayle) | Structured bug list + file paths | Hunter's reasoning, confidence, narrative |
-| Referee (Iris) | Hunter findings + Skeptic verdicts | Either agent's emotional register or certainty |
+| Referee (Jason) | Hunter findings + Skeptic verdicts | Either agent's emotional register or certainty |
 
 **Why this matters:** If the Skeptic sees the Hunter writing "I'm very confident this is critical," it anchors on that confidence. If the Referee sees the Skeptic's frustration at a finding, it drifts toward consensus. Isolation forces independent judgment.
 
@@ -125,7 +125,7 @@ If zero bugs are confirmed, that's reported clearly — a clean report is a valu
 - **Architecture changes** — broad-scope PRs that touch many files
 - **Compliance requirements** — when you need a documented, multi-perspective review
 
-For quick informal reviews, you can use just the Hunter phase (Nyx) directly.
+For quick informal reviews, you can use just the Hunter phase (Jerry) directly.
 
 ## Installation
 

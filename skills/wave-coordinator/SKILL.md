@@ -1,6 +1,6 @@
 ---
 name: wave-coordinator
-version: 1.0.0
+version: 1.0.1
 description: "This skill should be used when dispatching more than 5 parallel agents, when context budget management is needed, or when generating multiple variations of the same output. Complements superpowers dispatching-parallel-agents with wave sizing, context budget tracking, and directive diversity. Use when the user says 'fan out', 'generate variations', 'batch agents', 'wave dispatch', or when spawning large numbers of subagents."
 ---
 
@@ -19,7 +19,9 @@ Wave coordination solves all three.
 
 ## Wave Sizing Rule
 
-**Maximum 5 concurrent subagents per wave.** If N > 5, divide into sequential waves:
+Use five concurrent subagents as a conservative default, then clamp the wave to
+the host's advertised concurrency limit and the remaining context/token budget.
+If N exceeds the effective limit, divide the work into sequential waves:
 
 ```
 N=12 → Wave 1 (5) → Wave 2 (5) → Wave 3 (2)
@@ -99,7 +101,7 @@ Wave-coordinator handles **what** to dispatch and **when**. `Skill(superpowers:d
 1. Use this skill to plan wave sizes, generate diverse directives, and track progress
 2. Use `Skill(superpowers:dispatching-parallel-agents)` for the actual subagent spawning call syntax
 
-If the superpowers plugin is not installed, use Claude Code's native `Task` tool for subagent spawning instead. Do not silently degrade — state which tool you are using.
+If the superpowers plugin is not installed, use Claude Code's native `Agent` tool for subagent spawning instead. Do not silently degrade — state which tool you are using.
 
 ## Worked Example
 
@@ -126,7 +128,7 @@ Synthesize all 8 results. Rank by quality. Present top 3 with rationale.
 
 ## Key Rules
 
-- 5 agents max per wave — no exceptions
+- Five agents per wave is the conservative default; respect lower or higher host limits explicitly
 - Check context budget before each wave
 - Unique directive per agent — never duplicate prompts within a wave
 - Read prior output before launching the next wave

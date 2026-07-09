@@ -1,5 +1,5 @@
 ---
-allowed-tools: Skill(bopen-tools:loop-engineering), Skill(bopen-tools:linear-planning), Read, Write, Grep, Glob, Bash, TodoWrite
+allowed-tools: Skill(bopen-tools:loop-engineering), Skill(bopen-tools:linear-planning), Read, Write, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList
 description: Interactively design and scaffold an autonomous agent loop in this project (goal, gate, state, stop conditions, heartbeat)
 argument-hint: [goal or feature the loop should work toward]
 ---

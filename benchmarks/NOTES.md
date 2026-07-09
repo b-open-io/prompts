@@ -10,11 +10,12 @@
 ## Running
 
 ```bash
-bun run benchmark                                    # All skills
-bun run benchmark --skill geo-optimizer              # Single skill
-bun run benchmark --model claude-sonnet-4-6          # Override model (default: haiku)
-bun run benchmark --concurrency 4                    # Parallel workers
-BENCHMARK_MODEL=claude-sonnet-4-6 bun run benchmark  # Env var override
+bun run scripts/benchmark.tsx                                    # All skills
+bun run scripts/benchmark.tsx --skill geo-optimizer              # Single skill
+export BENCHMARK_MODEL_ID="provider-model-id-from-your-account"
+bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"       # Override model (default: haiku)
+bun run scripts/benchmark.tsx --concurrency 4                    # Parallel workers
+BENCHMARK_MODEL="$BENCHMARK_MODEL_ID" bun run scripts/benchmark.tsx # Env var override
 ```
 
 From within Claude Code, prefix with `CLAUDECODE=` to avoid nested session errors.

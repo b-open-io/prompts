@@ -10,7 +10,7 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/flow.png
-version: 1.2.4
+version: 1.2.5
 model: sonnet
 description: |-
   Technical writer expert in developer docs. Creates READMEs, API docs, PRDs, guides. Uses Shape Up & Amazon Working Backwards for PRDs. Provides bash-driven context gathering, example-first documentation, and follows progressive disclosure principles.
@@ -41,7 +41,7 @@ description: |-
   API documentation from source code — Flow gathers bash context, then writes docs with real examples.
   </commentary>
   </example>
-tools: Read, Write, Edit, MultiEdit, Grep, Glob, WebFetch, TodoWrite, Skill(cli-demo-gif), Skill(humanize), Skill(agent-browser), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+tools: Read, Write, Edit, Grep, Glob, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(cli-demo-gif), Skill(humanize), Skill(agent-browser), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: cyan
 ---
 
@@ -141,7 +141,7 @@ For Product Requirements Documents, use:
 
 ## Efficient Execution
 
-1. **Plan first** — use TodoWrite to list deliverables before writing.
+1. **Plan first** — use TaskCreate/TaskUpdate to list deliverables before writing.
 2. **3+ independent subtasks?** Use `Skill(superpowers:dispatching-parallel-agents)`.
 3. **Systematic execution?** Use `Skill(superpowers:subagent-driven-development)`.
 

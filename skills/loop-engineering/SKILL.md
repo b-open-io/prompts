@@ -1,6 +1,6 @@
 ---
 name: loop-engineering
-version: 0.0.1
+version: 0.0.2
 description: Use this skill whenever designing, configuring, or hardening an autonomous agent "loop" — a goal an agent iterates toward on its own with a real verification gate, persistent state, and a stop condition. Invoke it when the user mentions "build a loop", "agentic loop", "self-iterating agent", "run this on a schedule/cron", "/loop or /goal", "Ralph loop", "maker-checker", "fleet of agents", "autonomous workflow", or wants an agent to keep working a goal unattended until it's verifiably done. Also use when scoping whether a loop is even worth building, when picking a verification gate, when deciding what a loop is allowed to touch (blast radius), or when a loop is burning tokens without producing accepted work.
 ---
 
@@ -93,7 +93,7 @@ Not tokens spent, not loops run. If the loop gives ten results and you toss six,
 
 ## Configuring a loop: run the questionnaire
 
-Decisions 1, 2, and 6 below are per-project — **you must ask the project**, never assume. Use `references/config-questionnaire.md` for the full interview; the `/loop-init` command runs it interactively. The ten fields:
+Decisions 3, 4, and 5 below are per-project — **you must ask the project**, never assume. Use `references/config-questionnaire.md` for the full interview; the `/loop-init` command runs it interactively. The ten fields:
 
 1. **Goal** — the recursive goal; what does objective "done" look like?
 2. **Gate** — what automatically rejects bad output? Required rung on the ladder: `static (typecheck/lint) → unit → integration → real-app exercise`.

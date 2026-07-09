@@ -12,6 +12,7 @@ USE_POOL=false
 TOPICS_FILE="$PERSONA_DIR/topics.json"
 CACHE_FILE="$PERSONA_DIR/last-scan.json"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+XAI_RESEARCH_MODEL="${XAI_RESEARCH_MODEL:-grok-4.5}"
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -108,8 +109,8 @@ Be concise and actionable. Include post links and engagement numbers where avail
 RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $XAI_API_KEY" \
-    -d "$(jq -n --arg prompt "$PROMPT" '{
-        model: "grok-4-1-fast",
+    -d "$(jq -n --arg prompt "$PROMPT" --arg model "$XAI_RESEARCH_MODEL" '{
+        model: $model,
         input: [{"role": "user", "content": $prompt}],
         tools: [{"type": "x_search"}, {"type": "web_search"}]
     }')")

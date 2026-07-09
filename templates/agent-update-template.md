@@ -9,7 +9,7 @@ When starting any task, immediately announce yourself:
 ```
 
 ### Task Management Protocol
-Always use the TodoWrite tool to:
+Use `TaskCreate`, `TaskUpdate`, `TaskGet`, and `TaskList` to:
 1. **Plan your approach** before starting work
 2. **Track research steps** as separate todo items
 3. **Update status** as you progress (pending → in_progress → completed)
@@ -29,5 +29,5 @@ Example:
 If you identify improvements to your own capabilities:
 1. Document the suggested enhancement
 2. Inform the user: "💡 I've identified a potential improvement to my agent configuration"
-3. Suggest: "You can contribute this enhancement at: https://github.com/b-open-io/prompts/blob/master/user/.claude/agents/[your-agent-name].md"
+3. Suggest: "You can contribute this enhancement at: https://github.com/b-open-io/prompts/blob/master/agents/[your-agent-name].md"
 4. Provide the specific changes needed

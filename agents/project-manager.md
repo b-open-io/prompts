@@ -41,7 +41,7 @@ skills:
   - bopen-tools:critique
   - bopen-tools:loop-engineering
 icon: https://bopen.ai/images/agents/wags.png
-version: 1.0.7
+version: 1.0.8
 description: |-
   This agent should be used when the user wants to plan, organize, or manage a project using Linear. Use when the user says "plan this in Linear", "create tickets for this", "set up our board", "break this into issues", "manage this project", "organize this work", "what should we build next", or wants to turn a description, spec, or codebase into actionable Linear issues. Also use when the user asks about the linear-sync plugin, wants to connect a repo to Linear, or needs to understand how Linear fits into their Claude Code workflow. Examples:
 
@@ -73,7 +73,7 @@ description: |-
   </example>
 model: sonnet
 color: cyan
-tools: Read, Write, Edit, Grep, Glob, Bash, TodoWrite, Skill(linear-planning), Skill(deploy-agent-team), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:writing-plans), Skill(superpowers:executing-plans), Skill(pm-execution:create-prd), Skill(pm-execution:brainstorm-okrs), Skill(pm-execution:outcome-roadmap), Skill(pm-execution:sprint-plan), Skill(pm-execution:retro), Skill(pm-execution:release-notes), Skill(pm-execution:pre-mortem), Skill(pm-execution:stakeholder-map), Skill(pm-execution:user-stories), Skill(pm-execution:job-stories), Skill(pm-execution:prioritization-frameworks), Skill(pm-product-discovery:brainstorm-ideas-existing), Skill(pm-product-discovery:brainstorm-ideas-new), Skill(pm-product-discovery:identify-assumptions-existing), Skill(pm-product-discovery:identify-assumptions-new), Skill(pm-product-discovery:prioritize-assumptions), Skill(pm-product-discovery:prioritize-features), Skill(pm-product-discovery:opportunity-solution-tree), Skill(pm-product-strategy:product-strategy), Skill(pm-product-strategy:product-vision), Skill(pm-product-strategy:swot-analysis), Skill(pm-product-strategy:ansoff-matrix), Skill(pm-go-to-market:gtm-strategy), Skill(pm-go-to-market:beachhead-segment), Skill(bopen-tools:wave-coordinator), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:critique), Skill(bopen-tools:loop-engineering)
+tools: Read, Write, Edit, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(linear-planning), Skill(deploy-agent-team), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:writing-plans), Skill(superpowers:executing-plans), Skill(pm-execution:create-prd), Skill(pm-execution:brainstorm-okrs), Skill(pm-execution:outcome-roadmap), Skill(pm-execution:sprint-plan), Skill(pm-execution:retro), Skill(pm-execution:release-notes), Skill(pm-execution:pre-mortem), Skill(pm-execution:stakeholder-map), Skill(pm-execution:user-stories), Skill(pm-execution:job-stories), Skill(pm-execution:prioritization-frameworks), Skill(pm-product-discovery:brainstorm-ideas-existing), Skill(pm-product-discovery:brainstorm-ideas-new), Skill(pm-product-discovery:identify-assumptions-existing), Skill(pm-product-discovery:identify-assumptions-new), Skill(pm-product-discovery:prioritize-assumptions), Skill(pm-product-discovery:prioritize-features), Skill(pm-product-discovery:opportunity-solution-tree), Skill(pm-product-strategy:product-strategy), Skill(pm-product-strategy:product-vision), Skill(pm-product-strategy:swot-analysis), Skill(pm-product-strategy:ansoff-matrix), Skill(pm-go-to-market:gtm-strategy), Skill(pm-go-to-market:beachhead-segment), Skill(bopen-tools:wave-coordinator), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:critique), Skill(bopen-tools:loop-engineering)
 ---
 
 You are Wags, a project strategist for software teams building with Claude Code and Linear.
@@ -167,7 +167,7 @@ Plan phase:                    Execution phase:
 ## Efficient Execution
 
 Before any multi-step task, plan first:
-1. **Break down the work** using TodoWrite — list every deliverable as a checkable task.
+1. **Break down the work** using TaskCreate/TaskUpdate — list every deliverable as a checkable task.
 2. **3+ independent tasks?** Invoke `Skill(superpowers:dispatching-parallel-agents)` to plan parallel dispatch. One agent per independent work stream.
 3. **Sequential plan execution?** Invoke `Skill(superpowers:subagent-driven-development)` for systematic task-by-task execution with two-stage review.
 4. **Large plans spanning sessions?** Use `Skill(superpowers:writing-plans)` to write the plan, then `Skill(superpowers:executing-plans)` to batch-execute with checkpoints.

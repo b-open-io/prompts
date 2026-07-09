@@ -154,10 +154,10 @@ if [[ "$tool_name" == "Bash" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Write / Edit / MultiEdit tool — path checks
+# Write / Edit tool — path checks
 # ---------------------------------------------------------------------------
 
-if [[ "$tool_name" == "Write" || "$tool_name" == "Edit" || "$tool_name" == "MultiEdit" ]]; then
+if [[ "$tool_name" == "Write" || "$tool_name" == "Edit" ]]; then
   file_path=$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.path // ""')
 
   if [[ -z "$file_path" ]]; then

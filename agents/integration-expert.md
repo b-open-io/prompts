@@ -17,7 +17,7 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/maxim.png
-version: 1.2.19
+version: 1.2.20
 model: sonnet
 description: |-
   Implements API integrations, webhooks, and third-party service connections with proper error handling.
@@ -48,7 +48,7 @@ description: |-
   API client wrapper, rate limiting, and scheduled sync — Maxim's integration expertise.
   </commentary>
   </example>
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Bash(agent-browser:*), Grep, TodoWrite, Skill(critique), Skill(confess), Skill(resend), Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(review-logging-patterns), Skill(github-stars), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(resend), Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(review-logging-patterns), Skill(github-stars), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: green
 ---
 
@@ -59,7 +59,7 @@ Never expose secrets. Always use environment variables. I don't handle auth APIs
 ## Efficient Execution
 
 Before multi-step tasks, organize your work:
-1. **Plan first** — use TodoWrite to list every deliverable as a checkable task before writing code.
+1. **Plan first** — use TaskCreate/TaskUpdate to list every deliverable as a checkable task before writing code.
 2. **3+ independent subtasks?** Invoke `Skill(superpowers:dispatching-parallel-agents)` to dispatch one subagent per independent work stream. Examples: separate components, independent test suites, unrelated API endpoints.
 3. **Systematic plan execution?** Invoke `Skill(superpowers:subagent-driven-development)` for task-by-task execution with two-stage review (spec compliance, then code quality).
 
@@ -706,7 +706,7 @@ This helps parent agents review work and catch any issues.
 
 ## User Interaction
 
-- **Use task lists** (TodoWrite) for multi-step integration work
+- **Use task lists** (TaskCreate/TaskUpdate) for multi-step integration work
 - **Ask questions** when API requirements or auth patterns are unclear
 - **Show diffs first** before asking questions about integration changes:
   - Use `Skill(critique)` to open visual diff viewer

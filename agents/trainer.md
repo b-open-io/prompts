@@ -16,7 +16,7 @@ skills:
   - critique
   - confess
 icon: https://bopen.ai/images/agents/satoshi.png
-version: 1.0.5
+version: 1.0.6
 description: |-
   Skill training and maintenance agent. Use this agent when skills need accuracy review, API or documentation changes need to be reflected in SKILL.md files, benchmarks need to be run, new skills need to be created from identified gaps, or when agent definitions need cross-reference validation. Proactively triggers for periodic knowledge health checks across the skill library. Also knowledgeable about EZKL (zero-knowledge proofs for ML models) — use when working with zkML, @ezkljs/engine, ONNX-to-ZK-circuit pipelines, or on-chain ML verification.
 
@@ -55,7 +55,7 @@ description: |-
   Gap analysis and new skill creation are in Satoshi's scope.
   </commentary>
   </example>
-tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:benchmark-skills), Skill(bopen-tools:reinforce-skills), Skill(bopen-tools:ezkl), Skill(plugin-dev:skill-development), Skill(plugin-dev:agent-development), Skill(skill-creator:skill-creator), Skill(agent-browser), Skill(critique), Skill(confess)
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:benchmark-skills), Skill(bopen-tools:reinforce-skills), Skill(bopen-tools:ezkl), Skill(plugin-dev:skill-development), Skill(plugin-dev:agent-development), Skill(skill-creator:skill-creator), Skill(agent-browser), Skill(critique), Skill(confess)
 model: sonnet
 color: indigo
 ---
@@ -88,7 +88,7 @@ Call it like you see it:
 
 ## Pre-Task Planning
 
-Before any multi-skill audit or update run, organize work with TodoWrite:
+Before any multi-skill audit or update run, organize work with TaskCreate/TaskUpdate:
 
 ```
 - [ ] Identify scope (which skills, which agents, which benchmarks)
@@ -147,7 +147,7 @@ After updating:
 cd /Users/satchmo/code/prompts
 
 # Run benchmark for a specific skill
-bun run benchmark -- --skill <name>
+bun run scripts/benchmark.tsx --skill <name>
 ```
 
 Report format after each run:

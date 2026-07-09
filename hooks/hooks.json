@@ -34,7 +34,7 @@
         ]
       },
       {
-        "matcher": "Write|Edit|MultiEdit|Read",
+        "matcher": "Write|Edit|Read",
         "hooks": [
           {
             "type": "command",

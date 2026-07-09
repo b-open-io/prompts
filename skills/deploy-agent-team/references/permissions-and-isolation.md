@@ -1,43 +1,32 @@
 # Permissions and Isolation
 
-## The `mode` Parameter — Critical
+## Permission Model — Critical
 
-The `mode` parameter on Agent spawning controls how the agent handles permission prompts. **Without `mode: "bypassPermissions"`, teammates block** waiting for interactive prompts that will never arrive, stalling the entire team indefinitely.
+Agent-team permission behavior depends on the installed Claude Code build and the
+`Agent` schema it exposes. Start by configuring the lead, then use a per-spawn
+mode when the schema supports one:
 
-**Always set `mode: "bypassPermissions"` for agent team members.**
+- Allow only the file edits and commands the planned tasks require.
+- Keep destructive commands and sensitive directories denied.
+- Expect permission requests to bubble up to the lead when an operation was not
+  pre-approved.
+- Prefer `dontAsk` or `auto` for unattended workers; use `plan` when the lead
+  must approve an approach before edits.
+- Do not use `--dangerously-skip-permissions` as a convenience default. It removes
+  permission checks for the lead and every teammate.
 
-```
-Agent(
-  subagent_type: "bopen-tools:designer",
-  team_name: "feature-billing",
-  name: "designer",
-  mode: "bypassPermissions",   # ← Required for teams
-  prompt: "..."
-)
-```
-
-## Mode Options
-
-| Mode | Behavior | Use when |
-|------|----------|----------|
-| `bypassPermissions` | Skips ALL permission checks — no prompts | Trusted agents doing known work. **Recommended default for all teammates.** |
-| `acceptEdits` | Auto-approves file edits; asks for other permissions | Want edit autonomy but caution on Bash/destructive ops |
-| `dontAsk` | Doesn't prompt (silently respects existing restrictions) | Silent operation; agent already has needed permissions via settings |
-| `plan` | Agent enters plan mode; requires lead's `plan_approval_response` before proceeding | High-stakes changes where lead wants to review the plan first |
-| `default` | Normal interactive behavior — **will block waiting for prompts** | **Avoid in teams.** Only meaningful for solo agents with a human present. |
+If a task genuinely requires unrestricted operation, run the entire session inside
+an explicit external sandbox and obtain user approval for that trust boundary.
 
 ### When to Use `plan` Mode
 
-Use `plan` mode for agents making large structural changes — database migrations, API redesigns, major refactors — where you want to review their approach before they write a single line:
+Require plan approval for teammates making large structural changes — database
+migrations, API redesigns, or major refactors — by stating that requirement when
+asking the lead to spawn them:
 
 ```
-Agent(
-  subagent_type: "bopen-tools:database",
-  team_name: "feature-billing",
-  name: "db-designer",
-  mode: "plan",
-  prompt: "Design the billing schema. Present your plan before implementing."
-)
+Spawn a database teammate to design the billing schema. Require plan approval
+before it edits any files.
 ```
 
 The agent will exit plan mode and send you a `plan_approval_request`. You respond with:
@@ -52,56 +41,14 @@ SendMessage(
 
 Then the agent proceeds with implementation.
 
-## Worktree Isolation — for Parallel Edits
+## File Isolation for Parallel Edits
 
-When multiple agents edit the **same codebase in parallel**, you risk git conflicts. Use `isolation: "worktree"` to give each agent its own isolated git worktree:
+Partition work so every teammate owns a disjoint set of files, and pin shared
+interfaces in each task description before work starts. When the installed
+`Agent` schema supports `isolation: "worktree"`, use it for workers whose edits
+may overlap and have the lead integrate each branch.
 
-```
-Agent(
-  subagent_type: "bopen-tools:nextjs",
-  team_name: "feature-billing",
-  name: "frontend",
-  mode: "bypassPermissions",
-  isolation: "worktree",   # ← Each agent gets its own branch
-  prompt: "..."
-)
-```
-
-### How worktree isolation works
-
-1. Claude Code creates a temporary git worktree at `.claude/worktrees/<name>` with a new branch based on HEAD
-2. The agent works on this isolated copy — no conflicts with other agents
-3. If the agent makes **no changes**, the worktree is automatically cleaned up
-4. If the agent **makes changes**, the worktree path and branch name are returned in the result
-5. The lead (you) must then merge each agent's branch once all agents complete
-
-### Trade-offs
-
-| With worktree | Without worktree |
-|---------------|-----------------|
-| Agents can't conflict with each other | Agents may conflict on same files |
-| Lead must merge branches at the end | Changes land directly in working tree |
-| Cleaner for large parallel feature work | Simpler for well-partitioned tasks |
-
-### When to use worktree isolation
-
-**Use it when:**
-- Multiple agents will edit the same files (e.g., two agents both touch `package.json`)
-- Large codebase changes where git conflicts are likely
-- You want clean, reviewable branches per agent
-
-**Skip it when:**
-- Agents work on strictly separate files/directories
-- The task is read-only (analysis, auditing, documentation output)
-- The team is small (1-2 agents) with clearly partitioned work
-
-### Merge workflow after worktree agents complete
-
-```bash
-# Each agent that made changes returns its branch name
-# Example: agent "frontend" worked on branch feature-billing-frontend
-
-git merge feature-billing-frontend
-git merge feature-billing-backend
-# Resolve any conflicts, then push
-```
+If that field is unavailable, use isolated subagents, agent view sessions, or
+manually created worktrees instead of letting teammates write the same files in
+one checkout. The lead owns integration and reruns acceptance checks after each
+merge.

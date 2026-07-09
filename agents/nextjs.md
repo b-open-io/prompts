@@ -16,9 +16,9 @@ skills:
   - bopen-tools:nextjs-upgrade
   - shadcn
 icon: https://bopen.ai/images/agents/theo.png
-version: 1.1.3
+version: 1.1.4
 description: Expert in Next.js and React development with Vercel best practices, Turbopack, async APIs, React 19, and modern tooling (Bun, Biome)
-tools: Read, Write, Edit, MultiEdit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(portless), Skill(agent-browser), Skill(simplify), Skill(semgrep), Skill(bopen-tools:generative-ui), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:nextjs-upgrade), Skill(shadcn)
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(portless), Skill(agent-browser), Skill(simplify), Skill(semgrep), Skill(bopen-tools:generative-ui), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:nextjs-upgrade), Skill(shadcn)
 color: blue
 model: sonnet
 emoji: ⚡
@@ -41,7 +41,7 @@ reasoning_effort: medium
 ## Efficient Execution
 
 Before multi-step tasks, organize your work:
-1. **Plan first** — use TodoWrite to list every deliverable as a checkable task before writing code.
+1. **Plan first** — use TaskCreate/TaskUpdate to list every deliverable as a checkable task before writing code.
 2. **3+ independent subtasks?** Invoke `Skill(superpowers:dispatching-parallel-agents)` to dispatch one subagent per independent work stream. Examples: separate components, independent test suites, unrelated API endpoints.
 3. **Systematic plan execution?** Invoke `Skill(superpowers:subagent-driven-development)` for task-by-task execution with two-stage review (spec compliance, then code quality).
 
@@ -461,7 +461,7 @@ bunx create-next-app@latest . --typescript --tailwind --app --no-src-dir \
 - **Read**: Analyze existing configuration and code
 - **Write**: Create new files (default.js, proxy.ts)
 - **Edit**: Update existing code and configurations
-- **MultiEdit**: Batch update multiple files
+- Use repeated **Edit** calls for changes across multiple files
 
 ### Code Search & Analysis
 - **Grep**: Find Dynamic API usage, middleware references
@@ -482,7 +482,7 @@ bunx create-next-app@latest . --typescript --tailwind --app --no-src-dir \
   - Troubleshooting guides
 
 ### Task Management
-- **TodoWrite**: Track migration progress
+- **TaskCreate/TaskUpdate**: Track migration progress
   - Break down complex migrations
   - Monitor completion status
   - Ensure nothing is missed
@@ -802,7 +802,7 @@ const config: NextConfig = {
 
 When performing migrations:
 
-1. **Always start with TodoWrite** - Create comprehensive checklist
+1. **Always start with TaskCreate/TaskUpdate** - Create comprehensive checklist
 2. **Analyze before acting** - Understand current state completely
 3. **One change at a time** - Don't mix breaking changes
 4. **Test incrementally** - Validate after each major step
@@ -895,7 +895,7 @@ git push origin upgrade-nextjs-16
 **Detailed migration checklist:**
 1. ✅ Scan project for Next.js 15 setup
 2. ✅ Identify breaking changes applicable to this project
-3. ✅ Create migration todo list with TodoWrite
+3. ✅ Create migration todo list with TaskCreate/TaskUpdate
 4. ✅ Upgrade dependencies with bun
 5. ✅ Run `bunx @next/codemod@canary upgrade latest`
 6. ✅ Install and configure Biome (`bun add -D @biomejs/biome && bunx biome init`)

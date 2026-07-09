@@ -1,6 +1,6 @@
 ---
 name: x-research
-version: 1.1.2
+version: 1.1.3
 description: AI-powered X/Twitter research via xAI Grok. Returns AI SUMMARIES with analysis, not raw tweets. Use for "what's trending", "social sentiment", "summarize X discussion about", "analyze X conversation about", "research topic on X". For RAW tweet data, use x-user-timeline, x-tweet-search, x-tweet-fetch instead. Requires XAI_API_KEY.
 allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_PLUGIN_ROOT}:*)
 ---
@@ -15,7 +15,12 @@ AI-powered research using xAI's Grok API. Returns **AI summaries with citations*
 > - `x-tweet-fetch` - Raw single tweet
 > - `x-user-lookup` - User profile data
 >
-> These require `X_BEARER_TOKEN` instead of `XAI_API_KEY`.
+> When tools from X's official
+> [XMCP server](https://github.com/xdevplatform/xmcp) are available, prefer
+> them for raw X data. XMCP normally runs locally at
+> `http://127.0.0.1:8000/mcp`; `https://docs.x.com/mcp` is the separate hosted
+> documentation server. Otherwise use the skills above. Both raw-data routes
+> require X credentials; this synthesis skill uses `XAI_API_KEY` instead.
 
 ## When to Use
 
@@ -54,12 +59,16 @@ If unavailable, inform the user that XAI_API_KEY must be configured before using
 
 **Endpoint**: `https://api.x.ai/v1/responses`
 
-**Recommended Model**: `grok-4-1-fast` (specifically trained for agentic search)
+**Current Default**: `grok-4.5`
 
-**Available Models**:
-- `grok-4-1-fast` - Recommended for agentic search (auto-selects reasoning mode)
-- `grok-4-1-fast-reasoning` - Explicit reasoning for complex research
-- `grok-4-1-fast-non-reasoning` - Faster responses, simpler queries
+Set `XAI_RESEARCH_MODEL` to override it. Before a long-lived deployment or a
+reproducible run, list the models available to the current API key and pin an ID
+that meets the workload's search, reasoning, latency, and cost requirements:
+
+```bash
+curl -s https://api.x.ai/v1/models \
+  -H "Authorization: Bearer $XAI_API_KEY" | jq -r '.data[].id'
+```
 
 **Available Search Tools**:
 - `web_search` - Searches the internet and browses web pages
@@ -74,7 +83,7 @@ curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4-1-fast",
+    "model": "grok-4.5",
     "input": [{"role": "user", "content": "[YOUR QUERY]"}],
     "tools": [{"type": "web_search"}, {"type": "x_search"}]
   }' | jq -r '.output[-1].content[0].text'
@@ -87,7 +96,7 @@ RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4-1-fast",
+    "model": "grok-4.5",
     "input": [{"role": "user", "content": "[YOUR QUERY]"}],
     "tools": [{"type": "web_search"}, {"type": "x_search"}]
   }')
@@ -95,7 +104,7 @@ RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
 # Extract usage stats
 TOOL_CALLS=$(echo "$RESPONSE" | jq -r '.usage.num_server_side_tools_used // 0')
 COST_TICKS=$(echo "$RESPONSE" | jq -r '.usage.cost_in_usd_ticks // 0')
-COST_USD=$(echo "scale=4; $COST_TICKS / 1000000000" | bc)
+COST_USD=$(jq -n --argjson ticks "$COST_TICKS" '$ticks / 10000000000')
 echo "Tool calls: $TOOL_CALLS | Estimated cost: \$$COST_USD"
 echo ""
 echo "$RESPONSE" | jq -r '.output[-1].content[0].text'
@@ -132,8 +141,8 @@ echo "$RESPONSE" | jq -r '.output[-1].content[0].text'
 }]
 ```
 
-- `allowed_x_handles` - Only include posts from these accounts (max 10)
-- `excluded_x_handles` - Exclude posts from these accounts (max 10)
+- `allowed_x_handles` - Only include posts from these accounts (max 20)
+- `excluded_x_handles` - Exclude posts from these accounts (max 20)
 - `from_date` / `to_date` - ISO8601 date range (YYYY-MM-DD)
 - `enable_image_understanding` - Analyze images in posts
 - `enable_video_understanding` - Analyze videos in posts
@@ -147,7 +156,7 @@ curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4-1-fast",
+    "model": "grok-4.5",
     "input": [{"role": "user", "content": "What is currently trending on X? Include viral posts and major discussions."}],
     "tools": [{"type": "x_search"}]
   }' | jq -r '.output[-1].content[0].text'
@@ -160,7 +169,7 @@ curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4-1-fast",
+    "model": "grok-4.5",
     "input": [{"role": "user", "content": "What are developers saying about [TOPIC] on X? Include recent discussions and opinions."}],
     "tools": [{"type": "x_search"}, {"type": "web_search"}]
   }' | jq -r '.output[-1].content[0].text'
@@ -173,21 +182,21 @@ curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4-1-fast",
+    "model": "grok-4.5",
     "input": [{"role": "user", "content": "Latest news and developments about [TOPIC]"}],
     "tools": [{"type": "web_search"}]
   }' | jq -r '.output[-1].content[0].text'
 ```
 
-### Research with Date Range
+### Historical Research with Date Range
 
 ```bash
 curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4-1-fast",
-    "input": [{"role": "user", "content": "What happened with [TOPIC] last week?"}],
+    "model": "grok-4.5",
+    "input": [{"role": "user", "content": "What happened with [TOPIC] from January 9 through January 16, 2025?"}],
     "tools": [{
       "type": "x_search",
       "from_date": "2025-01-09",
@@ -232,19 +241,16 @@ The response contains:
 
 ## Pricing
 
-**Search tools are currently FREE** (promotional pricing).
-
-Standard pricing when active:
-- Web Search, X Search: $5 per 1,000 tool invocations
-- Token costs: Varies by model (~$3-15 per 1M input tokens)
-
-Track costs via `response.usage.cost_in_usd_ticks` (divide by 1,000,000,000 for USD).
+Search and token pricing changes independently of this skill. Read the exact
+charge from `response.usage.cost_in_usd_ticks`; xAI defines one USD as
+10,000,000,000 ticks. Consult the provider pricing page before estimating future
+requests.
 
 ## Error Handling
 
 If the API returns an error:
 1. Check XAI_API_KEY is set and valid
-2. Verify model name is correct (use `grok-4-1-fast`)
+2. Verify the model resolves for the current API key with `GET /v1/models`
 3. Check rate limits haven't been exceeded
 4. Ensure `tools` array is properly formatted
 5. Report the error to the user with the API response
@@ -269,7 +275,7 @@ Old format (deprecated):
 New format (use this):
 ```json
 {
-  "model": "grok-4-1-fast",
+  "model": "grok-4.5",
   "input": [...],
   "tools": [{"type": "web_search"}, {"type": "x_search"}]
 }

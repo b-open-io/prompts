@@ -34,7 +34,7 @@ list_backups() {
     local found=0
 
     # Find unique timestamps
-    for backup in "$CLAUDE_DIR"/settings.json.backup.* 2>/dev/null; do
+    for backup in "$CLAUDE_DIR"/settings.json.backup.*; do
         if [[ -f "$backup" ]]; then
             local ts=$(basename "$backup" | sed 's/settings.json.backup.//')
             local date_fmt=$(echo "$ts" | sed 's/\(....\)\(..\)\(..\)\(..\)\(..\)\(..\)/\1-\2-\3 \4:\5:\6/')

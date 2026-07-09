@@ -16,7 +16,7 @@ This repository provides:
 
 ## Installation
 
-**Full Plugin** (recommended - includes 28 agents, 48 skills, 10 commands, 5 hooks):
+**Full Plugin** (recommended - includes 31 agents, 71 skill entries, 14 commands, 6 hooks):
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
@@ -27,7 +27,7 @@ bunx skills add b-open-io/bopen-tools --skill <skill-name>
 ```
 
 <details>
-<summary><strong>All 48 skills — click to expand</strong></summary>
+<summary><strong>Curated skills — click to expand</strong></summary>
 
 ```bash
 bunx skills add b-open-io/bopen-tools --skill agent-auditor
@@ -84,19 +84,19 @@ bunx skills add b-open-io/bopen-tools --skill x-user-timeline
 
 ## Specialized AI Agents
 
-Our 28 expert agents enhance Claude Code with specialized knowledge. See [agents/](agents/) for full details.
+Our 31 expert agents enhance Claude Code with specialized knowledge. See [agents/](agents/) for full details.
 
 ### Development & Architecture
 - 🔵 [**prompt-engineer**](agents/prompt-engineer.md) — Zack — Slash commands, agent skills, YAML frontmatter, Claude Code config
 - 🏗️ [**architecture-reviewer**](agents/architecture-reviewer.md) — Kayle — Large-scale system design, refactoring, multi-file analysis
-- 🔴 [**code-auditor**](agents/code-auditor.md) — Nyx — Security vulnerabilities, comprehensive code audits
+- 🔴 [**code-auditor**](agents/code-auditor.md) — Jerry — Security vulnerabilities, comprehensive code audits
 - 🛡️ [**security-ops**](agents/security-ops.md) — Paul — Runtime security, dependency scanning, supply chain analysis, OWASP
 - 🚀 [**optimizer**](agents/optimizer.md) — Torque — Runtime performance, bundle analysis, Core Web Vitals
-- 🧪 [**tester**](agents/tester.md) — Iris — Testing strategies, evals, skill benchmarking, CI automation
+- 🧪 [**tester**](agents/tester.md) — Jason — Testing strategies, evals, skill benchmarking, CI automation
 - 🧹 [**consolidator**](agents/consolidator.md) — Steve — File organization, deduplication, naming conventions
 
 ### Platform & Infrastructure
-- 🟠 [**devops**](agents/devops.md) — Zoro — Vercel + Railway + Bun stack, CI/CD, security scanning
+- 🟠 [**devops**](agents/devops.md) — Root — Vercel + Railway + Bun stack, CI/CD, security scanning
 - 🟢 [**database**](agents/database.md) — Idris — PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, Convex
 - 📱 [**mobile**](agents/mobile.md) — Kira — React Native, Swift, Kotlin, Flutter
 - 🔗 [**integration-expert**](agents/integration-expert.md) — Maxim — API integrations, webhooks, third-party services
@@ -107,15 +107,15 @@ Our 28 expert agents enhance Claude Code with specialized knowledge. See [agents
 - 🔷 [**creative-developer**](agents/creative-developer.md) — Kris — Three.js, R3F, shaders, physics, interactive 3D prototypes
 - 🗺️ [**cartographer**](agents/cartographer.md) — Leaf — MapLibre, Mapbox, Leaflet, CesiumJS, geospatial data
 - 💚 [**payments**](agents/payments.md) — Mina — Payment integrations, Plaid, financial operations
-- 🤖 [**agent-builder**](agents/agent-builder.md) — Rowan — AI agent systems, tool-calling, multi-agent orchestration
-- 📊 [**data**](agents/data.md) — Mr. Data Accumulator — Data processing, analytics, ETL pipelines
-- 📣 [**marketer**](agents/marketer.md) — Caal — CRO, copywriting, SEO, launch strategy, email sequences
-- 🗂️ [**project-manager**](agents/project-manager.md) — Sage — Linear planning, issue tracking, project organization
+- 🤖 [**agent-builder**](agents/agent-builder.md) — Satchmo — AI agent systems, tool-calling, multi-agent orchestration
+- 📊 [**data**](agents/data.md) — Data Accumulator — Data processing, analytics, ETL pipelines
+- 📣 **marketer** — Caal — Moved to `product-skills:marketer`
+- 🗂️ [**project-manager**](agents/project-manager.md) — Wags — Linear planning, issue tracking, project organization
 
 ### Content & Communication
 - 🟣 [**designer**](agents/designer.md) — Ridd — UI/UX, Tailwind, shadcn/ui, accessibility, dark mode
 - 🔷 [**documentation-writer**](agents/documentation-writer.md) — Flow — READMEs, API docs, PRDs, guides
-- 🎵 [**audio-specialist**](agents/audio-specialist.md) — Juniper — ElevenLabs audio, sound effects, music generation
+- 🎵 [**audio-specialist**](agents/audio-specialist.md) — Frames — ElevenLabs audio, sound effects, music generation
 - 🩷 [**researcher**](agents/researcher.md) — Parker — Web research, docs, APIs, parallel research strategies
 - 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
 
@@ -230,6 +230,7 @@ Hooks are distributed automatically with the plugin — no manual installation n
 | `session-context` | SessionStart | Injects branch, commit history, and plugin inventory into session context |
 | `bouncer` | PreToolUse (Bash) | Validates Bash commands against safety rules |
 | `damage-control` | PreToolUse (Bash, Write, Edit, Read) | Prevents accidental destructive operations |
+| `publish-gate` | PreToolUse (Bash) | Guards publishing commands behind repository release checks |
 | `agent-browser-solo` | PreToolUse (WebSearch, WebFetch) | Routes web operations through the agent browser |
 | `hammertime` | Stop | Catches bad model behaviors via scored rule matching with optional Haiku verification |
 
@@ -364,15 +365,16 @@ Add evals alongside any skill at `skills/<name>/evals/evals.json`:
 
 ```bash
 # Run all skills with evals
-bun run benchmark
+bun run scripts/benchmark.tsx
 
 # Run a single skill
+bun run scripts/benchmark.tsx --skill geo-optimizer
 
-# Custom model or concurrency
-bun run benchmark --model claude-opus-4-6 --concurrency 5
+# Custom model or concurrency (use an ID available to your account)
+bun run scripts/benchmark.tsx --model "${BENCHMARK_MODEL_ID:?set BENCHMARK_MODEL_ID}" --concurrency 5
 ```
 
-Results are written to `benchmarks/latest.json` and automatically published to bopen.ai after each CI run.
+Results are written to `benchmarks/latest.json`. Commit reviewed results to publish them to bopen.ai.
 
 **Resume support:** Each eval result is cached by content hash (`benchmarks/cache/`). If a run is interrupted, restarting picks up where it left off — no tokens wasted.
 
@@ -390,9 +392,9 @@ Or ask the tester agent directly:
 "Have the tester agent write evals for the x-research skill and run the benchmark"
 ```
 
-### CI Integration
+### Publishing Results
 
-Benchmarks run **locally** using your existing Claude session — no API key needed. Commit `benchmarks/latest.json` alongside your skill changes and push. CI validates that results are present and warns if you changed a skill without updating its benchmarks. bopen.ai picks up the committed results via ISR.
+Benchmarks run **locally** using your existing Claude session — no API key needed. They are not run in CI. Commit `benchmarks/latest.json` alongside the reviewed skill changes; bopen.ai picks up the committed results via ISR.
 
 ---
 

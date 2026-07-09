@@ -1,7 +1,7 @@
 ---
 allowed-tools: Agent, Bash(git:*)
 description: 4 specialized reviewers examine changes simultaneously — security, perf, correctness, style
-argument-hint: [branch|commit-range] - defaults to uncommitted changes
+argument-hint: "[branch|commit-range] - defaults to uncommitted changes"
 ---
 
 ## Your Task

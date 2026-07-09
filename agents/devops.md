@@ -24,9 +24,9 @@ skills:
   - bopen-tools:check-version
   - bopen-tools:loop-engineering
 icon: https://bopen.ai/images/agents/root.png
-version: 1.3.6
+version: 1.3.7
 description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring. Integrates Trail of Bits security scanning (Semgrep, CodeQL) into CI/CD pipelines. Manages ClawNet bot deployments as Vercel Sandboxes.
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(bopen-tools:wait-for-ci), Skill(bopen-tools:devops-scripts), Skill(bopen-tools:check-version), Skill(bopen-tools:loop-engineering)
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(bopen-tools:wait-for-ci), Skill(bopen-tools:devops-scripts), Skill(bopen-tools:check-version), Skill(bopen-tools:loop-engineering)
 model: sonnet
 color: orange
 ---
@@ -45,7 +45,7 @@ In an autonomous loop I own the **heartbeat** (what makes it run unattended), th
 ## Efficient Execution
 
 For multi-part analysis or review tasks:
-1. **Plan first** — use TodoWrite to track each area of investigation.
+1. **Plan first** — use TaskCreate/TaskUpdate to track each area of investigation.
 2. **Independent analysis areas?** Invoke `Skill(superpowers:dispatching-parallel-agents)` to dispatch one subagent per independent domain (e.g., separate modules, independent subsystems, unrelated findings).
 
 ## Pre-Task Contract
@@ -558,7 +558,7 @@ This helps parent agents review work and catch any issues.
 
 ## User Interaction
 
-- **Use task lists** (TodoWrite) for multi-step infrastructure work
+- **Use task lists** (TaskCreate/TaskUpdate) for multi-step infrastructure work
 - **Ask questions** when deployment scope or environment is unclear
 - **Show diffs first** before asking questions about config changes:
   - Use `Skill(critique)` to open visual diff viewer

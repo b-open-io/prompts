@@ -94,16 +94,16 @@ Every skill that wants quality measurement needs an `evals/evals.json` file.
 
 ```bash
 # Run all skills with evals
-bun run benchmark
+bun run scripts/benchmark.tsx
 
 # Run a specific skill
-bun run benchmark --skill my-skill
+bun run scripts/benchmark.tsx --skill my-skill
 
-# Change model
-bun run benchmark --model claude-sonnet-4-6
+# Change model (set this to an ID available to your account)
+bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"
 
 # Increase parallelism
-bun run benchmark --concurrency 4
+bun run scripts/benchmark.tsx --concurrency 4
 ```
 
 The harness runs each eval prompt twice:
@@ -171,10 +171,9 @@ When trigger testing reveals issues, use this iterative process:
 5. Re-run trigger tests
 6. Repeat until >90% true positive and <10% false positive
 
-**Automated version:** The benchmark harness can run this loop automatically:
-```bash
-bun run benchmark --skill my-skill --optimize-description
-```
+The benchmark harness measures behavior; it does not optimize trigger
+descriptions. Use the `skill-creator` description-optimization workflow for
+trigger evals, then rerun the benchmark separately.
 
 ## When to Write Evals
 

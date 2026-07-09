@@ -1,5 +1,6 @@
 ---
 name: coordinator
+version: 0.0.1
 description: Always active when coding in a premium Claude (Fable/Opus) session with cheaper executors available — a codex or grok quota, or lower-tier Claude models. Triggers whenever implementation work is being planned, scoped, or about to start — before writing any code — to decide where each piece of work executes. Plan big, execute small — judgment (planning, specs, design intent, review, visual validation, git) stays in the premium session; code-writing volume dispatches to workers, with guardrails learned from real dispatch failures.
 ---
 
@@ -74,8 +75,10 @@ machine; confirm before running, re-run the preflight after):
   ("implement X, edits expected") so write mode is chosen.
 - **CLI only**: `codex exec --sandbox workspace-write --cd <repo> "..."` with
   every guardrail in the Dispatch Protocol below.
-- Same brain either way — the plugin changes thread/job management, not what
-  codex can do. Sandbox physics (no network, no port binding) are identical.
+- Do not assume the plugin and raw CLI resolve the same model, profile, rules,
+  or sandbox. Record the effective model and policy during preflight; the
+  plugin primarily changes thread/job management, but local configuration can
+  still make the two lanes behave differently.
 
 **grok (Grok Build CLI) dispatch shape:**
 ```bash
@@ -229,12 +232,12 @@ worker landed.
    ```
    (A custom codex prompt like `/goal` may front the one-liner where the
    user's codex config defines one — optional local sugar, not required.)
-   - Bare `codex exec` runs a **read-only** sandbox: the dispatch burns quota,
-     writes nothing, and returns an apology. Never omit the flag (plugin
-     path: never omit the write-capable run).
-   - The sandbox has **no network**. Anything that fetches at build time
-     (Google fonts, installs, codegen) will fail inside codex even though it
-     passes for you. That is expected — the spec's environment clause covers it.
+   - Never rely on the user's default Codex sandbox for implementation. Specify
+     `--sandbox workspace-write` and verify the effective policy (plugin path:
+     request a write-capable run explicitly).
+   - Treat network and port access as properties of the effective sandbox, not
+     universal Codex facts. Preflight them when the task depends on installs,
+     generated assets, external APIs, or a local server.
    - **If the task NEEDS external data, ship it offline.** Fetch the API
      response/catalog/fixture yourself, save it into the workspace (e.g.
      `SPEC-catalog-snapshot.json`), and spec an EXPLICIT override (env var or

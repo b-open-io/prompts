@@ -1,6 +1,6 @@
 ---
 name: agent-onboarding
-version: 1.1.0
+version: 1.1.1
 description: Complete end-to-end checklist for adding a new agent to the bOpen team. Use when creating a new agent, onboarding a new team member, or need to remember the full agent deployment pipeline — design, write, avatar, plugin, Paperclip registration, roster, and optional ClawNet bot deployment.
 ---
 
@@ -24,36 +24,31 @@ Before writing a single file, define the agent's identity.
 - [ ] **Trigger phrases** — what kinds of tasks should route to this agent? List 5–10.
 - [ ] **Delegation targets** — which other agents does this one hand off to?
 - [ ] **Model** — use `sonnet` for most tasks; `opus` for complex reasoning, security, or architecture review.
-- [ ] **Color** — pick one: `red`, `orange`, `yellow`, `green`, `teal`, `blue`, `purple`, `pink`, `gray`.
+- [ ] **Color** — copy a known-valid color from a current agent and validate it with the installed Claude Code version; do not rely on a frozen color catalog.
 - [ ] **Tools** — list every tool and skill the agent needs. Agents without a `tools:` field get full MCP access. Agents with `tools:` only see what's listed, so be complete.
 
 ---
 
 ## Phase 2: Write the Agent File
 
-Agents use a **folder-based package structure** with a symlink for Claude Code compatibility:
+Authored Claude Code agent definitions live directly at the top level:
 
 ```
 agents/
-  {name}.md → {name}/{name}.md   (symlink — Claude Code auto-discovers this)
-  {name}/
-    {name}.md                    (actual agent definition — source of truth)
-    SOUL.md                      (optional — personality/persona)
-    HEARTBEAT.md                 (optional — execution procedures for Paperclip)
-    TOOLS.md                     (optional — tool reference)
-    avatar.png                   (optional — agent portrait)
+  {name}.md                    (authored source of truth)
+bots/
+  {name}.bot.json             (optional ClawNet deployment metadata)
 ```
 
-### Creating the folder and symlink
+Do not create a folder/symlink package for a normal plugin agent. Runtime bot
+workspaces under `.agents/` and canonical bot templates belong to their runtime
+systems, not to the authored agent definition.
+
+### Creating the agent file
 
 ```bash
-mkdir -p agents/{name}
-# Write the agent .md file inside the folder
-# Then create the symlink at the top level:
-ln -sf {name}/{name}.md agents/{name}.md
+touch agents/{name}.md
 ```
-
-Claude Code discovers `agents/{name}.md` (the symlink). Paperclip and ClawNet can reference the folder for the full agent package.
 
 ### Frontmatter format
 
@@ -64,7 +59,7 @@ display_name: "Display Name"
 version: 1.0.0
 model: sonnet
 description: One-sentence description of what this agent does and when to route to it.
-tools: Read, Write, Edit, MultiEdit, Bash, Grep, Glob, WebFetch, Skill(bopen-tools:relevant-skill)
+tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, Skill(bopen-tools:relevant-skill)
 color: blue
 ---
 ```
@@ -96,25 +91,27 @@ Look at existing agents in `~/code/prompts/agents/` for reference. The `mcp.md`,
 
 Every agent needs a portrait avatar.
 
-### Generate with gemskills
-
-Invoke `Skill(gemskills:generate-image)` or delegate to the `gemskills:content` agent.
+Generate the avatar in the `bopen-ai` repository using the documented pixel-avatar
+workflow. The filename is derived from `display_name`: lowercase it, replace each
+non-alphanumeric run with `-`, then append `.png`.
 
 **Prompt template:**
 ```
-Portrait of [historical figure name], [brief description of who they are].
-Professional headshot style. Clean background. High detail.
-Consistent with a team of AI agent avatars.
+Stardew Valley retro 16-bit pixel art character portrait. Dark maroon background
+(#2b120a), steel blue (#8cb4cb) and amber (#e38f1a) accent colors. Head and
+shoulders portrait, expressive pixel face, no text. [Agent-specific traits.]
 ```
 
 **Specs:**
 - Size: 1024x1024
 - Format: PNG
-- Save to: `agents/avatars/{name}.png`
+- Save to: `~/code/bopen-ai/public/images/agents/{display-name-slug}.png`
+- Record the exact prompt in `~/code/bopen-ai/public/images/agents/prompts.json`
 
 ### ClawNet ICO (optional)
 
-If the agent will run as a live ClawNet bot, also generate a 32x32 ICO version for the bot's profile icon. The ICO file goes in the same `agents/avatars/` directory as `{name}.ico`.
+If the agent will run as a live ClawNet bot, follow the bot runtime's current icon
+contract separately; do not add runtime icons to this plugin's `agents/` directory.
 
 ---
 
@@ -124,13 +121,14 @@ If the agent will run as a live ClawNet bot, also generate a 32x32 ICO version f
 - [ ] Bump the version (patch for new agents: e.g., `1.0.86` → `1.0.87`)
 - [ ] The agents array is not in `plugin.json` for bopen-tools — the plugin auto-discovers agent `.md` files from the `agents/` directory. No manual registration needed.
 - [ ] Update `~/code/prompts/skills/deploy-agent-team/references/agent-roster.md` — add a row to the roster table with the new agent's `subagent_type`, model, and best-for summary.
-- [ ] Stage all new/modified files: agent `.md`, avatar PNG, `plugin.json`, `agent-roster.md`
+- [ ] Stage plugin files in this repository: agent `.md`, `plugin.json`, `agent-roster.md`, and optional `bots/*.bot.json`
+- [ ] Commit and push the avatar plus `prompts.json` in the separate `bopen-ai` repository
 - [ ] Commit with a clear message: `Add {name} agent with avatar`
 - [ ] Push to master — this publishes automatically
 
 ```bash
 cd ~/code/prompts
-git add agents/{name}.md agents/avatars/{name}.png .claude-plugin/plugin.json skills/deploy-agent-team/references/agent-roster.md
+git add agents/{name}.md .claude-plugin/plugin.json skills/deploy-agent-team/references/agent-roster.md
 git commit -m "Add {name} agent with avatar"
 git push
 ```
@@ -258,14 +256,14 @@ After any new agent is deployed:
 | Item | Location |
 |------|----------|
 | Agent files | `~/code/prompts/agents/{name}.md` |
-| Avatars | `~/code/prompts/agents/avatars/{name}.png` |
+| Avatars | `~/code/bopen-ai/public/images/agents/{display-name-slug}.png` |
 | Plugin manifest | `~/code/prompts/.claude-plugin/plugin.json` |
 | Agent roster | `~/code/prompts/skills/deploy-agent-team/references/agent-roster.md` |
 | ClawNet core | `~/code/clawnet` |
 | ClawNet bot runner | `~/code/clawnet-bot` |
 | Bot maintenance | Johnny (`clawnet-bot:clawnet-mechanic`) |
 | Routing updates | Martha (`bopen-tools:front-desk`) |
-| Avatar generation | `Skill(gemskills:generate-image)` or `gemskills:content` agent |
+| Avatar prompts | `~/code/bopen-ai/public/images/agents/prompts.json` |
 | Paperclip instance | https://paperclip.bopen.io |
 | Paperclip repo | `~/code/paperclip` (b-open-io/paperclip) |
 | Paperclip skill | `~/code/paperclip/skills/paperclip/SKILL.md` |

@@ -102,7 +102,7 @@ Audit → Fix → Benchmark (before) → Apply fixes → Benchmark (after) → C
 ```
 
 1. Run structural audit, identify and fix issues
-2. Run `bun run benchmark --skill [name]` to get baseline metrics
+2. Run `bun run scripts/benchmark.tsx --skill [name]` to get baseline metrics
 3. Apply the structural fixes (better description, reorganized content)
 4. Re-run benchmark with identical evals
 5. Compare pass_rate and baseline_pass_rate deltas

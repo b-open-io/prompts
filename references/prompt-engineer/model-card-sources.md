@@ -60,7 +60,10 @@ curl https://api.together.xyz/v1/models \
 - **SDK method**: `gateway.getAvailableModels()` via `@ai-sdk/gateway`
 - **Provider docs**: [ai-sdk.dev/providers/ai-sdk-providers](https://ai-sdk.dev/providers/ai-sdk-providers)
 
-**Model ID format**: `provider:model-id` (e.g., `anthropic:claude-sonnet-4-6`, `openai:gpt-5.1-instant`, `google:gemini-2.5-flash`)
+**Model ID format**: `provider:model-id` (for example,
+`anthropic:<model-id>`, `openai:<model-id>`, or `google:<model-id>`). Populate
+the ID from `gateway.getAvailableModels()` rather than copying a catalog from
+this reference.
 
 ```ts
 import { createGateway } from '@ai-sdk/gateway';

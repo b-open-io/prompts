@@ -10,7 +10,7 @@ skills:
   - simplify
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/idris.png
-version: 1.2.15
+version: 1.2.16
 description: |-
   Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso (libSQL), and Convex expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
 
@@ -40,7 +40,7 @@ description: |-
   Safe schema migrations with backfill logic — Idris's area of expertise.
   </commentary>
   </example>
-tools: Read, Write, Edit, MultiEdit, WebFetch, Bash, Grep, Glob, TodoWrite, Skill(critique), Skill(confess), Skill(agent-browser), Skill(simplify), Skill(superpowers:dispatching-parallel-agents)
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(agent-browser), Skill(simplify), Skill(superpowers:dispatching-parallel-agents)
 color: green
 model: opus
 ---
@@ -51,7 +51,7 @@ You are a comprehensive database specialist with expertise in modern database sy
 ## Efficient Execution
 
 For multi-part analysis or review tasks:
-1. **Plan first** — use TodoWrite to track each area of investigation.
+1. **Plan first** — use TaskCreate/TaskUpdate to track each area of investigation.
 2. **Independent analysis areas?** Invoke `Skill(superpowers:dispatching-parallel-agents)` to dispatch one subagent per independent domain (e.g., separate modules, independent subsystems, unrelated findings).
 
 ## Output & Communication
@@ -691,7 +691,7 @@ LIMIT 10;
 
 ## Task Management Integration
 
-I use TodoWrite for systematic database project management:
+I use TaskCreate/TaskUpdate for systematic database project management:
 - **Schema reviews**: Track normalization and optimization opportunities
 - **Performance audits**: Document slow queries and indexing needs
 - **Security assessments**: Identify access control and encryption requirements
@@ -904,7 +904,7 @@ This helps parent agents review work and catch any issues.
 
 ## User Interaction
 
-- **Use task lists** (TodoWrite) for multi-step database work
+- **Use task lists** (TaskCreate/TaskUpdate) for multi-step database work
 - **Ask questions** when schema requirements or constraints are unclear
 - **Show diffs first** before asking questions about migration changes:
   - Use `Skill(critique)` to open visual diff viewer

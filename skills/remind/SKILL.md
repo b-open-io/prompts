@@ -1,6 +1,6 @@
 ---
 name: remind
-version: 1.0.1
+version: 1.0.2
 description: "Search and recall previous Claude Code conversation sessions. Use this skill whenever the user asks to remember, recall, find, or look up something from a past conversation or session. Triggers on phrases like: 'remember when we...', 'what did we do about...', 'find that conversation where...', 'when did I last work on...', 'what was that command/approach/solution we used for...', 'look up my past sessions about...'. Also use this skill when the user references prior work context that isn't in the current session, asks to continue work from a previous session, or wants to find a specific discussion, decision, or code snippet from their conversation history. Even vague references to past work ('that thing we did', 'the approach from last week') should trigger this skill."
 user-invocable: false
 ---
@@ -33,7 +33,7 @@ The search script at `scripts/search.py` handles both backends automatically.
 Run the search script with the user's query:
 
 ```bash
-python3 "SKILL_DIR/scripts/search.py" "<query>" [options]
+python3 "${CLAUDE_SKILL_DIR}/scripts/search.py" "<query>" [options]
 ```
 
 **Options:**
@@ -70,7 +70,7 @@ Summarize what you found in a clear format:
 If the user wants more detail from a specific session:
 
 ```bash
-python3 "SKILL_DIR/scripts/search.py" --session <session-id> --json
+python3 "${CLAUDE_SKILL_DIR}/scripts/search.py" --session <session-id> --json
 ```
 
 This returns the full conversation transcript. Summarize the relevant portions — don't dump the whole thing.

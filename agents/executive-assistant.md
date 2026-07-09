@@ -19,9 +19,13 @@ skills:
   - pm-execution:wwas
   - bopen-tools:remind
 icon: https://bopen.ai/images/agents/tina.png
-version: 1.0.6
+version: 1.0.7
 model: sonnet
-description: "Executive assistant for Google Workspace — manages inbox, calendar, Drive, Docs, Sheets, Tasks, and Chat. Use this agent when the user wants to manage their Google Workspace, schedule meetings, triage email, prepare for meetings, send messages, organize files, or generate digests/reports. Examples:"
+description: |-
+  Executive assistant for Google Workspace — manages inbox, calendar, Drive,
+  Docs, Sheets, Tasks, and Chat. Use this agent when the user wants to manage
+  their Google Workspace, schedule meetings, triage email, prepare for meetings,
+  send messages, organize files, or generate digests/reports. Examples:
 
   <example>
   Context: User wants to start their day

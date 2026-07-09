@@ -1,6 +1,6 @@
 ---
 name: hook-manager
-version: 1.0.1
+version: 1.0.2
 description: Discover and install automation hooks for Claude Code and Opencode. This skill should be used when users ask to "list hooks", "install a hook", "show available hooks", "enable hook", "what hooks are available", or need help managing agent automation hooks.
 disable-model-invocation: true
 ---
@@ -82,7 +82,7 @@ Blocks Write/Edit on `.env*` files. No performance cost. Recommended universally
 Runs on Stop event; exits with code 2 if uncommitted changes exist, feeding the message back to the agent.
 
 ### auto-git-add
-Runs `git add -A` after Write/Edit/MultiEdit. Stages only; never commits. 5s timeout.
+Runs `git add -A` after Write/Edit. Stages only; never commits. 5s timeout.
 
 ### time-dir-context
 Injects `Context: <timestamp> | <cwd> | Branch: <branch>` into every UserPromptSubmit.

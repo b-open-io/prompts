@@ -16,10 +16,10 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/frames.png
-version: 1.0.8
+version: 1.0.9
 model: sonnet
-description: Use this agent for ElevenLabs audio generation — voiceovers, sound effects, music, and voice cloning — plus xAI/Grok image generation. For image generation use gemskills:content (Luma, Gemini images, Veo video).
-tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TodoWrite, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(voice-clone), Skill(agent-browser), Skill(remotion-best-practices), Skill(gemskills:generate-image), Skill(gemskills:generate-video), Skill(gemskills:browsing-styles), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+description: Use this agent for ElevenLabs audio generation — voiceovers, sound effects, music, and voice cloning — plus xAI/Grok image generation. Use gemskills:content for Gemini or Luma image generation and Veo video generation.
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(voice-clone), Skill(agent-browser), Skill(remotion-best-practices), Skill(gemskills:generate-image), Skill(gemskills:generate-video), Skill(gemskills:browsing-styles), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: orange
 ---
 
@@ -94,8 +94,10 @@ const openai = new OpenAI({
     baseURL: "https://api.x.ai/v1",
 });
 
+const imageModel = process.env.XAI_IMAGE_MODEL ?? "grok-imagine-image-quality";
+
 const response = await openai.images.generate({
-    model: "grok-2-image",
+    model: imageModel,
     prompt: "A modern Bitcoin wallet interface with security features highlighted"
 });
 
@@ -105,7 +107,7 @@ console.log(response.data[0].url);
 **Generate Base64 Image**:
 ```typescript
 const response = await openai.images.generate({
-    model: "grok-2-image",
+    model: imageModel,
     prompt: "Clean architecture diagram for microservices",
     response_format: "b64_json"
 });
@@ -119,7 +121,7 @@ fs.writeFileSync('architecture.jpg', buffer);
 **Generate Multiple Images**:
 ```typescript
 const response = await openai.images.generate({
-    model: "grok-2-image",
+    model: imageModel,
     prompt: "Logo design for a blockchain project",
     n: 4  // Generate 4 variations
 });
@@ -138,7 +140,7 @@ curl -X POST https://api.x.ai/v1/images/generations \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "grok-2-image",
+    "model": "grok-imagine-image-quality",
     "prompt": "A cat in a tree"
 }' | jq -r '.data[0].url'
 ```
@@ -149,7 +151,7 @@ curl -X POST https://api.x.ai/v1/images/generations \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "grok-2-image",
+    "model": "grok-imagine-image-quality",
     "prompt": "Modern tech logo",
     "response_format": "b64_json"
 }' | jq -r '.data[0].b64_json' | base64 -d > logo.jpg
@@ -161,7 +163,7 @@ curl -X POST https://api.x.ai/v1/images/generations \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "grok-2-image",
+    "model": "grok-imagine-image-quality",
     "prompt": "Futuristic city skyline",
     "n": 4
 }' | jq -r '.data[].url'
@@ -169,23 +171,22 @@ curl -X POST https://api.x.ai/v1/images/generations \
 
 ### Key Features
 
-- **Model**: grok-2-image (current model)
-- **Format**: JPG output
+- **Default example model**: `grok-imagine-image-quality`
+- **Discovery**: query `GET /v1/image-generation-models` for IDs available to the current API key
+- **Format**: inspect the returned `mime_type`; do not assume a format from an old model
 - **Parameters**:
   - `n`: 1-10 images per request
-  - `response_format`: "url" or "b64_json"
+  - Generation options vary by model; verify `n`, aspect ratio, resolution, and response-format support in current xAI docs
 - **Revised Prompts**: AI enhances your prompt automatically
 - **OpenAI SDK Compatible**: Use same SDK with different baseURL
-
-**Note**: quality, size, and style parameters are NOT supported by xAI API currently.
 
 ### When to Use Grok (xAI)
 
 - Need quick general-purpose images
-- Default 1024x768 works for your use case
+- The selected model supports the required aspect ratio and resolution
 - Using OpenAI SDK compatibility
 - JPG format is sufficient
-- Cost is a concern ($0.07/image)
+- The exact response cost is checked via `usage.cost_in_usd_ticks`
 
 **For aspect ratio control, social media dimensions, or PNG output**: Use `gemskills` plugin with Gemini instead.
 
@@ -357,7 +358,7 @@ async function enhanceReadme() {
 
     // Generate hero image
     const heroResponse = await openai.images.generate({
-        model: "grok-2-image",
+        model: process.env.XAI_IMAGE_MODEL ?? "grok-imagine-image-quality",
         prompt: `Hero banner for ${projectName}. ${description}. Modern tech aesthetic.`
     });
 
@@ -388,7 +389,7 @@ async function generateLogoVariations(projectName: string) {
     });
 
     const response = await openai.images.generate({
-        model: "grok-2-image",
+        model: process.env.XAI_IMAGE_MODEL ?? "grok-imagine-image-quality",
         prompt: `Minimalist logo for ${projectName}, tech startup style, suitable for app icon`,
         n: 6  // Generate 6 variations
     });
@@ -409,7 +410,7 @@ Since Claude can analyze but not generate images:
 IMAGE_URL=$(curl -s -X POST https://api.x.ai/v1/images/generations \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -H "Content-Type: application/json" \
--d '{"model": "grok-2-image", "prompt": "Dashboard UI mockup"}' | \
+-d '{"model": "grok-imagine-image-quality", "prompt": "Dashboard UI mockup"}' | \
 jq -r '.data[0].url')
 
 # 2. Download locally

@@ -1,8 +1,8 @@
 ---
 name: x-tweet-search
-version: 1.0.0
+version: 1.0.1
 description: Search recent X/Twitter posts by query. Returns RAW TWEETS (last 7 days). Use when user asks "search X for", "find tweets about", "what are people saying about", "Twitter search", "raw tweets about". For AI summaries/sentiment, use x-research instead. Requires X_BEARER_TOKEN.
-allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_PLUGIN_ROOT}:*)
+allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_SKILL_DIR}:*)
 ---
 
 # X Tweet Search
@@ -18,7 +18,7 @@ export X_BEARER_TOKEN="your-token"  # https://developer.x.com/en/portal/dashboar
 ## Usage
 
 ```bash
-${CLAUDE_PLUGIN_ROOT}/scripts/search.sh "<query>" [max_results]
+${CLAUDE_SKILL_DIR}/scripts/search.sh "<query>" [max_results]
 ```
 
 ## Search Operators
@@ -34,18 +34,20 @@ ${CLAUDE_PLUGIN_ROOT}/scripts/search.sh "<query>" [max_results]
 
 ```bash
 # Simple search
-${CLAUDE_PLUGIN_ROOT}/scripts/search.sh "bitcoin"
+${CLAUDE_SKILL_DIR}/scripts/search.sh "bitcoin"
 
 # From specific user
-${CLAUDE_PLUGIN_ROOT}/scripts/search.sh "from:kurtwuckertjr"
+${CLAUDE_SKILL_DIR}/scripts/search.sh "from:kurtwuckertjr"
 
 # Combined query
-${CLAUDE_PLUGIN_ROOT}/scripts/search.sh "BSV -is:retweet" 20
+${CLAUDE_SKILL_DIR}/scripts/search.sh "BSV -is:retweet" 20
 ```
 
-## Rate Limits
+## Pricing and Rate Limits
 
-Free tier: 10 requests per 15 minutes, 1,500 tweets/month
+X API access is pay-per-use. Read the endpoint's rate-limit response headers and
+consult the current X API pricing and rate-limit documentation instead of
+assuming a fixed free-tier quota.
 
 ## References
 
