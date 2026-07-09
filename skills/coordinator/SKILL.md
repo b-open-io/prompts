@@ -114,6 +114,52 @@ Claude subagent workers get a fully self-contained prompt: they have no
 conversation history. Include the spec content (or its path), acceptance
 command, and the final-report demand below, exactly as for the CLI lanes.
 
+## Parallel Dispatch Without Collisions
+
+Parallel workers step on each other in exactly one place: the files they
+write. Pick an isolation strategy per fan-out, in this order of preference:
+
+| Strategy | When | Cost |
+|----------|------|------|
+| **1. Disjoint file ownership** (default) | Units partition cleanly by file/module | Cheapest: shared tree, no merge step |
+| **2. Sequential waves** | Unit B imports code unit A must first create, or B's spec can't be written until A's output is known | Wall-clock: waves serialize |
+| **3. Worktree isolation** | Two workers genuinely must touch the SAME file, or overlap is uncertain | Coordinator absorbs the merge: integrate each diff here, re-run acceptance after every merge |
+
+**Strategy 1 mechanics — this is the workhorse:**
+- Every spec lists "files you may EDIT (only these)" and names the sibling
+  tasks' files under "do NOT touch". The partition IS the lock.
+- **Pin the seams verbatim in every spec.** Any contract two units share —
+  type signatures, request/response body fields, storage keys, function
+  names — is written exactly, in both specs, by the coordinator. Workers
+  code against the contract, not against each other's unfinished files.
+- Tell workers that type errors originating in a sibling task's not-yet-
+  landed files are expected: report them, never "fix" them. Run the real
+  whole-project typecheck yourself at the barrier.
+- Hard rule: two concurrent workers writing one file in a shared tree is
+  never acceptable — last write wins silently. Re-partition or use waves
+  or worktrees instead.
+
+**Strategy 2 mechanics:** dispatch in dependency order; a later wave's spec
+may reference files an earlier wave landed. A unit that IMPORTS a sibling's
+module but codes against a pinned contract does not need to wait — waves
+are for when the spec itself cannot be finished, not for import edges. For
+fan-outs larger than ~5 Claude subagents, `wave-coordinator` covers wave
+sizing and context budgeting.
+
+**Strategy 3 mechanics:** grok has native `--worktree`; codex sandboxes are
+already isolated workspaces; for Claude subagents or manual lanes use git
+worktrees directly (`superpowers:using-git-worktrees` where installed,
+plain `git worktree add` otherwise). The isolation is the easy half — the
+coordinator owns integration: review each worker's diff, merge or apply it
+to the main tree here, and re-run acceptance after EACH integration, not
+once at the end. If two isolated diffs rewrote the same lines, judgment
+about which side wins is premium work; do not dispatch the merge.
+
+Field note: strategy 1 with pinned contracts ran two real fan-outs (five
+dispatches, then three) against one shared tree with zero integration
+conflicts — the whole-project typecheck was green the moment the last
+worker landed.
+
 ## Delegation Economics
 
 - **Every dispatch has a fixed floor cost** — spec writing, context
