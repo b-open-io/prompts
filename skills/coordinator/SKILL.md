@@ -53,10 +53,12 @@ machine; confirm before running, re-run the preflight after):
 - **codex**: `npm i -g @openai/codex` (or install the codex Claude Code
   plugin), then `codex login` in a terminal for the subscription quota, or
   set `OPENAI_API_KEY` for pay-per-token.
-- **grok**: `curl -fsSL https://x.ai/cli/install.sh | bash`, then run `grok`
-  once interactively to log in via browser for the subscription quota, or
-  set `XAI_API_KEY` for headless pay-per-token. Browser login is
-  interactive — hand that step to the user; it cannot be done headlessly.
+- **grok**: `curl -fsSL https://x.ai/cli/install.sh | bash` (installs to
+  `~/.grok/bin`, no sudo; inspect the script before piping it). Auth, any
+  of: `XAI_API_KEY` env var (pay-per-token, zero interaction), `grok login`
+  (browser OAuth, subscription quota — hand to the user), or
+  `grok login --device-auth` for headless/remote boxes. Verify with
+  `grok models`.
 
 **codex: plugin vs raw CLI.** Detect once per session and prefer the plugin:
 
@@ -75,24 +77,32 @@ machine; confirm before running, re-run the preflight after):
 - Same brain either way — the plugin changes thread/job management, not what
   codex can do. Sandbox physics (no network, no port binding) are identical.
 
-**grok (Grok Build CLI), field-proven dispatch shape:**
+**grok (Grok Build CLI), dispatch shape verified against a live install:**
 ```bash
 SPEC_FILE=$(mktemp -t grok-spec.XXXXXX)   # unique per dispatch — parallel lanes on a shared path corrupt each other
-grok --prompt-file "$SPEC_FILE" -m <model> --permission-mode acceptEdits \
-  --output-format plain --cwd <repo>
+grok --prompt-file "$SPEC_FILE" -m <model-id> --permission-mode acceptEdits \
+  --sandbox workspace --output-format plain --cwd <repo>
 ```
-- **Pin the model explicitly** — never ride the CLI default; defaults drift
-  under you.
-- `acceptEdits`, never blanket command approval: the worker edits files; you
-  re-run verification yourself. (Its permission mode may also have blocked
-  it from running the acceptance command — your re-run covers that.)
-- **No sandbox flag exists** — isolation is only cwd-scoping, and the lane
-  HAS network access. Offline fixtures are unnecessary here, but scope
-  discipline is entirely the spec's job: the "what NOT to touch" list and
-  the adversarial review carry more weight on this lane, not less.
-- Wrap CLI dispatches in a timeout (`timeout`/`gtimeout` where available) so
-  a hung lane returns a status instead of stalling the barrier. The CLI is
-  young — confirm flags against `grok --help` before relying on them.
+- **Preflight with `grok models`** — one command verifies the binary AND auth
+  and lists the model IDs that actually exist. **Pin a model from that
+  output** — never the CLI default, and never a name from an announcement:
+  live model IDs drift from marketing names.
+- `acceptEdits`, never `--always-approve`: the worker edits files; you re-run
+  verification yourself. (Its permission mode may also have blocked it from
+  running the acceptance command — your re-run covers that.)
+- `--sandbox workspace` scopes filesystem/network access; custom profiles
+  live in `.grok/sandbox.toml`. **Footgun: an unknown profile only WARNS
+  ("sandbox could not be applied") and runs unsandboxed** — check stderr
+  before trusting isolation. The default lane has network access, so offline
+  fixtures are unneeded, but the "what NOT to touch" list and adversarial
+  review carry full weight here regardless.
+- Parallel dispatches: `--worktree` gives each run an isolated git worktree
+  natively. `--best-of-n <N>` (headless) races N attempts *within* the lane
+  and picks the best — in-lane redundancy; cross-vendor racing (below)
+  remains the stronger diversity play.
+- Wrap dispatches in a timeout (`timeout`/`gtimeout` where available) so a
+  hung lane returns a status instead of stalling the barrier. The CLI moves
+  fast — re-check `grok --help` when a flag misbehaves.
 
 Claude subagent workers get a fully self-contained prompt: they have no
 conversation history. Include the spec content (or its path), acceptance
