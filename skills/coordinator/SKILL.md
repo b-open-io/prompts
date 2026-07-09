@@ -6,7 +6,7 @@ description: Always active when coding in a premium Claude (Fable/Opus) session 
 # Coordinator
 
 Premium-model tokens are expensive; cheaper executors sit unused — a codex
-quota, lower-tier Claude models. Exploit the price gap: spend premium tokens
+or grok quota, lower-tier Claude models. Exploit the price gap: spend premium tokens
 on judgment — planning, specs, design intent, review, visual validation — and
 spend worker capacity on all code-writing volume. Plan big, execute small.
 
@@ -77,34 +77,34 @@ machine; confirm before running, re-run the preflight after):
 - Same brain either way — the plugin changes thread/job management, not what
   codex can do. Sandbox physics (no network, no port binding) are identical.
 
-**grok (Grok Build CLI), dispatch shape verified against a live install:**
+**grok (Grok Build CLI) dispatch shape:**
 ```bash
-SPEC_FILE=$(mktemp -t grok-spec.XXXXXX)   # unique per dispatch — parallel lanes on a shared path corrupt each other
-grok --prompt-file "$SPEC_FILE" -m <model-id> --permission-mode acceptEdits \
+PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)   # unique per dispatch — parallel lanes on a shared path corrupt each other
+printf '%s\n' "<one-line imperative; details in SPEC-*.md>" > "$PROMPT_FILE"
+grok --prompt-file "$PROMPT_FILE" -m grok-4.5 --permission-mode acceptEdits \
   --sandbox workspace --output-format plain --cwd <repo>
 ```
 - **Preflight with `grok models`** — one command verifies the binary AND
   auth and lists the available model IDs. **Pin the intended model
-  explicitly** (e.g. `-m grok-4.5`) — never ride the CLI default, which may
-  be a weaker non-reasoning variant. Read the FULL model list when
-  confirming an ID exists; a truncated read of any preflight output is how
-  wrong conclusions get built.
+  explicitly** and confirm it appears in the full `grok models` output —
+  never ride the CLI default, which may be a weaker non-reasoning variant.
 - `acceptEdits`, never `--always-approve`: the worker edits files; you re-run
   verification yourself. (Its permission mode may also have blocked it from
   running the acceptance command — your re-run covers that.)
-- `--sandbox workspace` scopes filesystem/network access; custom profiles
-  live in `.grok/sandbox.toml`. **Footgun: an unknown profile only WARNS
-  ("sandbox could not be applied") and runs unsandboxed** — check stderr
-  before trusting isolation. The default lane has network access, so offline
-  fixtures are unneeded, but the "what NOT to touch" list and adversarial
-  review carry full weight here regardless.
+- `--sandbox workspace` scopes filesystem access; custom profiles live in
+  `.grok/sandbox.toml`. **Footgun: an unknown profile only WARNS ("sandbox
+  could not be applied") and runs unsandboxed** — check stderr before
+  trusting isolation. Unlike codex's sandbox, the grok lane can reach the
+  network, so offline fixtures are usually unneeded — but verify what the
+  chosen profile actually permits rather than assuming, and the "what NOT
+  to touch" list and adversarial review carry full weight here regardless.
 - Parallel dispatches: `--worktree` gives each run an isolated git worktree
   natively. `--best-of-n <N>` (headless) races N attempts *within* the lane
   and picks the best — in-lane redundancy; cross-vendor racing (below)
   remains the stronger diversity play.
 - Wrap dispatches in a timeout (`timeout`/`gtimeout` where available) so a
-  hung lane returns a status instead of stalling the barrier. The CLI moves
-  fast — re-check `grok --help` when a flag misbehaves.
+  hung lane returns a status instead of stalling the barrier. If a flag
+  misbehaves, re-check `grok --help`.
 
 Claude subagent workers get a fully self-contained prompt: they have no
 conversation history. Include the spec content (or its path), acceptance
@@ -300,8 +300,9 @@ here, and keep dispatching. Strikes are about the actual implementation.
 
 ## Common Mistakes
 
-- Dispatching without `--sandbox workspace-write` (CLI) or a write-capable
-  run (plugin) → read-only sandbox, wasted dispatch, zero diff.
+- Dispatching codex without `--sandbox workspace-write` (raw CLI) or a
+  write-capable run (plugin), or grok without `--permission-mode
+  acceptEdits` → a worker that can't write; wasted dispatch, zero diff.
 - Dispatching without acceptance criteria → the worker returns "done" with
   red tests. Always name the test command that must pass.
 - Dispatching without the final-report demand → empty stdout over real (or

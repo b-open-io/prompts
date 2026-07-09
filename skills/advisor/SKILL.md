@@ -23,7 +23,7 @@ consult package must stand alone.
 
 ## Choosing the Advisor Channel
 
-Two channels. Detect what exists before picking; never assume.
+Three channels. Detect what exists before picking; never assume.
 
 | Channel | How it works | Prefer when |
 |---------|-------------|-------------|
@@ -40,10 +40,14 @@ Passive detection, in order:
    the native channel as unconfigured and suggest the user run `/advisor`
    to enable it. `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` in the environment
    means the native channel is off regardless.
-3. No channel available at all? Don't silently proceed unadvised — offer to
-   enable one (install/auth steps live in the coordinator skill's "Enabling
-   a lane" section; the same CLIs serve both patterns).
-4. Present the finding and recommendation to the user before first use —
+3. The premium-subagent channel needs no install — but confirm the intended
+   stronger model is actually available to the account (see the
+   silent-downgrade footgun below); an unavailable pin degrades to the
+   session model without erroring.
+4. No channel available at all? Don't silently proceed unadvised — offer to
+   enable one (the codex install/auth steps live in the coordinator skill's
+   "Enabling a lane" section).
+5. Present the finding and recommendation to the user before first use —
    "codex is installed; recommend it as advisor" or "advisorModel is already
    set to X; using the native tool" — and let them override. When both exist
    and the user hasn't expressed a preference, ask once with a recommended
@@ -178,4 +182,4 @@ The advisor only knows what the consult carries. Include:
 | "The advisor should just fix it" | Then it's not an advisor — that's the coordinator pattern upside down. Advice comes back; execution stays here. |
 | "My test passed, so the advice was wrong" | The test may not measure what the advice addressed. Reconcile before discarding. |
 | "I'll consult on every step to be safe" | Metered consults on mechanical steps invert the economics. Decision points only. |
-| "codex returned nothing, skip the consult" | Re-send with the structured-reply demand; an uninstructed run going silent is a known failure, not a verdict. |
+| "codex returned nothing, skip the consult" | Re-send with the advice contract attached; an uninstructed run going silent is a known failure, not a verdict. |
