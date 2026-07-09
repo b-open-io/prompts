@@ -40,7 +40,10 @@ Passive detection, in order:
    the native channel as unconfigured and suggest the user run `/advisor`
    to enable it. `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` in the environment
    means the native channel is off regardless.
-3. Present the finding and recommendation to the user before first use —
+3. No channel available at all? Don't silently proceed unadvised — offer to
+   enable one (install/auth steps live in the coordinator skill's "Enabling
+   a lane" section; the same CLIs serve both patterns).
+4. Present the finding and recommendation to the user before first use —
    "codex is installed; recommend it as advisor" or "advisorModel is already
    set to X; using the native tool" — and let them override. When both exist
    and the user hasn't expressed a preference, ask once with a recommended

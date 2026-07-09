@@ -47,6 +47,17 @@ another lane *explicitly* — a CLI lane that quietly becomes "I'll just write
 it here" defeats the routing. The premium session absorbs implementation
 only through the escape hatch, never through a silent fallback.
 
+**Enabling a lane.** Unavailable is a state to fix, not just report — when a
+wanted lane fails preflight, offer to enable it (installs change the user's
+machine; confirm before running, re-run the preflight after):
+- **codex**: `npm i -g @openai/codex` (or install the codex Claude Code
+  plugin), then `codex login` in a terminal for the subscription quota, or
+  set `OPENAI_API_KEY` for pay-per-token.
+- **grok**: `curl -fsSL https://x.ai/cli/install.sh | bash`, then run `grok`
+  once interactively to log in via browser for the subscription quota, or
+  set `XAI_API_KEY` for headless pay-per-token. Browser login is
+  interactive — hand that step to the user; it cannot be done headlessly.
+
 **codex: plugin vs raw CLI.** Detect once per session and prefer the plugin:
 
 - **Plugin installed** (`codex:*` commands / `codex:codex-rescue` agent
