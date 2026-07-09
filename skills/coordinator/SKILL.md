@@ -83,10 +83,12 @@ SPEC_FILE=$(mktemp -t grok-spec.XXXXXX)   # unique per dispatch — parallel lan
 grok --prompt-file "$SPEC_FILE" -m <model-id> --permission-mode acceptEdits \
   --sandbox workspace --output-format plain --cwd <repo>
 ```
-- **Preflight with `grok models`** — one command verifies the binary AND auth
-  and lists the model IDs that actually exist. **Pin a model from that
-  output** — never the CLI default, and never a name from an announcement:
-  live model IDs drift from marketing names.
+- **Preflight with `grok models`** — one command verifies the binary AND
+  auth and lists the available model IDs. **Pin the intended model
+  explicitly** (e.g. `-m grok-4.5`) — never ride the CLI default, which may
+  be a weaker non-reasoning variant. Read the FULL model list when
+  confirming an ID exists; a truncated read of any preflight output is how
+  wrong conclusions get built.
 - `acceptEdits`, never `--always-approve`: the worker edits files; you re-run
   verification yourself. (Its permission mode may also have blocked it from
   running the acceptance command — your re-run covers that.)
