@@ -16,3 +16,12 @@ Check exit status, stderr, network/auth context, and—when available—prefer t
 user's successful terminal output. For Grok routing in particular, pin
 `grok-4.5` only after a complete `grok models` result or explicit user evidence;
 the user's July 2026 output confirms that `grok-4.5` is available.
+
+## Restart sessions after replacing a versioned plugin cache
+
+Codex sessions resolve plugin hooks from the versioned cache directory that
+was active when the session started. Updating the plugin can evict that exact
+directory while the session still holds its absolute hook paths, causing every
+subsequent hook invocation to exit 127 even though the new version is healthy.
+After an in-session plugin update, finish any safe verification and start a
+fresh session before interpreting hook failures as script defects.

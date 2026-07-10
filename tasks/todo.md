@@ -22,6 +22,10 @@
 - Fresh Claude and Codex sessions returned `CLAUDE_AGENT_BOUNDARY_OK` and
   `CODEX_AGENT_BOUNDARY_OK`; Codex SessionStart, UserPromptSubmit, and Stop
   hooks all completed.
+- The updating Codex session remained pinned to the removed 1.1.29 hook path,
+  so its three PreToolUse commands exited 127 after 1.1.30 replaced the cache.
+  Fresh-session smoke tests prove the 1.1.30 hooks themselves are healthy; a
+  session restart is required after replacing an active versioned cache.
 
 - [x] Verify current Codex plugin, hook, and custom-agent contracts using
   official documentation and installed-runtime probes.
