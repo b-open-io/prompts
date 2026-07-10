@@ -1,14 +1,14 @@
 ---
 name: front-desk
-version: 1.0.2
+version: 1.0.3
 description: >-
   This skill should be used in Claude Code or Codex when the user asks "who
   handles X?", "what agents are available?", "how do I contact Y?", "team
   roster", "what services do we use?", "who should I talk to about Z?", "what
   skills are available?", "where do I find skill X?", or needs help routing to
-  the right agent or service provider. Also use when connecting to live agent
-  instances, checking agent-adapter availability, finding/installing skills,
-  sending emails on behalf of the org, or drafting communications. Route SOC 2,
+  the right agent or service provider. Also use when checking agent-adapter
+  availability, finding/installing skills, sending emails on behalf of the org,
+  or drafting communications. Route SOC 2,
   audit readiness, policy drafting, and evidence-gathering questions to Anthony
   in product-skills, with Paul in bopen-tools for technical control validation.
 user-invocable: false
@@ -24,8 +24,8 @@ Match the user's need to the right specialist:
 
 | Need | Agent | Plugin |
 |------|-------|--------|
-| BSV transactions, wallets | **Sato** (bitcoin) | bsv-skills |
-| Ordinals, NFTs, tokens | **Glyph** (ordinals) | 1sat-skills |
+| BSV transactions, wallets | **David** (bitcoin) | bsv-skills |
+| Ordinals, NFTs, tokens | **Uno Satoj** (ordinals) | 1sat-skills |
 | Agent architecture | **Satchmo** (agent-builder) | bopen-tools |
 | UI/UX design | **Ridd** (designer) | bopen-tools |
 | Performance | **Torque** (optimizer) | bopen-tools |
@@ -54,14 +54,6 @@ Match the user's need to the right specialist:
 | API integrations | **Maxim** (integration-expert) | bopen-tools |
 | Send/draft emails | **Martha** (front-desk) | bopen-tools |
 | Draft communications | **Martha** (front-desk) | bopen-tools |
-
-## Live Agent Instances
-
-Agents with cloud-hosted instances available for direct interaction:
-
-| Agent | URL | Notes |
-|-------|-----|-------|
-| Satchmo (Agent Builder) | satchmo.dev | Active — agent architecture, multi-agent systems |
 
 ## Dispatching Agents
 

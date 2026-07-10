@@ -12,7 +12,7 @@ disable-model-invocation: true
 user-invocable: true
 metadata:
   author: b-open-io
-  version: "1.0.1"
+  version: "1.0.2"
   codex:
     disable-model-invocation: true
     explicit_invocation_only: true
@@ -71,8 +71,9 @@ Each file installs as `bopen-<name>.toml` (for example
 
 ### Full roster
 
-`--all` installs every generated adapter under `codex/agents/` except the
-excluded remote bot `satchmo-live`.
+`--all` installs every generated adapter under `codex/agents/`. Only
+installable plugin personas live in `agents/`; app-specific deployments and
+user-created agents are not source inputs for this installer.
 
 ## What the installer does
 

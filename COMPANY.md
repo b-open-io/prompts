@@ -60,6 +60,9 @@ agents:
   - slug: integration-expert
     role: Integration Specialist
     reportsTo: project-manager
+  - slug: mcp
+    role: MCP Specialist
+    reportsTo: project-manager
   - slug: payments
     role: Payments Specialist
     reportsTo: project-manager
@@ -108,9 +111,6 @@ agents:
   - slug: community-manager
     role: Community Manager
     reportsTo: front-desk
-  - slug: satchmo-live
-    role: Live Agent
-    reportsTo: ceo
 skills:
   - charting
   - linear-planning
@@ -140,7 +140,11 @@ skills:
   - persona
 ---
 
-bOpen is an autonomous AI agent organization with 31 specialized agents and 64 skills. The team is structured with a CEO at the top, reporting chains through department leads, and specialized agents for every function from frontend development to security auditing.
+bOpen is an autonomous AI agent organization with 30 specialized agents and 64 skills. The team is structured with a CEO at the top, reporting chains through department leads, and specialized agents for every function from frontend development to security auditing.
+
+This roster contains installable plugin personas only. Persistent agents built
+inside applications and agents created by users belong to those projects; they
+do not become bopen-tools members or catalog entries.
 
 Agents are published to the [ClawNet on-chain registry](https://clawnet.sh) with cryptographic identity via BAP (Bitcoin Attestation Protocol). Skills follow the open [SKILL.md](https://agentskills.io) format and work across Claude Code, OpenCode, Cursor, Gemini CLI, and 20+ other tools.
 

@@ -1,5 +1,22 @@
 # Dual Claude Code and Codex plugin port
 
+## Plugin agent boundary correction
+
+- [x] Remove the app-specific `satchmo-live` deployment from plugin agent discovery.
+- [x] Remove live-service routing and roster references from distributed plugin metadata.
+- [x] Make the installable-persona versus app deployment boundary explicit.
+- [x] Add Orbit's missing canonical agent title and regenerate Codex adapters.
+- [ ] Patch-bump both manifests, validate, commit, push, and smoke-test both installs.
+
+### Review
+
+- The plugin now has 30 source agents and 30 generated Codex adapters; all 30
+  source agents have canonical `title` metadata.
+- `satchmo-live` is absent from agent discovery, generated manifests, the
+  company roster, the README, and front-desk routing.
+- App-specific persistent agents and user-created deployments are documented
+  as belonging to their owning projects rather than this plugin catalog.
+
 - [x] Verify current Codex plugin, hook, and custom-agent contracts using
   official documentation and installed-runtime probes.
 - [x] Design a shared prompt/include architecture that preserves the authored

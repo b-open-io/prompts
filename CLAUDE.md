@@ -224,10 +224,14 @@ This is support metadata, not a Claude plugin auto-discovery component.
 
 Source-of-truth boundaries:
 
-- `agents/*.md` = authored persona, routing, marketplace metadata
+- `agents/*.md` = installable plugin personas, routing, marketplace metadata
 - `bots/*.bot.json` = deployment metadata and naming contract
 - `clawnet-bot/templates/*` = canonical runtime templates
 - `.agents/*` = generated/runtime bot workspaces, not the primary authored source
+
+App-specific persistent agents and user-created deployments belong in their
+owning project repositories. Do not add them to `agents/`; every file there is
+auto-discovered as a distributable bopen-tools agent and public catalog member.
 
 Important: changing `display_name` changes the expected avatar slug in `bopen-ai` and may require a matching image update in `public/images/agents/`.
 

@@ -17,7 +17,7 @@ MANIFEST_FILENAME = "manifest.json"
 OWNERSHIP_FILENAME = ".bopen-tools-agents.json"
 MANAGED_PREFIX = "bopen-"
 MANAGED_SUFFIX = ".toml"
-EXCLUDED_SOURCE_NAMES = frozenset({"satchmo-live"})
+EXCLUDED_SOURCE_NAMES = frozenset()
 CURATED_SOURCE_NAMES: tuple[str, ...] = (
     "front-desk",
     "agent-builder",

@@ -95,6 +95,11 @@ agents:
       type: claude_local
     role: "Integration Specialist"
     icon: https://bopen.ai/images/agents/maxim.png
+  mcp:
+    adapter:
+      type: claude_local
+    role: "MCP Specialist"
+    icon: https://bopen.ai/images/agents/orbit.png
   mobile:
     adapter:
       type: claude_local
@@ -130,11 +135,6 @@ agents:
       type: claude_local
     role: "Research Analyst"
     icon: https://bopen.ai/images/agents/parker.png
-  satchmo-live:
-    adapter:
-      type: claude_local
-    role: "Live Agent"
-    icon: https://bopen.ai/images/agents/satchmo.png
   security-ops:
     adapter:
       type: claude_local

@@ -148,8 +148,10 @@ bunx skills add b-open-io/bopen-tools --skill x-user-timeline
 
 The canonical agent personas live in [agents/](agents/). Claude Code loads them
 directly from the plugin. Codex uses generated TOML adapters derived from those
-same files, installed with the explicit setup described above. The full Codex
-roster excludes `satchmo-live`, which is a separately deployed remote bot.
+same files, installed with the explicit setup described above. Every file in
+`agents/` is an installable plugin persona. App-specific persistent deployments
+and user-created agents stay in their owning projects and are not cataloged as
+bopen-tools members.
 
 ### Development & Architecture
 - 🔵 [**prompt-engineer**](agents/prompt-engineer.md) — Zack — Slash commands, agent skills, YAML frontmatter, Claude Code config
@@ -188,7 +190,6 @@ roster excludes `satchmo-live`, which is a separately deployed remote bot.
 - 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup
 - 💼 [**executive-assistant**](agents/executive-assistant.md) — Tina — Google Workspace, scheduling, communications
 - 🌐 [**account-manager**](agents/account-manager.md) — Kurt — Public-facing sales, visitor qualification, bOpen.io chat
-- 🔴 [**satchmo-live**](agents/satchmo-live.md) — Satchmo — Persistent agent at satchmo.dev, BSV knowledge base
 
 **Usage:** In Claude Code, request the plugin agent by name (for example,
 `bopen-tools:code-auditor`). In Codex, use its installed adapter name (for

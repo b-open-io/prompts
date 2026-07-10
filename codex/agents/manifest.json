@@ -2,9 +2,7 @@
   "schema_version": "1",
   "generator_schema_version": "2",
   "manager": "bopen-tools",
-  "excluded": [
-    "satchmo-live"
-  ],
+  "excluded": [],
   "curated": [
     "front-desk",
     "agent-builder",
@@ -206,10 +204,10 @@
     {
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
-      "source_version": "1.1.8",
-      "source_hash": "sha256:6ec3787d9838f617ae53799e0dfcbd82b4994c4c66cac40b00f092a973e8d6ec",
+      "source_version": "1.1.9",
+      "source_hash": "sha256:21412e7871ce97284984500614236d182abdf6faa9e698db8f3826aa9e45d667",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:1548e57cd1a1555a405110ba2b64960a4035a095f240081b3086f966c9523fa6",
+      "generated_hash": "sha256:6a145dd57879357551af4ae6ede2c07a2945ce57def66b1bb445dc2305914197",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true
@@ -228,10 +226,10 @@
     {
       "source_name": "mcp",
       "source_path": "agents/mcp.md",
-      "source_version": "3.0.22",
-      "source_hash": "sha256:d850b99ebc43cb1a7b91e07c87cd20044212d59c73d97dddcb07816506ab947f",
+      "source_version": "3.0.23",
+      "source_hash": "sha256:066710f028bc3684b3899a290d627cc73ddca107d0cb30dae8c108287923a6a7",
       "generated_file": "bopen-mcp.toml",
-      "generated_hash": "sha256:ea88777506f3f4b62e71c8fd35937520eb6ba7cf1e570d44221c2ebd183a1a45",
+      "generated_hash": "sha256:58a1f5fbdf1c2e5f7b46a98701002a5516ef8b25af952b10f0dae16a2844f218",
       "agent_name": "bopen_mcp",
       "curated": false,
       "default_install": false
