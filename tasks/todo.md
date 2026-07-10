@@ -6,7 +6,7 @@
 - [x] Remove live-service routing and roster references from distributed plugin metadata.
 - [x] Make the installable-persona versus app deployment boundary explicit.
 - [x] Add Orbit's missing canonical agent title and regenerate Codex adapters.
-- [ ] Patch-bump both manifests, validate, commit, push, and smoke-test both installs.
+- [x] Patch-bump both manifests, validate, commit, push, and smoke-test both installs.
 
 ### Review
 
@@ -16,6 +16,12 @@
   company roster, the README, and front-desk routing.
 - App-specific persistent agents and user-created deployments are documented
   as belonging to their owning projects rather than this plugin catalog.
+- Released both manifests at `1.1.30` in commit `3953dbe`, updated both
+  installed plugin caches, and verified the published artifact contains 30
+  agents, no `satchmo-live`, and Orbit's `MCP Specialist` title.
+- Fresh Claude and Codex sessions returned `CLAUDE_AGENT_BOUNDARY_OK` and
+  `CODEX_AGENT_BOUNDARY_OK`; Codex SessionStart, UserPromptSubmit, and Stop
+  hooks all completed.
 
 - [x] Verify current Codex plugin, hook, and custom-agent contracts using
   official documentation and installed-runtime probes.
