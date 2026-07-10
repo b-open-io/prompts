@@ -1,12 +1,24 @@
 ---
 name: wave-coordinator
-version: 1.0.1
-description: "This skill should be used when dispatching more than 5 parallel agents, when context budget management is needed, or when generating multiple variations of the same output. Complements superpowers dispatching-parallel-agents with wave sizing, context budget tracking, and directive diversity. Use when the user says 'fan out', 'generate variations', 'batch agents', 'wave dispatch', or when spawning large numbers of subagents."
+version: 1.0.2
+description: >-
+  This skill should be used in Claude Code or Codex when dispatching more agents
+  than the host can run concurrently, when context budget management is needed,
+  or when generating multiple variations of the same output. Coordinates native
+  Claude agents, Codex custom or built-in subagents, and mixed worker lanes with
+  wave sizing, context budget tracking, and directive diversity. Use when the
+  user says "fan out", "generate variations", "batch agents", "wave dispatch",
+  or asks for large-scale subagent work.
 ---
 
 # Wave Coordinator
 
-Manage large-scale subagent dispatch through structured waves. Prevents context exhaustion, ensures output diversity, and avoids duplication across batches. Works alongside `Skill(superpowers:dispatching-parallel-agents)` — wave-coordinator handles batching and diversity, dispatching-parallel-agents handles the actual subagent spawning mechanics.
+Manage large-scale subagent dispatch through structured waves. Prevent context
+exhaustion, preserve output diversity, and avoid duplication across batches.
+On Claude, this can compose with
+`Skill(superpowers:dispatching-parallel-agents)`; on Codex, use the native
+subagent runtime. Wave Coordinator owns batching and diversity while the host
+runtime owns thread creation.
 
 ## The Core Problem
 
@@ -19,9 +31,12 @@ Wave coordination solves all three.
 
 ## Wave Sizing Rule
 
-Use five concurrent subagents as a conservative default, then clamp the wave to
-the host's advertised concurrency limit and the remaining context/token budget.
-If N exceeds the effective limit, divide the work into sequential waves:
+Use five concurrent subagents as a conservative planning default, then clamp
+the wave to the host's advertised concurrency limit, currently free thread
+slots, task shape, and remaining context/token budget. Codex defaults to
+`agents.max_threads = 6` when unset, but that is a cap on open threads, not a
+promise that all six slots are free. If N exceeds the effective limit, divide
+the work into sequential waves:
 
 ```
 N=12 → Wave 1 (5) → Wave 2 (5) → Wave 3 (2)
@@ -29,7 +44,18 @@ N=7  → Wave 1 (5) → Wave 2 (2)
 N=5  → Wave 1 (5) — single wave, no split needed
 ```
 
-Each wave completes fully before the next launches. Do not launch wave 2 until all wave 1 agents have returned results.
+Each wave completes fully before the next launches. Do not launch wave 2 until
+all wave 1 agents have returned results.
+
+Compute the effective wave size as the minimum of:
+
+1. Five, unless the user or host deliberately chooses another wave size.
+2. The host-advertised concurrency cap.
+3. The number of currently free agent slots.
+4. The number of genuinely independent remaining units.
+5. The size the remaining context and token budget can safely synthesize.
+
+Never assume a configured maximum means those slots are all available.
 
 ## Context Budget Check
 
@@ -94,6 +120,33 @@ Remaining: [list of items not yet produced]
 
 Update the ledger after each wave completes. This prevents re-dispatching work already done and helps identify what the final synthesis pass needs.
 
+## Host Dispatch Adapters
+
+### Claude Code
+
+Use `Skill(superpowers:dispatching-parallel-agents)` when installed. Otherwise
+use Claude Code's native Agent tool and plugin-qualified agent IDs. Preserve one
+self-contained assignment per agent.
+
+### Codex
+
+Use Codex native subagents. Prefer installed `bopen_*` custom agents for named
+specialists and built-in `worker` or `explorer` agents when no matching custom
+adapter exists. Do not claim a `bopen_*` persona was used unless that adapter is
+actually installed and its thread was spawned.
+
+Codex defaults to `agents.max_threads = 6` and `agents.max_depth = 1` when the
+user leaves them unset. Depth 1 lets the main thread spawn direct children but
+prevents those children from recursively spawning their own agents. Keep wave
+coordination in the main thread under that default. If a workflow genuinely
+requires nested delegation, explain the token and runaway-fan-out risk before
+the user raises `agents.max_depth`; never change global Codex configuration as
+part of this skill.
+
+Use `/agent` or the available agent activity view to inspect active and
+completed threads. Account for already-open threads when calculating the next
+wave.
+
 ## Integration with superpowers
 
 Wave-coordinator handles **what** to dispatch and **when**. `Skill(superpowers:dispatching-parallel-agents)` handles **how** to spawn subagents. Use them together:
@@ -101,7 +154,10 @@ Wave-coordinator handles **what** to dispatch and **when**. `Skill(superpowers:d
 1. Use this skill to plan wave sizes, generate diverse directives, and track progress
 2. Use `Skill(superpowers:dispatching-parallel-agents)` for the actual subagent spawning call syntax
 
-If the superpowers plugin is not installed, use Claude Code's native `Agent` tool for subagent spawning instead. Do not silently degrade — state which tool you are using.
+If the superpowers plugin is not installed, use the current host's native
+subagent runtime instead. Do not silently degrade: state whether the wave uses
+Claude agents, Codex custom/built-in agents, or another explicitly authorized
+worker lane.
 
 ## Worked Example
 
@@ -128,7 +184,9 @@ Synthesize all 8 results. Rank by quality. Present top 3 with rationale.
 
 ## Key Rules
 
-- Five agents per wave is the conservative default; respect lower or higher host limits explicitly
+- Five agents per wave is the conservative planning default; clamp it to the host cap and currently free slots
+- Codex's default six-thread cap includes already-open threads; it is not a six-new-agent allowance
+- Keep orchestration at the main thread when Codex `max_depth` remains at its safe default of 1
 - Check context budget before each wave
 - Unique directive per agent — never duplicate prompts within a wave
 - Read prior output before launching the next wave

@@ -1,0 +1,9 @@
+interface:
+  display_name: "Codex Agent Setup"
+  short_description: "Install bopen-tools Codex custom agents (explicit only)"
+  default_prompt: >-
+    Use $bopen-tools:codex-agent-setup to install, update, check, or uninstall bopen-tools
+    Codex custom agents. Explicit invocation only — never run unless the user
+    asked to set up these agents.
+policy:
+  allow_implicit_invocation: false

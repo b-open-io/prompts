@@ -1,29 +1,27 @@
 ---
 name: advisor
-version: 0.0.1
+version: 0.0.2
 description: >-
-  Active when the session's main model is a cheaper executor (Sonnet/Haiku
-  tier) doing non-trivial implementation work and premium intelligence is
-  available to consult — a codex quota or a stronger Claude model. Triggers
-  before substantive work begins on a hard task, when stuck or about to change
-  approach, or when the user says "consult the advisor", "get a second
-  opinion", "ask codex", "ask a bigger model", or wants an advisor set up. The
-  reverse of the coordinator pattern: the cheap model executes everything;
-  premium intelligence is consulted at decision points only.
+  Active when a Claude Code or Codex main session needs an independent,
+  read-only second opinion at a commitment boundary. Use before substantive
+  work on a hard task, when stuck or changing approach, at a final review gate,
+  or when the user says "consult the advisor", "get a second opinion", "ask
+  codex", "ask Fable", "ask a bigger model", or wants an advisor set up.
+  Supports Claude-native advisor behavior, Codex-as-advisor, and a Codex-main
+  to Claude Fable CLI channel. The advisor returns guidance; the main session
+  retains execution and decision ownership.
 ---
 
 # Advisor
 
-The executor stays cheap; the intelligence gets borrowed. A lower-tier model
-doing multi-step work produces near-premium quality when a stronger model
-reviews its plan at the few moments that actually need judgment — most turns
-are mechanical, and having an excellent plan is what's crucial. The premium
-model never types; it advises.
+The main session borrows independent judgment at the few moments that determine
+whether the next hour of work is wasted. The advisor may be stronger, simply
+different, or context-clean. It never types the implementation; it advises.
 
-**You ARE the executor.** The advisor is consulted, never delegated to — it
-returns guidance, and the work continues here. If the plan is to have the
-premium model *do* the work, that is the `coordinator` skill's seat, not
-this one.
+**You ARE the main executor and decision owner.** The advisor is consulted,
+never delegated implementation. If another model should write bounded code,
+that is the `coordinator` worker pattern. Use `orchestrator` when the current
+main combines specialist agents, external workers, and an advisor.
 
 The advisor's value is only partly the stronger model: a consult also
 arrives **context-clean**, free of this session's accumulated assumptions.
@@ -32,40 +30,48 @@ consult package must stand alone.
 
 ## Choosing the Advisor Channel
 
-Three channels. Detect what exists before picking; never assume.
+Four channels. Detect the current host and what exists before picking; never
+assume.
 
 | Channel | How it works | Prefer when |
 |---------|-------------|-------------|
 | **codex as advisor** | Dispatch a read-only consult to codex (plugin or CLI) | A codex quota exists — subscription capacity is usually the cheapest premium intelligence available |
 | **Native advisor tool** | Claude Code's built-in advisor (`/advisor`, `advisorModel` setting, `--advisor` flag): the executor consults a stronger Claude model mid-turn, server-side | The advisor should be a Claude model and the account has capacity for it |
 | **Premium Claude subagent** | Spawn a read-only `Agent` (Read/Grep/Glob only) pinned to a stronger Claude model; it inspects the repo fresh and returns a verdict | The advisor should be Claude AND the question needs repo inspection the transcript doesn't carry |
+| **Fable CLI from Codex** | Run a clean, read-only Claude Code print session using the configurable `fable` model-family alias | The main is Codex and an independent Claude opinion is valuable, especially for Claude-specific work |
 
-Passive detection, in order:
+Passive detection depends on the host:
 
-1. `command -v codex` — CLI present? Are `codex:*` plugin commands available?
-2. Is `advisorModel` set in `~/.claude/settings.json` or the project's
+1. On Codex, check `command -v claude`, `claude --version`, and
+   `claude auth status`. The Fable lane is unavailable if CLI authentication
+   is unavailable; do not silently substitute another vendor.
+2. On Claude, check `command -v codex` and whether `codex:*` plugin commands
+   are available.
+3. Is `advisorModel` set in `~/.claude/settings.json` or the project's
    settings? (Slash commands are user-only — don't try to run `/advisor`.)
    If it's absent and the session wasn't launched with `--advisor`, treat
    the native channel as unconfigured and suggest the user run `/advisor`
    to enable it. `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` in the environment
    means the native channel is off regardless.
-3. The premium-subagent channel needs no install — but confirm the intended
+4. The premium-subagent channel needs no install — but confirm the intended
    stronger model is actually available to the account (see the
    silent-downgrade footgun below); an unavailable pin degrades to the
    session model without erroring.
-4. No channel available at all? Don't silently proceed unadvised — offer to
+5. No channel available at all? Don't silently proceed unadvised — offer to
    enable one (the codex install/auth steps live in the coordinator skill's
    "Enabling a lane" section).
-5. Present the finding and recommendation to the user before first use —
+6. Present the finding and recommendation to the user before first use —
    "codex is installed; recommend it as advisor" or "advisorModel is already
-   set to X; using the native tool" — and let them override. When both exist
-   and the user hasn't expressed a preference, ask once with a recommended
-   default based on what was found, then stick with the answer for the
-   session.
+   set to X; using the native tool" or "Claude CLI is authenticated; recommend
+   the Fable lane" — and let them override. When multiple channels exist and
+   the user has not expressed a preference, ask once, then keep the answer for
+   the session.
 
-Avoid `claude -p --model <premium>` as a consult channel unless the user
-asks for it: a fresh CLI invocation may bill API usage instead of drawing on
-subscription capacity, which defeats the economics this skill exists for.
+From a Claude main, avoid launching another `claude -p` process unless the user
+asks; the native advisor or a native subagent is cleaner. The deliberate
+exception is the cross-host Fable channel from a Codex main. Its preflight must
+report which authentication path will be used because a fresh CLI invocation
+can draw from subscription capacity or bill an API key.
 
 ### Native advisor notes
 
@@ -93,6 +99,56 @@ subscription capacity, which defeats the economics this skill exists for.
   channels.
 - It does not see this conversation — package the consult fully (see below).
   Like codex, it can read the repo, which the native advisor cannot.
+
+### Fable CLI from a Codex main
+
+Use this channel when the current main is Codex and an independent Claude
+opinion is useful. It is especially valuable for reviewing Claude agents,
+hooks, plugin behavior, or prompts where a Claude-native perspective reduces
+guesswork.
+
+Prepare the complete consult in a file. Feed it over stdin so shell quoting,
+prompt length, and repository text cannot become command interpolation:
+
+```bash
+ADVISOR_MODEL="${BOPEN_ADVISOR_MODEL:-fable}"
+PROMPT_FILE="/absolute/path/to/prepared-advisor-consult.md"
+
+env -u ANTHROPIC_API_KEY claude \
+  --print \
+  --safe-mode \
+  --model "$ADVISOR_MODEL" \
+  --effort high \
+  --permission-mode plan \
+  --tools "Read,Grep,Glob" \
+  --no-session-persistence \
+  < "$PROMPT_FILE"
+```
+
+- `fable` is a stable model-family alias chosen for this advisor lane, not a
+  claim about a permanently latest version. Set `BOPEN_ADVISOR_MODEL` when the
+  user chooses another available Claude model.
+- `--safe-mode` keeps personal plugins, hooks, memory, and project prompt
+  customizations out of the second opinion. This preserves context independence.
+- `--permission-mode plan` plus `Read,Grep,Glob` makes the lane repository-aware
+  but unable to edit or run shell commands. For a context-only consult, pass an
+  empty tool list instead.
+- `--no-session-persistence` prevents the consult from entering normal Claude
+  session history. Remove it only when the user explicitly wants a resumable
+  advisory thread.
+- `env -u ANTHROPIC_API_KEY` deliberately prefers the signed-in Claude Code
+  subscription rather than an ambient API key. If the user explicitly wants
+  API billing, omit that prefix and disclose the change.
+
+This is an external data boundary. The consult file and any repository files
+the read tools inspect can be sent to Anthropic. Before the first Fable consult,
+say what will be shared and obtain approval unless the user already explicitly
+authorized that lane for the task. Exclude secrets, credentials, and unrelated
+proprietary content.
+
+If `claude auth status` fails, the selected model is unavailable, or the CLI
+reports a billing/authentication mismatch, stop and report the lane as
+unavailable. Do not silently replace Fable with a different advisor.
 
 ### codex-as-advisor notes
 
@@ -154,7 +210,7 @@ every turn has inverted the economics — and one that never consults on a
 hard task has wasted the safety net. A few consults per task, each at a real
 decision point, is the shape to aim for.
 
-## Packaging a Consult (codex and premium-subagent channels)
+## Packaging a Consult (external and subagent channels)
 
 The advisor only knows what the consult carries. Include:
 
@@ -191,4 +247,4 @@ The advisor only knows what the consult carries. Include:
 | "The advisor should just fix it" | Then it's not an advisor — that's the coordinator pattern upside down. Advice comes back; execution stays here. |
 | "My test passed, so the advice was wrong" | The test may not measure what the advice addressed. Reconcile before discarding. |
 | "I'll consult on every step to be safe" | Metered consults on mechanical steps invert the economics. Decision points only. |
-| "codex returned nothing, skip the consult" | Re-send with the advice contract attached; an uninstructed run going silent is a known failure, not a verdict. |
+| "The external advisor returned nothing, skip the consult" | Re-send once with the advice contract attached; silence is a transport/reporting failure, not a verdict. |

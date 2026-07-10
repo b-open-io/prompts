@@ -6,10 +6,13 @@ import os
 import sys
 from datetime import datetime
 
-RULES_PATH = os.path.expanduser("~/.claude/hammertime/rules.json")
-DEBUG_LOG = os.path.expanduser("~/.claude/hammertime/debug.log")
-STATE_PATH = os.path.expanduser("~/.claude/hammertime/state.json")
-DISABLED_PATH = os.path.expanduser("~/.claude/hammertime/disabled")
+from hammertime_paths import hammertime_paths
+
+PATHS = hammertime_paths()
+RULES_PATH = PATHS["rules"]
+DEBUG_LOG = PATHS["debug"]
+STATE_PATH = PATHS["state"]
+DISABLED_PATH = PATHS["disabled"]
 
 BUILTIN_RULES = [
     {
@@ -131,7 +134,7 @@ def main():
         except OSError:
             print("Error reading debug log.")
     else:
-        print("Debug logging not enabled. Set `HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log` to enable.")
+        print(f"Debug logging not enabled. Set `HAMMERTIME_DEBUG={DEBUG_LOG}` to enable.")
     print()
 
     # --- Quick actions ---

@@ -1,26 +1,38 @@
-# Repository model-compatibility audit
+# Dual Claude Code and Codex plugin port
 
-- [x] Inventory explicit model names, IDs, and “latest/current/best” claims.
-- [x] Classify matches as active routing, intentional examples, historical artifacts, or stale guidance.
-- [x] Review agent frontmatter and model delegation behavior.
-- [x] Review coordinator, advisor, orchestrator, and related delegation skills.
-- [x] Apply only high-confidence, minimal corrections.
-- [x] Validate changed metadata, links/references, scripts, and repository checks.
-- [x] Review the final diff for accidental or unrelated changes.
+- [x] Verify current Codex plugin, hook, and custom-agent contracts using
+  official documentation and installed-runtime probes.
+- [x] Design a shared prompt/include architecture that preserves the authored
+  Claude agents while providing real Codex agent/orchestration support.
+- [x] Get a read-only Fable advisor verdict on the architecture before broad
+  edits.
+- [x] Move Claude hooks to an explicit Claude-only configuration and fix bugs
+  in the existing Claude behavior.
+- [x] Implement Codex-native versions of useful hooks, including HammerTime,
+  browser guidance, and session context where the runtime supports the spirit.
+- [x] Add the Codex plugin manifest and repository marketplace metadata.
+- [x] Make the coordinator/orchestrator and advisor patterns available in the
+  installed Codex plugin, including Grok worker routing.
+- [ ] Validate Claude and Codex plugin behavior, install the published plugin into Codex,
+  and smoke-test the installed toolkit from outside this repository.
+- [ ] Review the final diff, patch-bump both manifests, commit, push, update the
+  Claude plugin, and verify `origin/master..master` is empty.
 
 ## Review
 
-- Replaced retired model IDs and unsupported tool names while retaining stable
-  aliases, configurable environment variables, and historical benchmark records.
-- Preserved and documented X's official MCP route for raw X data; xAI remains the
-  synthesis path.
-- Corrected routing, model-profile validation, script path variables, cost-unit
-  math, response parsing, metadata, benchmark commands, and stale persona names.
-- Moved support documents out of `agents/` so Claude no longer discovers them as
-  runnable agents.
-- Validation passed for frontmatter, tracked JSON/Python, shell syntax, the
-  benchmark build, normal Claude plugin validation, and `git diff --check`.
-- `claude plugin validate --strict .` still treats the intentional root
-  `CLAUDE.md` repository guide as a warning; normal validation passes.
-- Edited skills retain older ClawNet attestation snapshots. Re-signing requires a
-  ClawNet signing identity, which is not available in this environment.
+- Codex 0.144.0 supports real project and user custom agents. Plugin manifests
+  do not install those agent files, so `agents/*.md` remains canonical and a
+  deterministic generator plus explicit, ownership-aware installer provides
+  regular TOML adapters without symlinks or hand-maintained prompt copies.
+- A live isolated `gpt-5.6-sol` test installed the plugin and all 30 adapters,
+  spawned `bopen_front_desk`, waited for it, and received
+  `FRONT_DESK_AGENT_OK` from the child.
+- Codex runtime agent identifiers require lowercase letters, digits, and
+  underscores. The first live test caught hyphenated generated names; generator
+  schema 2 now converts them and validates the runtime regex.
+- Hook tests cover 113 cases across both runtimes. They include the existing
+  Claude confirmation bug, nondestructive git unstaging, publish-gate GraphQL,
+  Codex apply_patch protection, session context, browser guidance, and
+  HammerTime continuation behavior.
+- Remaining: full release validation, synchronized patch bump, commit/push,
+  published Claude/Codex installs, and origin-gap verification.

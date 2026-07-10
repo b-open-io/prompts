@@ -1,26 +1,35 @@
 ---
 name: coordinator
-version: 0.0.1
-description: Always active when coding in a premium Claude (Fable/Opus) session with cheaper executors available — a codex or grok quota, or lower-tier Claude models. Triggers whenever implementation work is being planned, scoped, or about to start — before writing any code — to decide where each piece of work executes. Plan big, execute small — judgment (planning, specs, design intent, review, visual validation, git) stays in the premium session; code-writing volume dispatches to workers, with guardrails learned from real dispatch failures.
+version: 0.0.2
+description: >-
+  Always active when a capable current main session in Claude Code or Codex is
+  planning non-trivial implementation and cheaper or specialized executors are
+  available, including native subagents, Grok workers, Codex workers, or
+  lower-tier Claude agents. Trigger before code is written to decide where each
+  unit executes. Keep planning, specs, design intent, review, verification, and
+  git in the main seat; dispatch bounded code-writing volume with explicit
+  ownership and acceptance criteria.
 ---
 
 # Coordinator
 
-Premium-model tokens are expensive; cheaper executors sit unused — a codex
-or grok quota, lower-tier Claude models. Exploit the price gap: spend premium tokens
-on judgment — planning, specs, design intent, review, visual validation — and
-spend worker capacity on all code-writing volume. Plan big, execute small.
+Capable main-model tokens are best spent on judgment while cheaper or more
+specialized executors handle bounded code volume. This pattern works from a
+Claude Code or Codex main session. Never infer or pin the main model: "Here"
+means the current main session selected by the user.
 
-**You ARE the premium session.** "Here" means you do it yourself. There is no
-separate model to delegate judgment to. (For the reverse seat — a cheap main
-session consulting premium intelligence — see the `advisor` skill.)
+**You ARE the main seat.** The main owns the plan, interfaces, review,
+verification, and final decision. An advisor may pressure-test a decision, but
+advice does not transfer ownership. For a workflow that combines workers and an
+independent advisor, use the `orchestrator` skill; for advice alone, use
+`advisor`.
 
 ## Routing Table
 
 | Work | Where | Why |
 |------|-------|-----|
-| Planning, specs, architecture decisions | Here | Judgment is what the premium model is paid for |
-| **ALL implementation — backend, frontend, anything that writes code** | Worker dispatch | Worker capacity is cheap; typing code is not where premium adds value |
+| Planning, specs, architecture decisions | Here | Keep the task's controlling judgment in one context |
+| **ALL implementation — backend, frontend, anything that writes code** | Worker dispatch | Worker capacity is cheap; typing code is not where the main adds value |
 | Visual validation of UI work (run the app, screenshot, judge, iterate) | Here | The design eye is worth the price — validate, don't type |
 | Investigation and debugging analysis (root-causing hard bugs) | Here | Judgment work; the resulting fix dispatches with a precise spec |
 | Diff review, commits, pushes, PRs | Here | Git operations stay under your control |
@@ -29,23 +38,35 @@ session consulting premium intelligence — see the `advisor` skill.)
 
 ## Worker Selection
 
-Worker lanes. Pick per unit of work; lanes can run in parallel.
+Worker lanes differ by host. Pick per unit of work; independent lanes can run
+in parallel.
 
 | Worker | Best for |
 |--------|----------|
-| **codex** (CLI or plugin) | Isolated, well-specced code volume in a sandboxed workspace |
-| **grok** (Grok Build CLI, headless) | The same code-volume profile — an independent vendor lane when a quota exists |
-| **Cheap Claude subagent** (`Agent` tool with a lower-tier model) | Work needing this session's tools (browser, MCP servers), work leaning on conversation context, or when no CLI lane is available |
+| **Native Codex agent** (`bopen_*` custom agent or a built-in worker/explorer) | Specialist exploration, review, tests, and bounded work that should stay inside the current Codex runtime |
+| **Native Claude agent** (plugin agent or lower-tier subagent) | Work needing the current Claude session's tools, browser, MCP servers, or plugin context |
+| **grok** (Grok Build CLI, headless) | Well-specced implementation volume through an independent vendor lane |
+| **codex** (CLI or Claude plugin) | Sandboxed implementation from a Claude main, or a deliberately isolated second Codex run |
 
-Any headless coding CLI backed by a subsidized quota fits the CLI-lane slot;
-codex and grok are the known instances. Prefer whichever lane the user's
-quotas favor. Ask once when it's ambiguous, then stick with the answer.
+On a Codex main, prefer native Codex agents for specialist and read-heavy work,
+and Grok for external implementation volume. Do not recursively launch another
+Codex CLI merely to reproduce work a native agent can do. On a Claude main,
+native Claude agents, Grok, and an external Codex lane are all valid. Any
+headless coding CLI backed by a suitable quota fits the CLI slot; ask once when
+the user's preference is ambiguous, then keep it stable for the session.
+
+External lanes cross a data boundary. A Grok dispatch can send its prompt,
+specification, source excerpts, and other repository content to xAI. Before the
+first Grok dispatch, disclose what content will be sent and obtain the user's
+approval unless the user already explicitly authorized that lane for the task.
+Never include secrets, credentials, or unrelated proprietary material.
 
 **Preflight every CLI lane — and fail loudly.** Before a session's first
-dispatch: `command -v <cli>` plus a version/auth check. A missing or
+dispatch: `command -v <cli>` plus a version/auth check. For Grok, print and
+inspect the complete `grok models` output before selecting a model. A missing or
 unauthenticated lane is reported as unavailable and the spec re-routes to
 another lane *explicitly* — a CLI lane that quietly becomes "I'll just write
-it here" defeats the routing. The premium session absorbs implementation
+it here" defeats the routing. The main session absorbs implementation
 only through the escape hatch, never through a silent fallback.
 
 **Enabling a lane.** Unavailable is a state to fix, not just report — when a
@@ -62,6 +83,10 @@ machine; confirm before running, re-run the preflight after):
   `grok models`.
 
 **codex: plugin vs raw CLI.** Detect once per session and prefer the plugin:
+
+Apply this subsection only when an external Codex lane was deliberately chosen,
+normally from a Claude main. From a Codex main, use native subagents unless
+isolation or an explicit user request justifies a separate Codex process.
 
 - **Plugin installed** (`codex:*` commands / `codex:codex-rescue` agent
   available): dispatch through it — `/codex:rescue --background <task>` or the
@@ -83,14 +108,18 @@ machine; confirm before running, re-run the preflight after):
 **grok (Grok Build CLI) dispatch shape:**
 ```bash
 PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)   # unique per dispatch — parallel lanes on a shared path corrupt each other
+WORKER_MODEL="${BOPEN_WORKER_MODEL:-grok-4.5}"
+grok models                                  # inspect the COMPLETE output; confirm the exact ID below exists
 printf '%s\n' "<one-line imperative; details in SPEC-*.md>" > "$PROMPT_FILE"
-grok --prompt-file "$PROMPT_FILE" -m grok-4.5 --permission-mode acceptEdits \
+grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" --permission-mode acceptEdits \
   --sandbox workspace --output-format plain --cwd <repo>
 ```
 - **Preflight with `grok models`** — one command verifies the binary AND
-  auth and lists the available model IDs. **Pin the intended model
-  explicitly** and confirm it appears in the full `grok models` output —
-  never ride the CLI default, which may be a weaker non-reasoning variant.
+  auth and lists the available model IDs. Read the complete, untruncated
+  output. Set `BOPEN_WORKER_MODEL` when the user wants another available
+  model; otherwise use the explicit `grok-4.5` default. **Pin the resulting
+  model explicitly** and confirm the exact ID appears in that complete output
+  — never ride the CLI default, which may change independently.
 - `acceptEdits`, never `--always-approve`: the worker edits files; you re-run
   verification yourself. (Its permission mode may also have blocked it from
   running the acceptance command — your re-run covers that.)
@@ -113,9 +142,12 @@ grok --prompt-file "$PROMPT_FILE" -m grok-4.5 --permission-mode acceptEdits \
   failure. No timeout binary? Dispatch unwrapped and rely on background-job
   monitoring. If a flag misbehaves, re-check `grok --help`.
 
-Claude subagent workers get a fully self-contained prompt: they have no
-conversation history. Include the spec content (or its path), acceptance
-command, and the final-report demand below, exactly as for the CLI lanes.
+Native subagent workers get a fully self-contained prompt unless the host
+explicitly guarantees inherited context. Include the spec content (or its
+path), acceptance command, and the final-report demand below, exactly as for
+the CLI lanes. In Codex, prefer installed `bopen_*` specialist agents when a
+matching adapter exists; otherwise name the built-in agent or generic role
+being used rather than pretending a missing adapter was dispatched.
 
 ## Parallel Dispatch Without Collisions
 
@@ -146,17 +178,17 @@ write. Pick an isolation strategy per fan-out, in this order of preference:
 may reference files an earlier wave landed. A unit that IMPORTS a sibling's
 module but codes against a pinned contract does not need to wait — waves
 are for when the spec itself cannot be finished, not for import edges. For
-fan-outs larger than ~5 Claude subagents, `wave-coordinator` covers wave
+fan-outs larger than roughly one host-sized wave, `wave-coordinator` covers wave
 sizing and context budgeting.
 
 **Strategy 3 mechanics:** grok has native `--worktree`; codex sandboxes are
-already isolated workspaces; for Claude subagents or manual lanes use git
+already isolated workspaces; for native subagents or manual lanes use git
 worktrees directly (`superpowers:using-git-worktrees` where installed,
 plain `git worktree add` otherwise). The isolation is the easy half — the
 coordinator owns integration: review each worker's diff, merge or apply it
 to the main tree here, and re-run acceptance after EACH integration, not
 once at the end. If two isolated diffs rewrote the same lines, judgment
-about which side wins is premium work; do not dispatch the merge.
+about which side wins belongs to the main seat; do not dispatch the merge.
 
 Field note: strategy 1 with pinned contracts ran two real fan-outs (five
 dispatches, then three) against one shared tree with zero integration
@@ -184,12 +216,12 @@ worker landed.
   re-dispatch with concrete feedback, then the two-strike escape hatch.
 - **Race lanes on high-stakes work.** When correctness matters enough to pay
   twice, dispatch the SAME spec to two independent vendor lanes (codex +
-  grok) and pick the stronger diff. A premium session judging two
+  grok) and pick the stronger diff. The main session judging two
   cross-vendor implementations gets three independent perspectives for one
   extra dispatch. Never race on routine work — that's paying double for
   volume.
-- **Keep this session's context lean.** Everything in the premium context is
-  re-read at premium prices every turn. Don't paste full worker logs or
+- **Keep this session's context lean.** Everything in the main context is
+  re-read every turn. Don't paste full worker logs or
   diffs when a path reference and an excerpt carry the decision; delegate
   broad exploration to cheap read-only agents and keep only conclusions.
 - **No arbitrage on trivial work.** Dispatch overhead exceeds a one-liner; do
@@ -301,8 +333,8 @@ sign-in step to the user *early*, before the validation loop blocks on it.
 
 ## Background Subagent Etiquette (recon fan-outs)
 
-Recon/research subagents spawned via the Agent tool sometimes go idle with a
-bare idle notification instead of delivering their report:
+Recon/research subagents on either host can go idle with a bare notification
+instead of delivering their report:
 
 - In every background-agent prompt, end with: "Your final message is the
   deliverable — send the complete report; do not stop after an
@@ -310,12 +342,11 @@ bare idle notification instead of delivering their report:
 - Stronger (belt and suspenders): also instruct "Before you finish or go
   idle for any reason, SendMessage your complete report to `main`. An idle
   notification is not a deliverable." Field data: even with the
-  final-message line, roughly half of researcher agents in a fan-out idle
-  without delivering; the explicit SendMessage instruction is what recovers
-  the other half without a nudge round-trip.
-- If an idle notification arrives without the report content, immediately
-  SendMessage the agent: "Send your complete report to main now." One nudge
-  recovers it; don't wait passively.
+  final-message line, an explicit delivery instruction prevents ambiguity
+  about whether idle means complete.
+- If an idle notification arrives without the report content, immediately use
+  the host's steering or follow-up mechanism to ask: "Send your complete report
+  to main now." One nudge often recovers it; don't wait passively.
 - Treat a second content-free idle from the same agent as a failed dispatch —
   re-run the recon yourself or spawn a fresh agent.
 
@@ -345,10 +376,10 @@ here, and keep dispatching. Strikes are about the actual implementation.
 | "The worker says tests are green, ship it" | Its sandbox is not your machine. Re-run acceptance here, unpiped. |
 | "The diff builds, the workaround is probably fine" | A green build via a shimmed dependency is a failure that compiles. Audit tool-config changes independently. |
 | "I'll let the worker commit and push" | Review the diff and run git from this session. |
-| "No time to write a spec" | An unspecced dispatch comes back wrong and costs more premium tokens to fix than the spec would have. |
+| "No time to write a spec" | An unspecced dispatch comes back wrong and costs more main-seat effort to fix than the spec would have. |
 | "More, smaller dispatches = cheaper" | Each dispatch has a floor cost. Over-fragmenting raises the bill and multiplies review surface. |
 | "This code block in my plan is nearly done, I'll just finish it" | A code block longer than an interface signature or a few illustrative lines is a spec that hasn't been delegated yet. Stop and dispatch it. |
-| "Quicker to fix the worker's bug myself" | Same failure in disguise — the premium session quietly absorbing volume. Send a corrected spec back to the lane. |
+| "Quicker to fix the worker's bug myself" | Same failure in disguise — the main session quietly absorbing volume. Send a corrected spec back to the lane. |
 | "grok/codex isn't installed, I'll implement meanwhile" | That's a silent fallback. Report the lane unavailable, re-route explicitly, and only absorb work via the escape hatch. |
 
 ## Common Mistakes

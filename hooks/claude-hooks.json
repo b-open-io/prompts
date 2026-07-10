@@ -1,12 +1,12 @@
 {
-  "description": "Plugin hooks for tool validation and workflow enforcement",
+  "description": "Claude Code hooks for tool validation, session context, browser redirect, and HammerTime",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-context.sh",
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-context.sh\"",
             "timeout": 5
           }
         ]
@@ -18,17 +18,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/bouncer.sh",
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/bouncer.sh\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/damage-control.sh",
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/damage-control.sh\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/publish-gate.sh",
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/publish-gate.sh\"",
             "timeout": 10
           }
         ]
@@ -38,18 +38,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/damage-control.sh",
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/damage-control.sh\"",
             "timeout": 5
           }
         ]
       },
       {
-        "matcher": "WebSearch|WebFetch",
+        "matcher": "WebFetch",
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/agent-browser-solo.sh",
-            "timeout": 30
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-browser-solo.sh\"",
+            "timeout": 5
           }
         ]
       }
@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/hammertime.py",
+            "command": "BOPEN_HOOK_RUNTIME=claude python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/hammertime.py\"",
             "timeout": 15
           }
         ]

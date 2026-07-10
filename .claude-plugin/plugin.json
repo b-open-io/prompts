@@ -1,7 +1,7 @@
 {
   "name": "bopen-tools",
-  "version": "1.1.28",
-  "description": "Development agents, skills, hooks, and commands for Claude Code workflows",
+  "version": "1.1.29",
+  "description": "Cross-agent development skills, hooks, orchestration, and optional custom-agent adapters for Claude Code and Codex",
   "author": {
     "name": "b-open-io",
     "url": "https://github.com/b-open-io"
@@ -11,7 +11,9 @@
     "agents",
     "skills",
     "hooks",
+    "orchestration",
     "development",
     "workflows"
-  ]
+  ],
+  "hooks": "./hooks/claude-hooks.json"
 }

@@ -1,0 +1,70 @@
+{
+  "description": "Codex hooks for session context, browser-intent guidance, destructive/publish protection, apply_patch path policy, and HammerTime",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/session-context.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/browser-intent.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|bash|shell|Shell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/bouncer.sh\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/damage-control.sh\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/publish-gate.sh\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "apply_patch|ApplyPatch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/damage-control.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=codex python3 \"${PLUGIN_ROOT}/hooks/hammertime.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

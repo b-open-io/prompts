@@ -1,0 +1,350 @@
+{
+  "schema_version": "1",
+  "generator_schema_version": "2",
+  "manager": "bopen-tools",
+  "excluded": [
+    "satchmo-live"
+  ],
+  "curated": [
+    "front-desk",
+    "agent-builder",
+    "prompt-engineer",
+    "researcher",
+    "tester",
+    "documentation-writer",
+    "architecture-reviewer",
+    "code-auditor"
+  ],
+  "agents": [
+    {
+      "source_name": "account-manager",
+      "source_path": "agents/account-manager.md",
+      "source_version": "1.0.6",
+      "source_hash": "sha256:6167d7240fff3533432f97dc37f726739628a6b73db34929477f9e3fe6ee93f1",
+      "generated_file": "bopen-account-manager.toml",
+      "generated_hash": "sha256:dbd21990e95f60ffbd5e1c72a38895154e8d9199af451437c5ec17860b2c89d3",
+      "agent_name": "bopen_account_manager",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "agent-builder",
+      "source_path": "agents/agent-builder.md",
+      "source_version": "1.7.7",
+      "source_hash": "sha256:c6fc333b13940490eb5da00b8c812150ba224fc3837a7b256164f2f4eea58d75",
+      "generated_file": "bopen-agent-builder.toml",
+      "generated_hash": "sha256:96fee458f6380e18c3a7b4b3b5c0a29a4cdce97b7d3f636927d07e9e77294629",
+      "agent_name": "bopen_agent_builder",
+      "curated": true,
+      "default_install": true
+    },
+    {
+      "source_name": "architecture-reviewer",
+      "source_path": "agents/architecture-reviewer.md",
+      "source_version": "1.1.16",
+      "source_hash": "sha256:5399947e8f6991142e2025dea1ee4423c02f89f7daf3b0c8f0df51b377b1c5b3",
+      "generated_file": "bopen-architecture-reviewer.toml",
+      "generated_hash": "sha256:317806a370d05d845ad8c2acd5b32bf203b8216634fdaf65e06990931a278d53",
+      "agent_name": "bopen_architecture_reviewer",
+      "curated": true,
+      "default_install": true
+    },
+    {
+      "source_name": "audio-specialist",
+      "source_path": "agents/audio-specialist.md",
+      "source_version": "1.0.9",
+      "source_hash": "sha256:72ef5ab15f8d10fe878fe7c6ae9a27811415a3b6554673f44f9e39a8d1752cb1",
+      "generated_file": "bopen-audio-specialist.toml",
+      "generated_hash": "sha256:396800207cbd00b0c28cc02d75cf695afbebf74117273f147f3f0f1a694468b4",
+      "agent_name": "bopen_audio_specialist",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "cartographer",
+      "source_path": "agents/cartographer.md",
+      "source_version": "1.0.5",
+      "source_hash": "sha256:ce16bbe1c012be0c2d4cebf474633542e7fe0375953a8cede4042b6e6affa76e",
+      "generated_file": "bopen-cartographer.toml",
+      "generated_hash": "sha256:1ec109112eaaf9181725c8dcd62cbe4447a4a13a7396136faa4eadd57cc06bf4",
+      "agent_name": "bopen_cartographer",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "ceo",
+      "source_path": "agents/ceo.md",
+      "source_version": "1.0.4",
+      "source_hash": "sha256:a1ff505b59399f2fb2d4e1c893bdc904a07fcbd202e02c38a2a5f7b705229834",
+      "generated_file": "bopen-ceo.toml",
+      "generated_hash": "sha256:1860d285e64b0b418bea160cf5d2cd472d4313a6b813500ffd83496a289a0309",
+      "agent_name": "bopen_ceo",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "cfo",
+      "source_path": "agents/cfo.md",
+      "source_version": "1.0.6",
+      "source_hash": "sha256:628c06b1b8733117d78fb93cff93f7e5e9d496ea1769794c0cb1b62ba2545f76",
+      "generated_file": "bopen-cfo.toml",
+      "generated_hash": "sha256:e659cf48323c537bd469bab272b839c7b101c8dce413c70003fd0ef8f2f2a9b6",
+      "agent_name": "bopen_cfo",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "code-auditor",
+      "source_path": "agents/code-auditor.md",
+      "source_version": "1.4.7",
+      "source_hash": "sha256:d51519b7160124d318e723579fb1fe4c0abbda0829a9b88b382a9351dfd85868",
+      "generated_file": "bopen-code-auditor.toml",
+      "generated_hash": "sha256:c8beafdd11133067847d215fbc1938168be8b400b7b861d1b128e34e033c97c4",
+      "agent_name": "bopen_code_auditor",
+      "curated": true,
+      "default_install": true
+    },
+    {
+      "source_name": "community-manager",
+      "source_path": "agents/community-manager.md",
+      "source_version": "1.0.5",
+      "source_hash": "sha256:6abd718ad2f2a15a619a615f550f8c2bf9f7cf27830b3f1dba435b81b7d2d4d6",
+      "generated_file": "bopen-community-manager.toml",
+      "generated_hash": "sha256:57a7cf0f45796ae4b7d8276e122acd6249f16247df511952e63bf86f40d7bc7a",
+      "agent_name": "bopen_community_manager",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "consolidator",
+      "source_path": "agents/consolidator.md",
+      "source_version": "1.2.5",
+      "source_hash": "sha256:baa70193db43cd41589e516256174a66d9ea5bae97c03d3e8975b49f5224e6ad",
+      "generated_file": "bopen-consolidator.toml",
+      "generated_hash": "sha256:818fa23d591130a9f7640b375a87065ee3311d0492f95fcdbf0fec426b822fcc",
+      "agent_name": "bopen_consolidator",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "creative-developer",
+      "source_path": "agents/creative-developer.md",
+      "source_version": "1.0.5",
+      "source_hash": "sha256:a614131afa40240fd457f697cc911fe3ce8e75c918bf4943a9543484b10489ff",
+      "generated_file": "bopen-creative-developer.toml",
+      "generated_hash": "sha256:ce7b68473c660fbf9d62897eff6b412c1d3b6e9bc464baf5ddec5a717c57d582",
+      "agent_name": "bopen_creative_developer",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "data",
+      "source_path": "agents/data.md",
+      "source_version": "1.1.16",
+      "source_hash": "sha256:d7e498cafacf3d56764898889ed0ac4736843301b41395bfade3695c6f114677",
+      "generated_file": "bopen-data.toml",
+      "generated_hash": "sha256:96b56d59cc24713546337fa1475fb9ae908779e70eb6f826dcb5d39b95ecf8da",
+      "agent_name": "bopen_data",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "database",
+      "source_path": "agents/database.md",
+      "source_version": "1.2.16",
+      "source_hash": "sha256:f97766024e5456d2062aad16d516fb21d04247a6a227e72af958a36f67f98a76",
+      "generated_file": "bopen-database.toml",
+      "generated_hash": "sha256:80537df85f8e15df200f9d928dc64b7c469dc53f1cb917dae957f304d2efddd8",
+      "agent_name": "bopen_database",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "designer",
+      "source_path": "agents/designer.md",
+      "source_version": "1.0.17",
+      "source_hash": "sha256:8d49b870ec66280ccfdf146286a962bfd5b22060d1e55ed7d542ed0de708a5e9",
+      "generated_file": "bopen-designer.toml",
+      "generated_hash": "sha256:05fef2a76aafb628999949bac9f06e402ecd90ee2c01b058913c6915012de0f1",
+      "agent_name": "bopen_designer",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "devops",
+      "source_path": "agents/devops.md",
+      "source_version": "1.3.7",
+      "source_hash": "sha256:6cc7b4055e1b9080fb22bd7e4da032c9367d6ce971c57ee36888cb60de764c12",
+      "generated_file": "bopen-devops.toml",
+      "generated_hash": "sha256:b3a39f17e9b507b5032b29e08c6e1935cae0daa1ece7e2ceca1b56825c252f33",
+      "agent_name": "bopen_devops",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "documentation-writer",
+      "source_path": "agents/documentation-writer.md",
+      "source_version": "1.2.5",
+      "source_hash": "sha256:b336d6394234d5aef6b4b9618f2ebaefecbd568d0b8336c61c2c9fe1cd48dda9",
+      "generated_file": "bopen-documentation-writer.toml",
+      "generated_hash": "sha256:187fb36c36a43187e9e8561d84116b4fb5aefd416aa1d5bbe1622abca1f5031c",
+      "agent_name": "bopen_documentation_writer",
+      "curated": true,
+      "default_install": true
+    },
+    {
+      "source_name": "executive-assistant",
+      "source_path": "agents/executive-assistant.md",
+      "source_version": "1.0.7",
+      "source_hash": "sha256:d5548cdf4a6f3fbdcdb05e4c75ac70ae6f25f929e27adae9cd4b9b11c0510bab",
+      "generated_file": "bopen-executive-assistant.toml",
+      "generated_hash": "sha256:1916cd413d6a122a9b0fdf865dfc4010d0e8c4d9de5663ce30cd326a9c096ce7",
+      "agent_name": "bopen_executive_assistant",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "front-desk",
+      "source_path": "agents/front-desk.md",
+      "source_version": "1.1.8",
+      "source_hash": "sha256:6ec3787d9838f617ae53799e0dfcbd82b4994c4c66cac40b00f092a973e8d6ec",
+      "generated_file": "bopen-front-desk.toml",
+      "generated_hash": "sha256:1548e57cd1a1555a405110ba2b64960a4035a095f240081b3086f966c9523fa6",
+      "agent_name": "bopen_front_desk",
+      "curated": true,
+      "default_install": true
+    },
+    {
+      "source_name": "integration-expert",
+      "source_path": "agents/integration-expert.md",
+      "source_version": "1.2.20",
+      "source_hash": "sha256:0d4fd4bac277a66de7a11ba92a93511a85966ff3adb73622e157920737c58632",
+      "generated_file": "bopen-integration-expert.toml",
+      "generated_hash": "sha256:5cce1c4bedd97f4b8e8643d674339e8ad8e22269f415f5c8dde4c443cbd2f5e1",
+      "agent_name": "bopen_integration_expert",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "mcp",
+      "source_path": "agents/mcp.md",
+      "source_version": "3.0.22",
+      "source_hash": "sha256:d850b99ebc43cb1a7b91e07c87cd20044212d59c73d97dddcb07816506ab947f",
+      "generated_file": "bopen-mcp.toml",
+      "generated_hash": "sha256:ea88777506f3f4b62e71c8fd35937520eb6ba7cf1e570d44221c2ebd183a1a45",
+      "agent_name": "bopen_mcp",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "mobile",
+      "source_path": "agents/mobile.md",
+      "source_version": "1.1.12",
+      "source_hash": "sha256:2ebc94560a259d705812d8faf610969e8d3cfd90c93a3cc5ffdca1531ec018f9",
+      "generated_file": "bopen-mobile.toml",
+      "generated_hash": "sha256:2c3b02a6076554c8f16b240c23098fca5724cb8cdd0d2731b9cc4069f999030c",
+      "agent_name": "bopen_mobile",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "nextjs",
+      "source_path": "agents/nextjs.md",
+      "source_version": "1.1.4",
+      "source_hash": "sha256:f03c2fc2cdea3bb8cfac07bc7df8616bb14ac9e07dd16d668be2ac829bff4002",
+      "generated_file": "bopen-nextjs.toml",
+      "generated_hash": "sha256:f795c428ffc490fb44f91c56db4e7fa9c9208f74cdafee0a1b5c883da3e50096",
+      "agent_name": "bopen_nextjs",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "optimizer",
+      "source_path": "agents/optimizer.md",
+      "source_version": "1.2.21",
+      "source_hash": "sha256:4c1d7eebe3d95e2115db3b35026202dde9eebf0483417757a00cae7b40b36400",
+      "generated_file": "bopen-optimizer.toml",
+      "generated_hash": "sha256:d33e9886ddd08d314b568cbc4bd8dc196101d45bb36723ed76a4e5bfc9128e09",
+      "agent_name": "bopen_optimizer",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "payments",
+      "source_path": "agents/payments.md",
+      "source_version": "1.1.10",
+      "source_hash": "sha256:93a2730beff36b2b465bb16a42ca2240340f98f809581af6d1cb80002a670fd8",
+      "generated_file": "bopen-payments.toml",
+      "generated_hash": "sha256:774ca8c9e89c2a2ea43f579eabd57f2a27914f131d2a20f286b8ecfafee97441",
+      "agent_name": "bopen_payments",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "project-manager",
+      "source_path": "agents/project-manager.md",
+      "source_version": "1.0.8",
+      "source_hash": "sha256:9137088ffdc9f36c1924835d8a0381baa63777beaa6f60911d237c3ea183bee5",
+      "generated_file": "bopen-project-manager.toml",
+      "generated_hash": "sha256:49ed1ab8b0330659607bf6c2250daf202934999d3279cb7d51e7dd50967e3018",
+      "agent_name": "bopen_project_manager",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "prompt-engineer",
+      "source_path": "agents/prompt-engineer.md",
+      "source_version": "2.3.18",
+      "source_hash": "sha256:947d2879d2745acf38a2158683ded841a44d697ec4eabfd5f6a4b15f886b4756",
+      "generated_file": "bopen-prompt-engineer.toml",
+      "generated_hash": "sha256:9d1ab612dbeaa170e220776ad41403ae2c1408f18c74721ccbf08e2e51dd9c8c",
+      "agent_name": "bopen_prompt_engineer",
+      "curated": true,
+      "default_install": true
+    },
+    {
+      "source_name": "researcher",
+      "source_path": "agents/researcher.md",
+      "source_version": "1.2.10",
+      "source_hash": "sha256:97f48e9d4b3f53bb17f001fc6cafa29227d6a8e2370769457d177d80e165b3f0",
+      "generated_file": "bopen-researcher.toml",
+      "generated_hash": "sha256:ff1c663069803d7917382904ec0844694cbd6fa20690ab15ede4a000c77ff6f2",
+      "agent_name": "bopen_researcher",
+      "curated": true,
+      "default_install": true
+    },
+    {
+      "source_name": "security-ops",
+      "source_path": "agents/security-ops.md",
+      "source_version": "1.0.6",
+      "source_hash": "sha256:98d8f24231796e710ea23ef4f27e1a905b632deb9c27e400fee194a3d67f09a6",
+      "generated_file": "bopen-security-ops.toml",
+      "generated_hash": "sha256:36a70338f07884e5164f9c6e06765c525554fe0772986a6bd77c0db257449ef9",
+      "agent_name": "bopen_security_ops",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "tester",
+      "source_path": "agents/tester.md",
+      "source_version": "1.3.15",
+      "source_hash": "sha256:aee312defee0c895ffbd5fbd3f89f7c7f618a9400808c6f2ad93b801fe89d22c",
+      "generated_file": "bopen-tester.toml",
+      "generated_hash": "sha256:d6089ece680441703346b78edc2b9bf16955ee6942ae491d2037363c34b72e72",
+      "agent_name": "bopen_tester",
+      "curated": true,
+      "default_install": true
+    },
+    {
+      "source_name": "trainer",
+      "source_path": "agents/trainer.md",
+      "source_version": "1.0.6",
+      "source_hash": "sha256:4374933fcbb19a04652bea50ae475e4778a996402f1ae46dbcfc909b7a78c161",
+      "generated_file": "bopen-trainer.toml",
+      "generated_hash": "sha256:2f206224b031c8a4ffec862740f62b2c9463973cf7674b60b1774daeb46fe30c",
+      "agent_name": "bopen_trainer",
+      "curated": false,
+      "default_install": false
+    }
+  ]
+}

@@ -7,16 +7,17 @@ Usage:
     duration: Number + unit. Examples: 30m, 1h, 45m, 2h, 90m
     description: Optional. Rule text shown in block messages.
 
-Prints the computed deadline and writes the rule to ~/.claude/hammertime/rules.json.
+Prints the computed deadline and writes the rule to the shared HammerTime home.
 """
 
 import json
-import os
 import sys
 import time
 from datetime import datetime, timedelta
 
-RULES_PATH = os.path.expanduser("~/.claude/hammertime/rules.json")
+from hammertime_paths import hammertime_paths
+
+RULES_PATH = hammertime_paths()["rules"]
 
 
 def parse_duration(s):
@@ -61,7 +62,7 @@ def main():
 
     # Load existing rules
     rules = []
-    if os.path.exists(RULES_PATH):
+    if RULES_PATH.exists():
         try:
             with open(RULES_PATH, "r") as f:
                 rules = json.load(f)
@@ -71,11 +72,11 @@ def main():
     rules.append(rule)
 
     # Write atomically
-    os.makedirs(os.path.dirname(RULES_PATH), exist_ok=True)
-    tmp_path = RULES_PATH + ".tmp"
+    RULES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = RULES_PATH.with_suffix(".json.tmp")
     with open(tmp_path, "w") as f:
         json.dump(rules, f, indent=2)
-    os.rename(tmp_path, RULES_PATH)
+    tmp_path.replace(RULES_PATH)
 
     # Output for the command to display
     print(json.dumps({

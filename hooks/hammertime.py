@@ -23,19 +23,20 @@ Timer rules bypass scoring entirely:
 
 Rules come from two sources:
   1. BUILTIN_RULES (hardcoded below)
-  2. User rules in ~/.claude/hammertime/rules.json
+  2. User rules under the HammerTime home directory (see resolve_hammertime_home)
 
-Stop hook input (from Claude Code):
-  - last_assistant_message: the model's final response text
+Stop hook input (Claude Code and Codex):
+  - session_id: preferred key for per-session iteration state
+  - transcript_path: preferred path to the session transcript JSONL
+  - cwd: active workspace directory
+  - last_assistant_message: fallback final response text
   - stop_hook_active: true if already continuing from a prior Stop hook
 
 Full-turn evaluation (opt-in per rule):
   When a rule has "evaluate_full_turn": true, the hook reads the session
-  transcript (~/.claude/projects/{cwd}/*.jsonl) to collect ALL assistant
-  messages since the user's last message. This catches violations that
-  occur in intermediate responses (between tool calls), not just the
-  final message. Falls back to last_assistant_message if transcript
-  is unavailable.
+  transcript (hook input transcript_path, else Claude projects layout)
+  using tolerant Claude and Codex adapters. Parser failure falls back to
+  last_assistant_message rather than blocking incorrectly.
 
 Pending agent awareness:
   The hook scans the transcript for background Agent dispatches
@@ -44,7 +45,12 @@ Pending agent awareness:
   the Haiku verifier so it can consider whether the assistant is pausing
   to wait for background work rather than being truly finished.
 
-Block output format:
+Optional Anthropic verifier (Phase 2 Haiku):
+  Used only when score is ambiguous (1..threshold-1) and ANTHROPIC_API_KEY
+  is set. Debug-logged when invoked. Does NOT recursively launch an
+  advisor/model loop from inside HammerTime.
+
+Block output format (shared Claude + Codex):
   {"decision": "block", "reason": "...", "systemMessage": "..."}
 """
 
@@ -57,6 +63,16 @@ import time
 import urllib.request
 import urllib.error
 from datetime import datetime
+
+_SKILL_SCRIPTS = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "skills",
+    "hammertime",
+    "scripts",
+)
+if _SKILL_SCRIPTS not in sys.path:
+    sys.path.insert(0, _SKILL_SCRIPTS)
+from hammertime_paths import hammertime_paths, resolve_hammertime_home
 
 _start_time = time.monotonic()
 
@@ -172,9 +188,8 @@ BUILTIN_RULES = [
     }
 ]
 
-USER_RULES_PATH = os.path.expanduser("~/.claude/hammertime/rules.json")
-STATE_PATH = os.path.expanduser("~/.claude/hammertime/state.json")
-DISABLED_PATH = os.path.expanduser("~/.claude/hammertime/disabled")
+def _hammertime_paths():
+    return {key: os.fspath(value) for key, value in hammertime_paths().items()}
 
 
 def compile_user_rule(rule):
@@ -196,9 +211,10 @@ def compile_user_rule(rule):
 def load_rules():
     """Load builtin rules + user rules. User rules with same name override builtin."""
     rules = list(BUILTIN_RULES)
-    if os.path.exists(USER_RULES_PATH):
+    rules_path = _hammertime_paths()["rules"]
+    if os.path.exists(rules_path):
         try:
-            with open(USER_RULES_PATH, "r") as f:
+            with open(rules_path, "r") as f:
                 user_rules = json.load(f)
             if isinstance(user_rules, list):
                 builtin_names = {r["name"] for r in rules}
@@ -214,10 +230,11 @@ def load_rules():
 
 def load_state():
     """Load iteration tracking state. Returns empty dict if missing or corrupt."""
-    if not os.path.exists(STATE_PATH):
+    state_path = _hammertime_paths()["state"]
+    if not os.path.exists(state_path):
         return {}
     try:
-        with open(STATE_PATH, "r") as f:
+        with open(state_path, "r") as f:
             return json.load(f)
     except (json.JSONDecodeError, OSError):
         return {}
@@ -225,12 +242,13 @@ def load_state():
 
 def save_state(state):
     """Atomically write iteration state (temp file + os.rename)."""
-    os.makedirs(os.path.dirname(STATE_PATH), exist_ok=True)
-    tmp_path = STATE_PATH + ".tmp"
+    state_path = _hammertime_paths()["state"]
+    os.makedirs(os.path.dirname(state_path), exist_ok=True)
+    tmp_path = state_path + ".tmp"
     try:
         with open(tmp_path, "w") as f:
             json.dump(state, f, indent=2)
-        os.rename(tmp_path, STATE_PATH)
+        os.rename(tmp_path, state_path)
     except OSError:
         pass
 
@@ -344,10 +362,24 @@ def count_pending_agents(transcript_path):
 
 
 def phase2_haiku_evaluate(text, rule, pending_agents=0):
-    """Call Haiku to determine if the rule was actually violated. Returns True if violated."""
+    """Optional Anthropic Haiku verifier for ambiguous scores.
+
+    Privacy/safety notes:
+      - Only runs when ANTHROPIC_API_KEY is set and score is below the hard threshold.
+      - Sends a truncated slice of the assistant response (last 4000 chars) + rule text.
+      - Does NOT recursively launch an advisor, subagent, or model loop.
+      - Debug-logs when used so operators can audit verifier traffic.
+    Returns True if violated. Missing API key fails closed (treat as violated).
+    """
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
+        debug_log("PHASE2: ANTHROPIC_API_KEY unset — failing closed (violated=True)")
         return True
+
+    debug_log(
+        f"PHASE2: invoking Anthropic Haiku verifier for rule '{rule.get('name', '?')}' "
+        f"(pending_agents={pending_agents}, text_len={len(text or '')})"
+    )
 
     context_note = ""
     if pending_agents > 0:
@@ -372,7 +404,9 @@ def phase2_haiku_evaluate(text, rule, pending_agents=0):
     )
 
     body = json.dumps({
-        "model": "claude-haiku-4-5-20251001",
+        "model": os.environ.get(
+            "HAMMERTIME_VERIFIER_MODEL", "claude-haiku-4-5-20251001"
+        ),
         "max_tokens": 8,
         "messages": [{"role": "user", "content": prompt}],
     }).encode()
@@ -392,8 +426,11 @@ def phase2_haiku_evaluate(text, rule, pending_agents=0):
         with urllib.request.urlopen(req, timeout=10) as resp:
             result = json.loads(resp.read())
             answer = result.get("content", [{}])[0].get("text", "").strip().lower()
-            return answer.startswith("yes")
-    except (urllib.error.URLError, OSError, json.JSONDecodeError, KeyError, IndexError):
+            violated = answer.startswith("yes")
+            debug_log(f"PHASE2: Haiku answer={answer!r} violated={violated}")
+            return violated
+    except (urllib.error.URLError, OSError, json.JSONDecodeError, KeyError, IndexError) as exc:
+        debug_log(f"PHASE2: Haiku verifier error ({type(exc).__name__}) — failing open (violated=False)")
         return False
 
 
@@ -409,11 +446,12 @@ def infer_mode(rule_text):
 
 def cleanup_expired_timers():
     """Remove expired timer rules from rules.json. Returns list of removed rule names."""
-    if not os.path.exists(USER_RULES_PATH):
+    rules_path = _hammertime_paths()["rules"]
+    if not os.path.exists(rules_path):
         return []
 
     try:
-        with open(USER_RULES_PATH, "r") as f:
+        with open(rules_path, "r") as f:
             user_rules = json.load(f)
     except (json.JSONDecodeError, OSError):
         return []
@@ -436,12 +474,12 @@ def cleanup_expired_timers():
         kept.append(rule)
 
     if removed:
-        os.makedirs(os.path.dirname(USER_RULES_PATH), exist_ok=True)
-        tmp_path = USER_RULES_PATH + ".tmp"
+        os.makedirs(os.path.dirname(rules_path), exist_ok=True)
+        tmp_path = rules_path + ".tmp"
         try:
             with open(tmp_path, "w") as f:
                 json.dump(kept, f, indent=2)
-            os.rename(tmp_path, USER_RULES_PATH)
+            os.rename(tmp_path, rules_path)
         except OSError:
             pass
         for name in removed:
@@ -575,9 +613,10 @@ def check_git_clean():
 
 
 def find_transcript(cwd=None):
-    """Find the most recently modified JSONL transcript for the current project.
+    """Find the most recently modified Claude JSONL transcript for a project.
 
-    Returns the file path, or None if not found.
+    Returns the file path, or None if not found. Used only as a fallback when
+    hook input does not provide transcript_path.
     """
     if cwd is None:
         cwd = os.getcwd()
@@ -592,7 +631,6 @@ def find_transcript(cwd=None):
         debug_log(f"TRANSCRIPT: project dir not found: {projects_dir}")
         return None
 
-    # Find most recently modified .jsonl file
     best_path = None
     best_mtime = 0
     try:
@@ -614,23 +652,104 @@ def find_transcript(cwd=None):
     return best_path
 
 
+def _content_text_blocks(content):
+    """Extract plain text from Claude/Codex content fields. Tolerant of shapes."""
+    texts = []
+    if isinstance(content, str) and content:
+        texts.append(content)
+        return texts
+    if not isinstance(content, list):
+        return texts
+    for block in content:
+        if not isinstance(block, dict):
+            continue
+        btype = block.get("type", "")
+        # Claude: text; Codex: output_text / input_text
+        if btype in ("text", "output_text", "input_text"):
+            t = block.get("text", "")
+            if t:
+                texts.append(t)
+        elif "text" in block and isinstance(block["text"], str) and block["text"]:
+            texts.append(block["text"])
+    return texts
+
+
+def classify_transcript_entry(obj):
+    """Classify a transcript JSONL object as user|assistant|other.
+
+    Tolerant adapters for Claude Code and Codex rollout formats.
+    Returns (role, text_or_None). Parser anomalies return ("other", None).
+    """
+    if not isinstance(obj, dict):
+        return "other", None
+
+    # --- Claude Code format ---
+    # {"type":"user"|"assistant", "message":{"role":..., "content":...}}
+    entry_type = obj.get("type", "")
+    if entry_type in ("user", "assistant"):
+        msg = obj.get("message", {})
+        if not isinstance(msg, dict):
+            return entry_type, None
+        role = msg.get("role") or entry_type
+        texts = _content_text_blocks(msg.get("content", ""))
+        text = "\n".join(texts) if texts else None
+        if role == "user" or entry_type == "user":
+            return "user", text
+        if role == "assistant" or entry_type == "assistant":
+            return "assistant", text
+        return "other", text
+
+    # --- Codex rollout format ---
+    # {"type":"response_item","payload":{"type":"message","role":"assistant","content":[{"type":"output_text","text":"..."}]}}
+    # {"type":"event_msg","payload":{"type":"user_message","message":"..."}}
+    # {"type":"event_msg","payload":{"type":"agent_message","message":"..."}}
+    if entry_type == "response_item":
+        payload = obj.get("payload") or {}
+        if not isinstance(payload, dict):
+            return "other", None
+        role = payload.get("role")
+        texts = _content_text_blocks(payload.get("content", ""))
+        text = "\n".join(texts) if texts else None
+        if role == "user":
+            return "user", text
+        if role == "assistant":
+            return "assistant", text
+        return "other", text
+
+    if entry_type == "event_msg":
+        payload = obj.get("payload") or {}
+        if not isinstance(payload, dict):
+            return "other", None
+        ptype = payload.get("type", "")
+        if ptype == "user_message":
+            msg = payload.get("message") or payload.get("text") or ""
+            return "user", msg if isinstance(msg, str) and msg else None
+        if ptype in ("agent_message", "assistant_message"):
+            msg = payload.get("message") or payload.get("text") or ""
+            return "assistant", msg if isinstance(msg, str) and msg else None
+        return "other", None
+
+    return "other", None
+
+
 def collect_turn_messages(transcript_path):
     """Read transcript backwards, collect assistant text since last user message.
 
-    Returns concatenated text from all assistant messages in the current turn,
-    or None if reading fails.
+    Uses tolerant Claude + Codex adapters. Returns concatenated text, or None
+    if reading/parsing fails (caller must fall back — never block on parse errors).
     """
+    if not transcript_path:
+        return None
+
     try:
         file_size = os.path.getsize(transcript_path)
     except OSError:
         return None
 
-    # Read from the end — we only need the last turn
     MAX_READ = 2 * 1024 * 1024  # 2MB max — safety cap
 
     try:
         with open(transcript_path, "rb") as f:
-            # Seek to near end of file
             start_pos = max(0, file_size - MAX_READ)
             f.seek(start_pos)
             tail = f.read().decode("utf-8", errors="replace")
@@ -638,71 +757,115 @@ def collect_turn_messages(transcript_path):
         debug_log("TRANSCRIPT: failed to read file")
         return None
 
-    # Parse lines in reverse to find last user message, collect assistant text
     lines = tail.strip().split("\n")
     assistant_texts = []
 
-    for line in reversed(lines):
-        if not line.strip():
-            continue
-        try:
-            obj = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-
-        entry_type = obj.get("type", "")
-
-        # Stop at the last user message — we have the full turn
-        if entry_type == "user":
-            break
-
-        # Collect assistant text content
-        if entry_type == "assistant":
-            msg = obj.get("message", {})
-            if msg.get("role") != "assistant":
+    try:
+        for line in reversed(lines):
+            if not line.strip():
                 continue
-            content = msg.get("content", "")
-            if isinstance(content, str) and content:
-                assistant_texts.append(content)
-            elif isinstance(content, list):
-                for block in content:
-                    if isinstance(block, dict) and block.get("type") == "text":
-                        text = block.get("text", "")
-                        if text:
-                            assistant_texts.append(text)
+            try:
+                obj = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            role, text = classify_transcript_entry(obj)
+            if role == "user":
+                break
+            if role == "assistant" and text:
+                assistant_texts.append(text)
+    except Exception as exc:  # noqa: BLE001 — tolerant adapter: never block on parse bugs
+        debug_log(f"TRANSCRIPT: adapter error ({type(exc).__name__}): falling back")
+        return None
 
     if not assistant_texts:
         debug_log("TRANSCRIPT: no assistant text found in current turn")
         return None
 
-    # Reverse to chronological order, join with newlines
     assistant_texts.reverse()
     full_text = "\n\n".join(assistant_texts)
     debug_log(f"TRANSCRIPT: collected {len(assistant_texts)} assistant blocks, {len(full_text)} chars")
     return full_text
 
 
+def extract_last_assistant_message(hook_input):
+    """Best-effort last assistant message from hook input variants."""
+    if not isinstance(hook_input, dict):
+        return ""
+    for key in ("last_assistant_message", "last_message", "assistant_message", "message"):
+        val = hook_input.get(key)
+        if isinstance(val, str) and val.strip():
+            return val
+    # Codex sometimes nests under payload
+    payload = hook_input.get("payload")
+    if isinstance(payload, dict):
+        for key in ("last_assistant_message", "message", "text"):
+            val = payload.get(key)
+            if isinstance(val, str) and val.strip():
+                return val
+    return ""
+
+
 def main():
     # Global kill switch — if the sentinel file exists, skip all processing
-    if os.path.exists(DISABLED_PATH):
+    disabled_path = _hammertime_paths()["disabled"]
+    if os.path.exists(disabled_path):
         sys.exit(0)
 
     debug_log("--- HammerTime run ---")
+    debug_log(f"HOME: {resolve_hammertime_home()}")
     try:
         raw = sys.stdin.read()
-        hook_input = json.loads(raw)
+        hook_input = json.loads(raw) if raw.strip() else {}
     except (json.JSONDecodeError, OSError):
         debug_log("EXIT: failed to parse stdin")
         sys.exit(0)
 
-    debug_log(f"INPUT keys: {list(hook_input.keys())}")
-
-    last_msg = hook_input.get("last_assistant_message", "")
-    if not last_msg:
-        debug_log("EXIT: no last_assistant_message")
+    if not isinstance(hook_input, dict):
+        debug_log("EXIT: stdin JSON was not an object")
         sys.exit(0)
 
-    debug_log(f"LAST_MSG length: {len(last_msg)} chars")
+    debug_log(f"INPUT keys: {list(hook_input.keys())}")
+
+    last_msg = extract_last_assistant_message(hook_input)
+
+    # Prefer hook-provided transcript_path and cwd
+    transcript_path = hook_input.get("transcript_path") or hook_input.get("transcriptPath")
+    if transcript_path in ("", "null", None):
+        transcript_path = None
+    if transcript_path and not os.path.isfile(transcript_path):
+        debug_log(f"TRANSCRIPT: provided path missing: {transcript_path}")
+        transcript_path = None
+
+    cwd = hook_input.get("cwd") or os.environ.get("CLAUDE_WORKING_DIR") or os.getcwd()
+
+    # Session id: prefer explicit hook field (Codex + Claude), else derive
+    session_id = hook_input.get("session_id") or hook_input.get("sessionId")
+    if not session_id:
+        if transcript_path:
+            session_id = os.path.basename(transcript_path).replace(".jsonl", "")
+        else:
+            session_id = "unknown"
+
+    # Fallback discovery of Claude transcript when not provided
+    if not transcript_path:
+        transcript_path = find_transcript(cwd)
+
+    # If still no last message, try transcript adapters before giving up
+    if not last_msg and transcript_path:
+        try:
+            last_msg = collect_turn_messages(transcript_path) or ""
+            if last_msg:
+                debug_log(f"LAST_MSG: recovered {len(last_msg)} chars from transcript")
+        except Exception as exc:  # noqa: BLE001
+            debug_log(f"LAST_MSG: transcript recovery failed ({type(exc).__name__})")
+            last_msg = ""
+
+    if not last_msg:
+        debug_log("EXIT: no last_assistant_message (and transcript fallback empty)")
+        sys.exit(0)
+
+    debug_log(f"LAST_MSG length: {len(last_msg)} chars; session_id={session_id!r}")
 
     # Clean up expired timer rules (auto-delete from rules.json)
     removed = cleanup_expired_timers()
@@ -714,14 +877,10 @@ def main():
         debug_log("EXIT: no enabled rules")
         sys.exit(0)
 
-    # Determine session ID from transcript path (resets iteration counters on new session)
-    transcript_path = find_transcript()
-    session_id = os.path.basename(transcript_path).replace(".jsonl", "") if transcript_path else "unknown"
-
     # Load iteration state for loop safety (max_iterations)
     state = load_state()
     if state.get("session_id") != session_id:
-        debug_log(f"STATE: new session {session_id[:8]}..., resetting iteration counters")
+        debug_log(f"STATE: new session {str(session_id)[:12]}..., resetting iteration counters")
         state = {"session_id": session_id, "rule_iterations": {}}
 
     # --- Timer rules: evaluate BEFORE stop_hook_active guard ---
@@ -741,7 +900,6 @@ def main():
             continue
 
         if now < deadline_dt:
-            # Timer active — check iteration limit
             max_iter = rule.get("max_iterations", 0)  # Default unlimited for timers
             current_iter = state.get("rule_iterations", {}).get(rule_name, 0)
             if max_iter > 0 and current_iter >= max_iter:
@@ -766,14 +924,22 @@ def main():
         debug_log("EXIT: no content rules to evaluate")
         sys.exit(0)
 
-    # Count pending background agents for Haiku context
-    pending_agents = count_pending_agents(transcript_path)
+    # Count pending background agents for Haiku context (Claude transcripts)
+    pending_agents = 0
+    try:
+        pending_agents = count_pending_agents(transcript_path)
+    except Exception as exc:  # noqa: BLE001
+        debug_log(f"PENDING_AGENTS: scan failed ({type(exc).__name__})")
 
     # Read transcript for full-turn evaluation if any rule needs it
     full_turn_text = None
     if any(r.get("evaluate_full_turn") for r in content_rules):
         if transcript_path:
-            full_turn_text = collect_turn_messages(transcript_path)
+            try:
+                full_turn_text = collect_turn_messages(transcript_path)
+            except Exception as exc:  # noqa: BLE001
+                debug_log(f"FULL_TURN: collect failed ({type(exc).__name__}); using last_msg only")
+                full_turn_text = None
 
     # Split rules by evaluation mode
     full_turn_rules = []
@@ -799,7 +965,6 @@ def main():
     # Evaluate each scored rule
     for rule, score, breakdown in scored:
         threshold = rule.get("confidence_threshold", 5)
-        # Use full turn text for full_turn rules, last_msg otherwise
         eval_text = full_turn_text if rule.get("evaluate_full_turn") and full_turn_text else last_msg
         debug_log(f"SCORE: rule '{rule['name']}' score={score} (kw={breakdown['kw']}, intent={breakdown['intent']}, cluster={breakdown['cluster']})")
 
@@ -812,14 +977,18 @@ def main():
             continue
 
         if score >= threshold:
-            # Optional: check git state for rules that care
             if rule.get("check_git_state") and check_git_clean():
                 debug_log(f"SKIP: rule '{rule['name']}' score={score} but git state is clean")
                 continue
             debug_log(f"BLOCK: score {score} >= {threshold}, skipping Phase 2")
             state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
             save_state(state)
-            block_and_exit(rule, f"HammerTime rule '{rule['name']}': {rule['rule'][:150]} (score={score})", matched_keywords=breakdown.get("matched_keywords"), matched_intents=breakdown.get("matched_intents"))
+            block_and_exit(
+                rule,
+                f"HammerTime rule '{rule['name']}': {rule['rule'][:150]} (score={score})",
+                matched_keywords=breakdown.get("matched_keywords"),
+                matched_intents=breakdown.get("matched_intents"),
+            )
         else:
             if rule.get("check_git_state") and check_git_clean():
                 debug_log(f"SKIP: rule '{rule['name']}' score={score}, Haiku phase skipped — git clean")
@@ -830,7 +999,12 @@ def main():
             if violated:
                 state.setdefault("rule_iterations", {})[rule_name] = current_iter + 1
                 save_state(state)
-                block_and_exit(rule, f"HammerTime rule '{rule['name']}': {rule['rule'][:150]} (score={score}, haiku=yes)", matched_keywords=breakdown.get("matched_keywords"), matched_intents=breakdown.get("matched_intents"))
+                block_and_exit(
+                    rule,
+                    f"HammerTime rule '{rule['name']}': {rule['rule'][:150]} (score={score}, haiku=yes)",
+                    matched_keywords=breakdown.get("matched_keywords"),
+                    matched_intents=breakdown.get("matched_intents"),
+                )
 
     # No violations confirmed
     debug_log("PASS: no violations confirmed")

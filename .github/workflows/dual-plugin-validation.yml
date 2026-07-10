@@ -1,0 +1,34 @@
+name: Dual plugin validation
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check Claude and Codex manifest parity
+        run: python3 scripts/check-plugin-manifests.py
+
+      - name: Check generated Codex agents
+        run: python3 scripts/codex-agents/generate.py --check
+
+      - name: Test Codex agent installer safety
+        run: python3 scripts/codex-agents/test_install.py -v
+
+      - name: Test dual-runtime hooks
+        run: bash hooks/tests/run-tests.sh
+
+      - name: Check whitespace
+        run: git diff --check

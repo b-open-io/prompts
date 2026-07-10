@@ -1,0 +1,7 @@
+interface:
+  display_name: "Orchestrator"
+  short_description: "Coordinate native agents, Grok workers, and Fable advice"
+  default_prompt: >-
+    Use $bopen-tools:orchestrator to keep the current main agent in control
+    while routing specialist work, bounded implementation, and independent
+    advice.

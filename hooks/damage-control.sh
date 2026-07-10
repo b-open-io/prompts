@@ -1,12 +1,21 @@
 #!/bin/bash
 # damage-control.sh
-# PreToolUse hook: enforces tiered path and command protection defined in patterns.yaml.
-# Exit 0 = allow, Exit 2 = block (stderr message fed to Claude).
-# JSON output on stdout = ask for confirmation (askConfirmation tier).
+# PreToolUse hook: tiered path/command protection from patterns.yaml.
+# Supports Claude Code (Bash/Write/Edit/Read) and Codex (Bash/shell + apply_patch).
+#
+# Runtime (BOPEN_HOOK_RUNTIME=claude|codex):
+#   Claude confirmation → permissionDecision: "ask"
+#   Codex confirmation  → permissionDecision: "deny" with actionable reason
+#
+# Exit 0 = allow (or Claude ask JSON on stdout)
+# Exit 2 = deny (JSON on stderr)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/common.sh
+source "${SCRIPT_DIR}/lib/common.sh"
+
 PATTERNS_FILE="${SCRIPT_DIR}/patterns.yaml"
 
 if [[ ! -f "$PATTERNS_FILE" ]]; then
@@ -15,21 +24,16 @@ if [[ ! -f "$PATTERNS_FILE" ]]; then
 fi
 
 input=$(cat)
-tool_name=$(echo "$input" | jq -r '.tool_name // ""')
+tool_name=$(extract_tool_name "$input")
 
 # ---------------------------------------------------------------------------
-# Helpers
+# YAML list extract
 # ---------------------------------------------------------------------------
-
-# Extract a YAML list section into newline-separated values.
-# Usage: extract_section SECTION_NAME
 extract_section() {
   local section="$1"
   awk "/^${section}:/{found=1; next} found && /^  - /{gsub(/^  - /, \"\"); print} found && /^[a-z]/{found=0}" "$PATTERNS_FILE" | sed 's/^"//;s/"$//'
 }
 
-# Return 0 (true) if the given path matches any pattern in the list.
-# Supports prefix matching (ends with /), glob-style *. suffix, and exact match.
 path_matches_list() {
   local filepath="$1"
   local section="$2"
@@ -41,7 +45,6 @@ path_matches_list() {
     local expanded_pattern
     expanded_pattern="${pattern//\~/$HOME}"
 
-    # Prefix match (directory patterns ending with /)
     if [[ "$pattern" == */ ]]; then
       if [[ "$filepath" == "${expanded_pattern}"* ]]; then
         return 0
@@ -49,7 +52,6 @@ path_matches_list() {
       continue
     fi
 
-    # Glob suffix match (e.g., *.pem, *.key)
     if [[ "$pattern" == \*.* ]]; then
       local ext="${pattern#\*}"
       if [[ "$filepath" == *"$ext" ]]; then
@@ -58,7 +60,6 @@ path_matches_list() {
       continue
     fi
 
-    # .env.* wildcard (special case: match any .env.something)
     if [[ "$pattern" == ".env.*" ]]; then
       if [[ "$basename_path" == .env.* ]]; then
         return 0
@@ -66,7 +67,6 @@ path_matches_list() {
       continue
     fi
 
-    # Exact basename match or exact full path match
     if [[ "$basename_path" == "$pattern" ]] || [[ "$filepath" == "$expanded_pattern" ]]; then
       return 0
     fi
@@ -75,7 +75,6 @@ path_matches_list() {
   return 1
 }
 
-# Return 0 (true) if path is in the zeroAccessExceptions list.
 is_exception() {
   local filepath="$1"
   local basename_path
@@ -89,53 +88,74 @@ is_exception() {
   return 1
 }
 
-json_escape() {
-  python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])' <<< "$1"
-}
+# Enforce path policy for a single file path and operation:
+#   write | delete | read
+enforce_path_policy() {
+  local file_path="$1"
+  local op="$2" # write|delete|read
 
-block() {
-  local reason
-  reason=$(json_escape "$1")
-  printf '{"hookSpecificOutput":{"permissionDecision":"deny"},"systemMessage":"%s"}' \
-    "$reason" >&2
-  exit 2
+  [[ -z "$file_path" ]] && return 0
+
+  if path_matches_list "$file_path" "zeroAccessPaths"; then
+    if ! is_exception "$file_path"; then
+      deny_permission "BLOCKED by damage-control: '${file_path}' is in the zero-access list. The agent must never read or write this file. If the user requires changes, they must make them manually."
+    fi
+  fi
+
+  if [[ "$op" == "write" || "$op" == "delete" ]]; then
+    if path_matches_list "$file_path" "readOnlyPaths"; then
+      deny_permission "BLOCKED by damage-control: '${file_path}' is read-only. The agent may read this file but must not modify or delete it."
+    fi
+  fi
+
+  if [[ "$op" == "delete" ]]; then
+    if path_matches_list "$file_path" "noDeletePaths"; then
+      deny_permission "BLOCKED by damage-control: '${file_path}' matches a no-delete path. This file or directory must not be deleted."
+    fi
+    # Also treat zero-access as no-delete (already handled above for non-exceptions)
+  fi
 }
 
 # ---------------------------------------------------------------------------
-# Bash tool — command pattern checks
+# Bash / shell — command pattern checks
 # ---------------------------------------------------------------------------
 
-if [[ "$tool_name" == "Bash" ]]; then
-  command_str=$(echo "$input" | jq -r '.tool_input.command // ""')
-  command_lower=$(echo "$command_str" | tr '[:upper:]' '[:lower:]')
+_is_shell=false
+if is_shell_tool "$tool_name"; then
+  _is_shell=true
+elif [[ -z "$tool_name" && -n "$(extract_command "$input")" ]]; then
+  # Some hosts omit tool_name; treat presence of a command as shell.
+  _is_shell=true
+fi
+
+if [[ "$_is_shell" == "true" ]]; then
+  command_str=$(extract_command "$input")
+  command_lower=$(printf '%s' "$command_str" | tr '[:upper:]' '[:lower:]')
 
   # Hard block: destructiveCommands
   while IFS= read -r pattern; do
     [[ -z "$pattern" ]] && continue
-    pattern_lower=$(echo "$pattern" | tr '[:upper:]' '[:lower:]')
+    pattern_lower=$(printf '%s' "$pattern" | tr '[:upper:]' '[:lower:]')
 
     # Special case: allow --force-with-lease even though --force is blocked
-    if [[ "$pattern_lower" == "git push --force"* ]] || [[ "$pattern_lower" == "git push -f "* ]]; then
-      if echo "$command_lower" | grep -q "force-with-lease"; then
+    if [[ "$pattern_lower" == "git push --force"* ]] || [[ "$pattern_lower" == "git push -f "* ]] || [[ "$pattern_lower" == "git push -f" ]]; then
+      if printf '%s' "$command_lower" | grep -q "force-with-lease"; then
         continue
       fi
     fi
 
-    if echo "$command_lower" | grep -qF "$pattern_lower"; then
-      block "BLOCKED by damage-control: command matches destructive pattern '${pattern}'. This operation is not permitted. If you believe this is necessary, ask the user for explicit written permission."
+    if printf '%s' "$command_lower" | grep -qF "$pattern_lower"; then
+      deny_permission "BLOCKED by damage-control: command matches destructive pattern '${pattern}'. This operation is not permitted. If you believe this is necessary, ask the user for explicit written permission."
     fi
   done < <(extract_section "destructiveCommands")
 
-  # Ask confirmation: askConfirmation (output JSON to stdout, exit 0)
+  # Confirmation tier: ask (Claude) or deny with reason (Codex)
+  # Fixed: do NOT use `local` outside a function (that failed open).
   while IFS= read -r pattern; do
     [[ -z "$pattern" ]] && continue
-    pattern_lower=$(echo "$pattern" | tr '[:upper:]' '[:lower:]')
-    if echo "$command_lower" | grep -qF "$pattern_lower"; then
-      local escaped_cmd
-      escaped_cmd=$(json_escape "$command_str")
-      printf '{"continue":false,"stopReason":"damage-control: The command matches a confirmation-required pattern (%s). You must ask the user for explicit permission before running: %s"}' \
-        "$pattern" "$escaped_cmd"
-      exit 0
+    pattern_lower=$(printf '%s' "$pattern" | tr '[:upper:]' '[:lower:]')
+    if printf '%s' "$command_lower" | grep -qF "$pattern_lower"; then
+      ask_or_deny "damage-control: The command matches a confirmation-required pattern (${pattern}). You must ask the user for explicit permission before running: ${command_str}"
     fi
   done < <(extract_section "askConfirmation")
 
@@ -145,8 +165,9 @@ if [[ "$tool_name" == "Bash" ]]; then
     expanded_pattern="${pattern//\~/$HOME}"
     basename_pattern=$(basename "$expanded_pattern")
 
-    if echo "$command_str" | grep -qE '(^|[[:space:];|&])(rm|unlink|rmdir)[[:space:]]' && echo "$command_str" | grep -qF "$basename_pattern"; then
-      block "BLOCKED by damage-control: attempting to delete protected path '${pattern}'. This file or directory must not be deleted."
+    if printf '%s' "$command_str" | grep -qE '(^|[[:space:];|&])(rm|unlink|rmdir)[[:space:]]' \
+      && printf '%s' "$command_str" | grep -qF "$basename_pattern"; then
+      deny_permission "BLOCKED by damage-control: attempting to delete protected path '${pattern}'. This file or directory must not be deleted."
     fi
   done < <(extract_section "noDeletePaths")
 
@@ -154,48 +175,71 @@ if [[ "$tool_name" == "Bash" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Write / Edit tool — path checks
+# Codex apply_patch — parse Add/Update/Delete file headers
+# Native reads and arbitrary shell paths cannot be fully intercepted.
 # ---------------------------------------------------------------------------
 
-if [[ "$tool_name" == "Write" || "$tool_name" == "Edit" ]]; then
-  file_path=$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.path // ""')
+if is_apply_patch_tool "$tool_name"; then
+  patch_body=$(printf '%s' "$input" | jq -r '
+    .tool_input.input
+    // .tool_input.patch
+    // .tool_input.command
+    // .tool_input.contents
+    // empty
+  ' 2>/dev/null || true)
 
-  if [[ -z "$file_path" ]]; then
-    exit 0
-  fi
-
-  # zeroAccessPaths — block unless it is an exception
-  if path_matches_list "$file_path" "zeroAccessPaths"; then
-    if ! is_exception "$file_path"; then
-      block "BLOCKED by damage-control: '${file_path}' is in the zero-access list. Claude must never read or write this file. If the user requires changes, they must make them manually."
+  # Parse anchored headers only:
+  #   *** Add File: path
+  #   *** Update File: path
+  #   *** Delete File: path
+  while IFS= read -r header_line; do
+    [[ -z "$header_line" ]] && continue
+    op=""
+    fpath=""
+    if [[ "$header_line" =~ ^\*\*\*[[:space:]]+Add[[:space:]]+File:[[:space:]]*(.+)$ ]]; then
+      op="write"
+      fpath="${BASH_REMATCH[1]}"
+    elif [[ "$header_line" =~ ^\*\*\*[[:space:]]+Update[[:space:]]+File:[[:space:]]*(.+)$ ]]; then
+      op="write"
+      fpath="${BASH_REMATCH[1]}"
+    elif [[ "$header_line" =~ ^\*\*\*[[:space:]]+Delete[[:space:]]+File:[[:space:]]*(.+)$ ]]; then
+      op="delete"
+      fpath="${BASH_REMATCH[1]}"
+    else
+      continue
     fi
-  fi
-
-  # readOnlyPaths — block writes
-  if path_matches_list "$file_path" "readOnlyPaths"; then
-    block "BLOCKED by damage-control: '${file_path}' is read-only. Claude may read this file but must not modify it."
-  fi
+    # Trim trailing whitespace/CR
+    fpath=$(printf '%s' "$fpath" | sed 's/[[:space:]]*$//')
+    enforce_path_policy "$fpath" "$op"
+  done < <(printf '%s\n' "$patch_body" | grep -E '^\*\*\*[[:space:]]+(Add|Update|Delete)[[:space:]]+File:' || true)
 
   exit 0
 fi
 
 # ---------------------------------------------------------------------------
-# Read tool — zero access paths block reads too
+# Write / Edit tool — path checks (Claude)
 # ---------------------------------------------------------------------------
 
-if [[ "$tool_name" == "Read" ]]; then
-  file_path=$(echo "$input" | jq -r '.tool_input.file_path // ""')
+tool_lower=$(printf '%s' "$tool_name" | tr '[:upper:]' '[:lower:]')
+if [[ "$tool_lower" == "write" || "$tool_lower" == "edit" || "$tool_lower" == "multiedit" ]]; then
+  file_path=$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // empty' 2>/dev/null || true)
+  enforce_path_policy "$file_path" "write"
+  exit 0
+fi
 
-  if [[ -z "$file_path" ]]; then
-    exit 0
-  fi
+# ---------------------------------------------------------------------------
+# Read tool — zero access paths block reads too (Claude)
+# ---------------------------------------------------------------------------
 
-  if path_matches_list "$file_path" "zeroAccessPaths"; then
-    if ! is_exception "$file_path"; then
-      block "BLOCKED by damage-control: '${file_path}' is in the zero-access list. Claude must never read this file."
+if [[ "$tool_lower" == "read" ]]; then
+  file_path=$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // empty' 2>/dev/null || true)
+  if [[ -n "$file_path" ]]; then
+    if path_matches_list "$file_path" "zeroAccessPaths"; then
+      if ! is_exception "$file_path"; then
+        deny_permission "BLOCKED by damage-control: '${file_path}' is in the zero-access list. The agent must never read this file."
+      fi
     fi
   fi
-
   exit 0
 fi
 

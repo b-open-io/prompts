@@ -1,6 +1,6 @@
 # Damage Control Patterns
-# Tiered path and command protection for Claude Code hooks.
-# Used by hooks/damage-control.sh
+# Tiered path and command protection for Claude Code and Codex hooks.
+# Used by hooks/damage-control.sh (and apply_patch path policy on Codex).
 
 # No read, write, or any access.
 zeroAccessPaths:

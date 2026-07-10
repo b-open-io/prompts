@@ -2,26 +2,84 @@
   <img src="assets/banner.jpg" alt="bOpen Tools" width="100%" />
 </p>
 
-# OPL Prompts & AI Agents
+# bopen-tools: Prompts, Skills & AI Agents
 
-**Supercharge Claude Code with specialized AI agents and prompts** for BSV blockchain development, project automation, and workflow optimization.
+**A shared toolkit for Claude Code and Codex** with specialist agents, skills,
+orchestration patterns, safety hooks, and reusable development workflows.
 
 ## What This Repository Does
 
 This repository provides:
-- **Specialized AI Agents** - Expert sub-agents for specific tasks (design, security, documentation, content, payments, auth, etc.)
-- **Slash Commands** - Instant automation tools for common workflows
-- **Automation Hooks** - Background workflows to enhance development
-- **Powerful Prompts** - Reusable templates for complex operations
+
+- **Specialized AI agents** for design, security, documentation, architecture,
+  testing, payments, infrastructure, and more
+- **Cross-agent skills** shared by Claude Code and Codex
+- **Runtime-specific hooks** that preserve the same safety and workflow intent
+  on both hosts
+- **Orchestration patterns** for a strong main model, native specialists,
+  Grok implementation workers, and a read-only Fable advisor
+- **Claude Code slash commands** for common workflows
 
 ## Installation
 
-**Full Plugin** (recommended - includes 31 agents, 71 skill entries, 14 commands, 6 hooks):
+### Claude Code
+
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
 
-**Skills Only** (for other agentic frameworks — install individually):
+Claude Code discovers the plugin's agents, skills, commands, and Claude-specific
+hooks directly.
+
+### Codex
+
+Add this repository as a Codex marketplace, then install the plugin:
+
+```bash
+codex plugin marketplace add b-open-io/prompts --ref master
+codex plugin add bopen-tools@b-open-io
+```
+
+The Codex plugin installs the shared skills and Codex-specific hooks. Codex
+custom-agent files are configured separately because Codex discovers them from
+project or user agent directories rather than from a plugin manifest.
+
+#### Install Codex custom agents
+
+Ask Codex to invoke the explicit setup skill:
+
+```text
+Use $bopen-tools:codex-agent-setup to install the curated agents for this project.
+```
+
+The default installs eight curated adapters into the current project's
+`.codex/agents/` directory. To make the full roster available across projects:
+
+```text
+Use $bopen-tools:codex-agent-setup to install all agents in user scope.
+```
+
+From a repository checkout, the equivalent commands are:
+
+```bash
+# Curated roster in this project (the safe default)
+bash skills/codex-agent-setup/scripts/setup.sh
+
+# Full roster in ${CODEX_HOME:-~/.codex}/agents/
+bash skills/codex-agent-setup/scripts/setup.sh --user --all
+```
+
+The installer copies regular TOML files atomically, tracks only files it owns,
+preserves user modifications and unrelated agents, and never changes
+`~/.codex/config.toml`. Start a new Codex session after setup so the agents are
+discovered. Installed runtime agent names use the `bopen_` prefix and
+underscores, such as `bopen_agent_builder` and `bopen_code_auditor`. Generated
+filenames retain the readable `bopen-*.toml` convention.
+
+### Skills only
+
+For other agentic frameworks, install individual skills:
+
 ```bash
 bunx skills add b-open-io/bopen-tools --skill <skill-name>
 ```
@@ -33,12 +91,15 @@ bunx skills add b-open-io/bopen-tools --skill <skill-name>
 bunx skills add b-open-io/bopen-tools --skill agent-auditor
 bunx skills add b-open-io/bopen-tools --skill agent-decommissioning
 bunx skills add b-open-io/bopen-tools --skill agent-onboarding
+bunx skills add b-open-io/bopen-tools --skill advisor
 bunx skills add b-open-io/bopen-tools --skill benchmark-skills
 bunx skills add b-open-io/bopen-tools --skill charting
 bunx skills add b-open-io/bopen-tools --skill check-version
 bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
 bunx skills add b-open-io/bopen-tools --skill code-audit-scripts
+bunx skills add b-open-io/bopen-tools --skill codex-agent-setup
 bunx skills add b-open-io/bopen-tools --skill confess
+bunx skills add b-open-io/bopen-tools --skill coordinator
 bunx skills add b-open-io/bopen-tools --skill create-next-project
 bunx skills add b-open-io/bopen-tools --skill critique
 bunx skills add b-open-io/bopen-tools --skill deploy-agent-team
@@ -57,6 +118,7 @@ bunx skills add b-open-io/bopen-tools --skill mcp-apps
 bunx skills add b-open-io/bopen-tools --skill nextjs-upgrade
 bunx skills add b-open-io/bopen-tools --skill notebooklm
 bunx skills add b-open-io/bopen-tools --skill npm-publish
+bunx skills add b-open-io/bopen-tools --skill orchestrator
 bunx skills add b-open-io/bopen-tools --skill perf-audit
 bunx skills add b-open-io/bopen-tools --skill persona
 bunx skills add b-open-io/bopen-tools --skill plaid-integration
@@ -84,7 +146,10 @@ bunx skills add b-open-io/bopen-tools --skill x-user-timeline
 
 ## Specialized AI Agents
 
-Our 31 expert agents enhance Claude Code with specialized knowledge. See [agents/](agents/) for full details.
+The canonical agent personas live in [agents/](agents/). Claude Code loads them
+directly from the plugin. Codex uses generated TOML adapters derived from those
+same files, installed with the explicit setup described above. The full Codex
+roster excludes `satchmo-live`, which is a separately deployed remote bot.
 
 ### Development & Architecture
 - 🔵 [**prompt-engineer**](agents/prompt-engineer.md) — Zack — Slash commands, agent skills, YAML frontmatter, Claude Code config
@@ -125,7 +190,10 @@ Our 31 expert agents enhance Claude Code with specialized knowledge. See [agents
 - 🌐 [**account-manager**](agents/account-manager.md) — Kurt — Public-facing sales, visitor qualification, bOpen.io chat
 - 🔴 [**satchmo-live**](agents/satchmo-live.md) — Satchmo — Persistent agent at satchmo.dev, BSV knowledge base
 
-**Usage:** `"Use the [agent-name] to [specific task]"`
+**Usage:** In Claude Code, request the plugin agent by name (for example,
+`bopen-tools:code-auditor`). In Codex, use its installed adapter name (for
+example, `bopen_code_auditor`). If a Codex adapter is missing, run the setup
+skill rather than pretending the specialist was spawned.
 
 ## Skills
 
@@ -174,9 +242,13 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `agent-auditor` | Comprehensive audit for agents and skills across the plugin ecosystem |
 | `agent-decommissioning` | Retire and remove agents from the team |
 | `agent-onboarding` | End-to-end checklist for adding a new agent |
+| `codex-agent-setup` | Explicitly install, check, update, or uninstall Codex custom-agent adapters |
 | `deploy-agent-team` | Spin up parallel agents to work on tasks |
 | `hammertime` | Write behavioral guardrail rules for the HammerTime stop hook |
 | `hook-manager` | Discover and install automation hooks |
+| `orchestrator` | Keep the current main in control across specialists, workers, and an advisor |
+| `coordinator` | Specify and dispatch bounded implementation work to external workers |
+| `advisor` | Obtain a read-only second opinion at a commitment boundary |
 | `reinforce-skills` | Inject skill/agent routing maps into CLAUDE.md |
 | `skill-publish` | Publish and version bump plugins |
 | `wave-coordinator` | Dispatch 5+ parallel agents with context budget management |
@@ -208,7 +280,9 @@ Skills are context-triggered capabilities. They activate automatically or can be
 
 ## Slash Commands
 
-Commands use category subdirectories: `/category:command` or `/command` for root-level commands.
+Slash commands are a Claude Code surface. Codex users invoke the corresponding
+skills in natural language or with `$skill-name`. Claude commands use category
+subdirectories: `/category:command` or `/command` for root-level commands.
 
 - `/bug-hunt` - Adversarial bug hunt with 3 isolated agents — supports path or branch diff mode
 - `/prime` - Context warm-up — loads git state, plugin inventory, and project conventions
@@ -223,16 +297,23 @@ Commands use category subdirectories: `/category:command` or `/command` for root
 
 ## Automation Hooks
 
-Hooks are distributed automatically with the plugin — no manual installation needed.
+Hooks are distributed with each plugin manifest; do not copy them into a home
+directory. Shared scripts implement the common behavior, while
+`hooks/claude-hooks.json` and `hooks/codex-hooks.json` adapt event names and
+capabilities for each host.
 
-| Hook | Event | Description |
-|------|-------|-------------|
-| `session-context` | SessionStart | Injects branch, commit history, and plugin inventory into session context |
-| `bouncer` | PreToolUse (Bash) | Validates Bash commands against safety rules |
-| `damage-control` | PreToolUse (Bash, Write, Edit, Read) | Prevents accidental destructive operations |
-| `publish-gate` | PreToolUse (Bash) | Guards publishing commands behind repository release checks |
-| `agent-browser-solo` | PreToolUse (WebSearch, WebFetch) | Routes web operations through the agent browser |
-| `hammertime` | Stop | Catches bad model behaviors via scored rule matching with optional Haiku verification |
+| Hook | Claude Code | Codex | Description |
+|------|-------------|-------|-------------|
+| `session-context` | SessionStart | SessionStart | Injects bounded branch, history, and plugin context |
+| `bouncer` | Bash PreToolUse | Shell PreToolUse | Validates commands against safety rules |
+| `damage-control` | Bash/write/edit PreToolUse | Shell/`apply_patch` PreToolUse | Protects sensitive paths and destructive operations |
+| `publish-gate` | Bash PreToolUse | Shell PreToolUse | Guards publish commands behind release checks |
+| browser guidance | `agent-browser-solo` on WebFetch | `browser-intent` on UserPromptSubmit | Encourages isolated browser automation without injecting page content into privileged hook context; ordinary Claude WebSearch remains native |
+| `hammertime` | Stop | Stop | Applies behavioral guardrails and can request another turn |
+
+On first use, Codex may ask you to review and trust plugin hooks. Inspect the
+commands before approving them. Do not use hook-trust bypass flags for normal
+work; they exist for controlled diagnostics, not routine installation.
 
 ### HammerTime Stop Hook
 
@@ -244,9 +325,17 @@ HammerTime is a behavioral guardrail system that runs on every assistant respons
 | Intent Patterns | Regex structural matching | +2 each | Paraphrase catching |
 | Co-occurrence | Dismissal verb + qualifier in same sentence | +3 | Highest confidence |
 
-**Score thresholds:** 0 = pass, 1-4 = Haiku verification (~500ms, ~$0.001), 5+ = direct block.
+**Score thresholds:** 0 = pass, 1-4 = optional Haiku verification, 5+ =
+direct block. The verifier runs only when `ANTHROPIC_API_KEY` is configured;
+otherwise an ambiguous match blocks conservatively. When it runs, it sends the
+rule and up to the last 4,000 characters of the assistant response to
+Anthropic.
 
-**Loop safety:** Each rule has a `max_iterations` field (default: 3). The hook tracks blocks per session and auto-allows exit when the limit is hit. Counters reset on new sessions. Set `0` for unlimited. State stored in `~/.claude/hammertime/state.json`.
+**Loop safety:** Each rule has a `max_iterations` field (default: 3). The hook
+tracks blocks per session and auto-allows exit when the limit is hit. Counters
+reset on new sessions. Set `0` for unlimited. Existing Claude installations
+continue to use `~/.claude/hammertime`; otherwise the cross-host default is
+`~/.bopen-tools/hammertime`. Set `BOPEN_HAMMERTIME_HOME` to override it.
 
 **Full-turn evaluation:** Rules can opt into scoring ALL assistant messages since the user's last message (not just the final one). This catches violations in intermediate responses — e.g., the model dismisses an error mid-turn, then the final message just says "Done." Set `"evaluate_full_turn": true` on a rule to enable. The hook reads the session transcript JSONL backwards (last 2MB max).
 
@@ -263,7 +352,7 @@ Ships with a built-in `project-owner` rule that prevents dismissing errors as "p
 #### Debugging
 
 ```bash
-export HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log
+export HAMMERTIME_DEBUG="$HOME/.bopen-tools/hammertime/debug.log"
 ```
 
 Debug log shows elapsed time, score breakdowns, transcript reads, and phase decisions:
@@ -277,7 +366,9 @@ Debug log shows elapsed time, score breakdowns, transcript reads, and phase deci
 [   9ms] BLOCK: score 7 >= 5, skipping Phase 2
 ```
 
-Rules live at `~/.claude/hammertime/rules.json`. See the [hammertime skill](skills/hammertime/SKILL.md) for the full rule authoring guide.
+Rules live under the selected HammerTime home. See the
+[hammertime skill](skills/hammertime/SKILL.md) for the full rule authoring
+guide.
 
 ## Custom Statusline
 
@@ -313,22 +404,47 @@ See the [claude-peacock plugin](https://github.com/b-open-io/claude-peacock) for
 
 ```
 prompts/
-├── agents/                 # Specialized AI agents
-├── commands/               # Slash commands
+├── .claude-plugin/         # Claude Code plugin manifest
+├── .codex-plugin/          # Codex plugin manifest
+├── .agents/plugins/        # Codex marketplace manifest
+├── agents/                 # Canonical authored agent personas
+├── codex/agents/           # Generated Codex TOML adapters
+├── commands/               # Claude Code slash commands
 │   ├── bug-hunt.md         #   /bug-hunt
 │   ├── hammertime.md       #   /hammertime
 │   ├── hammertime/         #   /hammertime:status, /hammertime:manage
 │   ├── docs/               #   /docs:* commands
 │   └── utils/              #   /utils:* commands
-├── hooks/                  # Automation hooks (copy to ~/.claude/hooks)
-├── skills/                 # Agent skills (each has SKILL.md + evals/)
+├── hooks/                  # Shared scripts + host-specific hook manifests
+├── skills/                 # Cross-agent skills (each has SKILL.md)
 ├── benchmarks/             # Benchmark results (latest.json)
-├── scripts/                # CLI tools (benchmark.tsx)
+├── scripts/
+│   ├── codex-agents/       # Adapter generator and safe installer
+│   └── benchmark.tsx       # Skill benchmark CLI
 ├── references/             # Reference documentation
 ├── tsconfig.json           # JSX config for benchmark CLI
 ├── README.md
 └── QUICKSTART.md
 ```
+
+### One source of truth, two host adapters
+
+The repository avoids parallel hand-maintained copies:
+
+- `agents/*.md` is the canonical persona and instruction source. The committed
+  `codex/agents/*.toml` files are deterministic generated artifacts, and the
+  generator's `--check` mode catches drift.
+- Codex agent setup installs regular files instead of symlinks into a mutable
+  plugin cache. Its ownership manifest enables safe updates without taking
+  ownership of unrelated user files.
+- Hook logic lives in shared scripts. The Claude and Codex JSON manifests only
+  describe the different host event surfaces.
+- The two plugin manifests have independent host schemas but share one release
+  version and common metadata, checked by `scripts/check-plugin-manifests.py`.
+
+Do not manually copy plugin contents into `~/.claude` or `~/.codex`, and do not
+symlink agent definitions into a versioned plugin cache. Use the marketplace
+and agent setup flows so upgrades remain reproducible.
 
 ## Skill Benchmarks
 
@@ -419,19 +535,52 @@ Benchmarks run **locally** using your existing Claude session — no API key nee
 
 ### Working with Agents
 
-Agents can be explicitly requested for specific tasks:
+Agents can be explicitly requested for specific tasks. Use Claude plugin IDs or
+Codex adapter IDs according to the current host:
 
 ```
-"Use the prompt-engineer agent to create a deployment command"
-"Have the bitcoin-specialist review this transaction builder"
-"Ask the design-specialist about component library best practices"
+"Use bopen-tools:prompt-engineer to create a deployment command"   # Claude
+"Have bopen_code_auditor review the authentication boundary"      # Codex
+"Ask bopen_designer to review this component system"              # Codex
 ```
+
+### Orchestration: Codex main, Grok workers, Fable advisor
+
+Use the `orchestrator` skill when the current Claude Code or Codex main should
+retain the plan, judgment, verification, and git ownership while other lanes do
+bounded work:
+
+```text
+Use $bopen-tools:orchestrator. Keep this Codex session in the main seat, use
+native bopen specialists for research and review, grok-4.5 for bounded worker
+tasks, and Fable only for read-only second opinions at commitment boundaries.
+```
+
+The main model is always the model selected for the current session; the skill
+does not pin or rename it. The supporting skills divide responsibilities:
+
+- `coordinator` writes precise worker specs, assigns non-overlapping files,
+  dispatches implementation, and requires acceptance reports. Its default Grok
+  worker is `grok-4.5`, after confirming it appears in the complete
+  `grok models` output. Override it with `BOPEN_WORKER_MODEL`.
+- `advisor` packages a narrow, read-only consult. From a Codex main it can use
+  the Claude CLI with the `fable` model-family alias. Override it with
+  `BOPEN_ADVISOR_MODEL`.
+- `orchestrator` composes native specialists, Coordinator, Advisor, and staged
+  waves while leaving final decisions with the main session.
+
+External lanes cross provider boundaries. A Grok dispatch can send its prompt,
+specification, and selected repository content to xAI. A Fable consult can send
+its consult and files inspected by read-only tools to Anthropic. State what will
+be shared before first use, obtain approval unless the user already authorized
+that lane, and never send secrets or unrelated proprietary content.
 
 ### Custom Workflows
 
 Create project-specific automation by combining:
+
 1. Specialized agents for expertise
-2. Slash commands for automation
+2. Skills and, on Claude Code, slash commands for automation
 3. Hooks for background tasks
 4. Prompts for complex operations
 
@@ -454,9 +603,10 @@ Create project-specific automation by combining:
 
 
 
-## Recommended Permissions
+## Claude Code Permissions
 
-Some agents use CLI tools that require permission. To avoid repeated prompts, add these to your `~/.claude/settings.json`:
+Some Claude Code agents use CLI tools that require permission. To avoid
+repeated prompts, add these to your `~/.claude/settings.json`:
 
 ```json
 {
@@ -472,7 +622,7 @@ Some agents use CLI tools that require permission. To avoid repeated prompts, ad
 
 Or use `/permissions` to add them interactively.
 
-## Skill Limits & Configuration
+## Claude Code Skill Limits & Configuration
 
 Claude Code has a default **15,000 character budget** for skill metadata. When you have many skills installed, some may be truncated from Claude's context.
 

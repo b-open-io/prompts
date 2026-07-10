@@ -1,5 +1,6 @@
 ---
 name: hammertime
+version: 1.0.0
 description: >-
   This skill should be used when the user mentions a behavioral rule they want
   enforced, says "always do X", "never do Y", "stop doing Z", "from now on",
@@ -10,7 +11,10 @@ description: >-
 
 # HammerTime — Behavioral Rule System
 
-Rules live at `~/.claude/hammertime/rules.json`. The hook registers as a Stop hook and fires on every assistant turn.
+Rules live under the shared HammerTime home. Resolution order is
+`BOPEN_HAMMERTIME_HOME`, an existing legacy `~/.claude/hammertime`, then
+`~/.bopen-tools/hammertime`. The hook and bundled scripts use the same resolver.
+The hook registers as a Stop hook and fires on every assistant turn.
 
 Two rule types:
 - **Content rules** — scored detection against response text (three-layer scoring + optional Haiku verification)
@@ -216,10 +220,12 @@ If any answer is "no", rewrite the `rule` text. The rule text is the agent's onl
 
 ### Step 9: Write the rules file
 
-Read the existing `~/.claude/hammertime/rules.json` (or start with `[]` if it doesn't exist). Append the new rule and write the file. Create the `~/.claude/hammertime/` directory if needed.
+Resolve the active home with the bundled helper, then read its `rules.json` (or
+start with `[]` if it does not exist). Append the new rule and write atomically.
 
 ```bash
-mkdir -p ~/.claude/hammertime
+HAMMERTIME_HOME=$(python3 "${SKILL_DIR}/scripts/hammertime_paths.py")
+mkdir -p "$HAMMERTIME_HOME"
 ```
 
 ### Step 10: Check if HammerTime is paused
@@ -227,14 +233,15 @@ mkdir -p ~/.claude/hammertime
 After writing the rule, check for the disabled sentinel:
 
 ```bash
-test -f ~/.claude/hammertime/disabled && echo "PAUSED"
+test -f "$HAMMERTIME_HOME/disabled" && echo "PAUSED"
 ```
 
 If paused, warn: **"Note: HammerTime is currently paused. This rule has been saved but won't fire until you run `/hammertime:start`."**
 
 ### Step 11: Remind about restart
 
-Rules are loaded at hook registration time. Tell the user: **"Restart Claude Code for the new rule to take effect."**
+Rules are loaded at hook registration time. Tell the user: **"Start a new
+Claude Code or Codex session for the new rule to take effect."**
 
 ## Skill Invocation in Rules
 
@@ -269,7 +276,7 @@ Use full-turn for rules about dismissing work, skipping process steps, or any vi
 Set the environment variable to enable score breakdowns:
 
 ```bash
-export HAMMERTIME_DEBUG=~/.claude/hammertime/debug.log
+export HAMMERTIME_DEBUG="$(python3 "${SKILL_DIR}/scripts/hammertime_paths.py")/debug.log"
 ```
 
 ```
