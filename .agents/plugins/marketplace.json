@@ -15,6 +15,110 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Developer Tools"
+    },
+    {
+      "name": "gemskills",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/b-open-io/gemskills.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Creative Tools"
+    },
+    {
+      "name": "bsv-skills",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/b-open-io/bsv-skills.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "1sat",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/b-open-io/1sat-sdk.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "product-skills",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/b-open-io/product-skills.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "sigma-auth",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/b-open-io/better-auth-plugin.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "clawbook-skills",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/b-open-io/clawbook-skills.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Social"
+    },
+    {
+      "name": "clawnet-bot",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/b-open-io/clawnet-bot.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "linear-sync",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/b-open-io/linear-sync.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }
