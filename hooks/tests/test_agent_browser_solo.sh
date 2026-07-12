@@ -1,8 +1,8 @@
 #!/bin/bash
-# agent-browser-solo fetch-and-serve tests (mocked agent-browser).
+# agent-browser-solo redirect-and-serve tests (PreToolUse, mocked browser).
 
 echo
-echo "--- agent-browser-solo ---"
+echo "--- agent-browser-solo (redirect-and-serve) ---"
 
 MOCK_AB=$(mktemp -d)/agent-browser
 cat > "$MOCK_AB" <<'MOCK'
@@ -31,28 +31,29 @@ MOCK
 chmod +x "$MOCK_AB"
 
 FAIL_AB=$(mktemp -d)/agent-browser
-cat > "$FAIL_AB" <<'MOCK'
-#!/bin/bash
-exit 1
-MOCK
+printf '#!/bin/bash\nexit 1\n' > "$FAIL_AB"
 chmod +x "$FAIL_AB"
 
 fetch_input=$(jq -n '{tool_name:"WebFetch", tool_input:{url:"https://example.com/docs"}}')
 
-# Claude: content served in a clean structured deny (stdout, exit 0)
+# Claude: deny with ONE short reason line; content rides in additionalContext
 export AGENT_BROWSER_SOLO_BIN="$MOCK_AB"
 run_hook "agent-browser-solo.sh" "claude" "$fetch_input"
-assert_exit "ab-solo claude serve exit" "0" "$HOOK_EXIT"
+assert_exit "ab-solo claude exit" "0" "$HOOK_EXIT"
 assert_contains "ab-solo claude deny json" '"permissionDecision":"deny"' "$HOOK_STDOUT"
 assert_contains "ab-solo claude event name" '"hookEventName":"PreToolUse"' "$HOOK_STDOUT"
+assert_contains "ab-solo claude short reason" "handled by agent-browser" "$HOOK_STDOUT"
+assert_contains "ab-solo claude context field" '"additionalContext"' "$HOOK_STDOUT"
 assert_contains "ab-solo claude untrusted marker" "UNTRUSTED WEB CONTENT" "$HOOK_STDOUT"
 assert_contains "ab-solo claude page text" "mock extracted page text" "$HOOK_STDOUT"
-assert_contains "ab-solo claude url echoed" "example.com/docs" "$HOOK_STDOUT"
 assert_not_contains "ab-solo claude no systemMessage" '"systemMessage"' "$HOOK_STDOUT"
+# The visible reason must stay short: page content must NOT be in the reason.
+reason_only=$(printf '%s' "$HOOK_STDOUT" | jq -r '.hookSpecificOutput.permissionDecisionReason')
+assert_not_contains "ab-solo claude reason has no content" "mock extracted page text" "$reason_only"
 
-# Codex: same content, stderr + exit 2
+# Codex: reason + content combined on stderr, exit 2
 run_hook "agent-browser-solo.sh" "codex" "$fetch_input"
-assert_exit "ab-solo codex serve exit" "2" "$HOOK_EXIT"
+assert_exit "ab-solo codex exit" "2" "$HOOK_EXIT"
 assert_contains "ab-solo codex deny json" '"permissionDecision":"deny"' "$HOOK_STDERR"
 assert_contains "ab-solo codex page text" "mock extracted page text" "$HOOK_STDERR"
 

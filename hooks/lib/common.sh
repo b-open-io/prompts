@@ -35,9 +35,10 @@ resolve_cwd() {
   printf '%s' "$cwd"
 }
 
-# JSON-escape a string (no surrounding quotes).
+# JSON-escape a string (no surrounding quotes). The herestring feeding stdin
+# appends a newline; strip that one so messages don't end with a stray \n.
 json_escape() {
-  python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])' <<< "${1:-}"
+  python3 -c 'import json,sys; s=sys.stdin.read(); s=s[:-1] if s.endswith("\n") else s; print(json.dumps(s)[1:-1])' <<< "${1:-}"
 }
 
 # Emit a hard deny, per runtime.
@@ -59,6 +60,35 @@ deny_permission() {
 
   printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}' \
     "$reason"
+  exit 0
+}
+
+# Deny while delivering content through additionalContext, per runtime.
+# Claude Code renders the deny REASON in the transcript (tinted), but
+# additionalContext arrives as an invisible system reminder — so keep the
+# reason to ONE short line and put the payload in the context argument.
+# Codex has no additionalContext: reason and payload are concatenated into
+# the stderr deny (its UI does not have the banner problem).
+deny_with_context() {
+  local reason_raw="${1:-Blocked by hook.}"
+  local context_raw="${2:-}"
+  local runtime
+  runtime=$(get_runtime)
+
+  if [[ "$runtime" == "codex" ]]; then
+    local combined
+    combined=$(json_escape "${reason_raw}
+${context_raw}")
+    printf '{"hookSpecificOutput":{"permissionDecision":"deny"},"systemMessage":"%s"}' \
+      "$combined" >&2
+    exit 2
+  fi
+
+  local reason context
+  reason=$(json_escape "$reason_raw")
+  context=$(json_escape "$context_raw")
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s","additionalContext":"%s"}}' \
+    "$reason" "$context"
   exit 0
 }
 
