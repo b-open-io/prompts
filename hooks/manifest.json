@@ -1,0 +1,69 @@
+{
+  "$schema": "./manifest.schema.json",
+  "description": "Authored metadata for bopen-tools hooks. Consumed by the bopen.ai catalog; keep in sync with claude-hooks.json / codex-hooks.json wiring.",
+  "hooks": [
+    {
+      "name": "agent-browser-solo",
+      "path": "hooks/agent-browser-solo.sh",
+      "event": "PreToolUse",
+      "matcher": "WebFetch",
+      "runtimes": ["claude"],
+      "summary": "Services WebFetch through a real browser instead of plain HTTP.",
+      "description": "Intercepts WebFetch and fetches the page with agent-browser (headless Chrome) in an isolated session, delivering JS-rendered extracted text to the model in the same turn — one fetch, one quiet transcript line, no retry. Client-rendered pages that return a 10-byte shell over HTTP come back as complete content in about 1.5 seconds. Fetched text is sanitized, capped at 30KB, and wrapped in untrusted-data markers; near-empty results and missing-binary cases fall back to native WebFetch."
+    },
+    {
+      "name": "bouncer",
+      "path": "hooks/bouncer.sh",
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "runtimes": ["claude", "codex"],
+      "summary": "Blocks destructive git commands before they run.",
+      "description": "Hard-blocks working-tree-destroying git operations (reset --hard, clean -f, checkout --, restore of worktree files, stash clear) while allowing their safe counterparts like unstaging and restore --staged. Runs on every Bash call in both Claude Code and Codex runtimes."
+    },
+    {
+      "name": "damage-control",
+      "path": "hooks/damage-control.sh",
+      "event": "PreToolUse",
+      "matcher": "Bash|Write|Edit|Read",
+      "runtimes": ["claude", "codex"],
+      "summary": "Confirmation tier for risky operations; zero-access guard for secrets.",
+      "description": "Asks for user confirmation on risky-but-legitimate operations (stash drop, force pushes other than --force-with-lease) and hard-blocks writes to secret files like .env while allowing templates such as .env.example. On Codex, confirmation-tier operations deny with an actionable reason since Codex has no ask flow."
+    },
+    {
+      "name": "publish-gate",
+      "path": "hooks/publish-gate.sh",
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "runtimes": ["claude", "codex"],
+      "summary": "Gates package publishing behind Linear ticket verification.",
+      "description": "Detects publish commands (npm/bun publish, clawnet publish, including inside shell chains) and verifies an approved Linear ticket exists before allowing them. On-chain publishes additionally require an explicit irreversibility acknowledgment. Fails closed on API errors, timeouts, and missing credentials."
+    },
+    {
+      "name": "session-context",
+      "path": "hooks/session-context.sh",
+      "event": "SessionStart",
+      "matcher": "*",
+      "runtimes": ["claude", "codex"],
+      "summary": "Injects repo and plugin context at session start.",
+      "description": "Summarizes the working repository (branch, recent commits, files changed in the last commit) and the installed plugin inventory into the session's opening context so the agent starts oriented."
+    },
+    {
+      "name": "hammertime",
+      "path": "hooks/hammertime.py",
+      "event": "Stop",
+      "matcher": "*",
+      "runtimes": ["claude", "codex"],
+      "summary": "Corpus-tuned end-of-turn rule enforcement.",
+      "description": "Evaluates the assistant's turn against rules mined from real production transcripts (F1 0.89 on the tuning corpus) and blocks the stop when a rule fires — for example, dismissing errors as pre-existing instead of fixing them. Rules are managed via the hammertime skill."
+    },
+    {
+      "name": "browser-intent",
+      "path": "hooks/browser-intent.sh",
+      "event": "UserPromptSubmit",
+      "matcher": "*",
+      "runtimes": ["codex"],
+      "summary": "Steers browser-shaped prompts toward agent-browser.",
+      "description": "Detects prompts that involve browser work (URLs, navigation, form filling, login, screenshots, SPAs) and injects static guidance preferring agent-browser when installed. Never fetches or injects page content itself."
+    }
+  ]
+}
