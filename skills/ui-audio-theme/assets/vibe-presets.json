@@ -60,6 +60,18 @@
       },
       "best_for": ["retro games", "pixel art apps", "nostalgic products"]
     },
+    "pixel-minimal": {
+      "name": "Pixel Minimal",
+      "description": "Quiet 8-bit sounds for pixel-art interfaces that want charm without arcade noise",
+      "prompt": "Minimal 8-bit interface sounds, single soft chiptune square-wave blip, muted retro video game console UI, gentle pixel tone, quiet nostalgic micro-feedback, short and understated, no harsh arcade noise",
+      "characteristics": {
+        "tone": "bright but muted",
+        "energy": "low",
+        "material": "soft square-wave synthesizer",
+        "emotions": ["nostalgia", "calm", "charm"]
+      },
+      "best_for": ["pixel-art sites", "retro dashboards", "developer tools"]
+    },
     "premium-luxury": {
       "name": "Premium Luxury",
       "description": "Rich, refined sounds for high-end applications",

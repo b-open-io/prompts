@@ -65,15 +65,24 @@ SOUND_CATEGORIES = {
     },
 }
 
-# Predefined vibe presets
-VIBE_PRESETS = {
-    "corporate-trust": "Warm professional interface sounds, soft banking app chimes, muted corporate clicks, trustworthy",
-    "crypto-modern": "Clean digital minimal interface sounds, crisp modern app, subtle tech feedback, futuristic but understated",
-    "playful-delight": "Bright friendly interface sounds, cheerful app feedback, bouncy micro-interactions, delightful",
-    "minimal-focus": "Ultra-subtle interface sounds, near-silent productivity app, barely perceptible feedback, zen-like",
-    "retro-digital": "8-bit inspired interface sounds, pixel art game UI, chip-tune bleeps, nostalgic digital",
-    "premium-luxury": "Rich refined interface sounds, deep velvet tones, premium high-end app, sophisticated",
-}
+# Vibe presets are defined once, in assets/vibe-presets.json.
+_PRESETS_PATH = Path(__file__).resolve().parent.parent / "assets" / "vibe-presets.json"
+
+
+def _load_vibe_presets() -> dict:
+    if not _PRESETS_PATH.exists():
+        print(f"Error: vibe presets file not found at {_PRESETS_PATH}")
+        sys.exit(1)
+    with open(_PRESETS_PATH) as f:
+        data = json.load(f)
+    presets = data.get("presets")
+    if not isinstance(presets, dict) or not presets:
+        print(f"Error: no presets defined in {_PRESETS_PATH}")
+        sys.exit(1)
+    return {key: entry["prompt"] for key, entry in presets.items()}
+
+
+VIBE_PRESETS = _load_vibe_presets()
 
 
 @dataclass
