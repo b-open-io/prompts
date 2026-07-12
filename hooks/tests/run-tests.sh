@@ -98,6 +98,8 @@ source "$TESTS_DIR/test_session_context.sh"
 # shellcheck disable=SC1091
 source "$TESTS_DIR/test_hammertime.sh"
 # shellcheck disable=SC1091
+source "$TESTS_DIR/test_agent_browser_solo.sh"
+# shellcheck disable=SC1091
 source "$TESTS_DIR/test_validate.sh"
 
 echo
