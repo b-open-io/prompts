@@ -12,6 +12,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
+if declare -f hook_enabled >/dev/null; then
+  hook_enabled "browser-intent" || exit 0
+fi
+
 input=$(cat 2>/dev/null || echo "{}")
 
 prompt=""

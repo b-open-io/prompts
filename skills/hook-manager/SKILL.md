@@ -1,101 +1,110 @@
 ---
 name: hook-manager
-version: 1.0.2
-description: Discover and install automation hooks for Claude Code and Opencode. This skill should be used when users ask to "list hooks", "install a hook", "show available hooks", "enable hook", "what hooks are available", or need help managing agent automation hooks.
-disable-model-invocation: true
+version: 2.0.0
+description: Manage bopen-tools plugin hooks — list, enable, disable, diagnose, and run first-time setup. This skill should be used when the user asks to "list hooks", "disable a hook", "enable a hook", "hook setup", "which hooks are running", "turn off the publish gate", "hooks config", or when session context contains a [BOPEN-HOOKS-SETUP] directive.
 ---
 
 # Hook Manager
 
-Help users discover, install, and diagnose automation hooks from the bopen-tools collection.
-
-## Available Hooks
-
-| Hook | Event | Description | Recommendation |
-|------|-------|-------------|----------------|
-| `protect-env-files` | PreToolUse | Blocks edits to .env files (security) | Recommended |
-| `uncommitted-reminder` | Stop | Shows uncommitted changes when agent stops | Optional |
-| `auto-git-add` | PostToolUse | Auto-stages files after edits | Optional |
-| `time-dir-context` | UserPromptSubmit | Adds timestamp/dir/branch to prompts | Optional |
-| `lint-on-save` | PostToolUse | Runs lint:fix after file edits | Optional |
-| `lint-on-start` | SessionStart | Runs linting on session start | Optional |
-| `auto-test-on-save` | PostToolUse | Runs tests after file edits | Optional |
-| `protect-shadcn-components` | PreToolUse | Protects shadcn UI components | Optional |
-
-## Hook Source Paths
-
-Hooks live in the plugin cache. The exact version path segment varies; use a glob to locate them:
+Manage the hooks that ship with the bopen-tools plugin. The catalog source of
+truth is `hooks/manifest.json` in the installed plugin — read it live rather
+than trusting a memorized list:
 
 ```bash
-# Claude Code
-ls ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/
-
-# Opencode
-ls ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/
+cat "$(ls -d ~/.claude/plugins/cache/b-open-io/bopen-tools/*/ | sort -V | tail -1)hooks/manifest.json"
 ```
 
-## Installing a Hook for the User
+Each entry carries `name`, `event`, `matcher`, `runtimes`, `summary`, and
+`description`. Hooks register automatically when the plugin is installed;
+this skill controls which ones actually run.
 
-To install a hook, copy its JSON file to the correct hooks directory and inform the user to restart their agent.
+## The config file
 
-**Claude Code:**
+Per-hook enable/disable lives in a JSON config. Resolution order (first file
+with an explicit `true`/`false` verdict for a hook wins):
+
+1. `$BOPEN_HOOKS_CONFIG` — explicit override (tests, scripts)
+2. `<project>/.claude/bopen-hooks.json` — per-project
+3. `~/.claude/bopen-tools/hooks-config.json` — per-user
+
+```json
+{
+  "version": 1,
+  "hooks": {
+    "bouncer": true,
+    "damage-control": true,
+    "publish-gate": true,
+    "agent-browser-solo": true,
+    "session-context": true,
+    "hammertime": true,
+    "browser-intent": true
+  }
+}
+```
+
+A hook is disabled ONLY by an explicit `false`. Missing files, missing keys,
+or unparseable JSON all mean enabled — a broken config must never silently
+switch the guards off. Changes take effect on the next hook invocation; no
+restart is required.
+
+## First-time setup (the [BOPEN-HOOKS-SETUP] directive)
+
+When session context carries `[BOPEN-HOOKS-SETUP]`, the user has no config
+yet. Do not interrupt their task; offer setup at a natural pause. The flow:
+
+1. Read the manifest (command above) and present the hooks in two tiers via
+   AskUserQuestion (multiSelect):
+   - **Guards (recommended on)**: bouncer, damage-control, publish-gate —
+     they prevent work loss, secret exposure, and unticketed publishes.
+   - **Workflow (preference)**: agent-browser-solo, session-context,
+     hammertime, browser-intent.
+2. Run the prerequisite checks below and fold findings into the
+   recommendation (e.g. agent-browser-solo without agent-browser installed
+   silently falls back to native WebFetch — still safe to leave on).
+3. Write `~/.claude/bopen-tools/hooks-config.json` with the full hooks map —
+   include every hook with an explicit boolean, even the all-defaults case.
+   Writing the file is what dismisses the setup notice permanently.
+
+## Enabling / disabling a hook
+
+Edit the user config (or project config for repo-scoped changes) with the
+Read and Write tools — read, flip the boolean, write back. Create the file
+from the template above when it does not exist. Never edit files inside the
+plugin cache; updates overwrite them.
+
+Warn before disabling guards: bouncer stops `git reset --hard`-class work
+loss, damage-control enforces zero-access paths like `.env`, publish-gate
+blocks unticketed npm/on-chain publishes. Disabling them is the user's call,
+but say plainly what protection goes away.
+
+## Diagnosis
+
+When a hook misbehaves or the user asks "why did X get blocked/skipped":
+
 ```bash
-mkdir -p ~/.claude/hooks
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.claude/hooks/
+# Which config verdict applies to a hook?
+for f in "$BOPEN_HOOKS_CONFIG" ./.claude/bopen-hooks.json ~/.claude/bopen-tools/hooks-config.json; do
+  [ -f "$f" ] && echo "$f: $(jq -r '.hooks["<name>"] // "no verdict"' "$f")"
+done
+
+# Prerequisites
+command -v jq || echo "jq missing — hooks fail open without it"
+command -v agent-browser || echo "agent-browser missing — agent-browser-solo falls back to native WebFetch"
+[ -n "$LINEAR_API_KEY" ] || echo "LINEAR_API_KEY unset — publish-gate fails closed on gated publishes"
+command -v python3 || echo "python3 missing — hammertime and JSON escaping degrade"
 ```
 
-**Opencode:**
-```bash
-mkdir -p ~/.opencode/hooks
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.opencode/hooks/
-```
+- Hard denies surface to the model as structured permission denials; on the
+  Codex runtime they arrive as stderr JSON with exit 2. Both are by design.
+- hammertime also has its own controls — `Skill(bopen-tools:hammertime)` and
+  the `hammertime:manage` skill — for rule-level tuning beyond on/off.
+- The definitive behavior reference for every hook is its script header in
+  the plugin's `hooks/` directory; read it before guessing.
 
-After copying, tell the user: restart Claude Code (or Opencode) for the hook to take effect.
+## What this skill never does
 
-## Checking Which Hooks Are Installed
-
-```bash
-# Claude Code
-ls ~/.claude/hooks/
-
-# Opencode
-ls ~/.opencode/hooks/
-```
-
-## Recommending Hooks
-
-When a user asks what hooks to install without specifying a use case:
-
-1. Always recommend `protect-env-files` first — it is a security safeguard with no downsides.
-2. Ask about their workflow to recommend optional hooks:
-   - Git-heavy work: `auto-git-add`, `uncommitted-reminder`
-   - Linting setup with `bun lint:fix`: `lint-on-save`, `lint-on-start`
-   - shadcn/ui projects: `protect-shadcn-components`
-   - Wants richer context in every prompt: `time-dir-context`
-
-## Hook Details for Diagnosis
-
-### protect-env-files
-Blocks Write/Edit on `.env*` files. No performance cost. Recommended universally.
-
-### uncommitted-reminder
-Runs on Stop event; exits with code 2 if uncommitted changes exist, feeding the message back to the agent.
-
-### auto-git-add
-Runs `git add -A` after Write/Edit. Stages only; never commits. 5s timeout.
-
-### time-dir-context
-Injects `Context: <timestamp> | <cwd> | Branch: <branch>` into every UserPromptSubmit.
-
-### lint-on-save / lint-on-start
-Runs `bun lint:fix`. Requires `lint:fix` in package.json and `bun` + `jq` on PATH.
-
-### auto-test-on-save
-Runs tests after file edits. Can be slow on large suites — confirm user wants this before installing.
-
-### protect-shadcn-components
-Blocks edits to shadcn/ui component files. Only relevant when project uses shadcn/ui.
-
-## Additional Resources
-
-See the hook catalog above for all available hooks and their configurations.
+- Never copies hook files into `~/.claude` — hooks ship with the plugin and
+  update through `claude plugin update bopen-tools@b-open-io`.
+- Never edits `hooks/*.sh`, `claude-hooks.json`, or anything in the plugin
+  cache.
+- Never disables a guard hook without telling the user what it protected.

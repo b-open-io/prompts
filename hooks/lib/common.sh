@@ -35,6 +35,33 @@ resolve_cwd() {
   printf '%s' "$cwd"
 }
 
+# Per-hook enable/disable gate. Call as the first act of every hook:
+#   hook_enabled "bouncer" || exit 0
+# Config precedence: $BOPEN_HOOKS_CONFIG (explicit file, tests/power users)
+# → project .claude/bopen-hooks.json → user ~/.claude/bopen-tools/hooks-config.json.
+# Schema: {"hooks": {"<name>": true|false}}. A hook is disabled ONLY by an
+# explicit false; absent files, absent keys, or unreadable JSON mean enabled —
+# a broken or missing config must never silently switch the guards off.
+hook_enabled() {
+  local name="$1"
+  local verdict=""
+  local cfg
+  for cfg in \
+    "${BOPEN_HOOKS_CONFIG:-}" \
+    "${CLAUDE_PROJECT_DIR:-$PWD}/.claude/bopen-hooks.json" \
+    "${HOME}/.claude/bopen-tools/hooks-config.json"
+  do
+    [[ -n "$cfg" && -f "$cfg" ]] || continue
+    # NB: jq's `//` treats false as absent — use tostring, never `// empty`.
+    verdict=$(jq -r --arg n "$name" '.hooks[$n] | tostring' "$cfg" 2>/dev/null || true)
+    if [[ "$verdict" == "true" || "$verdict" == "false" ]]; then
+      break
+    fi
+    verdict=""
+  done
+  [[ "$verdict" != "false" ]]
+}
+
 # JSON-escape a string (no surrounding quotes). The herestring feeding stdin
 # appends a newline; strip that one so messages don't end with a stray \n.
 json_escape() {

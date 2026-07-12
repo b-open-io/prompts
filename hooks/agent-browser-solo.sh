@@ -25,6 +25,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 
+hook_enabled "agent-browser-solo" || exit 0
+
 input=$(cat)
 tool_name=$(extract_tool_name "$input")
 tool_lower=$(printf '%s' "$tool_name" | tr '[:upper:]' '[:lower:]')

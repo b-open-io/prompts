@@ -17,6 +17,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 
+hook_enabled "publish-gate" || exit 0
+
 # Top-level error handling: never crash open on unexpected failures for gated cmds.
 # Non-gated commands always exit 0. Unexpected errors on gated paths fail closed
 # for on-chain and fail with deny for other publishes.

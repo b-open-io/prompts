@@ -806,7 +806,41 @@ def extract_last_assistant_message(hook_input):
     return ""
 
 
+def hook_enabled(name: str) -> bool:
+    """Mirror of hooks/lib/common.sh hook_enabled(): disabled ONLY by an
+    explicit false in BOPEN_HOOKS_CONFIG, project .claude/bopen-hooks.json,
+    or ~/.claude/bopen-tools/hooks-config.json (first explicit verdict wins);
+    anything else — absent files, keys, or broken JSON — means enabled."""
+    candidates = [
+        os.environ.get("BOPEN_HOOKS_CONFIG", ""),
+        os.path.join(
+            os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd()),
+            ".claude",
+            "bopen-hooks.json",
+        ),
+        os.path.join(
+            os.path.expanduser("~"), ".claude", "bopen-tools", "hooks-config.json"
+        ),
+    ]
+    for path in candidates:
+        if not path or not os.path.isfile(path):
+            continue
+        try:
+            with open(path) as fh:
+                verdict = json.load(fh).get("hooks", {}).get(name)
+        except (json.JSONDecodeError, OSError):
+            continue
+        if verdict is True:
+            return True
+        if verdict is False:
+            return False
+    return True
+
+
 def main():
+    if not hook_enabled("hammertime"):
+        sys.exit(0)
+
     # Global kill switch — if the sentinel file exists, skip all processing
     disabled_path = _hammertime_paths()["disabled"]
     if os.path.exists(disabled_path):

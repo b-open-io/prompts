@@ -8,6 +8,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
+if declare -f hook_enabled >/dev/null; then
+  hook_enabled "session-context" || exit 0
+fi
+
 input=$(cat 2>/dev/null || echo "{}")
 
 # Prefer hook-provided cwd; never default to the plugin cache directory.
@@ -117,6 +121,15 @@ if [[ -n "$context_file" ]]; then
 else
   context="## Session Context (active workspace)
 - Cwd: ${cwd}"
+fi
+
+# One-time hooks setup offer, linear-sync style: when no user hooks config
+# exists, point the session at the hook-manager skill. The wizard writes the
+# config (even for "keep all defaults"), which silences this permanently.
+if [[ ! -f "${HOME}/.claude/bopen-tools/hooks-config.json" ]]; then
+  context="${context}
+
+[BOPEN-HOOKS-SETUP] No hooks config found at ~/.claude/bopen-tools/hooks-config.json. All bopen-tools hooks are running with defaults (everything enabled). When convenient — do not interrupt the user's task for this — offer to run hook setup via the bopen-tools:hook-manager skill to review which hooks are enabled and check their prerequisites. Writing the config (even all-defaults) dismisses this notice."
 fi
 
 # Emit JSON with real newlines inside additionalContext via json.dumps
