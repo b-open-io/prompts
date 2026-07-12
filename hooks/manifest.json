@@ -9,7 +9,7 @@
       "matcher": "WebFetch",
       "runtimes": ["claude"],
       "summary": "Services WebFetch through a real browser instead of plain HTTP.",
-      "description": "Intercepts WebFetch and fetches the page with agent-browser (headless Chrome) in an isolated session, delivering JS-rendered extracted text to the model in the same turn — one fetch, one quiet transcript line, no retry. Client-rendered pages that return a 10-byte shell over HTTP come back as complete content in about 1.5 seconds. Fetched text is sanitized, capped at 30KB, and wrapped in untrusted-data markers; near-empty results and missing-binary cases fall back to native WebFetch."
+      "description": "Intercepts WebFetch and fetches the page with agent-browser (headless Chrome) in an isolated session, delivering JS-rendered extracted text to the model in the same turn — one fetch, one quiet transcript line, no retry. Client-rendered pages that return a 10-byte shell over HTTP come back as complete content in about 1.5 seconds. Fetched text is sanitized, capped at 30KB, and wrapped in untrusted-data markers; near-empty results and missing-binary cases fall back to native WebFetch. Claude-only: Codex has no WebFetch tool to intercept — its counterpart is the browser-intent hook."
     },
     {
       "name": "bouncer",
@@ -63,7 +63,7 @@
       "matcher": "*",
       "runtimes": ["codex"],
       "summary": "Steers browser-shaped prompts toward agent-browser.",
-      "description": "Detects prompts that involve browser work (URLs, navigation, form filling, login, screenshots, SPAs) and injects static guidance preferring agent-browser when installed. Never fetches or injects page content itself."
+      "description": "Detects prompts that involve browser work (URLs, navigation, form filling, login, screenshots, SPAs) and injects static guidance preferring agent-browser when installed. Never fetches or injects page content itself. Codex counterpart of agent-browser-solo: Codex has no WebFetch tool to intercept, so this hook steers at the prompt level instead."
     }
   ]
 }
