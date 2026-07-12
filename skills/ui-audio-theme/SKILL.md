@@ -1,5 +1,5 @@
 ---
-version: 1.0.2
+version: 1.0.3
 name: ui-audio-theme
 description: Generate cohesive UI audio themes with subtle, minimal sound effects for applications. This skill should be used when users want to create a set of coordinated interface sounds for wallet apps, dashboards, or web applications - generating sounds mapped to UI interaction constants like button clicks, notifications, and navigation transitions using ElevenLabs API.
 location: user
@@ -74,6 +74,26 @@ python scripts/generate_theme.py \
   --vibe "crypto-modern" \
   --output-dir "./audio-theme"
 ```
+
+## Loudness Normalization
+
+ElevenLabs SFX loudness tracks the prompt wording — "quiet"/"subtle" vibes can
+come back peaking at -31 dBFS, inaudible once an app applies its own 20-40% UI
+volume. The generator therefore peak-normalizes every file to -3 dBFS by
+default (requires `ffmpeg`; pass `--no-normalize` to keep raw output). Keep
+the vibe words for timbre; let the app's volume setting control loudness.
+
+## Integration Gotchas
+
+- **Autoplay policy**: browsers block ALL audio until the user's first
+  click/tap/keypress on the page. Hover-triggered sounds only work after that
+  first gesture — this is a hard browser rule, not an implementation choice.
+- **Hover cues**: play them 40-60% quieter than clicks and throttle (~90ms) so
+  cursor sweeps across menus don't machine-gun.
+- **Verify audibly, not just mechanically**: `audio.play()` resolving proves
+  playback, not perceptibility. Check peaks with
+  `ffmpeg -i file.mp3 -af volumedetect -f null -` and listen at the app's
+  actual volume multiplier before shipping.
 
 ## Sound Categories
 

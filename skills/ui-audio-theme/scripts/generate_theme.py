@@ -105,12 +105,66 @@ def get_api_key() -> str:
     return key
 
 
+# ElevenLabs SFX loudness tracks the prompt wording: "quiet"/"subtle" vibes
+# come back with peaks as low as -31 dBFS, which is inaudible once an app
+# applies its own 20-40% UI volume. Normalizing to a fixed peak keeps the vibe
+# in the timbre and leaves loudness to the app's volume knob.
+NORMALIZE_TARGET_DBFS = -3.0
+
+
+def require_ffmpeg() -> None:
+    """Exit informatively if ffmpeg is unavailable (needed for --normalize)."""
+    import shutil
+    if shutil.which("ffmpeg") is None:
+        print("Error: ffmpeg is required to normalize generated sounds.")
+        print("Install it (macOS: brew install ffmpeg) or pass --no-normalize")
+        print("to keep the raw ElevenLabs output — raw loudness varies with the")
+        print("vibe wording and quiet vibes can be inaudible at UI volumes.")
+        sys.exit(1)
+
+
+def normalize_peak(path: Path, target_dbfs: float = NORMALIZE_TARGET_DBFS) -> None:
+    """Re-encode the file so its peak sits at target_dbfs."""
+    import re
+    import subprocess
+    probe = subprocess.run(
+        ["ffmpeg", "-i", str(path), "-af", "volumedetect", "-f", "null", "-"],
+        capture_output=True,
+        text=True,
+    )
+    match = re.search(r"max_volume: (-?[\d.]+) dB", probe.stderr)
+    if not match:
+        print(f"Error: could not measure peak volume of {path}")
+        sys.exit(1)
+    gain = target_dbfs - float(match.group(1))
+    if abs(gain) < 0.5:
+        return
+    tmp_path = path.with_name(f"{path.stem}.tmp{path.suffix}")
+    codec_args = (
+        ["-codec:a", "libmp3lame", "-q:a", "4"] if path.suffix == ".mp3" else []
+    )
+    encode = subprocess.run(
+        [
+            "ffmpeg", "-loglevel", "error", "-y", "-i", str(path),
+            "-af", f"volume={gain:.1f}dB", *codec_args,
+            str(tmp_path),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if encode.returncode != 0:
+        print(f"Error: ffmpeg failed to normalize {path}: {encode.stderr.strip()}")
+        sys.exit(1)
+    tmp_path.replace(path)
+
+
 def generate_sound(
     api_key: str,
     prompt: str,
     duration_seconds: float,
     output_path: Path,
-    prompt_influence: float = 0.5
+    prompt_influence: float = 0.5,
+    normalize: bool = True,
 ) -> GenerationResult:
     """Generate a single sound effect using ElevenLabs API."""
 
@@ -137,6 +191,9 @@ def generate_sound(
             output_path.parent.mkdir(parents=True, exist_ok=True)
             with open(output_path, "wb") as f:
                 f.write(response.content)
+
+            if normalize:
+                normalize_peak(output_path)
 
             return GenerationResult(
                 sound_name=output_path.stem,
@@ -193,11 +250,14 @@ def generate_theme(
     format: str = "mp3",
     categories: Optional[list] = None,
     regenerate_only: Optional[list] = None,
-    prompt_influence: float = 0.5
+    prompt_influence: float = 0.5,
+    normalize: bool = True,
 ) -> dict:
     """Generate a complete audio theme."""
 
     api_key = get_api_key()
+    if normalize:
+        require_ffmpeg()
     results = []
     manifest = {
         "name": "custom" if len(vibe) > 50 else vibe.replace(" ", "-"),
@@ -248,7 +308,8 @@ def generate_theme(
                 prompt=prompt,
                 duration_seconds=config["duration"],
                 output_path=output_path,
-                prompt_influence=prompt_influence
+                prompt_influence=prompt_influence,
+                normalize=normalize,
             )
 
             results.append(result)
@@ -338,6 +399,13 @@ def main():
         help="Prompt influence (0-1, higher = stricter adherence)"
     )
     parser.add_argument(
+        "--no-normalize",
+        action="store_true",
+        help="Keep raw ElevenLabs loudness instead of normalizing peaks to "
+             f"{NORMALIZE_TARGET_DBFS} dBFS (raw output varies with vibe wording; "
+             "quiet vibes can be inaudible at UI volumes)"
+    )
+    parser.add_argument(
         "--list-vibes",
         action="store_true",
         help="List available vibe presets"
@@ -405,7 +473,8 @@ def main():
         format=args.format,
         categories=args.categories,
         regenerate_only=regenerate_only,
-        prompt_influence=args.prompt_influence
+        prompt_influence=args.prompt_influence,
+        normalize=not args.no_normalize,
     )
 
 
