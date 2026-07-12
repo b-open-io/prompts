@@ -1,5 +1,5 @@
 ---
-version: 1.0.1
+version: 1.0.2
 name: ui-audio-theme
 description: Generate cohesive UI audio themes with subtle, minimal sound effects for applications. This skill should be used when users want to create a set of coordinated interface sounds for wallet apps, dashboards, or web applications - generating sounds mapped to UI interaction constants like button clicks, notifications, and navigation transitions using ElevenLabs API.
 location: user
@@ -37,6 +37,7 @@ Available presets in `assets/vibe-presets.json`:
 | `playful-delight` | Bright, friendly | Social, consumer |
 | `minimal-focus` | Ultra-subtle | Productivity, tools |
 | `retro-digital` | 8-bit inspired | Games, nostalgic |
+| `pixel-minimal` | Quiet 8-bit | Pixel-art sites, retro dashboards |
 | `premium-luxury` | Rich, refined | High-end apps |
 
 ### Step 3: Generate the Audio Theme
