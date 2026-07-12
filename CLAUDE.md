@@ -16,8 +16,10 @@ After ANY commit that bumps either `.claude-plugin/plugin.json` or
 `git log origin/master..master` must be empty before the session ends. Then
 install via `CLAUDECODE= claude plugin update bopen-tools@b-open-io` (never
 copy files into ~/.claude manually). Refresh the published Codex marketplace
-with `codex plugin marketplace add b-open-io/prompts --ref master`, install it
-with `codex plugin add bopen-tools@b-open-io`, and smoke-test both plugin
+with `codex plugin marketplace upgrade` — `marketplace add` does NOT refresh
+an existing snapshot and will silently reinstall the stale version — then
+install with `codex plugin add bopen-tools@b-open-io` and verify the printed
+"Installed plugin root" version matches the bump. Smoke-test both plugin
 installs in fresh sessions.
 
 <!-- SKILL-MAP-START -->STOP. You WILL forget skill names mid-session. Check this map before ANY task.|create/improve/test/benchmark any skill→Skill(skill-creator:skill-creator)|writing SKILL.md→Skill(plugin-dev:skill-development)|writing agent .md→Skill(plugin-dev:agent-development)|writing slash commands→Skill(plugin-dev:command-development)|inject skill/agent map into CLAUDE.md→Skill(bopen-tools:reinforce-skills)|run skill benchmarks, write evals→Skill(bopen-tools:benchmark-skills)|fan out agents, wave dispatch, batch agents, generate variations, N>5 parallel subagents→Skill(bopen-tools:wave-coordinator)|design/build/harden an autonomous loop, agentic loop, /loop, /goal, ralph loop, maker-checker, self-iterating agent on a schedule, pick a verification gate, blast radius→Skill(bopen-tools:loop-engineering)|free roam, explore the app, monkey/exploratory testing, surface new bugs, discovery loop, use app like a human→Skill(bopen-tools:free-roam-testing)|visual recap, recap this PR/branch/diff, show what changed visually, make PR reviewable, diff-to-HTML review page→Skill(bopen-tools:visual-recap)|premium session routing implementation to cheaper workers, dispatch to codex/grok, race worker lanes, plan big execute small, model arbitrage, spec-and-dispatch→Skill(bopen-tools:coordinator)|cheap executor consulting a premium model, consult the advisor, second opinion from a bigger model, ask codex for advice, set up /advisor→Skill(bopen-tools:advisor)<!-- SKILL-MAP-END -->
