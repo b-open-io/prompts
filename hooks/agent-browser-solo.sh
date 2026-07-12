@@ -110,6 +110,22 @@ if [[ -z "$page_text" ]]; then
   exit 0
 fi
 
+# Neutralize marker-escape injection: page text must not be able to fake our
+# BEGIN/END delimiters or a system-reminder wrapper and "close" the untrusted
+# block early. Strip reminder tags and de-fang delimiter lookalikes.
+sanitize_content() {
+  printf '%s' "$1" | python3 -c '
+import re, sys
+s = sys.stdin.read()
+s = re.sub(r"(?i)</?system-reminder[^>]*>", "", s)
+s = re.sub(r"={4,}", "- - -", s)
+s = re.sub(r"(?i)untrusted web content", "untrusted-web-content", s)
+sys.stdout.write(s)
+'
+}
+page_text=$(sanitize_content "$page_text")
+page_title=$(sanitize_content "$page_title")
+
 # Size cap: extracted text only, bounded. Raw HTML is never served.
 MAX_BYTES="${AGENT_BROWSER_SOLO_MAX_BYTES:-30000}"
 truncation_note=""

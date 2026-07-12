@@ -27,13 +27,13 @@ installs in fresh sessions.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
-## Hook API Source of Truth
+## Keep Working Skills Current
 
-When writing or changing anything in `hooks/`, fetch the LIVE hook docs —
-https://code.claude.com/docs/en/hooks.md — before relying on any cached skill
-snapshot. The plugin-dev skill's hooks reference has lagged the platform
-before (it was missing `additionalContext`, `defer`, and `updatedToolOutput`
-in July 2026); cached docs describe the API as it was, not as it is.
+Skills used to work on this repo must be current. For fast-moving platform
+APIs (hooks, plugin manifests), verify against the live docs rather than a
+cached skill's snapshot, and keep plugins updated via their normal update
+path (`claude plugin update <name>@<marketplace>`). Never copy external docs
+into skills folders — install the plugin that owns them so updates flow.
 
 ## Version Management for Agents, Commands, and Skills
 
