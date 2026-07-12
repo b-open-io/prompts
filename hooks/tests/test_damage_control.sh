@@ -20,10 +20,12 @@ assert_contains "damage-control codex deny field" '"permissionDecision":"deny"' 
 assert_not_contains "damage-control codex no ask" '"permissionDecision":"ask"' "$HOOK_STDERR$HOOK_STDOUT"
 assert_not_contains "damage-control codex no continue" '"continue"' "$HOOK_STDERR$HOOK_STDOUT"
 
-# Destructive still hard-blocked on both
+# Destructive still hard-blocked on both (claude: stdout deny + exit 0;
+# codex: stderr deny + exit 2)
 input=$(jq -n '{tool_name:"Bash", tool_input:{command:"git reset --hard HEAD"}}')
 run_hook "damage-control.sh" "claude" "$input"
-assert_exit "damage-control claude hard reset" "2" "$HOOK_EXIT"
+assert_exit "damage-control claude hard reset" "0" "$HOOK_EXIT"
+assert_contains "damage-control claude hard reset deny" '"permissionDecision":"deny"' "$HOOK_STDOUT"
 run_hook "damage-control.sh" "codex" "$input"
 assert_exit "damage-control codex hard reset" "2" "$HOOK_EXIT"
 
@@ -35,7 +37,8 @@ assert_exit "damage-control allow force-with-lease" "0" "$HOOK_EXIT"
 # zero-access write blocked
 input=$(jq -n '{tool_name:"Write", tool_input:{file_path:"/tmp/project/.env", content:"x=1"}}')
 run_hook "damage-control.sh" "claude" "$input"
-assert_exit "damage-control block write .env" "2" "$HOOK_EXIT"
+assert_exit "damage-control block write .env" "0" "$HOOK_EXIT"
+assert_contains "damage-control block write .env deny" '"permissionDecision":"deny"' "$HOOK_STDOUT"
 
 # .env.example exception allowed
 input=$(jq -n '{tool_name:"Write", tool_input:{file_path:"/tmp/project/.env.example", content:"x=1"}}')

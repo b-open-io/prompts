@@ -40,14 +40,26 @@ json_escape() {
   python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])' <<< "${1:-}"
 }
 
-# Emit a hard deny. Works for Claude and Codex PreToolUse.
-# Writes JSON to stderr and exits 2 (supported block signal in both runtimes).
+# Emit a hard deny, per runtime.
+# Claude Code: structured deny on stdout, exit 0 — stderr + exit 2 surfaces as
+# a "PreToolUse hook error" banner instead of a clean deny (regression first
+# fixed in 0abffbe; do not unify back onto the codex path).
+# Codex: JSON on stderr, exit 2 (its supported block signal).
 deny_permission() {
   local reason
   reason=$(json_escape "${1:-Blocked by hook.}")
-  printf '{"hookSpecificOutput":{"permissionDecision":"deny"},"systemMessage":"%s"}' \
-    "$reason" >&2
-  exit 2
+  local runtime
+  runtime=$(get_runtime)
+
+  if [[ "$runtime" == "codex" ]]; then
+    printf '{"hookSpecificOutput":{"permissionDecision":"deny"},"systemMessage":"%s"}' \
+      "$reason" >&2
+    exit 2
+  fi
+
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}' \
+    "$reason"
+  exit 0
 }
 
 # Confirmation-tier: Claude asks the user; Codex denies with an actionable reason
