@@ -105,8 +105,12 @@ if ${T:+"$T" "$OPEN_TIMEOUT"} "$AGENT_BROWSER" --session "$SESSION" open "$url" 
 fi
 "$AGENT_BROWSER" --session "$SESSION" close >/dev/null 2>&1 || true
 
-if [[ -z "$page_text" ]]; then
-  # Fetch failed or timed out — let WebFetch proceed; never waste the turn.
+MIN_BYTES="${AGENT_BROWSER_SOLO_MIN_BYTES:-200}"
+if [[ -z "$page_text" ]] || (( ${#page_text} < MIN_BYTES )); then
+  # Fetch failed, timed out, or returned near-nothing (edge block, bot wall,
+  # bare error body — observed live: an edge served a 51-byte JSON error as
+  # the whole page). Let WebFetch try natively with its own fingerprint
+  # rather than confidently serving crumbs; never waste the turn.
   exit 0
 fi
 
