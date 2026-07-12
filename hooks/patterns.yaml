@@ -48,6 +48,13 @@ noDeletePaths:
   - "plugin.json"
   - "skills-lock.json"
 
+# Writes to these paths require explicit user confirmation (ask on Claude,
+# deny-with-reason on Codex). Guards the hook enable/disable configs so an
+# agent can never silently disarm its own guard hooks.
+askPaths:
+  - "hooks-config.json"
+  - "bopen-hooks.json"
+
 # Bash command patterns that are hard-blocked (exit 2).
 destructiveCommands:
   - "rm -rf /"

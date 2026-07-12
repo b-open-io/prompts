@@ -108,6 +108,9 @@ enforce_path_policy() {
     if path_matches_list "$file_path" "readOnlyPaths"; then
       deny_permission "BLOCKED by damage-control: '${file_path}' is read-only. The agent may read this file but must not modify or delete it."
     fi
+    if path_matches_list "$file_path" "askPaths"; then
+      ask_or_deny "damage-control: '${file_path}' controls which guard hooks are enabled. Modifying it requires the user's explicit confirmation — disabling guards removes work-loss and secret protections. State plainly which hooks the change affects."
+    fi
   fi
 
   if [[ "$op" == "delete" ]]; then

@@ -72,6 +72,11 @@ Read and Write tools — read, flip the boolean, write back. Create the file
 from the template above when it does not exist. Never edit files inside the
 plugin cache; updates overwrite them.
 
+Expect a confirmation prompt on every config write: damage-control treats
+these files as ask-tier so guards can never be disarmed without the user's
+explicit yes (on Codex the write is denied outright — have the user edit
+the file themselves). This is by design; do not route around it.
+
 Warn before disabling guards: bouncer stops `git reset --hard`-class work
 loss, damage-control enforces zero-access paths like `.env`, publish-gate
 blocks unticketed npm/on-chain publishes. Disabling them is the user's call,
