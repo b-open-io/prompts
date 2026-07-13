@@ -1,6 +1,6 @@
 ---
 name: advisor
-version: 0.0.2
+version: 0.0.3
 description: >-
   Active when a Claude Code or Codex main session needs an independent,
   read-only second opinion at a commitment boundary. Use before substantive
@@ -22,6 +22,12 @@ different, or context-clean. It never types the implementation; it advises.
 never delegated implementation. If another model should write bounded code,
 that is the `coordinator` worker pattern. Use `orchestrator` when the current
 main combines specialist agents, external workers, and an advisor.
+
+When one advisor's verdict isn't enough — you want N independent perspectives
+or an adversarial panel voting on a finding — Claude Code's native `Workflow`
+tool runs judge panels as a deterministic script (opt-in gated, Claude-only);
+see `../coordinator/references/native-workflows.md`. A single well-packaged
+consult remains the default; panels are for the highest-stakes calls.
 
 The advisor's value is only partly the stronger model: a consult also
 arrives **context-clean**, free of this session's accumulated assumptions.
