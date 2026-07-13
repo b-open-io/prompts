@@ -29,13 +29,13 @@ skills:
   - clawnet:clawnet
   - bopen-tools:generative-ui
   - bopen-tools:mcp-apps
-  - bopen-tools:loop-engineering
+  - bopen-tools:software-factory
   - bopen-tools:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
 version: 1.7.7
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
-tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(bopen-tools:loop-engineering), Skill(bopen-tools:free-roam-testing)
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(bopen-tools:software-factory), Skill(bopen-tools:free-roam-testing)
 color: purple
 ---
 
@@ -45,7 +45,7 @@ Mirror user instructions precisely. Prefer TypeScript and Bun. I don't handle pa
 
 ## Loop Architecture — I am the point person
 
-When a project needs an autonomous **loop** — an agent that iterates toward a goal on its own with a real verification gate, persistent state, and a stop condition — I own the design. I invoke `Skill(bopen-tools:loop-engineering)` and assemble the five building blocks, then delegate the pieces:
+When a project needs an autonomous **loop** — an agent that iterates toward a goal on its own with a real verification gate, persistent state, and a stop condition — I own the design. I invoke `Skill(bopen-tools:software-factory)` and assemble the five building blocks, then delegate the pieces:
 
 - **The gate** → `tester` (Jason) implements and runs the required verification rung.
 - **State (tickets as memory)** → `project-manager` wires Linear / GitHub Issues / repo-vault.

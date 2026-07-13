@@ -6,7 +6,7 @@ description: Use this skill to run a discovery loop that explores a running app 
 
 # Free-Roam Testing
 
-Scripted tests check what you already thought to check. **Free roam finds what you didn't.** This skill drives the actual running app along randomized, human-like paths to surface new issues, then files them as deduplicated tickets that an execution loop works systematically. It is the **discovery / producer** half of the two-loop architecture in `Skill(bopen-tools:loop-engineering)`.
+Scripted tests check what you already thought to check. **Free roam finds what you didn't.** This skill drives the actual running app along randomized, human-like paths to surface new issues, then files them as deduplicated tickets that an execution loop works systematically. It is the **discovery / producer** half of the two-loop architecture in `Skill(bopen-tools:software-factory)`.
 
 The value comes from *unpredictability*: a real user clicks the wrong thing, pastes an emoji into a number field, hits back mid-submit, opens two tabs, and abandons a checkout. Reproduce that texture and you find the bugs that scripted suites never touch.
 
@@ -15,7 +15,7 @@ The value comes from *unpredictability*: a real user clicks the wrong thing, pas
 Free roam is randomized, so it is only safe inside a known blast-radius boundary. Establish these **before the first click**:
 
 1. **Environment** — Prefer an ephemeral / preview env (Vercel preview + seeded throwaway DB): roam freely, mutate anything, it's discarded. On **prod**, you are read-mostly + safe-mutations-only.
-2. **Never-touch list** — A hard list of actions the roam must never take, read every pass. On prod this always includes: destructive deletes, real payments, real outbound email/SMS, anything irreversible (High blast-radius — see `loop-engineering/references/blast-radius.md`). Ask the project for app-specific additions.
+2. **Never-touch list** — A hard list of actions the roam must never take, read every pass. On prod this always includes: destructive deletes, real payments, real outbound email/SMS, anything irreversible (High blast-radius — see `software-factory/references/blast-radius.md`). Ask the project for app-specific additions.
 3. **Identity** — Use a dedicated test account, never a real user's. Scope credentials to test/staging.
 
 If you cannot confirm a boundary, ask — do not roam against prod with unknown blast radius.
@@ -29,7 +29,7 @@ read open tickets  →  pick an entry point  →  roam (randomized)  →
 
 ### 1. Load context
 
-- Read the **open tickets** from the state backend first (Linear / GitHub / repo vault — see `loop-engineering/references/state-backends.md`). You need them to dedup; refiling a known issue every pass is the #1 way discovery loops waste money.
+- Read the **open tickets** from the state backend first (Linear / GitHub / repo vault — see `software-factory/references/state-backends.md`). You need them to dedup; refiling a known issue every pass is the #1 way discovery loops waste money.
 - Read the never-touch list and the app's basic surface (routes, primary flows).
 
 ### 2. Roam like a human

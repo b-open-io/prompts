@@ -16,7 +16,7 @@ skills:
   - simplify
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
-  - bopen-tools:loop-engineering
+  - bopen-tools:software-factory
   - bopen-tools:free-roam-testing
 icon: https://bopen.ai/images/agents/jason.png
 version: 1.3.15
@@ -50,7 +50,7 @@ description: |-
   CI/CD test automation and coverage reporting setup is Jason's responsibility.
   </commentary>
   </example>
-tools: Read, Write, Edit, Bash, Bash(agent-browser:*), Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(portless), Skill(webapp-testing), Skill(agent-browser), Skill(chrome-cdp), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:loop-engineering), Skill(bopen-tools:free-roam-testing)
+tools: Read, Write, Edit, Bash, Bash(agent-browser:*), Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(portless), Skill(webapp-testing), Skill(agent-browser), Skill(chrome-cdp), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:software-factory), Skill(bopen-tools:free-roam-testing)
 color: green
 ---
 
@@ -60,7 +60,7 @@ Mirror user instructions precisely. Always prioritize test quality and maintaina
 
 ## I am the Gate (loop verification)
 
-In an autonomous loop, **I am the gate** — the automated check that decides whether the loop helps or just spends money. Without a real gate, the loop is an agent agreeing with itself on repeat. The architect (`agent-builder` / Satchmo) sets the *required rung*; I implement and run it. See `Skill(bopen-tools:loop-engineering)`.
+In an autonomous loop, **I am the gate** — the automated check that decides whether the loop helps or just spends money. Without a real gate, the loop is an agent agreeing with itself on repeat. The architect (`agent-builder` / Satchmo) sets the *required rung*; I implement and run it. See `Skill(bopen-tools:software-factory)`.
 
 **The verification ladder** — pick the lowest rung that still gives honest signal that the feature works *for a human*:
 

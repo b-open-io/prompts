@@ -1,14 +1,20 @@
 ---
-name: loop-engineering
-version: 0.0.2
-description: Use this skill whenever designing, configuring, or hardening an autonomous agent "loop" — a goal an agent iterates toward on its own with a real verification gate, persistent state, and a stop condition. Invoke it when the user mentions "build a loop", "agentic loop", "self-iterating agent", "run this on a schedule/cron", "/loop or /goal", "Ralph loop", "maker-checker", "fleet of agents", "autonomous workflow", or wants an agent to keep working a goal unattended until it's verifiably done. Also use when scoping whether a loop is even worth building, when picking a verification gate, when deciding what a loop is allowed to touch (blast radius), or when a loop is burning tokens without producing accepted work.
+name: software-factory
+version: 0.0.3
+description: Use this skill when designing, configuring, or hardening a software factory — an AI developer workflow where agents iterate toward a goal — a goal an agent iterates toward on its own with a real verification gate, persistent state, and a stop condition. Invoke it when the user mentions "build a loop", "agentic loop", "self-iterating agent", "run this on a schedule/cron", "/loop or /goal", "Ralph loop", "maker-checker", "fleet of agents", "autonomous workflow", "AI developer workflow", "ADW", "software factory", "agentic SDLC", or wants an agent to keep working a goal unattended until it's verifiably done. Also use when scoping whether a loop is even worth building, when picking a verification gate, when deciding what a loop is allowed to touch (blast radius), or when a loop is burning tokens without producing accepted work.
 ---
 
-# Loop Engineering
+# Software Factory
 
 A **prompt** hands an agent one instruction and waits for you. A **loop** hands the agent a job, a way to know when the job is done, and a rule for when to give up — then runs the full cycle on its own until the goal is met. This skill is how we design loops that survive production instead of billing you in silence.
 
+Call the concept by its older name: **this is the software development lifecycle.** A "loop" is one control-flow primitive inside a larger *AI developer workflow* — the plan → build → test → review → ship pipeline engineers used to walk by hand, now staffed by agents and deterministic code with an engineer at exactly two points: the plan going in (prompting is planning) and the review coming out (validation). Everything between those two constraints is system. The skill is named for the whole factory, with the iterate-until-verified loop as its engine — design the whole workflow, and remember the highest-leverage work is building the system that builds the system — the agentic layer, where one improvement multiplies across every future run.
+
 The single most important idea: **the gate is the loop.** Without a real, automated check on the result, you don't have a loop — you have an agent agreeing with itself on repeat. Everything else (scheduling, sub-agents, connectors) is plumbing around that one load-bearing part. Design the gate first.
+
+## Three actors: code, engineers, agents
+
+Every workflow node is staffed by one of three actors, and reliability ranks them **code > engineers > agents**. Code runs deterministically at zero token cost and never hallucinates; agents are the most expensive and least reliable actor in the system. The placement heuristic: push every deterministic step — lint, format, typecheck, test runs, status updates, result routing — into plain code, and reserve agents for the judgment steps code can't do. Staffing an agent where code suffices is the most common way loops burn money. The corollary for gates: run checks as separate code, feed failures back to the maker agent in the same session, and never bury the whole ladder inside one mega-skill the agent interprets (see failure modes).
 
 ## The five building blocks
 
@@ -46,6 +52,10 @@ Most real work needs **both**, running in parallel, with the ticketing system (t
 
 The dedup-vs-open-tickets step is what stops discovery from re-filing the same issue every pass. Always read open tickets before filing new ones.
 
+At factory scale, a **router** sits above both loops: work arrives typed (chore, bug, feature, hotfix), and the router picks the workflow and the model tier for it — a workhorse maker for volume, a state-of-the-art model only where planning or checking earns it. Speed-critical work (hotfixes) can **race**: several isolated agents attack the same fix in parallel and the first one through the gate wins. Isolation progresses with maturity — git worktrees are a great place to start and a poor place to end; sandboxes give full isolation plus a place a human can step into mid-run.
+
+**On Claude Code specifically**, staged fan-outs inside a loop pass — find → adversarially verify → synthesize, judge panels, loop-until-dry discovery — can run as a native `Workflow` (deterministic script, live `/workflows` progress, resumable). This is framework-dependent and opt-in-gated; see `skills/coordinator/references/native-workflows.md` for when it applies. On other runtimes, the manual wave protocols in `wave-coordinator` do the same job.
+
 ## Do you even need a loop?
 
 Loops are real, but most tasks don't need the heavy version. Build one **only when all four are true** — miss one box and keep it a manual prompt:
@@ -73,6 +83,7 @@ Reserve human gates for irreversible actions only — humans rubber-stamp when a
 
 The order matters more than the tools. Scheduling something you haven't made reliable by hand is exactly how loops blow up while you sleep.
 
+0. **Design it by doing it** — walk every node of the workflow yourself, by hand, once. Sketch the result (a Mermaid diagram earns its keep here). Encode only steps you have personally executed; a node you've never run manually is a guess wearing automation.
 1. **Prove it once** — run the full cycle manually, watched, on a real case. Confirm the gate actually fails bad output.
 2. **Harden it** — add the stop conditions, circuit breaker, state file, never-touch list; run it watched a few more times; measure accept rate.
 3. **Automate it** — only now wire the heartbeat (cron/`/loop`/Actions). Promotion respects the blast-radius tier above.
@@ -108,7 +119,7 @@ Decisions 3, 4, and 5 below are per-project — **you must ask the project**, ne
 
 ## Failure modes — design the guards in
 
-Loops fail quietly, not loudly. Before shipping, walk `references/failure-modes.md` and confirm a guard for each: the Ralph Wiggum premature-done, silent runaway, context rot, phantom implementation, scope creep, comprehension debt, approval fatigue, injection propagation. The two cheapest guards that prevent the most damage: an **objective external gate** (not LLM self-assessment) and a **pre-flight budget breaker**.
+Loops fail quietly, not loudly. Before shipping, walk `references/failure-modes.md` and confirm a guard for each: the Ralph Wiggum premature-done, silent runaway, context rot, phantom implementation, scope creep, comprehension debt, approval fatigue, injection propagation, and the **mega-skill** — one giant skill that interprets the whole build-check-route pipeline in a single agent context, which makes every step untestable and every failure invisible. The two cheapest guards that prevent the most damage: an **objective external gate** (not LLM self-assessment) and a **pre-flight budget breaker**.
 
 ## Who does what (roster)
 

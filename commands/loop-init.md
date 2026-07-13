@@ -1,5 +1,5 @@
 ---
-allowed-tools: Skill(bopen-tools:loop-engineering), Skill(bopen-tools:linear-planning), Read, Write, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList
+allowed-tools: Skill(bopen-tools:software-factory), Skill(bopen-tools:linear-planning), Read, Write, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList
 description: Interactively design and scaffold an autonomous agent loop in this project (goal, gate, state, stop conditions, heartbeat)
 argument-hint: [goal or feature the loop should work toward]
 ---
@@ -13,7 +13,7 @@ If the arguments contain "--help", show this help and exit:
 **Usage:** `/loop-init [goal or feature the loop should work toward]`
 
 **Description:**
-Runs the loop-engineering config questionnaire, decides whether a loop is even
+Runs the software-factory config questionnaire, decides whether a loop is even
 warranted, then scaffolds a runnable loop: the verification gate, the state
 backend, stop conditions, blast-radius boundary, and the heartbeat. Follows
 prove → harden → automate — it does NOT schedule anything unattended until the
@@ -33,7 +33,7 @@ Otherwise, design the loop:
 
 ### Step 1: Load the methodology
 
-Invoke `Skill(bopen-tools:loop-engineering)`. It defines the five building blocks,
+Invoke `Skill(bopen-tools:software-factory)`. It defines the five building blocks,
 the two loop types, blast-radius tiering, stop conditions, and the failure-mode
 guards. Everything below follows it.
 
@@ -47,7 +47,7 @@ a loop that shouldn't exist.
 
 ### Step 3: Run the config questionnaire
 
-Walk the ten fields in `loop-engineering/references/config-questionnaire.md`. Fields
+Walk the ten fields in `software-factory/references/config-questionnaire.md`. Fields
 3 (environment), 4 (cleanup), and 5 (state backend) are per-project — **ask the
 user, don't assume**. Detect what you can from the repo first (test runner, CI,
 Linear/GitHub presence, preview-env config) and propose defaults, but confirm the

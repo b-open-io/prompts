@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.2
+version: 0.0.3
 description: >-
   Always active when a capable current main session in Claude Code or Codex is
   planning non-trivial implementation and cheaper or specialized executors are
@@ -47,6 +47,13 @@ in parallel.
 | **Native Claude agent** (plugin agent or lower-tier subagent) | Work needing the current Claude session's tools, browser, MCP servers, or plugin context |
 | **grok** (Grok Build CLI, headless) | Well-specced implementation volume through an independent vendor lane |
 | **codex** (CLI or Claude plugin) | Sandboxed implementation from a Claude main, or a deliberately isolated second Codex run |
+| **Native Workflow** (Claude Code `Workflow` tool) | Deterministic staged fan-outs on a Claude main — find→verify→synthesize pipelines, adversarial verification panels, loop-until-dry discovery, budget-scaled sweeps. Opt-in-gated and Claude-only; see `references/native-workflows.md` |
+
+When the orchestration itself has deterministic shape (stages, loops, majority
+votes) and the user opted into multi-agent work, a native Workflow beats
+hand-executing waves turn by turn — the script owns control flow while every
+coordinator rule (specs in agent prompts, main-seat review, git here) still
+applies. Details, gating, and availability: `references/native-workflows.md`.
 
 On a Codex main, prefer native Codex agents for specialist and read-heavy work,
 and Grok for external implementation volume. Do not recursively launch another

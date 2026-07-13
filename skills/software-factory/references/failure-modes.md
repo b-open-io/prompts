@@ -62,3 +62,11 @@ Before automating, confirm a guard exists for each mode above, plus:
 - [ ] State file is cold-start readable
 - [ ] Never-touch list defined and loaded each pass
 - [ ] Blast-radius tier assigned; High-tier actions human-gated
+
+## The mega-skill
+
+**Symptom:** one skill file contains the entire workflow — build instructions, every check on the validation ladder, routing rules, ticket updates — and a single agent context interprets all of it.
+
+**Why it fails:** each step becomes untestable in isolation, failures surface as vague mid-transcript drift instead of a red exit code, and deterministic work (lint, typecheck, tests, status updates) burns tokens and picks up hallucination risk it never needed. The reliability ranking is code > engineer > agent; a mega-skill staffs everything with the least reliable actor.
+
+**Guard:** separate code from agents. Run the maker agent via the SDK or dispatch primitive, run each gate as its own deterministic command, and route failures back to the maker with the same session ID so it keeps its context. The skill's job is the judgment layer — what "done" means, what never to touch — never the pipeline itself.

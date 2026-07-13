@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-version: 0.0.1
+version: 0.0.2
 description: >-
   Use this skill when a capable current Claude Code or Codex main session
   should coordinate native specialist agents, external implementation workers
@@ -26,6 +26,11 @@ Current Claude or Codex main
 ├── Grok worker lane: bounded implementation volume
 └── Fable advisor lane: read-only second opinions at commitment boundaries
 ```
+
+On a Claude Code main, a fourth lane exists: the native `Workflow` tool for
+deterministic staged fan-outs (opt-in-gated, Claude-only). Treat it as a
+dispatch lane under the same ownership rules — see
+`../coordinator/references/native-workflows.md`.
 
 The main owns:
 

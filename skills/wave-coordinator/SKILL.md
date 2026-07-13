@@ -1,6 +1,6 @@
 ---
 name: wave-coordinator
-version: 1.0.2
+version: 1.0.3
 description: >-
   This skill should be used in Claude Code or Codex when dispatching more agents
   than the host can run concurrently, when context budget management is needed,
@@ -19,6 +19,21 @@ On Claude, this can compose with
 `Skill(superpowers:dispatching-parallel-agents)`; on Codex, use the native
 subagent runtime. Wave Coordinator owns batching and diversity while the host
 runtime owns thread creation.
+
+## Prefer Native Workflows on Claude Code
+
+Claude Code ships a native `Workflow` tool that solves this skill's core
+problems structurally: `pipeline()` runs items through stages with no wave
+barriers, concurrency clamps to min(16, cores-2) with automatic queueing,
+results collect as structured returns, and `/workflows` shows live progress
+with resume support. When the session has the Workflow tool AND the user
+explicitly asked for the fan-out (which is normally why this skill fired),
+write the dispatch as a workflow script instead of hand-managed waves —
+diversity directives go into the per-item `agent()` prompts and dedup runs as
+plain code between stages. This is framework-dependent: no other runtime has
+an equivalent, so on Codex or any non-Claude host the wave protocols below
+remain the way. Gating and API details:
+`../coordinator/references/native-workflows.md`.
 
 ## The Core Problem
 
