@@ -2,6 +2,7 @@ import { CopyButton } from "@/components/setup/CopyButton"
 import { ExternalLink, Linkify } from "@/components/setup/ExternalLink"
 import { GlyphToggle } from "@/components/setup/GlyphToggle"
 import { HookToggle } from "@/components/setup/HookToggle"
+import { ManifestInfo } from "@/components/setup/ManifestInfo"
 import { Card } from "@/components/ui/card"
 import { isSkillSlug, pluginBopenUrl, pluginInstallCommand, skillBopenUrl } from "@/lib/links"
 import type { CheckKind, PluginState, Selections } from "@/lib/types"
@@ -15,18 +16,18 @@ const CHECK_SECTIONS: Array<{ kind: CheckKind; label: string }> = [
 
 function SectionShell({ label, children }: { label: string; children: React.ReactNode }) {
 	return (
-		<section className="mb-5">
+		<section className="mb-6">
 			<span className="mb-1.5 block font-mono text-[0.72rem] uppercase tracking-wide text-accent">
 				[ {label} ]
 			</span>
-			<Card>{children}</Card>
+			<Card className="native-card overflow-hidden">{children}</Card>
 		</section>
 	)
 }
 
 function Row({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="flex flex-wrap items-start gap-2.5 border-b border-border p-2.5 last:border-b-0">
+		<div className="flex min-h-11 flex-wrap items-start gap-2.5 border-b border-border p-3 transition-colors duration-200 last:border-b-0 hover:bg-muted/45">
 			{children}
 		</div>
 	)
@@ -74,15 +75,16 @@ function PluginInstallSection({
 	]
 
 	return (
-		<section className="mb-5">
+		<section className="mb-6">
 			<span className="mb-1.5 flex items-center font-mono text-[0.72rem] uppercase tracking-wide text-accent">
 				[ PLUGIN ]
 				<ExternalLink
 					href={pluginBopenUrl(plugin.name)}
 					label={`Open ${plugin.name} on bopen.ai`}
 				/>
+				{!plugin.hasSetupManifest && <ManifestInfo />}
 			</span>
-			<Card>
+			<Card className="native-card overflow-hidden">
 				{rows.map(([runtime, version]) => {
 					const installed = version !== null
 					const applicable = runtime === selectedRuntime
@@ -236,7 +238,7 @@ export function PluginTab({
 	onToggleHook: (hookName: string) => void
 }) {
 	return (
-		<div>
+		<div className="max-w-4xl">
 			<PluginInstallSection
 				plugin={plugin}
 				selection={selection}
@@ -244,12 +246,7 @@ export function PluginTab({
 				onToggleInstallPlugin={onToggleInstallPlugin}
 			/>
 
-			{!plugin.hasSetupManifest ? (
-				<p className="py-2 text-[0.78rem] text-muted-foreground">
-					This plugin has no setup/manifest.json — install state only, no CLI/env/skill/hook checks
-					available.
-				</p>
-			) : (
+			{plugin.hasSetupManifest && (
 				<>
 					{CHECK_SECTIONS.map(({ kind, label }) => (
 						<CheckSection

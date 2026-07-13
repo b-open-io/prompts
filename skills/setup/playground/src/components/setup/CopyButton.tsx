@@ -19,7 +19,7 @@ export function CopyButton({ text, className }: { text: string; className?: stri
 	}
 
 	return (
-		<Button size="sm" onClick={doCopy} className={cn(className)}>
+		<Button size="sm" onClick={doCopy} className={cn("rounded-md normal-case", className)}>
 			{label}
 		</Button>
 	)

@@ -22,3 +22,8 @@ export function pluginInstallCommand(name: string, runtime: string): string | nu
 	if (runtime === "codex") return `codex plugin add ${name}@b-open-io`
 	return null
 }
+
+export function pluginUpdateCommand(name: string, runtime: "claude" | "codex"): string {
+	if (runtime === "claude") return `claude plugin update ${name}@b-open-io`
+	return `codex plugin marketplace upgrade && codex plugin add ${name}@b-open-io`
+}

@@ -1,16 +1,20 @@
 "use client"
 
+import { CheckCircle2, Hammer, LoaderCircle } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Banners } from "@/components/setup/Banners"
-import { Header } from "@/components/setup/Header"
 import { OverviewTab } from "@/components/setup/OverviewTab"
 import { PlanPanel } from "@/components/setup/PlanPanel"
 import { PluginTab } from "@/components/setup/PluginTab"
-import { TabBar } from "@/components/setup/TabBar"
+import { Sidebar } from "@/components/setup/Sidebar"
+import { Button } from "@/components/ui/button"
 import { assemblePlanSelections, initAllSelections, reconcileSelections } from "@/lib/selections"
 import type { HarnessState, Selections } from "@/lib/types"
 
 type PlanResult = { markdown: string; path: string }
+type ShellMode = "standalone" | "agent-master"
+
+const SHELL_STORAGE_KEY = "bopen-setup-shell"
 
 export default function SetupPlaygroundPage() {
 	const [state, setState] = useState<HarnessState | null>(null)
@@ -22,6 +26,8 @@ export default function SetupPlaygroundPage() {
 	const [plan, setPlan] = useState<PlanResult | null>(null)
 	const [loadError, setLoadError] = useState<string | null>(null)
 	const [transientErrors, setTransientErrors] = useState<string[]>([])
+	const [shellMode, setShellMode] = useState<ShellMode>("standalone")
+	const [searchFocusToken, setSearchFocusToken] = useState(0)
 	const errorIdRef = useRef(0)
 
 	const pushTransientError = useCallback((msg: string) => {
@@ -55,6 +61,31 @@ export default function SetupPlaygroundPage() {
 			setLoadError(err instanceof Error ? err.message : String(err))
 		})
 	}, [fetchState])
+
+	useEffect(() => {
+		const shellParam = new URLSearchParams(window.location.search).get("shell")
+		if (shellParam === "agent-master") {
+			window.localStorage.setItem(SHELL_STORAGE_KEY, "agent-master")
+			setShellMode("agent-master")
+			return
+		}
+		if (window.localStorage.getItem(SHELL_STORAGE_KEY) === "agent-master") {
+			setShellMode("agent-master")
+		}
+	}, [])
+
+	useEffect(() => {
+		function handleShortcut(event: KeyboardEvent) {
+			if (!event.metaKey || (event.key.toLowerCase() !== "f" && event.key.toLowerCase() !== "k")) {
+				return
+			}
+			event.preventDefault()
+			setActiveTab("overview")
+			setSearchFocusToken((token) => token + 1)
+		}
+		document.addEventListener("keydown", handleShortcut)
+		return () => document.removeEventListener("keydown", handleShortcut)
+	}, [])
 
 	async function handleRefresh() {
 		setRefreshing(true)
@@ -115,46 +146,87 @@ export default function SetupPlaygroundPage() {
 	}
 
 	const activePlugin = state?.plugins.find((p) => p.name === activeTab) ?? null
+	const activeTitle = activePlugin?.name ?? "Overview"
 
 	return (
-		<div className="flex min-h-screen flex-col">
-			<Header
-				runtimeArg={state?.runtimeArg ?? null}
-				runtimeDetected={state?.runtimeDetected ?? null}
+		<div className="app-shell">
+			<Sidebar
+				state={state}
+				activeView={activeTab}
+				shellMode={shellMode}
 				selectedRuntime={selectedRuntime}
+				onSelect={setActiveTab}
 				onRuntimeChange={setSelectedRuntime}
 				onRefresh={handleRefresh}
-				onBuildPlan={handleBuildPlan}
 				refreshing={refreshing}
-				building={building}
 			/>
 
 			<Banners state={state} transientErrors={transientErrors} />
 
-			<TabBar state={state} activeTab={activeTab} onSelect={setActiveTab} />
+			<section className="workspace">
+				<header className="workspace-toolbar">
+					<div className="min-w-0 flex-1">
+						<h1 className="truncate text-[0.95rem] font-semibold tracking-[-0.01em]">
+							{activeTitle}
+						</h1>
+						<div className="truncate text-[0.65rem] text-muted-foreground">
+							{activePlugin ? "Plugin setup details" : "Setup health and installed plugins"}
+						</div>
+					</div>
+					{state && state.runtimeArg === state.runtimeDetected && (
+						<div className="hidden items-center gap-1.5 text-[0.66rem] text-muted-foreground sm:flex">
+							<CheckCircle2 className="size-3 text-green-600" /> Runtime {state.runtimeDetected}
+						</div>
+					)}
+					<Button
+						variant="primary"
+						onClick={handleBuildPlan}
+						disabled={building || !state || !selectedRuntime}
+						className="h-8 rounded-md px-3 normal-case shadow-sm"
+					>
+						{building ? (
+							<LoaderCircle className="size-3.5 animate-spin" />
+						) : (
+							<Hammer className="size-3.5" />
+						)}
+						{building ? "Building…" : "Build setup plan"}
+					</Button>
+				</header>
 
-			<main className="max-w-full flex-1 p-4">
-				{!state ? (
-					<p className="py-2 text-[0.78rem] text-muted-foreground">
-						{loadError
-							? `Could not load /api/state. Is the setup server running? (${loadError})`
-							: "Loading harness state…"}
-					</p>
-				) : activeTab === "overview" ? (
-					<OverviewTab state={state} />
-				) : activePlugin && selectedRuntime ? (
-					<PluginTab
-						plugin={activePlugin}
-						selection={selections[activePlugin.name]}
-						selectedRuntime={selectedRuntime}
-						onToggleInstallPlugin={() => toggleInstallPlugin(activePlugin.name)}
-						onToggleCheck={(id) => toggleCheck(activePlugin.name, id)}
-						onToggleHook={(hookName) => toggleHook(activePlugin.name, hookName)}
-					/>
-				) : (
-					<p className="py-2 text-[0.78rem] text-muted-foreground">Unknown plugin.</p>
-				)}
-			</main>
+				<main className="content-view flex-1">
+					{!state ? (
+						<div className="native-card flex min-h-44 items-center justify-center bg-card p-6 text-center">
+							<div>
+								{!loadError && (
+									<LoaderCircle className="mx-auto mb-2 size-5 animate-spin text-primary" />
+								)}
+								<p className="text-[0.78rem] text-muted-foreground">
+									{loadError
+										? `Could not load /api/state. Is the setup server running? (${loadError})`
+										: "Checking installed runtimes and plugins…"}
+								</p>
+							</div>
+						</div>
+					) : activeTab === "overview" ? (
+						<OverviewTab
+							state={state}
+							onSelectPlugin={setActiveTab}
+							searchFocusToken={searchFocusToken}
+						/>
+					) : activePlugin && selectedRuntime && selections[activePlugin.name] ? (
+						<PluginTab
+							plugin={activePlugin}
+							selection={selections[activePlugin.name]}
+							selectedRuntime={selectedRuntime}
+							onToggleInstallPlugin={() => toggleInstallPlugin(activePlugin.name)}
+							onToggleCheck={(id) => toggleCheck(activePlugin.name, id)}
+							onToggleHook={(hookName) => toggleHook(activePlugin.name, hookName)}
+						/>
+					) : (
+						<p className="py-2 text-[0.78rem] text-muted-foreground">Unknown plugin.</p>
+					)}
+				</main>
+			</section>
 
 			{plan && (
 				<PlanPanel markdown={plan.markdown} path={plan.path} onClose={() => setPlan(null)} />

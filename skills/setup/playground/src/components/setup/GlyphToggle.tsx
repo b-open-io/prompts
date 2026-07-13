@@ -24,7 +24,7 @@ export function GlyphToggle({
 			disabled={inert}
 			onClick={onToggle}
 			className={cn(
-				"w-4 flex-none select-none text-left font-mono leading-tight",
+				"w-4 flex-none select-none rounded-sm text-left font-mono leading-tight outline-none focus-visible:ring-2 focus-visible:ring-ring",
 				checked ? "text-primary" : "text-muted-foreground",
 				inert ? "cursor-default" : "cursor-pointer",
 			)}
