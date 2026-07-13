@@ -64,6 +64,24 @@
       "runtimes": ["codex"],
       "summary": "Steers browser-shaped prompts toward agent-browser.",
       "description": "Detects prompts that involve browser work (URLs, navigation, form filling, login, screenshots, SPAs) and injects static guidance preferring agent-browser when installed. Never fetches or injects page content itself. Codex counterpart of agent-browser-solo: Codex has no WebFetch tool to intercept, so this hook steers at the prompt level instead."
+    },
+    {
+      "name": "prompt-router",
+      "path": "hooks/prompt-router.sh",
+      "event": "UserPromptSubmit",
+      "matcher": "*",
+      "runtimes": ["claude"],
+      "summary": "Points prompts at the matching installed skill before the model responds.",
+      "description": "Scores the submitted prompt against ~/.claude/bopen-tools/router-index.json (built by scripts/build-router-index.py from every installed b-open-io plugin) and, above threshold, injects a short pointer at the best-matching Skill or roster subagent_type — at most the top two matches, capped at 500 chars. Requires either one matched trigger phrase or two matched keywords; skips prompts under 15 chars and slash commands. Never echoes the raw prompt back into the injected context. The directive is always phrased conditionally (\"...unless its instructions are already loaded in your context this session\") since the model's own context is the only accurate judge of that, not the transcript. Router-side session memory in ~/.claude/bopen-tools/router-state/<session_id>.json caps a given id at two firings per session with a minimum 10-prompt gap between them, pruning state older than 7 days on every write. Claude-only: matches on Skill()/subagent_type semantics Codex doesn't share."
+    },
+    {
+      "name": "roster-guard",
+      "path": "hooks/roster-guard.sh",
+      "event": "PreToolUse",
+      "matcher": "Task",
+      "runtimes": ["claude"],
+      "summary": "Suggests a roster specialist when a Task dispatch targets a generic agent.",
+      "description": "When a Task call's subagent_type is \"general-purpose\" or \"Explore\", scores the dispatch prompt/description against the AGENT entries in the router index and, above threshold, emits additionalContext naming the closest-matching roster subagent_type. Carries no permissionDecision at all — additionalContext is a standalone PreToolUse field, so the permission flow is left completely untouched rather than implicitly allowed. Steps aside silently if the router index is missing or nothing matches. Claude-only: Codex has no Task tool or subagent_type namespace to guard."
     }
   ]
 }

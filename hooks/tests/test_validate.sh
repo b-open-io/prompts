@@ -5,7 +5,7 @@ echo
 echo "--- validation ---"
 
 # JSON files
-for f in claude-hooks.json codex-hooks.json patterns.yaml; do
+for f in claude-hooks.json codex-hooks.json manifest.json patterns.yaml; do
   if [[ "$f" == *.json ]]; then
     if jq -e . "$ROOT/$f" >/dev/null 2>&1; then
       PASS=$((PASS + 1))
@@ -64,7 +64,7 @@ else
   PASS=$((PASS + 1)); printf '  PASS  claude does not intercept WebSearch\n'
 fi
 
-# OPL-2842: PreToolUse Bash matcher is a single consolidated entry (one bash
+# PreToolUse Bash matcher is a single consolidated entry (one bash
 # spawn) pointing at pretooluse-bash.sh, not three separate hook entries.
 for f in claude-hooks.json codex-hooks.json; do
   bash_hook_count=$(jq -r --arg m "Bash" '
@@ -79,6 +79,31 @@ for f in claude-hooks.json codex-hooks.json; do
   fi
 done
 
+# prompt-router (UserPromptSubmit) and roster-guard (PreToolUse
+# Task) are wired in claude-hooks.json only, and both appear in manifest.json.
+if jq -e '.hooks.UserPromptSubmit[].hooks[] | select(.command | test("prompt-router.sh"))' "$ROOT/claude-hooks.json" >/dev/null 2>&1; then
+  PASS=$((PASS + 1)); printf '  PASS  claude UserPromptSubmit wires prompt-router\n'
+else
+  FAIL=$((FAIL + 1)); failures+=("claude-hooks.json missing prompt-router wiring"); printf '  FAIL  claude UserPromptSubmit wires prompt-router\n'
+fi
+if jq -e '.hooks.PreToolUse[] | select(.matcher == "Task") | .hooks[] | select(.command | test("roster-guard.sh"))' "$ROOT/claude-hooks.json" >/dev/null 2>&1; then
+  PASS=$((PASS + 1)); printf '  PASS  claude PreToolUse Task matcher wires roster-guard\n'
+else
+  FAIL=$((FAIL + 1)); failures+=("claude-hooks.json missing roster-guard wiring"); printf '  FAIL  claude PreToolUse Task matcher wires roster-guard\n'
+fi
+if jq -r '.hooks | .. | strings? // empty' "$ROOT/codex-hooks.json" | grep -qE 'prompt-router.sh|roster-guard.sh'; then
+  FAIL=$((FAIL + 1)); failures+=("codex-hooks.json unexpectedly wires prompt-router/roster-guard"); printf '  FAIL  codex does not wire prompt-router/roster-guard\n'
+else
+  PASS=$((PASS + 1)); printf '  PASS  codex does not wire prompt-router/roster-guard\n'
+fi
+for name in prompt-router roster-guard; do
+  if jq -e --arg n "$name" '.hooks[] | select(.name == $n)' "$ROOT/manifest.json" >/dev/null 2>&1; then
+    PASS=$((PASS + 1)); printf '  PASS  manifest.json has entry: %s\n' "$name"
+  else
+    FAIL=$((FAIL + 1)); failures+=("manifest.json missing entry: $name"); printf '  FAIL  manifest.json has entry: %s\n' "$name"
+  fi
+done
+
 # hooks.json removed
 if [[ ! -f "$ROOT/hooks.json" ]]; then
   PASS=$((PASS + 1)); printf '  PASS  default hooks.json removed\n'
@@ -89,6 +114,7 @@ fi
 # Shell syntax
 for sh in bouncer.sh damage-control.sh publish-gate.sh pretooluse-bash.sh \
           session-context.sh agent-browser-solo.sh browser-intent.sh \
+          prompt-router.sh roster-guard.sh \
           lib/common.sh; do
   if bash -n "$ROOT/$sh" 2>/dev/null; then
     PASS=$((PASS + 1))
@@ -102,32 +128,35 @@ done
 
 # Python compile (write bytecode to a temp dir so a read-only/cache issue cannot fail us)
 PY_TMP=$(mktemp -d)
-if python3 -c "import py_compile,sys; py_compile.compile(sys.argv[1], cfile=sys.argv[2], doraise=True)" \
-    "$ROOT/hammertime.py" "$PY_TMP/hammertime.pyc" 2>"$PY_TMP/err"; then
-  PASS=$((PASS + 1)); printf '  PASS  python compile hammertime.py\n'
-else
-  FAIL=$((FAIL + 1))
-  err=$(cat "$PY_TMP/err" 2>/dev/null || true)
-  failures+=("py_compile hammertime.py: $err")
-  printf '  FAIL  python compile hammertime.py\n        %s\n' "$err"
-fi
+for py_rel in hammertime.py ../scripts/build-router-index.py; do
+  py_name=$(basename "$py_rel")
+  if python3 -c "import py_compile,sys; py_compile.compile(sys.argv[1], cfile=sys.argv[2], doraise=True)" \
+      "$ROOT/$py_rel" "$PY_TMP/${py_name}.pyc" 2>"$PY_TMP/err"; then
+    PASS=$((PASS + 1)); printf '  PASS  python compile %s\n' "$py_name"
+  else
+    FAIL=$((FAIL + 1))
+    err=$(cat "$PY_TMP/err" 2>/dev/null || true)
+    failures+=("py_compile $py_name: $err")
+    printf '  FAIL  python compile %s\n        %s\n' "$py_name" "$err"
+  fi
+done
 rm -rf "$PY_TMP"
 
 # git diff --check on owned files
-if git -C "$ROOT/.." diff --check -- hooks/ >/dev/null 2>&1; then
-  PASS=$((PASS + 1)); printf '  PASS  git diff --check hooks/\n'
+if git -C "$ROOT/.." diff --check -- hooks/ scripts/build-router-index.py >/dev/null 2>&1; then
+  PASS=$((PASS + 1)); printf '  PASS  git diff --check hooks/ scripts/build-router-index.py\n'
 else
   # Also check untracked via diff against empty? For working tree:
   set +e
-  check_out=$(git -C "$ROOT/.." diff --check -- hooks/ 2>&1)
+  check_out=$(git -C "$ROOT/.." diff --check -- hooks/ scripts/build-router-index.py 2>&1)
   # Include staged
-  check_out2=$(git -C "$ROOT/.." diff --cached --check -- hooks/ 2>&1)
+  check_out2=$(git -C "$ROOT/.." diff --cached --check -- hooks/ scripts/build-router-index.py 2>&1)
   set -e
   if [[ -z "$check_out" && -z "$check_out2" ]]; then
-    PASS=$((PASS + 1)); printf '  PASS  git diff --check hooks/\n'
+    PASS=$((PASS + 1)); printf '  PASS  git diff --check hooks/ scripts/build-router-index.py\n'
   else
     FAIL=$((FAIL + 1))
     failures+=("git diff --check: $check_out $check_out2")
-    printf '  FAIL  git diff --check hooks/\n%s\n%s\n' "$check_out" "$check_out2"
+    printf '  FAIL  git diff --check hooks/ scripts/build-router-index.py\n%s\n%s\n' "$check_out" "$check_out2"
   fi
 fi

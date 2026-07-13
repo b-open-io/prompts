@@ -63,7 +63,7 @@ run_hook "damage-control.sh" "claude" "$input"
 assert_exit "damage-control hooks-config read allowed" "0" "$HOOK_EXIT"
 assert_not_contains "damage-control hooks-config read no prompt" "permissionDecision" "$HOOK_STDOUT$HOOK_STDERR"
 
-# OPL-2842 regression: noDeletePaths must evaluate rm's actual argument
+# Regression guard: noDeletePaths must evaluate rm's actual argument
 # paths, not substring-match the whole command line. A chained command that
 # merely mentions a protected path elsewhere (via `cat`, not `rm`) must pass.
 input=$(jq -n '{tool_name:"Bash", tool_input:{command:"rm /tmp/x && cat ~/.claude/plugins/foo"}}')

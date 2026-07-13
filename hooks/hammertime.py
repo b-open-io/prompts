@@ -838,12 +838,17 @@ def hook_enabled(name: str) -> bool:
 
 
 def main():
+    # These two exits are logged BEFORE they fire: a silent exit-0 here is
+    # indistinguishable from "no rule matched" in test output, which made a
+    # suite flake undiagnosable — no debug line ever appeared.
     if not hook_enabled("hammertime"):
+        debug_log("EXIT: hook_enabled('hammertime') returned False (config disable)")
         sys.exit(0)
 
     # Global kill switch — if the sentinel file exists, skip all processing
     disabled_path = _hammertime_paths()["disabled"]
     if os.path.exists(disabled_path):
+        debug_log(f"EXIT: disabled sentinel present at {disabled_path}")
         sys.exit(0)
 
     debug_log("--- HammerTime run ---")

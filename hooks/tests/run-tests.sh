@@ -104,6 +104,14 @@ source "$TESTS_DIR/test_hook_enabled.sh"
 # shellcheck disable=SC1091
 source "$TESTS_DIR/test_agent_browser_solo.sh"
 # shellcheck disable=SC1091
+source "$TESTS_DIR/test_build_router_index.sh"
+# shellcheck disable=SC1091
+source "$TESTS_DIR/test_prompt_router.sh"
+# shellcheck disable=SC1091
+source "$TESTS_DIR/test_prompt_router_dedup.sh"
+# shellcheck disable=SC1091
+source "$TESTS_DIR/test_roster_guard.sh"
+# shellcheck disable=SC1091
 source "$TESTS_DIR/test_validate.sh"
 
 echo

@@ -27,7 +27,7 @@ run_hook "pretooluse-bash.sh" "claude" "$input"
 assert_exit "pretooluse-bash damage-control fires exit" "0" "$HOOK_EXIT"
 assert_contains "pretooluse-bash damage-control fires deny" "BLOCKED by damage-control" "$HOOK_STDOUT"
 
-# OPL-2842 regression, exercised through the consolidated entry too: a
+# Regression case, exercised through the consolidated entry too: a
 # chained command that merely mentions a protected path via `cat` (not `rm`)
 # must not trip the no-delete check.
 input=$(jq -n '{tool_name:"Bash", tool_input:{command:"rm /tmp/x && cat ~/.claude/plugins/foo"}}')

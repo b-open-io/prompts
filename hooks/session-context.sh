@@ -123,6 +123,38 @@ else
 - Cwd: ${cwd}"
 fi
 
+# Invocation contract: static, hand-curated, kept small on purpose (see
+# not generated from the router index so it stays reviewable.
+context="${context}
+
+[BOPEN-CONTRACT] If an installed skill plausibly covers the task, invoke it BEFORE responding — check the router index categories: factory/loops→software-factory, waves/fan-out→wave-coordinator, dispatch-to-workers→coordinator, second-opinion→advisor, setup/install→setup, review→visual-review, done/complete→confess. Prefer a roster subagent_type over general-purpose or Explore — the roster travels with this plugin."
+
+# Rebuild the router index (used by prompt-router.sh and roster-guard.sh)
+# when missing or stale relative to the newest plugin cache directory.
+# Runs in the background so a slow/cold rebuild never blocks session start;
+# both consumer hooks step aside silently when the index isn't there yet.
+ROUTER_INDEX="${BOPEN_ROUTER_INDEX:-${HOME}/.claude/bopen-tools/router-index.json}"
+BUILDER_SCRIPT="${SCRIPT_DIR}/../scripts/build-router-index.py"
+CACHE_ROOT="${BOPEN_PLUGIN_CACHE_ROOT:-${HOME}/.claude/plugins/cache/b-open-io}"
+if command -v python3 >/dev/null 2>&1 && [[ -f "$BUILDER_SCRIPT" ]]; then
+  needs_rebuild=false
+  if [[ ! -f "$ROUTER_INDEX" ]]; then
+    needs_rebuild=true
+  elif [[ -d "$CACHE_ROOT" ]]; then
+    newest_cache_mtime=$(find "$CACHE_ROOT" -maxdepth 2 -type d -print0 2>/dev/null \
+      | xargs -0 stat -f '%m' 2>/dev/null \
+      || find "$CACHE_ROOT" -maxdepth 2 -type d -printf '%T@\n' 2>/dev/null)
+    newest_cache_mtime=$(printf '%s\n' "$newest_cache_mtime" | sort -rn | head -n1)
+    index_mtime=$(stat -f '%m' "$ROUTER_INDEX" 2>/dev/null || stat -c '%Y' "$ROUTER_INDEX" 2>/dev/null || echo 0)
+    if [[ -n "$newest_cache_mtime" ]] && (( $(printf '%.0f' "${newest_cache_mtime:-0}") > $(printf '%.0f' "${index_mtime:-0}") )); then
+      needs_rebuild=true
+    fi
+  fi
+  if [[ "$needs_rebuild" == "true" ]]; then
+    ( python3 "$BUILDER_SCRIPT" --cache-root "$CACHE_ROOT" --output "$ROUTER_INDEX" >/dev/null 2>&1 & disown ) 2>/dev/null || true
+  fi
+fi
+
 # One-time hooks setup offer, linear-sync style: when no user hooks config
 # exists, point the session at the hook-manager skill. The wizard writes the
 # config (even for "keep all defaults"), which silences this permanently.

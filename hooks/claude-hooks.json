@@ -1,5 +1,5 @@
 {
-  "description": "Claude Code hooks for tool validation, session context, browser redirect, and HammerTime",
+  "description": "Claude Code hooks for tool validation, session context, prompt/roster routing, browser redirect, and HammerTime",
   "hooks": {
     "SessionStart": [
       {
@@ -7,6 +7,17 @@
           {
             "type": "command",
             "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-context.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/prompt-router.sh\"",
             "timeout": 5
           }
         ]
@@ -40,6 +51,16 @@
             "type": "command",
             "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-browser-solo.sh\"",
             "timeout": 60
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/roster-guard.sh\"",
+            "timeout": 5
           }
         ]
       }
