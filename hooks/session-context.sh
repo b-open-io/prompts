@@ -129,7 +129,7 @@ fi
 if [[ ! -f "${HOME}/.claude/bopen-tools/hooks-config.json" ]]; then
   context="${context}
 
-[BOPEN-HOOKS-SETUP] No hooks config found at ~/.claude/bopen-tools/hooks-config.json. All bopen-tools hooks are running with defaults (everything enabled). When convenient — do not interrupt the user's task for this — offer to run hook setup via the bopen-tools:hook-manager skill to review which hooks are enabled and check their prerequisites. Writing the config (even all-defaults) dismisses this notice."
+[BOPEN-HOOKS-SETUP] No hooks config found at ~/.claude/bopen-tools/hooks-config.json. All bopen-tools hooks are running with defaults (everything enabled). When convenient — do not interrupt the user's task for this — offer to run hook setup via the bopen-tools:hook-manager skill (conversational) or the bopen-tools:setup skill (visual installer UI covering hooks plus all other harness dependencies) to review which hooks are enabled and check their prerequisites. Writing the config (even all-defaults) dismisses this notice."
 fi
 
 # Emit JSON with real newlines inside additionalContext via json.dumps
