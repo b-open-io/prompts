@@ -1,7 +1,7 @@
 ---
-version: 1.0.4
+version: 1.0.5
 name: ui-audio-theme
-description: Generate cohesive UI audio themes with subtle, minimal sound effects for applications. This skill should be used when users want to create a set of coordinated interface sounds for wallet apps, dashboards, or web applications - generating sounds mapped to UI interaction constants like button clicks, notifications, and navigation transitions using ElevenLabs API.
+description: Generate cohesive UI audio themes with subtle, minimal sound effects for applications. This skill should be used when users want to create a set of coordinated interface sounds for wallet apps, dashboards, or web applications - generating sounds mapped to UI interaction constants like button clicks, notifications, and navigation transitions using ElevenLabs API. Ships an interactive local sound picker (web UI) for auditioning unlimited candidates per slot with editable prompts and one-click accept into the theme, plus guidance for artifact-based audition boards. All output is peak-normalized so quiet vibes stay audible.
 location: user
 ---
 
