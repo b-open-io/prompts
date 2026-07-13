@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.4
+version: 0.0.5
 description: >-
   Always active when a capable current main session in Claude Code or Codex is
   planning non-trivial implementation and cheaper or specialized executors are
@@ -250,7 +250,11 @@ worker landed.
    work the spec carries the design intent: layout, states, interactions,
    spacing, motion, reference patterns. For the hardest parts, spec down to
    pseudocode — the thinking stays here; the typing still dispatches. Keep
-   spec files untracked (never commit them).
+   spec files untracked (never commit them). When the spec covers a
+   generator whose output the repo's linter checks, require the generator
+   itself to emit lint-clean output (or gitignore/lint-ignore the emitted
+   path) — hand-formatting generated files at every barrier is a treadmill,
+   not a fix.
 
 2. **Every spec MUST include the environment clause** (verbatim or close):
    > If you hit an environment blocker (read-only path, no network, blocked
@@ -299,6 +303,12 @@ worker landed.
    - Go repos: the default build cache lives outside the workspace. Tell the
      worker to use `GOCACHE=$PWD/.gocache` (and gitignore it) when the default
      is blocked.
+   - **Capture the dispatch's full output to a file, never pipe it through
+     `tail`/`head`.** Piping truncates the worker's final report
+     irrecoverably — `codex exec ... | tail -50` can permanently lose the
+     structured report demanded above. Redirect to a log file
+     (`... > /tmp/dispatch-<id>.log 2>&1 &`) and read the tail of that file
+     separately when a quick look is enough.
    - Keep working while it runs: next spec, review of a prior dispatch,
      validation.
 
@@ -325,7 +335,11 @@ worker landed.
    explicitly, before any commit or push.
 
 7. **Ship from here.** Commit, push, PR from this session — never let a
-   worker commit. Expect the remote to have moved if other sessions/loops
+   worker commit. **In a shared tree with live workers, stage by explicit
+   path list only** (`git add path/one path/two`) — never `git add -A` or
+   `git add .`; a broad add sweeps a mid-flight worker's uncommitted files
+   into your commit, and a production deploy is one careless `git add -A`
+   away. Expect the remote to have moved if other sessions/loops
    share the repo: on rejected push, `git pull --no-rebase`, resolve (watch
    for conflicts whose sides each depend on shared closing lines — naive
    marker stripping breaks functions mid-body), then **re-run acceptance
@@ -343,7 +357,15 @@ Auth-gated UIs: you cannot enter credentials (hard boundary). Plan for it —
 mock-data mode, a signed-in user session in the driven browser, or hand the
 sign-in step to the user *early*, before the validation loop blocks on it.
 
-## Background Subagent Etiquette (recon fan-outs)
+Served-build invalidation: if a worker's acceptance build ran inside the
+directory a long-lived dev/preview server is serving, that build invalidates
+the running server — stale chunk hashes surface in the browser as
+client-side exceptions, not build errors, and look exactly like a real
+regression. Restart the served process at every barrier where a worker
+built in its served directory, before judging step 2 against the design
+intent.
+
+## Background Subagent Etiquette (recon and watch fan-outs)
 
 Recon/research subagents on either host can go idle with a bare notification
 instead of delivering their report:
@@ -361,6 +383,12 @@ instead of delivering their report:
   to main now." One nudge often recovers it; don't wait passively.
 - Treat a second content-free idle from the same agent as a failed dispatch —
   re-run the recon yourself or spawn a fresh agent.
+
+Field note: two background research/watch agents went fully idle without
+ever delivering their reports in the same session. The explicit delivery
+instruction above is not optional decoration — treat it as a required line
+in every background-spawned agent's prompt, not just recon fan-outs; a
+background agent's final text is not auto-delivered to you.
 
 ## Escape Hatch: When a Worker Struggles
 
@@ -415,3 +443,15 @@ here, and keep dispatching. Strikes are about the actual implementation.
   first when it matters.
 - Trusting piped exit codes in ship chains → a masked red suite goes to the
   remote. Gate pushes on unpiped commands.
+- Staging with `git add -A`/`git add .` in a shared tree with live workers →
+  sweeps a mid-flight worker's uncommitted files into your commit. Stage by
+  explicit path list only.
+- Piping a dispatch invocation through `tail`/`head` → truncates the final
+  report irrecoverably. Capture full output to a file, read the tail
+  separately.
+- Trusting a worker's green build when it ran inside a directory your dev/
+  preview server is serving → invalidates the running server; stale chunks
+  read as client-side exceptions. Restart the server at the barrier.
+- Hand-formatting a generator's output at every barrier → the generator
+  should emit lint-clean output itself (or its path should be lint-ignored).
+  Fix it once, not every barrier.

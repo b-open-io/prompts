@@ -6,7 +6,21 @@ generated adapters carrying the persona body. Grok has no such adapter; a raw
 `scripts/grok-persona.sh` closes that gap by prefixing the task with an
 agent's system-prompt body (frontmatter stripped).
 
+## Preflight the model
+
+`grok` reads `XAI_API_KEY`. Confirm the key resolves and the worker model is
+actually available to the account before dispatching:
+
+```bash
+grok models          # lists available models; verify your target is present
+WORKER_MODEL="${BOPEN_WORKER_MODEL:-grok-4.5}"
+```
+
+`grok-4.5` is the current default; pin a specific ID for reproducible work.
+
 ## Usage with the grok dispatch shape
+
+Code-writing lane (agent edits the repo):
 
 ```bash
 PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
@@ -14,6 +28,23 @@ bash scripts/grok-persona.sh code-auditor "$(cat SPEC-x.md)" > "$PROMPT_FILE"
 grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" --permission-mode acceptEdits \
   --sandbox workspace --output-format plain --cwd <repo>
 ```
+
+Read-only lane (research, summaries, reviews — no edits): drop `acceptEdits`
+and `--sandbox workspace`. Make the task self-contained (inline the material)
+so no filesystem or network tools are needed and headless never stalls on an
+approval prompt:
+
+```bash
+PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
+bash scripts/grok-persona.sh researcher "Summarize this README:
+$(head -60 README.md)" > "$PROMPT_FILE"
+grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" \
+  --output-format plain --permission-mode default --cwd "$(pwd)"
+```
+
+Persona activation shows up in the output shape: a `researcher` dispatch
+returns Parker's template (a "What matters" block, Scope/Sources/Deliverable,
+Sources with access dates) rather than a generic answer.
 
 Agent name may omit `.md`. Task text is `$2`, or piped/heredoc'd stdin when
 `$2` is absent. A missing agent name exits 1 with the list of available

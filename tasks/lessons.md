@@ -1,5 +1,35 @@
 # Lessons
 
+## 2026-07-13: orchestration lessons from a live shared-tree session
+
+- **Barrier staging**: in a shared tree with live workers, stage by explicit
+  path list only. `git add -A` swept a mid-flight worker's files into a
+  production deploy. Encoded in coordinator's Dispatch Protocol step 7 and
+  Common Mistakes.
+- **Background agent reports**: a background-spawned agent's final text is
+  NOT auto-delivered — every background research/watch agent prompt must end
+  with an explicit instruction to deliver its report via SendMessage. Two
+  agents went idle in silence. Encoded in coordinator's Background Subagent
+  Etiquette and orchestrator's specialist-evidence step.
+- **Served-build invalidation**: a worker building for acceptance inside a
+  directory a long-lived server is serving invalidates that server — stale
+  chunk hashes read as client-side exceptions, not build errors. Restart the
+  server at every barrier where a worker built in a served directory.
+  Encoded in coordinator's Visual Validation Loop.
+- **Generated-file lint**: when a generator emits files the repo's linter
+  checks, the generator must emit lint-clean output (or the path must be
+  lint-ignored) — hand-formatting generated files at every barrier is a
+  treadmill. Encoded in coordinator's Dispatch Protocol step 1 and Common
+  Mistakes.
+- **Dispatch output capture**: never pipe a dispatch invocation through
+  `tail`/`head` — it truncates the final report irrecoverably. Capture full
+  output to a file, read the tail separately. Encoded in coordinator's
+  Dispatch Protocol step 4 and Common Mistakes.
+- **CLI lanes in native workflows**: already documented in
+  `coordinator/references/native-workflows.md`; coordinator's routing table
+  already points to it (Native Workflow row + preflight section) — no gap
+  found, no change needed.
+
 ## Keep authored plugin personas separate from deployed app instances
 
 Every Markdown file under `agents/` is a distributable plugin persona and a

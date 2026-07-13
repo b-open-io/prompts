@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-version: 0.0.3
+version: 0.0.4
 description: >-
   Use this skill when a capable current Claude Code or Codex main session
   should coordinate native specialist agents, external implementation workers
@@ -117,7 +117,11 @@ or a broader repository snapshot than the assignment needs.
    repository content to xAI or Anthropic.
 5. **Gather specialist evidence.** Use native agents for independent research,
    architecture, security, testing, documentation, or domain analysis. Give
-   each a bounded, self-contained assignment and require a complete report.
+   each a bounded, self-contained assignment and require a complete report —
+   for background-dispatched agents, instruct them explicitly to deliver
+   that report via the host's messaging mechanism before going idle; an idle
+   notification is not a deliverable (see Coordinator's Background Subagent
+   Etiquette for the full pattern).
 6. **Consult at a commitment boundary.** If warranted, package the goal,
    constraints, state, evidence, and one decision for the read-only advisor.
    Advice returns to the main; it never becomes an edit task.
