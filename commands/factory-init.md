@@ -8,9 +8,9 @@ argument-hint: [goal or feature the loop should work toward]
 
 If the arguments contain "--help", show this help and exit:
 
-**loop-init** — Design and scaffold an autonomous agent loop
+**factory-init** — Design and scaffold an autonomous agent loop
 
-**Usage:** `/loop-init [goal or feature the loop should work toward]`
+**Usage:** `/factory-init [goal or feature the factory should work toward]`
 
 **Description:**
 Runs the software-factory config questionnaire, decides whether a loop is even
@@ -23,9 +23,9 @@ loop is proven by hand.
 - `[goal]` : What the loop should accomplish (optional — will be asked if omitted)
 
 **Examples:**
-- `/loop-init "keep the e2e test suite green on every push"`
-- `/loop-init "triage and fix accessibility issues across the marketing site"`
-- `/loop-init "explore the app nightly and file new bugs"`
+- `/factory-init "keep the e2e test suite green on every push"`
+- `/factory-init "triage and fix accessibility issues across the marketing site"`
+- `/factory-init "explore the app nightly and file new bugs"`
 
 Then stop.
 

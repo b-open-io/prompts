@@ -58,4 +58,4 @@ Prove it once by hand on a real case, watching the gate actually reject bad work
 - `references/failure-modes.md` — ten ways loops fail quietly, each with its guard.
 - `references/state-backends.md` — Linear, GitHub Issues, and repo-vault state, with the contract all three satisfy.
 
-The `/loop-init` command runs the questionnaire and scaffolds a loop end to end. Satchmo (`agent-builder`) is the point person who owns loop design; Jason runs the gate, Wags owns the ticket state, Root wires the heartbeat, and Milton watches the cost per accepted change.
+The `/factory-init` command runs the questionnaire and scaffolds a loop end to end. Satchmo (`agent-builder`) is the point person who owns loop design; Jason runs the gate, Wags owns the ticket state, Root wires the heartbeat, and Milton watches the cost per accepted change.

@@ -106,7 +106,7 @@ Not tokens spent, not loops run. If the loop gives ten results and you toss six,
 
 ## Configuring a loop: run the questionnaire
 
-Decisions 3, 4, and 5 below are per-project — **you must ask the project**, never assume. Use `references/config-questionnaire.md` for the full interview; the `/loop-init` command runs it interactively. The ten fields:
+Decisions 3, 4, and 5 below are per-project — **you must ask the project**, never assume. Use `references/config-questionnaire.md` for the full interview; the `/factory-init` command runs it interactively. The ten fields:
 
 1. **Goal** — the recursive goal; what does objective "done" look like?
 2. **Gate** — what automatically rejects bad output? Required rung on the ladder: `static (typecheck/lint) → unit → integration → real-app exercise`.

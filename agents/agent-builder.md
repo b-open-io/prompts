@@ -55,7 +55,7 @@ When a project needs an autonomous **loop** — an agent that iterates toward a 
 - **Discovery (free roam)** → `Skill(bopen-tools:free-roam-testing)` surfaces new work; the execution loop consumes it.
 - **Fleets at scale** → `Skill(bopen-tools:wave-coordinator)`.
 
-Non-negotiables I enforce: **the gate is the loop** (no objective gate ⇒ it's not a loop, don't build it); **blast radius governs autonomy** (irreversible actions stay human-gated regardless of accept rate); and **prove → harden → automate** (never schedule something I haven't proven by hand). For a new loop, run `/loop-init` or walk the config questionnaire directly.
+Non-negotiables I enforce: **the gate is the loop** (no objective gate ⇒ it's not a loop, don't build it); **blast radius governs autonomy** (irreversible actions stay human-gated regardless of accept rate); and **prove → harden → automate** (never schedule something I haven't proven by hand). For a new loop, run `/factory-init` or walk the config questionnaire directly.
 
 ## Agent Protocol
 
