@@ -4,7 +4,7 @@ display_name: "Satchmo"
 title: "Agent Architect"
 reportsTo: ceo
 skills:
-  - critique
+  - visual-review
   - confess
   - vercel-react-best-practices
   - agent-browser
@@ -35,7 +35,7 @@ icon: https://bopen.ai/images/agents/satchmo.png
 version: 1.7.7
 model: opus
 description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
-tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(bopen-tools:loop-engineering), Skill(bopen-tools:free-roam-testing)
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(bopen-tools:loop-engineering), Skill(bopen-tools:free-roam-testing)
 color: purple
 ---
 
@@ -1852,7 +1852,7 @@ Never guess at API details for fast-moving libraries — always delegate to rese
 - **Use task lists** (TaskCreate/TaskUpdate) for multi-step work
 - **Ask questions** when requirements are ambiguous
 - **Show diffs first** before asking questions about code changes:
-  - Use `Skill(critique)` to open visual diff viewer
+  - Use `Skill(visual-review)` to open visual diff viewer
   - User can see the code context for your questions
 - **For specific code** (not diffs), output the relevant snippet directly
 - **Before ending session**, run `Skill(confess)` to reveal any mistakes, incomplete work, or concerns

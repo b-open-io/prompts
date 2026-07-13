@@ -4,7 +4,7 @@ display_name: "Idris"
 title: "Database Engineer"
 reportsTo: project-manager
 skills:
-  - critique
+  - visual-review
   - confess
   - agent-browser
   - simplify
@@ -40,7 +40,7 @@ description: |-
   Safe schema migrations with backfill logic — Idris's area of expertise.
   </commentary>
   </example>
-tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(agent-browser), Skill(simplify), Skill(superpowers:dispatching-parallel-agents)
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(agent-browser), Skill(simplify), Skill(superpowers:dispatching-parallel-agents)
 color: green
 model: opus
 ---
@@ -701,7 +701,7 @@ I use TaskCreate/TaskUpdate for systematic database project management:
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(critique)` — show visual diffs of schema changes before asking questions.
+- `Skill(visual-review)` — show visual diffs of schema changes before asking questions.
 - `Skill(confess)` — reveal mistakes, incomplete migrations, or concerns before ending session.
 - `Skill(agent-browser)` — scrape database documentation or release notes when needed.
 
@@ -907,7 +907,7 @@ This helps parent agents review work and catch any issues.
 - **Use task lists** (TaskCreate/TaskUpdate) for multi-step database work
 - **Ask questions** when schema requirements or constraints are unclear
 - **Show diffs first** before asking questions about migration changes:
-  - Use `Skill(critique)` to open visual diff viewer
+  - Use `Skill(visual-review)` to open visual diff viewer
   - User can see the schema changes context for your questions
 - **For specific code** (not diffs), output the relevant SQL snippet directly
 - **Before ending session**, run `Skill(confess)` to reveal any migration risks, incomplete work, or concerns

@@ -22,7 +22,7 @@ install with `codex plugin add bopen-tools@b-open-io` and verify the printed
 "Installed plugin root" version matches the bump. Smoke-test both plugin
 installs in fresh sessions.
 
-<!-- SKILL-MAP-START -->STOP. You WILL forget skill names mid-session. Check this map before ANY task.|create/improve/test/benchmark any skill→Skill(skill-creator:skill-creator)|writing SKILL.md→Skill(plugin-dev:skill-development)|writing agent .md→Skill(plugin-dev:agent-development)|writing slash commands→Skill(plugin-dev:command-development)|inject skill/agent map into CLAUDE.md→Skill(bopen-tools:reinforce-skills)|run skill benchmarks, write evals→Skill(bopen-tools:benchmark-skills)|fan out agents, wave dispatch, batch agents, generate variations, N>5 parallel subagents→Skill(bopen-tools:wave-coordinator)|design/build/harden an autonomous loop, agentic loop, /loop, /goal, ralph loop, maker-checker, self-iterating agent on a schedule, pick a verification gate, blast radius→Skill(bopen-tools:loop-engineering)|free roam, explore the app, monkey/exploratory testing, surface new bugs, discovery loop, use app like a human→Skill(bopen-tools:free-roam-testing)|visual recap, recap this PR/branch/diff, show what changed visually, make PR reviewable, diff-to-HTML review page→Skill(bopen-tools:visual-recap)|premium session routing implementation to cheaper workers, dispatch to codex/grok, race worker lanes, plan big execute small, model arbitrage, spec-and-dispatch→Skill(bopen-tools:coordinator)|cheap executor consulting a premium model, consult the advisor, second opinion from a bigger model, ask codex for advice, set up /advisor→Skill(bopen-tools:advisor)|list/enable/disable hooks, hook setup, hooks config, [BOPEN-HOOKS-SETUP] directive→Skill(bopen-tools:hook-manager)<!-- SKILL-MAP-END -->
+<!-- SKILL-MAP-START -->STOP. You WILL forget skill names mid-session. Check this map before ANY task.|create/improve/test/benchmark any skill→Skill(skill-creator:skill-creator)|writing SKILL.md→Skill(plugin-dev:skill-development)|writing agent .md→Skill(plugin-dev:agent-development)|writing slash commands→Skill(plugin-dev:command-development)|inject skill/agent map into CLAUDE.md→Skill(bopen-tools:reinforce-skills)|run skill benchmarks, write evals→Skill(bopen-tools:benchmark-skills)|fan out agents, wave dispatch, batch agents, generate variations, N>5 parallel subagents→Skill(bopen-tools:wave-coordinator)|design/build/harden an autonomous loop, agentic loop, /loop, /goal, ralph loop, maker-checker, self-iterating agent on a schedule, pick a verification gate, blast radius→Skill(bopen-tools:loop-engineering)|free roam, explore the app, monkey/exploratory testing, surface new bugs, discovery loop, use app like a human→Skill(bopen-tools:free-roam-testing)|visual recap, recap this PR/branch/diff, critique this change, code review page, show what changed visually, make PR reviewable, diff-to-HTML review page→Skill(bopen-tools:visual-review)|premium session routing implementation to cheaper workers, dispatch to codex/grok, race worker lanes, plan big execute small, model arbitrage, spec-and-dispatch→Skill(bopen-tools:coordinator)|cheap executor consulting a premium model, consult the advisor, second opinion from a bigger model, ask codex for advice, set up /advisor→Skill(bopen-tools:advisor)|list/enable/disable hooks, hook setup, hooks config, [BOPEN-HOOKS-SETUP] directive→Skill(bopen-tools:hook-manager)<!-- SKILL-MAP-END -->
 <!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|create/edit skills, commands, prompts→Agent(bopen-tools:prompt-engineer)|agent systems, multi-agent orchestration, design/own an autonomous loop (loop architect point person)→Agent(bopen-tools:agent-builder)|docs and READMEs→Agent(bopen-tools:documentation-writer)|researching tools and best practices→Agent(bopen-tools:researcher)|skill testing, evals, benchmarking→Agent(bopen-tools:tester)|who handles X, team roster, routing→Agent(bopen-tools:front-desk)<!-- AGENT-MAP-END -->
 
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
@@ -286,25 +286,9 @@ bun run scripts/generate.ts "PROMPT" --style pixl --aspect 1:1 \
 - **Cloudflare CLI (Wrangler)**: CDN, DNS, and edge services
 - **critique**: Beautiful terminal/web UI for reviewing git diffs (requires Bun)
 
-### Showing Users Code Changes with Critique
+### Showing Users Code Changes
 
-When users ask to see what changed, use `critique` to display diffs. Since the TUI is hidden inside Bash tool calls, use one of these visible approaches:
-
-```bash
-# Split pane (macOS/iTerm2) - opens TUI in split, auto-closes on quit
-/path/to/skills/critique/scripts/open-critique-pane.sh "$PWD" -h
-
-# Web preview - opens in browser (cross-platform)
-bunx critique --web --open
-
-# AI-explained review
-bunx critique review --agent claude --web --open
-
-# Compare branches (PR-style)
-bunx critique main HEAD --web --open
-```
-
-Prefer the split pane script for the best TUI experience on macOS, or `--web --open` for cross-platform.
+When users ask to see what changed, use `Skill(bopen-tools:visual-review)` — it turns a PR, branch, commit, or working-tree diff into a self-contained HTML recap page (wireframes, contract summaries, file map, annotated key diffs). For a quick terminal-driven look at a raw diff, `bunx critique --web --open` still works (the CLI remains; only the skill wrapper was retired).
 
 ### Our Projects (Referenced in Prompts)
 - **BigBlocks**: Bitcoin component library

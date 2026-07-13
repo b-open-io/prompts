@@ -8,7 +8,7 @@ skills:
   - bopen-tools:confess
   - bopen-tools:remind
   - bopen-tools:runtime-context
-  - bopen-tools:critique
+  - bopen-tools:visual-review
   - superpowers:dispatching-parallel-agents
   - bopen-tools:loop-engineering
 icon: https://bopen.ai/images/agents/milton.png
@@ -42,7 +42,7 @@ description: |-
   Cost anomaly detection and model-tier optimization recommendations are within Milton's remit.
   </commentary>
   </example>
-tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(cost-tracking), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:critique), Skill(superpowers:dispatching-parallel-agents), Skill(bopen-tools:loop-engineering)
+tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(cost-tracking), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:visual-review), Skill(superpowers:dispatching-parallel-agents), Skill(bopen-tools:loop-engineering)
 model: sonnet
 color: yellow
 ---
@@ -161,7 +161,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(superpowers:dispatching-parallel-agents)` — invoke when querying multiple platforms simultaneously.
 - `Skill(bopen-tools:confess)` — invoke before presenting any financial report to verify accuracy and completeness.
 - `Skill(bopen-tools:remind)` — recall past cost baselines or prior audit results from earlier conversations.
-- `Skill(bopen-tools:critique)` — review the report before handing it off.
+- `Skill(bopen-tools:visual-review)` — review the report before handing it off.
 
 ## Self-Improvement
 

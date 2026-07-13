@@ -1,12 +1,12 @@
 ---
-allowed-tools: Skill(bopen-tools:visual-recap), Bash(git:*), Bash(gh:*), Bash(open:*), Read, Write, Glob, Grep
-description: Turn a PR, branch, commit, or diff into a visual recap — a self-contained HTML page with wireframes, contract summaries, file map, and annotated key-change diffs
+allowed-tools: Skill(bopen-tools:visual-review), Bash(git:*), Bash(gh:*), Bash(open:*), Read, Write, Glob, Grep
+description: Turn a PR, branch, commit, or diff into a visual review — a self-contained HTML recap page with wireframes, contract summaries, file map, and annotated key-change diffs
 argument-hint: "[branch | commit-sha | PR# | --base <ref>] (default: current branch vs main)"
 ---
 
 ## Your Task
 
-Invoke `Skill(bopen-tools:visual-recap)` and follow it exactly.
+Invoke `Skill(bopen-tools:visual-review)` and follow it exactly.
 
 Resolve the recap target from the arguments: `$ARGUMENTS`
 
@@ -17,8 +17,8 @@ Resolve the recap target from the arguments: `$ARGUMENTS`
 - `--wt` → uncommitted working tree: `git diff HEAD`
 
 If the resolved diff is tiny (1-2 files, no schema/API/UI surface), say so and
-recommend reviewing it directly with the critique skill instead of building a
-recap — then stop unless the user insists.
+recommend reviewing it directly with `bunx critique --web --open` instead of
+building a recap — then stop unless the user insists.
 
 Otherwise build the recap per the skill: copy the template, ground every
 structured section in the real diff, fill the canonical skeleton, and deliver

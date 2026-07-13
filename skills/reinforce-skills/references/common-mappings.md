@@ -34,7 +34,7 @@ These skills ship with plugins and are available to anyone who installs the plug
 | Trigger | Skill |
 |---------|-------|
 | self-audit, find-mistakes | bopen-tools:confess |
-| quality-check, review-work | bopen-tools:critique |
+| quality-check, review-work, critique-change, diff-review | bopen-tools:visual-review |
 | humanize, clean-ai-slop, remove-ai-patterns | bopen-tools:humanize |
 | refresh-skill-map | bopen-tools:reinforce-skills |
 | npm-publish | bopen-tools:npm-publish |

@@ -38,7 +38,7 @@ skills:
   - bopen-tools:confess
   - bopen-tools:remind
   - bopen-tools:runtime-context
-  - bopen-tools:critique
+  - bopen-tools:visual-review
   - bopen-tools:loop-engineering
 icon: https://bopen.ai/images/agents/wags.png
 version: 1.0.8
@@ -73,7 +73,7 @@ description: |-
   </example>
 model: sonnet
 color: cyan
-tools: Read, Write, Edit, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(linear-planning), Skill(deploy-agent-team), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:writing-plans), Skill(superpowers:executing-plans), Skill(pm-execution:create-prd), Skill(pm-execution:brainstorm-okrs), Skill(pm-execution:outcome-roadmap), Skill(pm-execution:sprint-plan), Skill(pm-execution:retro), Skill(pm-execution:release-notes), Skill(pm-execution:pre-mortem), Skill(pm-execution:stakeholder-map), Skill(pm-execution:user-stories), Skill(pm-execution:job-stories), Skill(pm-execution:prioritization-frameworks), Skill(pm-product-discovery:brainstorm-ideas-existing), Skill(pm-product-discovery:brainstorm-ideas-new), Skill(pm-product-discovery:identify-assumptions-existing), Skill(pm-product-discovery:identify-assumptions-new), Skill(pm-product-discovery:prioritize-assumptions), Skill(pm-product-discovery:prioritize-features), Skill(pm-product-discovery:opportunity-solution-tree), Skill(pm-product-strategy:product-strategy), Skill(pm-product-strategy:product-vision), Skill(pm-product-strategy:swot-analysis), Skill(pm-product-strategy:ansoff-matrix), Skill(pm-go-to-market:gtm-strategy), Skill(pm-go-to-market:beachhead-segment), Skill(bopen-tools:wave-coordinator), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:critique), Skill(bopen-tools:loop-engineering)
+tools: Read, Write, Edit, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(linear-planning), Skill(deploy-agent-team), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:writing-plans), Skill(superpowers:executing-plans), Skill(pm-execution:create-prd), Skill(pm-execution:brainstorm-okrs), Skill(pm-execution:outcome-roadmap), Skill(pm-execution:sprint-plan), Skill(pm-execution:retro), Skill(pm-execution:release-notes), Skill(pm-execution:pre-mortem), Skill(pm-execution:stakeholder-map), Skill(pm-execution:user-stories), Skill(pm-execution:job-stories), Skill(pm-execution:prioritization-frameworks), Skill(pm-product-discovery:brainstorm-ideas-existing), Skill(pm-product-discovery:brainstorm-ideas-new), Skill(pm-product-discovery:identify-assumptions-existing), Skill(pm-product-discovery:identify-assumptions-new), Skill(pm-product-discovery:prioritize-assumptions), Skill(pm-product-discovery:prioritize-features), Skill(pm-product-discovery:opportunity-solution-tree), Skill(pm-product-strategy:product-strategy), Skill(pm-product-strategy:product-vision), Skill(pm-product-strategy:swot-analysis), Skill(pm-product-strategy:ansoff-matrix), Skill(pm-go-to-market:gtm-strategy), Skill(pm-go-to-market:beachhead-segment), Skill(bopen-tools:wave-coordinator), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:visual-review), Skill(bopen-tools:loop-engineering)
 ---
 
 You are Wags, a project strategist for software teams building with Claude Code and Linear.
@@ -275,7 +275,7 @@ When asked to execute a plan that's already in Linear:
 - `Skill(bopen-tools:runtime-context)` — detect which mode you're in
 - `Skill(bopen-tools:confess)` — self-audit before completing any task
 - `Skill(bopen-tools:remind)` — recall context from past conversations
-- `Skill(bopen-tools:critique)` — review changes before presenting results
+- `Skill(bopen-tools:visual-review)` — review changes before presenting results
 
 ### Core Workflow
 

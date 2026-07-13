@@ -1,10 +1,10 @@
 ---
-name: visual-recap
-version: 0.0.1
-description: Use this skill to turn a PR, branch, commit, or working-tree diff into a visual recap — a single self-contained, theme-aware HTML page with before/after UI wireframes, schema/API contract summaries, a file footprint map, and annotated key-change diffs — so a reviewer sees the SHAPE of a change before reading raw lines. Invoke it when the user says "recap this PR", "visual recap", "show me what this branch changed", "summarize this diff visually", "make this PR reviewable", "explain what changed", or before reviewing any large, multi-file, UI-heavy, or schema/API-touching change. Code-review agents (code-auditor, architecture-reviewer) should produce one as the opening artifact of any big review. NOT for small single-file diffs — those review faster as a raw diff via the critique skill.
+name: visual-review
+version: 0.0.2
+description: Use this skill to turn a PR, branch, commit, or working-tree diff into a visual recap — a single self-contained, theme-aware HTML page with before/after UI wireframes, schema/API contract summaries, a file footprint map, and annotated key-change diffs — so a reviewer sees the SHAPE of a change before reading raw lines. Invoke it when the user asks to critique a change, review a diff visually, run a code review or diff review, or says "recap this PR", "visual recap", "show me what this branch changed", "summarize this diff visually", "make this PR reviewable", "explain what changed", or before reviewing any large, multi-file, UI-heavy, or schema/API-touching change. Code-review agents (code-auditor, architecture-reviewer) should produce one as the opening artifact of any big review. NOT for small single-file diffs — those review faster as a raw diff via `bunx critique --web --open`.
 ---
 
-# Visual Recap
+# Visual Review
 
 A visual recap is the reverse of a plan: instead of describing a change you are
 about to make, it describes the change that was just made, at a higher altitude
@@ -13,7 +13,7 @@ moved, which contracts changed, where the risky lines live — before spending
 attention on literal lines. Diffs hide the shape of a change; the recap restores
 it.
 
-Heavily inspired by BuilderIO's `/visual-recap`, adapted for this stack: the
+Heavily inspired by BuilderIO's visual recap skill, adapted for this stack: the
 deliverable is a **single self-contained HTML file** built from
 `assets/template.html` — no hosted service, no external requests, works offline,
 theme-aware in light and dark. When the Artifact tool is available in the
@@ -26,9 +26,15 @@ Build a recap when a change is large, multi-file, UI-heavy, or touches schema,
 API contracts, permissions, or architecture — anywhere a reviewer benefits from
 a map before the territory. Skip it for small, single-file, or obvious diffs: a
 recap is review overhead, and a tiny change reviews faster as a plain diff
-(`Skill(bopen-tools:critique)` / `bunx critique --web --open`). The recap
-complements the raw diff, it never replaces it — recap first for shape, critique
-for lines.
+(`bunx critique --web --open`). The recap complements the raw diff, it never
+replaces it — recap first for shape, raw diff for lines.
+
+## Quick terminal alternative
+
+For a fast local look without generating a recap page, `bunx critique --web
+--open` renders the current diff in the browser with syntax highlighting and
+split view (requires Bun). Use `bunx critique main HEAD --web --open` for a
+PR-style branch comparison.
 
 ## Scope: recap the whole work unit
 
@@ -166,5 +172,5 @@ sentence handoff plus the link/path is the right chat footprint.
 After the reviewer reads the recap, feedback arrives in chat or PR comments.
 Revise the same recap file in place so it still covers the whole work unit plus
 the correction — don't replace a broad recap with a narrow recap of only the
-latest feedback. Pair with `Skill(bopen-tools:critique)` when the reviewer wants
+latest feedback. Pair with `bunx critique --web --open` when the reviewer wants
 to drop from the recap into the full raw diff.

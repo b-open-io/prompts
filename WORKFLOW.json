@@ -158,7 +158,7 @@
       "agent": "Idris",
       "model": "opus",
       "phase": "implemented",
-      "tools": ["critique", "confess"],
+      "tools": ["visual-review", "confess"],
       "description": "Schema design, query tuning, Postgres/Mongo/Redis/Convex",
       "code_ref": "agents/database.md"
     },
@@ -214,7 +214,7 @@
       "agent": "Steve",
       "model": "sonnet",
       "phase": "implemented",
-      "tools": ["critique", "confess"],
+      "tools": ["visual-review", "confess"],
       "description": "File consolidation, dedup, codebase organization",
       "code_ref": "agents/consolidator.md"
     },
@@ -368,7 +368,7 @@
       "id": "ann-shared-skills",
       "target": "martha",
       "type": "info",
-      "text": "All agents share: markdown-writer, agent-browser. Most share: critique, confess, simplify"
+      "text": "All agents share: markdown-writer, agent-browser. Most share: visual-review, confess, simplify"
     },
     {
       "id": "ann-missing",

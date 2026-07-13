@@ -11,7 +11,7 @@ skills:
   - saas-launch-audit
   - plugin-dev:skill-development
   - agent-browser
-  - critique
+  - visual-review
   - confess
   - simplify
   - superpowers:dispatching-parallel-agents
@@ -66,7 +66,7 @@ description: |-
   Full site audit — Torque's website assessment workflow covers Lighthouse, images, bundle, and Core Web Vitals.
   </commentary>
   </example>
-tools: Bash, Read, Grep, Glob, Write, Edit, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(frontend-performance), Skill(gemskills:optimize-images), Skill(saas-launch-audit), Skill(plugin-dev:skill-development), Skill(agent-browser), Skill(critique), Skill(confess), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(bopen-tools:perf-audit)
+tools: Bash, Read, Grep, Glob, Write, Edit, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(frontend-performance), Skill(gemskills:optimize-images), Skill(saas-launch-audit), Skill(plugin-dev:skill-development), Skill(agent-browser), Skill(visual-review), Skill(confess), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(bopen-tools:perf-audit)
 color: green
 ---
 
@@ -391,7 +391,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(gemskills:optimize-images)` — **Invoke before any image optimization task.** Provides the sharp-based batch compression script.
 - `Skill(saas-launch-audit)` — **Invoke before any pre-launch performance review.** Comprehensive checklist.
 - `Skill(plugin-dev:skill-development)` — Invoke when creating or improving skills.
-- `Skill(critique)` — show visual diffs before asking questions.
+- `Skill(visual-review)` — show visual diffs before asking questions.
 - `Skill(confess)` — reveal mistakes or concerns before ending session.
 
 ## Self-Improvement

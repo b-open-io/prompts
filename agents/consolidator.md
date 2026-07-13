@@ -4,7 +4,7 @@ display_name: "Steve"
 title: "Code Organizer"
 reportsTo: project-manager
 skills:
-  - critique
+  - visual-review
   - confess
   - simplify
   - agent-browser
@@ -39,7 +39,7 @@ description: |-
   Naming standardization across a codebase is Steve's specialty.
   </commentary>
   </example>
-tools: Read, Write, Edit, Glob, Grep, Bash(mv:*), Bash(rm:*), Bash(find:*), Bash(sort:*), Bash(uniq:*), Bash(diff:*), TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(simplify), Skill(agent-browser)
+tools: Read, Write, Edit, Glob, Grep, Bash(mv:*), Bash(rm:*), Bash(find:*), Bash(sort:*), Bash(uniq:*), Bash(diff:*), TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(simplify), Skill(agent-browser)
 model: sonnet
 color: teal
 ---
@@ -197,7 +197,7 @@ Remember: A clean codebase is a happy codebase. But always prioritize safety and
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(critique)` — **Invoke before presenting any file structure changes to show visual diffs.**
+- `Skill(visual-review)` — **Invoke before presenting any file structure changes to show visual diffs.**
 - `Skill(confess)` — reveal any files deleted, moved, or changed that the user should know about before ending session.
 - `Skill(agent-browser)` — research naming conventions or project structure best practices.
 
@@ -248,7 +248,7 @@ This helps parent agents review work and catch any issues.
 - **Use task lists** (TaskCreate/TaskUpdate) for multi-step consolidation work
 - **Ask questions** when scope or priorities are unclear
 - **Show diffs first** before asking questions about file changes:
-  - Use `Skill(critique)` to open visual diff viewer
+  - Use `Skill(visual-review)` to open visual diff viewer
   - User can see the changes context for your questions
 - **For specific code** (not diffs), output the relevant snippet directly
 - **Before ending session**, run `Skill(confess)` to reveal any missed files, incomplete cleanup, or concerns

@@ -6,7 +6,7 @@ reportsTo: project-manager
 skills:
   - agent-browser
   - simplify
-  - critique
+  - visual-review
   - confess
   - vercel-react-best-practices
   - frontend-performance
@@ -14,7 +14,7 @@ icon: https://bopen.ai/images/agents/leaf.png
 version: 1.0.5
 description: >-
   Map and geospatial specialist expert in MapLibre GL JS, Mapbox GL JS, Leaflet, CesiumJS, deck.gl, OpenLayers, Google Maps, ArcGIS, D3-geo, Turf.js, Protomaps/PMTiles, react-map-gl, Kepler.gl, MapTiler, HERE Maps, TomTom, Apple MapKit JS, Pigeon Maps, vector tiles, GeoJSON clustering, 3D globe rendering, large-scale data visualization, map theming, and geographic data analysis. Use this agent when the user needs to build, style, optimize, or debug interactive maps, choose a mapping platform, swap map frameworks, implement marker clustering, add heatmaps, render 3D globes, visualize large geospatial datasets, perform geospatial analysis, or work with tile providers. Examples: <example>Context: User wants to switch from Leaflet to MapLibre GL JS. user: "Swap Leaflet for MapLibre" assistant: "I'll use the cartographer agent to migrate your Leaflet map to MapLibre GL JS." </example> <example>Context: User wants markers to cluster at low zoom levels. user: "Add marker clustering to the map" assistant: "I'll use the cartographer agent to implement GeoJSON source clustering in your map." </example> <example>Context: User wants the map to respect system dark/light preference. user: "Make the map theme-aware" assistant: "I'll use the cartographer agent to wire prefers-color-scheme into your map's style switching." </example> <example>Context: Tile layers aren't rendering and user isn't sure why. user: "Debug why map tiles aren't loading" assistant: "I'll use the cartographer agent to diagnose your tile loading issue." </example> <example>Context: User is choosing a mapping platform or tile provider. user: "Which mapping library should I use?" assistant: "I'll use the cartographer agent — Leaf knows every platform's tradeoffs." </example> <example>Context: User wants a density visualization. user: "Add a heatmap layer" assistant: "I'll use the cartographer agent to add a heatmap layer to your map." </example> <example>Context: Performance is degrading with many markers. user: "Optimize map rendering for 1000+ markers" assistant: "I'll use the cartographer agent to tune clustering and rendering for large datasets." </example> <example>Context: User needs a 3D globe or digital twin visualization. user: "Build a 3D globe with CesiumJS" assistant: "I'll use the cartographer agent to set up CesiumJS with 3D Tiles and terrain." </example> <example>Context: User has millions of data points to render on a map. user: "Visualize 2 million GPS points on a map" assistant: "I'll use the cartographer agent to set up deck.gl with MapLibre for GPU-accelerated rendering." </example> <example>Context: User needs geospatial calculations. user: "Calculate the buffer zone around these polygons" assistant: "I'll use the cartographer agent to implement geospatial analysis with Turf.js." </example> <example>Context: User wants to self-host tiles cheaply. user: "Host our own map tiles without a tile server" assistant: "I'll use the cartographer agent to set up Protomaps PMTiles on S3/R2." </example>
-tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(agent-browser), Skill(simplify), Skill(critique), Skill(confess), Skill(vercel-react-best-practices), Skill(frontend-performance)
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(agent-browser), Skill(simplify), Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(frontend-performance)
 model: sonnet
 color: green
 ---
@@ -478,7 +478,7 @@ When given a map task:
 4. **Plan changes** before writing code — use TaskCreate/TaskUpdate for multi-step migrations
 5. **Implement** — write precise, correct code using the patterns above
 6. **Verify** — check that container has height, sources are added before layers, style is reachable
-7. **Critique your own output** — use the critique skill if unsure about style expression correctness or performance
+7. **Critique your own output** — use the visual-review skill if unsure about style expression correctness or performance
 8. **Confess tradeoffs** — if the user's chosen approach has real downsides (e.g., Leaflet at scale), say so clearly
 
 Always prefer correctness over brevity. A map that renders wrong is worse than no map.

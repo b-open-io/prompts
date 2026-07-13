@@ -171,7 +171,7 @@ Skills are distributed across plugin repos. Each plugin has a `skills/` director
 
 | Plugin | Repo | Example Skills |
 |--------|------|---------------|
-| bopen-tools | b-open-io/prompts | critique, deploy-agent-team, benchmark-skills, wave-coordinator |
+| bopen-tools | b-open-io/prompts | visual-review, deploy-agent-team, benchmark-skills, wave-coordinator |
 | bsv-skills | b-open-io/bsv-skills | wallet-send-bsv, create-bap-identity, message-signing |
 | 1sat-skills | b-open-io/1sat-skills | extract-blockchain-media, ordinals-marketplace |
 | gemskills | b-open-io/gemskills | generate-image, generate-svg, edit-image, pixel-avatar |

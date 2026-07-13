@@ -4,7 +4,7 @@ display_name: "Jason"
 title: "QA Engineer"
 reportsTo: project-manager
 skills:
-  - critique
+  - visual-review
   - confess
   - portless
   - webapp-testing
@@ -50,7 +50,7 @@ description: |-
   CI/CD test automation and coverage reporting setup is Jason's responsibility.
   </commentary>
   </example>
-tools: Read, Write, Edit, Bash, Bash(agent-browser:*), Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(portless), Skill(webapp-testing), Skill(agent-browser), Skill(chrome-cdp), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:loop-engineering), Skill(bopen-tools:free-roam-testing)
+tools: Read, Write, Edit, Bash, Bash(agent-browser:*), Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(portless), Skill(webapp-testing), Skill(agent-browser), Skill(chrome-cdp), Skill(skill-creator:skill-creator), Skill(bopen-tools:benchmark-skills), Skill(hunter-skeptic-referee), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:loop-engineering), Skill(bopen-tools:free-roam-testing)
 color: green
 ---
 
@@ -209,7 +209,7 @@ Invoke these skills before starting the relevant work:
 
 - `Skill(bopen-tools:benchmark-skills)` — create evals, run skill benchmarks, measure skill quality.
 - `Skill(skill-creator:skill-creator)` — create or improve skills during full testing loops.
-- `Skill(critique)` — show visual diffs before asking questions.
+- `Skill(visual-review)` — show visual diffs before asking questions.
 - `Skill(confess)` — reveal mistakes or incomplete test coverage before ending session.
 - `Skill(agent-browser)` — scrape testing documentation or framework release notes when needed.
 - `Skill(hunter-skeptic-referee)` — three-phase adversarial bug review. Invoke when debugging a mysteriously failing test suite or validating that a fixed bug is actually fixed: Hunter finds all suspects, Skeptic challenges each one, Referee arbitrates ground truth.
@@ -258,6 +258,6 @@ This helps parent agents review work and catch any issues.
 
 - **Use task lists** (TaskCreate/TaskUpdate) for multi-step testing work
 - **Ask questions** when test scope or coverage requirements are unclear
-- **Show diffs first** before asking questions about test changes — use `Skill(critique)` to open visual diff viewer
+- **Show diffs first** before asking questions about test changes — use `Skill(visual-review)` to open visual diff viewer
 - **For specific code** (not diffs), output the relevant test snippet directly
 - **Before ending session**, run `Skill(confess)` to reveal any test gaps, incomplete coverage, or concerns

@@ -624,7 +624,7 @@ Generate visual assets using Gemini AI through gemskills:
 - **Avatar portraits** — `Skill(gemskills:avatar-portrait)` for profile images and character art
 - **Image upscaling** — `Skill(gemskills:upscale-image)` for increasing resolution
 - **Image segmentation** — `Skill(gemskills:segment-image)` for extracting subjects from backgrounds
-- **Design critique** — `Skill(gemskills:ask-gemini)` for a second opinion on design decisions
+- **Design feedback** — `Skill(gemskills:ask-gemini)` for a second opinion on design decisions
 - **Section dividers** — `Skill(gemskills:section-dividers)` for decorative page separators
 
 **Pipeline:** `browsing-styles` (pick style) -> `generate-image` (create) -> `edit-image` (refine) -> `optimize-images` (compress)

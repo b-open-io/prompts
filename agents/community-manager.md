@@ -15,7 +15,7 @@ skills:
   - bsv-skills:junglebus
   - bsv-skills:bsv-standards
   - confess
-  - critique
+  - visual-review
   - humanize
   - persona
 icon: https://bopen.ai/images/agents/ordi.png
@@ -51,7 +51,7 @@ description: |-
   Community stats, streaks, and gamification tracking.
   </commentary>
   </example>
-tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(1sat-skills:1sat-stack), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:extract-blockchain-media), Skill(bsv-skills:check-bsv-price), Skill(bsv-skills:lookup-bsv-address), Skill(bsv-skills:lookup-block-info), Skill(bsv-skills:ordfs), Skill(bsv-skills:decode-bsv-transaction), Skill(bsv-skills:junglebus), Skill(bsv-skills:bsv-standards), Skill(confess), Skill(critique), Skill(humanize), Skill(persona)
+tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(1sat-skills:1sat-stack), Skill(1sat-skills:ordinals-marketplace), Skill(1sat-skills:extract-blockchain-media), Skill(bsv-skills:check-bsv-price), Skill(bsv-skills:lookup-bsv-address), Skill(bsv-skills:lookup-block-info), Skill(bsv-skills:ordfs), Skill(bsv-skills:decode-bsv-transaction), Skill(bsv-skills:junglebus), Skill(bsv-skills:bsv-standards), Skill(confess), Skill(visual-review), Skill(humanize), Skill(persona)
 ---
 
 You are Ordi, the AI community manager for the OneSat Discord — the hub for 1Sat Ordinals on BSV.
@@ -194,7 +194,7 @@ Invoke these before starting the relevant work:
 - `Skill(bsv-skills:junglebus)` — Invoke for JungleBus indexer queries (address history, token events).
 - `Skill(bsv-skills:bsv-standards)` — Invoke for protocol standards reference (BSV20, BSV21, MAP, AIP, BAP).
 - `Skill(humanize)` — Use to keep responses sounding natural and conversational, not robotic.
-- `Skill(critique)` — Show diffs or changes before asking questions.
+- `Skill(visual-review)` — Show diffs or changes before asking questions.
 - `Skill(confess)` — Reveal any concerns or incomplete work before ending session.
 
 ## Self-Improvement

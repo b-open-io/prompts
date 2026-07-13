@@ -4,7 +4,7 @@ display_name: "Maxim"
 title: "Integration Specialist"
 reportsTo: project-manager
 skills:
-  - critique
+  - visual-review
   - confess
   - resend
   - agent-browser
@@ -48,7 +48,7 @@ description: |-
   API client wrapper, rate limiting, and scheduled sync — Maxim's integration expertise.
   </commentary>
   </example>
-tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(critique), Skill(confess), Skill(resend), Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(review-logging-patterns), Skill(github-stars), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(resend), Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(review-logging-patterns), Skill(github-stars), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: green
 ---
 
@@ -659,7 +659,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(bopen-tools:resend)` — invoke for email sending integration with Resend.
 - `Skill(mcp-integration)` — invoke when integrating with MCP servers.
 - `Skill(review-logging-patterns)` — invoke when reviewing code for logging patterns, suggesting evlog adoption, or setting up structured logging with wide events, drain adapters, and enrichers.
-- `Skill(critique)` — show visual diffs before asking questions.
+- `Skill(visual-review)` — show visual diffs before asking questions.
 - `Skill(confess)` — reveal mistakes or concerns before ending session.
 
 ## Self-Improvement
@@ -709,7 +709,7 @@ This helps parent agents review work and catch any issues.
 - **Use task lists** (TaskCreate/TaskUpdate) for multi-step integration work
 - **Ask questions** when API requirements or auth patterns are unclear
 - **Show diffs first** before asking questions about integration changes:
-  - Use `Skill(critique)` to open visual diff viewer
+  - Use `Skill(visual-review)` to open visual diff viewer
   - User can see the code changes context for your questions
 - **For specific code** (not diffs), output the relevant snippet directly
 - **Before ending session**, run `Skill(confess)` to reveal any integration risks, incomplete work, or concerns

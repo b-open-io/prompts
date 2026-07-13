@@ -101,7 +101,6 @@ bunx skills add b-open-io/bopen-tools --skill codex-agent-setup
 bunx skills add b-open-io/bopen-tools --skill confess
 bunx skills add b-open-io/bopen-tools --skill coordinator
 bunx skills add b-open-io/bopen-tools --skill create-next-project
-bunx skills add b-open-io/bopen-tools --skill critique
 bunx skills add b-open-io/bopen-tools --skill deploy-agent-team
 bunx skills add b-open-io/bopen-tools --skill devops-scripts
 bunx skills add b-open-io/bopen-tools --skill front-desk
@@ -132,6 +131,7 @@ bunx skills add b-open-io/bopen-tools --skill skill-publish
 bunx skills add b-open-io/bopen-tools --skill statusline-setup
 bunx skills add b-open-io/bopen-tools --skill threejs-r3f
 bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
+bunx skills add b-open-io/bopen-tools --skill visual-review
 bunx skills add b-open-io/bopen-tools --skill voice-clone
 bunx skills add b-open-io/bopen-tools --skill wait-for-ci
 bunx skills add b-open-io/bopen-tools --skill wave-coordinator
@@ -226,7 +226,6 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `benchmark-skills` | Write evals for skills and measure impact vs baseline |
 | `code-audit-scripts` | Deterministic security and quality scans (secrets, debug artifacts) |
 | `confess` | Analyze and document code issues and technical debt |
-| `critique` | Show diffs and provide constructive feedback on code changes |
 | `create-next-project` | Scaffold a new Next.js app with Bun and Biome |
 | `frontend-performance` | Optimize Next.js performance using Lighthouse and bundle analysis |
 | `github-stars` | Add GitHub star counts and social proof widgets |
@@ -236,6 +235,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `perf-audit` | Run local performance audits without network calls |
 | `shaders` | Custom shaders for Three.js and WebGL |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |
+| `visual-review` | Turn a PR, branch, or diff into a visual HTML review page |
 
 ### Agent & Plugin Management
 | Skill | Description |

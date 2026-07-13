@@ -117,7 +117,7 @@ skills:
   - npm-publish
   - confess
   - humanize
-  - critique
+  - visual-review
   - runtime-context
   - remind
   - generative-ui

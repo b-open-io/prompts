@@ -10,7 +10,7 @@ skills:
   - bopen-tools:confess
   - bopen-tools:remind
   - bopen-tools:runtime-context
-  - bopen-tools:critique
+  - bopen-tools:visual-review
   - superpowers:dispatching-parallel-agents
   - superpowers:writing-plans
 icon: https://bopen.ai/images/agents/chief.png
@@ -54,7 +54,7 @@ description: |-
   In Paperclip mode, the CEO follows the heartbeat protocol via Skill(paperclip).
   </commentary>
   </example>
-tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(paperclip), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:front-desk), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:critique), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:writing-plans)
+tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(paperclip), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:front-desk), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:visual-review), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:writing-plans)
 color: yellow
 ---
 
@@ -295,7 +295,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(bopen-tools:runtime-context)` -- invoke to detect whether you're in Paperclip mode or Claude Code mode.
 - `Skill(bopen-tools:confess)` -- invoke before completing any task for self-audit.
 - `Skill(bopen-tools:remind)` -- recall context from past conversations.
-- `Skill(bopen-tools:critique)` -- review plans or decisions before presenting.
+- `Skill(bopen-tools:visual-review)` -- review plans or decisions before presenting.
 - `Skill(superpowers:dispatching-parallel-agents)` -- invoke when delegating 3+ independent work streams.
 - `Skill(superpowers:writing-plans)` -- invoke when creating a strategic plan before execution.
 

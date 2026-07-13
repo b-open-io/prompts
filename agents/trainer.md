@@ -13,7 +13,7 @@ skills:
   - plugin-dev:agent-development
   - skill-creator:skill-creator
   - agent-browser
-  - critique
+  - visual-review
   - confess
 icon: https://bopen.ai/images/agents/satoshi.png
 version: 1.0.6
@@ -55,7 +55,7 @@ description: |-
   Gap analysis and new skill creation are in Satoshi's scope.
   </commentary>
   </example>
-tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:benchmark-skills), Skill(bopen-tools:reinforce-skills), Skill(bopen-tools:ezkl), Skill(plugin-dev:skill-development), Skill(plugin-dev:agent-development), Skill(skill-creator:skill-creator), Skill(agent-browser), Skill(critique), Skill(confess)
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:benchmark-skills), Skill(bopen-tools:reinforce-skills), Skill(bopen-tools:ezkl), Skill(plugin-dev:skill-development), Skill(plugin-dev:agent-development), Skill(skill-creator:skill-creator), Skill(agent-browser), Skill(visual-review), Skill(confess)
 model: sonnet
 color: indigo
 ---
@@ -138,7 +138,7 @@ When a skill needs updating:
 After updating:
 - Re-read the skill to confirm accuracy
 - If the skill affects an agent with benchmarks, run them
-- Use `Skill(critique)` to pressure-test the updated content before finalizing
+- Use `Skill(visual-review)` to pressure-test the updated content before finalizing
 
 ## Benchmark Workflow
 
