@@ -1,7 +1,7 @@
 ---
 name: create-next-project
 description: This skill should be used when the user asks to "create a new project", "scaffold a Next.js app", "initialize a new app", "start a new project", "set up a new Next.js project", or mentions "create-next-project". Provides a guided, opinionated full-stack Next.js project initialization with Biome, Tailwind v4, shadcn/ui, better-auth, and Vercel deployment. Uses agent teams for parallel execution.
-version: 2.0.1
+version: 2.0.2
 ---
 
 # Create Next.js Project
@@ -46,24 +46,18 @@ This step gets the bare project on disk and into version control.
 
 If the target directory already has files (e.g., a `.claude/` directory), move them to `/tmp` first, scaffold, then move them back.
 
+`create-next-app` now has a `--biome` flag (its interactive prompt asks "Which linter would you like to use? ESLint / Biome / None") -- pass it directly instead of scaffolding with ESLint and removing it afterward:
+
 ```bash
 bunx create-next-app@latest <project-name> \
   --typescript --tailwind --app --src-dir \
-  --import-alias "@/*" --use-bun --turbopack --yes
+  --import-alias "@/*" --use-bun --turbopack --biome --yes
 cd <project-name>
 ```
 
-### 1b. Replace ESLint with Biome
+### 1b. Align biome.json with house config
 
-`create-next-app` does NOT have a `--biome` flag. It installs ESLint by default.
-
-```bash
-bun remove eslint eslint-config-next
-rm -f eslint.config.mjs
-bun add -d @biomejs/biome
-```
-
-Create `biome.json` -- see `references/stack-defaults.md` for the exact config. Key Biome 2.x rules:
+The generated `biome.json` is a reasonable default, but overwrite it with the house config -- see `references/stack-defaults.md` for the exact config. Key Biome 2.x rules:
 - `organizeImports` goes under `assist.actions.source` (not the old top-level key)
 - There is NO `files.ignore`. Use negation patterns in `files.includes` (e.g., `"!src/components/ui"`)
 - Folder ignores do NOT use trailing `/**` (since Biome 2.2.0). Just `"!foldername"`
@@ -481,6 +475,8 @@ After first deploy completes:
 - Verify both dev and production deployments exist in the Convex dashboard
 - Test auth flow if configured
 - Confirm theme toggle works
+- Run `Skill(react-doctor)` (`npx -y react-doctor@latest . --verbose --diff`) and fix everything it flags -- a brand-new project should score 100, not just "pass"
+- Run `bun run lint` one final time -- Biome must be 100% clean, not just building
 
 ---
 
@@ -628,8 +624,9 @@ These stubs get overwritten on first `bunx convex dev`.
 ## Key Principles
 
 - **Bun everywhere** -- never npm, npx, or yarn. Use `bun`, `bunx` for everything
-- **Manual Biome setup** -- `create-next-app` does NOT have a `--biome` flag. Remove ESLint, install Biome, create `biome.json` manually
+- **Scaffold with `--biome` directly** -- `create-next-app` has a `--biome` flag now; pass it at scaffold time instead of removing ESLint afterward. Still overwrite the generated `biome.json` with the house config
 - **Biome 2.x config** -- `assist.actions.source.organizeImports`, negation patterns in `files.includes` (no `files.ignore`), `css.parser.tailwindDirectives: true`
+- **react-doctor to 100** -- run `Skill(react-doctor)` before calling the project done. A new project has no excuse for anything less than a 100 score
 - **No non-null assertions** -- Biome flags `process.env.FOO!`. Always validate env vars and throw informatively:
   ```typescript
   // WRONG

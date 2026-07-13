@@ -4,15 +4,7 @@ Exact configurations and setup patterns for the core stack.
 
 ## Biome Configuration
 
-`create-next-app` does NOT have a `--biome` flag. It installs ESLint by default. After scaffolding, manually remove ESLint and replace with Biome:
-
-```bash
-bun remove eslint eslint-config-next
-rm -f eslint.config.mjs
-bun add -d @biomejs/biome
-```
-
-Create `biome.json` with the Biome 2.x config:
+`create-next-app` now has a `--biome` flag -- pass `--biome` at scaffold time (see Step 1a in SKILL.md) instead of scaffolding with ESLint and removing it afterward. The generated `biome.json` is a reasonable starting point; overwrite it with the house Biome 2.x config below:
 
 ```json
 {

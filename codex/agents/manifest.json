@@ -248,10 +248,10 @@
     {
       "source_name": "nextjs",
       "source_path": "agents/nextjs.md",
-      "source_version": "1.1.4",
-      "source_hash": "sha256:f03c2fc2cdea3bb8cfac07bc7df8616bb14ac9e07dd16d668be2ac829bff4002",
+      "source_version": "1.1.5",
+      "source_hash": "sha256:08c693bd1333310dcb74091454c9543ca64eca3e6b9ae61311f9a8505c8ad25f",
       "generated_file": "bopen-nextjs.toml",
-      "generated_hash": "sha256:f795c428ffc490fb44f91c56db4e7fa9c9208f74cdafee0a1b5c883da3e50096",
+      "generated_hash": "sha256:c44743ad92986cae00142860ade0fc4f1c6de40e8d55f934004cbe5b2bdbe004",
       "agent_name": "bopen_nextjs",
       "curated": false,
       "default_install": false
