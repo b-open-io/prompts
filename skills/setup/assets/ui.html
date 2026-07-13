@@ -295,6 +295,22 @@
 
   .row-obtain a { color: var(--primary); }
 
+  .ext-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.7rem;
+    margin-left: 0.3rem;
+  }
+
+  .ext-link:hover { color: var(--fg); }
+
+  .skill-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .skill-link:hover { text-decoration: underline; }
+
   .row-actions {
     flex: 0 0 auto;
     display: flex;
@@ -718,6 +734,7 @@
       var codexBit = p.installedCodex !== null ? "codex v" + escapeHtml(p.installedCodex) : "codex: not installed";
       var mktBit = p.marketplaceVersion !== null ? "marketplace v" + escapeHtml(p.marketplaceVersion) : "marketplace: unavailable";
       html += '<div class="status-line"><strong>' + escapeHtml(p.name) + "</strong>" +
+        pluginLinkHtml(p.name) +
         '<span class="row-detail">' + claudeBit + " &middot; " + codexBit + " &middot; " + mktBit + "</span></div>";
     });
     html += '<p class="note">Generated at ' + escapeHtml(state.generatedAt) + " on " + escapeHtml(state.platform) + ".</p>";
@@ -759,7 +776,8 @@
 
   function renderPluginSectionHtml(plugin) {
     var sel = selections[plugin.name];
-    var html = '<section class="check-section"><span class="eyebrow">[ PLUGIN ]</span><div class="card">';
+    var html = '<section class="check-section"><span class="eyebrow">[ PLUGIN ]</span>' +
+      pluginLinkHtml(plugin.name) + '<div class="card">';
 
     [["claude", plugin.installedClaude], ["codex", plugin.installedCodex]].forEach(function (pair) {
       var runtime = pair[0], version = pair[1];
@@ -802,13 +820,14 @@
       var actionAttr = inert ? "" : ' data-action="toggle-check" data-plugin="' + escapeHtml(plugin.name) + '" data-id="' + escapeHtml(c.id) + '"';
       html += '<div class="row">';
       html += '<span class="' + glyphClass + '"' + actionAttr + '>' + glyphChar + "</span>";
-      html += '<div class="row-main"><div class="row-name">' + escapeHtml(c.name) + "</div>";
+      var nameHtml = kind === "setup-script" ? skillNameHtml(plugin.name, c.name) : escapeHtml(c.name);
+      html += '<div class="row-main"><div class="row-name">' + nameHtml + "</div>";
       if (c.detail) html += '<div class="row-detail">' + escapeHtml(c.detail) + "</div>";
       if (kind === "env" && c.obtain) {
         html += '<div class="row-detail row-obtain">obtain: ' + linkifyHtml(c.obtain) + "</div>";
       }
       if (c.usedBy && c.usedBy.length) {
-        html += '<div class="row-usedby">used by: ' + escapeHtml(c.usedBy.join(", ")) + "</div>";
+        html += '<div class="row-usedby">used by: ' + usedByHtml(plugin.name, c.usedBy) + "</div>";
       }
       html += "</div>";
       html += '<div class="row-actions">';
@@ -846,6 +865,38 @@
     var url = urlMatch[1];
     var after = escapeHtml(text.slice(urlMatch.index + url.length));
     return before + '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(url) + "</a>" + after;
+  }
+
+  /** Skill names printed from manifest data are kebab-case slugs; prose like
+   *  "many scripts" must stay plain text rather than link to a bogus URL. */
+  var SKILL_SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+  function pluginBopenUrl(name) {
+    return "https://bopen.ai/plugins/" + name;
+  }
+
+  function skillBopenUrl(pluginName, skillName) {
+    return "https://bopen.ai/skills/" + pluginName + "/" + skillName;
+  }
+
+  function externalLinkHtml(url, label) {
+    return '<a class="ext-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" aria-label="' +
+      escapeHtml(label) + '">↗</a>';
+  }
+
+  function pluginLinkHtml(name) {
+    return externalLinkHtml(pluginBopenUrl(name), "Open " + name + " on bopen.ai");
+  }
+
+  function skillNameHtml(pluginName, skillName) {
+    var escaped = escapeHtml(skillName);
+    if (!SKILL_SLUG_RE.test(skillName)) return escaped;
+    return '<a class="skill-link" href="' + escapeHtml(skillBopenUrl(pluginName, skillName)) +
+      '" target="_blank" rel="noopener noreferrer">' + escaped + "</a>";
+  }
+
+  function usedByHtml(pluginName, usedBy) {
+    return usedBy.map(function (name) { return skillNameHtml(pluginName, name); }).join(", ");
   }
 
   function copyButtonHtml(text) {
