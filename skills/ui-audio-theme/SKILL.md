@@ -1,5 +1,5 @@
 ---
-version: 1.0.3
+version: 1.0.4
 name: ui-audio-theme
 description: Generate cohesive UI audio themes with subtle, minimal sound effects for applications. This skill should be used when users want to create a set of coordinated interface sounds for wallet apps, dashboards, or web applications - generating sounds mapped to UI interaction constants like button clicks, notifications, and navigation transitions using ElevenLabs API.
 location: user
@@ -74,6 +74,35 @@ python scripts/generate_theme.py \
   --vibe "crypto-modern" \
   --output-dir "./audio-theme"
 ```
+
+### Step 5: Audition and Refine (Interactive Picker)
+
+Taste can't be automated — after generating a baseline, let the user audition
+each slot and iterate. Two strategies; pick by runtime:
+
+**A. Local picker server (default — works in Claude Code AND Codex):**
+
+```bash
+python scripts/sound_picker.py --vibe pixel-minimal --output-dir ./audio-theme
+# → http://127.0.0.1:7777
+```
+
+Serves a local page with, per sound slot: a play button for the current file,
+an editable generation prompt (pre-filled from the vibe), "Generate next" for
+unlimited fresh candidates via ElevenLabs (auto-normalized), and per-candidate
+"Accept" buttons that write the winner into the theme directory and record the
+winning prompt in `theme.json`. Run it in the background, hand the user the
+URL, and continue once they've picked. No CSP constraints because it's
+localhost.
+
+**B. Artifact audition board (Claude Code only, when a hosted page is
+preferred):** hosted Artifacts enforce a strict CSP — no external requests, so
+live generation inside the artifact is impossible. Instead: pre-generate 2-4
+candidates per slot with `--regenerate`, embed each mp3 as a base64 `data:` URI
+in an HTML page with play buttons and the prompt shown per candidate, publish
+via the Artifact tool, and let the user reply with picks and prompt tweaks for
+the next batch round. Iterative rounds instead of infinite Next; keep
+candidate counts small — base64 audio inflates page size ~33%.
 
 ## Loudness Normalization
 

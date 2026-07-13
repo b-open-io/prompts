@@ -63,7 +63,7 @@
     "pixel-minimal": {
       "name": "Pixel Minimal",
       "description": "Quiet 8-bit sounds for pixel-art interfaces that want charm without arcade noise",
-      "prompt": "Minimal 8-bit interface sounds, single soft chiptune square-wave blip, muted retro video game console UI, gentle pixel tone, quiet nostalgic micro-feedback, short and understated, no harsh arcade noise",
+      "prompt": "Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb",
       "characteristics": {
         "tone": "bright but muted",
         "energy": "low",
