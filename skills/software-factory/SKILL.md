@@ -30,6 +30,8 @@ Every production loop is assembled from these five. Claude Code ships all of the
 
 The maker is too generous grading its own homework, so block 3 (a separate, often stronger checker) plus block 5 (an objective gate) is *most of the quality*. Make the maker fast and cheap; make the checker slow and strict.
 
+**Watching the factory floor:** [`looptop`](https://www.npmjs.com/package/looptop) (`npm install -g looptop`) is htop for these loops — a live terminal monitor plus a macOS menu-bar app showing every running loop's status. Optional, and worth installing the day more than one loop runs unattended; the setup installer checks for it.
+
 ## Two loop types — coordinated through tickets
 
 Most real work needs **both**, running in parallel, with the ticketing system (the State block) as the seam between them. This is a producer/consumer architecture: discovery produces work, execution consumes it.

@@ -72,6 +72,16 @@
         "any": "pipx install semgrep",
         "darwin": "brew install semgrep"
       }
+    },
+    {
+      "name": "looptop",
+      "usedBy": [
+        "software-factory"
+      ],
+      "check": "looptop --version",
+      "install": {
+        "any": "npm install -g looptop"
+      }
     }
   ],
   "env": [
