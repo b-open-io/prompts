@@ -1,7 +1,13 @@
 ---
 name: agent-onboarding
 version: 1.1.1
-description: Complete end-to-end checklist for adding a new agent to the bOpen team. Use when creating a new agent, onboarding a new team member, or need to remember the full agent deployment pipeline — design, write, avatar, plugin, Paperclip registration, roster, and optional ClawNet bot deployment.
+description: >-
+  This skill should be used when the user asks to "create a new agent",
+  "onboard a new agent", "add an agent to the team", "deploy a new bot",
+  "register an agent with Paperclip", or "add this agent to the roster".
+  Provides the complete end-to-end checklist for bringing a new agent onto the
+  bOpen team — design, write, avatar, plugin, Paperclip registration, roster,
+  and optional ClawNet bot deployment.
 ---
 
 # Agent Onboarding

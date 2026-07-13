@@ -2,10 +2,11 @@
 name: threejs-r3f
 version: 1.0.1
 description: >-
-  This skill should be used when building Three.js or React Three Fiber (R3F) projects,
-  creating 3D scenes, animating meshes with useFrame, loading GLTF/GLB models, setting up physics with @react-three/rapier, using WebGPU with R3F,
-  optimizing 3D performance, scaffolding Vite+R3F projects, or exporting R3F components.
-  Covers scene setup, Drei helpers, asset pipeline, responsive canvas, and performance budgets.
+  This skill should be used when the user asks to "build a Three.js scene",
+  "set up React Three Fiber", "animate a mesh with useFrame",
+  "load a GLTF or GLB model", or "add physics with react-three/rapier". Covers
+  scene setup, Drei helpers, the asset pipeline, responsive canvas, and
+  performance budgets for Three.js and React Three Fiber projects.
 metadata:
   tags:
     - three.js

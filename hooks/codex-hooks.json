@@ -1,6 +1,6 @@
 {
   "description": "Codex hooks for session context, browser-intent guidance, destructive/publish protection, apply_patch path policy, and HammerTime",
-  "_comment": "prompt-router.sh and roster-guard.sh are Claude-only and intentionally not wired here — they match on Claude-specific tool names (\"Task\") and subagent_type values (\"general-purpose\", \"Explore\") that Codex does not use.",
+  "_comment": "prompt-router.sh, roster-guard.sh, and skill-activity.sh are Claude-only and intentionally not wired here — they match on Claude-specific tool names (\"Task\", \"Skill\") and subagent_type values (\"general-purpose\", \"Explore\") that Codex does not use.",
   "hooks": {
     "SessionStart": [
       {

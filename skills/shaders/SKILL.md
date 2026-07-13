@@ -2,11 +2,12 @@
 name: shaders
 version: 1.0.0
 description: >-
-  This skill should be used when writing custom shaders for Three.js, creating visual
-  effects with GLSL or TSL (Three Shader Language) for WebGL and WebGPU, debugging shader issues, building
-  post-processing pipelines, implementing noise functions, procedural textures, or
-  custom materials. Covers shader workflow, TSL node system, GLSL patterns, debugging,
-  performance optimization, and post-processing with pmndrs/postprocessing.
+  This skill should be used when the user asks to
+  "write a custom Three.js shader", "create a GLSL shader effect",
+  "build a TSL shader", "debug a WebGL or WebGPU shader issue", or
+  "build a post-processing pipeline". Covers shader workflow, the TSL node
+  system, GLSL patterns, debugging, performance optimization, and
+  post-processing with pmndrs/postprocessing.
 metadata:
   tags:
     - shaders

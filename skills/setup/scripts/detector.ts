@@ -31,6 +31,14 @@ export type HookState = {
   runtimes: string[];
 };
 
+export type SkillActivityState = {
+  lastInvokedAt: number;
+  sessionId: string;
+  count24h: number;
+};
+
+export type SkillActivityMap = Record<string, SkillActivityState>;
+
 export type PluginState = {
   name: string;
   installedClaude: string | null;
@@ -40,6 +48,7 @@ export type PluginState = {
   checks: CheckState[];
   hooks: HookState[];
   hooksConfigPath: string | null;
+  skillActivity?: SkillActivityMap;
 };
 
 export type HarnessState = {
@@ -67,6 +76,71 @@ const MARKETPLACE_TIMEOUT_MS = 10_000;
 
 const CLAUDE_PLUGIN_CACHE = join(homedir(), ".claude", "plugins", "cache", "b-open-io");
 const CODEX_PLUGIN_CACHE = join(homedir(), ".codex", "plugins", "cache", "b-open-io");
+const DEFAULT_SKILL_ACTIVITY_FILE = join(homedir(), ".claude", "bopen-tools", "skill-activity.jsonl");
+const DAY_SECONDS = 24 * 60 * 60;
+
+export function readSkillActivity(opts?: {
+  env?: Record<string, string | undefined>;
+  nowSeconds?: number;
+}): SkillActivityMap {
+  const env = opts?.env ?? process.env;
+  const activityPath = env.BOPEN_SKILL_ACTIVITY_FILE || DEFAULT_SKILL_ACTIVITY_FILE;
+  const nowSeconds = opts?.nowSeconds ?? Math.floor(Date.now() / 1000);
+  const cutoff = nowSeconds - DAY_SECONDS;
+  const activity: SkillActivityMap = {};
+
+  let contents: string;
+  try {
+    contents = readFileSync(activityPath, "utf8");
+  } catch {
+    return activity;
+  }
+
+  for (const line of contents.split("\n")) {
+    if (!line.trim()) continue;
+
+    let record: unknown;
+    try {
+      record = JSON.parse(line);
+    } catch {
+      continue;
+    }
+
+    if (!record || typeof record !== "object") continue;
+    const { ts, session_id: sessionId, skill } = record as {
+      ts?: unknown;
+      session_id?: unknown;
+      skill?: unknown;
+    };
+    if (!Number.isFinite(ts) || (ts as number) < 0 || typeof sessionId !== "string" || typeof skill !== "string" || skill.length === 0) {
+      continue;
+    }
+
+    const timestamp = ts as number;
+    const existing = activity[skill];
+    if (!existing) {
+      activity[skill] = {
+        lastInvokedAt: timestamp,
+        sessionId,
+        count24h: timestamp >= cutoff && timestamp <= nowSeconds ? 1 : 0,
+      };
+      continue;
+    }
+
+    if (timestamp >= existing.lastInvokedAt) {
+      existing.lastInvokedAt = timestamp;
+      existing.sessionId = sessionId;
+    }
+    if (timestamp >= cutoff && timestamp <= nowSeconds) existing.count24h += 1;
+  }
+
+  return activity;
+}
+
+function filterSkillActivityForPlugin(activity: SkillActivityMap, pluginName: string): SkillActivityMap {
+  const prefix = `${pluginName}:`;
+  return Object.fromEntries(Object.entries(activity).filter(([skillId]) => skillId.startsWith(prefix)));
+}
 
 function expandHome(pattern: string): string {
   if (pattern === "~") return homedir();
@@ -451,8 +525,11 @@ export async function detectHarness(opts: {
   runtimeArg: Runtime;
   marketplaceUrl?: string;
   marketplaceCache?: MarketplaceSnapshot;
+  env?: Record<string, string | undefined>;
+  nowSeconds?: number;
 }): Promise<HarnessState> {
   const platform = process.platform as HarnessState["platform"];
+  const skillActivity = readSkillActivity({ env: opts.env, nowSeconds: opts.nowSeconds });
 
   const [claudePlugins, codexPlugins, marketplace] = await Promise.all([
     listLatestPluginVersions(CLAUDE_PLUGIN_CACHE),
@@ -493,6 +570,7 @@ export async function detectHarness(opts: {
         checks,
         hooks,
         hooksConfigPath,
+        skillActivity: filterSkillActivityForPlugin(skillActivity, name),
       };
     })
   );

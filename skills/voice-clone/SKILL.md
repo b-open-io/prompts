@@ -1,7 +1,14 @@
 ---
 name: voice-clone
 version: 1.0.1
-description: Clone real or fictional voices using ElevenLabs Instant Voice Cloning (IVC). This skill chains together the full pipeline — finding reference audio, preparing samples, uploading to ElevenLabs IVC, testing the clone with text-to-speech, and tuning voice settings. Use this skill whenever the user wants to clone a voice, create a custom voice from audio samples, replicate a famous voice style, or build a voice for a character. Covers celebrity impressions, fictional characters, branded voices, and personal voice clones.
+description: >-
+  This skill should be used when the user asks to "clone a voice",
+  "create a custom voice from audio samples",
+  "replicate a celebrity voice style", or
+  "build a voice for a fictional character". Chains the full ElevenLabs
+  Instant Voice Cloning (IVC) pipeline — finding reference audio, preparing
+  samples, uploading to IVC, testing the clone with text-to-speech, and tuning
+  voice settings.
 ---
 
 # Voice Clone

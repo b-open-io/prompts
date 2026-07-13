@@ -1,6 +1,13 @@
 ---
 name: chrome-cdp
-description: Interact with local Chrome browser session (only on explicit user approval after being asked to inspect, debug, or interact with a page open in Chrome). Connects via Chrome DevTools Protocol — no extension, no Puppeteer, handles 100+ tabs.
+description: >-
+  This skill should be used when the user asks to
+  "inspect this page in Chrome", "debug what's happening in my browser",
+  "read the browser console logs", "interact with the page open in Chrome", or
+  "attach to my live Chrome session". Interacts with the user's local Chrome
+  browser session via Chrome DevTools Protocol — no extension, no Puppeteer —
+  but only after explicit user approval to inspect, debug, or interact with an
+  open tab.
 ---
 
 # Chrome CDP

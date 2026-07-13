@@ -66,3 +66,41 @@ when no roster agent fits. Practical notes that recur:
 titles matching `meta.phases`, worktree isolation only when agents mutate
 files in parallel, and read `<transcriptDir>/journal.jsonl` before diagnosing
 an empty result.
+
+## CLI worker lanes inside a native workflow (codex/grok)
+
+The Workflow harness runs Claude agents only — but a workflow agent has Bash,
+so external CLI lanes slot in as wrapped stages. The economics: the wrapper
+should be the cheapest tier that can supervise (`model: 'haiku'` or
+`effort: 'low'`); the code volume bills to the external lane, and Claude spend
+concentrates in the verify/synthesis stages where judgment lives.
+
+Wrapper recipe (the agent prompt, not the script):
+1. Write the unit's SPEC to the target repo (untracked), exactly per the
+   coordinator dispatch protocol — environment clause, FINAL REPORT demand,
+   file ownership.
+2. Launch with `run_in_background: true`:
+   `codex exec --sandbox workspace-write --cd <repo> "<one-liner; details in SPEC>"`
+   (grok: `grok --prompt-file <f> -m "${BOPEN_WORKER_MODEL:-grok-4.5}"
+   --permission-mode acceptEdits --sandbox workspace --cwd <repo>`).
+3. Poll the output file every 30-60s: on error signatures (sandbox
+   PermissionDenied, auth failures, "environment blocker") kill and report
+   immediately instead of waiting out the timeout; otherwise relay the final
+   report as your agent text.
+4. Never let the CLI worker run git mutations; the main seat owns version
+   control at the barrier.
+
+Real-time caveat: the workflow progress UI shows script `log()` lines, not a
+subagent's inner tool output — CLI stdout cannot stream to /workflows. Emit
+`log()` at stage boundaries from the script, and have wrappers report
+checkpoint summaries, not raw logs.
+
+Script-side shape:
+```js
+const impl = await agent(WRAP_PROMPT(unit), {
+  label: `codex:${unit.key}`, phase: 'Implement', model: 'haiku',
+})
+const verdict = await agent(VERIFY_PROMPT(unit, impl), {
+  label: `verify:${unit.key}`, phase: 'Verify', schema: VERDICT,  // full-tier judgment
+})
+```

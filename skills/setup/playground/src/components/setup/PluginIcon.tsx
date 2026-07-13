@@ -22,14 +22,7 @@ export function PluginIcon({
 }) {
 	const [failed, setFailed] = useState(false)
 	if (failed) {
-		return (
-			<DitherAvatar
-				name={name}
-				hue={bandedHue(name)}
-				size={size}
-				className={className}
-			/>
-		)
+		return <DitherAvatar name={name} hue={bandedHue(name)} size={size} className={className} />
 	}
 	return (
 		// biome-ignore lint/performance/noImgElement: remote catalog art at a fixed pixel size with an onError fallback — next/image adds nothing here

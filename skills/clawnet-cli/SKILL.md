@@ -1,7 +1,13 @@
 ---
 name: clawnet-cli
 version: 0.0.33
-description: Reference for ClawNet CLI internals, architecture, and recent changes. Use this skill when working on clawnet, clawnet-paperclip-plugin, or any code that interacts with the ClawNet registry, vault, ORDFS content fetching, or agent/organization publishing.
+description: >-
+  This skill should be used when the user asks to "work on the ClawNet CLI",
+  "debug clawnet-paperclip-plugin", "explain ClawNet vault architecture",
+  "fetch content from ORDFS", or
+  "publish an agent or organization to the ClawNet registry". Reference for
+  ClawNet CLI internals, architecture, and recent changes to the registry,
+  vault, and publishing flow.
 ---
 
 # ClawNet CLI

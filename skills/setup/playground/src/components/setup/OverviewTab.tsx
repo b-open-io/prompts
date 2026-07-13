@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { CopyButton } from "@/components/setup/CopyButton"
 import { ManifestInfo } from "@/components/setup/ManifestInfo"
 import { PluginIcon } from "@/components/setup/PluginIcon"
+import { isRecentSkillActivity, SkillActivityBadge } from "@/components/setup/SkillActivityBadge"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { pluginUpdateCommand } from "@/lib/links"
@@ -390,6 +391,9 @@ export function OverviewTab({
 					<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
 						{filteredPlugins.map((plugin) => {
 							const status = pluginState(plugin)
+							const recentActivity = Object.values(plugin.skillActivity ?? {})
+								.filter((activity) => isRecentSkillActivity(activity))
+								.sort((a, b) => b.lastInvokedAt - a.lastInvokedAt)[0]
 							return (
 								<Card
 									key={plugin.name}
@@ -407,7 +411,12 @@ export function OverviewTab({
 												className="shrink-0 rounded-md bg-muted"
 											/>
 											<div className="min-w-0 flex-1 pr-5">
-												<div className="truncate text-[0.82rem] font-semibold">{plugin.name}</div>
+												<div className="flex items-center gap-1.5">
+													<div className="truncate text-[0.82rem] font-semibold">{plugin.name}</div>
+													{recentActivity && (
+														<SkillActivityBadge activity={recentActivity} compact />
+													)}
+												</div>
 												<div className="mt-1 flex flex-wrap gap-1">
 													<RuntimeChip runtime="claude" version={plugin.installedClaude} />
 													<RuntimeChip runtime="codex" version={plugin.installedCodex} />

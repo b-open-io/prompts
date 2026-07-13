@@ -1,7 +1,13 @@
 ---
 name: benchmark-skills
 version: 2.0.1
-description: "Use this skill when creating evals or assertions for a skill, running the skill benchmark harness, measuring skill effectiveness vs baseline, or writing evals.json files alongside skills. Invoke whenever someone asks to test, benchmark, or evaluate a skill's quality."
+description: >-
+  This skill should be used when the user asks to "write evals for a skill",
+  "benchmark this skill", "test skill effectiveness",
+  "run the skill benchmark harness", "measure skill quality vs baseline", or
+  "add an evals.json alongside a skill". Invoke whenever someone wants to
+  test, benchmark, or evaluate whether a skill actually helps compared to no
+  skill at all.
 ---
 
 # Benchmark Skills

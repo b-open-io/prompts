@@ -3,6 +3,7 @@ import { ExternalLink, Linkify } from "@/components/setup/ExternalLink"
 import { GlyphToggle } from "@/components/setup/GlyphToggle"
 import { HookToggle } from "@/components/setup/HookToggle"
 import { ManifestInfo } from "@/components/setup/ManifestInfo"
+import { SkillActivityBadge } from "@/components/setup/SkillActivityBadge"
 import { Card } from "@/components/ui/card"
 import { isSkillSlug, pluginBopenUrl, pluginInstallCommand, skillBopenUrl } from "@/lib/links"
 import type { CheckKind, PluginState, Selections } from "@/lib/types"
@@ -144,6 +145,8 @@ function CheckSection({
 			{checks.map((c) => {
 				const checked = selection.checks.has(c.id)
 				const inert = c.installed
+				const activity =
+					kind === "setup-script" ? plugin.skillActivity?.[`${plugin.name}:${c.name}`] : undefined
 				const nameNode =
 					kind === "setup-script" && isSkillSlug(c.name) ? (
 						<a
@@ -166,7 +169,10 @@ function CheckSection({
 							label={c.name}
 						/>
 						<div className="min-w-48 flex-1">
-							<div>{nameNode}</div>
+							<div className="flex flex-wrap items-center gap-2">
+								{nameNode}
+								{activity && <SkillActivityBadge activity={activity} />}
+							</div>
 							{c.detail && <div className="text-[0.75rem] text-muted-foreground">{c.detail}</div>}
 							{kind === "env" && c.obtain && (
 								<div className="text-[0.75rem] text-muted-foreground">

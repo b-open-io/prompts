@@ -63,6 +63,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/skill-activity.sh\"",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "Stop": [

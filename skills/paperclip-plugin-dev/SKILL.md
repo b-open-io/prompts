@@ -1,7 +1,13 @@
 ---
 name: paperclip-plugin-dev
 version: 1.1.0
-description: Build, publish, and install Paperclip plugins correctly. This skill should be used when scaffolding a new Paperclip plugin, writing a plugin manifest, implementing plugin worker logic, adding UI slots, publishing to npm, or installing a plugin into a Paperclip instance. Contains critical lessons from real publishing failures. Also invoke when working on plugin capabilities, jobs, webhooks, agent tools, or the plugin SDK.
+description: >-
+  This skill should be used when the user asks to
+  "scaffold a Paperclip plugin", "write a Paperclip plugin manifest",
+  "add a UI slot to a Paperclip plugin", "publish a Paperclip plugin to npm",
+  or "install a Paperclip plugin". Builds, publishes, and installs Paperclip
+  plugins correctly, with critical lessons learned from real publishing
+  failures — plugin capabilities, jobs, webhooks, and agent tools.
 ---
 
 # Paperclip Plugin Development

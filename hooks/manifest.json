@@ -82,6 +82,15 @@
       "runtimes": ["claude"],
       "summary": "Suggests a roster specialist when a Task dispatch targets a generic agent.",
       "description": "When a Task call's subagent_type is \"general-purpose\" or \"Explore\", scores the dispatch prompt/description against the AGENT entries in the router index and, above threshold, emits additionalContext naming the closest-matching roster subagent_type. Carries no permissionDecision at all — additionalContext is a standalone PreToolUse field, so the permission flow is left completely untouched rather than implicitly allowed. Steps aside silently if the router index is missing or nothing matches. Claude-only: Codex has no Task tool or subagent_type namespace to guard."
+    },
+    {
+      "name": "skill-activity",
+      "path": "hooks/skill-activity.sh",
+      "event": "PreToolUse",
+      "matcher": "Skill",
+      "runtimes": ["claude"],
+      "summary": "Records recent skill invocations for local activity displays.",
+      "description": "Appends each Claude Skill tool invocation to a local JSONL activity file with its timestamp, session id, and skill id, pruning entries older than seven days on every write. Produces no hook output and never changes tool permissions or context; missing dependencies, malformed input, and filesystem failures are silent no-ops. Claude-only: Codex does not expose Claude's Skill tool matcher."
     }
   ]
 }

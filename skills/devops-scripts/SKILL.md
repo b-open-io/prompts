@@ -1,6 +1,14 @@
 ---
 name: devops-scripts
-description: "Deterministic shell scripts for infrastructure health checks and environment validation. This skill should be used when checking deployment health, verifying service connectivity, validating required environment variables before deployment, running pre-deploy smoke checks, diagnosing connectivity issues with Vercel, Railway, Redis, or PostgreSQL, or when the agent needs structured JSON output about infrastructure state without burning context on inline bash logic."
+description: >-
+  This skill should be used when the user asks to "check deployment health",
+  "verify service connectivity",
+  "validate environment variables before deploy",
+  "run a pre-deploy smoke check", or
+  "diagnose a Vercel, Railway, Redis, or Postgres connection issue". Runs
+  deterministic shell scripts for infrastructure health checks and environment
+  validation, returning structured JSON instead of burning context on inline
+  bash logic.
 user-invocable: true
 allowed-tools:
   - Bash

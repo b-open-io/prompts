@@ -28,6 +28,12 @@ export type HookState = {
 	runtimes: string[]
 }
 
+export type SkillActivityState = {
+	lastInvokedAt: number
+	sessionId: string
+	count24h: number
+}
+
 export type PluginState = {
 	name: string
 	installedClaude: string | null
@@ -37,6 +43,7 @@ export type PluginState = {
 	checks: CheckState[]
 	hooks: HookState[]
 	hooksConfigPath: string | null
+	skillActivity?: Record<string, SkillActivityState>
 }
 
 export type HarnessState = {

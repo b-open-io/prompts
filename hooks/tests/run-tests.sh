@@ -112,6 +112,8 @@ source "$TESTS_DIR/test_prompt_router_dedup.sh"
 # shellcheck disable=SC1091
 source "$TESTS_DIR/test_roster_guard.sh"
 # shellcheck disable=SC1091
+source "$TESTS_DIR/test_skill_activity.sh"
+# shellcheck disable=SC1091
 source "$TESTS_DIR/test_validate.sh"
 
 echo

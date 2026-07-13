@@ -2,7 +2,16 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { detectRuntime, evaluateCheck, fetchMarketplaceCatalog, resolveHookConfigPaths, resolveHookEnabled, resolveInstall } from "./detector";
+import {
+  detectHarness,
+  detectRuntime,
+  evaluateCheck,
+  fetchMarketplaceCatalog,
+  readSkillActivity,
+  resolveHookConfigPaths,
+  resolveHookEnabled,
+  resolveInstall,
+} from "./detector";
 
 describe("evaluateCheck", () => {
   test("env form reports installed when the var is set and non-empty", async () => {
@@ -126,6 +135,104 @@ describe("detectRuntime", () => {
         { grokPresent: true, hermesPresent: true }
       )
     ).toBe("generic");
+  });
+});
+
+describe("skill activity", () => {
+  let dir: string;
+  const nowSeconds = 1_800_000_000;
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), "detector-skill-activity-"));
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  test("parses valid JSONL records, ignores malformed lines, and aggregates against an injected clock", async () => {
+    const activityFile = join(dir, "activity.jsonl");
+    await writeFile(
+      activityFile,
+      [
+        JSON.stringify({ ts: nowSeconds - 90_000, session_id: "old-session", skill: "bopen-tools:advisor" }),
+        "not json",
+        JSON.stringify({ ts: nowSeconds - 120, session_id: "first-recent", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-session", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 30, session_id: "missing-skill" }),
+        JSON.stringify({ ts: "not-a-number", session_id: "bad-ts", skill: "bopen-tools:ignored" }),
+        JSON.stringify({ ts: nowSeconds - 10, session_id: "other-session", skill: "other-plugin:helper" }),
+      ].join("\n")
+    );
+
+    const activity = readSkillActivity({
+      env: { BOPEN_SKILL_ACTIVITY_FILE: activityFile },
+      nowSeconds,
+    });
+
+    expect(activity["bopen-tools:advisor"]).toEqual({
+      lastInvokedAt: nowSeconds - 60,
+      sessionId: "latest-session",
+      count24h: 2,
+    });
+    expect(activity["other-plugin:helper"]).toEqual({
+      lastInvokedAt: nowSeconds - 10,
+      sessionId: "other-session",
+      count24h: 1,
+    });
+    expect(activity["bopen-tools:ignored"]).toBeUndefined();
+  });
+
+  test("missing or unreadable activity data is an empty object", () => {
+    expect(
+      readSkillActivity({
+        env: { BOPEN_SKILL_ACTIVITY_FILE: join(dir, "does-not-exist.jsonl") },
+        nowSeconds,
+      })
+    ).toEqual({});
+  });
+
+  test("detectHarness attaches full skill ids only to their exact plugin namespace", async () => {
+    const activityFile = join(dir, "activity.jsonl");
+    await writeFile(
+      activityFile,
+      [
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "bopen-session", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 30, session_id: "similar-session", skill: "bopen-tools-extra:helper" }),
+      ].join("\n")
+    );
+
+    const state = await detectHarness({
+      runtimeArg: "generic",
+      marketplaceCache: {
+        fetched: true,
+        error: null,
+        fetchedAt: "2027-01-15T00:00:00.000Z",
+        versions: new Map([
+          ["bopen-tools", "1.0.0"],
+          ["bopen-tools-extra", "1.0.0"],
+          ["no-activity", "1.0.0"],
+        ]),
+      },
+      env: { BOPEN_SKILL_ACTIVITY_FILE: activityFile },
+      nowSeconds,
+    });
+
+    expect(state.plugins.find((plugin) => plugin.name === "bopen-tools")?.skillActivity).toEqual({
+      "bopen-tools:advisor": {
+        lastInvokedAt: nowSeconds - 60,
+        sessionId: "bopen-session",
+        count24h: 1,
+      },
+    });
+    expect(state.plugins.find((plugin) => plugin.name === "bopen-tools-extra")?.skillActivity).toEqual({
+      "bopen-tools-extra:helper": {
+        lastInvokedAt: nowSeconds - 30,
+        sessionId: "similar-session",
+        count24h: 1,
+      },
+    });
+    expect(state.plugins.find((plugin) => plugin.name === "no-activity")?.skillActivity).toEqual({});
   });
 });
 
