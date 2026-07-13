@@ -13,12 +13,11 @@ import {
 	X,
 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { DitherAvatar } from "@/components/dither-kit/avatar"
 import { CopyButton } from "@/components/setup/CopyButton"
 import { ManifestInfo } from "@/components/setup/ManifestInfo"
+import { PluginIcon } from "@/components/setup/PluginIcon"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { bandedHue } from "@/lib/banded-hue"
 import { pluginUpdateCommand } from "@/lib/links"
 import type { HarnessState, PluginState } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -41,7 +40,7 @@ function pluginState(plugin: PluginState): "complete" | "partial" | "missing" {
 
 function statusLabel(plugin: PluginState): string {
 	const state = pluginState(plugin)
-	if (state === "complete") return "Installed in both runtimes"
+	if (state === "complete") return "Installed in all detected runtimes"
 	if (state === "partial") return "Partially installed"
 	return "Not installed"
 }
@@ -402,9 +401,8 @@ export function OverviewTab({
 										className="w-full p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
 									>
 										<div className="flex items-start gap-2.5">
-											<DitherAvatar
+											<PluginIcon
 												name={plugin.name}
-												hue={bandedHue(plugin.name)}
 												size={34}
 												className="shrink-0 rounded-md bg-muted"
 											/>

@@ -3,9 +3,9 @@
 import { Boxes, CheckCircle2, Circle, LoaderCircle, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
-import { DitherAvatar } from "@/components/dither-kit/avatar"
 import { DitherGradient } from "@/components/dither-kit/gradient"
 import { ManifestInfo } from "@/components/setup/ManifestInfo"
+import { PluginIcon } from "@/components/setup/PluginIcon"
 import { Button } from "@/components/ui/button"
 import {
 	Select,
@@ -14,7 +14,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { bandedHue } from "@/lib/banded-hue"
 import type { HarnessState } from "@/lib/types"
 import { VALID_RUNTIMES } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -30,9 +29,9 @@ function installState(installedClaude: string | null, installedCodex: string | n
 function StateDot({ state }: { state: InstallState }) {
 	const label =
 		state === "complete"
-			? "Installed in both runtimes"
+			? "Installed in all detected runtimes"
 			: state === "partial"
-				? "Installed in one runtime"
+				? "Partially installed"
 				: "Not installed"
 	return (
 		<span
@@ -150,9 +149,8 @@ export function Sidebar({
 										: "text-sidebar-foreground hover:bg-sidebar-accent/60",
 								)}
 							>
-								<DitherAvatar
+								<PluginIcon
 									name={plugin.name}
-									hue={bandedHue(plugin.name)}
 									size={18}
 									className="shrink-0 rounded-sm bg-background/35"
 								/>
