@@ -142,14 +142,19 @@ displayed with a copy button and written to
 |---|---|---|---|---|
 | Claude Code | v1 | `claude plugin install x@marketplace` | bundled with plugin | `CLAUDECODE` env |
 | Codex CLI | v1 | `codex plugin add` + marketplace | `codex-agent-setup` scripts | codex session env/paths |
-| OpenCode | pending research | reads `.claude/skills`, parses CC agent files | native parse | TBD |
-| Pi | pending research | TBD | TBD | TBD |
-| Hermes | pending research | TBD | TBD | TBD |
-| Grok/GrokBuild | pending research | TBD | TBD | TBD |
+| OpenCode | v1 | reads `.claude/skills/` + Claude Code agent .md natively; own dirs `.opencode/skills/`, `~/.config/opencode/skills/` | native parse of CC agent files | `$OPENCODE` / `$AGENT` env (confirmed, sst/opencode#1775); `opencode.json` |
+| Grok Build | v1 | **zero-config full Claude Code compat**: reads CC marketplaces, plugins, skills, agents, hooks, CLAUDE.md; own dirs `.grok/skills/`, `~/.grok/plugins/` | native (CC compat) | `~/.grok/config.toml`, `grok` on PATH; plan can use `grok inspect` to verify discovery |
+| Hermes (NousResearch/hermes-agent) | v1 (distinct target) | SKILL.md standard supported, but installs to `~/.hermes/skills/`; plugins to `~/.hermes/plugins/` (never the repo tree); config `~/.hermes/config.yaml` | no CC agent-file parsing — agents not deliverable | `command -v hermes` + `~/.hermes/` presence (no reliable env var) |
+| Pi / unknown | generic tier | no skill-discovery mechanism of its own (superpowers treats it as a thin tool-mapping layer) | n/a | none — generic fallback |
 
-A background research pass (in flight) fills this table before implementation;
-runtimes that lack a real skill mechanism ship as "generic" (plan emits
-portable `npx skills add` instructions only).
+Research findings (2026-07-13, researcher dispatch): OpenCode and Grok Build
+are structurally compatible with the Claude Code plugin layout — for them the
+plan mostly verifies discovery rather than installing anything new (Grok:
+`grok inspect` prints exactly what was discovered). Hermes ships its own
+profile-aware home (`~/.hermes/`) and caches prompts aggressively (skills
+inject as user messages) — the plan notes the context-cost difference when
+targeting it. Pi and anything undetected get the generic tier: portable
+`npx skills add` instructions only.
 
 ## 8. v1 scope
 
