@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bOpen Setup</title>
+<style>
+  :root {
+    --bg: #2b120a;
+    --fg: #f2e6d9;
+    --card: #3a1d12;
+    --primary: #8cb4cb;
+    --accent: #e38f1a;
+    --muted: #231006;
+    --input: #3f2516;
+    /* not part of the pinned palette list, but --muted (#231006) is nearly
+       indistinguishable from --bg for text; this adds a readable muted
+       foreground for detail/usedBy text without touching the pinned vars. */
+    --muted-fg: #a6876c;
+    --line: #5a3a28;
+    --danger: #c0533b;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: ui-monospace, Menlo, monospace;
+    overflow-x: hidden;
+    min-width: 0;
+  }
+
+  button, select, input {
+    font-family: inherit;
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    font-size: 0.72rem;
+  }
+
+  #app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header#app-header {
+    border-bottom: 1px solid var(--line);
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--card);
+  }
+
+  .brand {
+    font-size: 1.05rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .runtime-block {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--line);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg);
+    background: var(--muted);
+  }
+
+  .chip.warn {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .chip.dim {
+    color: var(--muted-fg);
+  }
+
+  .chip.plan-for-label {
+    border: none;
+    padding: 0.15rem 0;
+    background: transparent;
+  }
+
+  select#runtime-select {
+    background: var(--input);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    padding: 0.25rem 0.4rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+
+  .spacer { flex: 1 1 auto; }
+
+  button {
+    background: var(--input);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+  }
+
+  button:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+  button:disabled { opacity: 0.5; cursor: default; }
+
+  button.primary {
+    background: var(--primary);
+    color: var(--bg);
+    border-color: var(--primary);
+    font-weight: bold;
+  }
+  button.primary:hover:not(:disabled) { color: var(--bg); border-color: var(--fg); }
+
+  button.copy-btn {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.68rem;
+  }
+
+  #banners { display: flex; flex-direction: column; }
+
+  .banner {
+    padding: 0.5rem 1rem;
+    font-size: 0.78rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .banner.error {
+    background: var(--muted);
+    color: var(--accent);
+    border-left: 3px solid var(--accent);
+  }
+
+  .banner.info {
+    background: var(--muted);
+    color: var(--muted-fg);
+    border-left: 3px solid var(--line);
+  }
+
+  nav#tabbar {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--line);
+    border-radius: 0;
+    color: var(--fg);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.75rem;
+    flex: 0 0 auto;
+  }
+
+  .tab-btn.active {
+    background: var(--card);
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+  }
+
+  .tab-btn.dim { color: var(--muted-fg); }
+
+  .tab-btn .chip { margin-left: 0.4rem; }
+
+  main#content {
+    flex: 1 1 auto;
+    padding: 1rem;
+    max-width: 100%;
+  }
+
+  .tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .tile {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 0.6rem 0.9rem;
+    min-width: 9rem;
+    flex: 1 1 9rem;
+  }
+
+  .tile .tile-value {
+    font-size: 1.3rem;
+    color: var(--primary);
+  }
+
+  .tile .tile-label {
+    font-size: 0.68rem;
+    color: var(--muted-fg);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .status-line {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: baseline;
+    font-size: 0.85rem;
+  }
+
+  section.check-section {
+    margin-bottom: 1.25rem;
+  }
+
+  section.check-section > .eyebrow {
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+
+  .row:last-child { border-bottom: none; }
+
+  .glyph {
+    font-size: 1rem;
+    line-height: 1.4;
+    width: 1rem;
+    flex: 0 0 auto;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .glyph.installed { color: var(--primary); }
+  .glyph.not-installed { color: var(--muted-fg); }
+  .glyph.inert { cursor: default; }
+
+  .row-main {
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+
+  .row-name {
+    color: var(--fg);
+  }
+
+  .row-detail {
+    color: var(--muted-fg);
+    font-size: 0.75rem;
+    word-break: break-word;
+  }
+
+  .row-usedby {
+    color: var(--muted-fg);
+    font-size: 0.68rem;
+    margin-top: 0.15rem;
+  }
+
+  .row-obtain a { color: var(--primary); }
+
+  .row-actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .hook-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+
+  .hook-chip {
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--line);
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+  }
+
+  .hook-chip.on { color: var(--primary); border-color: var(--primary); }
+  .hook-chip.off { color: var(--muted-fg); }
+
+  .note {
+    color: var(--muted-fg);
+    font-size: 0.78rem;
+    padding: 0.5rem 0;
+  }
+
+  #plan-panel {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+    overflow-y: auto;
+  }
+
+  #plan-panel.hidden { display: none; }
+
+  .plan-box {
+    background: var(--card);
+    border: 1px solid var(--line);
+    max-width: 48rem;
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .plan-box-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+  }
+
+  .plan-path {
+    font-size: 0.75rem;
+    color: var(--muted-fg);
+    margin-bottom: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    word-break: break-all;
+  }
+
+  .plan-copy-row {
+    margin-top: 0.6rem;
+    text-align: right;
+  }
+
+  pre.plan-md {
+    background: var(--muted);
+    border: 1px solid var(--line);
+    padding: 0.75rem;
+    max-height: 60vh;
+    overflow: auto;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 480px) {
+    .brand { font-size: 0.9rem; }
+    main#content { padding: 0.6rem; }
+    .row { flex-direction: column; }
+    .row-actions { width: 100%; justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="app-header">
+    <div class="brand">[ bOpen SETUP ]</div>
+    <div class="runtime-block">
+      <span class="chip" id="runtime-badge">runtime: ?</span>
+      <span class="chip warn hidden" id="runtime-mismatch-chip"></span>
+      <label class="chip dim plan-for-label" for="runtime-select">plan for:</label>
+      <select id="runtime-select">
+        <option value="claude">claude</option>
+        <option value="codex">codex</option>
+        <option value="opencode">opencode</option>
+        <option value="grok">grok</option>
+        <option value="hermes">hermes</option>
+        <option value="generic">generic</option>
+      </select>
+    </div>
+    <div class="spacer"></div>
+    <button type="button" id="refresh-btn">Refresh</button>
+    <button type="button" id="build-plan-btn" class="primary">Build setup plan</button>
+  </header>
+
+  <div id="banners"></div>
+
+  <nav id="tabbar"></nav>
+
+  <main id="content">
+    <p class="note">Loading harness state&hellip;</p>
+  </main>
+</div>
+
+<div id="plan-panel" class="hidden">
+  <div class="plan-box">
+    <div class="plan-box-header">
+      <span class="eyebrow">[ SETUP PLAN ]</span>
+      <button type="button" id="plan-dismiss-btn">Close</button>
+    </div>
+    <div class="plan-path">
+      <span id="plan-path-text"></span>
+      <button type="button" class="copy-btn" id="plan-path-copy-btn">copy</button>
+    </div>
+    <pre class="plan-md" id="plan-markdown"></pre>
+    <div class="plan-copy-row">
+      <button type="button" class="copy-btn" id="plan-md-copy-btn">copy plan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /** @type {any} full HarnessState from GET /api/state, or null before first load */
+  var state = null;
+
+  /** @type {Object<string, {installPlugin: boolean, checks: Set<string>, hooks: Object<string, boolean>}>} */
+  var selections = {};
+
+  var activeTab = "overview";
+  var selectedRuntime = null;
+
+  /** Copy payloads keyed by index, rebuilt on every render to avoid HTML-attribute escaping of arbitrary shell strings. */
+  var copyRegistry = [];
+
+  function escapeHtml(str) {
+    return String(str == null ? "" : str).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function el(id) { return document.getElementById(id); }
+
+  // ---------------------------------------------------------------------
+  // Selections: init + reconcile
+  // ---------------------------------------------------------------------
+
+  function initPluginSelection(plugin) {
+    var checks = new Set();
+    (plugin.checks || []).forEach(function (c) {
+      if (c.installed) checks.add(c.id);
+    });
+    var hooks = {};
+    (plugin.hooks || []).forEach(function (h) {
+      hooks[h.name] = !!h.enabled;
+    });
+    return { installPlugin: false, checks: checks, hooks: hooks };
+  }
+
+  function initAllSelections(newState) {
+    var out = {};
+    newState.plugins.forEach(function (p) {
+      out[p.name] = initPluginSelection(p);
+    });
+    return out;
+  }
+
+  function reconcileSelections(oldSel, newState) {
+    var out = {};
+    newState.plugins.forEach(function (p) {
+      var fresh = initPluginSelection(p);
+      var old = oldSel[p.name];
+      if (!old) {
+        out[p.name] = fresh;
+        return;
+      }
+      fresh.installPlugin = old.installPlugin;
+      (p.checks || []).forEach(function (c) {
+        if (c.installed || old.checks.has(c.id)) fresh.checks.add(c.id);
+        else fresh.checks.delete(c.id);
+      });
+      (p.hooks || []).forEach(function (h) {
+        if (Object.prototype.hasOwnProperty.call(old.hooks, h.name)) {
+          fresh.hooks[h.name] = old.hooks[h.name];
+        }
+      });
+      out[p.name] = fresh;
+    });
+    return out;
+  }
+
+  // ---------------------------------------------------------------------
+  // Networking
+  // ---------------------------------------------------------------------
+
+  function fetchState(preserve) {
+    return fetch("/api/state").then(function (res) {
+      if (!res.ok) throw new Error("GET /api/state failed: " + res.status);
+      return res.json();
+    }).then(function (newState) {
+      selections = preserve ? reconcileSelections(selections, newState) : initAllSelections(newState);
+      state = newState;
+      if (!preserve) {
+        selectedRuntime = state.runtimeArg;
+        activeTab = "overview";
+      } else if (!state.plugins.some(function (p) { return p.name === activeTab; }) && activeTab !== "overview") {
+        activeTab = "overview";
+      }
+      renderAll();
+    });
+  }
+
+  function assemblePlanSelections() {
+    return {
+      runtime: selectedRuntime,
+      plugins: state.plugins.map(function (p) {
+        var s = selections[p.name];
+        return {
+          name: p.name,
+          installPlugin: s.installPlugin,
+          checks: Array.from(s.checks),
+          hooks: Object.assign({}, s.hooks)
+        };
+      })
+    };
+  }
+
+  function buildPlan() {
+    var btn = el("build-plan-btn");
+    var original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "building…";
+    fetch("/api/plan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(assemblePlanSelections())
+    }).then(function (res) {
+      if (!res.ok) throw new Error("POST /api/plan failed: " + res.status);
+      return res.json();
+    }).then(function (data) {
+      showPlanPanel(data.markdown, data.path);
+    }).catch(function (err) {
+      showErrorBanner("Failed to build plan: " + err.message);
+    }).finally(function () {
+      btn.disabled = false;
+      btn.textContent = original;
+    });
+  }
+
+  function refresh() {
+    var btn = el("refresh-btn");
+    var original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "re-checking…";
+    fetchState(true).catch(function (err) {
+      showErrorBanner("Failed to refresh: " + err.message);
+    }).finally(function () {
+      btn.disabled = false;
+      btn.textContent = original;
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Banners
+  // ---------------------------------------------------------------------
+
+  function showErrorBanner(msg) {
+    var box = el("banners");
+    var div = document.createElement("div");
+    div.className = "banner error";
+    div.textContent = msg;
+    box.appendChild(div);
+    setTimeout(function () { div.remove(); }, 8000);
+  }
+
+  function renderPersistentBanners() {
+    var box = el("banners");
+    var persistent = box.querySelectorAll(".banner.persistent");
+    persistent.forEach(function (n) { n.remove(); });
+    if (!state) return;
+    if (!state.marketplace.fetched || state.marketplace.error) {
+      var div = document.createElement("div");
+      div.className = "banner error persistent";
+      div.textContent = "Marketplace unavailable: " + (state.marketplace.error || "no data") +
+        " — local detection still works; marketplace version columns show “unavailable”.";
+      box.insertBefore(div, box.firstChild);
+    }
+    if (state.plugins.some(function (p) { return !p.hasSetupManifest; })) {
+      var info = document.createElement("div");
+      info.className = "banner info persistent";
+      info.textContent = "Plugins without a setup/manifest.json show install state only — no CLI/env/skill/hook checks are available for them.";
+      box.appendChild(info);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Header
+  // ---------------------------------------------------------------------
+
+  function renderHeader() {
+    if (!state) return;
+    el("runtime-badge").textContent = "runtime: " + state.runtimeArg;
+    var mismatch = el("runtime-mismatch-chip");
+    if (state.runtimeDetected !== state.runtimeArg) {
+      mismatch.textContent = "detected: " + state.runtimeDetected;
+      mismatch.classList.remove("hidden");
+    } else {
+      mismatch.classList.add("hidden");
+    }
+    var select = el("runtime-select");
+    if (selectedRuntime) select.value = selectedRuntime;
+  }
+
+  // ---------------------------------------------------------------------
+  // Tabs
+  // ---------------------------------------------------------------------
+
+  function renderTabs() {
+    var bar = el("tabbar");
+    if (!state) { bar.innerHTML = ""; return; }
+    var html = "";
+    html += tabButtonHtml("overview", "OVERVIEW", true, false);
+    state.plugins.forEach(function (p) {
+      var installed = p.installedClaude !== null || p.installedCodex !== null;
+      html += tabButtonHtml(p.name, p.name, installed, !installed);
+    });
+    bar.innerHTML = html;
+  }
+
+  function tabButtonHtml(id, label, installed, showChip) {
+    var classes = "tab-btn";
+    if (id === activeTab) classes += " active";
+    if (!installed) classes += " dim";
+    var chip = showChip ? '<span class="chip dim">not installed</span>' : "";
+    return '<button type="button" class="' + classes + '" data-action="switch-tab" data-tab="' + escapeHtml(id) + '">' +
+      escapeHtml(label) + chip + "</button>";
+  }
+
+  // ---------------------------------------------------------------------
+  // Content: dispatch
+  // ---------------------------------------------------------------------
+
+  function renderContent() {
+    copyRegistry = [];
+    var main = el("content");
+    if (!state) {
+      main.innerHTML = '<p class="note">Loading harness state&hellip;</p>';
+      return;
+    }
+    if (activeTab === "overview") {
+      main.innerHTML = renderOverviewHtml();
+    } else {
+      var plugin = state.plugins.find(function (p) { return p.name === activeTab; });
+      main.innerHTML = plugin ? renderPluginTabHtml(plugin) : '<p class="note">Unknown plugin.</p>';
+    }
+  }
+
+  function renderAll() {
+    renderHeader();
+    renderPersistentBanners();
+    renderTabs();
+    renderContent();
+  }
+
+  // ---------------------------------------------------------------------
+  // Overview tab
+  // ---------------------------------------------------------------------
+
+  function renderOverviewHtml() {
+    var total = state.plugins.length;
+    var installedCount = state.plugins.filter(function (p) {
+      return p.installedClaude !== null || p.installedCodex !== null;
+    }).length;
+
+    var missingClis = 0, unsetEnv = 0, hooksOn = 0, hooksTotal = 0;
+    state.plugins.forEach(function (p) {
+      (p.checks || []).forEach(function (c) {
+        if (c.kind === "cli" && !c.installed) missingClis++;
+        if (c.kind === "env" && !c.installed) unsetEnv++;
+      });
+      (p.hooks || []).forEach(function (h) {
+        hooksTotal++;
+        if (h.enabled) hooksOn++;
+      });
+    });
+
+    var html = "";
+    html += '<div class="tiles">';
+    html += tileHtml(installedCount + " / " + total, "plugins installed");
+    html += tileHtml(String(missingClis), "missing CLIs");
+    html += tileHtml(String(unsetEnv), "unset env keys");
+    html += tileHtml(hooksOn + " / " + hooksTotal, "hooks enabled");
+    html += "</div>";
+
+    html += '<span class="eyebrow">[ PLUGINS ]</span>';
+    state.plugins.forEach(function (p) {
+      var claudeBit = p.installedClaude !== null ? "claude v" + escapeHtml(p.installedClaude) : "claude: not installed";
+      var codexBit = p.installedCodex !== null ? "codex v" + escapeHtml(p.installedCodex) : "codex: not installed";
+      var mktBit = p.marketplaceVersion !== null ? "marketplace v" + escapeHtml(p.marketplaceVersion) : "marketplace: unavailable";
+      html += '<div class="status-line"><strong>' + escapeHtml(p.name) + "</strong>" +
+        '<span class="row-detail">' + claudeBit + " &middot; " + codexBit + " &middot; " + mktBit + "</span></div>";
+    });
+    html += '<p class="note">Generated at ' + escapeHtml(state.generatedAt) + " on " + escapeHtml(state.platform) + ".</p>";
+    return html;
+  }
+
+  function tileHtml(value, label) {
+    return '<div class="tile"><div class="tile-value">' + escapeHtml(value) + '</div>' +
+      '<div class="tile-label">' + escapeHtml(label) + "</div></div>";
+  }
+
+  // ---------------------------------------------------------------------
+  // Plugin tab
+  // ---------------------------------------------------------------------
+
+  function renderPluginTabHtml(plugin) {
+    var html = "";
+    html += renderPluginSectionHtml(plugin);
+
+    if (!plugin.hasSetupManifest) {
+      html += '<p class="note">This plugin has no setup/manifest.json — install state only, no CLI/env/skill/hook checks available.</p>';
+      return html;
+    }
+
+    html += renderCheckSectionHtml(plugin, "codex-agents", "AGENTS");
+    html += renderCheckSectionHtml(plugin, "cli", "CLI DEPENDENCIES");
+    html += renderCheckSectionHtml(plugin, "env", "ENV KEYS");
+    html += renderCheckSectionHtml(plugin, "third-party-skill", "THIRD-PARTY SKILLS");
+    html += renderHooksSectionHtml(plugin);
+    html += renderCheckSectionHtml(plugin, "setup-script", "SKILL SETUP SCRIPTS");
+    return html;
+  }
+
+  function pluginInstallCommand(name, runtime) {
+    if (runtime === "claude") return "claude plugin install " + name + "@b-open-io";
+    if (runtime === "codex") return "codex plugin add " + name + "@b-open-io";
+    return null;
+  }
+
+  function renderPluginSectionHtml(plugin) {
+    var sel = selections[plugin.name];
+    var html = '<section class="check-section"><span class="eyebrow">[ PLUGIN ]</span><div class="card">';
+
+    [["claude", plugin.installedClaude], ["codex", plugin.installedCodex]].forEach(function (pair) {
+      var runtime = pair[0], version = pair[1];
+      var installed = version !== null;
+      var applicable = runtime === selectedRuntime;
+      var glyphClass = "glyph " + (installed ? "installed" : "not-installed") + (installed || !applicable ? " inert" : "");
+      var glyphChar = installed ? "■" : (applicable && sel.installPlugin ? "■" : "□");
+      var detail = installed ? "v" + escapeHtml(version) : "not installed";
+      var actionAttr = (installed || !applicable) ? "" : ' data-action="toggle-install-plugin" data-plugin="' + escapeHtml(plugin.name) + '"';
+      html += '<div class="row">';
+      html += '<span class="' + glyphClass + '"' + actionAttr + '>' + glyphChar + "</span>";
+      html += '<div class="row-main"><div class="row-name">' + runtime + '</div>' +
+        '<div class="row-detail">' + detail + (installed ? "" : (applicable ? " — check the box to include install in the plan" : " — not the active plan runtime")) + "</div></div>";
+      html += '<div class="row-actions">';
+      if (!installed) {
+        var cmd = pluginInstallCommand(plugin.name, runtime);
+        if (cmd) html += copyButtonHtml(cmd);
+      }
+      html += "</div></div>";
+    });
+
+    html += '<div class="row"><div class="row-main"><div class="row-detail">marketplace: ' +
+      (plugin.marketplaceVersion !== null ? "v" + escapeHtml(plugin.marketplaceVersion) : "unavailable") +
+      "</div></div></div>";
+
+    html += "</div></section>";
+    return html;
+  }
+
+  function renderCheckSectionHtml(plugin, kind, label) {
+    var checks = (plugin.checks || []).filter(function (c) { return c.kind === kind; });
+    if (checks.length === 0) return "";
+    var sel = selections[plugin.name];
+    var html = '<section class="check-section"><span class="eyebrow">[ ' + label + ' ]</span><div class="card">';
+    checks.forEach(function (c) {
+      var checked = sel.checks.has(c.id);
+      var inert = c.installed;
+      var glyphChar = checked ? "■" : "□";
+      var glyphClass = "glyph " + (checked ? "installed" : "not-installed") + (inert ? " inert" : "");
+      var actionAttr = inert ? "" : ' data-action="toggle-check" data-plugin="' + escapeHtml(plugin.name) + '" data-id="' + escapeHtml(c.id) + '"';
+      html += '<div class="row">';
+      html += '<span class="' + glyphClass + '"' + actionAttr + '>' + glyphChar + "</span>";
+      html += '<div class="row-main"><div class="row-name">' + escapeHtml(c.name) + "</div>";
+      if (c.detail) html += '<div class="row-detail">' + escapeHtml(c.detail) + "</div>";
+      if (kind === "env" && c.obtain) {
+        html += '<div class="row-detail row-obtain">obtain: ' + linkifyHtml(c.obtain) + "</div>";
+      }
+      if (c.usedBy && c.usedBy.length) {
+        html += '<div class="row-usedby">used by: ' + escapeHtml(c.usedBy.join(", ")) + "</div>";
+      }
+      html += "</div>";
+      html += '<div class="row-actions">';
+      if (!c.installed && c.install) html += copyButtonHtml(c.install);
+      html += "</div></div>";
+    });
+    html += "</div></section>";
+    return html;
+  }
+
+  function renderHooksSectionHtml(plugin) {
+    var hooks = plugin.hooks || [];
+    if (hooks.length === 0) return "";
+    var sel = selections[plugin.name];
+    var html = '<section class="check-section"><span class="eyebrow">[ HOOKS ]</span><div class="card">';
+    hooks.forEach(function (h) {
+      var on = !!sel.hooks[h.name];
+      html += '<div class="row">';
+      html += '<div class="row-main"><div class="row-name">' + escapeHtml(h.name) + '</div>' +
+        '<div class="row-detail">' + escapeHtml(h.summary) + '</div>' +
+        '<div class="row-usedby">runtimes: ' + escapeHtml((h.runtimes || []).join(", ")) + "</div></div>";
+      html += '<div class="row-actions"><span class="hook-toggle" data-action="toggle-hook" data-plugin="' +
+        escapeHtml(plugin.name) + '" data-hook="' + escapeHtml(h.name) + '">' +
+        '<span class="hook-chip ' + (on ? "on" : "off") + '">[' + (on ? "ON" : "OFF") + "]</span></span></div>";
+      html += "</div>";
+    });
+    html += "</div></section>";
+    return html;
+  }
+
+  function linkifyHtml(text) {
+    var urlMatch = /(https?:\/\/[^\s]+)/.exec(text);
+    if (!urlMatch) return escapeHtml(text);
+    var before = escapeHtml(text.slice(0, urlMatch.index));
+    var url = urlMatch[1];
+    var after = escapeHtml(text.slice(urlMatch.index + url.length));
+    return before + '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(url) + "</a>" + after;
+  }
+
+  function copyButtonHtml(text) {
+    var idx = copyRegistry.length;
+    copyRegistry.push(text);
+    return '<button type="button" class="copy-btn" data-action="copy" data-copy-idx="' + idx + '">copy</button>';
+  }
+
+  // ---------------------------------------------------------------------
+  // Plan panel
+  // ---------------------------------------------------------------------
+
+  function showPlanPanel(markdown, path) {
+    el("plan-markdown").textContent = markdown;
+    el("plan-path-text").textContent = path;
+    el("plan-panel").classList.remove("hidden");
+    el("plan-path-copy-btn").onclick = function (e) { doCopy(path, e.currentTarget); };
+    el("plan-md-copy-btn").onclick = function (e) { doCopy(markdown, e.currentTarget); };
+  }
+
+  function hidePlanPanel() {
+    el("plan-panel").classList.add("hidden");
+  }
+
+  // ---------------------------------------------------------------------
+  // Copy-to-clipboard
+  // ---------------------------------------------------------------------
+
+  function doCopy(text, btn) {
+    var original = btn.textContent;
+    navigator.clipboard.writeText(text).then(function () {
+      btn.textContent = "copied ✓";
+    }).catch(function () {
+      btn.textContent = "copy failed ✗";
+    }).finally(function () {
+      setTimeout(function () { btn.textContent = original; }, 1500);
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Event wiring
+  // ---------------------------------------------------------------------
+
+  function onContentClick(e) {
+    var target = e.target.closest("[data-action]");
+    if (!target) return;
+    var action = target.dataset.action;
+    if (action === "switch-tab") {
+      activeTab = target.dataset.tab;
+      renderTabs();
+      renderContent();
+      return;
+    }
+    var pluginName = target.dataset.plugin;
+    var sel = pluginName ? selections[pluginName] : null;
+    if (action === "toggle-check" && sel) {
+      var id = target.dataset.id;
+      if (sel.checks.has(id)) sel.checks.delete(id); else sel.checks.add(id);
+      renderContent();
+    } else if (action === "toggle-hook" && sel) {
+      var hookName = target.dataset.hook;
+      sel.hooks[hookName] = !sel.hooks[hookName];
+      renderContent();
+    } else if (action === "toggle-install-plugin" && sel) {
+      sel.installPlugin = !sel.installPlugin;
+      renderContent();
+    } else if (action === "copy") {
+      var idx = Number(target.dataset.copyIdx);
+      var text = copyRegistry[idx];
+      if (text != null) doCopy(text, target);
+    }
+  }
+
+  function onTabbarClick(e) {
+    var target = e.target.closest("[data-action='switch-tab']");
+    if (!target) return;
+    activeTab = target.dataset.tab;
+    renderTabs();
+    renderContent();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    el("content").addEventListener("click", onContentClick);
+    el("tabbar").addEventListener("click", onTabbarClick);
+    el("refresh-btn").addEventListener("click", refresh);
+    el("build-plan-btn").addEventListener("click", buildPlan);
+    el("plan-dismiss-btn").addEventListener("click", hidePlanPanel);
+    el("runtime-select").addEventListener("change", function (e) {
+      selectedRuntime = e.target.value;
+      renderContent();
+    });
+
+    fetchState(false).catch(function (err) {
+      showErrorBanner("Failed to load harness state: " + err.message);
+      el("content").innerHTML = '<p class="note">Could not load /api/state. Is the setup server running?</p>';
+    });
+  });
+})();
+</script>
+
+<!--
+MOCK SMOKE-TEST NOTE (Unit C, SPEC-OPL-2850-C):
+Unit B's server.ts/detector.ts did not exist yet, so this was tested
+standalone over file:// via agent-browser: a temporary `USE_MOCK` branch
+in fetchState()/buildPlan() returned a sample two-plugin HarnessState
+(mixed installed/missing checks + hooks) and a canned {markdown, path}.
+Verified: tabs (dimmed vs solid), overview tiles, checkbox/hook toggles
+re-rendering, copy-button "copied" flip, plan panel, and refresh
+preserving selections — no console errors. Also re-tested build-plan's
+real (unmocked) fetch path, which correctly showed an error banner
+against a server-less file:// origin. Mock branch removed after testing.
+-->
+</body>
+</html>

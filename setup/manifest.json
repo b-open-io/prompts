@@ -1,0 +1,150 @@
+{
+  "plugin": "bopen-tools",
+  "clis": [
+    {
+      "name": "agent-browser",
+      "usedBy": [
+        "agent-browser",
+        "chrome-cdp",
+        "webapp-testing",
+        "free-roam-testing"
+      ],
+      "check": "agent-browser --version",
+      "install": {
+        "any": "npm install -g agent-browser && agent-browser install"
+      }
+    },
+    {
+      "name": "bun",
+      "usedBy": [
+        "benchmark-skills",
+        "visual-review",
+        "many scripts"
+      ],
+      "check": "bun --version",
+      "install": {
+        "darwin": "brew install oven-sh/bun/bun",
+        "linux": "curl -fsSL https://bun.sh/install | bash"
+      }
+    },
+    {
+      "name": "uv",
+      "usedBy": [
+        "ui-audio-theme",
+        "hammertime"
+      ],
+      "check": "uv --version",
+      "install": {
+        "any": "curl -LsSf https://astral.sh/uv/install.sh | sh"
+      }
+    },
+    {
+      "name": "ffmpeg",
+      "usedBy": [
+        "ui-audio-theme"
+      ],
+      "check": "ffmpeg -version",
+      "install": {
+        "darwin": "brew install ffmpeg",
+        "linux": "sudo apt install ffmpeg"
+      }
+    },
+    {
+      "name": "gh",
+      "usedBy": [
+        "wait-for-ci",
+        "devops-scripts"
+      ],
+      "check": "gh --version",
+      "install": {
+        "darwin": "brew install gh",
+        "linux": "sudo apt install gh"
+      }
+    },
+    {
+      "name": "semgrep",
+      "usedBy": [
+        "semgrep",
+        "code-audit-scripts"
+      ],
+      "check": "semgrep --version",
+      "install": {
+        "any": "pipx install semgrep",
+        "darwin": "brew install semgrep"
+      }
+    }
+  ],
+  "env": [
+    {
+      "key": "ELEVENLABS_API_KEY",
+      "usedBy": [
+        "ui-audio-theme",
+        "voice-clone"
+      ],
+      "obtain": "https://elevenlabs.io \u2192 Profile \u2192 API Keys"
+    },
+    {
+      "key": "X_BEARER_TOKEN",
+      "usedBy": [
+        "x-tweet-search",
+        "x-user-timeline",
+        "x-user-lookup",
+        "x-research"
+      ],
+      "obtain": "https://developer.x.com \u2192 project \u2192 Bearer Token (run skills/x-tweet-search/scripts/setup.sh)"
+    }
+  ],
+  "thirdPartySkills": [
+    {
+      "name": "vercel-react-best-practices",
+      "source": "vercel-labs/agent-skills",
+      "check": "path:~/.claude/skills/vercel-react-best-practices/SKILL.md",
+      "install": "npx skills add https://github.com/vercel-labs/agent-skills --skill react-best-practices"
+    },
+    {
+      "name": "react-doctor",
+      "source": "vercel-labs",
+      "check": "path:~/.claude/skills/react-doctor/SKILL.md",
+      "install": "npx skills add react-doctor"
+    },
+    {
+      "name": "shadcn",
+      "source": "shadcn-ui",
+      "check": "path:~/.claude/skills/shadcn/SKILL.md",
+      "install": "npx skills add shadcn"
+    }
+  ],
+  "agents": {
+    "claude": "bundled",
+    "codex": {
+      "script": "skills/codex-agent-setup/scripts/setup.sh",
+      "check": "path:~/.codex/agents/bopen_*"
+    }
+  },
+  "hooks": {
+    "manifest": "hooks/manifest.json",
+    "config": "~/.claude/bopen-tools/hooks-config.json"
+  },
+  "skillSetupScripts": [
+    {
+      "skill": "x-tweet-search",
+      "script": "skills/x-tweet-search/scripts/setup.sh",
+      "purpose": "X API bearer token"
+    },
+    {
+      "skill": "npm-publish",
+      "script": "skills/npm-publish/scripts/setup-token.sh",
+      "purpose": "npm automation token"
+    },
+    {
+      "skill": "statusline-setup",
+      "script": "skills/statusline-setup/scripts/install-statusline.sh",
+      "purpose": "peacock statusline"
+    },
+    {
+      "skill": "persona",
+      "script": "skills/persona/scripts/setup-token.sh",
+      "purpose": "persona voice profile token"
+    }
+  ]
+}

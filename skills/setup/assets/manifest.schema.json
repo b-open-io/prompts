@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bopen.ai/schemas/setup-manifest.schema.json",
+  "title": "bOpen plugin setup manifest",
+  "description": "Declares a plugin's installable dependencies (CLIs, env keys, third-party skills, agent delivery, hooks, and skill setup scripts) for the bopen-tools setup installer. Manifests are declarative only — no install state is ever recorded here. One manifest lives at <plugin-root>/setup/manifest.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["plugin"],
+  "properties": {
+    "plugin": {
+      "type": "string",
+      "description": "The plugin name, matching its entry in the marketplace catalog and .claude-plugin/plugin.json (e.g. \"bopen-tools\")."
+    },
+    "clis": {
+      "type": "array",
+      "description": "Command-line tools this plugin's skills shell out to. Each entry is checked live by the detector; nothing here reflects current install state.",
+      "items": { "$ref": "#/$defs/cli" }
+    },
+    "env": {
+      "type": "array",
+      "description": "Environment variables this plugin's skills read. The detector only checks presence/non-emptiness of the value — it never reads or displays the value itself.",
+      "items": { "$ref": "#/$defs/env" }
+    },
+    "thirdPartySkills": {
+      "type": "array",
+      "description": "Skills installed via `npx skills add` (or similar) from an external source rather than shipped inside this plugin.",
+      "items": { "$ref": "#/$defs/thirdPartySkill" }
+    },
+    "agents": {
+      "description": "How this plugin delivers agent definitions per runtime.",
+      "$ref": "#/$defs/agents"
+    },
+    "hooks": {
+      "description": "Pointer to this plugin's hook catalog and its per-user/per-project enable/disable config. Omit if the plugin ships no hooks.",
+      "$ref": "#/$defs/hooks"
+    },
+    "skillSetupScripts": {
+      "type": "array",
+      "description": "Per-skill setup.sh-style scripts that provision credentials or local install state (e.g. an API token) beyond what the CLI/env/third-party-skill checks cover.",
+      "items": { "$ref": "#/$defs/skillSetupScript" }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "string",
+      "description": "How the detector evaluates whether this dependency is satisfied. Three forms: a plain shell command (exit 0 = installed), `path:<glob>` (a `~`-expanded glob that must match at least one file to count as installed), or `env:<KEY>` (the named environment variable must be set and non-empty)."
+    },
+    "cli": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "check", "install"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The CLI binary name, e.g. \"bun\"."
+        },
+        "usedBy": {
+          "type": "array",
+          "description": "Names of skills (or a free-text note) that depend on this CLI, so the UI can show what breaks without it.",
+          "items": { "type": "string" }
+        },
+        "check": { "$ref": "#/$defs/check" },
+        "install": { "$ref": "#/$defs/installCommands" }
+      }
+    },
+    "env": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "obtain"],
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The environment variable name, e.g. \"ELEVENLABS_API_KEY\"."
+        },
+        "usedBy": {
+          "type": "array",
+          "description": "Names of skills that depend on this env key.",
+          "items": { "type": "string" }
+        },
+        "obtain": {
+          "type": "string",
+          "description": "Human-readable instructions for where to get a value for this key (a URL and/or navigation path, or a setup script to run)."
+        }
+      }
+    },
+    "thirdPartySkill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source", "check", "install"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The skill's directory/name as installed under ~/.claude/skills/."
+        },
+        "source": {
+          "type": "string",
+          "description": "The GitHub org/repo (or equivalent) the skill was installed from, e.g. \"vercel-labs/agent-skills\"."
+        },
+        "check": { "$ref": "#/$defs/check" },
+        "install": {
+          "type": "string",
+          "description": "The exact command that installs this skill, e.g. an `npx skills add` invocation."
+        }
+      }
+    },
+    "agentDelivery": {
+      "description": "How agent definitions for a single runtime are delivered: either bundled directly inside the installed plugin (no extra step needed), or via a setup script the detector can verify with a check.",
+      "oneOf": [
+        {
+          "const": "bundled",
+          "description": "Agent .md files ship inside the plugin and are auto-discovered by the runtime; no separate install step exists."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["script", "check"],
+          "properties": {
+            "script": {
+              "type": "string",
+              "description": "Path (relative to the plugin root) to the script that delivers agent definitions to this runtime."
+            },
+            "check": { "$ref": "#/$defs/check" }
+          }
+        }
+      ]
+    },
+    "agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claude", "codex"],
+      "properties": {
+        "claude": { "$ref": "#/$defs/agentDelivery" },
+        "codex": { "$ref": "#/$defs/agentDelivery" }
+      }
+    },
+    "hooks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest", "config"],
+      "properties": {
+        "manifest": {
+          "type": "string",
+          "description": "Path (relative to the plugin root) to this plugin's hook catalog, e.g. \"hooks/manifest.json\"."
+        },
+        "config": {
+          "type": "string",
+          "description": "Path (may use `~`) to the per-user hooks enable/disable config file, e.g. \"~/.claude/bopen-tools/hooks-config.json\". Writing this file is ask-tier — the installer never writes it itself."
+        }
+      }
+    },
+    "skillSetupScript": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "script", "purpose"],
+      "properties": {
+        "skill": {
+          "type": "string",
+          "description": "The skill this setup script belongs to."
+        },
+        "script": {
+          "type": "string",
+          "description": "Path (relative to the plugin root) to the setup script."
+        },
+        "purpose": {
+          "type": "string",
+          "description": "One-line human-readable description of what the script provisions."
+        }
+      }
+    },
+    "installCommands": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "description": "Platform-specific install commands. At least one of `any`, `darwin`, or `linux` must be present. `any` is used when the command is identical across platforms; platform-specific keys take precedence over `any` when both are present for the current platform.",
+      "properties": {
+        "any": {
+          "type": "string",
+          "description": "Install command to use regardless of platform."
+        },
+        "darwin": {
+          "type": "string",
+          "description": "Install command to use on macOS."
+        },
+        "linux": {
+          "type": "string",
+          "description": "Install command to use on Linux."
+        }
+      }
+    }
+  }
+}
