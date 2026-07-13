@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.4
+version: 0.0.5
 description: Use this skill when designing, configuring, or hardening a software factory — an AI developer workflow where agents iterate toward a goal — a goal an agent iterates toward on its own with a real verification gate, persistent state, and a stop condition. Invoke it when the user mentions "build a loop", "agentic loop", "self-iterating agent", "run this on a schedule/cron", "/loop or /goal", "Ralph loop", "maker-checker", "fleet of agents", "autonomous workflow", "AI developer workflow", "ADW", "software factory", "agentic SDLC", or wants an agent to keep working a goal unattended until it's verifiably done. Also use when scoping whether a loop is even worth building, when picking a verification gate, when deciding what a loop is allowed to touch (blast radius), or when a loop is burning tokens without producing accepted work.
 ---
 
@@ -155,9 +155,16 @@ Loops fail quietly, not loudly. Before shipping, walk `references/failure-modes.
 - **`CFO` (Milton)** — cost-per-accepted-change watchdog.
 - **`wave-coordinator`** — fleets of workers at scale.
 
+Register every worker with looptop **at configuration time, paused** — see
+`references/looptop-registration.md` for the exact on-disk contract (plist,
+state dir, manifest, ledger schemas). A worker invisible to looptop is a
+worker nobody can observe, pause, or kickstart; prove-phase means paused
+registration, never no registration.
+
 ## References
 
 - `references/config-questionnaire.md` — the full per-project loop interview, field by field.
 - `references/blast-radius.md` — tiering detail + the prove→harden→automate promotion protocol.
 - `references/failure-modes.md` — the catalog of quiet failure modes and their guards.
+- `references/looptop-registration.md` — the worker registration contract, verified against looptop source.
 - `references/state-backends.md` — Linear vs GitHub Issues vs repo-vault, with the state-file contract.
