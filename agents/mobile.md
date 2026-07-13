@@ -11,9 +11,9 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/kira.png
-version: 1.1.12
+version: 1.1.13
 description: |-
-  Expert in mobile app development for React Native, Swift, Kotlin, and Flutter.
+  Use this agent when the user asks to "build a React Native screen", "add biometric login to my iOS app", "set up Flutter navigation", "fix this Android performance issue", or needs mobile development in React Native, Swift, Kotlin, or Flutter. Not for web frontend work (use nextjs) or visual UI design (use designer).
 
   <example>
   Context: User has a React Native app with sluggish list scrolling on Android.

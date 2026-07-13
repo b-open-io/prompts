@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.3
+version: 0.0.4
 description: >-
   Always active when a capable current main session in Claude Code or Codex is
   planning non-trivial implementation and cheaper or specialized executors are
@@ -48,6 +48,11 @@ in parallel.
 | **grok** (Grok Build CLI, headless) | Well-specced implementation volume through an independent vendor lane |
 | **codex** (CLI or Claude plugin) | Sandboxed implementation from a Claude main, or a deliberately isolated second Codex run |
 | **Native Workflow** (Claude Code `Workflow` tool) | Deterministic staged fan-outs on a Claude main — find→verify→synthesize pipelines, adversarial verification panels, loop-until-dry discovery, budget-scaled sweeps. Opt-in-gated and Claude-only; see `references/native-workflows.md` |
+
+Before dispatching to `general-purpose`, match the unit against the roster in
+`skills/deploy-agent-team/references/agent-roster.md` and pass the specific
+`subagent_type` (e.g. `bopen-tools:code-auditor`). Use `general-purpose` only
+when no roster agent fits, and say so explicitly in the dispatch note.
 
 When the orchestration itself has deterministic shape (stages, loops, majority
 votes) and the user opted into multi-agent work, a native Workflow beats

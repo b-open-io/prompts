@@ -17,10 +17,10 @@ skills:
   - pm-execution:test-scenarios
   - pm-product-discovery:metrics-dashboard
 icon: https://bopen.ai/images/agents/data-accumulator.png
-version: 1.1.16
+version: 1.1.17
 model: sonnet
 description: |-
-  Expert in data processing, analytics, ETL pipelines, and data visualization with focus on robust data architecture.
+  Use this agent when the user asks to "build an ETL pipeline", "run a cohort analysis", "set up a metrics dashboard", "analyze this A/B test", or needs data ingestion, transformation, and visualization with robust pipeline architecture. Not for database schema design or query tuning (use database) or building the dashboard's frontend UI (use nextjs or designer).
 
   <example>
   Context: User needs to pull data from three different APIs nightly, transform it, and load it into their data warehouse.

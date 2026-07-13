@@ -24,8 +24,18 @@ skills:
   - bopen-tools:check-version
   - bopen-tools:software-factory
 icon: https://bopen.ai/images/agents/root.png
-version: 1.3.7
-description: Expert in our Vercel+Railway+Bun stack with Bitcoin auth patterns and satchmo-watch monitoring. Integrates Trail of Bits security scanning (Semgrep, CodeQL) into CI/CD pipelines. Manages ClawNet bot deployments as Vercel Sandboxes.
+version: 1.3.8
+description: |-
+  Use this agent when the user asks to "deploy this to Vercel", "set up CI/CD", "wire up a ClawNet bot deployment", "add satchmo-watch monitoring", or needs help with the Vercel+Railway+Bun stack, Bitcoin auth patterns, or Trail of Bits security scanning (Semgrep/CodeQL) in a pipeline. Not for code-level security audits (use code-auditor) or dependency/secrets scanning outside CI (use security-ops).
+
+  <example>
+  Context: User wants a ClawNet bot deployed as a Vercel Sandbox
+  user: "Deploy this bot as a Vercel Sandbox and wire up the heartbeat cron."
+  assistant: "I'll use the devops agent to deploy the sandbox and configure the CI pipeline."
+  <commentary>
+  ClawNet bot deployment and CI/CD setup on the Vercel+Railway+Bun stack is Root's core job.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(npm-publish), Skill(saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(bopen-tools:wait-for-ci), Skill(bopen-tools:devops-scripts), Skill(bopen-tools:check-version), Skill(bopen-tools:software-factory)
 model: sonnet
 color: orange

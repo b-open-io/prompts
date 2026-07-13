@@ -1,6 +1,6 @@
 ---
 name: wave-coordinator
-version: 1.0.3
+version: 1.0.4
 description: >-
   This skill should be used in Claude Code or Codex when dispatching more agents
   than the host can run concurrently, when context budget management is needed,
@@ -136,6 +136,13 @@ Remaining: [list of items not yet produced]
 Update the ledger after each wave completes. This prevents re-dispatching work already done and helps identify what the final synthesis pass needs.
 
 ## Host Dispatch Adapters
+
+Before assigning a wave slot to a generic worker, match it against the roster
+in `../deploy-agent-team/references/agent-roster.md` and pass the specific
+`subagent_type` (e.g. `bopen-tools:code-auditor`). Each wave slot picks a
+roster agent before defaulting to a generic explorer/worker — use the generic
+adapter only when no roster agent fits, and say so explicitly in the wave
+ledger.
 
 ### Claude Code
 

@@ -6,7 +6,7 @@ Scripted tests check what you already thought to check. Free roam finds what you
 
 A real user clicks the wrong button, pastes an emoji into a number field, hits back mid-submit, opens two tabs, and abandons a half-finished checkout. Reproduce that texture and you hit the bugs a fixed test suite was never written to catch. Free roam manufactures that variety on purpose by rotating personas, fuzzing inputs, and varying the path through the app on every pass.
 
-It is the **discovery** half of the two-loop architecture in `software-factory`. Discovery produces tickets; the execution loop consumes them. Keeping the two separate is the point — one loop surfaces breadth while the other resolves depth, and the ticket queue between them is what lets either resume tomorrow.
+It is **the discovery worker of a software factory** — the producer half of the worker architecture in `software-factory` (loop and worker are synonyms there). Discovery produces tickets; the execution worker consumes them. Keeping the two separate is the point — one worker surfaces breadth while the other resolves depth, and the ticket queue between them is what lets either resume tomorrow.
 
 ## The roam loop
 

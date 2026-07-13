@@ -1,12 +1,12 @@
 ---
 name: free-roam-testing
-version: 0.0.1
+version: 0.0.2
 description: Use this skill to run a discovery loop that explores a running app the way a curious or chaotic human would — randomized, unscripted paths, weird inputs, edge interactions — to surface NEW bugs, broken flows, confusing UX, and slow spots, then file them as deduplicated tickets. Invoke it when the user says "free roam", "explore the app", "monkey test", "find issues I don't know about", "exploratory testing", "use it like a real user", "discovery loop", "surface new bugs", or wants an agent to poke around an app autonomously and report what's broken. This is the producer half of the loop architecture — it feeds tickets to the execution loop. NOT for scripted regression tests (that's the tester agent's verification gate). Always respects a never-touch list and a blast-radius boundary before mutating anything.
 ---
 
 # Free-Roam Testing
 
-Scripted tests check what you already thought to check. **Free roam finds what you didn't.** This skill drives the actual running app along randomized, human-like paths to surface new issues, then files them as deduplicated tickets that an execution loop works systematically. It is the **discovery / producer** half of the two-loop architecture in `Skill(bopen-tools:software-factory)`.
+Scripted tests check what you already thought to check. **Free roam finds what you didn't.** This skill drives the actual running app along randomized, human-like paths to surface new issues, then files them as deduplicated tickets that an execution worker works systematically. It is **the discovery worker of a software factory** — the producer half of the worker architecture in `Skill(bopen-tools:software-factory)` (loop and worker are used interchangeably there).
 
 The value comes from *unpredictability*: a real user clicks the wrong thing, pastes an emoji into a number field, hits back mid-submit, opens two tabs, and abandons a checkout. Reproduce that texture and you find the bugs that scripted suites never touch.
 
@@ -29,7 +29,7 @@ read open tickets  →  pick an entry point  →  roam (randomized)  →
 
 ### 1. Load context
 
-- Read the **open tickets** from the state backend first (Linear / GitHub / repo vault — see `software-factory/references/state-backends.md`). You need them to dedup; refiling a known issue every pass is the #1 way discovery loops waste money.
+- Read the **open tickets** from the state backend first (Linear / GitHub / repo vault, Obsidian-compatible — see `software-factory/references/state-backends.md`). You need them to dedup; refiling a known issue every pass is the #1 way discovery loops waste money.
 - Read the never-touch list and the app's basic surface (routes, primary flows).
 
 ### 2. Roam like a human

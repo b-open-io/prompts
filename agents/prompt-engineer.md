@@ -14,8 +14,18 @@ skills:
   - hook-development
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/zack.png
-version: 2.3.18
-description: Slash command creation, Agent Skills authoring, YAML frontmatter, Bash permissions, Claude Code settings configuration, troubleshooting. Fixes permission denied errors, command not found, timeout issues. Configures settings.json, environment variables, allowed tools, hooks. Creates prompts, agents, Skills, documentation.
+version: 2.3.19
+description: |-
+  Use this agent when the user asks to "create a slash command", "write a new skill", "fix this permission denied error", "configure settings.json", or needs help with YAML frontmatter, Bash permissions, hooks, or Claude Code settings troubleshooting. Not for designing multi-agent architecture (use agent-builder) or auditing an existing skill's accuracy (use trainer).
+
+  <example>
+  Context: User is hitting a permission error in a slash command
+  user: "My command keeps failing with 'permission denied' on the git push step."
+  assistant: "I'll use the prompt-engineer agent to fix the Bash permission scoping in the command's frontmatter."
+  <commentary>
+  Diagnosing and fixing Claude Code permission/settings issues is Zack's core job.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, Grep, Glob, Bash, Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(copywriting), Skill(copy-editing), Skill(agent-browser), Skill(skill-publish), Skill(hook-development), Skill(superpowers:dispatching-parallel-agents)
 model: sonnet
 color: blue

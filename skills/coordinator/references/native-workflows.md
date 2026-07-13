@@ -57,7 +57,10 @@ is the living contract; do not trust a memorized snapshot of parameter names.
 A workflow is a dispatch lane, not an ownership transfer. Coordinator rules
 apply verbatim: specs and pinned contracts go INTO the `agent()` prompts
 (with `schema` for structured returns), the main seat reviews results, re-runs
-acceptance outside the workflow, and owns git. Practical notes that recur:
+acceptance outside the workflow, and owns git. Pass the matched roster ID as
+`agent()`'s `agentType` so each workflow stage runs under its specialist
+persona instead of the generic workflow agent; fall back to the default only
+when no roster agent fits. Practical notes that recur:
 `.filter(Boolean)` worker results (skipped/dead agents return null),
 `Date.now()`/`Math.random()` are unavailable inside scripts, use `phase()`
 titles matching `meta.phases`, worktree isolation only when agents mutate

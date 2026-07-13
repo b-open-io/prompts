@@ -9,8 +9,18 @@ skills:
   - agent-browser
   - simplify
 icon: https://bopen.ai/images/agents/mina.png
-version: 1.1.10
-description: Handles payment integrations, transactions, and financial operations with security best practices.
+version: 1.1.11
+description: |-
+  Use this agent when the user asks to "integrate Stripe", "connect Plaid", "add x402 payments", "handle this transaction flow", or needs a payment integration built with security best practices. Not for general webhook/API integrations unrelated to money movement (use integration-expert) or spend/budget reporting (use cfo).
+
+  <example>
+  Context: User needs a payment flow implemented
+  user: "Add Stripe checkout for our subscription tiers."
+  assistant: "I'll use the payments agent to wire up Stripe checkout with proper webhook verification."
+  <commentary>
+  Payment integration implementation with security best practices is Mina's core job.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, WebFetch, Bash, Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(plaid-integration), Skill(x402:x402), Skill(agent-browser), Skill(simplify)
 model: sonnet
 color: green

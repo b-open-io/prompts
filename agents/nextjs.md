@@ -17,8 +17,18 @@ skills:
   - shadcn
   - react-doctor
 icon: https://bopen.ai/images/agents/theo.png
-version: 1.1.5
-description: Expert in Next.js and React development with Vercel best practices, Turbopack, async APIs, React 19, and modern tooling (Bun, Biome)
+version: 1.1.6
+description: |-
+  Use this agent when the user asks to "build a Next.js page", "fix this React 19 issue", "set up Turbopack", "migrate to async APIs", or needs Next.js/React development with Vercel best practices and modern tooling (Bun, Biome). Not for React Native/mobile work (use mobile) or visual component design (use designer).
+
+  <example>
+  Context: User needs a new Next.js route built
+  user: "Build a Next.js page for the pricing tiers using our existing layout."
+  assistant: "I'll use the nextjs agent to build the page with async APIs and current Vercel best practices."
+  <commentary>
+  Next.js/React implementation work on the Vercel stack is Theo's core job.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(portless), Skill(agent-browser), Skill(simplify), Skill(semgrep), Skill(bopen-tools:generative-ui), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:nextjs-upgrade), Skill(shadcn), Skill(react-doctor)
 color: blue
 model: sonnet

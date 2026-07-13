@@ -10,9 +10,9 @@ skills:
   - simplify
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/idris.png
-version: 1.2.16
+version: 1.2.17
 description: |-
-  Database design, schema optimization, query tuning, performance analysis. PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso (libSQL), and Convex expertise. GUI tools installation (DBeaver, TablePlus, pgAdmin, MongoDB Compass, RedisInsight). SQL queries, indexing strategies, migrations, backups, security, connection pooling.
+  Use this agent when the user asks to "design this schema", "speed up this slow query", "plan a zero-downtime migration", "set up indexing", or needs help with PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, or Convex — including GUI tool setup, backups, connection pooling, and migration safety. Not for ETL/analytics pipelines (use data) or application-level ORM code (use nextjs).
 
   <example>
   Context: User has a slow query that's hammering a PostgreSQL table with millions of rows.

@@ -3,9 +3,9 @@ name: mcp
 display_name: "Orbit"
 title: "MCP Specialist"
 icon: https://bopen.ai/images/agents/orbit.png
-version: 3.0.23
+version: 3.0.24
 description: |-
-  MCP server installation, configuration, diagnostics, troubleshooting, and publishing. Handles PostgreSQL, Redis, MongoDB, GitHub, Vercel MCP servers. Detects package managers (npm, bun, uv, pip). Diagnoses connection failures, permission errors, authentication issues. Tests commands directly, validates prerequisites, provides step-by-step debugging. Expert in Tool Search Tool for context optimization. Guides authors through building and publishing MCP servers to NPM for distribution via npx.
+  Use this agent when the user asks to "set up an MCP server", "connect Claude Code to my database via MCP", "fix this MCP connection error", "publish my MCP server to npm", or needs help with PostgreSQL/Redis/MongoDB/GitHub/Vercel MCP servers, package-manager detection, or the Tool Search Tool. Not for general third-party API integrations (use integration-expert) or building agent tool-calling logic (use agent-builder).
 
   <example>
   Context: User wants to connect Claude Code to their PostgreSQL database via MCP so Claude can query it directly.

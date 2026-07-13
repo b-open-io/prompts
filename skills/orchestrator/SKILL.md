@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-version: 0.0.2
+version: 0.0.3
 description: >-
   Use this skill when a capable current Claude Code or Codex main session
   should coordinate native specialist agents, external implementation workers
@@ -56,7 +56,10 @@ Use the existing skills instead of duplicating their full manuals:
   verdict contract, and reconciliation.
 - Load [Wave Coordinator](../wave-coordinator/SKILL.md) when the requested fan-
   out exceeds currently free host slots or needs staged diversity.
-- Use Front Desk or the host agent roster to select named specialists.
+- Before dispatching to a generic specialist, match the unit against the
+  roster in `../deploy-agent-team/references/agent-roster.md` (or ask Front
+  Desk) and pass the specific `subagent_type`. Use a generic agent only when
+  no roster agent fits, and say so explicitly in the dispatch note.
 
 Apply Coordinator and Advisor together when the workflow has both workers and
 an advisor. Coordinator governs execution; Advisor governs judgment consults.

@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.3
+version: 0.0.4
 description: Use this skill when designing, configuring, or hardening a software factory — an AI developer workflow where agents iterate toward a goal — a goal an agent iterates toward on its own with a real verification gate, persistent state, and a stop condition. Invoke it when the user mentions "build a loop", "agentic loop", "self-iterating agent", "run this on a schedule/cron", "/loop or /goal", "Ralph loop", "maker-checker", "fleet of agents", "autonomous workflow", "AI developer workflow", "ADW", "software factory", "agentic SDLC", or wants an agent to keep working a goal unattended until it's verifiably done. Also use when scoping whether a loop is even worth building, when picking a verification gate, when deciding what a loop is allowed to touch (blast radius), or when a loop is burning tokens without producing accepted work.
 ---
 
@@ -32,12 +32,12 @@ The maker is too generous grading its own homework, so block 3 (a separate, ofte
 
 **Watching the factory floor:** [`looptop`](https://www.npmjs.com/package/looptop) (`npm install -g looptop`) is htop for these loops — a live terminal monitor plus a macOS menu-bar app showing every running loop's status. Optional, and worth installing the day more than one loop runs unattended; the setup installer checks for it.
 
-## Two loop types — coordinated through tickets
+## Worker types — coordinated through tickets
 
-Most real work needs **both**, running in parallel, with the ticketing system (the State block) as the seam between them. This is a producer/consumer architecture: discovery produces work, execution consumes it.
+In the factory analogy, a loop *is* a factory worker — a worker with one specific job. ("Loop" and "worker" are used interchangeably throughout this skill; the vocabulary didn't change, the analogy just got a name.) Most real work needs more than one worker type running in parallel, with the ticketing system (the State block) as the seam between them. The two that coordinate through the same ticket queue are a producer/consumer pair — discovery produces work, execution consumes it — plus a third, maintenance, that keeps the factory itself healthy (see below).
 
 ```
-   DISCOVERY LOOP  (free roam)              EXECUTION LOOP  (systematic)
+   DISCOVERY WORKER  (free-roam loop)       EXECUTION WORKER  (systematic loop)
    ┌───────────────────────────┐           ┌───────────────────────────┐
    │ roam the app like a human │  files    │ pull an open ticket       │
    │ randomized human-like     │  tickets  │ work it end-to-end        │
@@ -49,14 +49,35 @@ Most real work needs **both**, running in parallel, with the ticketing system (t
         PRODUCER                                CONSUMER
 ```
 
-- **Execution loop** — the classic loop: take a ticket, work it, gate it, close it. Run via `Skill(superpowers:subagent-driven-development)` or a fleet via `Skill(bopen-tools:wave-coordinator)`.
-- **Discovery loop** — exploratory free-roam testing that *surfaces new work* the execution loop then tackles systematically. Owned by `Skill(bopen-tools:free-roam-testing)`.
+The worker roster:
+
+- **Execution worker** (execution loop) — pulls a ticket, works it, gates it, closes it. Run via `Skill(superpowers:subagent-driven-development)` or a fleet via `Skill(bopen-tools:wave-coordinator)`.
+- **Discovery worker** (discovery loop) — runs the product like a user, surfaces bugs nobody knew existed, and files deduped tickets for the execution worker to pick up. Owned by `Skill(bopen-tools:free-roam-testing)`.
+- **Maintenance worker** (maintenance loop) — recurring upkeep that keeps the factory itself healthy rather than shipping a ticket. See "Maintenance workers & looptop" below.
 
 The dedup-vs-open-tickets step is what stops discovery from re-filing the same issue every pass. Always read open tickets before filing new ones.
 
-At factory scale, a **router** sits above both loops: work arrives typed (chore, bug, feature, hotfix), and the router picks the workflow and the model tier for it — a workhorse maker for volume, a state-of-the-art model only where planning or checking earns it. Speed-critical work (hotfixes) can **race**: several isolated agents attack the same fix in parallel and the first one through the gate wins. Isolation progresses with maturity — git worktrees are a great place to start and a poor place to end; sandboxes give full isolation plus a place a human can step into mid-run.
+At factory scale, a **router** sits above all worker types: work arrives typed (chore, bug, feature, hotfix), and the router picks the workflow and the model tier for it — a workhorse maker for volume, a state-of-the-art model only where planning or checking earns it. Speed-critical work (hotfixes) can **race**: several isolated agents attack the same fix in parallel and the first one through the gate wins. Isolation progresses with maturity — git worktrees are a great place to start and a poor place to end; sandboxes give full isolation plus a place a human can step into mid-run.
 
 **On Claude Code specifically**, staged fan-outs inside a loop pass — find → adversarially verify → synthesize, judge panels, loop-until-dry discovery — can run as a native `Workflow` (deterministic script, live `/workflows` progress, resumable). This is framework-dependent and opt-in-gated; see `skills/coordinator/references/native-workflows.md` for when it applies. On other runtimes, the manual wave protocols in `wave-coordinator` do the same job.
+
+## Maintenance workers & looptop
+
+The third worker type isn't "build this ticket" (execution) or "find what's broken" (discovery) — it's the recurring upkeep that keeps the factory itself healthy: dependency updates, link checks, stale-ticket sweeps, catalog freshness. Its gate is usually "did the check come back clean," not "did a feature ship."
+
+**Cadence patterns** — pick one per project:
+
+- **Dedicated schedule** — its own heartbeat (e.g. a weekly dependency-bump cron), independent of execution volume.
+- **Alternating with execution** — one worker splits its time, running as execution or maintenance on alternating passes — "half the time one or the other." Cheaper than a second worker when upkeep volume is low.
+- **Two parallel workers** — a standing maintenance loop runs alongside the execution loop once upkeep volume earns its own heartbeat.
+
+**Watching the factory floor with `looptop`:**
+
+- Loops are discovered from their LaunchAgents: `~/Library/LaunchAgents/ai.<slug>.loop.exec.plist`.
+- `looptop ls` / `looptop status` / `looptop tail` / `looptop pause` / `looptop resume` — list, inspect, and control any running loop.
+- `looptop run <slug> [exec|maintenance]` kickstarts a worker of the given type on demand.
+- Each loop's state file carries a `paused` flag in `state.json` that `pause`/`resume` toggle — resume picks the worker back up from where the state file left off (the state-file contract in `references/state-backends.md`).
+- Install with `npm install -g looptop`; the setup installer already checks for it (`setup/manifest.json`), so a factory-init'd project has nothing extra to wire up.
 
 ## Do you even need a loop?
 
@@ -112,7 +133,7 @@ Decisions 3, 4, and 5 below are per-project — **you must ask the project**, ne
 2. **Gate** — what automatically rejects bad output? Required rung on the ladder: `static (typecheck/lint) → unit → integration → real-app exercise`.
 3. **Environment** — ephemeral/preview when available (nothing to clean up); prod is fine for early/simple apps. *Ask.*
 4. **Side-effects & cleanup** — does verification mutate state? ephemeral vs register-teardown vs acceptable-to-leave. *Ask.* Don't bend the app's mechanics to enforce teardown.
-5. **State backend** — Linear / GitHub Issues / checked-in repo vault. *Ask.* (`references/state-backends.md`)
+5. **State backend** — Linear / GitHub Issues / Repo vault (Obsidian-compatible). *Ask.* (`references/state-backends.md`)
 6. **Maker/checker** — separate checker agent? cheap maker (Haiku-tier reads/diffs) + strict checker (strong model, high effort).
 7. **Stop conditions** — cap, success condition, budget, halt-below-accept-rate.
 8. **Heartbeat** — manual now (prove) or scheduled (cron/`/loop`/Actions/hook)? cadence?
@@ -126,12 +147,13 @@ Loops fail quietly, not loudly. Before shipping, walk `references/failure-modes.
 ## Who does what (roster)
 
 - **`agent-builder` (Satchmo)** — loop architect; runs this skill, assembles the five blocks, owns the design.
-- **`tester` (Jason)** — the gate; implements and runs verification at the required rung.
-- **`project-manager`** — the state layer; tickets as loop memory across all three backends.
-- **`devops`** — heartbeat + connectors; cron/Actions, circuit breakers, the promotion gate.
+- **`tester` (Jason)** — the execution worker's gate; implements and runs verification at the required rung.
+- **`free-roam-testing`** — the discovery worker; roams the product like a user and files deduped tickets.
+- **`project-manager`** — the state layer; tickets as worker memory across all three backends.
+- **`devops`** — heartbeat + connectors for every worker type, including maintenance-worker cadence; cron/Actions, circuit breakers, the promotion gate.
 - **`code-auditor` / `hunter-skeptic-referee`** — adversarial maker/checker separation.
 - **`CFO` (Milton)** — cost-per-accepted-change watchdog.
-- **`wave-coordinator`** — fleets of loops at scale.
+- **`wave-coordinator`** — fleets of workers at scale.
 
 ## References
 

@@ -16,11 +16,11 @@ skills:
   - product-skills:soc2-evidence-collection
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/paul.png
-version: 1.0.6
+version: 1.0.7
 model: sonnet
 color: yellow
 description: |-
-  Runtime security operations, dependency scanning, supply chain analysis, secrets scanning, OWASP compliance, and security incident response. Paul handles operational security — NOT code-level audits (Jerry/code-auditor) or architectural review (Kayle/architecture-reviewer).
+  Use this agent when the user asks to "scan our dependencies for CVEs", "check for leaked secrets", "is this OWASP compliant", "run a supply chain audit", or needs runtime/operational security work. Paul handles operational security — not code-level audits (use code-auditor) or architectural review (use architecture-reviewer).
 
   <example>
   Context: User wants dependency audit

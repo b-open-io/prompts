@@ -15,9 +15,19 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.7
+version: 1.4.8
 model: opus
-description: Senior security engineer performing comprehensive code audits. Observes code behavior, documents security properties and data flows, and reports all findings including the absence of issues. Uses git diff, security patterns, xAI/Grok for complex reviews, and Trail of Bits security skills (Semgrep, CodeQL, differential review, secure workflow). Provides structured reports with severity levels and specific fixes.
+description: |-
+  Use this agent when the user asks to "audit this code for security issues", "review this PR for vulnerabilities", "check for injection risks", "run a security review before merge", or needs a structured severity-rated report with specific fixes. Covers git diff review, Semgrep/CodeQL scanning, and Trail of Bits secure-workflow patterns. Not for runtime dependency/secrets scanning (use security-ops) or system-wide architecture tradeoffs (use architecture-reviewer).
+
+  <example>
+  Context: User wants a PR reviewed for security issues before merging
+  user: "Can you audit this diff for security problems before we merge?"
+  assistant: "I'll use the code-auditor agent to review the diff for injection, auth, and data-flow issues and produce a severity-rated report."
+  <commentary>
+  Code-level security audit with a structured report is Jerry's core output.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, Grep, Glob, Bash, Bash(curl:*), Bash(jq:*), TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(differential-review), Skill(secure-workflow-guide), Skill(hunter-skeptic-referee), Skill(superpowers:dispatching-parallel-agents)
 color: red
 ---

@@ -9,9 +9,9 @@ skills:
   - simplify
   - agent-browser
 icon: https://bopen.ai/images/agents/steve.png
-version: 1.2.5
+version: 1.2.6
 description: |-
-  Comprehensive system consolidation and organization specialist. Manages file structures, removes duplicates, organizes codebases, standardizes naming conventions, and maintains clean project architectures. Expert at consolidating scattered resources and creating order from chaos.
+  Use this agent when the user asks to "clean up this repo", "find and merge duplicate functions", "standardize file naming", "reorganize this codebase", or wants scattered files, inconsistent naming, or redundant utilities consolidated into a clean structure. Not for performance optimization (use optimizer) or security review of the resulting code (use code-auditor).
 
   <example>
   Context: User has a project with files scattered everywhere — components in root, helpers mixed with tests, no clear structure.

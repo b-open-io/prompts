@@ -19,10 +19,10 @@ skills:
   - bopen-tools:software-factory
   - bopen-tools:free-roam-testing
 icon: https://bopen.ai/images/agents/jason.png
-version: 1.3.15
+version: 1.3.16
 model: sonnet
 description: |-
-  Expert in comprehensive testing strategies, framework implementation, and quality assurance. Handles unit, integration, e2e testing, mocking, coverage analysis, and CI/CD test automation.
+  Use this agent when the user asks to "write tests", "add test coverage", "set up e2e/Playwright tests", "fix failing tests", or "add a CI coverage gate", or when a change needs unit/integration/e2e tests before merging. Covers mocking, coverage analysis, and CI test automation. Not for performance profiling (use optimizer) or security review (use code-auditor).
 
   <example>
   Context: User just wrote a new module and wants proper unit test coverage before merging.

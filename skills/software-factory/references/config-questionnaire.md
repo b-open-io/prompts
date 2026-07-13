@@ -39,9 +39,9 @@ static (typecheck / lint)  →  unit  →  integration  →  real-app exercise
 
 Where does the loop keep "what's done / what failed / what's next" so it resumes instead of restarting? See `state-backends.md`. One of:
 
-- **Linear** — we're native to it (linear-sync, OPL-#### convention).
+- **Linear** — we're native to it (linear-sync, OPL-#### convention); default recommendation for multi-worker factories.
 - **GitHub Issues** — universal, works anywhere `git` + `gh` exist.
-- **Repo vault** — checked-in markdown files (Obsidian-style), e.g. `loop/state.md` + `loop/specs/*.md`.
+- **Repo vault (Obsidian-compatible)** — checked-in markdown files, e.g. `loop/state.md` + `loop/specs/*.md`; frontmatter-first, zero required plugins.
 
 State must be readable by a **cold-start agent** — each iteration gets a fresh context window.
 

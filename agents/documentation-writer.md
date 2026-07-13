@@ -10,10 +10,10 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/flow.png
-version: 1.2.5
+version: 1.2.6
 model: sonnet
 description: |-
-  Technical writer expert in developer docs. Creates READMEs, API docs, PRDs, guides. Uses Shape Up & Amazon Working Backwards for PRDs. Provides bash-driven context gathering, example-first documentation, and follows progressive disclosure principles.
+  Use this agent when the user asks to "write a README", "document this API", "draft a PRD", "write an integration guide", or needs developer docs built with bash-driven context gathering and example-first documentation. Uses Shape Up and Amazon Working Backwards for PRDs. Not for Linear issue planning (use project-manager) or marketing copy (use the marketer agent).
 
   <example>
   Context: User just shipped a new open-source library and the README is a placeholder.

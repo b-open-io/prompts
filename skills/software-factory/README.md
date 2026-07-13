@@ -18,12 +18,12 @@ The failure this prevents has a name: the Ralph Wiggum loop, where the agent dec
 | **Connectors** | let the loop act — open the PR, comment the ticket, ping the channel |
 | **Verifier** | the gate that automatically rejects bad output |
 
-## Two loops, one ticket queue
+## Worker types, one ticket queue
 
-Most real work runs two loops in parallel, coordinated through a ticketing system that holds the state:
+A loop *is* a factory worker with one specific job. Most real work runs an execution worker and a discovery worker in parallel, coordinated through a ticketing system that holds the state, plus a maintenance worker for recurring upkeep:
 
 ```
-  DISCOVERY (free roam)                 EXECUTION (systematic)
+  DISCOVERY WORKER (free roam)          EXECUTION WORKER (systematic)
   roam the app like a human    files    pull an open ticket
   surface new anomalies       ──────▶   work it, gate it, close it
   dedup vs open tickets       tickets   (free-roam the fix to verify)
@@ -31,7 +31,7 @@ Most real work runs two loops in parallel, coordinated through a ticketing syste
        PRODUCER                              CONSUMER
 ```
 
-The discovery half is its own skill, `free-roam-testing`. The execution half runs through `subagent-driven-development` or, for a fleet, `wave-coordinator`. Tickets are the memory that lets either loop resume tomorrow instead of starting cold, which is why the state backend (Linear, GitHub Issues, or a checked-in repo vault) is a first-class design decision rather than an afterthought.
+The discovery worker is its own skill, `free-roam-testing`. The execution worker runs through `subagent-driven-development` or, for a fleet, `wave-coordinator`. The maintenance worker handles recurring upkeep (dependency bumps, link checks, stale-ticket sweeps) on its own cadence — see `SKILL.md`'s "Maintenance workers & looptop" section, and watch any of them with `looptop`. Tickets are the memory that lets any worker resume tomorrow instead of starting cold, which is why the state backend (Linear, GitHub Issues, or a repo vault that's Obsidian-compatible) is a first-class design decision rather than an afterthought.
 
 ## When a loop is worth building
 

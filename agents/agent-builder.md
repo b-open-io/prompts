@@ -32,9 +32,19 @@ skills:
   - bopen-tools:software-factory
   - bopen-tools:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
-version: 1.7.7
+version: 1.7.8
 model: opus
-description: Designs, integrates, and productionizes AI agents using OpenAI/Vercel SDKs and related stacks. Specializes in tool-calling, routing, memory, evals, resilient chat UIs, visual workflow planning, and live agent deployment via ClawNet. Can brainstorm agent architectures collaboratively and produce interactive workflow diagrams.
+description: |-
+  Use this agent when the user asks to "design an agent", "build an AI agent", "wire up tool-calling", "add memory to my agent", "set up agent routing", or "deploy this as a ClawNet bot", or needs help with evals, resilient chat UIs, or visual workflow diagrams for a multi-agent system. Covers agent architecture using OpenAI/Vercel SDKs. Not for authoring individual Skills or slash commands (use prompt-engineer) or auditing an existing skill's accuracy (use trainer).
+
+  <example>
+  Context: User wants to build a new agent from scratch
+  user: "I need an agent that can call tools, remember context across turns, and route to the right specialist."
+  assistant: "I'll use the agent-builder agent to design the tool-calling and routing architecture, then wire up memory."
+  <commentary>
+  Agent architecture design — tool-calling, routing, memory — is agent-builder's core job.
+  </commentary>
+  </example>
 tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(ai-sdk), Skill(plugin-dev:agent-development), Skill(plugin-dev:skill-development), Skill(skill-creator:skill-creator), Skill(superpowers:brainstorming), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:executing-plans), Skill(superpowers:writing-plans), Skill(bopen-tools:deploy-agent-team), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:agent-decommissioning), Skill(gemskills:visual-planner), Skill(simplify), Skill(semgrep), Skill(hunter-skeptic-referee), Skill(bopen-tools:agent-auditor), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(bopen-tools:software-factory), Skill(bopen-tools:free-roam-testing)
 color: purple
 ---

@@ -17,10 +17,10 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/maxim.png
-version: 1.2.20
+version: 1.2.21
 model: sonnet
 description: |-
-  Implements API integrations, webhooks, and third-party service connections with proper error handling.
+  Use this agent when the user asks to "wire up this webhook", "integrate with this API", "sync data from X on a schedule", "send transactional emails", or needs a third-party service connection with proper error handling, rate limiting, and signature verification. Not for payment-specific integrations (use payments) or MCP server setup (use mcp).
 
   <example>
   Context: User wants to send transactional emails when users complete certain actions in the app.
