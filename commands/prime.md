@@ -1,7 +1,7 @@
 ---
 allowed-tools: Agent
 description: Context warm-up — loads git state, plugin inventory, and project conventions before starting work
-argument-hint: [--help]
+argument-hint: "[--help]"
 ---
 
 ## Your Task

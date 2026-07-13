@@ -1497,7 +1497,7 @@ claude config add permissions.allow "Bash(npm test:*)"
 version: 1.0.0
 allowed-tools: Read, Bash(claude config:*), Bash(jq:*)
 description: Check current permission settings
-argument-hint: [tool-name]
+argument-hint: "[tool-name]"
 ---
 
 Show current permission configuration for Claude Code.
@@ -1531,7 +1531,7 @@ Add a directory to additionalDirectories in permissions.
 version: 1.0.0
 allowed-tools: Read, Grep, Glob
 description: Find TODO comments in codebase
-argument-hint: [file-pattern]
+argument-hint: "[file-pattern]"
 ---
 
 # Find TODOs
