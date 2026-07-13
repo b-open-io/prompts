@@ -33,9 +33,17 @@ TRIGGER_MSG='These are pre-existing errors. Nothing new from our changes. They m
 # Clean benign message
 CLEAN_MSG='Implemented the feature and all new tests pass.'
 
+# Every case pins cwd to an empty temp dir. Without it the hook falls back
+# to os.getcwd() = this repo, DISCOVERS the live Claude session's transcript
+# in ~/.claude/projects/, and full-turn rules score that session's real
+# conversation instead of the test message — the outcome then depends on
+# what the developer's assistant happened to be saying, which was the
+# long-standing "flaky hammertime" mystery.
+HT_CWD=$(mktemp -d)
+
 # 1) stop_hook_active skips content rules (exit 0, no block)
-input=$(jq -n --arg m "$TRIGGER_MSG" \
-  '{session_id:"sess-stop", stop_hook_active:true, last_assistant_message:$m, transcript_path:null}')
+input=$(jq -n --arg m "$TRIGGER_MSG" --arg cwd "$HT_CWD" \
+  '{session_id:"sess-stop", stop_hook_active:true, last_assistant_message:$m, transcript_path:null, cwd:$cwd}')
 run_ht "$input"
 assert_exit "hammertime stop_hook_active allows exit" "0" "$HOOK_EXIT"
 assert_not_contains "hammertime stop_hook_active no block decision" '"decision": "block"' "$HOOK_STDOUT"
@@ -48,9 +56,24 @@ run_ht "$input"
 assert_exit "hammertime null transcript clean exit" "0" "$HOOK_EXIT"
 
 # 3) Triggering rule blocks with decision:block
-input=$(jq -n --arg m "$TRIGGER_MSG" \
-  '{session_id:"sess-trigger", last_assistant_message:$m, transcript_path:null}')
+input=$(jq -n --arg m "$TRIGGER_MSG" --arg cwd "$HT_CWD" \
+  '{session_id:"sess-trigger", last_assistant_message:$m, transcript_path:null, cwd:$cwd}')
 run_ht "$input"
+# Failure diagnostics: an empty stdout here has historically been an opaque
+# flake. Dump everything needed to explain it before the assertions fire.
+if [ -z "$HOOK_STDOUT" ]; then
+  echo "DIAG trigger-case empty stdout:"
+  echo "DIAG exit=$HOOK_EXIT stderr=[$HOOK_STDERR]"
+  echo "DIAG HAMMERTIME_DEBUG=$HAMMERTIME_DEBUG"
+  echo "DIAG BOPEN_HOOKS_CONFIG=${BOPEN_HOOKS_CONFIG:-unset} CLAUDE_PROJECT_DIR=${CLAUDE_PROJECT_DIR:-unset} PWD=$PWD"
+  echo "DIAG debug.log ($(wc -l < "$HAMMERTIME_DEBUG" 2>/dev/null || echo 0) lines) BEGIN"
+  sed 's/^/DIAG | /' "$HAMMERTIME_DEBUG" 2>/dev/null || echo "DIAG (no debug.log)"
+  echo "DIAG debug.log END"
+  echo "DIAG home dir:"; ls -la "$BOPEN_HAMMERTIME_HOME" 2>/dev/null | sed 's/^/DIAG | /'
+  echo "DIAG retrying same input in place:"
+  run_ht "$input"
+  echo "DIAG retry exit=$HOOK_EXIT stdout_bytes=$(printf '%s' "$HOOK_STDOUT" | wc -c | tr -d ' ')"
+fi
 assert_exit "hammertime trigger exit" "0" "$HOOK_EXIT"
 assert_contains "hammertime trigger decision block" '"decision": "block"' "$HOOK_STDOUT"
 # systemMessage present
