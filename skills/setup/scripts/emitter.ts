@@ -112,14 +112,30 @@ function buildPluginsSection(state: any, selections: any, runtime: string): stri
       continue;
     }
 
-    if (runtime === "opencode" || runtime === "grok") {
+    if (runtime === "opencode") {
       const line = claudeInstallLine(plugin);
       if (line) {
         lines.push(line);
         lines.push(
-          runtime === "grok"
-            ? "  verify: `grok inspect` (Claude-Code-installed plugins are discovered natively)"
-            : "  verify: OpenCode discovers Claude-Code-installed plugins natively",
+          "  verify: OpenCode discovers Claude-Code-installed plugins natively",
+        );
+      }
+      continue;
+    }
+
+    if (runtime === "grok") {
+      // Grok Build reads Claude Code plugin installs zero-config (compat
+      // passthrough); its native registry is a separate path for Grok-only
+      // machines. `grok plugin list` is blind to compat-discovered plugins,
+      // so verification for that path must use `grok inspect`.
+      if (plugin.installedClaude !== null) {
+        lines.push(
+          `- ${sel.name}: already active in Grok Build via the Claude Code install — no separate install needed. Verify with \`grok inspect\` (Plugins section); \`grok plugin list\` only shows Grok-native installs and will not list it.`,
+        );
+      } else {
+        lines.push(
+          `- \`grok plugin install ${MARKETPLACE}/prompts --trust\``,
+          `  verify: \`grok plugin details ${sel.name}\` (native installs appear in Grok's own registry)`,
         );
       }
       continue;

@@ -218,3 +218,45 @@ describe("emitPlan", () => {
     expect(first).toBe(second);
   });
 });
+
+describe("grok dialect", () => {
+  const grokState = (installedClaude: string | null) =>
+    ({
+      runtimeArg: "grok",
+      runtimeDetected: "grok",
+      platform: "darwin",
+      generatedAt: "2026-07-13T00:00:00.000Z",
+      plugins: [
+        {
+          name: "bopen-tools",
+          installedClaude,
+          installedCodex: null,
+          marketplaceVersion: "9.9.9",
+          hasSetupManifest: false,
+          checks: [],
+          hooks: [],
+          hooksConfigPath: null,
+        },
+      ],
+      marketplace: { fetched: true, error: null, fetchedAt: null },
+    }) as any;
+  const grokSel = {
+    runtime: "grok",
+    plugins: [
+      { name: "bopen-tools", installPlugin: true, checks: [], hooks: {} },
+    ],
+  } as any;
+
+  test("claude-installed plugin emits compat passthrough with grok inspect", () => {
+    const plan = emitPlan(grokState("1.1.47"), grokSel);
+    expect(plan).toContain("already active in Grok Build");
+    expect(plan).toContain("grok inspect");
+    expect(plan).not.toContain("grok plugin install");
+  });
+
+  test("no claude install emits native grok plugin install", () => {
+    const plan = emitPlan(grokState(null), grokSel);
+    expect(plan).toContain("grok plugin install b-open-io/prompts --trust");
+    expect(plan).toContain("grok plugin details bopen-tools");
+  });
+});
