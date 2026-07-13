@@ -62,3 +62,27 @@ input=$(jq -n '{tool_name:"Read", tool_input:{file_path:"/Users/x/.claude/bopen-
 run_hook "damage-control.sh" "claude" "$input"
 assert_exit "damage-control hooks-config read allowed" "0" "$HOOK_EXIT"
 assert_not_contains "damage-control hooks-config read no prompt" "permissionDecision" "$HOOK_STDOUT$HOOK_STDERR"
+
+# OPL-2842 regression: noDeletePaths must evaluate rm's actual argument
+# paths, not substring-match the whole command line. A chained command that
+# merely mentions a protected path elsewhere (via `cat`, not `rm`) must pass.
+input=$(jq -n '{tool_name:"Bash", tool_input:{command:"rm /tmp/x && cat ~/.claude/plugins/foo"}}')
+run_hook "damage-control.sh" "claude" "$input"
+assert_exit "damage-control rm-elsewhere-mention allow exit" "0" "$HOOK_EXIT"
+assert_not_contains "damage-control rm-elsewhere-mention no deny" "permissionDecision" "$HOOK_STDOUT$HOOK_STDERR"
+
+# The real thing must still deny: rm actually targeting the protected dir.
+input=$(jq -n '{tool_name:"Bash", tool_input:{command:"rm -rf ~/.claude"}}')
+run_hook "damage-control.sh" "claude" "$input"
+assert_exit "damage-control rm protected dir deny exit" "0" "$HOOK_EXIT"
+assert_contains "damage-control rm protected dir deny field" '"permissionDecision":"deny"' "$HOOK_STDOUT"
+
+# Deleting a file underneath the protected directory must also deny.
+input=$(jq -n '{tool_name:"Bash", tool_input:{command:"rm ~/.claude/settings.json"}}')
+run_hook "damage-control.sh" "claude" "$input"
+assert_contains "damage-control rm file under protected dir deny" '"permissionDecision":"deny"' "$HOOK_STDOUT"
+
+# rm with only an unrelated target stays allowed.
+input=$(jq -n '{tool_name:"Bash", tool_input:{command:"rm /tmp/scratch.txt"}}')
+run_hook "damage-control.sh" "claude" "$input"
+assert_not_contains "damage-control rm unrelated target allow" "permissionDecision" "$HOOK_STDOUT$HOOK_STDERR"

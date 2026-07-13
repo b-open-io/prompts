@@ -1,0 +1,13 @@
+.next/
+node_modules/
+*.local
+.env*
+
+# The repo root .gitignore blanket-excludes package.json/bun.lock/lockfiles
+# everywhere ("this is NOT an npm package"). This directory is the one
+# deliberate exception — a self-contained, buildable Next.js app per
+# SPEC-OPL-2879-playground.md — so its own manifest and lockfile need to be
+# tracked for `bun install` to reproduce the same deps for anyone who clones
+# the plugin fresh.
+!package.json
+!bun.lock

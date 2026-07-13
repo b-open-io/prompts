@@ -1,6 +1,6 @@
 ---
 name: setup
-version: 1.0.0
+version: 1.0.1
 description: This skill should be used when the user says "bopen setup", "setup ui", "harness install", "audit my setup", "install everything", "unified installer", "setup plan", "/bopen-setup", or wants a single view of which bOpen plugins, CLIs, env keys, third-party skills, agents, and hooks are installed across their agent harness. It audits live state, lets the user select what to fix, and emits a runtime-tailored instruction plan — it never installs anything itself. For hooks-only configuration (enabling/disabling a single hook without the full harness view) the hook-manager skill remains canonical; this skill's Overview and per-plugin tabs point there for that narrower job.
 ---
 
@@ -31,7 +31,18 @@ agent decides whether and when to run them.
 
 ## How to launch
 
-From the installed plugin root:
+From the installed plugin root — two paths, identical API contracts:
+
+**Playground (preferred — richer UI, shadcn + dither-kit):**
+
+```bash
+bun skills/setup/scripts/playground_server.ts --runtime <claude|codex|opencode|grok|hermes|generic>
+```
+
+A buildable Next.js app on port 7788; the launcher installs and builds on
+first run (needs network once), then starts instantly.
+
+**Zero-install fallback (single file, works offline):**
 
 ```bash
 bun skills/setup/scripts/server.ts --runtime <claude|codex|opencode|grok|hermes|generic> [--port 7788]

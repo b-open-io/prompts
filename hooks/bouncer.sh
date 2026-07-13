@@ -12,21 +12,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
 
-hook_enabled "bouncer" || exit 0
-
-input=$(cat)
-tool_name=$(extract_tool_name "$input")
-
-# Only act on shell tools; other tools pass through.
-if [[ -n "$tool_name" ]] && ! is_shell_tool "$tool_name"; then
-  exit 0
-fi
-
-command=$(extract_command "$input")
-if [[ -z "$command" ]]; then
-  exit 0
-fi
-
 # ---------------------------------------------------------------------------
 # Classification helpers
 # Returns 0 if the command should be hard-blocked; prints matched reason.
@@ -98,9 +83,39 @@ hard_block_reason() {
   return 1
 }
 
-reason=$(hard_block_reason "$command" || true)
-if [[ -n "${reason:-}" ]]; then
-  deny_permission "BLOCKED: This command can destroy uncommitted work (matched: ${reason}). Ask the user for explicit permission before running destructive git commands."
-fi
+# Entry point. Callable standalone (this file executed directly) or sourced
+# and invoked in-process by pretooluse-bash.sh — either way $1 is the raw
+# hook stdin JSON; a deny/ask exits the whole process via common.sh, an
+# allow returns 0 so a caller can continue to the next check.
+bouncer_main() {
+  local input="$1"
+  hook_enabled "bouncer" || return 0
 
-exit 0
+  local tool_name
+  tool_name=$(extract_tool_name "$input")
+
+  # Only act on shell tools; other tools pass through.
+  if [[ -n "$tool_name" ]] && ! is_shell_tool "$tool_name"; then
+    return 0
+  fi
+
+  local command
+  command=$(extract_command "$input")
+  if [[ -z "$command" ]]; then
+    return 0
+  fi
+
+  local reason
+  reason=$(hard_block_reason "$command" || true)
+  if [[ -n "${reason:-}" ]]; then
+    deny_permission "BLOCKED: This command can destroy uncommitted work (matched: ${reason}). Ask the user for explicit permission before running destructive git commands."
+  fi
+
+  return 0
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  input=$(cat)
+  bouncer_main "$input"
+  exit 0
+fi

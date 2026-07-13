@@ -18,18 +18,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/bouncer.sh\"",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/damage-control.sh\"",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/publish-gate.sh\"",
-            "timeout": 10
+            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse-bash.sh\"",
+            "timeout": 20
           }
         ]
       },

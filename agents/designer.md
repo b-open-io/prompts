@@ -34,7 +34,7 @@ skills:
   - document-skills:pdf
   - html-to-pdf
 icon: https://bopen.ai/images/agents/ridd.png
-version: 1.0.17
+version: 1.0.18
 model: sonnet
 description: Creates beautiful, accessible UI components using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "set up shadcn preset", "implement dark mode", "review UI accessibility", "design in pencil", "open a .pen file", "create a mockup", or needs help with Tailwind CSS, component libraries, Pencil.dev visual design, or visual design.
 tools: ["Read", "Write", "Edit", "WebFetch", "Bash", "Grep", "Glob", "TaskCreate", "TaskUpdate", "TaskGet", "TaskList", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(gemskills:generate-image)", "Skill(gemskills:generate-svg)", "Skill(gemskills:generate-icon)", "Skill(gemskills:edit-image)", "Skill(gemskills:optimize-images)", "Skill(gemskills:section-dividers)", "Skill(gemskills:browsing-styles)", "Skill(gemskills:avatar-portrait)", "Skill(gemskills:ask-gemini)", "Skill(gemskills:generate-video)", "Skill(gemskills:upscale-image)", "Skill(gemskills:segment-image)", "Skill(bopen-tools:generative-ui)", "Skill(bopen-tools:mcp-apps)", "Skill(superpowers:dispatching-parallel-agents)", "Skill(superpowers:subagent-driven-development)", "Skill(agent-browser)", "Skill(chrome-cdp)", "mcp__pencil__get_editor_state", "mcp__pencil__open_document", "mcp__pencil__get_guidelines", "mcp__pencil__get_style_guide_tags", "mcp__pencil__get_style_guide", "mcp__pencil__batch_get", "mcp__pencil__batch_design", "mcp__pencil__snapshot_layout", "mcp__pencil__get_screenshot", "mcp__pencil__get_variables", "mcp__pencil__set_variables", "mcp__pencil__find_empty_space_on_canvas", "mcp__pencil__search_all_unique_properties", "mcp__pencil__replace_all_matching_properties", "Skill(gemskills:pixel-avatar)", "Skill(gemskills:style-creator)", "Skill(gemskills:team-group-photo)", "Skill(shadcn)", "Skill(document-skills:pdf)", "Skill(html-to-pdf)"]
@@ -167,6 +167,24 @@ function WalletConnect() {
 ```
 
 **Key features:** tree-shakeable, TypeScript support, dark mode ready, consistent SVG style across all coins. Import only what you need. Use `h-4 w-4` (small), `h-6 w-6` (medium), `h-8 w-8` (large) for consistent sizing. Apply `aria-label` when the icon is used without visible text.
+
+## Dither Kit (Boring-Software-Inc)
+
+A shadcn-style registry of ordered-dither (Bayer-matrix) chart and identity primitives — vendored per-component, not an npm dependency:
+
+```bash
+bunx --bun shadcn@latest add Boring-Software-Inc/dither-kit/<component>
+```
+
+**Primitives:** charts (`area`, `bar`, `pie`, `radar`, `sparkline`); standalone (`avatar`, `button`, `gradient`).
+
+**`<DitherAvatar name={seed} />`** — deterministic placeholder identity. Same `name` always renders the same mirrored pixel glyph; hue (0-360) derives from the name unless overridden. Use for user/agent avatars, empty states, catalog fallbacks — anywhere a stable, generative identity mark beats a real image.
+
+**Palette reality:** charts and buttons take a `color` prop locked to a 7-value enum (`green`/`blue`/`purple`/`pink`/`orange`/`red`/`grey`) — no arbitrary hex. To hit exact brand colors, fork the vendored `palette.ts` and swap the RGB triples per color key. Avatars and gradients take a continuous hue instead and aren't enum-locked.
+
+**Precedent:** `bopen-ai/src/components/dither-kit` is our fork, plus `DitherFallback`, whose banded-hue helper maps a seed into one of two on-brand hue ranges (steel-blue/amber) instead of full-spectrum random, so generated fallbacks stay on-brand rather than reading as rainbow noise.
+
+**When NOT to use it:** dense data tables, text-heavy surfaces, or anywhere dither noise competes with reading — it's a stylistic accent, not a general-purpose chart replacement.
 
 ## Reference Files
 

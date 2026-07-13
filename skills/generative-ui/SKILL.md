@@ -1,6 +1,6 @@
 ---
 name: generative-ui
-version: 0.2.1
+version: 0.2.2
 description: >-
   This skill should be used when the user asks about "generative UI", "dynamic UI",
   "AI-generated interfaces", "json-render", "render JSON as UI", "generate a dashboard",
@@ -88,6 +88,31 @@ For building MCP Apps that deliver generative UI, use Skill(bopen-tools:mcp-apps
 | Images | `@json-render/image` | Image file (PNG/SVG) |
 
 MCP Apps delivery is available for any renderer that targets the browser (React, shadcn). Bundle the renderer + catalog + registry into a single HTML file with Vite + `vite-plugin-singlefile`, serve it as a `ui://` resource.
+
+## Dithered primitives
+
+`dither-kit` (Boring-Software-Inc) is a shadcn-style registry of Bayer-matrix dithered chart and identity primitives, vendored per-component:
+
+```bash
+bunx --bun shadcn@latest add Boring-Software-Inc/dither-kit/<component>
+```
+
+**Charts** (`area`, `bar`, `pie`, `radar`, `sparkline`):
+```tsx
+<DitherBarChart data={rows} color="blue" />
+```
+
+**Avatar** — deterministic placeholder identity, same name -> same glyph:
+```tsx
+<DitherAvatar name={seed} />
+```
+
+**Standalone** (`button`, `gradient`):
+```tsx
+<DitherButton color="green">Ship</DitherButton>
+```
+
+**Palette constraint:** charts/buttons take a `color` prop locked to a 7-value enum (`green`/`blue`/`purple`/`pink`/`orange`/`red`/`grey`) — fork the vendored `palette.ts` for exact brand RGB triples. `DitherAvatar` and `gradient` take a continuous `hue` (0-360) instead, with no enum limit. Skip the dither treatment on dense tables or text-heavy surfaces, where the ordered-dither texture fights readability.
 
 ## Reference Files
 

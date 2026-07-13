@@ -64,6 +64,21 @@ else
   PASS=$((PASS + 1)); printf '  PASS  claude does not intercept WebSearch\n'
 fi
 
+# OPL-2842: PreToolUse Bash matcher is a single consolidated entry (one bash
+# spawn) pointing at pretooluse-bash.sh, not three separate hook entries.
+for f in claude-hooks.json codex-hooks.json; do
+  bash_hook_count=$(jq -r --arg m "Bash" '
+    [.hooks.PreToolUse[] | select(.matcher | test("(^|[|])" + $m + "([|]|$)"; "i")) | .hooks[]] | length
+  ' "$ROOT/$f" 2>/dev/null || echo -1)
+  assert_eq "$f: single consolidated Bash PreToolUse entry" "1" "$bash_hook_count"
+  if jq -r '.. | strings? // empty' "$ROOT/$f" | grep -q 'pretooluse-bash.sh'; then
+    PASS=$((PASS + 1)); printf '  PASS  %s: uses pretooluse-bash.sh\n' "$f"
+  else
+    FAIL=$((FAIL + 1)); failures+=("$f: does not reference pretooluse-bash.sh")
+    printf '  FAIL  %s: uses pretooluse-bash.sh\n' "$f"
+  fi
+done
+
 # hooks.json removed
 if [[ ! -f "$ROOT/hooks.json" ]]; then
   PASS=$((PASS + 1)); printf '  PASS  default hooks.json removed\n'
@@ -72,8 +87,9 @@ else
 fi
 
 # Shell syntax
-for sh in bouncer.sh damage-control.sh publish-gate.sh session-context.sh \
-          agent-browser-solo.sh browser-intent.sh lib/common.sh; do
+for sh in bouncer.sh damage-control.sh publish-gate.sh pretooluse-bash.sh \
+          session-context.sh agent-browser-solo.sh browser-intent.sh \
+          lib/common.sh; do
   if bash -n "$ROOT/$sh" 2>/dev/null; then
     PASS=$((PASS + 1))
     printf '  PASS  bash -n %s\n' "$sh"

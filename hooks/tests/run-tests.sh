@@ -94,6 +94,8 @@ source "$TESTS_DIR/test_apply_patch.sh"
 # shellcheck disable=SC1091
 source "$TESTS_DIR/test_publish_gate.sh"
 # shellcheck disable=SC1091
+source "$TESTS_DIR/test_pretooluse_bash.sh"
+# shellcheck disable=SC1091
 source "$TESTS_DIR/test_session_context.sh"
 # shellcheck disable=SC1091
 source "$TESTS_DIR/test_hammertime.sh"

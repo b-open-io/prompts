@@ -3,6 +3,14 @@
 # Source from hook scripts:  source "$(dirname "$0")/lib/common.sh"
 # Or:                       source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
 
+# Include guard: pretooluse-bash.sh sources this directly, then sources
+# bouncer.sh/damage-control.sh/publish-gate.sh which each also source this
+# file — skip re-parsing after the first load in a process.
+if [[ -n "${_BOPEN_COMMON_SH_LOADED:-}" ]]; then
+  return 0 2>/dev/null || true
+fi
+_BOPEN_COMMON_SH_LOADED=1
+
 # Runtime: set BOPEN_HOOK_RUNTIME=claude|codex in the hook command string.
 # Defaults to claude for backward compatibility.
 get_runtime() {
