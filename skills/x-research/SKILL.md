@@ -86,7 +86,7 @@ curl -s "https://api.x.ai/v1/responses" \
     "model": "grok-4.5",
     "input": [{"role": "user", "content": "[YOUR QUERY]"}],
     "tools": [{"type": "web_search"}, {"type": "x_search"}]
-  }' | jq -r '.output[-1].content[0].text'
+  }' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
 ```
 
 ### Query with Usage Tracking (Recommended)
@@ -107,7 +107,7 @@ COST_TICKS=$(echo "$RESPONSE" | jq -r '.usage.cost_in_usd_ticks // 0')
 COST_USD=$(jq -n --argjson ticks "$COST_TICKS" '$ticks / 10000000000')
 echo "Tool calls: $TOOL_CALLS | Estimated cost: \$$COST_USD"
 echo ""
-echo "$RESPONSE" | jq -r '.output[-1].content[0].text'
+echo "$RESPONSE" | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
 ```
 
 ## Search Tool Parameters
@@ -159,7 +159,7 @@ curl -s "https://api.x.ai/v1/responses" \
     "model": "grok-4.5",
     "input": [{"role": "user", "content": "What is currently trending on X? Include viral posts and major discussions."}],
     "tools": [{"type": "x_search"}]
-  }' | jq -r '.output[-1].content[0].text'
+  }' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
 ```
 
 ### Developer Sentiment on a Topic
@@ -172,7 +172,7 @@ curl -s "https://api.x.ai/v1/responses" \
     "model": "grok-4.5",
     "input": [{"role": "user", "content": "What are developers saying about [TOPIC] on X? Include recent discussions and opinions."}],
     "tools": [{"type": "x_search"}, {"type": "web_search"}]
-  }' | jq -r '.output[-1].content[0].text'
+  }' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
 ```
 
 ### News and Web Research
@@ -185,7 +185,7 @@ curl -s "https://api.x.ai/v1/responses" \
     "model": "grok-4.5",
     "input": [{"role": "user", "content": "Latest news and developments about [TOPIC]"}],
     "tools": [{"type": "web_search"}]
-  }' | jq -r '.output[-1].content[0].text'
+  }' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
 ```
 
 ### Historical Research with Date Range
@@ -204,7 +204,7 @@ curl -s "https://api.x.ai/v1/responses" \
     }, {
       "type": "web_search"
     }]
-  }' | jq -r '.output[-1].content[0].text'
+  }' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
 ```
 
 ## Response Structure
@@ -235,7 +235,7 @@ The response contains:
 }
 ```
 
-**Extracting content**: `jq -r '.output[-1].content[0].text'`
+**Extracting content**: `jq -r '[.output[] | select(.type=="message")][-1].content[0].text'` — select the last MESSAGE element explicitly; on grok-4.5 the final `output[]` element is a reasoning block, and reasoning summaries can contain raw control characters that break strict JSON parsing of the whole payload. If jq still chokes, sanitize first: `tr -d '\000-\010\013\014\016-\037'` before parsing.
 
 **Extracting citations**: `jq -r '.citations[]'`
 
