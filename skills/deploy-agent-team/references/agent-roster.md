@@ -147,10 +147,10 @@ Invoke `Skill(bopen-tools:humanize)` after drafting to eliminate padding.
 
 ```markdown
 ## Your Available Skills
-- `Skill(marketing-skills:page-cro)` — invoke for landing page conversion optimization
+- `Skill(marketing-skills:cro)` — invoke for landing page conversion optimization
 - `Skill(marketing-skills:seo-audit)` — invoke for SEO analysis
 - `Skill(marketing-skills:copywriting)` — invoke for persuasive copy guidance
-- `Skill(marketing-skills:launch-strategy)` — invoke when planning a product launch
+- `Skill(marketing-skills:launch)` — invoke when planning a product launch
 - `Skill(marketing-skills:programmatic-seo)` — invoke for programmatic SEO strategies
 
 Invoke the most relevant skill before starting any campaign or page work.

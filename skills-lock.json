@@ -61,11 +61,6 @@
       "source": "vercel-labs/json-render",
       "sourceType": "github",
       "computedHash": "4756068d1b2f92ef4f6d1301094a9862ef275687d3dbf26fda5e52cae3fca4c1"
-    },
-    "review-logging-patterns": {
-      "source": "HugoRCD/evlog",
-      "sourceType": "github",
-      "computedHash": "4a3a8840a6e2f5acdaf61318b3a1bb6d15fa5f3f03a6ded91a5f255f98f6366e"
     }
   }
 }

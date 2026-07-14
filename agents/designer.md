@@ -86,7 +86,7 @@ For landing page CRO, copywriting, and conversion optimization:
 ```bash
 npx add-skill coreyhaines31/marketingskills
 ```
-Provides page-cro, signup-flow-cro, pricing-strategy, and 20+ marketing skills.
+Provides cro, signup, pricing, and 20+ marketing skills.
 
 To install the official Anthropic `frontend-design` plugin (auto-invoked skill for anti-AI-slop aesthetics):
 ```bash

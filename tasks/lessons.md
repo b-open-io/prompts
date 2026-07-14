@@ -68,3 +68,6 @@ count. Counts go stale the moment the catalog grows. In templates derive
 from the data source (ARRAY.length); in fixed strings (Stripe product
 names, taglines, emails) write count-free ("Every Pack", "each vertical").
 A literal entity count in a copy diff is a review defect.
+
+## Never fabricate Linear ticket IDs (2026-07-14)
+Used OPL-2935/2936/2937 in spec filenames and a pushed commit before creating the tickets; Linear then assigned 2935 to an unrelated issue and everything misaligned. Rule: CREATE the ticket first (linear-api.sh issueCreate), then use the identifier it returns. If an ID was already burned in pushed history, realign by retitling/creating tickets in sequence immediately.

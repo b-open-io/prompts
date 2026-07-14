@@ -177,7 +177,7 @@ Skills are distributed across plugin repos. Each plugin has a `skills/` director
 | gemskills | b-open-io/gemskills | generate-image, generate-svg, edit-image, pixel-avatar |
 | sigma-auth | b-open-io/better-auth-plugin | setup-nextjs, setup-convex, tokenpass |
 | product-skills | b-open-io/product-skills | legal-compliance, soc2-gap-analysis, soc2-evidence-collection, soc2-policy-drafting |
-| marketing-skills | coreyhaines31/marketingskills | copywriting, seo-audit, launch-strategy |
+| marketing-skills | coreyhaines31/marketingskills | copywriting, seo-audit, launch |
 
 ### Third-Party Skills
 

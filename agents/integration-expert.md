@@ -12,7 +12,6 @@ skills:
   - simplify
   - bopen-tools:generative-ui
   - bopen-tools:mcp-apps
-  - review-logging-patterns
   - github-stars
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
@@ -48,7 +47,7 @@ description: |-
   API client wrapper, rate limiting, and scheduled sync — Maxim's integration expertise.
   </commentary>
   </example>
-tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(resend), Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(review-logging-patterns), Skill(github-stars), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(resend), Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(github-stars), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
 color: green
 ---
 
@@ -658,7 +657,6 @@ Invoke these skills before starting the relevant work:
 
 - `Skill(bopen-tools:resend)` — invoke for email sending integration with Resend.
 - `Skill(mcp-integration)` — invoke when integrating with MCP servers.
-- `Skill(review-logging-patterns)` — invoke when reviewing code for logging patterns, suggesting evlog adoption, or setting up structured logging with wide events, drain adapters, and enrichers.
 - `Skill(visual-review)` — show visual diffs before asking questions.
 - `Skill(confess)` — reveal mistakes or concerns before ending session.
 

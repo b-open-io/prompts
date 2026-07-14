@@ -136,7 +136,7 @@
       "phase": "external",
       "plugin": "product-skills",
       "agent_ref": "product-skills:marketer",
-      "tools": ["copywriting", "seo-audit", "launch-strategy"],
+      "tools": ["copywriting", "seo-audit", "launch"],
       "description": "Growth marketing, CRO, copy, SEO, launch planning"
     },
     {
