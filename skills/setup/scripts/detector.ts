@@ -2,12 +2,13 @@
 // Read-only: every check here shells out or reads the filesystem/network,
 // never writes. See SPEC-OPL-2850-CONTRACTS.md for the pinned shared types.
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import type { Runtime } from "./runtimes";
 
-export type Runtime = "claude" | "codex" | "opencode" | "grok" | "hermes" | "generic";
+export type { Runtime } from "./runtimes";
 
 export type CheckKind = "cli" | "env" | "third-party-skill" | "codex-agents" | "setup-script";
 
@@ -35,6 +36,7 @@ export type SkillActivityState = {
   lastInvokedAt: number;
   sessionId: string;
   count24h: number;
+  isLive: boolean;
 };
 
 export type SkillActivityMap = Record<string, SkillActivityState>;
@@ -77,7 +79,37 @@ const MARKETPLACE_TIMEOUT_MS = 10_000;
 const CLAUDE_PLUGIN_CACHE = join(homedir(), ".claude", "plugins", "cache", "b-open-io");
 const CODEX_PLUGIN_CACHE = join(homedir(), ".codex", "plugins", "cache", "b-open-io");
 const DEFAULT_SKILL_ACTIVITY_FILE = join(homedir(), ".claude", "bopen-tools", "skill-activity.jsonl");
+const DEFAULT_CLAUDE_PROJECTS_DIR = join(homedir(), ".claude", "projects");
 const DAY_SECONDS = 24 * 60 * 60;
+const LIVE_SESSION_SECONDS = 120;
+
+function isSessionLive(
+  projectsDir: string,
+  sessionId: string,
+  nowSeconds: number,
+): boolean {
+  if (!/^[A-Za-z0-9_-]+$/.test(sessionId)) return false;
+
+  let projectSlugs: string[];
+  try {
+    projectSlugs = readdirSync(projectsDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
+  } catch {
+    return false;
+  }
+
+  for (const slug of projectSlugs) {
+    try {
+      const modifiedAt = statSync(join(projectsDir, slug, `${sessionId}.jsonl`)).mtimeMs / 1000;
+      const age = nowSeconds - modifiedAt;
+      if (age >= 0 && age <= LIVE_SESSION_SECONDS) return true;
+    } catch {
+      // This project slug does not contain the session transcript.
+    }
+  }
+  return false;
+}
 
 export function readSkillActivity(opts?: {
   env?: Record<string, string | undefined>;
@@ -85,6 +117,7 @@ export function readSkillActivity(opts?: {
 }): SkillActivityMap {
   const env = opts?.env ?? process.env;
   const activityPath = env.BOPEN_SKILL_ACTIVITY_FILE || DEFAULT_SKILL_ACTIVITY_FILE;
+  const projectsDir = env.BOPEN_CLAUDE_PROJECTS_DIR || DEFAULT_CLAUDE_PROJECTS_DIR;
   const nowSeconds = opts?.nowSeconds ?? Math.floor(Date.now() / 1000);
   const cutoff = nowSeconds - DAY_SECONDS;
   const activity: SkillActivityMap = {};
@@ -123,6 +156,7 @@ export function readSkillActivity(opts?: {
         lastInvokedAt: timestamp,
         sessionId,
         count24h: timestamp >= cutoff && timestamp <= nowSeconds ? 1 : 0,
+        isLive: false,
       };
       continue;
     }
@@ -132,6 +166,16 @@ export function readSkillActivity(opts?: {
       existing.sessionId = sessionId;
     }
     if (timestamp >= cutoff && timestamp <= nowSeconds) existing.count24h += 1;
+  }
+
+  const liveBySession = new Map<string, boolean>();
+  for (const entry of Object.values(activity)) {
+    let isLive = liveBySession.get(entry.sessionId);
+    if (isLive === undefined) {
+      isLive = isSessionLive(projectsDir, entry.sessionId, nowSeconds);
+      liveBySession.set(entry.sessionId, isLive);
+    }
+    entry.isLive = isLive;
   }
 
   return activity;

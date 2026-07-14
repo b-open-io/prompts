@@ -2,19 +2,14 @@
 // as skills/setup/scripts/server.ts. Runtime imports detector.ts directly
 // (never modified — see SPEC-OPL-2879-playground.md); this route is the only
 // consumer allowed to reach across into the sibling unit's scripts/.
-import {
-	detectHarness,
-	fetchMarketplaceCatalog,
-	type Runtime,
-} from "../../../../../scripts/detector"
+import { detectHarness, fetchMarketplaceCatalog } from "../../../../../scripts/detector"
+import { isRuntime, type Runtime } from "../../../../../scripts/runtimes"
 
 export const dynamic = "force-dynamic"
 
-const VALID_RUNTIMES: Runtime[] = ["claude", "codex", "opencode", "grok", "hermes", "generic"]
-
 function resolveRuntime(): Runtime {
 	const raw = process.env.BOPEN_SETUP_RUNTIME
-	return raw && VALID_RUNTIMES.includes(raw as Runtime) ? (raw as Runtime) : "generic"
+	return raw && isRuntime(raw) ? raw : "generic"
 }
 
 // Fetched once per server process — /api/state reuses this snapshot but

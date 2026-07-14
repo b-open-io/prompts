@@ -10,15 +10,13 @@
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isRuntime, RUNTIME_IDS, type Runtime } from "./runtimes";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLAYGROUND_DIR = resolve(__dirname, "..", "playground");
 
-type Runtime = "claude" | "codex" | "opencode" | "grok" | "hermes" | "generic";
-const VALID_RUNTIMES: Runtime[] = ["claude", "codex", "opencode", "grok", "hermes", "generic"];
-
 function usage(): never {
-  console.error(`Usage: bun skills/setup/scripts/playground_server.ts --runtime <${VALID_RUNTIMES.join("|")}> [--port <number>] [--rebuild]`);
+  console.error(`Usage: bun skills/setup/scripts/playground_server.ts --runtime <${RUNTIME_IDS.join("|")}> [--port <number>] [--rebuild]`);
   process.exit(1);
 }
 
@@ -40,8 +38,8 @@ function parseArgs(argv: string[]): { runtime: Runtime; port: number; rebuild: b
     }
   }
 
-  if (!runtime || !VALID_RUNTIMES.includes(runtime as Runtime)) usage();
-  return { runtime: runtime as Runtime, port, rebuild };
+  if (!runtime || !isRuntime(runtime)) usage();
+  return { runtime, port, rebuild };
 }
 
 function checkBun(): void {

@@ -9,7 +9,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { VALID_RUNTIMES } from "@/lib/types"
+import { RUNTIMES } from "@/lib/types"
 
 export function Header({
 	runtimeArg,
@@ -60,9 +60,12 @@ export function Header({
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						{VALID_RUNTIMES.map((r) => (
-							<SelectItem key={r} value={r}>
-								{r}
+						{RUNTIMES.map((runtime) => (
+							<SelectItem key={runtime.id} value={runtime.id}>
+								<span>{runtime.label}</span>
+								{runtime.tier === "experimental" && (
+									<span className="ml-1 normal-case text-muted-foreground">experimental</span>
+								)}
 							</SelectItem>
 						))}
 					</SelectContent>

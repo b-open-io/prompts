@@ -1,0 +1,436 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+  color: var(--primary-foreground);
+  font-family: var(--font-mono), monospace;
+  contain: strict;
+}
+
+.root[data-visible="true"] {
+  visibility: visible;
+}
+
+.root[data-interactive="true"] {
+  pointer-events: auto;
+}
+
+.root[data-reduced-motion="true"][data-phase="screen"],
+.root[data-reduced-motion="true"][data-phase="close"] {
+  background: var(--primary);
+}
+
+.root[data-reduced-motion="true"][data-phase="screen"] {
+  animation: reducedFadeIn 160ms ease-out both;
+}
+
+.root[data-reduced-motion="true"][data-phase="close"] {
+  animation: reducedFadeOut 160ms ease-in both;
+}
+
+.transition {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.screenStage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  opacity: 1;
+}
+
+.root[data-phase="close"] .screenStage {
+  animation: contentExit 140ms ease-in both;
+}
+
+.pattern {
+  position: fixed;
+  inset: -1%;
+  z-index: 0;
+  width: 102%;
+  height: 102%;
+  opacity: 0.16;
+  image-rendering: pixelated;
+  pointer-events: none;
+  animation:
+    patternReveal 300ms ease-out both,
+    patternDrift 10s ease-in-out infinite alternate;
+}
+
+.dialog {
+  position: relative;
+  z-index: 1;
+  width: min(72rem, calc(100vw - 3rem));
+  min-height: min(42rem, calc(100vh - 4rem));
+  margin: 2rem auto;
+  outline: none;
+}
+
+.screenContent {
+  min-height: inherit;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(1.5rem, 4vh, 3.5rem);
+  padding: clamp(1.25rem, 4vw, 4rem);
+  border: 1px solid
+    color-mix(in srgb, var(--primary-foreground) 38%, transparent);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 90%, transparent),
+      color-mix(in srgb, var(--primary) 76%, transparent)
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 7px,
+      color-mix(in srgb, var(--primary-foreground) 7%, transparent) 7px 8px
+    );
+  box-shadow:
+    12px 12px 0 color-mix(in srgb, var(--primary-foreground) 9%, transparent),
+    inset 0 0 0 7px color-mix(in srgb, var(--primary) 62%, transparent);
+  animation: contentEnter 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.screenHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  border-bottom: 2px solid var(--primary-foreground);
+  padding-bottom: 1rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  opacity: 0.62;
+}
+
+.screenTitle {
+  margin: 0;
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(2.65rem, 9vw, 7.5rem);
+  font-weight: 700;
+  line-height: 0.82;
+  letter-spacing: -0.08em;
+  text-shadow: 6px 6px 0 color-mix(in srgb, var(--accent) 58%, transparent);
+}
+
+.modeReadout {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 0.55rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid
+    color-mix(in srgb, var(--primary-foreground) 38%, transparent);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
+.statusLight {
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.controlGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  align-self: center;
+}
+
+.controlColumn {
+  position: relative;
+  min-width: 0;
+  border: 1px solid
+    color-mix(in srgb, var(--primary-foreground) 38%, transparent);
+  background: color-mix(in srgb, var(--primary-foreground) 7%, transparent);
+  padding: clamp(1rem, 2.5vw, 2rem);
+}
+
+.corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--accent);
+  border-style: solid;
+}
+
+.cornerTopLeft {
+  top: -3px;
+  left: -3px;
+  border-width: 3px 0 0 3px;
+}
+
+.cornerTopRight {
+  top: -3px;
+  right: -3px;
+  border-width: 3px 3px 0 0;
+}
+
+.cornerBottomLeft {
+  bottom: -3px;
+  left: -3px;
+  border-width: 0 0 3px 3px;
+}
+
+.cornerBottomRight {
+  right: -3px;
+  bottom: -3px;
+  border-width: 0 3px 3px 0;
+}
+
+.columnTitle {
+  margin: 0 0 1.5rem;
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(0.9rem, 2vw, 1.25rem);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.columnTitle::before {
+  content: "[ ";
+  color: var(--accent);
+}
+
+.columnTitle::after {
+  content: " ]";
+  color: var(--accent);
+}
+
+.bindingList {
+  display: grid;
+}
+
+.bindingRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  min-height: 4rem;
+  border-top: 1px dashed
+    color-mix(in srgb, var(--primary-foreground) 30%, transparent);
+}
+
+.bindingRow:last-child {
+  border-bottom: 1px dashed
+    color-mix(in srgb, var(--primary-foreground) 30%, transparent);
+}
+
+.bindingLabel {
+  font-size: clamp(0.7rem, 1.5vw, 0.82rem);
+  line-height: 1.35;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bindingValue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.qualifier {
+  font-size: 0.58rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.keycap {
+  min-width: 2rem;
+  height: 2rem;
+  border: 1px solid
+    color-mix(in srgb, var(--primary-foreground) 45%, transparent);
+  border-bottom-width: 3px;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--primary-foreground) 13%, transparent);
+  color: var(--primary-foreground);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+}
+
+.gamepadBinding {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.gamepadGlyph {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid
+    color-mix(in srgb, var(--primary-foreground) 58%, transparent);
+  border-radius: 50%;
+  color: var(--primary-foreground);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.screenFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid
+    color-mix(in srgb, var(--primary-foreground) 38%, transparent);
+  padding-top: 1rem;
+  font-size: clamp(0.62rem, 1.5vw, 0.75rem);
+  letter-spacing: 0.06em;
+}
+
+.screenFooter p {
+  margin: 0;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex: none;
+  border: 1px solid var(--primary-foreground);
+  border-bottom-width: 3px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--primary-foreground);
+  padding: 0.6rem 0.8rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.closeButton:hover,
+.closeButton:focus-visible {
+  outline: none;
+  background: var(--primary-foreground);
+  color: var(--primary);
+}
+
+@keyframes contentEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes contentExit {
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes patternDrift {
+  from {
+    transform: translate3d(-0.75%, -0.5%, 0);
+  }
+  to {
+    transform: translate3d(0.75%, 0.5%, 0);
+  }
+}
+
+@keyframes patternReveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.16;
+  }
+}
+
+@keyframes reducedFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes reducedFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .dialog {
+    width: calc(100vw - 1.25rem);
+    min-height: calc(100vh - 1.25rem);
+    margin: 0.625rem auto;
+  }
+
+  .screenContent {
+    gap: 1.25rem;
+    padding: 1.1rem;
+  }
+
+  .screenHeader {
+    align-items: start;
+  }
+
+  .modeReadout {
+    border: 0;
+    padding: 0.25rem 0;
+    font-size: 0;
+  }
+
+  .controlGrid {
+    grid-template-columns: 1fr;
+    align-self: stretch;
+  }
+
+  .controlColumn {
+    padding: 0.9rem;
+  }
+
+  .columnTitle {
+    margin-bottom: 0.65rem;
+  }
+
+  .bindingRow {
+    min-height: 2.8rem;
+  }
+
+  .screenFooter {
+    align-items: flex-end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pattern,
+  .screenContent,
+  .root[data-phase="close"] .screenStage {
+    animation: none;
+  }
+}

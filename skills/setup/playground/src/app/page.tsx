@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Hammer, LoaderCircle } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { useSound } from "@/components/SoundProvider"
 import { Banners } from "@/components/setup/Banners"
 import { OverviewTab } from "@/components/setup/OverviewTab"
 import { PlanPanel } from "@/components/setup/PlanPanel"
@@ -9,18 +10,19 @@ import { PluginTab } from "@/components/setup/PluginTab"
 import { Sidebar } from "@/components/setup/Sidebar"
 import { Button } from "@/components/ui/button"
 import { assemblePlanSelections, initAllSelections, reconcileSelections } from "@/lib/selections"
-import type { HarnessState, Selections } from "@/lib/types"
+import type { HarnessState, Runtime, Selections } from "@/lib/types"
 
-type PlanResult = { markdown: string; path: string }
+type PlanResult = { markdown: string }
 type ShellMode = "standalone" | "agent-master"
 
 const SHELL_STORAGE_KEY = "bopen-setup-shell"
 
 export default function SetupPlaygroundPage() {
+	const { play } = useSound()
 	const [state, setState] = useState<HarnessState | null>(null)
 	const [selections, setSelections] = useState<Selections>({})
 	const [activeTab, setActiveTab] = useState("overview")
-	const [selectedRuntime, setSelectedRuntime] = useState<string | null>(null)
+	const [selectedRuntime, setSelectedRuntime] = useState<Runtime | null>(null)
 	const [refreshing, setRefreshing] = useState(false)
 	const [building, setBuilding] = useState(false)
 	const [plan, setPlan] = useState<PlanResult | null>(null)
@@ -28,6 +30,7 @@ export default function SetupPlaygroundPage() {
 	const [transientErrors, setTransientErrors] = useState<string[]>([])
 	const [shellMode, setShellMode] = useState<ShellMode>("standalone")
 	const [searchFocusToken, setSearchFocusToken] = useState(0)
+	const [pluginGridFocusToken, setPluginGridFocusToken] = useState(0)
 	const errorIdRef = useRef(0)
 
 	const pushTransientError = useCallback((msg: string) => {
@@ -51,7 +54,9 @@ export default function SetupPlaygroundPage() {
 			setActiveTab("overview")
 		} else {
 			setActiveTab((prev) =>
-				prev !== "overview" && !newState.plugins.some((p) => p.name === prev) ? "overview" : prev,
+				prev !== "overview" && prev !== "plugins" && !newState.plugins.some((p) => p.name === prev)
+					? "overview"
+					: prev,
 			)
 		}
 	}, [])
@@ -88,14 +93,22 @@ export default function SetupPlaygroundPage() {
 	}, [])
 
 	async function handleRefresh() {
+		play("LOADING_START")
 		setRefreshing(true)
 		try {
 			await fetchState(true)
+			play("LOADING_COMPLETE")
 		} catch (err) {
+			play("NOTIFICATION_ERROR")
 			pushTransientError(`Failed to refresh: ${err instanceof Error ? err.message : String(err)}`)
 		} finally {
 			setRefreshing(false)
 		}
+	}
+
+	function handleSelectView(view: string) {
+		setActiveTab(view)
+		if (view === "plugins") setPluginGridFocusToken((token) => token + 1)
 	}
 
 	async function handleBuildPlan() {
@@ -146,7 +159,7 @@ export default function SetupPlaygroundPage() {
 	}
 
 	const activePlugin = state?.plugins.find((p) => p.name === activeTab) ?? null
-	const activeTitle = activePlugin?.name ?? "Overview"
+	const activeTitle = activePlugin?.name ?? (activeTab === "plugins" ? "Plugins" : "Overview")
 
 	return (
 		<div className="app-shell">
@@ -155,7 +168,7 @@ export default function SetupPlaygroundPage() {
 				activeView={activeTab}
 				shellMode={shellMode}
 				selectedRuntime={selectedRuntime}
-				onSelect={setActiveTab}
+				onSelect={handleSelectView}
 				onRuntimeChange={setSelectedRuntime}
 				onRefresh={handleRefresh}
 				refreshing={refreshing}
@@ -207,11 +220,12 @@ export default function SetupPlaygroundPage() {
 								</p>
 							</div>
 						</div>
-					) : activeTab === "overview" ? (
+					) : activeTab === "overview" || activeTab === "plugins" ? (
 						<OverviewTab
 							state={state}
-							onSelectPlugin={setActiveTab}
+							onSelectPlugin={handleSelectView}
 							searchFocusToken={searchFocusToken}
+							pluginGridFocusToken={pluginGridFocusToken}
 						/>
 					) : activePlugin && selectedRuntime && selections[activePlugin.name] ? (
 						<PluginTab
@@ -228,9 +242,7 @@ export default function SetupPlaygroundPage() {
 				</main>
 			</section>
 
-			{plan && (
-				<PlanPanel markdown={plan.markdown} path={plan.path} onClose={() => setPlan(null)} />
-			)}
+			{plan && <PlanPanel markdown={plan.markdown} onClose={() => setPlan(null)} />}
 		</div>
 	)
 }

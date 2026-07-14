@@ -1,16 +1,14 @@
 #!/usr/bin/env bun
-// bopen-setup installer server (OPL-2850, Unit B). Never writes anything
-// except the single plan file on POST /api/plan — see
+// bopen-setup installer server (OPL-2850, Unit B). Never writes anything;
+// POST /api/plan returns a complete generated prompt — see
 // SPEC-OPL-2850-CONTRACTS.md for the HTTP contract this implements.
 
-import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { detectHarness, fetchMarketplaceCatalog, type PlanSelections, type Runtime } from "./detector";
-
-const VALID_RUNTIMES: Runtime[] = ["claude", "codex", "opencode", "grok", "hermes", "generic"];
+import { detectHarness, fetchMarketplaceCatalog, type PlanSelections } from "./detector";
+import { isRuntime, RUNTIME_IDS, type Runtime } from "./runtimes";
 
 function usage(): never {
-  console.error(`Usage: bun server.ts --runtime <${VALID_RUNTIMES.join("|")}> [--port <number>]`);
+  console.error(`Usage: bun server.ts --runtime <${RUNTIME_IDS.join("|")}> [--port <number>]`);
   process.exit(1);
 }
 
@@ -29,14 +27,14 @@ function parseArgs(argv: string[]): { runtime: Runtime; port: number } {
     }
   }
 
-  if (!runtime || !VALID_RUNTIMES.includes(runtime as Runtime)) usage();
-  return { runtime: runtime as Runtime, port };
+  if (!runtime || !isRuntime(runtime)) usage();
+  return { runtime, port };
 }
 
 function isPlanSelections(body: unknown): body is PlanSelections {
   if (!body || typeof body !== "object") return false;
   const candidate = body as Record<string, unknown>;
-  if (typeof candidate.runtime !== "string" || !VALID_RUNTIMES.includes(candidate.runtime as Runtime)) return false;
+  if (typeof candidate.runtime !== "string" || !isRuntime(candidate.runtime)) return false;
   if (!Array.isArray(candidate.plugins)) return false;
 
   return candidate.plugins.every((entry) => {
@@ -98,9 +96,7 @@ Bun.serve({
       const { emitPlan } = await import("./emitter");
       const state = await detectHarness({ runtimeArg: runtime, marketplaceCache });
       const markdown = emitPlan(state, body);
-      const path = join(process.cwd(), "bopen-setup-plan.md");
-      await writeFile(path, markdown, "utf8");
-      return Response.json({ markdown, path });
+      return Response.json({ markdown });
     }
 
     return new Response("not found", { status: 404 });

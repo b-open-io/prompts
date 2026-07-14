@@ -2,7 +2,7 @@
 // initPluginSelection/initAllSelections/reconcileSelections so Refresh
 // preserves in-progress selections against fresh detected state.
 
-import type { HarnessState, PlanSelections, PluginState, Selections } from "./types"
+import type { HarnessState, PlanSelections, PluginState, Runtime, Selections } from "./types"
 
 export function initPluginSelection(plugin: PluginState): Selections[string] {
 	const checks = new Set<string>()
@@ -47,10 +47,10 @@ export function reconcileSelections(oldSel: Selections, newState: HarnessState):
 export function assemblePlanSelections(
 	state: HarnessState,
 	selections: Selections,
-	runtime: string,
+	runtime: Runtime,
 ): PlanSelections {
 	return {
-		runtime: runtime as PlanSelections["runtime"],
+		runtime,
 		plugins: state.plugins.map((p) => {
 			const s = selections[p.name]
 			return {

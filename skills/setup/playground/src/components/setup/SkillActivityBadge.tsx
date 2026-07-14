@@ -36,10 +36,9 @@ export function SkillActivityBadge({
 	activity: SkillActivityState
 	compact?: boolean
 }) {
-	const recent = isRecentSkillActivity(activity)
 	const age = relativeAge(activity.lastInvokedAt)
 	const sessionId = shortSessionId(activity.sessionId)
-	const tooltip = `invoked ${age} ago · session ${sessionId}`
+	const tooltip = `${activity.isLive ? "session live" : `invoked ${age} ago`} · session ${sessionId}`
 
 	if (compact) {
 		return (
@@ -50,8 +49,15 @@ export function SkillActivityBadge({
 				className="inline-flex size-3 shrink-0 items-center justify-center"
 			>
 				<span className="relative flex size-2">
-					<span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-45" />
-					<span className="relative inline-flex size-2 rounded-full bg-green-500" />
+					{activity.isLive && (
+						<span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-45" />
+					)}
+					<span
+						className={cn(
+							"relative inline-flex size-2 rounded-full",
+							activity.isLive ? "bg-green-500" : "bg-muted-foreground/45",
+						)}
+					/>
 				</span>
 			</span>
 		)
@@ -59,16 +65,16 @@ export function SkillActivityBadge({
 
 	return (
 		<span
-			title={`session ${sessionId}`}
+			title={tooltip}
 			className="inline-flex items-center gap-1.5 whitespace-nowrap text-[0.68rem] text-muted-foreground"
 		>
 			<span
 				className={cn(
 					"size-2 rounded-full",
-					recent ? "animate-pulse bg-green-500" : "bg-muted-foreground/45",
+					activity.isLive ? "animate-pulse bg-green-500" : "bg-muted-foreground/45",
 				)}
 			/>
-			invoked {age} ago
+			{activity.isLive ? "session live" : `invoked ${age} ago`}
 		</span>
 	)
 }

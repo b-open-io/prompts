@@ -1,27 +1,19 @@
 // POST /api/plan — re-exposes emitPlan with the identical JSON contract as
 // skills/setup/scripts/server.ts: validates PlanSelections, diffs against
-// fresh detected state, writes the single plan file to cwd, returns
-// {markdown, path}. detector.ts/emitter.ts are imported, never modified.
-import { writeFile } from "node:fs/promises"
-import { join } from "node:path"
-import { detectHarness, type PlanSelections, type Runtime } from "../../../../../scripts/detector"
+// fresh detected state, and returns the complete prompt as {markdown}.
+import { detectHarness, type PlanSelections } from "../../../../../scripts/detector"
 import { emitPlan } from "../../../../../scripts/emitter"
-
-const VALID_RUNTIMES: Runtime[] = ["claude", "codex", "opencode", "grok", "hermes", "generic"]
+import { isRuntime, type Runtime } from "../../../../../scripts/runtimes"
 
 function resolveRuntime(): Runtime {
 	const raw = process.env.BOPEN_SETUP_RUNTIME
-	return raw && VALID_RUNTIMES.includes(raw as Runtime) ? (raw as Runtime) : "generic"
+	return raw && isRuntime(raw) ? raw : "generic"
 }
 
 function isPlanSelections(body: unknown): body is PlanSelections {
 	if (!body || typeof body !== "object") return false
 	const candidate = body as Record<string, unknown>
-	if (
-		typeof candidate.runtime !== "string" ||
-		!VALID_RUNTIMES.includes(candidate.runtime as Runtime)
-	)
-		return false
+	if (typeof candidate.runtime !== "string" || !isRuntime(candidate.runtime)) return false
 	if (!Array.isArray(candidate.plugins)) return false
 
 	return candidate.plugins.every((entry) => {
@@ -52,7 +44,5 @@ export async function POST(req: Request) {
 
 	const state = await detectHarness({ runtimeArg: resolveRuntime() })
 	const markdown = emitPlan(state, body)
-	const path = join(process.cwd(), "bopen-setup-plan.md")
-	await writeFile(path, markdown, "utf8")
-	return Response.json({ markdown, path })
+	return Response.json({ markdown })
 }

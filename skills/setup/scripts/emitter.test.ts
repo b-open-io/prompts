@@ -27,7 +27,7 @@ function makePlugin(overrides: Record<string, unknown> = {}): any {
 }
 
 describe("emitPlan", () => {
-  test("empty diff produces header and footer only, no section headings", () => {
+  test("empty diff is still a self-contained execution prompt", () => {
     const plugin = makePlugin({ installedClaude: "1.0.0", marketplaceVersion: "1.0.0" });
     const state = makeState({}, [plugin]);
     const selections = {
@@ -37,9 +37,13 @@ describe("emitPlan", () => {
 
     const plan = emitPlan(state, selections);
 
-    expect(plan).toContain("# bOpen Setup Plan");
-    expect(plan).toContain("Execute via Skill(bopen-tools:coordinator)");
-    expect(plan).not.toContain("## ");
+    expect(plan).toContain("# bOpen Setup Execution Prompt");
+    expect(plan).toContain("## Mission");
+    expect(plan).toContain("## Execution rules");
+    expect(plan).toContain("## Final verification and report");
+    expect(plan).not.toContain("## Plugins");
+    expect(plan).not.toContain("bopen-tools:coordinator");
+    expect(plan).not.toContain("Refresh");
   });
 
   test("claude and codex use different install dialects for the same selection", () => {
@@ -88,7 +92,7 @@ describe("emitPlan", () => {
     expect(plan).toContain("not deliverable on this runtime");
   });
 
-  test("missing CLI on darwin picks the darwin install; falls back to the lone other-platform command with a hint", () => {
+  test("missing CLI emits the detector-resolved command and its platform note", () => {
     const pluginBothPlatforms = makePlugin({
       checks: [
         {
@@ -96,7 +100,7 @@ describe("emitPlan", () => {
           kind: "cli",
           name: "ffmpeg",
           installed: false,
-          install: { darwin: "brew install ffmpeg", linux: "apt install ffmpeg" },
+          install: "brew install ffmpeg",
           checkCommand: "ffmpeg -version",
         },
       ],
@@ -117,7 +121,8 @@ describe("emitPlan", () => {
           kind: "cli",
           name: "ffmpeg",
           installed: false,
-          install: { linux: "apt install ffmpeg" },
+          install: "apt install ffmpeg",
+          installNote: "linux command; adapt for darwin",
           checkCommand: "ffmpeg -version",
         },
       ],
@@ -125,7 +130,7 @@ describe("emitPlan", () => {
 
     const planFallback = emitPlan(makeState({ platform: "darwin" }, [pluginLinuxOnly]), selections);
     expect(planFallback).toContain("apt install ffmpeg");
-    expect(planFallback).toContain("platform hint");
+    expect(planFallback).toContain("linux command; adapt for darwin");
   });
 
   test("hooks diff emits the ask-tier sentence verbatim and the full target config", () => {
@@ -180,7 +185,7 @@ describe("emitPlan", () => {
 
     const plan = emitPlan(state, selections);
 
-    expect(plan).toContain("export ELEVENLABS_API_KEY=...");
+    expect(plan).toContain('export ELEVENLABS_API_KEY="<value supplied securely by the user>"');
     expect(plan).not.toContain("sk-should-never-appear-in-plan");
   });
 
@@ -217,6 +222,80 @@ describe("emitPlan", () => {
 
     expect(first).toBe(second);
   });
+
+  test("never leaks detector paths and includes inline commands and verification", () => {
+    const plugin = makePlugin({
+      checks: [
+        {
+          id: "third-party-skill:example",
+          kind: "third-party-skill",
+          name: "example",
+          installed: false,
+          install: "npx skills add https://github.com/example/skills --skill example",
+          checkCommand: "path:~/.claude/skills/example/SKILL.md",
+          detail: "/Users/alice/private/repo/skill",
+        },
+        {
+          id: "setup-script:bopen-tools:persona",
+          kind: "setup-script",
+          name: "persona",
+          installed: false,
+          install: "bash scripts/setup-persona.sh",
+          detail: "/Users/alice/private/repo/setup-persona.sh",
+        },
+      ],
+    });
+    const plan = emitPlan(makeState({}, [plugin]), {
+      runtime: "claude",
+      plugins: [
+        {
+          name: "bopen-tools",
+          installPlugin: false,
+          checks: ["third-party-skill:example", "setup-script:bopen-tools:persona"],
+          hooks: {},
+        },
+      ],
+    });
+
+    expect(plan).toContain("Command:");
+    expect(plan).toContain("Verify:");
+    expect(plan).toContain("$HOME/.claude/skills/example/SKILL.md");
+    expect(plan).not.toContain("/Users/alice");
+    expect(plan).not.toContain("bash bash");
+    expect(plan).not.toContain("compgen");
+    expect(plan).not.toContain('test "$?"');
+    expect(plan).toContain("bopen-setup-bopen-tools-persona.ok");
+  });
+
+  test("Codex agent delivery locates the portable installed root and verifies the manifest check", () => {
+    const plugin = makePlugin({
+      checks: [
+        {
+          id: "codex-agents",
+          kind: "codex-agents",
+          name: "codex agent delivery",
+          installed: false,
+          install: "bash scripts/install-codex-agents.sh",
+          checkCommand: "path:~/.codex/agents/bopen_*.toml",
+        },
+      ],
+    });
+    const plan = emitPlan(makeState({}, [plugin]), {
+      runtime: "codex",
+      plugins: [
+        {
+          name: "bopen-tools",
+          installPlugin: false,
+          checks: ["codex-agents"],
+          hooks: {},
+        },
+      ],
+    });
+
+    expect(plan).toContain('$HOME/.codex/plugins/cache/b-open-io/bopen-tools');
+    expect(plan).toContain("bash scripts/install-codex-agents.sh");
+    expect(plan).toContain('$HOME/.codex/agents/bopen_*.toml');
+  });
 });
 
 describe("grok dialect", () => {
@@ -247,9 +326,9 @@ describe("grok dialect", () => {
     ],
   } as any;
 
-  test("claude-installed plugin emits compat passthrough with grok inspect", () => {
+  test("stale Claude-compatible plugin emits an update with grok inspect verification", () => {
     const plan = emitPlan(grokState("1.1.47"), grokSel);
-    expect(plan).toContain("already active in Grok Build");
+    expect(plan).toContain("claude plugin update bopen-tools@b-open-io");
     expect(plan).toContain("grok inspect");
     expect(plan).not.toContain("grok plugin install");
   });

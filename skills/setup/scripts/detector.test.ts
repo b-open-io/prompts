@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -12,6 +12,23 @@ import {
   resolveHookEnabled,
   resolveInstall,
 } from "./detector";
+import { isRuntime, RUNTIMES, RUNTIME_IDS } from "./runtimes";
+
+describe("runtime registry", () => {
+  test("is the canonical ordered runtime and tier list", () => {
+    expect(RUNTIMES).toEqual([
+      { id: "claude", label: "Claude Code", tier: "supported" },
+      { id: "codex", label: "Codex", tier: "supported" },
+      { id: "grok", label: "Grok Build", tier: "supported" },
+      { id: "opencode", label: "OpenCode", tier: "experimental" },
+      { id: "hermes", label: "Hermes", tier: "experimental" },
+      { id: "generic", label: "Generic", tier: "fallback" },
+    ]);
+    expect(RUNTIME_IDS).toEqual(RUNTIMES.map((runtime) => runtime.id));
+    expect(RUNTIME_IDS.every(isRuntime)).toBe(true);
+    expect(isRuntime("unknown")).toBe(false);
+  });
+});
 
 describe("evaluateCheck", () => {
   test("env form reports installed when the var is set and non-empty", async () => {
@@ -166,7 +183,10 @@ describe("skill activity", () => {
     );
 
     const activity = readSkillActivity({
-      env: { BOPEN_SKILL_ACTIVITY_FILE: activityFile },
+      env: {
+        BOPEN_SKILL_ACTIVITY_FILE: activityFile,
+        BOPEN_CLAUDE_PROJECTS_DIR: join(dir, "projects"),
+      },
       nowSeconds,
     });
 
@@ -174,11 +194,13 @@ describe("skill activity", () => {
       lastInvokedAt: nowSeconds - 60,
       sessionId: "latest-session",
       count24h: 2,
+      isLive: false,
     });
     expect(activity["other-plugin:helper"]).toEqual({
       lastInvokedAt: nowSeconds - 10,
       sessionId: "other-session",
       count24h: 1,
+      isLive: false,
     });
     expect(activity["bopen-tools:ignored"]).toBeUndefined();
   });
@@ -190,6 +212,75 @@ describe("skill activity", () => {
         nowSeconds,
       })
     ).toEqual({});
+  });
+
+  test("marks only a latest-session transcript modified within 120 seconds as live", async () => {
+    const activityFile = join(dir, "activity.jsonl");
+    const projectsDir = join(dir, "projects");
+    const slug = join(projectsDir, "-Users-example-project");
+    await mkdir(slug, { recursive: true });
+    await writeFile(
+      activityFile,
+      [
+        JSON.stringify({ ts: nowSeconds - 300, session_id: "older-live", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-live", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 30, session_id: "stale-session", skill: "bopen-tools:hook-manager" }),
+        JSON.stringify({ ts: nowSeconds - 20, session_id: "missing-session", skill: "bopen-tools:persona" }),
+      ].join("\n"),
+    );
+
+    const olderTranscript = join(slug, "older-live.jsonl");
+    const latestTranscript = join(slug, "latest-live.jsonl");
+    const staleTranscript = join(slug, "stale-session.jsonl");
+    await Promise.all([
+      writeFile(olderTranscript, "{}\n"),
+      writeFile(latestTranscript, "{}\n"),
+      writeFile(staleTranscript, "{}\n"),
+    ]);
+    await utimes(olderTranscript, nowSeconds - 10, nowSeconds - 10);
+    await utimes(latestTranscript, nowSeconds - 120, nowSeconds - 120);
+    await utimes(staleTranscript, nowSeconds - 121, nowSeconds - 121);
+
+    const activity = readSkillActivity({
+      env: {
+        BOPEN_SKILL_ACTIVITY_FILE: activityFile,
+        BOPEN_CLAUDE_PROJECTS_DIR: projectsDir,
+      },
+      nowSeconds,
+    });
+
+    expect(activity["bopen-tools:advisor"].sessionId).toBe("latest-live");
+    expect(activity["bopen-tools:advisor"].isLive).toBe(true);
+    expect(activity["bopen-tools:hook-manager"].isLive).toBe(false);
+    expect(activity["bopen-tools:persona"].isLive).toBe(false);
+  });
+
+  test("rejects future transcript mtimes and unsafe session ids", async () => {
+    const activityFile = join(dir, "activity.jsonl");
+    const projectsDir = join(dir, "projects");
+    const slug = join(projectsDir, "project");
+    await mkdir(slug, { recursive: true });
+    await writeFile(
+      activityFile,
+      [
+        JSON.stringify({ ts: nowSeconds - 10, session_id: "future-session", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 5, session_id: "../escape", skill: "bopen-tools:persona" }),
+      ].join("\n"),
+    );
+    const transcript = join(slug, "future-session.jsonl");
+    await writeFile(transcript, "{}\n");
+    await utimes(transcript, nowSeconds + 1, nowSeconds + 1);
+
+    const activity = readSkillActivity({
+      env: {
+        BOPEN_SKILL_ACTIVITY_FILE: activityFile,
+        BOPEN_CLAUDE_PROJECTS_DIR: projectsDir,
+      },
+      nowSeconds,
+    });
+
+    expect(activity["bopen-tools:advisor"].isLive).toBe(false);
+    expect(activity["bopen-tools:persona"].isLive).toBe(false);
   });
 
   test("detectHarness attaches full skill ids only to their exact plugin namespace", async () => {
@@ -214,7 +305,10 @@ describe("skill activity", () => {
           ["no-activity", "1.0.0"],
         ]),
       },
-      env: { BOPEN_SKILL_ACTIVITY_FILE: activityFile },
+      env: {
+        BOPEN_SKILL_ACTIVITY_FILE: activityFile,
+        BOPEN_CLAUDE_PROJECTS_DIR: join(dir, "projects"),
+      },
       nowSeconds,
     });
 
@@ -223,6 +317,7 @@ describe("skill activity", () => {
         lastInvokedAt: nowSeconds - 60,
         sessionId: "bopen-session",
         count24h: 1,
+        isLive: false,
       },
     });
     expect(state.plugins.find((plugin) => plugin.name === "bopen-tools-extra")?.skillActivity).toEqual({
@@ -230,6 +325,7 @@ describe("skill activity", () => {
         lastInvokedAt: nowSeconds - 30,
         sessionId: "similar-session",
         count24h: 1,
+        isLive: false,
       },
     });
     expect(state.plugins.find((plugin) => plugin.name === "no-activity")?.skillActivity).toEqual({});

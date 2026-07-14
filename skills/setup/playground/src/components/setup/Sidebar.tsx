@@ -1,9 +1,19 @@
 "use client"
 
-import { Boxes, CheckCircle2, Circle, LoaderCircle, RefreshCw } from "lucide-react"
+import {
+	Boxes,
+	CheckCircle2,
+	ChevronRight,
+	Circle,
+	LoaderCircle,
+	Puzzle,
+	RefreshCw,
+} from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
 import { DitherGradient } from "@/components/dither-kit/gradient"
+import { useSound } from "@/components/SoundProvider"
+import { SoundToggle } from "@/components/SoundToggle"
 import { ManifestInfo } from "@/components/setup/ManifestInfo"
 import { PluginIcon } from "@/components/setup/PluginIcon"
 import { Button } from "@/components/ui/button"
@@ -14,8 +24,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import type { HarnessState } from "@/lib/types"
-import { VALID_RUNTIMES } from "@/lib/types"
+import { type HarnessState, RUNTIMES, type Runtime } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 type InstallState = "complete" | "partial" | "missing"
@@ -87,12 +96,22 @@ export function Sidebar({
 	state: HarnessState | null
 	activeView: string
 	shellMode: "standalone" | "agent-master"
-	selectedRuntime: string | null
+	selectedRuntime: Runtime | null
 	onSelect: (view: string) => void
-	onRuntimeChange: (runtime: string) => void
+	onRuntimeChange: (runtime: Runtime) => void
 	onRefresh: () => void
 	refreshing: boolean
 }) {
+	const [pluginsExpanded, setPluginsExpanded] = useState(true)
+	const { play } = useSound()
+
+	function selectRuntime(runtime: string) {
+		const entry = RUNTIMES.find((candidate) => candidate.id === runtime)
+		if (!entry) return
+		play("DROPDOWN_CLOSE")
+		onRuntimeChange(entry.id)
+	}
+
 	return (
 		<aside className="setup-sidebar">
 			<div className="relative min-h-[72px] overflow-hidden px-4 pb-3 pt-4">
@@ -119,6 +138,7 @@ export function Sidebar({
 				<button
 					type="button"
 					onClick={() => onSelect("overview")}
+					data-sound="nav-tab-switch"
 					aria-current={activeView === "overview" ? "page" : undefined}
 					className={cn(
 						"mb-4 flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[0.78rem] font-medium",
@@ -131,42 +151,75 @@ export function Sidebar({
 					Overview
 				</button>
 
-				<div className="mb-1 px-2 font-mono text-[0.61rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-					Plugins
-				</div>
-				{state?.plugins.map((plugin) => {
-					const active = activeView === plugin.name
-					return (
-						<div key={plugin.name} className="relative">
-							<button
-								type="button"
-								onClick={() => onSelect(plugin.name)}
-								aria-current={active ? "page" : undefined}
-								className={cn(
-									"group flex h-8 w-full items-center gap-2 rounded-md px-2 pr-14 text-left text-[0.76rem]",
-									active
-										? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_0.5px_var(--sidebar-border)]"
-										: "text-sidebar-foreground hover:bg-sidebar-accent/60",
+				<button
+					type="button"
+					onClick={() => {
+						setPluginsExpanded(true)
+						onSelect("plugins")
+					}}
+					onKeyDown={(event) => {
+						if (event.key === "ArrowRight") {
+							event.preventDefault()
+							setPluginsExpanded(true)
+						} else if (event.key === "ArrowLeft") {
+							event.preventDefault()
+							setPluginsExpanded(false)
+						}
+					}}
+					aria-current={activeView === "plugins" ? "page" : undefined}
+					aria-expanded={pluginsExpanded}
+					aria-controls="setup-plugin-navigation"
+					data-sound="nav-tab-switch"
+					className={cn(
+						"mb-1 flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[0.78rem] font-medium",
+						activeView === "plugins"
+							? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_0.5px_var(--sidebar-border)]"
+							: "text-sidebar-foreground hover:bg-sidebar-accent/60",
+					)}
+				>
+					<Puzzle className="size-4" strokeWidth={1.7} aria-hidden="true" />
+					<span className="flex-1">Plugins</span>
+					<ChevronRight
+						className={cn("size-3.5 transition-transform", pluginsExpanded && "rotate-90")}
+						aria-hidden="true"
+					/>
+				</button>
+				<div id="setup-plugin-navigation" hidden={!pluginsExpanded}>
+					{state?.plugins.map((plugin) => {
+						const active = activeView === plugin.name
+						return (
+							<div key={plugin.name} className="relative">
+								<button
+									type="button"
+									onClick={() => onSelect(plugin.name)}
+									data-sound="nav-tab-switch"
+									aria-current={active ? "page" : undefined}
+									className={cn(
+										"group flex h-8 w-full items-center gap-2 rounded-md px-2 pr-14 text-left text-[0.76rem]",
+										active
+											? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_0.5px_var(--sidebar-border)]"
+											: "text-sidebar-foreground hover:bg-sidebar-accent/60",
+									)}
+								>
+									<PluginIcon
+										name={plugin.name}
+										size={18}
+										className="shrink-0 rounded-sm bg-background/35"
+									/>
+									<span className="min-w-0 flex-1 truncate">{plugin.name}</span>
+								</button>
+								{!plugin.hasSetupManifest && (
+									<div className="absolute right-6 top-1.5">
+										<ManifestInfo compact />
+									</div>
 								)}
-							>
-								<PluginIcon
-									name={plugin.name}
-									size={18}
-									className="shrink-0 rounded-sm bg-background/35"
-								/>
-								<span className="min-w-0 flex-1 truncate">{plugin.name}</span>
-							</button>
-							{!plugin.hasSetupManifest && (
-								<div className="absolute right-6 top-1.5">
-									<ManifestInfo compact />
+								<div className="pointer-events-none absolute right-2 top-3">
+									<StateDot state={installState(plugin.installedClaude, plugin.installedCodex)} />
 								</div>
-							)}
-							<div className="pointer-events-none absolute right-2 top-3">
-								<StateDot state={installState(plugin.installedClaude, plugin.installedCodex)} />
 							</div>
-						</div>
-					)
-				})}
+						)
+					})}
+				</div>
 				{!state && (
 					<div className="flex items-center gap-2 px-2 py-2 text-[0.72rem] text-muted-foreground">
 						<LoaderCircle className="size-3.5 animate-spin" /> Loading…
@@ -179,14 +232,17 @@ export function Sidebar({
 					<span className="font-mono text-[0.61rem] uppercase tracking-[0.1em] text-muted-foreground">
 						Plan for
 					</span>
-					<Select value={selectedRuntime ?? undefined} onValueChange={onRuntimeChange}>
+					<Select value={selectedRuntime ?? undefined} onValueChange={selectRuntime}>
 						<SelectTrigger className="h-7 rounded-md bg-background/60 px-2 py-0">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent className="rounded-md">
-							{VALID_RUNTIMES.map((runtime) => (
-								<SelectItem key={runtime} value={runtime} className="rounded-sm">
-									{runtime}
+							{RUNTIMES.map((runtime) => (
+								<SelectItem key={runtime.id} value={runtime.id} className="rounded-sm">
+									<span>{runtime.label}</span>
+									{runtime.tier === "experimental" && (
+										<span className="ml-1 normal-case text-muted-foreground">experimental</span>
+									)}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -208,11 +264,16 @@ export function Sidebar({
 				<Button
 					onClick={onRefresh}
 					disabled={refreshing}
+					data-sound="none"
 					className="h-7 w-full rounded-md normal-case"
 				>
 					<RefreshCw className={cn("size-3", refreshing && "animate-spin")} aria-hidden="true" />
 					{refreshing ? "Re-checking…" : "Refresh"}
 				</Button>
+				<div className="mt-2 flex items-center justify-between gap-2 text-[0.65rem] text-muted-foreground">
+					<span>Interface sound</span>
+					<SoundToggle />
+				</div>
 			</div>
 		</aside>
 	)

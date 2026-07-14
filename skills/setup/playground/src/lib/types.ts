@@ -4,7 +4,10 @@
 // in the client bundle — only the route handlers import detector.ts/emitter.ts
 // directly, per SPEC-OPL-2879-playground.md.
 
-export type Runtime = "claude" | "codex" | "opencode" | "grok" | "hermes" | "generic"
+export type { Runtime, RuntimeTier } from "../../../scripts/runtimes"
+export { RUNTIME_IDS, RUNTIMES } from "../../../scripts/runtimes"
+
+import type { Runtime } from "../../../scripts/runtimes"
 
 export type CheckKind = "cli" | "env" | "third-party-skill" | "codex-agents" | "setup-script"
 
@@ -32,6 +35,7 @@ export type SkillActivityState = {
 	lastInvokedAt: number
 	sessionId: string
 	count24h: number
+	isLive: boolean
 }
 
 export type PluginState = {
@@ -64,15 +68,6 @@ export type PlanSelections = {
 		hooks: Record<string, boolean>
 	}>
 }
-
-export const VALID_RUNTIMES: Runtime[] = [
-	"claude",
-	"codex",
-	"opencode",
-	"grok",
-	"hermes",
-	"generic",
-]
 
 /** Per-plugin UI selection state — not part of the server contract. */
 export type PluginSelection = {

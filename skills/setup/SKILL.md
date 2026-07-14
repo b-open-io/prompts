@@ -1,6 +1,6 @@
 ---
 name: setup
-version: 1.0.1
+version: 1.0.2
 description: This skill should be used when the user says "bopen setup", "setup ui", "harness install", "audit my setup", "install everything", "unified installer", "setup plan", "/bopen-setup", or wants a single view of which bOpen plugins, CLIs, env keys, third-party skills, agents, and hooks are installed across their agent harness. It audits live state, lets the user select what to fix, and emits a runtime-tailored instruction plan — it never installs anything itself. For hooks-only configuration (enabling/disabling a single hook without the full harness view) the hook-manager skill remains canonical; this skill's Overview and per-plugin tabs point there for that narrower job.
 ---
 
@@ -21,13 +21,13 @@ installs, writes config, or mutates anything; it declares, detects, and emits.
 2. **Select** — a local web UI lets the user tick which detected gaps to fix
    and which hooks to toggle, per plugin, per runtime.
 3. **Emit** — "Build setup plan" diffs the selections against detected state
-   and writes a runtime-tailored markdown instruction prompt to
-   `<cwd>/bopen-setup-plan.md`. That file, and only that file, is ever written
-   by this system.
+   and presents one complete, runtime-tailored instruction prompt inline. Copy
+   that full prompt into any agent; it includes its own context, commands,
+   verification steps, execution rules, and final-report contract.
 
-Nothing here calls `npm install`, `claude plugin install`, or edits any
-config file. The plan is prose and copyable commands; a human or the parent
-agent decides whether and when to run them.
+Nothing here calls `npm install`, `claude plugin install`, writes a plan file,
+or edits any config file. The prompt is prose and copyable commands; a human
+or agent decides whether and when to execute it.
 
 ## How to launch
 
@@ -36,7 +36,7 @@ From the installed plugin root — two paths, identical API contracts:
 **Playground (preferred — richer UI, shadcn + dither-kit):**
 
 ```bash
-bun skills/setup/scripts/playground_server.ts --runtime <claude|codex|opencode|grok|hermes|generic>
+bun skills/setup/scripts/playground_server.ts --runtime <claude|codex|grok|opencode|hermes|generic>
 ```
 
 A buildable Next.js app on port 7788; the launcher installs and builds on
@@ -45,7 +45,7 @@ first run (needs network once), then starts instantly.
 **Zero-install fallback (single file, works offline):**
 
 ```bash
-bun skills/setup/scripts/server.ts --runtime <claude|codex|opencode|grok|hermes|generic> [--port 7788]
+bun skills/setup/scripts/server.ts --runtime <claude|codex|grok|opencode|hermes|generic> [--port 7788]
 ```
 
 Pass the runtime you already know you're running as — the agent invoking this
@@ -91,13 +91,12 @@ or hook wiring.
 
 ## Executing the plan
 
-The setup plan is an instruction prompt, not a script — it lists ordered
-steps (plugins → agents → CLIs → env → third-party skills → hooks config →
-skill setup scripts) with commands in the active runtime's dialect. The
-parent agent executes it, ideally by handing bounded chunks to
-`Skill(bopen-tools:coordinator)` so cheap workers run the mechanical install
-steps while the main session keeps the plan, review, and verification.
-Hooks-config changes in the plan are a special case: writing
+The setup plan is a self-contained instruction prompt, not a script — it lists
+ordered steps (plugins → agents → CLIs → env → third-party skills → hooks
+config → skill setup scripts) with commands and verification in the active
+runtime's dialect. Paste the full prompt into any agent without supplying a
+repository checkout, machine-specific path, or prior conversation.
+Hooks-config changes in the prompt are a special case: writing
 `hooks-config.json` is ask-tier (per hook-manager's guard semantics), so the
 executing agent must confirm with the user before writing it — the plan says
 this explicitly rather than assuming silent consent.

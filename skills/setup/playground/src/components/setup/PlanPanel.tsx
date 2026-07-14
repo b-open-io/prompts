@@ -5,15 +5,7 @@ import { useEffect } from "react"
 import { CopyButton } from "@/components/setup/CopyButton"
 import { Button } from "@/components/ui/button"
 
-export function PlanPanel({
-	markdown,
-	path,
-	onClose,
-}: {
-	markdown: string
-	path: string
-	onClose: () => void
-}) {
+export function PlanPanel({ markdown, onClose }: { markdown: string; onClose: () => void }) {
 	useEffect(() => {
 		function handleEscape(event: KeyboardEvent) {
 			if (event.key === "Escape") onClose()
@@ -46,7 +38,7 @@ export function PlanPanel({
 								Setup plan ready
 							</div>
 							<div className="text-[0.65rem] text-muted-foreground">
-								Review or copy the generated steps.
+								Review or copy the full execution prompt.
 							</div>
 						</div>
 					</div>
@@ -54,15 +46,11 @@ export function PlanPanel({
 						<X className="size-3.5" />
 					</Button>
 				</div>
-				<div className="mb-2 flex items-center gap-2 rounded-md bg-muted px-2.5 py-2 text-[0.7rem] text-muted-foreground">
-					<code className="min-w-0 flex-1 break-all font-mono">{path}</code>
-					<CopyButton text={path} />
-				</div>
 				<pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap break-words rounded-lg border border-border bg-muted p-3 font-mono text-[0.72rem] leading-5">
 					{markdown}
 				</pre>
 				<div className="mt-3 flex justify-end">
-					<CopyButton text={markdown} className="px-3" />
+					<CopyButton text={markdown} label="copy full prompt" className="px-3" />
 				</div>
 			</div>
 		</div>

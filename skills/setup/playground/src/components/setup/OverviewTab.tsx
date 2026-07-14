@@ -106,6 +106,7 @@ function HealthChip({
 		<button
 			type="button"
 			onClick={onClick}
+			data-sound="button-click-secondary"
 			className={cn(
 				"flex min-h-12 min-w-40 flex-1 items-center gap-2.5 rounded-lg border px-3 py-2 text-left shadow-sm",
 				active ? "border-primary bg-primary/10 ring-2 ring-primary/15" : "border-border bg-card",
@@ -165,10 +166,12 @@ export function OverviewTab({
 	state,
 	onSelectPlugin,
 	searchFocusToken,
+	pluginGridFocusToken,
 }: {
 	state: HarnessState
 	onSelectPlugin: (plugin: string) => void
 	searchFocusToken: number
+	pluginGridFocusToken: number
 }) {
 	const [query, setQuery] = useState("")
 	const [gridFilter, setGridFilter] = useState<GridFilter>("all")
@@ -201,6 +204,12 @@ export function OverviewTab({
 		const timer = window.setTimeout(() => setShortcutFlash(false), 500)
 		return () => window.clearTimeout(timer)
 	}, [searchFocusToken])
+
+	useEffect(() => {
+		if (pluginGridFocusToken === 0) return
+		gridRef.current?.focus({ preventScroll: true })
+		gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+	}, [pluginGridFocusToken])
 
 	function chooseFilter(filter: GridFilter, target: "attention" | "grid") {
 		setGridFilter((current) => (current === filter ? "all" : filter))
@@ -334,7 +343,12 @@ export function OverviewTab({
 				</section>
 			)}
 
-			<section ref={gridRef} aria-labelledby="plugins-heading" className="scroll-mt-20">
+			<section
+				ref={gridRef}
+				tabIndex={-1}
+				aria-labelledby="plugins-heading"
+				className="scroll-mt-20 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			>
 				<div className="mb-3 flex flex-wrap items-end justify-between gap-3">
 					<div>
 						<h2 id="plugins-heading" className="text-[0.95rem] font-semibold tracking-[-0.01em]">
@@ -392,8 +406,11 @@ export function OverviewTab({
 						{filteredPlugins.map((plugin) => {
 							const status = pluginState(plugin)
 							const recentActivity = Object.values(plugin.skillActivity ?? {})
-								.filter((activity) => isRecentSkillActivity(activity))
-								.sort((a, b) => b.lastInvokedAt - a.lastInvokedAt)[0]
+								.filter((activity) => activity.isLive || isRecentSkillActivity(activity))
+								.sort(
+									(a, b) =>
+										Number(b.isLive) - Number(a.isLive) || b.lastInvokedAt - a.lastInvokedAt,
+								)[0]
 							return (
 								<Card
 									key={plugin.name}

@@ -369,16 +369,6 @@
     margin-bottom: 0.6rem;
   }
 
-  .plan-path {
-    font-size: 0.75rem;
-    color: var(--muted-fg);
-    margin-bottom: 0.5rem;
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    word-break: break-all;
-  }
-
   .plan-copy-row {
     margin-top: 0.6rem;
     text-align: right;
@@ -414,12 +404,12 @@
       <span class="chip warn hidden" id="runtime-mismatch-chip"></span>
       <label class="chip dim plan-for-label" for="runtime-select">plan for:</label>
       <select id="runtime-select">
-        <option value="claude">claude</option>
-        <option value="codex">codex</option>
-        <option value="opencode">opencode</option>
-        <option value="grok">grok</option>
-        <option value="hermes">hermes</option>
-        <option value="generic">generic</option>
+        <option value="claude">Claude Code</option>
+        <option value="codex">Codex</option>
+        <option value="grok">Grok Build</option>
+        <option value="opencode">OpenCode (experimental)</option>
+        <option value="hermes">Hermes (experimental)</option>
+        <option value="generic">Generic</option>
       </select>
     </div>
     <div class="spacer"></div>
@@ -442,13 +432,9 @@
       <span class="eyebrow">[ SETUP PLAN ]</span>
       <button type="button" id="plan-dismiss-btn">Close</button>
     </div>
-    <div class="plan-path">
-      <span id="plan-path-text"></span>
-      <button type="button" class="copy-btn" id="plan-path-copy-btn">copy</button>
-    </div>
     <pre class="plan-md" id="plan-markdown"></pre>
     <div class="plan-copy-row">
-      <button type="button" class="copy-btn" id="plan-md-copy-btn">copy plan</button>
+      <button type="button" class="copy-btn" id="plan-md-copy-btn">copy full prompt</button>
     </div>
   </div>
 </div>
@@ -574,7 +560,7 @@
       if (!res.ok) throw new Error("POST /api/plan failed: " + res.status);
       return res.json();
     }).then(function (data) {
-      showPlanPanel(data.markdown, data.path);
+      showPlanPanel(data.markdown);
     }).catch(function (err) {
       showErrorBanner("Failed to build plan: " + err.message);
     }).finally(function () {
@@ -909,11 +895,9 @@
   // Plan panel
   // ---------------------------------------------------------------------
 
-  function showPlanPanel(markdown, path) {
+  function showPlanPanel(markdown) {
     el("plan-markdown").textContent = markdown;
-    el("plan-path-text").textContent = path;
     el("plan-panel").classList.remove("hidden");
-    el("plan-path-copy-btn").onclick = function (e) { doCopy(path, e.currentTarget); };
     el("plan-md-copy-btn").onclick = function (e) { doCopy(markdown, e.currentTarget); };
   }
 

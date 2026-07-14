@@ -1,0 +1,147 @@
+{
+  "name": "custom",
+  "version": "1.0.0",
+  "generated": "2026-07-13T02:56:59Z",
+  "vibe": "Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb",
+  "sounds": {
+    "button-click-primary": {
+      "file": "buttons/button-click-primary.mp3",
+      "duration_ms": 500,
+      "prompt": "single ultra-soft smooth rounded interface tick, faint retro accent, very quiet, very short",
+      "picked": true
+    },
+    "button-click-secondary": {
+      "file": "buttons/button-click-secondary.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, light secondary tap, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "button-click-destructive": {
+      "file": "buttons/button-click-destructive.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, warning action tap, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "nav-tab-switch": {
+      "file": "navigation/nav-tab-switch.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface subtle click feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, tab switch transition, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "nav-back": {
+      "file": "navigation/nav-back.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, back navigation swipe, short UI sound, minimal interface feedback"
+    },
+    "nav-forward": {
+      "file": "navigation/nav-forward.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface \"nav forward\" feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, forward navigation, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "nav-menu-open": {
+      "file": "navigation/nav-menu-open.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, menu drawer slide open, short UI sound, minimal interface feedback"
+    },
+    "nav-menu-close": {
+      "file": "navigation/nav-menu-close.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, menu dismiss, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "notification-success": {
+      "file": "feedback/notification-success.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, positive confirmation chime, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "notification-error": {
+      "file": "feedback/notification-error.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface error tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, error alert tone, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "notification-warning": {
+      "file": "feedback/notification-warning.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface warning tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, warning attention, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "notification-info": {
+      "file": "feedback/notification-info.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, information notice, short UI sound, minimal interface feedback"
+    },
+    "notification-badge": {
+      "file": "feedback/notification-badge.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, badge counter update, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "toggle-on": {
+      "file": "states/toggle-on.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, switch enable click, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "toggle-off": {
+      "file": "states/toggle-off.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, switch disable click, short UI sound, minimal interface feedback"
+    },
+    "checkbox-check": {
+      "file": "states/checkbox-check.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface subtle checkbox \"tick\" tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, checkbox select tick, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "checkbox-uncheck": {
+      "file": "states/checkbox-uncheck.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface checkbox clear tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, checkbox deselect, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "loading-start": {
+      "file": "states/loading-start.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface loading start tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, loading initiate, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "loading-complete": {
+      "file": "states/loading-complete.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, loading finish success, short UI sound, minimal interface feedback"
+    },
+    "modal-open": {
+      "file": "modals/modal-open.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface modal open tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, modal appear, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "modal-close": {
+      "file": "modals/modal-close.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, modal dismiss, short UI sound, minimal interface feedback"
+    },
+    "tooltip-show": {
+      "file": "modals/tooltip-show.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface \"tooltip show\" feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, tooltip reveal, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "dropdown-open": {
+      "file": "modals/dropdown-open.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface extremely ubtle \"dropdown expand\" feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, dropdown expand, short UI sound, minimal interface feedback",
+      "picked": true
+    },
+    "dropdown-close": {
+      "file": "modals/dropdown-close.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, Extremely subtle smooth user interface extremely subtle \"dropdown close\" feedback tone, soft rounded chiptune character, gentle low-pass filtered square wave, one very short quiet note, smooth attack and decay, modern OS interface sound with a faint retro video game accent, not a sound effect, no harshness, no noise, no reverb, dropdown collapse, short UI sound, minimal interface feedback",
+      "picked": true
+    }
+  },
+  "typescript_constants": "// Auto-generated UI Audio Theme Constants\n\nexport const UI_SOUNDS = {\n  BUTTON_CLICK_PRIMARY: \"./buttons/button-click-primary.mp3\",\n  BUTTON_CLICK_SECONDARY: \"./buttons/button-click-secondary.mp3\",\n  BUTTON_CLICK_DESTRUCTIVE: \"./buttons/button-click-destructive.mp3\",\n  NAV_TAB_SWITCH: \"./navigation/nav-tab-switch.mp3\",\n  NAV_BACK: \"./navigation/nav-back.mp3\",\n  NAV_FORWARD: \"./navigation/nav-forward.mp3\",\n  NAV_MENU_OPEN: \"./navigation/nav-menu-open.mp3\",\n  NAV_MENU_CLOSE: \"./navigation/nav-menu-close.mp3\",\n  NOTIFICATION_SUCCESS: \"./feedback/notification-success.mp3\",\n  NOTIFICATION_ERROR: \"./feedback/notification-error.mp3\",\n  NOTIFICATION_WARNING: \"./feedback/notification-warning.mp3\",\n  NOTIFICATION_INFO: \"./feedback/notification-info.mp3\",\n  NOTIFICATION_BADGE: \"./feedback/notification-badge.mp3\",\n  TOGGLE_ON: \"./states/toggle-on.mp3\",\n  TOGGLE_OFF: \"./states/toggle-off.mp3\",\n  CHECKBOX_CHECK: \"./states/checkbox-check.mp3\",\n  CHECKBOX_UNCHECK: \"./states/checkbox-uncheck.mp3\",\n  LOADING_START: \"./states/loading-start.mp3\",\n  LOADING_COMPLETE: \"./states/loading-complete.mp3\",\n  MODAL_OPEN: \"./modals/modal-open.mp3\",\n  MODAL_CLOSE: \"./modals/modal-close.mp3\",\n  TOOLTIP_SHOW: \"./modals/tooltip-show.mp3\",\n  DROPDOWN_OPEN: \"./modals/dropdown-open.mp3\",\n  DROPDOWN_CLOSE: \"./modals/dropdown-close.mp3\",\n} as const;\n\nexport type UISoundKey = keyof typeof UI_SOUNDS;"
+}
