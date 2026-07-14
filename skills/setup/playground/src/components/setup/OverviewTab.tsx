@@ -12,7 +12,7 @@ import {
 	TerminalSquare,
 	X,
 } from "lucide-react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { CopyButton } from "@/components/setup/CopyButton"
 import { ManifestInfo } from "@/components/setup/ManifestInfo"
 import { PluginIcon } from "@/components/setup/PluginIcon"
@@ -162,6 +162,61 @@ function RuntimeChip({ runtime, version }: { runtime: string; version: string | 
 	)
 }
 
+const PluginGridCard = memo(function PluginGridCard({
+	plugin,
+	onSelectPlugin,
+}: {
+	plugin: PluginState
+	onSelectPlugin: (plugin: string) => void
+}) {
+	const handleSelect = useCallback(() => onSelectPlugin(plugin.name), [onSelectPlugin, plugin.name])
+	const status = pluginState(plugin)
+	const recentActivity = Object.values(plugin.skillActivity ?? {})
+		.filter((activity) => activity.isLive || isRecentSkillActivity(activity))
+		.sort((a, b) => Number(b.isLive) - Number(a.isLive) || b.lastInvokedAt - a.lastInvokedAt)[0]
+
+	return (
+		<Card className="native-card group relative overflow-hidden transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md">
+			<button
+				type="button"
+				onClick={handleSelect}
+				className="w-full p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+			>
+				<div className="flex items-start gap-2.5">
+					<PluginIcon name={plugin.name} size={34} className="shrink-0 rounded-md bg-muted" />
+					<div className="min-w-0 flex-1 pr-5">
+						<div className="flex items-center gap-1.5">
+							<div className="truncate text-[0.82rem] font-semibold">{plugin.name}</div>
+							{recentActivity && <SkillActivityBadge activity={recentActivity} compact />}
+						</div>
+						<div className="mt-1 flex flex-wrap gap-1">
+							<RuntimeChip runtime="claude" version={plugin.installedClaude} />
+							<RuntimeChip runtime="codex" version={plugin.installedCodex} />
+						</div>
+					</div>
+					<ChevronRight className="mt-2 size-3.5 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
+				</div>
+				<div className="mt-3 flex items-center gap-1.5 text-[0.66rem] text-muted-foreground">
+					<span
+						className={cn(
+							"size-2 rounded-full",
+							status === "complete" && "bg-green-500",
+							status === "partial" && "bg-amber-500",
+							status === "missing" && "bg-zinc-400",
+						)}
+					/>
+					{statusLabel(plugin)}
+				</div>
+			</button>
+			{!plugin.hasSetupManifest && (
+				<div className="absolute right-7 top-2.5">
+					<ManifestInfo compact />
+				</div>
+			)}
+		</Card>
+	)
+})
+
 export function OverviewTab({
 	state,
 	onSelectPlugin,
@@ -211,7 +266,7 @@ export function OverviewTab({
 		gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
 	}, [pluginGridFocusToken])
 
-	function chooseFilter(filter: GridFilter, target: "attention" | "grid") {
+	const chooseFilter = useCallback((filter: GridFilter, target: "attention" | "grid") => {
 		setGridFilter((current) => (current === filter ? "all" : filter))
 		window.requestAnimationFrame(() => {
 			;(target === "attention" ? attentionRef.current : gridRef.current)?.scrollIntoView({
@@ -219,20 +274,22 @@ export function OverviewTab({
 				block: "start",
 			})
 		})
-	}
+	}, [])
 
-	const filteredPlugins = state.plugins.filter((plugin) => {
+	const filteredPlugins = useMemo(() => {
 		const normalized = query.trim().toLowerCase()
-		if (normalized && !plugin.name.toLowerCase().includes(normalized)) return false
-		if (gridFilter === "installed")
-			return plugin.installedClaude !== null || plugin.installedCodex !== null
-		if (gridFilter === "missing-cli")
-			return plugin.checks?.some((check) => check.kind === "cli" && !check.installed)
-		if (gridFilter === "unset-env")
-			return plugin.checks?.some((check) => check.kind === "env" && !check.installed)
-		if (gridFilter === "hooks") return (plugin.hooks?.length ?? 0) > 0
-		return true
-	})
+		return state.plugins.filter((plugin) => {
+			if (normalized && !plugin.name.toLowerCase().includes(normalized)) return false
+			if (gridFilter === "installed")
+				return plugin.installedClaude !== null || plugin.installedCodex !== null
+			if (gridFilter === "missing-cli")
+				return plugin.checks?.some((check) => check.kind === "cli" && !check.installed)
+			if (gridFilter === "unset-env")
+				return plugin.checks?.some((check) => check.kind === "env" && !check.installed)
+			if (gridFilter === "hooks") return (plugin.hooks?.length ?? 0) > 0
+			return true
+		})
+	}, [gridFilter, query, state.plugins])
 
 	return (
 		<div className="space-y-6">
@@ -403,64 +460,9 @@ export function OverviewTab({
 
 				{filteredPlugins.length > 0 ? (
 					<div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
-						{filteredPlugins.map((plugin) => {
-							const status = pluginState(plugin)
-							const recentActivity = Object.values(plugin.skillActivity ?? {})
-								.filter((activity) => activity.isLive || isRecentSkillActivity(activity))
-								.sort(
-									(a, b) =>
-										Number(b.isLive) - Number(a.isLive) || b.lastInvokedAt - a.lastInvokedAt,
-								)[0]
-							return (
-								<Card
-									key={plugin.name}
-									className="native-card group relative overflow-hidden transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md"
-								>
-									<button
-										type="button"
-										onClick={() => onSelectPlugin(plugin.name)}
-										className="w-full p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-									>
-										<div className="flex items-start gap-2.5">
-											<PluginIcon
-												name={plugin.name}
-												size={34}
-												className="shrink-0 rounded-md bg-muted"
-											/>
-											<div className="min-w-0 flex-1 pr-5">
-												<div className="flex items-center gap-1.5">
-													<div className="truncate text-[0.82rem] font-semibold">{plugin.name}</div>
-													{recentActivity && (
-														<SkillActivityBadge activity={recentActivity} compact />
-													)}
-												</div>
-												<div className="mt-1 flex flex-wrap gap-1">
-													<RuntimeChip runtime="claude" version={plugin.installedClaude} />
-													<RuntimeChip runtime="codex" version={plugin.installedCodex} />
-												</div>
-											</div>
-											<ChevronRight className="mt-2 size-3.5 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
-										</div>
-										<div className="mt-3 flex items-center gap-1.5 text-[0.66rem] text-muted-foreground">
-											<span
-												className={cn(
-													"size-2 rounded-full",
-													status === "complete" && "bg-green-500",
-													status === "partial" && "bg-amber-500",
-													status === "missing" && "bg-zinc-400",
-												)}
-											/>
-											{statusLabel(plugin)}
-										</div>
-									</button>
-									{!plugin.hasSetupManifest && (
-										<div className="absolute right-7 top-2.5">
-											<ManifestInfo compact />
-										</div>
-									)}
-								</Card>
-							)
-						})}
+						{filteredPlugins.map((plugin) => (
+							<PluginGridCard key={plugin.name} plugin={plugin} onSelectPlugin={onSelectPlugin} />
+						))}
 					</div>
 				) : (
 					<Card className="native-card flex min-h-36 flex-col items-center justify-center p-6 text-center">

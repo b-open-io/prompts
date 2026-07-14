@@ -1,1 +1,1 @@
-export { GameShellProvider } from "./GameShellProvider";
+export { GameShellProvider } from "./GameShellProvider"

@@ -1,2 +1,2 @@
-export * from "./bindings";
-export * from "./GameInputProvider";
+export * from "./bindings"
+export * from "./GameInputProvider"

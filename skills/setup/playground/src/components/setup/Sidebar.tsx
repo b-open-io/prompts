@@ -10,7 +10,7 @@ import {
 	RefreshCw,
 } from "lucide-react"
 import Image from "next/image"
-import { useState } from "react"
+import { memo, useCallback, useEffect, useState } from "react"
 import { DitherGradient } from "@/components/dither-kit/gradient"
 import { useSound } from "@/components/SoundProvider"
 import { SoundToggle } from "@/components/SoundToggle"
@@ -24,10 +24,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
-import { type HarnessState, RUNTIMES, type Runtime } from "@/lib/types"
+import { type HarnessState, type PluginState, RUNTIMES, type Runtime } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 type InstallState = "complete" | "partial" | "missing"
+
+const PLUGINS_EXPANDED_STORAGE_KEY = "bopen-setup-plugins-expanded"
 
 function installState(installedClaude: string | null, installedCodex: string | null): InstallState {
 	if (installedClaude && installedCodex) return "complete"
@@ -83,7 +85,47 @@ function AgentMasterBrand() {
 	)
 }
 
-export function Sidebar({
+const SidebarPluginRow = memo(function SidebarPluginRow({
+	plugin,
+	active,
+	onSelect,
+}: {
+	plugin: PluginState
+	active: boolean
+	onSelect: (view: string) => void
+}) {
+	const handleSelect = useCallback(() => onSelect(plugin.name), [onSelect, plugin.name])
+
+	return (
+		<div className="relative">
+			<button
+				type="button"
+				onClick={handleSelect}
+				data-sound="nav-tab-switch"
+				aria-current={active ? "page" : undefined}
+				className={cn(
+					"group flex h-8 w-full items-center gap-2 rounded-md px-2 pr-14 text-left text-[0.76rem]",
+					active
+						? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_0.5px_var(--sidebar-border)]"
+						: "text-sidebar-foreground hover:bg-sidebar-accent/60",
+				)}
+			>
+				<PluginIcon name={plugin.name} size={18} className="shrink-0 rounded-sm bg-background/35" />
+				<span className="min-w-0 flex-1 truncate">{plugin.name}</span>
+			</button>
+			{!plugin.hasSetupManifest && (
+				<div className="absolute right-6 top-1.5">
+					<ManifestInfo compact />
+				</div>
+			)}
+			<div className="pointer-events-none absolute right-2 top-3">
+				<StateDot state={installState(plugin.installedClaude, plugin.installedCodex)} />
+			</div>
+		</div>
+	)
+})
+
+export const Sidebar = memo(function Sidebar({
 	state,
 	activeView,
 	shellMode,
@@ -105,12 +147,47 @@ export function Sidebar({
 	const [pluginsExpanded, setPluginsExpanded] = useState(true)
 	const { play } = useSound()
 
-	function selectRuntime(runtime: string) {
-		const entry = RUNTIMES.find((candidate) => candidate.id === runtime)
-		if (!entry) return
-		play("DROPDOWN_CLOSE")
-		onRuntimeChange(entry.id)
-	}
+	useEffect(() => {
+		const stored = window.localStorage.getItem(PLUGINS_EXPANDED_STORAGE_KEY)
+		if (stored === "true" || stored === "false") {
+			setPluginsExpanded(stored === "true")
+		}
+	}, [])
+
+	const setPluginsDisclosure = useCallback((expanded: boolean) => {
+		setPluginsExpanded(expanded)
+		window.localStorage.setItem(PLUGINS_EXPANDED_STORAGE_KEY, String(expanded))
+	}, [])
+
+	const handleOverviewSelect = useCallback(() => onSelect("overview"), [onSelect])
+
+	const handlePluginsSelect = useCallback(() => {
+		setPluginsDisclosure(!pluginsExpanded)
+		onSelect("plugins")
+	}, [onSelect, pluginsExpanded, setPluginsDisclosure])
+
+	const handlePluginsKeyDown = useCallback(
+		(event: React.KeyboardEvent<HTMLButtonElement>) => {
+			if (event.key === "ArrowRight") {
+				event.preventDefault()
+				setPluginsDisclosure(true)
+			} else if (event.key === "ArrowLeft") {
+				event.preventDefault()
+				setPluginsDisclosure(false)
+			}
+		},
+		[setPluginsDisclosure],
+	)
+
+	const selectRuntime = useCallback(
+		(runtime: string) => {
+			const entry = RUNTIMES.find((candidate) => candidate.id === runtime)
+			if (!entry) return
+			play("DROPDOWN_CLOSE")
+			onRuntimeChange(entry.id)
+		},
+		[onRuntimeChange, play],
+	)
 
 	return (
 		<aside className="setup-sidebar">
@@ -137,11 +214,11 @@ export function Sidebar({
 			<nav aria-label="Setup navigation" className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
 				<button
 					type="button"
-					onClick={() => onSelect("overview")}
+					onClick={handleOverviewSelect}
 					data-sound="nav-tab-switch"
 					aria-current={activeView === "overview" ? "page" : undefined}
 					className={cn(
-						"mb-4 flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[0.78rem] font-medium",
+						"mb-2 flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[0.78rem] font-medium",
 						activeView === "overview"
 							? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_0.5px_var(--sidebar-border)]"
 							: "text-sidebar-foreground hover:bg-sidebar-accent/60",
@@ -153,19 +230,8 @@ export function Sidebar({
 
 				<button
 					type="button"
-					onClick={() => {
-						setPluginsExpanded(true)
-						onSelect("plugins")
-					}}
-					onKeyDown={(event) => {
-						if (event.key === "ArrowRight") {
-							event.preventDefault()
-							setPluginsExpanded(true)
-						} else if (event.key === "ArrowLeft") {
-							event.preventDefault()
-							setPluginsExpanded(false)
-						}
-					}}
+					onClick={handlePluginsSelect}
+					onKeyDown={handlePluginsKeyDown}
 					aria-current={activeView === "plugins" ? "page" : undefined}
 					aria-expanded={pluginsExpanded}
 					aria-controls="setup-plugin-navigation"
@@ -184,41 +250,15 @@ export function Sidebar({
 						aria-hidden="true"
 					/>
 				</button>
-				<div id="setup-plugin-navigation" hidden={!pluginsExpanded}>
-					{state?.plugins.map((plugin) => {
-						const active = activeView === plugin.name
-						return (
-							<div key={plugin.name} className="relative">
-								<button
-									type="button"
-									onClick={() => onSelect(plugin.name)}
-									data-sound="nav-tab-switch"
-									aria-current={active ? "page" : undefined}
-									className={cn(
-										"group flex h-8 w-full items-center gap-2 rounded-md px-2 pr-14 text-left text-[0.76rem]",
-										active
-											? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_0.5px_var(--sidebar-border)]"
-											: "text-sidebar-foreground hover:bg-sidebar-accent/60",
-									)}
-								>
-									<PluginIcon
-										name={plugin.name}
-										size={18}
-										className="shrink-0 rounded-sm bg-background/35"
-									/>
-									<span className="min-w-0 flex-1 truncate">{plugin.name}</span>
-								</button>
-								{!plugin.hasSetupManifest && (
-									<div className="absolute right-6 top-1.5">
-										<ManifestInfo compact />
-									</div>
-								)}
-								<div className="pointer-events-none absolute right-2 top-3">
-									<StateDot state={installState(plugin.installedClaude, plugin.installedCodex)} />
-								</div>
-							</div>
-						)
-					})}
+				<div id="setup-plugin-navigation" hidden={!pluginsExpanded} className="space-y-1">
+					{state?.plugins.map((plugin) => (
+						<SidebarPluginRow
+							key={plugin.name}
+							plugin={plugin}
+							active={activeView === plugin.name}
+							onSelect={onSelect}
+						/>
+					))}
 				</div>
 				{!state && (
 					<div className="flex items-center gap-2 px-2 py-2 text-[0.72rem] text-muted-foreground">
@@ -277,4 +317,4 @@ export function Sidebar({
 			</div>
 		</aside>
 	)
-}
+})

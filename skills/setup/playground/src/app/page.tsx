@@ -92,7 +92,7 @@ export default function SetupPlaygroundPage() {
 		return () => document.removeEventListener("keydown", handleShortcut)
 	}, [])
 
-	async function handleRefresh() {
+	const handleRefresh = useCallback(async () => {
 		play("LOADING_START")
 		setRefreshing(true)
 		try {
@@ -104,12 +104,12 @@ export default function SetupPlaygroundPage() {
 		} finally {
 			setRefreshing(false)
 		}
-	}
+	}, [fetchState, play, pushTransientError])
 
-	function handleSelectView(view: string) {
+	const handleSelectView = useCallback((view: string) => {
 		setActiveTab(view)
 		if (view === "plugins") setPluginGridFocusToken((token) => token + 1)
-	}
+	}, [])
 
 	async function handleBuildPlan() {
 		if (!state || !selectedRuntime) return
