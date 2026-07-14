@@ -60,3 +60,11 @@ fresh session before interpreting hook failures as script defects.
 - A dispatch lane (codex/grok) that returns even ONE exit-0/empty-output/zero-file-change completion is QUARANTINED immediately: no further dispatches until a trivial preflight ("reply HEALTHY") passes. Infra incidents (the GitHub outage) degrade lanes silently; identical invocations succeed before and fail after with no error surface.
 - Preflight is not once-per-session. Re-preflight after ANY infra incident and before every batch of dispatches.
 - ONE default methodology for implementation units: worktree executor subagents (inline plan, evidence-audited SendMessage report, local commit, reviewer cherry-picks). 100% success rate, zero permission prompts. External CLI lanes are the exception for volume economics, and ONLY via the supervised wrapper (poll 30-60s, kill on stall or error signature) — never fire-and-forget from the main seat.
+
+## No hardcoded counts in copy or product names (2026-07-14)
+"All Five Packs" was baked into premium copy AND the live Stripe suite
+product name; earlier the same session shipped a wrong hardcoded roster
+count. Counts go stale the moment the catalog grows. In templates derive
+from the data source (ARRAY.length); in fixed strings (Stripe product
+names, taglines, emails) write count-free ("Every Pack", "each vertical").
+A literal entity count in a copy diff is a review defect.
