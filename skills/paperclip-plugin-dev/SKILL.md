@@ -1,6 +1,6 @@
 ---
 name: paperclip-plugin-dev
-version: 1.1.0
+version: 1.1.1
 description: >-
   This skill should be used when the user asks to
   "scaffold a Paperclip plugin", "write a Paperclip plugin manifest",
@@ -13,6 +13,10 @@ description: >-
 # Paperclip Plugin Development
 
 Build Paperclip plugins based on the actual SDK source code, validator source code, and examples. Follows lessons learned from real publishing failures.
+
+## SDK Version
+
+`@paperclipai/plugin-sdk` is published on npm under calver (`YYYY.MDD.patch`). Latest stable as of 2026-07-14: **`2026.707.0`** (a `canary` dist-tag tracks upstream). Check `npm view @paperclipai/plugin-sdk version` before starting work. Entry points: `.` (worker: `definePlugin`, `runWorker`), `./ui` + `./ui/hooks` + `./ui/types` (UI bridge), `./types`, `./protocol`, `./testing` (`createTestHarness`, environment-driver harnesses), `./bundlers` (`createPluginBundlerPresets` — ESM output), and `./dev-server` (`startPluginDevServer`).
 
 ## Critical Lessons — Read First
 
@@ -48,9 +52,9 @@ When iterating, clear stale cache on the server: `npm cache clean --force` via S
 
 Publishing a new version with additional capabilities puts the plugin in `upgrade_pending` state. Plan v1 capabilities carefully.
 
-### 7. No `agents.create` in SDK
+### 7. No arbitrary `agents.create` in SDK
 
-The plugin SDK can read, pause, resume, invoke, and chat with agents — but cannot create or update them. For v1, present templates in the UI and let the operator create agents manually.
+The plugin SDK can read, pause, resume, invoke, and chat with agents — but cannot create or update arbitrary agents. Two newer, narrower paths exist: `ctx.agents.managed` (`get`/`reconcile`/`reset` of manifest-declared plugin-managed agents by stable key, requires `agents.managed`) and `ctx.agents.sessions` (create/message/close two-way chat sessions, requires `agent.sessions.*`). For anything else, present templates in the UI and let the operator create agents manually.
 
 ### 8. ConvexError stores messages in `error.data`, NOT `error.message`
 
@@ -73,9 +77,9 @@ function extractConvexErrorMessage(error: unknown): string {
 }
 ```
 
-### 9. SDK tgz files go stale when upstream Paperclip changes shared types
+### 9. Depend on the npm SDK; tgz packing is only for unpublished upstream changes
 
-When upstream Paperclip adds new fields to shared types (like `originKind` on Issue), the plugin SDK tgz files become stale. To rebuild:
+The SDK is now published to npm — depend on `@paperclipai/plugin-sdk` directly and bump it like any dependency (calver; check the `canary` dist-tag for bleeding edge). The old local-tgz workflow is only needed when tracking upstream changes that haven't shipped yet:
 
 ```bash
 cd ~/code/paperclip/packages/shared && pnpm run build && pnpm pack
@@ -85,9 +89,11 @@ cd ~/code/paperclip/packages/plugins/sdk && pnpm run build && pnpm pack
 bun install
 ```
 
-### 10. `ctx.http.fetch` does NOT support relative URLs or private IPs
+Local tgz files go stale the moment upstream changes shared types — prefer the published package.
 
-Plugin workers cannot call the internal Paperclip API via `ctx.http.fetch` — it blocks private IPs and requires absolute URLs. Use the typed SDK clients instead: `ctx.issues.list`, `ctx.agents.list`, etc. There is no `ctx.routines` client.
+### 10. Use typed SDK clients, not raw HTTP against the internal API
+
+Never call the internal Paperclip API via `ctx.http.fetch` or raw fetch — use the typed clients: `ctx.issues`, `ctx.agents`, `ctx.goals`, `ctx.projects`, `ctx.companies`, `ctx.executionWorkspaces`, plus the managed-resource clients `ctx.routines` (requires `routines.managed`) and `ctx.skills` (requires `skills.managed`). The old "there is no `ctx.routines` client" limitation is gone. `ctx.http.fetch` (requires `http.outbound`) is for external services and exists for host-managed tracing/audit; requests need absolute URLs.
 
 ---
 
@@ -184,9 +190,9 @@ Enter the npm package name (e.g., `@bopen-io/tortuga-plugin`) in the "Install Pl
 
 ---
 
-## Sandbox Constraints
+## Worker Runtime Constraints
 
-Plugin workers run in a `vm.createContext()` sandbox. No access to `process`, `require`, `fs`, `net`, `child_process`. CJS bundles only (esbuild presets handle this). All host interaction through `PluginContext` methods.
+Plugin workers run as out-of-process child processes (`node:child_process` fork) speaking JSON-RPC to the host — no longer a `vm.createContext()` sandbox. Bundle as ESM via `createPluginBundlerPresets` from `@paperclipai/plugin-sdk/bundlers` (the old CJS-only requirement is gone). All Paperclip host interaction still goes through `PluginContext` methods, gated by declared capabilities.
 
 ---
 
@@ -200,11 +206,13 @@ Declare `format: "secret-ref"` in `instanceConfigSchema`. Operator pastes a secr
 
 For detailed API documentation, consult:
 
-- **`references/manifest-reference.md`** — All 37 capabilities, slot types, validation rules, declaration examples
-- **`references/worker-api-reference.md`** — Full PluginContext API, lifecycle hooks, sandbox constraints
-- **`references/ui-reference.md`** — All 5 hooks, component props, styling, streaming, navigation patterns
+- **`references/manifest-reference.md`** — Capabilities (73 as of SDK 2026.707.0 — verify against `packages/shared/src/constants.ts` `PLUGIN_CAPABILITIES`, the reference file predates the expansion from 37), slot types, validation rules, declaration examples
+- **`references/worker-api-reference.md`** — Full PluginContext API, lifecycle hooks, runtime constraints
+- **`references/ui-reference.md`** — UI hooks (now 7: `usePluginData`, `usePluginAction`, `useHostContext`, `useHostNavigation`, `useHostLocation`, `usePluginStream`, `usePluginToast`), component props, styling, streaming, navigation patterns
 
 ## Source Code References
+
+`~/code/paperclip` is a fork of `paperclipai/paperclip` — verify it is synced with upstream (`git fetch upstream && git merge upstream/master`) before treating it as source of truth, or consult `github.com/paperclipai/paperclip` directly.
 
 - Plugin SDK: `~/code/paperclip/packages/plugins/sdk/`
 - Plugin spec: `~/code/paperclip/doc/plugins/PLUGIN_SPEC.md`

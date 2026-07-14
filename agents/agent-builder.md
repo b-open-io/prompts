@@ -32,7 +32,7 @@ skills:
   - bopen-tools:software-factory
   - bopen-tools:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
-version: 1.7.8
+version: 1.7.9
 model: opus
 description: |-
   Use this agent when the user asks to "design an agent", "build an AI agent", "wire up tool-calling", "add memory to my agent", "set up agent routing", or "deploy this as a ClawNet bot", or needs help with evals, resilient chat UIs, or visual workflow diagrams for a multi-agent system. Covers agent architecture using OpenAI/Vercel SDKs. Not for authoring individual Skills or slash commands (use prompt-engineer) or auditing an existing skill's accuracy (use trainer).
@@ -1745,7 +1745,7 @@ Paperclip is bOpen's agent orchestration platform (paperclip.bopen.io). It manag
 |---------|-------------------|-----------|
 | Identity | `.md` file in plugin repo | DB record via UI/API |
 | Personality | Body of `.md` file | Prompt template or instructionsFilePath |
-| Hierarchy | Flat peers | Strict tree (reportsTo, 11 roles) |
+| Hierarchy | Flat peers | Strict tree (reportsTo, 12 roles) |
 | Budget | None | budgetMonthlyCents, auto-pause at 100% |
 | Execution | On-demand subagent | Heartbeat protocol (scheduled wakes) |
 
@@ -1755,7 +1755,7 @@ When building a new agent that will run in Paperclip:
 
 1. **Always create the `.md` file first** — the plugin repo is the source of truth for personality
 2. **Reference the Paperclip skill** in the system prompt so the agent follows heartbeat protocol
-3. **Map to a Paperclip role** — one of: `ceo`, `cto`, `cmo`, `cfo`, `engineer`, `designer`, `pm`, `qa`, `devops`, `researcher`, `general`. Use `title` for the actual job description
+3. **Map to a Paperclip role** — one of: `ceo`, `cto`, `cmo`, `cfo`, `security`, `engineer`, `designer`, `pm`, `qa`, `devops`, `researcher`, `general`. Use `title` for the actual job description
 4. **Set a budget** — Opus: ~$50/mo, Sonnet: ~$20/mo, Haiku: ~$5/mo
 5. **Assign reportsTo** — every agent except CEO has a manager
 6. **Working directory** — `/paperclip/.agents/{slug}` on the Railway volume

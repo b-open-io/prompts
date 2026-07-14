@@ -1,6 +1,6 @@
 ---
 name: agent-onboarding
-version: 1.1.1
+version: 1.1.2
 description: >-
   This skill should be used when the user asks to "create a new agent",
   "onboard a new agent", "add an agent to the team", "deploy a new bot",
@@ -165,7 +165,7 @@ Paperclip agents are NOT the same as Claude Code plugin agents. Key differences:
 | Hierarchy | Flat peers | Strict tree (reportsTo) |
 | Budget | None | budgetMonthlyCents with auto-pause at 100% |
 | Execution | On-demand subagent | Heartbeat protocol (scheduled wakes) |
-| Roles | Freeform | 11 fixed: ceo, cto, cmo, cfo, engineer, designer, pm, qa, devops, researcher, general |
+| Roles | Freeform | 12 fixed: ceo, cto, cmo, cfo, security, engineer, designer, pm, qa, devops, researcher, general |
 
 ### Registration via Paperclip UI
 
@@ -195,7 +195,8 @@ Paperclip agents are NOT the same as Claude Code plugin agents. Key differences:
 | Most specialists | `engineer` | [Actual specialty] Specialist |
 | UI/UX agents | `designer` | UI/UX Designer |
 | Project coordinators | `pm` | Project Manager |
-| Testing/auditing | `qa` | [Code Auditor / Tester] |
+| Testing | `qa` | [Tester] |
+| Security/auditing | `security` | [Code Auditor / Security Ops] |
 | Infra/CI/CD | `devops` | Infrastructure Lead |
 | Research agents | `researcher` | Lead Researcher |
 | Everything else | `general` | [Actual role description] |
