@@ -352,6 +352,60 @@
         "scale": 1
       }
     },
+    "shape:ada": {
+      "id": "shape:ada",
+      "typeName": "shape",
+      "rotation": 0,
+      "index": "a8pAda01",
+      "parentId": "shape:frame_build",
+      "isLocked": false,
+      "opacity": 1,
+      "meta": {
+        "note": "phase:implemented | agent:native-desktop"
+      },
+      "type": "geo",
+      "x": 450,
+      "y": 92,
+      "props": {
+        "geo": "rectangle",
+        "w": 240,
+        "h": 80,
+        "color": "blue",
+        "fill": "lined-fill",
+        "dash": "solid",
+        "size": "m",
+        "font": "sans",
+        "align": "middle",
+        "verticalAlign": "middle",
+        "labelColor": "black",
+        "richText": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Ada"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "(Native Desktop)"
+                }
+              ]
+            }
+          ]
+        },
+        "url": "",
+        "growY": 0,
+        "scale": 1
+      }
+    },
     "shape:mira": {
       "id": "shape:mira",
       "typeName": "shape",

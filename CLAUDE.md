@@ -130,7 +130,7 @@ This repository is a **Claude plugin** with standard plugin structure. Component
 prompts/
 ├── .claude-plugin/
 │   └── plugin.json      # Plugin manifest
-├── agents/              # Specialized AI sub-agents (19+ files)
+├── agents/              # Specialized AI sub-agents
 ├── commands/            # User commands (category subdirectories)
 ├── skills/              # Skill definitions with scripts
 └── hooks/               # Automation hooks
@@ -195,6 +195,7 @@ Our specialized agents use a consistent color scheme for easy identification:
 - 🔴 **Red** - code-auditor (security)
 - 🔷 **Cyan** - documentation-writer (docs)
 - 🩷 **Pink** - research-specialist (info gathering)
+- 🩵 **Teal** - native-desktop (Native SDK desktop apps)
 
 ## Agent Avatar System (bopen.ai)
 

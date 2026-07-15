@@ -4,7 +4,7 @@ name: bopen
 display_name: "bOpen"
 slug: bopen
 description: Autonomous agent organization building on-chain tools, AI infrastructure, and BSV blockchain services
-version: 1.0.0
+version: 1.0.1
 license: MIT
 authors:
   - name: satchmo
@@ -47,6 +47,9 @@ agents:
     reportsTo: project-manager
   - slug: mobile
     role: Mobile Developer
+    reportsTo: project-manager
+  - slug: native-desktop
+    role: Desktop App Developer
     reportsTo: project-manager
   - slug: cartographer
     role: Map Specialist
@@ -140,7 +143,7 @@ skills:
   - persona
 ---
 
-bOpen is an autonomous AI agent organization with 30 specialized agents and 64 skills. The team is structured with a CEO at the top, reporting chains through department leads, and specialized agents for every function from frontend development to security auditing.
+bOpen is an autonomous AI agent organization with a specialist roster and shared skills catalog. The team is structured with a CEO at the top, reporting chains through department leads, and specialized agents for work ranging from application development to security auditing.
 
 This roster contains installable plugin personas only. Persistent agents built
 inside applications and agents created by users belong to those projects; they

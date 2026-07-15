@@ -10,6 +10,7 @@ Full bopen-tools agent roster with `subagent_type` identifiers and the skills to
 |-------|--------------|-------|----------|
 | **researcher** | `bopen-tools:researcher` | sonnet | Libraries, APIs, docs, competitive analysis, web sources |
 | **nextjs** | `bopen-tools:nextjs` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
+| **native-desktop** | `bopen-tools:native-desktop` | sonnet | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs |
 | **designer** | `bopen-tools:designer` | sonnet | UI components, Tailwind, shadcn/ui, design systems, accessibility |
 | **agent-builder** | `bopen-tools:agent-builder` | opus | AI agent systems, tool-calling, LLM integration, Vercel AI SDK |
 | **database** | `bopen-tools:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
@@ -20,7 +21,7 @@ Full bopen-tools agent roster with `subagent_type` identifiers and the skills to
 | **devops** | `bopen-tools:devops` | sonnet | Vercel+Railway+Bun deployments, CI/CD, monitoring |
 | **optimizer** | `bopen-tools:optimizer` | opus | Bundle analysis, Lighthouse, runtime perf, Core Web Vitals |
 | **architecture-reviewer** | `bopen-tools:architecture-reviewer` | opus | System design review, refactoring strategy, tech debt |
-| **mobile** | `bopen-tools:mobile` | sonnet | React Native, Swift, Kotlin, Flutter |
+| **mobile** | `bopen-tools:mobile` | sonnet | Expo-first React Native, Swift, Kotlin, Flutter |
 | **data** | `bopen-tools:data` | sonnet | ETL pipelines, analytics, data visualization |
 | **payments** | `bopen-tools:payments` | sonnet | Stripe, billing, financial transactions |
 | **mcp** | `bopen-tools:mcp` | sonnet | MCP server setup, config, diagnostics |
@@ -87,6 +88,19 @@ Use these to ground your review in concrete analysis, not just intuition.
 - `Skill(bopen-tools:create-next-project)` — invoke when scaffolding a new Next.js project
 
 Always invoke `Skill(vercel-react-best-practices)` before writing any server component or route handler.
+```
+
+### native-desktop
+
+```markdown
+## Your Available Skills
+- `Skill(macos-design)` — invoke before consequential macOS window, menu, or interaction decisions
+- `Skill(bopen-tools:check-version)` — invoke before Native SDK scaffolding or migration decisions
+- `Skill(agent-browser)` — invoke for current Native SDK, Zig, and Apple platform documentation
+- `Skill(visual-review)` — invoke for reviewable desktop UI and release-flow recaps
+- `Skill(confess)` — invoke before completion to catch unsupported assumptions and missed release gates
+
+Use the Native SDK for new desktop applications. Treat Wails, Electron, and ElectroBun as migration sources only.
 ```
 
 ### researcher

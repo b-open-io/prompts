@@ -1,5 +1,22 @@
 # Dual Claude Code and Codex plugin port
 
+## OPL-2945 native agents
+
+- [x] Read the full spec, house agent guidance, required exemplars, and named ground-truth repositories.
+- [x] Inventory persona names, skill IDs, roster surfaces, versions, and the clean working-tree baseline.
+- [x] Create the Native SDK desktop specialist in the house agent format.
+- [x] Tune Kira to make Expo and React Native the default house mobile stack and patch-bump her version.
+- [x] Add the desktop specialist to every roster and routing surface plus the CLAUDE.md color scheme.
+- [x] Validate agent structure, prose constraints, version policy, manifests, roster coverage, and uncommitted state.
+
+### Review
+
+- Added Ada, the Native SDK and Zig desktop specialist, with an explicitly pending avatar and verified skill references.
+- Updated Kira to an Expo-first React Native default while preserving native iOS, native Android, and Flutter expertise.
+- Wired the new agent through authored directories, dispatch rosters, organization metadata, architecture maps, and generated Codex adapters.
+- Validated JSON, YAML frontmatter, agent parsing, version bumps, prose constraints, roster uniqueness, generated adapters, plugin-manifest sync, and the no-bot boundary.
+- Left the complete working tree uncommitted and did not edit either plugin manifest.
+
 ## Plugin agent boundary correction
 
 - [x] Remove the app-specific `satchmo-live` deployment from plugin agent discovery.

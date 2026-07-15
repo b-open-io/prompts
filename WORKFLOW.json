@@ -1,7 +1,7 @@
 {
   "name": "bopen-tools Agent Ecosystem",
-  "description": "31 agents across 5 functional teams — routing, dispatch, and skill dependencies",
-  "version": "0.1.1",
+  "description": "Agent routing, dispatch, functional teams, and skill dependencies",
+  "version": "0.1.2",
   "nodes": [
     {
       "id": "martha",
@@ -47,6 +47,17 @@
       "tools": ["vercel-react-best-practices", "create-next-project", "portless"],
       "description": "Next.js 16, React 19, Vercel deployment",
       "code_ref": "agents/nextjs.md"
+    },
+    {
+      "id": "ada",
+      "label": "Ada (Native Desktop)",
+      "type": "worker",
+      "agent": "Ada",
+      "model": "sonnet",
+      "phase": "implemented",
+      "tools": ["macos-design", "visual-review", "check-version"],
+      "description": "Native SDK, Zig, system WebViews, menu-bar apps, signed DMG releases",
+      "code_ref": "agents/native-desktop.md"
     },
     {
       "id": "ridd",
@@ -238,7 +249,7 @@
       "model": "sonnet",
       "phase": "implemented",
       "tools": ["vercel-react-native-skills"],
-      "description": "React Native, Swift, Kotlin, Flutter",
+      "description": "Expo-first React Native, Swift, Kotlin, Flutter",
       "code_ref": "agents/mobile.md"
     },
     {
@@ -291,6 +302,7 @@
     { "id": "martha-parker", "from": "martha", "to": "parker", "label": "research question", "type": "conditional" },
 
     { "id": "wags-frontend", "from": "wags", "to": "theo", "label": "frontend task", "type": "conditional" },
+    { "id": "wags-native-desktop", "from": "wags", "to": "ada", "label": "desktop app", "type": "conditional" },
     { "id": "wags-design", "from": "wags", "to": "ridd", "label": "design task", "type": "conditional" },
     { "id": "wags-security", "from": "wags", "to": "jerry", "label": "audit needed", "type": "conditional" },
     { "id": "wags-devops", "from": "wags", "to": "root", "label": "deploy/infra", "type": "conditional" },

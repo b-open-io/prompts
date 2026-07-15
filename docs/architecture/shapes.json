@@ -6,9 +6,10 @@
   { "_type": "rectangle", "shapeId": "sage", "w": 240, "h": 80, "color": "violet", "fill": "solid", "text": "Sage\n(Project Manager)", "note": "phase:implemented | agent:project-manager | Linear planning, sprint management" },
   { "_type": "rectangle", "shapeId": "tina", "w": 240, "h": 80, "color": "violet", "fill": "solid", "text": "Tina\n(Executive Assistant)", "note": "phase:implemented | agent:executive-assistant" },
 
-  { "_type": "frame", "shapeId": "frame_build", "name": "Build & Ship", "color": "blue", "children": ["satchmo", "theo", "mira", "kira", "zack", "leaf"] },
+  { "_type": "frame", "shapeId": "frame_build", "name": "Build & Ship", "color": "blue", "children": ["satchmo", "theo", "ada", "mira", "kira", "zack", "leaf"] },
   { "_type": "rectangle", "shapeId": "satchmo", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Satchmo\n(Agent Builder)", "note": "phase:implemented | agent:agent-builder" },
   { "_type": "rectangle", "shapeId": "theo", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Theo\n(Next.js)", "note": "phase:implemented | agent:nextjs" },
+  { "_type": "rectangle", "shapeId": "ada", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Ada\n(Native Desktop)", "note": "phase:implemented | agent:native-desktop" },
   { "_type": "rectangle", "shapeId": "mira", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Mira\n(Designer)", "note": "phase:implemented | agent:designer" },
   { "_type": "rectangle", "shapeId": "kira", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Kira\n(Mobile)", "note": "phase:implemented | agent:mobile" },
   { "_type": "rectangle", "shapeId": "zack", "w": 240, "h": 80, "color": "blue", "fill": "solid", "text": "Zack\n(Prompt Engineer)", "note": "phase:implemented | agent:prompt-engineer" },

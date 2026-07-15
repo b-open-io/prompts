@@ -1,6 +1,6 @@
 ---
 name: front-desk
-version: 1.0.3
+version: 1.0.4
 description: >-
   This skill should be used in Claude Code or Codex when the user asks "who
   handles X?", "what agents are available?", "how do I contact Y?", "team
@@ -32,6 +32,7 @@ Match the user's need to the right specialist:
 | Security audit | **Jerry** (code-auditor) | bopen-tools |
 | Architecture review | **Kayle** (architecture-reviewer) | bopen-tools |
 | Next.js / React | **Theo** (nextjs) | bopen-tools |
+| Desktop apps / Native SDK | **Ada** (native-desktop) | bopen-tools |
 | Tests / QA | **Jason** (tester) | bopen-tools |
 | Documentation | **Flow** (documentation-writer) | bopen-tools |
 | Marketing / copy | **Caal** (marketer) | product-skills |
@@ -44,7 +45,7 @@ Match the user's need to the right specialist:
 | MCP servers | **Orbit** (mcp) | bopen-tools |
 | Research | **Parker** (researcher) | bopen-tools |
 | 3D / creative dev | **Kris** (creative-developer) | bopen-tools |
-| Mobile | **Kira** (mobile) | bopen-tools |
+| Mobile / Expo / React Native | **Kira** (mobile) | bopen-tools |
 | Audio / media | **Frames** (audio-specialist) | bopen-tools |
 | Data pipelines | **Data Accumulator** (data) | bopen-tools |
 | Project mgmt | **Wags** (project-manager) | bopen-tools |

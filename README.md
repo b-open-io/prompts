@@ -52,7 +52,7 @@ Ask Codex to invoke the explicit setup skill:
 Use $bopen-tools:codex-agent-setup to install the curated agents for this project.
 ```
 
-The default installs eight curated adapters into the current project's
+The default installs a curated adapter set into the current project's
 `.codex/agents/` directory. To make the full roster available across projects:
 
 ```text
@@ -165,7 +165,8 @@ bopen-tools members.
 ### Platform & Infrastructure
 - 🟠 [**devops**](agents/devops.md) — Root — Vercel + Railway + Bun stack, CI/CD, security scanning
 - 🟢 [**database**](agents/database.md) — Idris — PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, Convex
-- 📱 [**mobile**](agents/mobile.md) — Kira — React Native, Swift, Kotlin, Flutter
+- 📱 [**mobile**](agents/mobile.md) — Kira — Expo-first React Native, Swift, Kotlin, Flutter
+- 🖥️ [**native-desktop**](agents/native-desktop.md) — Ada — Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs
 - 🔗 [**integration-expert**](agents/integration-expert.md) — Maxim — API integrations, webhooks, third-party services
 - 🟠 [**mcp**](agents/mcp.md) — Orbit — MCP server setup, diagnostics, publishing to NPM, PostgreSQL/Redis/GitHub MCP
 - ⚡ [**nextjs**](agents/nextjs.md) — Theo — Next.js, React 19, Turbopack, Bun, Biome

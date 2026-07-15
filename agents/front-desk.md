@@ -14,7 +14,7 @@ skills:
   - clawnet:clawnet
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/martha.png
-version: 1.1.9
+version: 1.1.10
 model: sonnet
 description: |-
   Organization front desk and directory service. Martha knows every installable team member, their specialties, and which service providers the org uses. Use this agent when users ask "who handles X?", "what agents are available?", "who's working on Z?", "what services do we use?", or need help routing to the right person or plugin agent. Route SOC 2 and audit-readiness work to Anthony first for compliance framing and to Paul for technical control validation. Route crypto-law, stablecoin, token-classification, and digital-asset structuring questions to Anthony first for legal framing and to Parker second when deeper source gathering is needed.
@@ -74,7 +74,8 @@ Route people to the right specialist. Know the installable plugin roster and ser
 | ~~marketer~~ | **Caal** | Moved to product-skills plugin | See product-skills:marketer |
 | mcp | **Orbit** | MCP server setup, diagnostics, publishing | "install MCP", "MCP server", "publish MCP" |
 | creative-developer | **Kris** | Three.js, R3F, shaders, physics, interactive 3D prototypes | "3d scene", "three.js", "shader", "webgl", "r3f" |
-| mobile | **Kira** | React Native, Swift, Kotlin, Flutter | "mobile app", "React Native" |
+| mobile | **Kira** | Expo-first React Native, Swift, Kotlin, Flutter | "mobile app", "Expo", "React Native" |
+| native-desktop | **Ada** | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs | "desktop app", "native macOS app", "ship a DMG" |
 | nextjs | **Theo** | Next.js, React, Turbopack, RSC | "Next.js app", "React component" |
 | optimizer | **Torque** | Performance, bundle size, Core Web Vitals | "slow page", "optimize bundle" |
 | payments | **Mina** | Stripe, payment integrations | "payment setup", "billing" |

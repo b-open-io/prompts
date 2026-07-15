@@ -83,7 +83,8 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 | devops, ci-cd, deployment | bopen-tools:devops |
 | payments, stripe, checkout | bopen-tools:payments |
 | performance-optimization, bundle-size | bopen-tools:optimizer |
-| mobile-app, react-native | bopen-tools:mobile |
+| mobile-app, expo, react-native | bopen-tools:mobile |
+| desktop-app, native-macos, menu-bar-app, ship-dmg | bopen-tools:native-desktop |
 | mcp-server, mcp-config | bopen-tools:mcp |
 | research, gather-info, web-research | bopen-tools:researcher |
 | agent-design, ai-agent | bopen-tools:agent-builder |
