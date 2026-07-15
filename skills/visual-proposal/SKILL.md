@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.2
+version: 0.0.3
 description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
 ---
 
@@ -112,16 +112,29 @@ Use two optional upgrades to make parallel advocacy more decision-useful:
   advocates' cases and rebuttals. Assign a distinct evaluative lens (e.g.
   correctness/robustness,
   efficiency/simplicity, ecosystem adoption/interop). Each judge names their
-  lens, picks a winner and runner-up, and states the deciding factor. The page
-  presents the verdicts in a clearly separated judgment section — a tally plus
-  each judge's one-line rationale. Keep verdict badges out of the neutral option
-  cards.
+  lens, picks a winner and runner-up, states the deciding factor, and — the most
+  decision-useful part — the single condition that would FLIP their verdict
+  ("would flip if …"). Those flip-conditions are the real tiebreakers, so keep
+  them: they tell the reviewer exactly which fact to go check. The page presents
+  the verdicts in a clearly separated judgment section — a tally, each judge's
+  one-line rationale, and their flip-condition. Keep verdict badges out of the
+  neutral option cards.
 
 Fix the judging lenses and evaluation rubric before showing judges the advocacy
 record. Present every judge's verdict, including dissent; never collapse a tally
 into objective truth. This remains within Rule 1 only because the user requested
 the recommendation and the host presents the attributed verdicts without adding
 one. The human reviewer makes the final call.
+
+**Show the agents — avatar, name, role.** When advocates or judges appear, give
+each a real identity: their avatar, name, and one-line role on the card that
+carries their argument or verdict. It makes the page feel authored by the panel
+rather than narrated about them, and it lets the reviewer track a voice across
+the page. For a fact that several agents independently verified (e.g. all
+advocates confirmed it against the code), attribute it visually — cluster those
+agents' avatars on that fact's card (straddling its top edge reads as a group
+sign-off) instead of writing "everyone agreed." An avatar cluster conveys
+consensus and who-verified at a glance.
 
 ## The grounding rule
 
@@ -138,16 +151,23 @@ Adapt to the subject — not every section always applies — but the usual spin
 
 1. **Hero / thesis** — the one-sentence claim + the most characteristic diagram.
 2. **Problem / context** — what's wrong or missing today, concretely.
-3. **The approach / principle** — the core idea, and the constraint it respects
+3. **Landscape / what already exists** — an inventory of the relevant specs,
+   code, and tools that exist today, where each lives (repo/file/URL), and a
+   status chip on each (shipped, draft, branch, live, legacy, frontend-only).
+   Frame it explicitly as orientation, NOT a judging input — options are judged
+   on their merits, not on what happens to be built already. Include it whenever
+   a proposal touches an existing system; it grounds a reviewer (and an external
+   maintainer) fast and prevents "wait, does this already exist?" confusion.
+4. **The approach / principle** — the core idea, and the constraint it respects
    (e.g. "changes X, leaves Y untouched"). Before/after helps here.
-4. **The decision(s)** — where options exist, the neutral comparison (Rule 1),
+5. **The decision(s)** — where options exist, the neutral comparison (Rule 1),
    diagram-led (Rule 2): a matrix, per-option structure diagrams, commonalities,
    differences, challenges.
-5. **Architecture** — how it's put together if adopted.
-6. **Evidence** — what's confirmed vs open (cite the sources).
-7. **Roadmap / plan** — sequenced steps, dependencies. Number only if it's a
+6. **Architecture** — how it's put together if adopted.
+7. **Evidence** — what's confirmed vs open (cite the sources).
+8. **Roadmap / plan** — sequenced steps, dependencies. Number only if it's a
    real sequence.
-8. **Open questions** — what still needs deciding, each with the trade-off.
+9. **Open questions** — what still needs deciding, each with the trade-off.
 
 ## Craft (via artifact-design)
 

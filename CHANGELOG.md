@@ -6,6 +6,19 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.91] - 2026-07-15
+
+### Changed
+
+- `visual-proposal` skill (0.0.3): added a "landscape / what already exists"
+  section to the proposal spine — an inventory of existing specs, code, and
+  tools with where each lives and a status chip, framed explicitly as
+  orientation and NOT a judging input. Documented the agent sign-off affordance
+  (cluster the advocate avatars on a fact's card, straddling its top edge, to
+  show a group verified it) and the requirement to show each advocate/judge's
+  avatar, name, and role. The judging bench now keeps each judge's "would flip
+  if" condition as the actionable tiebreaker.
+
 ## [1.1.90] - 2026-07-15
 
 ### Fixed
