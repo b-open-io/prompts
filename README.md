@@ -483,9 +483,10 @@ users do not need a bOpen Tools checkout or global JavaScript tooling.
 Managed interfaces allow up to 90 seconds for a cold production start before
 reporting a launch failure. For HTTP Portless routes, the readiness probe
 connects to the loopback proxy while preserving the tool's named origin in the
-`Host` header. This keeps routing deterministic on machines whose resolver does
-not support multi-label `.localhost` names; the browser still receives the
-normal named tool URL.
+`Host` header using a direct loopback socket that bypasses environment proxy
+settings. This keeps routing deterministic on machines whose resolver does not
+support multi-label `.localhost` names or whose HTTP proxy ignores `NO_PROXY`;
+the browser still receives the normal named tool URL.
 
 ```bash
 portless agent-master bun skills/setup/scripts/playground_server.ts \

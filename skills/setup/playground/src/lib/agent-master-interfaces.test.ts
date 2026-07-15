@@ -36,29 +36,6 @@ describe("Agent Master local interface readiness", () => {
 		expect(INTERFACE_STARTUP_TIMEOUT_MS).toBe(90_000)
 	})
 
-	test("probes HTTP Portless routes through loopback with the public Host header", async () => {
-		let observedHost = ""
-		const server = Bun.serve({
-			hostname: "127.0.0.1",
-			port: 0,
-			fetch(request) {
-				observedHost = request.headers.get("host") ?? ""
-				return new Response("<title>Deck Playground</title>")
-			},
-		})
-
-		try {
-			await waitForReady(
-				`http://deck.agent-master.localhost:${server.port}`,
-				"<title>Deck Playground</title>",
-				1_000,
-			)
-			expect(observedHost).toBe(`deck.agent-master.localhost:${server.port}`)
-		} finally {
-			server.stop(true)
-		}
-	})
-
 	test("does not treat a wildcard 404 as a ready interface", async () => {
 		let requests = 0
 		const server = Bun.serve({
@@ -91,6 +68,33 @@ describe("Agent Master local interface readiness", () => {
 				waitForReady(server.url.toString(), '"product":"visual-wayfinder"', 50),
 			).rejects.toThrow("readiness marker missing")
 		} finally {
+			server.stop(true)
+		}
+	})
+
+	test("probes HTTP Portless routes through loopback with the public Host header", async () => {
+		let observedHost = ""
+		const previousProxy = process.env.HTTP_PROXY
+		const server = Bun.serve({
+			hostname: "127.0.0.1",
+			port: 0,
+			fetch(request) {
+				observedHost = request.headers.get("host") ?? ""
+				return new Response("<title>Deck Playground</title>")
+			},
+		})
+
+		try {
+			process.env.HTTP_PROXY = "http://127.0.0.1:1"
+			await waitForReady(
+				`http://deck.agent-master.localhost:${server.port}`,
+				"<title>Deck Playground</title>",
+				1_000,
+			)
+			expect(observedHost).toBe(`deck.agent-master.localhost:${server.port}`)
+		} finally {
+			if (previousProxy === undefined) delete process.env.HTTP_PROXY
+			else process.env.HTTP_PROXY = previousProxy
 			server.stop(true)
 		}
 	})

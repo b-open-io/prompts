@@ -1,5 +1,6 @@
 import { type ChildProcess, spawn, spawnSync } from "node:child_process"
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs"
+import { createConnection } from "node:net"
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
 
@@ -39,6 +40,12 @@ type ManagedProcess = {
 type ReadinessProbe = {
 	path: string
 	marker: string
+}
+
+type ReadinessResponse = {
+	ok: boolean
+	status: number
+	body: string
 }
 
 const INTERFACES: readonly InterfaceDefinition[] = [
@@ -277,38 +284,68 @@ function readinessProbe(id: LocalInterfaceId): ReadinessProbe {
 	return { path: "/", marker: "<title>Visual Planner</title>" }
 }
 
+async function requestReadiness(url: string, signal: AbortSignal): Promise<ReadinessResponse> {
+	const publicUrl = new URL(url)
+	if (publicUrl.protocol === "http:" && publicUrl.hostname.endsWith(".localhost")) {
+		return await new Promise((resolve, reject) => {
+			let response = ""
+			let settled = false
+			const socket = createConnection({ host: "127.0.0.1", port: Number(publicUrl.port || "80") })
+			const finish = () => {
+				if (settled) return
+				settled = true
+				const match = response.match(/^HTTP\/1\.[01] (\d{3})/)
+				const status = match?.[1] ? Number(match[1]) : 0
+				resolve({ ok: status >= 200 && status < 300, status, body: response })
+			}
+			const abort = () => socket.destroy(new Error("readiness probe timed out"))
+			signal.addEventListener("abort", abort, { once: true })
+			socket.setEncoding("utf8")
+			socket.on("data", (chunk) => {
+				response += chunk
+			})
+			socket.once("connect", () => {
+				socket.write(
+					`GET ${publicUrl.pathname}${publicUrl.search} HTTP/1.1\r\nHost: ${publicUrl.host}\r\nConnection: close\r\n\r\n`,
+				)
+			})
+			socket.once("end", finish)
+			socket.once("close", () => {
+				signal.removeEventListener("abort", abort)
+				finish()
+			})
+			socket.once("error", (error) => {
+				if (settled) return
+				settled = true
+				reject(error)
+			})
+		})
+	}
+
+	const response = await fetch(publicUrl, {
+		cache: "no-store",
+		redirect: "manual",
+		signal,
+	})
+	return { ok: response.ok, status: response.status, body: await response.text() }
+}
+
 export async function waitForReady(
 	url: string,
 	expectedMarker: string,
 	timeoutMs = INTERFACE_STARTUP_TIMEOUT_MS,
 ): Promise<void> {
-	const publicUrl = new URL(url)
-	const probeUrl = new URL(publicUrl)
-	const headers = new Headers()
-	if (probeUrl.protocol === "http:" && probeUrl.hostname.endsWith(".localhost")) {
-		// Some clean macOS runners do not resolve multi-label .localhost names in
-		// Bun even though Portless is listening. Connect to the local proxy
-		// directly while retaining the public hostname for route selection.
-		headers.set("Host", publicUrl.host)
-		probeUrl.hostname = "127.0.0.1"
-	}
 	const deadline = Date.now() + timeoutMs
 	let lastError: unknown
 	while (Date.now() < deadline) {
 		const controller = new AbortController()
 		const timeout = setTimeout(() => controller.abort(), 1_500)
 		try {
-			const response = await fetch(probeUrl, {
-				cache: "no-store",
-				headers,
-				redirect: "manual",
-				signal: controller.signal,
-			})
+			const response = await requestReadiness(url, controller.signal)
 			if (!response.ok) {
 				lastError = new Error(`HTTP ${response.status}`)
 			} else {
-				const body = await response.text()
-				if (body.includes(expectedMarker)) return
+				if (response.body.includes(expectedMarker)) return
 				lastError = new Error("readiness marker missing")
 			}
 		} catch (error) {

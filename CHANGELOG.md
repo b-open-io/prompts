@@ -6,6 +6,14 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.95] - 2026-07-15
+
+### Fixed
+
+- Bypassed environment HTTP proxies with a direct loopback socket for Agent
+  Master's Portless readiness requests, preventing clean CI proxy settings
+  from intercepting local tool health checks.
+
 ## [1.1.94] - 2026-07-15
 
 ### Changed
