@@ -32,6 +32,7 @@ for row in "${bouncer_cases[@]}"; do
   if [[ "$verdict" == "deny" ]]; then
     assert_contains "bouncer claude: $name (deny json)" '"permissionDecision":"deny"' "$HOOK_STDOUT"
     assert_contains "bouncer claude: $name (event name)" '"hookEventName":"PreToolUse"' "$HOOK_STDOUT"
+    assert_contains "bouncer claude: $name (safe alternative)" "Safe alternative:" "$HOOK_STDOUT"
   else
     assert_not_contains "bouncer claude: $name (no deny)" '"permissionDecision":"deny"' "$HOOK_STDOUT$HOOK_STDERR"
   fi
@@ -42,6 +43,7 @@ input=$(jq -n '{tool_name:"Bash", tool_input:{command:"git reset --hard"}}')
 run_hook "bouncer.sh" "codex" "$input"
 assert_exit "bouncer codex: hard reset blocked" "2" "$HOOK_EXIT"
 assert_contains "bouncer codex: deny json on stderr" '"permissionDecision":"deny"' "$HOOK_STDERR"
+assert_contains "bouncer codex: safe alternative on stderr" "git restore --staged" "$HOOK_STDERR"
 
 input=$(jq -n '{tool_name:"Bash", tool_input:{command:"git restore --staged foo"}}')
 run_hook "bouncer.sh" "codex" "$input"

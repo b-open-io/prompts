@@ -11,12 +11,14 @@ input=$(jq -n --arg c "$confirm_cmd" '{tool_name:"Bash", tool_input:{command:$c}
 run_hook "damage-control.sh" "claude" "$input"
 assert_exit "damage-control claude stash drop exit" "0" "$HOOK_EXIT"
 assert_contains "damage-control claude ask field" '"permissionDecision":"ask"' "$HOOK_STDOUT"
+assert_contains "damage-control claude ask safe alternative" "Safe alternative:" "$HOOK_STDOUT"
 assert_json "damage-control claude ask json" "$HOOK_STDOUT"
 
 # Codex: deny, exit 2, no ask/continue fields
 run_hook "damage-control.sh" "codex" "$input"
 assert_exit "damage-control codex stash drop exit" "2" "$HOOK_EXIT"
 assert_contains "damage-control codex deny field" '"permissionDecision":"deny"' "$HOOK_STDERR"
+assert_contains "damage-control codex deny safe alternative" "Safe alternative:" "$HOOK_STDERR"
 assert_not_contains "damage-control codex no ask" '"permissionDecision":"ask"' "$HOOK_STDERR$HOOK_STDOUT"
 assert_not_contains "damage-control codex no continue" '"continue"' "$HOOK_STDERR$HOOK_STDOUT"
 
@@ -26,6 +28,7 @@ input=$(jq -n '{tool_name:"Bash", tool_input:{command:"git reset --hard HEAD"}}'
 run_hook "damage-control.sh" "claude" "$input"
 assert_exit "damage-control claude hard reset" "0" "$HOOK_EXIT"
 assert_contains "damage-control claude hard reset deny" '"permissionDecision":"deny"' "$HOOK_STDOUT"
+assert_contains "damage-control hard reset safe alternative" "git restore --staged" "$HOOK_STDOUT"
 run_hook "damage-control.sh" "codex" "$input"
 assert_exit "damage-control codex hard reset" "2" "$HOOK_EXIT"
 
@@ -39,6 +42,7 @@ input=$(jq -n '{tool_name:"Write", tool_input:{file_path:"/tmp/project/.env", co
 run_hook "damage-control.sh" "claude" "$input"
 assert_exit "damage-control block write .env" "0" "$HOOK_EXIT"
 assert_contains "damage-control block write .env deny" '"permissionDecision":"deny"' "$HOOK_STDOUT"
+assert_contains "damage-control block write .env template alternative" ".env.example" "$HOOK_STDOUT"
 
 # .env.example exception allowed
 input=$(jq -n '{tool_name:"Write", tool_input:{file_path:"/tmp/project/.env.example", content:"x=1"}}')
@@ -52,6 +56,7 @@ for cfg_path in "/Users/x/.claude/bopen-tools/hooks-config.json" "/tmp/project/.
   run_hook "damage-control.sh" "claude" "$input"
   assert_exit "damage-control hooks-config ask exit ($cfg_path)" "0" "$HOOK_EXIT"
   assert_contains "damage-control hooks-config ask field ($cfg_path)" '"permissionDecision":"ask"' "$HOOK_STDOUT"
+  assert_contains "damage-control hooks-config safe alternative ($cfg_path)" "leave the config unchanged" "$HOOK_STDOUT"
   run_hook "damage-control.sh" "codex" "$input"
   assert_exit "damage-control hooks-config codex deny exit ($cfg_path)" "2" "$HOOK_EXIT"
   assert_contains "damage-control hooks-config codex deny field ($cfg_path)" '"permissionDecision":"deny"' "$HOOK_STDERR"
@@ -76,6 +81,7 @@ input=$(jq -n '{tool_name:"Bash", tool_input:{command:"rm -rf ~/.claude"}}')
 run_hook "damage-control.sh" "claude" "$input"
 assert_exit "damage-control rm protected dir deny exit" "0" "$HOOK_EXIT"
 assert_contains "damage-control rm protected dir deny field" '"permissionDecision":"deny"' "$HOOK_STDOUT"
+assert_contains "damage-control rm protected dir safe alternative" "git rm --cached" "$HOOK_STDOUT"
 
 # Deleting a file underneath the protected directory must also deny.
 input=$(jq -n '{tool_name:"Bash", tool_input:{command:"rm ~/.claude/settings.json"}}')

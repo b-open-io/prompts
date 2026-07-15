@@ -106,6 +106,7 @@ run_publish "claude" "cd /tmp && npm publish" "rejected"
 assert_exit "publish-gate chain npm publish gated" "0" "$HOOK_EXIT"
 assert_contains "publish-gate chain deny" "PUBLISH GATE" "$HOOK_STDOUT"
 assert_contains "publish-gate chain deny field" '"permissionDecision":"deny"' "$HOOK_STDOUT"
+assert_contains "publish-gate chain safe path" "bopen-tools:publish-request" "$HOOK_STDOUT"
 
 # Approved
 run_publish "claude" "npm publish" "approved"
@@ -119,22 +120,26 @@ assert_contains "publish-gate query field" "query" "$(cat "$CAPTURE_REQ")"
 run_publish "codex" "bun publish" "rejected"
 assert_exit "publish-gate rejected deny" "2" "$HOOK_EXIT"
 assert_contains "publish-gate rejected reason" "No Linear ticket" "$HOOK_STDERR"
+assert_contains "publish-gate rejected safe path" "bopen-tools:publish-request" "$HOOK_STDERR"
 assert_not_contains "publish-gate rejected no continue field" '"continue"' "$HOOK_STDERR$HOOK_STDOUT"
 
 # API error
 run_publish "claude" "npm publish" "api_error"
 assert_exit "publish-gate api error deny" "0" "$HOOK_EXIT"
 assert_contains "publish-gate api error msg" "GraphQL error" "$HOOK_STDOUT"
+assert_contains "publish-gate api error safe path" "Safe publish path:" "$HOOK_STDOUT"
 
 # Timeout
 run_publish "claude" "npm publish" "timeout"
 assert_exit "publish-gate timeout deny" "0" "$HOOK_EXIT"
 assert_contains "publish-gate timeout msg" "timed out" "$HOOK_STDOUT"
+assert_contains "publish-gate timeout safe path" "bopen-tools:publish-request" "$HOOK_STDOUT"
 
 # On-chain without ack
 run_publish "claude" "clawnet publish --on-chain" "on_chain_no_ack"
 assert_exit "publish-gate on-chain no ack deny" "0" "$HOOK_EXIT"
 assert_contains "publish-gate on-chain no ack msg" "irreversible acknowledged" "$HOOK_STDOUT"
+assert_contains "publish-gate on-chain no ack safe path" "Safe publish path:" "$HOOK_STDOUT"
 assert_json "publish-gate comments request JSON" "$(cat "$CAPTURE_COMMENTS")"
 
 # On-chain with ack
@@ -148,6 +153,7 @@ input=$(jq -n --arg cwd "$ROOT" \
 run_hook "publish-gate.sh" "claude" "$input"
 assert_exit "publish-gate on-chain no key deny" "0" "$HOOK_EXIT"
 assert_contains "publish-gate on-chain no key deny field" '"permissionDecision":"deny"' "$HOOK_STDOUT"
+assert_contains "publish-gate on-chain no key safe path" "bopen-tools:publish-request" "$HOOK_STDOUT"
 export LINEAR_API_KEY="test-key-not-real"
 
 rm -rf "$MOCK_BIN" "$CAPTURE_REQ" "$CAPTURE_COMMENTS"

@@ -28,7 +28,7 @@ on_unexpected_error() {
   if [[ "${_PUBLISH_GATE_ACTIVE:-false}" == "true" ]]; then
     echo "publish-gate: unexpected error (exit ${exit_code}). Denying publish for safety." >&2
     # Best-effort deny without relying on helpers that may have failed
-    printf '%s\n' '{"hookSpecificOutput":{"permissionDecision":"deny"},"systemMessage":"PUBLISH GATE: internal error while evaluating publish approval. Retry after checking LINEAR_API_KEY and network access."}' >&2
+    printf '%s\n' '{"hookSpecificOutput":{"permissionDecision":"deny"},"systemMessage":"PUBLISH GATE: internal error while evaluating publish approval. Safe publish path: run the bopen-tools:publish-request skill, check LINEAR_API_KEY and network access, have a human move the Linear ticket to Approved, then retry through the gate."}' >&2
     exit 2
   fi
   exit 0
@@ -146,7 +146,7 @@ publish_gate_main() {
 
   if [[ -z "${LINEAR_API_KEY:-}" ]]; then
     if [[ "$IS_ON_CHAIN" == "true" ]]; then
-      deny_permission "PUBLISH GATE (on-chain): LINEAR_API_KEY is not set. clawnet publish --on-chain broadcasts an irreversible BSV transaction to mainnet. Set LINEAR_API_KEY and obtain an Approved Linear ticket before proceeding."
+      deny_permission "PUBLISH GATE (on-chain): LINEAR_API_KEY is not set. clawnet publish --on-chain broadcasts an irreversible BSV transaction to mainnet. Safe publish path: run the bopen-tools:publish-request skill, obtain an Approved Linear ticket, have its approver comment exactly 'irreversible acknowledged', set LINEAR_API_KEY from a human terminal, then retry through the gate."
     else
       echo "publish-gate: WARNING — LINEAR_API_KEY not set. Skipping approval check for reversible publish of '${PACKAGE_HINT}'." >&2
       trap - ERR
@@ -205,16 +205,16 @@ publish_gate_main() {
 
   if [[ $CURL_STATUS -ne 0 || -z "$LINEAR_RESPONSE" ]]; then
     if [[ "$IS_ON_CHAIN" == "true" ]]; then
-      deny_permission "PUBLISH GATE (on-chain): Linear API request failed or timed out (curl exit ${CURL_STATUS}). Cannot verify approval for irreversible publish. Retry when Linear is reachable."
+      deny_permission "PUBLISH GATE (on-chain): Linear API request failed or timed out (curl exit ${CURL_STATUS}). Cannot verify approval for irreversible publish. Safe publish path: keep the release request in bopen-tools:publish-request, restore Linear access, verify the Approved ticket and exact 'irreversible acknowledged' comment, then retry through the gate."
     fi
-    deny_permission "PUBLISH GATE: Linear API request failed or timed out (curl exit ${CURL_STATUS}). Cannot verify an Approved publish ticket. Retry when Linear is reachable, or set PUBLISH_BYPASS_TOKEN only from a human terminal."
+    deny_permission "PUBLISH GATE: Linear API request failed or timed out (curl exit ${CURL_STATUS}). Cannot verify an Approved publish ticket. Safe publish path: run the bopen-tools:publish-request skill, restore Linear access, have a human approve the ticket, then retry through the gate; only a human terminal may set PUBLISH_BYPASS_TOKEN."
   fi
 
   # GraphQL top-level errors
   if printf '%s' "$LINEAR_RESPONSE" | jq -e '.errors and (.errors | length > 0)' >/dev/null 2>&1; then
     local ERR_MSG
     ERR_MSG=$(printf '%s' "$LINEAR_RESPONSE" | jq -r '[.errors[].message] | join("; ")' 2>/dev/null || echo "unknown GraphQL error")
-    deny_permission "PUBLISH GATE: Linear GraphQL error: ${ERR_MSG}"
+    deny_permission "PUBLISH GATE: Linear GraphQL error: ${ERR_MSG}. Safe publish path: run the bopen-tools:publish-request skill, fix the Linear request or credentials, have a human confirm the ticket is Approved, then retry through the gate."
   fi
 
   local TICKET_ID TICKET_IDENTIFIER TICKET_TITLE
@@ -251,7 +251,7 @@ publish_gate_main() {
     trap on_unexpected_error ERR
 
     if [[ $COMMENTS_STATUS -ne 0 || -z "$COMMENTS_RESPONSE" ]]; then
-      deny_permission "PUBLISH GATE (on-chain): failed to load comments for ticket ${TICKET_IDENTIFIER}. Cannot verify irreversible acknowledgment."
+      deny_permission "PUBLISH GATE (on-chain): failed to load comments for ticket ${TICKET_IDENTIFIER}. Cannot verify irreversible acknowledgment. Safe publish path: keep the release in bopen-tools:publish-request, restore Linear access, verify the approver's exact 'irreversible acknowledged' comment, then retry through the gate."
     fi
 
     local HAS_ACK
@@ -259,7 +259,7 @@ publish_gate_main() {
       jq -r '[.data.issue.comments.nodes[].body // empty] | map(ascii_downcase) | any(test("irreversible acknowledged"))' 2>/dev/null || echo "false")
 
     if [[ "$HAS_ACK" != "true" ]]; then
-      deny_permission "PUBLISH GATE (on-chain): Linear ticket ${TICKET_IDENTIFIER} (${TICKET_TITLE}) is Approved, but no comment containing \"irreversible acknowledged\" was found. The approver must add a comment with that exact phrase to confirm they understand this BSV transaction cannot be undone."
+      deny_permission "PUBLISH GATE (on-chain): Linear ticket ${TICKET_IDENTIFIER} (${TICKET_TITLE}) is Approved, but no comment containing \"irreversible acknowledged\" was found. Safe publish path: have the approver add that exact phrase to the bopen-tools:publish-request ticket, then retry through the gate."
     fi
   fi
 
@@ -277,7 +277,7 @@ publish_gate_main() {
   if [[ -n "$PACKAGE_HINT" ]]; then
     STOP_REASON="${STOP_REASON} matching package \"${PACKAGE_HINT}\""
   fi
-  STOP_REASON="${STOP_REASON}. Use the publish-request skill to prepare a release plan and post it to Linear. Then ask the user to review and move the ticket to Approved. Once confirmed, retry the publish command."
+  STOP_REASON="${STOP_REASON}. Safe publish path: run the bopen-tools:publish-request skill to prepare the release plan in Linear, have a human review it and move the ticket to Approved, then retry through the gate."
 
   deny_permission "$STOP_REASON"
 }

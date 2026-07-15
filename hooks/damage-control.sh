@@ -134,6 +134,40 @@ rm_target_matches_no_delete() {
   return 1
 }
 
+safe_command_alternative() {
+  local pattern="$1"
+
+  case "$pattern" in
+    "git reset --hard")
+      printf '%s' "inspect with 'git status' and 'git diff'; use 'git restore --staged <path>' to unstage, or preserve work in a named stash before requesting approval"
+      ;;
+    "git clean -fd"|"git clean -df")
+      printf '%s' "preview with 'git clean -nd' and move wanted untracked files to scratch before requesting cleanup approval"
+      ;;
+    "git push --force"|"git push -f")
+      printf '%s' "use 'git push --force-with-lease' so the push refuses to overwrite unexpected remote work"
+      ;;
+    "npm unpublish")
+      printf '%s' "deprecate the affected version with 'npm deprecate <package>@<version> \"reason\"' instead of removing it"
+      ;;
+    "drop table"|"drop database"|"truncate table"|"truncate ")
+      printf '%s' "inspect the affected rows/schema with a read-only query and prepare a reviewed migration plus backup before requesting execution"
+      ;;
+    "vercel rm"|"vercel remove"|"railway delete")
+      printf '%s' "list and inspect the target first, then disable or scale it down where supported while a human reviews permanent deletion"
+      ;;
+    "rm -rf /"|"rm -rf /*"|"rm -fr /"|"rm -fr /*"|"rm -r -f /")
+      printf '%s' "operate only on an explicitly named disposable scratch directory and inspect the resolved path before removing anything"
+      ;;
+    "chmod 777")
+      printf '%s' "grant only the needed owner/group permission, such as 'chmod u+rwX <path>', after inspecting the current mode"
+      ;;
+    *)
+      printf '%s' "use the command's preview or dry-run form and preserve affected work in a named stash, backup, or scratch copy before requesting approval"
+      ;;
+  esac
+}
+
 # Enforce path policy for a single file path and operation:
 #   write | delete | read
 enforce_path_policy() {
@@ -144,22 +178,22 @@ enforce_path_policy() {
 
   if path_matches_list "$file_path" "zeroAccessPaths"; then
     if ! is_exception "$file_path"; then
-      deny_permission "BLOCKED by damage-control: '${file_path}' is in the zero-access list. The agent must never read or write this file. If the user requires changes, they must make them manually."
+      deny_permission "BLOCKED by damage-control: '${file_path}' is in the zero-access list. The agent must never read or write this file. Safe alternative: work from a redacted .env.example/.env.sample or ask the user to make the secret-bearing change manually and provide only sanitized results."
     fi
   fi
 
   if [[ "$op" == "write" || "$op" == "delete" ]]; then
     if path_matches_list "$file_path" "readOnlyPaths"; then
-      deny_permission "BLOCKED by damage-control: '${file_path}' is read-only. The agent may read this file but must not modify or delete it."
+      deny_permission "BLOCKED by damage-control: '${file_path}' is read-only. The agent may read this file but must not modify or delete it. Safe alternative: copy the relevant content to a project scratch directory, edit the copy, and propose the resulting diff."
     fi
     if path_matches_list "$file_path" "askPaths"; then
-      ask_or_deny "damage-control: '${file_path}' controls which guard hooks are enabled. Modifying it requires the user's explicit confirmation — disabling guards removes work-loss and secret protections. State plainly which hooks the change affects."
+      ask_or_deny "damage-control: '${file_path}' controls which guard hooks are enabled. Modifying it requires the user's explicit confirmation — disabling guards removes work-loss and secret protections. State plainly which hooks the change affects. Safe alternative: leave the config unchanged, describe the exact proposed edit, and continue under the current protections while awaiting confirmation."
     fi
   fi
 
   if [[ "$op" == "delete" ]]; then
     if path_matches_list "$file_path" "noDeletePaths"; then
-      deny_permission "BLOCKED by damage-control: '${file_path}' matches a no-delete path. This file or directory must not be deleted."
+      deny_permission "BLOCKED by damage-control: '${file_path}' matches a no-delete path. This file or directory must not be deleted. Safe alternative: for a regular tracked file that only needs to stop being tracked, use 'git rm --cached -- ${file_path}'; otherwise copy or move new work to scratch while leaving the protected path intact."
     fi
     # Also treat zero-access as no-delete (already handled above for non-exceptions)
   fi
@@ -194,7 +228,7 @@ damage_control_main() {
   fi
 
   if [[ "$_is_shell" == "true" ]]; then
-    local command_str command_lower
+    local command_str command_lower alternative
     command_str=$(extract_command "$input")
     command_lower=$(printf '%s' "$command_str" | tr '[:upper:]' '[:lower:]')
 
@@ -211,7 +245,8 @@ damage_control_main() {
       fi
 
       if printf '%s' "$command_lower" | grep -qF "$pattern_lower"; then
-        deny_permission "BLOCKED by damage-control: command matches destructive pattern '${pattern}'. This operation is not permitted. If you believe this is necessary, ask the user for explicit written permission."
+        alternative=$(safe_command_alternative "$pattern")
+        deny_permission "BLOCKED by damage-control: command matches destructive pattern '${pattern}'. This operation is not permitted. If you believe this is necessary, ask the user for explicit written permission. Safe alternative: ${alternative}."
       fi
     done < <(extract_section "destructiveCommands")
 
@@ -221,7 +256,7 @@ damage_control_main() {
       [[ -z "$pattern" ]] && continue
       pattern_lower=$(printf '%s' "$pattern" | tr '[:upper:]' '[:lower:]')
       if printf '%s' "$command_lower" | grep -qF "$pattern_lower"; then
-        ask_or_deny "damage-control: The command matches a confirmation-required pattern (${pattern}). You must ask the user for explicit permission before running: ${command_str}"
+        ask_or_deny "damage-control: The command matches a confirmation-required pattern (${pattern}). You must ask the user for explicit permission before running: ${command_str}. Safe alternative: preview first with 'git status', 'git diff', 'git stash list', or the command's dry-run form, and preserve affected work in a named backup or scratch copy."
       fi
     done < <(extract_section "askConfirmation")
 
@@ -230,7 +265,7 @@ damage_control_main() {
     while IFS= read -r target; do
       [[ -z "$target" ]] && continue
       if rm_target_matches_no_delete "$target"; then
-        deny_permission "BLOCKED by damage-control: attempting to delete protected path '${target}'. This file or directory must not be deleted."
+        deny_permission "BLOCKED by damage-control: attempting to delete protected path '${target}'. This file or directory must not be deleted. Safe alternative: for a regular tracked file that only needs to stop being tracked, use 'git rm --cached -- ${target}'; otherwise copy or move new work to scratch while leaving the protected path intact."
       fi
     done < <(extract_rm_targets "$command_str")
 
@@ -303,7 +338,7 @@ damage_control_main() {
     if [[ -n "$file_path" ]]; then
       if path_matches_list "$file_path" "zeroAccessPaths"; then
         if ! is_exception "$file_path"; then
-          deny_permission "BLOCKED by damage-control: '${file_path}' is in the zero-access list. The agent must never read this file."
+          deny_permission "BLOCKED by damage-control: '${file_path}' is in the zero-access list. The agent must never read this file. Safe alternative: use a redacted .env.example/.env.sample or ask the user for the specific sanitized, non-secret value needed."
         fi
       fi
     fi

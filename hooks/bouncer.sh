@@ -83,6 +83,31 @@ hard_block_reason() {
   return 1
 }
 
+safe_alternative_for() {
+  local reason="$1"
+
+  case "$reason" in
+    "git reset --hard")
+      printf '%s' "inspect with 'git status' and 'git diff'; if the goal is only to unstage files, use 'git restore --staged <path>', and preserve wanted work in a named stash before any cleanup"
+      ;;
+    "git clean -f")
+      printf '%s' "preview exactly what would be removed with 'git clean -nd' and move wanted untracked files to scratch before asking for cleanup approval"
+      ;;
+    "git checkout -f"|"git checkout -- <paths>")
+      printf '%s' "inspect the affected paths with 'git diff -- <paths>' and preserve wanted changes with 'git stash push -m \"backup before checkout\" -- <paths>'"
+      ;;
+    "git restore --worktree"|"git restore -s/--source"|"git restore (worktree)")
+      printf '%s' "inspect with 'git diff -- <paths>'; use 'git restore --staged <paths>' if you only need to unstage, or stash a named backup before restoring the worktree"
+      ;;
+    "git stash clear")
+      printf '%s' "review with 'git stash list' and 'git stash show -p stash@{0}', then keep or export needed stashes instead of clearing all of them"
+      ;;
+    *)
+      printf '%s' "inspect with 'git status' and 'git diff', then preserve wanted work in a named stash before requesting approval"
+      ;;
+  esac
+}
+
 # Entry point. Callable standalone (this file executed directly) or sourced
 # and invoked in-process by pretooluse-bash.sh — either way $1 is the raw
 # hook stdin JSON; a deny/ask exits the whole process via common.sh, an
@@ -108,7 +133,9 @@ bouncer_main() {
   local reason
   reason=$(hard_block_reason "$command" || true)
   if [[ -n "${reason:-}" ]]; then
-    deny_permission "BLOCKED: This command can destroy uncommitted work (matched: ${reason}). Ask the user for explicit permission before running destructive git commands."
+    local alternative
+    alternative=$(safe_alternative_for "$reason")
+    deny_permission "BLOCKED: This command can destroy uncommitted work (matched: ${reason}). Ask the user for explicit permission before running destructive git commands. Safe alternative: ${alternative}."
   fi
 
   return 0
