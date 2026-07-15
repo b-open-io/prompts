@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Hammer, LoaderCircle } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { MyPacksTab } from "@/components/packs/MyPacksTab"
 import { useSound } from "@/components/SoundProvider"
 import { Banners } from "@/components/setup/Banners"
 import { OverviewTab } from "@/components/setup/OverviewTab"
@@ -9,6 +10,8 @@ import { PlanPanel } from "@/components/setup/PlanPanel"
 import { PluginTab } from "@/components/setup/PluginTab"
 import { Sidebar } from "@/components/setup/Sidebar"
 import { Button } from "@/components/ui/button"
+import { openExternalUrl } from "@/lib/native-sdk"
+import { PACK_BY_SLUG } from "@/lib/pack-catalog"
 import { assemblePlanSelections, initAllSelections, reconcileSelections } from "@/lib/selections"
 import type { HarnessState, Runtime, Selections } from "@/lib/types"
 
@@ -31,6 +34,7 @@ export default function SetupPlaygroundPage() {
 	const [shellMode, setShellMode] = useState<ShellMode>("standalone")
 	const [searchFocusToken, setSearchFocusToken] = useState(0)
 	const [pluginGridFocusToken, setPluginGridFocusToken] = useState(0)
+	const [packAccess, setPackAccess] = useState<string[] | null>(null)
 	const errorIdRef = useRef(0)
 
 	const pushTransientError = useCallback((msg: string) => {
@@ -51,10 +55,17 @@ export default function SetupPlaygroundPage() {
 		setState(newState)
 		if (!preserve) {
 			setSelectedRuntime(newState.runtimeArg)
-			setActiveTab("overview")
+			const agentMasterShell =
+				new URLSearchParams(window.location.search).get("shell") === "agent-master" ||
+				window.localStorage.getItem(SHELL_STORAGE_KEY) === "agent-master"
+			setActiveTab(agentMasterShell ? "packs" : "overview")
 		} else {
 			setActiveTab((prev) =>
-				prev !== "overview" && prev !== "plugins" && !newState.plugins.some((p) => p.name === prev)
+				prev !== "overview" &&
+				prev !== "plugins" &&
+				prev !== "packs" &&
+				!prev.startsWith("pack:") &&
+				!newState.plugins.some((p) => p.name === prev)
 					? "overview"
 					: prev,
 			)
@@ -72,10 +83,12 @@ export default function SetupPlaygroundPage() {
 		if (shellParam === "agent-master") {
 			window.localStorage.setItem(SHELL_STORAGE_KEY, "agent-master")
 			setShellMode("agent-master")
+			setActiveTab("packs")
 			return
 		}
 		if (window.localStorage.getItem(SHELL_STORAGE_KEY) === "agent-master") {
 			setShellMode("agent-master")
+			setActiveTab("packs")
 		}
 	}, [])
 
@@ -110,6 +123,21 @@ export default function SetupPlaygroundPage() {
 		setActiveTab(view)
 		if (view === "plugins") setPluginGridFocusToken((token) => token + 1)
 	}, [])
+
+	const handlePackAccessChange = useCallback((slugs: string[] | null) => {
+		setPackAccess(slugs)
+	}, [])
+
+	const handleOpenStore = useCallback(
+		(slug: string) => {
+			openExternalUrl(`https://bopen.ai/premium/${slug}`).catch((error) => {
+				pushTransientError(
+					`Could not open store: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			})
+		},
+		[pushTransientError],
+	)
 
 	async function handleBuildPlan() {
 		if (!state || !selectedRuntime) return
@@ -159,7 +187,20 @@ export default function SetupPlaygroundPage() {
 	}
 
 	const activePlugin = state?.plugins.find((p) => p.name === activeTab) ?? null
-	const activeTitle = activePlugin?.name ?? (activeTab === "plugins" ? "Plugins" : "Overview")
+	const selectedPackSlug = activeTab.startsWith("pack:") ? activeTab.slice("pack:".length) : null
+	const activePack = selectedPackSlug ? PACK_BY_SLUG.get(selectedPackSlug) : undefined
+	const isPackView = activeTab === "packs" || Boolean(activePack)
+	const activeTitle =
+		activePack?.name ??
+		activePlugin?.name ??
+		(activeTab === "plugins" ? "Plugins" : activeTab === "packs" ? "My Packs" : "Overview")
+	const activeSubtitle = activePack
+		? "Purchased content and dependency readiness"
+		: isPackView
+			? "What you own, matched against what is installed"
+			: activePlugin
+				? "Plugin setup details"
+				: "Setup health and installed plugins"
 
 	return (
 		<div className="app-shell">
@@ -172,6 +213,8 @@ export default function SetupPlaygroundPage() {
 				onRuntimeChange={setSelectedRuntime}
 				onRefresh={handleRefresh}
 				refreshing={refreshing}
+				packAccess={packAccess}
+				onOpenStore={handleOpenStore}
 			/>
 
 			<Banners state={state} transientErrors={transientErrors} />
@@ -182,28 +225,28 @@ export default function SetupPlaygroundPage() {
 						<h1 className="truncate text-[0.95rem] font-semibold tracking-[-0.01em]">
 							{activeTitle}
 						</h1>
-						<div className="truncate text-[0.65rem] text-muted-foreground">
-							{activePlugin ? "Plugin setup details" : "Setup health and installed plugins"}
-						</div>
+						<div className="truncate text-[0.65rem] text-muted-foreground">{activeSubtitle}</div>
 					</div>
 					{state && state.runtimeArg === state.runtimeDetected && (
 						<div className="hidden items-center gap-1.5 text-[0.66rem] text-muted-foreground sm:flex">
 							<CheckCircle2 className="size-3 text-green-600" /> Runtime {state.runtimeDetected}
 						</div>
 					)}
-					<Button
-						variant="primary"
-						onClick={handleBuildPlan}
-						disabled={building || !state || !selectedRuntime}
-						className="h-8 rounded-md px-3 normal-case shadow-sm"
-					>
-						{building ? (
-							<LoaderCircle className="size-3.5 animate-spin" />
-						) : (
-							<Hammer className="size-3.5" />
-						)}
-						{building ? "Building…" : "Build setup plan"}
-					</Button>
+					{!isPackView && (
+						<Button
+							variant="primary"
+							onClick={handleBuildPlan}
+							disabled={building || !state || !selectedRuntime}
+							className="h-8 rounded-md px-3 normal-case shadow-sm"
+						>
+							{building ? (
+								<LoaderCircle className="size-3.5 animate-spin" />
+							) : (
+								<Hammer className="size-3.5" />
+							)}
+							{building ? "Building…" : "Build setup plan"}
+						</Button>
+					)}
 				</header>
 
 				<main className="content-view flex-1">
@@ -220,6 +263,14 @@ export default function SetupPlaygroundPage() {
 								</p>
 							</div>
 						</div>
+					) : isPackView && selectedRuntime ? (
+						<MyPacksTab
+							state={state}
+							runtime={selectedRuntime}
+							selectedSlug={selectedPackSlug}
+							onSelectPack={(slug) => setActiveTab(`pack:${slug}`)}
+							onAccessChange={handlePackAccessChange}
+						/>
 					) : activeTab === "overview" || activeTab === "plugins" ? (
 						<OverviewTab
 							state={state}

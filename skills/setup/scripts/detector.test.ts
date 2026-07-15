@@ -7,6 +7,8 @@ import {
   detectRuntime,
   evaluateCheck,
   fetchMarketplaceCatalog,
+  listInstalledPlugins,
+  listPortableSkills,
   readSkillActivity,
   resolveHookConfigPaths,
   resolveHookEnabled,
@@ -85,6 +87,43 @@ describe("evaluateCheck", () => {
       const result = await evaluateCheck("this-binary-definitely-does-not-exist-xyz");
       expect(result.installed).toBe(false);
     });
+  });
+});
+
+describe("pack dependency discovery", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), "detector-pack-deps-"));
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  test("scans plugins across every marketplace cache", async () => {
+    await Promise.all([
+      mkdir(join(dir, "b-open-io", "bopen-tools", "1.1.70"), { recursive: true }),
+      mkdir(join(dir, "trailofbits", "static-analysis", "2.0.0"), { recursive: true }),
+      mkdir(join(dir, "claude-plugins-official", "stripe", "1.0.0"), { recursive: true }),
+      mkdir(join(dir, "temp_subdir_123.clone", ".git", "objects"), { recursive: true }),
+    ]);
+
+    const installed = await listInstalledPlugins(dir);
+    expect(installed.get("bopen-tools")?.marketplace).toBe("b-open-io");
+    expect(installed.get("static-analysis")?.marketplace).toBe("trailofbits");
+    expect(installed.get("stripe")?.version).toBe("1.0.0");
+    expect(installed.has(".git")).toBe(false);
+  });
+
+  test("merges portable skill directories and symlinks", async () => {
+    const shared = join(dir, "shared");
+    const claude = join(dir, "claude");
+    await mkdir(join(shared, "react-doctor"), { recursive: true });
+    await mkdir(join(claude, "webapp-testing"), { recursive: true });
+
+    const skills = await listPortableSkills([shared, claude, join(dir, "missing")]);
+    expect(skills).toEqual(["react-doctor", "webapp-testing"]);
   });
 });
 

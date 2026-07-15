@@ -59,6 +59,7 @@ export type HarnessState = {
   platform: "darwin" | "linux" | "win32";
   generatedAt: string;
   plugins: PluginState[];
+  portableSkills: string[];
   marketplace: { fetched: boolean; error: string | null; fetchedAt: string | null };
 };
 
@@ -76,8 +77,13 @@ const DEFAULT_MARKETPLACE_URL = "https://bopen.ai/api/marketplace";
 const COMMAND_TIMEOUT_MS = 5000;
 const MARKETPLACE_TIMEOUT_MS = 10_000;
 
-const CLAUDE_PLUGIN_CACHE = join(homedir(), ".claude", "plugins", "cache", "b-open-io");
-const CODEX_PLUGIN_CACHE = join(homedir(), ".codex", "plugins", "cache", "b-open-io");
+const CLAUDE_PLUGIN_CACHE = join(homedir(), ".claude", "plugins", "cache");
+const CODEX_PLUGIN_CACHE = join(homedir(), ".codex", "plugins", "cache");
+const PORTABLE_SKILL_ROOTS = [
+  join(homedir(), ".agents", "skills"),
+  join(homedir(), ".claude", "skills"),
+  join(homedir(), ".codex", "skills"),
+];
 const DEFAULT_SKILL_ACTIVITY_FILE = join(homedir(), ".claude", "bopen-tools", "skill-activity.jsonl");
 const DEFAULT_CLAUDE_PROJECTS_DIR = join(homedir(), ".claude", "projects");
 const DAY_SECONDS = 24 * 60 * 60;
@@ -486,8 +492,10 @@ function compareVersions(a: string, b: string): number {
   return 0;
 }
 
-async function listLatestPluginVersions(cacheDir: string): Promise<Map<string, { version: string; root: string }>> {
-  const result = new Map<string, { version: string; root: string }>();
+type InstalledPlugin = { version: string; root: string; marketplace: string };
+
+async function listLatestPluginVersions(cacheDir: string, marketplace: string): Promise<Map<string, InstalledPlugin>> {
+  const result = new Map<string, InstalledPlugin>();
   let pluginNames: string[];
   try {
     pluginNames = (await readdir(cacheDir, { withFileTypes: true })).filter((e) => e.isDirectory()).map((e) => e.name);
@@ -505,10 +513,57 @@ async function listLatestPluginVersions(cacheDir: string): Promise<Map<string, {
     }
     if (versions.length === 0) continue;
     const latest = versions.sort(compareVersions).at(-1) as string;
-    result.set(pluginName, { version: latest, root: join(pluginPath, latest) });
+    result.set(pluginName, { version: latest, root: join(pluginPath, latest), marketplace });
   }
 
   return result;
+}
+
+/** Scan every marketplace cache, not only b-open-io. Pack manifests cite
+ * third-party marketplaces, and reporting those as missing while their
+ * plugins are installed would make the dependency check untrustworthy. */
+export async function listInstalledPlugins(cacheRoot: string): Promise<Map<string, InstalledPlugin>> {
+  const result = new Map<string, InstalledPlugin>();
+  let marketplaces: string[];
+  try {
+    marketplaces = (await readdir(cacheRoot, { withFileTypes: true }))
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          !entry.name.startsWith(".") &&
+          !entry.name.startsWith("temp_subdir_") &&
+          !entry.name.endsWith(".clone"),
+      )
+      .map((entry) => entry.name);
+  } catch {
+    return result;
+  }
+
+  for (const marketplace of marketplaces.sort()) {
+    const plugins = await listLatestPluginVersions(join(cacheRoot, marketplace), marketplace);
+    for (const [name, installed] of plugins) {
+      const existing = result.get(name);
+      if (!existing || compareVersions(installed.version, existing.version) > 0) {
+        result.set(name, installed);
+      }
+    }
+  }
+  return result;
+}
+
+export async function listPortableSkills(roots: string[] = PORTABLE_SKILL_ROOTS): Promise<string[]> {
+  const names = new Set<string>();
+  for (const root of roots) {
+    try {
+      const entries = await readdir(root, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory() || entry.isSymbolicLink()) names.add(entry.name);
+      }
+    } catch {
+      // A harness may not use every portable skill store.
+    }
+  }
+  return [...names].sort();
 }
 
 // --- Marketplace catalog ---
@@ -571,13 +626,16 @@ export async function detectHarness(opts: {
   marketplaceCache?: MarketplaceSnapshot;
   env?: Record<string, string | undefined>;
   nowSeconds?: number;
+  pluginCacheRoots?: { claude: string; codex: string };
+  portableSkillRoots?: string[];
 }): Promise<HarnessState> {
   const platform = process.platform as HarnessState["platform"];
   const skillActivity = readSkillActivity({ env: opts.env, nowSeconds: opts.nowSeconds });
 
-  const [claudePlugins, codexPlugins, marketplace] = await Promise.all([
-    listLatestPluginVersions(CLAUDE_PLUGIN_CACHE),
-    listLatestPluginVersions(CODEX_PLUGIN_CACHE),
+  const [claudePlugins, codexPlugins, portableSkills, marketplace] = await Promise.all([
+    listInstalledPlugins(opts.pluginCacheRoots?.claude ?? CLAUDE_PLUGIN_CACHE),
+    listInstalledPlugins(opts.pluginCacheRoots?.codex ?? CODEX_PLUGIN_CACHE),
+    listPortableSkills(opts.portableSkillRoots),
     opts.marketplaceCache ?? fetchMarketplaceCatalog(opts.marketplaceUrl),
   ]);
 
@@ -625,6 +683,7 @@ export async function detectHarness(opts: {
     platform,
     generatedAt: new Date().toISOString(),
     plugins,
+    portableSkills,
     marketplace: {
       fetched: marketplace.fetched,
       error: marketplace.error,

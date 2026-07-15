@@ -1,11 +1,15 @@
 "use client"
 
 import {
+	BookOpen,
 	Boxes,
 	CheckCircle2,
 	ChevronRight,
 	Circle,
+	ExternalLink,
 	LoaderCircle,
+	LockKeyhole,
+	PackageCheck,
 	Puzzle,
 	RefreshCw,
 } from "lucide-react"
@@ -24,6 +28,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select"
+import { PACK_CATALOG } from "@/lib/pack-catalog"
 import { type HarnessState, type PluginState, RUNTIMES, type Runtime } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -134,6 +139,8 @@ export const Sidebar = memo(function Sidebar({
 	onRuntimeChange,
 	onRefresh,
 	refreshing,
+	packAccess,
+	onOpenStore,
 }: {
 	state: HarnessState | null
 	activeView: string
@@ -143,9 +150,15 @@ export const Sidebar = memo(function Sidebar({
 	onRuntimeChange: (runtime: Runtime) => void
 	onRefresh: () => void
 	refreshing: boolean
+	packAccess: string[] | null
+	onOpenStore: (slug: string) => void
 }) {
 	const [pluginsExpanded, setPluginsExpanded] = useState(true)
 	const { play } = useSound()
+	const unlockedPacks = new Set(packAccess ?? [])
+	const orderedPacks = [...PACK_CATALOG].sort(
+		(a, b) => Number(unlockedPacks.has(b.slug)) - Number(unlockedPacks.has(a.slug)),
+	)
 
 	useEffect(() => {
 		const stored = window.localStorage.getItem(PLUGINS_EXPANDED_STORAGE_KEY)
@@ -227,6 +240,70 @@ export const Sidebar = memo(function Sidebar({
 					<Boxes className="size-4" strokeWidth={1.7} aria-hidden="true" />
 					Overview
 				</button>
+
+				{shellMode === "agent-master" && (
+					<div className="mb-3 border-b border-sidebar-border pb-3">
+						<button
+							type="button"
+							onClick={() => onSelect("packs")}
+							data-sound="nav-tab-switch"
+							aria-current={activeView === "packs" ? "page" : undefined}
+							className={cn(
+								"mb-1 flex h-8 w-full items-center gap-2 rounded-md px-2 text-left font-mono text-[0.65rem] font-semibold tracking-[0.1em]",
+								activeView === "packs"
+									? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_0.5px_var(--sidebar-border)]"
+									: "text-sidebar-foreground hover:bg-sidebar-accent/60",
+							)}
+						>
+							<BookOpen className="size-4" strokeWidth={1.7} aria-hidden="true" />
+							<span className="flex-1">MY PACKS</span>
+							{packAccess && (
+								<span className="text-[0.58rem] text-muted-foreground">{packAccess.length}</span>
+							)}
+						</button>
+						{packAccess === null ? (
+							<button
+								type="button"
+								onClick={() => onSelect("packs")}
+								className="flex h-7 w-full items-center gap-2 rounded-md px-2 text-left text-[0.68rem] text-muted-foreground hover:bg-sidebar-accent/50"
+							>
+								<LockKeyhole className="size-3.5" /> Sign in to view purchases
+							</button>
+						) : (
+							<div className="space-y-0.5">
+								{orderedPacks.map((pack) => {
+									const unlocked = unlockedPacks.has(pack.slug)
+									const view = `pack:${pack.slug}`
+									return (
+										<button
+											type="button"
+											key={pack.slug}
+											onClick={() => (unlocked ? onSelect(view) : onOpenStore(pack.slug))}
+											aria-current={activeView === view ? "page" : undefined}
+											aria-label={unlocked ? `Open ${pack.name}` : `View ${pack.name} in the store`}
+											className={cn(
+												"flex h-7 w-full items-center gap-2 rounded-md px-2 text-left text-[0.69rem]",
+												activeView === view
+													? "bg-sidebar-accent text-sidebar-accent-foreground"
+													: "text-sidebar-foreground hover:bg-sidebar-accent/50",
+											)}
+										>
+											{unlocked ? (
+												<PackageCheck className="size-3.5 shrink-0 text-green-600" />
+											) : (
+												<LockKeyhole className="size-3.5 shrink-0 text-muted-foreground" />
+											)}
+											<span className="min-w-0 flex-1 truncate">{pack.name}</span>
+											{!unlocked && (
+												<ExternalLink className="size-3 shrink-0 text-muted-foreground" />
+											)}
+										</button>
+									)
+								})}
+							</div>
+						)}
+					</div>
+				)}
 
 				<button
 					type="button"

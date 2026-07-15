@@ -56,6 +56,7 @@ export type HarnessState = {
 	platform: "darwin" | "linux" | "win32"
 	generatedAt: string
 	plugins: PluginState[]
+	portableSkills: string[]
 	marketplace: { fetched: boolean; error: string | null; fetchedAt: string | null }
 }
 
