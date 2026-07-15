@@ -480,6 +480,8 @@ path, and returned launch URLs are checked against the expected tool hostname.
 The signed Agent Master desktop release uses this same broker as a Next.js
 standalone build bundled with its pinned Bun and Portless runtimes, so desktop
 users do not need a bOpen Tools checkout or global JavaScript tooling.
+Managed interfaces allow up to 90 seconds for a cold production start before
+reporting a launch failure.
 
 ```bash
 portless agent-master bun skills/setup/scripts/playground_server.ts \

@@ -4,6 +4,7 @@ import { homedir } from "node:os"
 import { join, resolve } from "node:path"
 
 export const AGENT_MASTER_PROTOCOL_VERSION = 1
+export const INTERFACE_STARTUP_TIMEOUT_MS = 90_000
 
 export type LocalInterfaceId =
 	| "gemskills:deck-creator"
@@ -279,7 +280,7 @@ function readinessProbe(id: LocalInterfaceId): ReadinessProbe {
 export async function waitForReady(
 	url: string,
 	expectedMarker: string,
-	timeoutMs = 30_000,
+	timeoutMs = INTERFACE_STARTUP_TIMEOUT_MS,
 ): Promise<void> {
 	const deadline = Date.now() + timeoutMs
 	let lastError: unknown

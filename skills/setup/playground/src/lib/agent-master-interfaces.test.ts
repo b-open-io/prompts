@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test"
-import { interfaceUrl, listLocalInterfaces, waitForReady } from "./agent-master-interfaces"
+import {
+	INTERFACE_STARTUP_TIMEOUT_MS,
+	interfaceUrl,
+	listLocalInterfaces,
+	waitForReady,
+} from "./agent-master-interfaces"
 
 describe("Agent Master local interface routing", () => {
 	test("uses isolated Portless subdomains for server-backed tools", () => {
@@ -27,6 +32,10 @@ describe("Agent Master local interface routing", () => {
 })
 
 describe("Agent Master local interface readiness", () => {
+	test("allows production tools enough time for a cold standalone start", () => {
+		expect(INTERFACE_STARTUP_TIMEOUT_MS).toBe(90_000)
+	})
+
 	test("does not treat a wildcard 404 as a ready interface", async () => {
 		let requests = 0
 		const server = Bun.serve({

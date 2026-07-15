@@ -6,6 +6,14 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.90] - 2026-07-15
+
+### Fixed
+
+- Extended Agent Master's managed-interface readiness window to 90 seconds so
+  cold standalone Deck Creator and Visual Planner starts do not fail on clean
+  release machines under load.
+
 ## [1.1.89] - 2026-07-15
 
 ### Changed
