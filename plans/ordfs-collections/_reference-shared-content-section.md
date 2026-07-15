@@ -46,10 +46,12 @@ Keep the collection and item MAP envelopes unchanged:
   `B` output. Directory manifests may point to shared or item-specific content
   without changing collection membership.
 
-The collection and item keep their existing AIP authorship signatures. For
-additional OrdFS directory outputs, signing follows output type: a signed
-1-sat ordinal uses SIGMA and a signed 0-sat `B` output uses AIP; immutable
-leaves may also be unsigned.
+The collection and item carry an authorship signature whose signer identifies
+the collection author. Use **SIGMA** for the 1-sat ordinal (its prefix commits
+to a transaction input, so the signature is replay-resistant and cannot be
+lifted onto another item); legacy AIP-signed collections remain valid. Signing
+follows output type: a signed 1-sat ordinal uses SIGMA and a signed 0-sat `B`
+output uses AIP; immutable leaves may also be unsigned.
 
 #### Resolution notes
 

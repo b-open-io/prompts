@@ -22,10 +22,13 @@ In this case:
 - The token's own `icon` field (an inscription-origin or B-protocol-file
   outpoint) may serve as the item's preview image in place of a separate
   `previewUrl` / attachment.
-- Canonical membership is `subTypeData.collectionId` plus an AIP identity
-  matching the collection root. When `collectionId` is an absolute outpoint,
-  the ordinal `parent` field (field 3) may duplicate it as a navigation hint;
-  it is not required, and a same-transaction `_N` reference cannot use it.
+- Canonical membership is `subTypeData.collectionId` plus an authorship
+  signature whose signer matches the collection root. Use **SIGMA** — its prefix
+  commits to a transaction input, so the signature cannot be replayed onto
+  another item (legacy AIP-signed members remain valid). When `collectionId` is
+  an absolute outpoint, the ordinal `parent` field (field 3) may duplicate it as
+  a navigation hint; it is not required, and a same-transaction `_N` reference
+  cannot use it.
 
 ### Supply model
 

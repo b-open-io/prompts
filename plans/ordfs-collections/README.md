@@ -17,7 +17,7 @@ A second round (four advocates re-proposed, a bench of three re-judged — unani
 
 **The boundary:** fungibility is BSV-21's axis; multi-leaf bundling and 1/1 media is `ord-fs/json`'s. Orthogonal and composable — a token `icon` may itself point at an `ord-fs/json` directory.
 
-**Membership never reads the leaf.** Membership keys on `collectionId` + `subType:collectionItem` + a valid AIP signer matching the collection root — forgery-resistant, transfer-stable, and uniform across both citizens; the member's own content-type never enters the authorization decision. There is no collection indexer yet (the stack emits only `map:type:`, never `map:collectionId`), so plan 003 Part B DEFINES this rule and is the real gating work for both citizens.
+**Membership never reads the leaf.** Membership keys on `collectionId` + `subType:collectionItem` + a valid authorship signature whose signer matches the collection root — uniform across both citizens; the member's own content-type never enters the authorization decision. **Preferred signature: SIGMA, not AIP.** SIGMA commits to a specific transaction input (outpoint), so a valid signature cannot be replayed onto another item or tx — making membership forgery-resistant at the signature layer, not merely at the signer-match layer. This matches the 1-sat-ordinal convention (a signed 1-sat ordinal uses SIGMA; a signed 0-sat `B` uses AIP). Legacy AIP-signed collections/items stay valid (the indexer already emits `signer:` events for both — `pkg/parse/bitcom.go:104,150`), so the membership check accepts a matching signer under either protocol; new mints SHOULD use SIGMA. There is no collection indexer yet (the stack emits only `map:type:`, never `map:collectionId`), so plan 003 Part B DEFINES this rule and is the real gating work for both citizens.
 
 ## BSV-21 token members — the hybrid (audited 2026-07-15)
 
@@ -29,7 +29,7 @@ A collection member need not be a distinct NFT. A collection (e.g. "bOpen.ai Pro
 
 **Feasibility (grounded in 1sat-sdk + 1sat-stack reads):**
 - ✅ **Works at the protocol/script layer as-is.** A 1-sat `application/bsv-20` deploy can carry a MAP+AIP suffix — shipped precedent combines `P2PKH + non-image inscription + MAP + AIP` in one output (`registry/package-tx.ts:53-243`); dual classification is already supported by the additive indexer parser (bsv21 reads the envelope, MAP reads the OP_RETURN suffix — no collision).
-- 🛠️ **Needs SDK action code** (plan 001 Step 5): `deployBsv21Mint`/`deployBsv21Auth` build a single output with no MAP/AIP path today; `BSV21Options.scriptSuffix`/`parent` already support wiring it in. Plus a pre-existing gap: `mintCollection`/`mintCollectionItem` apply no AIP at all despite the spec requiring it.
+- 🛠️ **Needs SDK action code** (plan 001 Step 5): `deployBsv21Mint`/`deployBsv21Auth` build a single output with no MAP/signature path today; `BSV21Options.scriptSuffix`/`parent` already support wiring it in. Plus a pre-existing gap: `mintCollection`/`mintCollectionItem` apply no authorship signature at all despite the spec requiring one — fix it with **SIGMA** (input-bound, replay-resistant) per the 1-sat-ordinal convention, not AIP.
 - ⛔ **Needs indexer code** (plan 003 Parts B/E): the stack indexes NO `collectionId` today (only `map:type:`; `collectionId` is nested in `subTypeData` JSON) — so no collection is enumerable yet, token or NFT. The BSV-21 overlay also discards MAP into a separate store, so a `tokenId → collection` resolver is needed for the balance×membership wallet view.
 - 📄 **Needs a docs acknowledgment** (plan 002 Step 3): `collectionitem-subtype.md` gains a "Fungible (BSV-21) collection members" subsection ([`_bsv21-collection-member-section.md`](./_bsv21-collection-member-section.md)). No existing field changes.
 
@@ -39,9 +39,16 @@ A collection member need not be a distinct NFT. A collection (e.g. "bOpen.ai Pro
 
 ## Execution order & status
 
+> **Upstream already moved (2026-07-15):** `1sat-stack` origin/master merged
+> `3e89a97` — **ref=ordfs removed** and the **`.` default-entry added** (exactly
+> our round-2 call). So plan 003 Parts D/F are verify-not-build. **Pull latest per
+> repo before writing any PR.** [Plan 000](./000-pr-flurry-coordination.md)
+> orchestrates the cross-repo PRs via codex workers (coordinator pattern).
+
 | Plan | Title | Repo | Priority | Effort | Depends on | Status |
 |------|-------|------|----------|--------|------------|--------|
-| [001](./001-1sat-sdk-ordfs-dir-and-collectionitem-ref.md) | OrdFS dir entry API + `mintCollectionItem({ ref })` | 1sat-sdk (PR #13 branch `feat/ordfs-directory-writing`) | P1 | M | — | TODO |
+| [000](./000-pr-flurry-coordination.md) | PR-flurry coordination (codex workers) | all | P0 | — | orchestrates 001–005 | TODO |
+| [001](./001-1sat-sdk-ordfs-dir-and-collectionitem-ref.md) | OrdFS item API + token-member deploy + SIGMA authorship | 1sat-sdk (PR #13 branch `feat/ordfs-directory-writing`) | P1 | M | — | TODO |
 | [002](./002-1sat-ordinals-docs-reference-shared-content.md) | Docs: reference-shared-content pattern | 1sat-ordinals | P2 | S | — | TODO |
 | [003](./003-1sat-stack-verify-and-collection-listing.md) | Verify beef/spends fallback + B-leaf serving; decide member-listing API | 1sat-stack | P2 | S/M | — | TODO |
 | [004](./004-mintflow-reference-items-and-mint-on-buy.md) | Reference item minting (drop `x-ordfs=alias`) + Mint-on-Buy | mintflow | P2/P3 | M/L | 001 | TODO |
@@ -68,7 +75,7 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (reason) | REJECTED (rational
 1. **Does the indexer admit a reference-content item as a collection member? — SETTLED.** There is no collection indexer yet, so plan 003's listing DEFINES the rule: membership keys on MAP `collectionId` + `subType:collectionItem` + a valid AIP signer matching the collection root, never the inscription body. A `ref=ordfs`, `ord-fs/json`, `text/uri-list`, or `base64Content` item is byte-identical at the MAP layer, so all are admitted identically with rarity/traits intact. Purely additive. (Cite in the PR #13 comment.)
 2. **NFT item vs fungible BSV-21 member — per SKU, and they coexist.** See the "BSV-21 token members" section above for the audited seam. A distinct NFT `collectionItem` (per-unit art, rarity, provenance) and a fungible BSV-21-token member (interchangeable units, hold-to-access, native resale) can both live in ONE collection via the same `collectionItem` MAP+AIP. Choose per SKU by whether units are distinct or interchangeable; the material difference is wallet display (an NFT tile vs a token balance). Feasibility is audited: works at the protocol layer, needs SDK action code (plan 001 Step 5) + indexer code (plan 003 Parts B/E) + a docs acknowledgment (plan 002 Step 3).
 3. **Root: classic vs dual-role.** These plans keep the collection root a classic `image/*` MAP collection (max compat) and apply references only at the item level. If the maintainers want the root to *be* an ord-fs directory (single tradeable tree), that's a follow-up plan — it needs the root to still surface a referenced image preview + carry `subType:collection` MAP.
-4. **Signing:** items stay AIP (collection authorship, matching key) even with reference content; the SIGMA/AIP-by-output-type rule is the ordfs content-signing convention and is orthogonal to collection membership. Before implementation, reconcile the docs' ordinal AIP `[-1]` whole-output form with the SDK/stack's current Bitcom-only helper semantics (plan 001 STOP condition).
+4. **Signing — use SIGMA, not AIP, for collection/item authorship.** SIGMA's prefix commits to a transaction input, so the authorship signature is replay-resistant (it can't be lifted onto another item or tx) — the right property for forgery-resistant membership, and consistent with the "signed 1-sat ordinal uses SIGMA" convention. Legacy AIP-signed collections remain valid and the indexer emits `signer:` for both, so the membership check is protocol-agnostic on read; new mints use SIGMA. This is now part of the docs PR (update `signing.md` / `collections.md` / `collectionitem-subtype.md` to specify SIGMA for the 1-sat ordinal authorship) rather than an open question.
 
 ## Reference material (in this folder)
 
