@@ -3,18 +3,20 @@
 // POST /api/plan returns a complete generated prompt — see
 // SPEC-OPL-2850-CONTRACTS.md for the HTTP contract this implements.
 
-import { join } from "node:path";
+import { existsSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { detectHarness, fetchMarketplaceCatalog, type PlanSelections } from "./detector";
 import { isRuntime, RUNTIME_IDS, type Runtime } from "./runtimes";
 
 function usage(): never {
-  console.error(`Usage: bun server.ts --runtime <${RUNTIME_IDS.join("|")}> [--port <number>]`);
+  console.error(`Usage: bun server.ts --runtime <${RUNTIME_IDS.join("|")}> [--port <number>] [--pack <toc.json|pack.json>]`);
   process.exit(1);
 }
 
-function parseArgs(argv: string[]): { runtime: Runtime; port: number } {
+function parseArgs(argv: string[]): { runtime: Runtime; port: number; packPath?: string } {
   let runtime: string | undefined;
   let port = 7788;
+  let packPath: string | undefined;
 
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--runtime") {
@@ -24,11 +26,19 @@ function parseArgs(argv: string[]): { runtime: Runtime; port: number } {
       const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
       if (Number.isNaN(parsed)) usage();
       port = parsed;
+    } else if (argv[i] === "--pack") {
+      const raw = argv[++i];
+      if (!raw) usage();
+      packPath = resolve(raw);
     }
   }
 
   if (!runtime || !isRuntime(runtime)) usage();
-  return { runtime, port };
+  if (packPath && !existsSync(packPath)) {
+    console.error(`Pack input not found: ${packPath}`);
+    process.exit(1);
+  }
+  return { runtime, port, packPath };
 }
 
 function isPlanSelections(body: unknown): body is PlanSelections {
@@ -52,7 +62,7 @@ function isPlanSelections(body: unknown): body is PlanSelections {
   });
 }
 
-const { runtime, port } = parseArgs(process.argv.slice(2));
+const { runtime, port, packPath } = parseArgs(process.argv.slice(2));
 const uiPath = join(import.meta.dir, "..", "assets", "ui.html");
 
 // Fetched once at boot per the caching contract; /api/state reuses this
@@ -75,7 +85,7 @@ Bun.serve({
     }
 
     if (req.method === "GET" && url.pathname === "/api/state") {
-      const state = await detectHarness({ runtimeArg: runtime, marketplaceCache });
+      const state = await detectHarness({ runtimeArg: runtime, marketplaceCache, packPath });
       return Response.json(state);
     }
 
@@ -94,7 +104,7 @@ Bun.serve({
       // yet. This keeps GET /api/state bootable and testable independent of
       // that sibling unit landing; only this route depends on it.
       const { emitPlan } = await import("./emitter");
-      const state = await detectHarness({ runtimeArg: runtime, marketplaceCache });
+      const state = await detectHarness({ runtimeArg: runtime, marketplaceCache, packPath });
       const markdown = emitPlan(state, body);
       return Response.json({ markdown });
     }
@@ -103,6 +113,7 @@ Bun.serve({
   },
 });
 
-const bootState = await detectHarness({ runtimeArg: runtime, marketplaceCache });
+const bootState = await detectHarness({ runtimeArg: runtime, marketplaceCache, packPath });
 console.log(`bopen-setup server: http://127.0.0.1:${port}`);
 console.log(`runtime arg: ${runtime} | detected: ${bootState.runtimeDetected} | plugins: ${bootState.plugins.length}`);
+if (bootState.pack) console.log(`pack: ${bootState.pack.name} | dependencies: ${bootState.pack.dependencies.length}`);

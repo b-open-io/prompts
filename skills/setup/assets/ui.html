@@ -524,8 +524,8 @@
       state = newState;
       if (!preserve) {
         selectedRuntime = state.runtimeArg;
-        activeTab = "overview";
-      } else if (!state.plugins.some(function (p) { return p.name === activeTab; }) && activeTab !== "overview") {
+        activeTab = state.pack ? "pack" : "overview";
+      } else if (!state.plugins.some(function (p) { return p.name === activeTab; }) && activeTab !== "overview" && activeTab !== "pack") {
         activeTab = "overview";
       }
       renderAll();
@@ -642,6 +642,7 @@
     if (!state) { bar.innerHTML = ""; return; }
     var html = "";
     html += tabButtonHtml("overview", "OVERVIEW", true, false);
+    if (state.pack) html += tabButtonHtml("pack", "PACK · " + state.pack.dependencies.length, true, false);
     state.plugins.forEach(function (p) {
       var installed = p.installedClaude !== null || p.installedCodex !== null;
       html += tabButtonHtml(p.name, p.name, installed, !installed);
@@ -671,6 +672,8 @@
     }
     if (activeTab === "overview") {
       main.innerHTML = renderOverviewHtml();
+    } else if (activeTab === "pack" && state.pack) {
+      main.innerHTML = renderPackHtml(state.pack);
     } else {
       var plugin = state.plugins.find(function (p) { return p.name === activeTab; });
       main.innerHTML = plugin ? renderPluginTabHtml(plugin) : '<p class="note">Unknown plugin.</p>';
@@ -682,6 +685,49 @@
     renderPersistentBanners();
     renderTabs();
     renderContent();
+  }
+
+  // ---------------------------------------------------------------------
+  // Pack dependency pass
+  // ---------------------------------------------------------------------
+
+  function renderPackHtml(pack) {
+    var runtimes = [
+      { id: "claude", label: "CLAUDE CODE" },
+      { id: "codex", label: "CODEX" },
+      { id: "grok", label: "GROK BUILD" }
+    ];
+    var html = '<span class="eyebrow">[ PACK DEPENDENCY CLOSURE ]</span>';
+    html += '<div class="tiles">';
+    html += tileHtml(pack.name, "pack");
+    html += tileHtml(String(pack.dependencies.length), "required plugins");
+    html += tileHtml(pack.skillIds.length ? String(pack.skillIds.length) : "manifest", "cited skills");
+    html += tileHtml(pack.inputKind, "input format");
+    html += "</div>";
+
+    runtimes.forEach(function (runtime) {
+      var missing = pack.dependencies.filter(function (dependency) {
+        return !dependency.runtimes[runtime.id].installed;
+      });
+      html += '<section class="check-section"><span class="eyebrow">[ ' + runtime.label +
+        ' · ' + (pack.dependencies.length - missing.length) + '/' + pack.dependencies.length +
+        ' INSTALLED ]</span><div class="card">';
+      pack.dependencies.forEach(function (dependency) {
+        var runtimeState = dependency.runtimes[runtime.id];
+        html += '<div class="row"><div class="glyph ' +
+          (runtimeState.installed ? "installed inert" : "not-installed inert") + '">' +
+          (runtimeState.installed ? "■" : "□") + '</div><div class="row-main"><div class="row-name">' +
+          escapeHtml(dependency.name) + '</div><div class="row-detail">' +
+          escapeHtml(dependency.marketplace) + ' · ' +
+          (runtimeState.installed ? escapeHtml(runtimeState.installedVersion || "installed") : "missing") +
+          '</div></div><div class="row-actions">';
+        if (!runtimeState.installed) html += copyButtonHtml(runtimeState.installCommand);
+        html += "</div></div>";
+      });
+      html += "</div></section>";
+    });
+    html += '<p class="note">The fallback wizard is read-only. Build the setup plan to emit every missing install as an execution prompt; the playground can run them directly.</p>';
+    return html;
   }
 
   // ---------------------------------------------------------------------

@@ -8,6 +8,7 @@ import type {
   PlanSelections,
   PluginState,
 } from "./detector";
+import { validatePackRuntime } from "./pack";
 import { RUNTIMES, type Runtime } from "./runtimes";
 
 const MARKETPLACE = "b-open-io";
@@ -205,6 +206,31 @@ function buildPluginsSection(
   }
 
   return blocks;
+}
+
+function buildPackSection(state: HarnessState, runtime: Runtime): string[] {
+  if (!state.pack || !validatePackRuntime(runtime)) return [];
+  const pack = state.pack;
+  return pack.dependencies.flatMap((dependency) => {
+    const runtimeState = dependency.runtimes[runtime];
+    if (runtimeState.installed) return [];
+    const verify =
+      dependency.marketplace === "portable-skill"
+        ? `npx skills list | grep -F "${dependency.name}"`
+        : runtime === "codex"
+          ? `codex plugin list | grep -F "${dependency.name}"`
+          : runtime === "grok"
+            ? `grok inspect | grep -F "${dependency.name}"`
+            : `claude plugin list | grep -F "${dependency.name}"`;
+    return [
+      action(
+        `${dependency.name}: install the ${pack.name} dependency`,
+        runtimeState.installCommand,
+        verify,
+        `Required by pack ${pack.packId}; marketplace ${dependency.marketplace}.`,
+      ),
+    ];
+  });
 }
 
 function selectedChecks(
@@ -407,6 +433,7 @@ function finalRuntimeVerification(runtime: Runtime): string {
 export function emitPlan(state: HarnessState, selections: PlanSelections): string {
   const runtime = selections.runtime;
   const sections: Array<{ title: string; blocks: string[] }> = [
+    { title: "Pack dependencies", blocks: buildPackSection(state, runtime) },
     { title: "Plugins", blocks: buildPluginsSection(state, selections, runtime) },
     { title: "Agents", blocks: buildAgentsSection(state, selections, runtime) },
     { title: "CLI dependencies", blocks: buildCliSection(state, selections) },

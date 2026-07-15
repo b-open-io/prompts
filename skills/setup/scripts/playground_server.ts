@@ -16,14 +16,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLAYGROUND_DIR = resolve(__dirname, "..", "playground");
 
 function usage(): never {
-  console.error(`Usage: bun skills/setup/scripts/playground_server.ts --runtime <${RUNTIME_IDS.join("|")}> [--port <number>] [--rebuild]`);
+  console.error(`Usage: bun skills/setup/scripts/playground_server.ts --runtime <${RUNTIME_IDS.join("|")}> [--port <number>] [--pack <toc.json|pack.json>] [--rebuild]`);
   process.exit(1);
 }
 
-function parseArgs(argv: string[]): { runtime: Runtime; port: number; rebuild: boolean } {
+function parseArgs(argv: string[]): { runtime: Runtime; port: number; packPath?: string; rebuild: boolean } {
   let runtime: string | undefined;
   let port = 7788;
   let rebuild = false;
+  let packPath: string | undefined;
 
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--runtime") {
@@ -35,11 +36,19 @@ function parseArgs(argv: string[]): { runtime: Runtime; port: number; rebuild: b
       port = parsed;
     } else if (argv[i] === "--rebuild") {
       rebuild = true;
+    } else if (argv[i] === "--pack") {
+      const raw = argv[++i];
+      if (!raw) usage();
+      packPath = resolve(raw);
     }
   }
 
   if (!runtime || !isRuntime(runtime)) usage();
-  return { runtime, port, rebuild };
+  if (packPath && !existsSync(packPath)) {
+    console.error(`Pack input not found: ${packPath}`);
+    process.exit(1);
+  }
+  return { runtime, port, packPath, rebuild };
 }
 
 function checkBun(): void {
@@ -62,7 +71,7 @@ function run(cmd: string[], cwd: string, env?: Record<string, string | undefined
   }
 }
 
-const { runtime, port, rebuild } = parseArgs(process.argv.slice(2));
+const { runtime, port, packPath, rebuild } = parseArgs(process.argv.slice(2));
 
 checkBun();
 
@@ -86,7 +95,7 @@ console.error(`runtime arg: ${runtime}`);
 
 const proc = Bun.spawn(["bun", "--bun", "next", "start", "-p", String(port)], {
   cwd: PLAYGROUND_DIR,
-  env: { ...process.env, BOPEN_SETUP_RUNTIME: runtime },
+  env: { ...process.env, BOPEN_SETUP_RUNTIME: runtime, BOPEN_SETUP_PACK: packPath },
   stdio: ["inherit", "inherit", "inherit"],
 });
 

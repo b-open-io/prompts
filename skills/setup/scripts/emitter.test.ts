@@ -27,6 +27,54 @@ function makePlugin(overrides: Record<string, unknown> = {}): any {
 }
 
 describe("emitPlan", () => {
+  test("includes every missing pack dependency for the selected harness", () => {
+    const state = makeState(
+      {
+        pack: {
+          packId: "payments-blockchain",
+          name: "Payments & Blockchain",
+          inputKind: "manifest",
+          skillIds: [],
+          dependencies: [
+            {
+              name: "stripe",
+              marketplace: "claude-plugins-official",
+              source: "anthropics/claude-plugins-official",
+              install: "claude plugin install stripe@claude-plugins-official",
+              runtimes: {
+                claude: {
+                  installed: false,
+                  installedVersion: null,
+                  installCommand:
+                    "claude plugin marketplace add anthropics/claude-plugins-official\nclaude plugin install stripe@claude-plugins-official",
+                },
+                codex: {
+                  installed: false,
+                  installedVersion: null,
+                  installCommand:
+                    "codex plugin marketplace add anthropics/claude-plugins-official\ncodex plugin marketplace upgrade\ncodex plugin add stripe@claude-plugins-official",
+                },
+                grok: {
+                  installed: true,
+                  installedVersion: "1.0.0",
+                  installCommand: "claude plugin install stripe@claude-plugins-official",
+                },
+              },
+            },
+          ],
+        },
+      },
+      [],
+    );
+
+    const plan = emitPlan(state, { runtime: "codex", plugins: [] });
+
+    expect(plan).toContain("## Pack dependencies");
+    expect(plan).toContain("codex plugin marketplace add anthropics/claude-plugins-official");
+    expect(plan).toContain("codex plugin add stripe@claude-plugins-official");
+    expect(plan).toContain("Required by pack payments-blockchain");
+  });
+
   test("empty diff is still a self-contained execution prompt", () => {
     const plugin = makePlugin({ installedClaude: "1.0.0", marketplaceVersion: "1.0.0" });
     const state = makeState({}, [plugin]);

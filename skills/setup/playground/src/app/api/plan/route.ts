@@ -42,7 +42,10 @@ export async function POST(req: Request) {
 		return Response.json({ error: "body does not match PlanSelections" }, { status: 400 })
 	}
 
-	const state = await detectHarness({ runtimeArg: resolveRuntime() })
+	const state = await detectHarness({
+		runtimeArg: resolveRuntime(),
+		packPath: process.env.BOPEN_SETUP_PACK,
+	})
 	const markdown = emitPlan(state, body)
 	return Response.json({ markdown })
 }

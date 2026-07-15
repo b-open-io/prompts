@@ -6,6 +6,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { type CatalogPlugin, loadPackState, type PackState } from "./pack";
 import type { Runtime } from "./runtimes";
 
 export type { Runtime } from "./runtimes";
@@ -60,6 +61,7 @@ export type HarnessState = {
   generatedAt: string;
   plugins: PluginState[];
   portableSkills: string[];
+  pack: PackState | null;
   marketplace: { fetched: boolean; error: string | null; fetchedAt: string | null };
 };
 
@@ -573,9 +575,13 @@ export type MarketplaceSnapshot = {
   error: string | null;
   fetchedAt: string | null;
   versions: Map<string, string>;
+  plugins?: Map<string, CatalogPlugin>;
 };
 
-function parseMarketplaceBody(body: unknown): Map<string, string> | null {
+function parseMarketplaceBody(body: unknown): {
+  versions: Map<string, string>;
+  plugins: Map<string, CatalogPlugin>;
+} | null {
   const entries: unknown[] | null = Array.isArray(body)
     ? body
     : body && typeof body === "object" && Array.isArray((body as { plugins?: unknown }).plugins)
@@ -584,12 +590,33 @@ function parseMarketplaceBody(body: unknown): Map<string, string> | null {
   if (!entries) return null;
 
   const versions = new Map<string, string>();
+  const plugins = new Map<string, CatalogPlugin>();
   for (const entry of entries) {
-    if (entry && typeof entry === "object" && typeof (entry as { name?: unknown }).name === "string" && typeof (entry as { version?: unknown }).version === "string") {
-      versions.set((entry as { name: string }).name, (entry as { version: string }).version);
-    }
+    if (!entry || typeof entry !== "object") continue;
+    const candidate = entry as {
+      name?: unknown;
+      version?: unknown;
+      org?: unknown;
+      repo?: unknown;
+      install?: unknown;
+    };
+    if (typeof candidate.name !== "string") continue;
+    if (typeof candidate.version === "string") versions.set(candidate.name, candidate.version);
+    if (typeof candidate.org !== "string" || typeof candidate.repo !== "string") continue;
+    const install =
+      typeof candidate.install === "string"
+        ? candidate.install.replace(/^\/plugin install /, "claude plugin install ")
+        : `claude plugin install ${candidate.name}@${candidate.org}`;
+    const marketplace = install.match(/@([a-z0-9][a-z0-9-]*)$/)?.[1] ?? candidate.org;
+    plugins.set(candidate.name, {
+      name: candidate.name,
+      marketplace,
+      source: marketplace === "b-open-io" ? "b-open-io/claude-plugins" : `${candidate.org}/${candidate.repo}`,
+      install,
+      version: typeof candidate.version === "string" ? candidate.version : null,
+    });
   }
-  return versions;
+  return { versions, plugins };
 }
 
 export async function fetchMarketplaceCatalog(url: string = DEFAULT_MARKETPLACE_URL): Promise<MarketplaceSnapshot> {
@@ -604,17 +631,17 @@ export async function fetchMarketplaceCatalog(url: string = DEFAULT_MARKETPLACE_
     }
 
     if (!res.ok) {
-      return { fetched: false, error: `HTTP ${res.status}`, fetchedAt: null, versions: new Map() };
+      return { fetched: false, error: `HTTP ${res.status}`, fetchedAt: null, versions: new Map(), plugins: new Map() };
     }
 
-    const versions = parseMarketplaceBody(await res.json());
-    if (!versions) {
-      return { fetched: false, error: "unrecognized marketplace response shape", fetchedAt: null, versions: new Map() };
+    const parsed = parseMarketplaceBody(await res.json());
+    if (!parsed) {
+      return { fetched: false, error: "unrecognized marketplace response shape", fetchedAt: null, versions: new Map(), plugins: new Map() };
     }
 
-    return { fetched: true, error: null, fetchedAt: new Date().toISOString(), versions };
+    return { fetched: true, error: null, fetchedAt: new Date().toISOString(), ...parsed };
   } catch (err) {
-    return { fetched: false, error: err instanceof Error ? err.message : String(err), fetchedAt: null, versions: new Map() };
+    return { fetched: false, error: err instanceof Error ? err.message : String(err), fetchedAt: null, versions: new Map(), plugins: new Map() };
   }
 }
 
@@ -628,6 +655,7 @@ export async function detectHarness(opts: {
   nowSeconds?: number;
   pluginCacheRoots?: { claude: string; codex: string };
   portableSkillRoots?: string[];
+  packPath?: string;
 }): Promise<HarnessState> {
   const platform = process.platform as HarnessState["platform"];
   const skillActivity = readSkillActivity({ env: opts.env, nowSeconds: opts.nowSeconds });
@@ -641,8 +669,8 @@ export async function detectHarness(opts: {
 
   const pluginNames = new Set<string>([...claudePlugins.keys(), ...codexPlugins.keys(), ...marketplace.versions.keys()]);
 
-  const plugins = await Promise.all(
-    [...pluginNames].sort().map(async (name): Promise<PluginState> => {
+  const [plugins, pack] = await Promise.all([
+    Promise.all([...pluginNames].sort().map(async (name): Promise<PluginState> => {
       const claude = claudePlugins.get(name);
       const codex = codexPlugins.get(name);
       const root = claude?.root ?? codex?.root;
@@ -674,8 +702,9 @@ export async function detectHarness(opts: {
         hooksConfigPath,
         skillActivity: filterSkillActivityForPlugin(skillActivity, name),
       };
-    })
-  );
+    })),
+    opts.packPath ? loadPackState(opts.packPath, { catalog: marketplace.plugins }) : Promise.resolve(null),
+  ]);
 
   return {
     runtimeArg: opts.runtimeArg,
@@ -684,6 +713,7 @@ export async function detectHarness(opts: {
     generatedAt: new Date().toISOString(),
     plugins,
     portableSkills,
+    pack,
     marketplace: {
       fetched: marketplace.fetched,
       error: marketplace.error,

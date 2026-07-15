@@ -6,6 +6,7 @@ import { MyPacksTab } from "@/components/packs/MyPacksTab"
 import { useSound } from "@/components/SoundProvider"
 import { Banners } from "@/components/setup/Banners"
 import { OverviewTab } from "@/components/setup/OverviewTab"
+import { PackDependenciesTab } from "@/components/setup/PackDependenciesTab"
 import { PlanPanel } from "@/components/setup/PlanPanel"
 import { PluginTab } from "@/components/setup/PluginTab"
 import { Sidebar } from "@/components/setup/Sidebar"
@@ -58,12 +59,13 @@ export default function SetupPlaygroundPage() {
 			const agentMasterShell =
 				new URLSearchParams(window.location.search).get("shell") === "agent-master" ||
 				window.localStorage.getItem(SHELL_STORAGE_KEY) === "agent-master"
-			setActiveTab(agentMasterShell ? "packs" : "overview")
+			setActiveTab(agentMasterShell ? "packs" : newState.pack ? "pack" : "overview")
 		} else {
 			setActiveTab((prev) =>
 				prev !== "overview" &&
 				prev !== "plugins" &&
 				prev !== "packs" &&
+				prev !== "pack" &&
 				!prev.startsWith("pack:") &&
 				!newState.plugins.some((p) => p.name === prev)
 					? "overview"
@@ -191,16 +193,21 @@ export default function SetupPlaygroundPage() {
 	const activePack = selectedPackSlug ? PACK_BY_SLUG.get(selectedPackSlug) : undefined
 	const isPackView = activeTab === "packs" || Boolean(activePack)
 	const activeTitle =
-		activePack?.name ??
-		activePlugin?.name ??
-		(activeTab === "plugins" ? "Plugins" : activeTab === "packs" ? "My Packs" : "Overview")
-	const activeSubtitle = activePack
-		? "Purchased content and dependency readiness"
-		: isPackView
-			? "What you own, matched against what is installed"
-			: activePlugin
-				? "Plugin setup details"
-				: "Setup health and installed plugins"
+		activeTab === "pack"
+			? (state?.pack?.name ?? "Pack dependencies")
+			: (activePack?.name ??
+				activePlugin?.name ??
+				(activeTab === "plugins" ? "Plugins" : activeTab === "packs" ? "My Packs" : "Overview"))
+	const activeSubtitle =
+		activeTab === "pack"
+			? "Full dependency closure across Claude Code, Codex, and Grok Build"
+			: activePack
+				? "Purchased content and dependency readiness"
+				: isPackView
+					? "What you own, matched against what is installed"
+					: activePlugin
+						? "Plugin setup details"
+						: "Setup health and installed plugins"
 
 	return (
 		<div className="app-shell">
@@ -270,6 +277,12 @@ export default function SetupPlaygroundPage() {
 							selectedSlug={selectedPackSlug}
 							onSelectPack={(slug) => setActiveTab(`pack:${slug}`)}
 							onAccessChange={handlePackAccessChange}
+						/>
+					) : activeTab === "pack" && state.pack && selectedRuntime ? (
+						<PackDependenciesTab
+							pack={state.pack}
+							selectedRuntime={selectedRuntime}
+							onInstallComplete={handleRefresh}
 						/>
 					) : activeTab === "overview" || activeTab === "plugins" ? (
 						<OverviewTab

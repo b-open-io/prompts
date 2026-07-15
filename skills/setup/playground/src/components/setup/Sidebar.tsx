@@ -305,6 +305,27 @@ export const Sidebar = memo(function Sidebar({
 					</div>
 				)}
 
+				{state?.pack && (
+					<button
+						type="button"
+						onClick={() => onSelect("pack")}
+						data-sound="nav-tab-switch"
+						aria-current={activeView === "pack" ? "page" : undefined}
+						className={cn(
+							"mb-2 flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[0.78rem] font-medium",
+							activeView === "pack"
+								? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_0_0_0_0.5px_var(--sidebar-border)]"
+								: "text-sidebar-foreground hover:bg-sidebar-accent/60",
+						)}
+					>
+						<PackageCheck className="size-4" strokeWidth={1.7} aria-hidden="true" />
+						<span className="min-w-0 flex-1 truncate">Pack dependencies</span>
+						<span className="text-[0.58rem] text-muted-foreground">
+							{state.pack.dependencies.length}
+						</span>
+					</button>
+				)}
+
 				<button
 					type="button"
 					onClick={handlePluginsSelect}

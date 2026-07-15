@@ -8,8 +8,9 @@ description: This skill should be used when the user says "bopen setup", "setup 
 
 A cross-plugin installer that shows the true state of a user's agent harness —
 plugins, CLIs, env keys, third-party skills, agents, hooks — and turns
-selections into a plan the parent agent executes. The installer itself never
-installs, writes config, or mutates anything; it declares, detects, and emits.
+selections into a plan the parent agent executes. The fallback installer never
+installs, writes config, or mutates anything; the playground may run a pack's
+missing installs only after the user clicks **Install missing**.
 
 ## What it does
 
@@ -24,10 +25,15 @@ installs, writes config, or mutates anything; it declares, detects, and emits.
    and presents one complete, runtime-tailored instruction prompt inline. Copy
    that full prompt into any agent; it includes its own context, commands,
    verification steps, execution rules, and final-report contract.
+4. **PACK dependency pass** — when launched with `--pack`, reads either a
+   ToC (`playbooks[].skills`) or the shipped `pack.json`, computes the full
+   plugin closure, and shows required vs. installed with exact commands for
+   Claude Code, Codex, and Grok Build.
 
-Nothing here calls `npm install`, `claude plugin install`, writes a plan file,
-or edits any config file. The prompt is prose and copyable commands; a human
-or agent decides whether and when to execute it.
+The zero-install fallback only emits prose and copyable commands. The
+playground's pack step can execute its validated manifest entries on explicit
+user action; it constructs argv from validated plugin, marketplace, and source
+fields rather than executing manifest text through a shell.
 
 ## How to launch
 
@@ -36,7 +42,7 @@ From the installed plugin root — two paths, identical API contracts:
 **Playground (preferred — richer UI, shadcn + dither-kit):**
 
 ```bash
-bun skills/setup/scripts/playground_server.ts --runtime <claude|codex|grok|opencode|hermes|generic>
+bun skills/setup/scripts/playground_server.ts --runtime <claude|codex|grok|opencode|hermes|generic> [--pack <toc.json|pack.json>]
 ```
 
 A buildable Next.js app on port 7788; the launcher installs and builds on
@@ -45,7 +51,7 @@ first run (needs network once), then starts instantly.
 **Zero-install fallback (single file, works offline):**
 
 ```bash
-bun skills/setup/scripts/server.ts --runtime <claude|codex|grok|opencode|hermes|generic> [--port 7788]
+bun skills/setup/scripts/server.ts --runtime <claude|codex|grok|opencode|hermes|generic> [--pack <toc.json|pack.json>] [--port 7788]
 ```
 
 Pass the runtime you already know you're running as — the agent invoking this

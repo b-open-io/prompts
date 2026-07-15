@@ -20,6 +20,10 @@ let marketplaceCachePromise: ReturnType<typeof fetchMarketplaceCatalog> | null =
 export async function GET() {
 	if (!marketplaceCachePromise) marketplaceCachePromise = fetchMarketplaceCatalog()
 	const marketplaceCache = await marketplaceCachePromise
-	const state = await detectHarness({ runtimeArg: resolveRuntime(), marketplaceCache })
+	const state = await detectHarness({
+		runtimeArg: resolveRuntime(),
+		marketplaceCache,
+		packPath: process.env.BOPEN_SETUP_PACK,
+	})
 	return Response.json(state)
 }

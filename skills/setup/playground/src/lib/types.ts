@@ -50,6 +50,27 @@ export type PluginState = {
 	skillActivity?: Record<string, SkillActivityState>
 }
 
+export type PackRuntime = "claude" | "codex" | "grok"
+
+export type PackDependency = {
+	name: string
+	marketplace: string
+	source: string
+	install: string
+	runtimes: Record<
+		PackRuntime,
+		{ installed: boolean; installedVersion: string | null; installCommand: string }
+	>
+}
+
+export type PackState = {
+	packId: string
+	name: string
+	inputKind: "manifest" | "toc"
+	skillIds: string[]
+	dependencies: PackDependency[]
+}
+
 export type HarnessState = {
 	runtimeArg: Runtime
 	runtimeDetected: Runtime
@@ -57,6 +78,7 @@ export type HarnessState = {
 	generatedAt: string
 	plugins: PluginState[]
 	portableSkills: string[]
+	pack: PackState | null
 	marketplace: { fetched: boolean; error: string | null; fetchedAt: string | null }
 }
 
