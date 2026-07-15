@@ -1,5 +1,14 @@
 # Lessons
 
+## Dirty sibling repositories contain work, not obstacles (2026-07-15)
+
+When a related repository is dirty, inspect and understand every changed and
+untracked path before routing around it. Treat the work as intentional unless
+proved otherwise, preserve it on its own commit, reconcile it with upstream,
+and leave the checkout clean when the user authorizes a release. A clean
+worktree created to avoid overlap is not a substitute for reviewing and
+shipping the original work.
+
 ## 2026-07-13: orchestration lessons from a live shared-tree session
 
 - **Barrier staging**: in a shared tree with live workers, stage by explicit

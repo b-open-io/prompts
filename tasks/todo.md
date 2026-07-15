@@ -1,3 +1,32 @@
+# OpNS / 1sat.name ownership refresh
+
+- [x] Clone and inspect the updated `b-open-io/1sat-name` product.
+- [x] Audit the active `1sat:opns` skill and agent ownership.
+- [x] Audit bopen.ai premium packs for OpNS and decentralized-name coverage.
+- [x] Update Uno, the OpNS skill, routing, and the premium playbook.
+- [x] Validate all touched repositories and record the review.
+
+## Review
+
+- Uno Satoj is the primary owner for OpNS acquisition and owned-name lifecycle
+  operations. Mina supports BRC-105 payment/refund flows, David supports
+  covenant and transaction verification, Theo supports site integration, and
+  Ordi supports community education.
+- Published and installed `1sat@b-open-io` 0.2.4 for Claude and Codex. The
+  release documents 1sat.name claiming, marketplace purchase, job/refund
+  handling, exact-name selection, identity publication, listing, and transfer.
+- Preserved the pre-existing `1sat-sdk` persona and Uno tooling edits in a
+  dedicated commit before integrating the OpNS release; the SDK is clean and
+  synchronized with `origin/master`.
+- Updated the existing `payments-blockchain` premium pack and its ordinals
+  launch chain in bOpen.AI. The source update is committed locally but remains
+  unpublished pending a separate website/pack release decision.
+- Plugin generation checks, 13 adapter/materialization tests, both skill
+  validators, pack construction, 28 pack tests, and bOpen.AI typechecking pass.
+  The SDK's full build reaches macOS code signing and then requires
+  `ELECTROBUN_DEVELOPER_ID`; the full test suite records 240 passes and 11
+  pre-existing environment/mock failures.
+
 # Dual Claude Code and Codex plugin port
 
 ## WorkOS auth.md skill
