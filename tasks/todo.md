@@ -133,5 +133,7 @@
 - Pre-release gates pass: 329 hook tests, 7 installer tests, manifest parity,
   documentation inventory, generated adapters, YAML parsing, Python compile,
   catalog-art validation, bOpen.AI typecheck, and whitespace checks.
-- Release target: both plugin manifests at `1.1.77`, followed by marketplace
-  refresh and fresh Claude/Codex smoke tests.
+- Released both manifests at `1.1.77`; fresh Codex skill loading passed but
+  exposed an unsupported `_comment` field in the Codex hook manifest. The
+  follow-up `1.1.78` patch removes it, adds a schema regression assertion, and
+  repeats marketplace refresh plus fresh Claude/Codex smoke tests.

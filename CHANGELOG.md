@@ -6,6 +6,14 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.78] - 2026-07-14
+
+### Fixed
+
+- Removed the unsupported top-level `_comment` field from the Codex hook
+  manifest. Codex 0.144.1 rejects unknown hook-config fields and could skip the
+  plugin's hooks on a fresh install; validation now locks the accepted schema.
+
 ## [1.1.77] - 2026-07-14
 
 ### Added

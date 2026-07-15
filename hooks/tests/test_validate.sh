@@ -30,6 +30,10 @@ for f in claude-hooks.json codex-hooks.json; do
   fi
 done
 
+# Codex rejects unknown top-level hook-config fields instead of ignoring them.
+codex_unknown_top_level=$(jq '[keys[] | select(. != "description" and . != "hooks")] | length' "$ROOT/codex-hooks.json")
+assert_eq "codex-hooks uses only supported top-level fields" "0" "$codex_unknown_top_level"
+
 # Claude uses CLAUDE_PLUGIN_ROOT; Codex uses PLUGIN_ROOT
 claude_roots=$(jq -r '.. | strings? // empty' "$ROOT/claude-hooks.json" | grep -c 'CLAUDE_PLUGIN_ROOT' || true)
 codex_roots=$(jq -r '.. | strings? // empty' "$ROOT/codex-hooks.json" | grep -c 'PLUGIN_ROOT' || true)
