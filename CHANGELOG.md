@@ -6,6 +6,14 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.89] - 2026-07-15
+
+### Changed
+
+- Documented `visual-proposal`'s optional advocate debates and user-requested
+  judging panels in the public skill inventory, keeping release documentation
+  synchronized with the expanded skill surface.
+
 ## [1.1.88] - 2026-07-15
 
 ### Changed
