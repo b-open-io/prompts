@@ -25,6 +25,7 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+*.tsbuildinfo
 .cache/
 
 # Build outputs
