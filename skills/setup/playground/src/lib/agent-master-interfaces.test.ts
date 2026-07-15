@@ -36,6 +36,29 @@ describe("Agent Master local interface readiness", () => {
 		expect(INTERFACE_STARTUP_TIMEOUT_MS).toBe(90_000)
 	})
 
+	test("probes HTTP Portless routes through loopback with the public Host header", async () => {
+		let observedHost = ""
+		const server = Bun.serve({
+			hostname: "127.0.0.1",
+			port: 0,
+			fetch(request) {
+				observedHost = request.headers.get("host") ?? ""
+				return new Response("<title>Deck Playground</title>")
+			},
+		})
+
+		try {
+			await waitForReady(
+				`http://deck.agent-master.localhost:${server.port}`,
+				"<title>Deck Playground</title>",
+				1_000,
+			)
+			expect(observedHost).toBe(`deck.agent-master.localhost:${server.port}`)
+		} finally {
+			server.stop(true)
+		}
+	})
+
 	test("does not treat a wildcard 404 as a ready interface", async () => {
 		let requests = 0
 		const server = Bun.serve({

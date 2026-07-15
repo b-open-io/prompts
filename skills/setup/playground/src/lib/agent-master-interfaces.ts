@@ -282,14 +282,25 @@ export async function waitForReady(
 	expectedMarker: string,
 	timeoutMs = INTERFACE_STARTUP_TIMEOUT_MS,
 ): Promise<void> {
+	const publicUrl = new URL(url)
+	const probeUrl = new URL(publicUrl)
+	const headers = new Headers()
+	if (probeUrl.protocol === "http:" && probeUrl.hostname.endsWith(".localhost")) {
+		// Some clean macOS runners do not resolve multi-label .localhost names in
+		// Bun even though Portless is listening. Connect to the local proxy
+		// directly while retaining the public hostname for route selection.
+		headers.set("Host", publicUrl.host)
+		probeUrl.hostname = "127.0.0.1"
+	}
 	const deadline = Date.now() + timeoutMs
 	let lastError: unknown
 	while (Date.now() < deadline) {
 		const controller = new AbortController()
 		const timeout = setTimeout(() => controller.abort(), 1_500)
 		try {
-			const response = await fetch(url, {
+			const response = await fetch(probeUrl, {
 				cache: "no-store",
+				headers,
 				redirect: "manual",
 				signal: controller.signal,
 			})

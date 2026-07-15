@@ -6,6 +6,14 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.92] - 2026-07-15
+
+### Fixed
+
+- Made Agent Master's HTTP Portless readiness probes connect through loopback
+  while preserving each tool's public hostname, avoiding multi-label
+  `.localhost` resolver failures on clean macOS release runners.
+
 ## [1.1.91] - 2026-07-15
 
 ### Changed
