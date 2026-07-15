@@ -51,8 +51,32 @@ class SoundPickerTests(unittest.TestCase):
         self.assertIn('id="trim-end-handle"', sound_picker.PAGE)
         self.assertIn('type="range"', sound_picker.PAGE)
         self.assertIn("save as new revision", sound_picker.PAGE)
+        self.assertIn('class="mini-wave"', sound_picker.PAGE)
+        self.assertIn("observeMiniWaveforms", sound_picker.PAGE)
+        self.assertIn("sound-card selected", sound_picker.PAGE)
+        self.assertNotIn('class="candidate-list"', sound_picker.PAGE)
+        self.assertNotIn(">edit waveform<", sound_picker.PAGE.lower())
         self.assertNotIn("soften edge", sound_picker.PAGE.lower())
         self.assertNotIn('type="number"', sound_picker.PAGE)
+
+    def test_candidate_record_identifies_every_live_assignment(self):
+        path, url = self.write_candidate("item-hover")
+        (self.output / "theme.json").write_text(
+            json.dumps(
+                {
+                    "sounds": {
+                        "item-hover": {"accepted_from": {"url": url}},
+                        "nav-item-hover": {"accepted_from": {"url": url}},
+                    }
+                }
+            )
+        )
+
+        record = self.state._candidate_record("item-hover", path)
+
+        self.assertEqual(
+            record["accepted_in"], ["item-hover", "nav-item-hover"]
+        )
 
     def test_accept_can_assign_candidate_to_a_different_slot_with_provenance(self):
         path, url = self.write_candidate()

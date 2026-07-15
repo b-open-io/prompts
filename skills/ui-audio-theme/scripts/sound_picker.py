@@ -42,35 +42,104 @@ PAGE = """<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>UI Sound Picker</title>
 <style>
-  :root { --bg:#2b120a; --panel:#1d0c06; --fg:#f2e6d9; --accent:#e38f1a;
-          --blue:#8cb4cb; --line:#5a3a28; --danger:#e66b55; }
+  :root { --bg:#190a05; --panel:#241008; --panel-raised:#30160c; --fg:#f4eadf;
+          --muted:#8ca9b8; --accent:#f0a238; --blue:#93bfd2; --line:#5b3826;
+          --line-bright:#795037; --danger:#ef715b; --shadow:#08030199; }
   * { box-sizing:border-box; }
-  body { background:var(--bg); color:var(--fg); font-family:ui-monospace,Menlo,monospace;
-         margin:0; padding:clamp(1rem,3vw,2rem); font-size:13px; }
-  h1 { color:var(--accent); font-size:1.1rem; letter-spacing:.08em; }
-  h2 { color:var(--blue); font-size:.85rem; margin:2rem 0 .5rem; text-transform:uppercase; }
-  .slot { border:1px solid var(--line); padding:.9rem; margin-bottom:.75rem; }
-  .slot-head,.candidate-actions { display:flex; align-items:center; gap:.45rem; flex-wrap:wrap; }
-  .slot-name { color:var(--fg); min-width:220px; font-weight:bold; }
+  body { background:
+           radial-gradient(circle at 88% -10%,#6d311622 0,transparent 33rem),
+           linear-gradient(90deg,#ffffff05 1px,transparent 1px) 0 0/48px 48px,
+           var(--bg);
+         color:var(--fg); font-family:"SFMono-Regular","Cascadia Code",Menlo,monospace;
+         margin:0; padding:clamp(1rem,2.5vw,2.5rem); font-size:13px; }
+  main { width:min(1760px,100%); margin:auto; }
+  .masthead { display:grid; grid-template-columns:minmax(260px,.7fr) minmax(420px,1.3fr);
+              gap:1.5rem; align-items:end; margin-bottom:1rem; }
+  .eyebrow { color:var(--blue); font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; }
+  h1 { color:var(--accent); font-size:clamp(1.35rem,2vw,2rem); letter-spacing:.02em;
+       margin:.35rem 0 0; }
+  h2 { display:flex; align-items:center; gap:.75rem; color:var(--blue); font-size:.72rem;
+       letter-spacing:.14em; margin:2rem 0 .65rem; text-transform:uppercase; }
+  h2::after { content:""; height:1px; flex:1; background:linear-gradient(90deg,var(--line),transparent); }
+  .masthead-copy { color:var(--muted); line-height:1.55; }
+  .slot { display:grid; grid-template-columns:minmax(210px,260px) minmax(0,1fr); gap:1rem;
+          border:1px solid var(--line); border-radius:8px; padding:.8rem; margin-bottom:.7rem;
+          background:linear-gradient(135deg,#2a1209cc,#1d0c06dd); box-shadow:0 10px 24px var(--shadow); }
+  .slot-rail { position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:.7rem;
+               padding:.25rem .25rem .25rem .15rem; min-width:0; }
+  .slot-title-row { display:flex; align-items:center; gap:.55rem; width:100%; }
+  .slot-name { color:var(--fg); min-width:0; font-weight:700; overflow-wrap:anywhere; }
+  .slot-count { margin-left:auto; color:var(--muted); font-size:.68rem; white-space:nowrap; }
+  .slot-actions,.candidate-actions,.card-meta { display:flex; align-items:center; gap:.38rem; }
+  .slot-actions { flex-wrap:wrap; }
   button,select,summary,input { font:inherit; }
-  button,summary { background:none; border:1px solid var(--blue); color:var(--blue);
-                   padding:.3rem .7rem; cursor:pointer; }
-  button:hover,summary:hover { border-color:var(--accent); color:var(--accent); }
-  button:disabled { opacity:.4; cursor:wait; }
+  button,summary { background:#1b0b06; border:1px solid var(--line-bright); color:var(--blue);
+                   border-radius:4px; padding:.38rem .62rem; cursor:pointer; }
+  button:hover,summary:hover { border-color:var(--accent); color:var(--accent); background:#35170b; }
+  button:focus-visible,summary:focus-visible,select:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  button svg,summary svg,.status-icon svg { width:14px; height:14px; display:block; stroke:currentColor;
+                                           fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .button-with-label { display:inline-flex; align-items:center; gap:.42rem; }
+  .icon-button { display:grid; place-items:center; width:30px; height:30px; padding:0; }
   button.accept { border-color:var(--accent); color:var(--accent); }
   button.danger { border-color:var(--danger); color:var(--danger); }
   textarea { width:100%; margin-top:.6rem; background:var(--panel); color:var(--fg);
              border:1px solid var(--line); font:inherit; padding:.5rem; min-height:3.2em; }
-  select,input { background:var(--panel); color:var(--fg); border:1px solid var(--line); padding:.3rem; }
-  .candidates { display:grid; gap:.5rem; margin-top:.6rem; }
-  .candidate { border:1px dashed var(--line); padding:.45rem; }
-  .candidate-kind { color:var(--blue); min-width:4.5rem; opacity:.8; }
-  .candidate-list,.prompt { margin-top:.45rem; }
-  .candidate-list > summary,.prompt > summary { border:0; padding:.15rem 0; opacity:.8; }
+  select,input { background:var(--panel); color:var(--fg); border:1px solid var(--line);
+                 border-radius:4px; padding:.38rem; }
+  select { min-width:0; max-width:150px; }
+  .sound-deck { display:grid; grid-template-columns:repeat(auto-fill,minmax(238px,1fr));
+                align-items:start; gap:.55rem; min-width:0; }
+  .sound-card { position:relative; min-width:0; padding:.58rem; border:1px solid var(--line);
+                border-radius:6px; background:#1a0a05; transition:border-color .16s,transform .16s,background .16s; }
+  .sound-card:hover { border-color:var(--line-bright); background:#211008; transform:translateY(-1px); }
+  .sound-card.selected { border-color:var(--accent); background:linear-gradient(145deg,#32160b,#1b0b06); }
+  .card-head { display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+               min-height:20px; margin-bottom:.38rem; }
+  .candidate-kind { color:var(--muted); font-size:.65rem; letter-spacing:.11em; text-transform:uppercase; }
+  .status-icon { display:inline-flex; align-items:center; gap:.3rem; color:var(--muted); font-size:.67rem; }
+  .status-icon.selected { color:var(--accent); }
+  .status-icon.cross-live { color:var(--blue); }
+  .mini-wave-button { position:relative; display:block; width:100%; height:70px; padding:0;
+                      overflow:hidden; border-color:var(--line); background:#120704; cursor:pointer; }
+  .mini-wave-button:hover { background:#180a05; }
+  .mini-wave { display:block; width:100%; height:100%; }
+  .edit-cue { position:absolute; right:6px; bottom:5px; display:grid; place-items:center;
+              width:22px; height:22px; border:1px solid #ffffff24; border-radius:50%;
+              background:#120704cc; color:var(--blue); opacity:0; transform:translateY(3px);
+              transition:opacity .16s,transform .16s; pointer-events:none; }
+  .edit-cue svg { width:12px; height:12px; }
+  .mini-wave-button:hover .edit-cue,.mini-wave-button:focus-visible .edit-cue { opacity:1; transform:none; }
+  .candidate-actions { justify-content:space-between; margin-top:.45rem; min-width:0; }
+  .assign-controls { position:relative; margin-left:auto; }
+  .assign-controls > summary { display:grid; place-items:center; width:30px; height:30px; padding:0;
+                               list-style:none; }
+  .assign-controls > summary::-webkit-details-marker { display:none; }
+  .assign-controls[open] > summary { border-color:var(--accent); color:var(--accent); }
+  .assign-popover { position:absolute; z-index:5; right:0; bottom:calc(100% + .4rem); display:flex;
+                    gap:.35rem; width:270px; padding:.45rem; border:1px solid var(--line-bright);
+                    border-radius:5px; background:#160905; box-shadow:0 16px 34px #000c; }
+  .assign-popover select { flex:1; max-width:none; }
+  .empty-take { display:grid; place-items:center; min-height:116px; color:var(--muted);
+                border:1px dashed var(--line); border-radius:6px; font-size:.72rem; }
+  .prompt { position:relative; width:100%; }
+  .prompt > summary { display:inline-flex; align-items:center; gap:.38rem; padding:.32rem .5rem;
+                      color:var(--muted); list-style:none; }
+  .prompt > summary::-webkit-details-marker { display:none; }
+  .prompt[open] { position:absolute; z-index:4; width:min(560px,calc(100vw - 3rem));
+                  padding:.55rem; border:1px solid var(--line-bright); border-radius:6px;
+                  background:#160905; box-shadow:0 18px 40px #000b; }
+  .prompt[open] > summary { color:var(--accent); }
   .hint { color:var(--blue); opacity:.75; line-height:1.5; }
   .attention { position:sticky; top:.5rem; z-index:2; display:flex; gap:.45rem; flex-wrap:wrap;
-               margin:1rem 0; padding:.55rem; border:1px solid var(--accent); background:var(--panel); }
+               margin:1rem 0; padding:.55rem .7rem; border:1px solid var(--accent); border-radius:5px;
+               background:#190a05ee; box-shadow:0 8px 24px #0008; backdrop-filter:blur(8px); }
   .attention a { color:var(--accent); }
+  .attention svg { width:14px; height:14px; flex:0 0 auto; stroke:var(--accent); fill:none;
+                   stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+             clip:rect(0,0,0,0); white-space:nowrap; border:0; }
   .audio-editor { width:min(920px,calc(100vw - 2rem)); max-height:calc(100dvh - 2rem);
                   overflow:auto; padding:0; border:1px solid var(--accent); color:var(--fg);
                   background:#140804; box-shadow:0 20px 80px #000b; }
@@ -107,18 +176,26 @@ PAGE = """<!doctype html>
   .editor-foot .spacer { flex:1; }
   .loading-wave { display:grid; place-items:center; height:100%; color:var(--blue); }
   @media (max-width:700px) {
+    body { padding:.75rem; }
+    .masthead,.slot { grid-template-columns:1fr; }
+    .masthead { gap:.65rem; }
+    .slot-rail { flex-direction:row; flex-wrap:wrap; align-items:center; }
+    .slot-title-row { width:auto; flex:1 1 180px; }
+    .sound-deck { grid-template-columns:1fr; }
     .wave-stage { height:170px; }
     .effect-grid { grid-template-columns:1fr; }
   }
 </style>
 </head>
 <body>
-<h1>[ ♪ UI SOUND PICKER ]</h1>
-<div class="hint">Vibe: <span id="vibe"></span> · playback 30% · Generate creates an immutable
-original · Edit creates a reversible revision · Accept copies into this slot · Assign copies into
-another slot · Delete removes candidate audio, never the accepted theme file.</div>
+<main>
+<header class="masthead">
+  <div><div class="eyebrow">UI audio / theme workbench</div><h1>Sound map</h1></div>
+  <div class="masthead-copy"><span id="vibe"></span><br>Waveforms open the editor · playback 30% · every edit is a reversible revision.</div>
+</header>
 <div id="attention" class="attention"></div>
 <div id="slots"></div>
+</main>
 <dialog id="audio-editor" class="audio-editor" aria-labelledby="editor-title">
   <header class="editor-head">
     <div>
@@ -172,6 +249,17 @@ const editor = { sound:null, url:null, audio:null, buffer:null, durationMs:0,
 const editDefaults = { attackMs:0, releaseMs:0, gainDb:0, reverbPercent:0,
   delayMs:120, delayMixPercent:0 };
 const esc = (value) => String(value).replace(/[&<>\"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const icons = {
+  play:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg>`,
+  spark:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.3 4.1L17 9l-3.7 1.9L12 15l-1.3-4.1L7 9l3.7-1.9Z"/><path d="m19 15 .7 2.2L22 18l-2.3.8L19 21l-.7-2.2L16 18l2.3-.8Z"/></svg>`,
+  sliders:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg>`,
+  route:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 6h3a3 3 0 0 1 3 3v6a3 3 0 0 0 3 3"/></svg>`,
+  arrow:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5"/></svg>`,
+  trash:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>`,
+};
+const waveformCache = new Map();
+let miniWaveObserver = null;
 function play(url, scale=1) {
   const audio = new Audio(url + "?t=" + Date.now());
   audio.volume = VOL * scale;
@@ -186,6 +274,75 @@ async function post(path, payload) {
 }
 async function state() { return (await fetch("/api/state")).json(); }
 function formatSeconds(ms) { return (ms / 1000).toFixed(3); }
+async function waveformPeaks(url) {
+  if (!waveformCache.has(url)) {
+    waveformCache.set(url, (async () => {
+      const response = await fetch(url + "?mini=" + Date.now());
+      if (!response.ok) throw new Error(`Could not load waveform (${response.status})`);
+      const encoded = await response.arrayBuffer();
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const context = new AudioContextClass();
+      const buffer = await context.decodeAudioData(encoded);
+      await context.close();
+      const data = buffer.getChannelData(0);
+      const bucketCount = 220;
+      const peaks = new Float32Array(bucketCount);
+      for (let bucket = 0; bucket < bucketCount; bucket += 1) {
+        const start = Math.floor(bucket * data.length / bucketCount);
+        const end = Math.max(start + 1, Math.floor((bucket + 1) * data.length / bucketCount));
+        let peak = 0;
+        for (let index = start; index < end; index += 1) peak = Math.max(peak, Math.abs(data[index]));
+        peaks[bucket] = peak;
+      }
+      return peaks;
+    })());
+  }
+  return waveformCache.get(url);
+}
+function paintMiniWaveform(canvas, peaks) {
+  if (!canvas.isConnected) return;
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.round(rect.width * ratio));
+  canvas.height = Math.max(1, Math.round(rect.height * ratio));
+  const context = canvas.getContext("2d");
+  context.scale(ratio, ratio);
+  context.clearRect(0, 0, rect.width, rect.height);
+  const selected = canvas.closest(".sound-card")?.classList.contains("selected");
+  const middle = rect.height / 2;
+  context.strokeStyle = selected ? "#f0a238" : "#93bfd2";
+  context.globalAlpha = selected ? .96 : .78;
+  context.lineWidth = 1;
+  const bars = Math.min(peaks.length, Math.floor(rect.width / 2));
+  for (let bar = 0; bar < bars; bar += 1) {
+    const peak = peaks[Math.floor(bar * peaks.length / bars)];
+    const x = (bar + .5) * rect.width / bars;
+    const height = Math.max(1.5, peak * rect.height * .78);
+    context.beginPath();
+    context.moveTo(x, middle - height / 2);
+    context.lineTo(x, middle + height / 2);
+    context.stroke();
+  }
+  context.globalAlpha = 1;
+}
+async function loadMiniWaveform(canvas) {
+  if (canvas.dataset.loaded === "true") return;
+  canvas.dataset.loaded = "true";
+  try { paintMiniWaveform(canvas, await waveformPeaks(canvas.dataset.url)); }
+  catch { canvas.dataset.loaded = "error"; }
+}
+function observeMiniWaveforms() {
+  miniWaveObserver?.disconnect();
+  miniWaveObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      miniWaveObserver.unobserve(entry.target);
+      loadMiniWaveform(entry.target);
+    }
+  }, { rootMargin:"400px 0px" });
+  for (const canvas of document.querySelectorAll("canvas.mini-wave")) miniWaveObserver.observe(canvas);
+}
 function drawWaveform() {
   const canvas = document.getElementById("wave-canvas");
   const rect = canvas.getBoundingClientRect();
@@ -404,15 +561,17 @@ async function saveEditorRevision(button) {
   } catch (error) { alert(error.message); }
   finally { button.disabled = false; button.textContent = "save as new revision"; }
 }
-async function render() {
+async function render(preserveSlot=null) {
+  const previousAnchor = preserveSlot ? document.getElementById(`slot-${preserveSlot}`) : null;
+  const previousTop = previousAnchor?.getBoundingClientRect().top;
   const s = await state();
   candidateIndex = 0;
   targets = s.targets;
   currentByName = Object.fromEntries(s.slots.map((slot) => [slot.name, Boolean(slot.current)]));
   const missing = s.slots.filter((slot) => !slot.current);
   document.getElementById("attention").innerHTML = missing.length
-    ? `<span>Needs sound:</span>${missing.map((slot) => `<a href="#slot-${slot.name}">${slot.name}</a>`).join(" · ")}`
-    : `<span>Every event has an accepted sound.</span>`;
+    ? `${icons.route}<span>Unmapped:</span>${missing.map((slot) => `<a href="#slot-${slot.name}">${slot.name}</a>`).join(" · ")}`
+    : `${icons.check}<span>Every event is mapped.</span>`;
   document.getElementById("vibe").textContent = s.vibe;
   const root = document.getElementById("slots");
   root.innerHTML = "";
@@ -428,19 +587,38 @@ async function render() {
     div.className = "slot";
     div.id = `slot-${slot.name}`;
     const candidateCount = slot.candidates.length;
-    const openCandidates = !slot.current && candidateCount > 0 ? "open" : "";
-    div.innerHTML = `<div class="slot-head"><span class="slot-name">${esc(slot.name)}</span>
-      ${slot.current ? `<button onclick="play('${slot.current}')">▶ current</button>` : `<span class="hint">no accepted file</span>`}
-      <button id="gen-${slot.name}" onclick="generateCandidate('${slot.name}',this)">Generate next →</button></div>
-      <details class="prompt"><summary>generation prompt</summary>
+    const currentKind = slot.current_origin?.kind || "legacy file";
+    const currentLabel = ["current", "legacy file"].includes(currentKind) ? "existing" : currentKind;
+    const selectedCandidate = slot.candidates.find((candidate) =>
+      (candidate.accepted_in || []).includes(slot.name));
+    const currentCard = slot.current && !selectedCandidate ? `<article class="sound-card selected">
+      <header class="card-head"><span class="candidate-kind">${esc(currentLabel)}</span>
+        <span class="status-icon selected" title="Selected for ${esc(slot.name)}">${icons.check}<span class="sr-only">Selected</span></span></header>
+      <button class="mini-wave-button" onclick="openEditor('${slot.name}','${slot.current}','selected sound')" title="Edit selected waveform">
+        <canvas class="mini-wave" data-url="${slot.current}" aria-hidden="true"></canvas>
+        <span class="edit-cue">${icons.sliders}</span><span class="sr-only">Edit selected waveform</span></button>
+      <div class="candidate-actions"><button class="icon-button" onclick="play('${slot.current}')" title="Preview selected sound" aria-label="Preview selected sound">${icons.play}</button></div>
+    </article>` : "";
+    div.innerHTML = `<aside class="slot-rail"><div class="slot-title-row">
+        <span class="slot-name">${esc(slot.name)}</span><span id="count-${slot.name}" class="slot-count">${candidateCount} take${candidateCount === 1 ? "" : "s"}</span></div>
+      <div class="slot-actions"><button id="gen-${slot.name}" class="button-with-label" onclick="generateCandidate('${slot.name}',this)">${icons.spark}<span>Generate</span></button>
+      <details class="prompt"><summary title="Edit generation prompt">${icons.sliders}<span>Prompt</span></summary>
         <textarea id="prompt-${slot.name}" aria-label="Generation prompt for ${esc(slot.name)}">${esc(slot.prompt)}</textarea>
-      </details>
-      ${slot.current ? `<button onclick="openEditor('${slot.name}','${slot.current}','accepted sound')">edit waveform</button>` : ""}
-      <details class="candidate-list" ${openCandidates}><summary>${candidateCount} candidate${candidateCount === 1 ? "" : "s"}</summary>
-        <div class="candidates" id="candidates-${slot.name}"></div>
-      </details>`;
+      </details></div></aside>
+      <div class="sound-deck" id="candidates-${slot.name}">${currentCard}</div>`;
     root.appendChild(div);
-    for (const candidate of slot.candidates) addCandidate(slot.name, candidate);
+    const orderedCandidates = [...slot.candidates].sort((left, right) =>
+      Number((right.accepted_in || []).includes(slot.name)) - Number((left.accepted_in || []).includes(slot.name)));
+    for (const candidate of orderedCandidates) addCandidate(slot.name, candidate);
+    if (!slot.current && candidateCount === 0) {
+      document.getElementById("candidates-" + slot.name).innerHTML =
+        `<div class="empty-take">No takes yet · generate the first</div>`;
+    }
+  }
+  observeMiniWaveforms();
+  if (preserveSlot && Number.isFinite(previousTop)) {
+    const nextAnchor = document.getElementById(`slot-${preserveSlot}`);
+    if (nextAnchor) window.scrollBy(0, nextAnchor.getBoundingClientRect().top - previousTop);
   }
 }
 function targetOptions(source) {
@@ -452,16 +630,33 @@ function addCandidate(source, candidate) {
   const id = `candidate-${++candidateIndex}`;
   const wrap = document.getElementById("candidates-" + source);
   const el = document.createElement("article");
-  el.className = "candidate";
+  el.dataset.candidate = "true";
+  el.dataset.url = candidate.url;
   const kind = ["revision", "history"].includes(candidate.kind) ? candidate.kind : "generated";
-  el.innerHTML = `<div class="candidate-actions"><span class="candidate-kind">${kind}</span>
-    <button onclick="play('${candidate.url}')">▶</button>
-    <button onclick="openEditor('${source}','${candidate.url}','${kind} candidate')">edit waveform</button>
-    <button class="accept" onclick="acceptCandidate('${source}','${candidate.url}',this)">accept</button>
-    <select id="${id}-target" aria-label="Assign candidate to another event">${targetOptions(source)}</select>
-    <button onclick="assignCandidate('${source}','${candidate.url}','${id}')">assign</button>
-    <button class="danger" onclick="deleteCandidate('${candidate.url}')">delete</button></div>`;
+  const acceptedIn = candidate.accepted_in || [];
+  const acceptedHere = acceptedIn.includes(source);
+  const otherLive = acceptedIn.filter((name) => name !== source);
+  const liveElsewhere = otherLive.length ? `<span class="status-icon cross-live" title="Also selected for ${otherLive.map(esc).join(", ")}">${icons.route}<span>${otherLive.length}</span></span>` : "";
+  el.className = `sound-card${acceptedHere ? " selected" : ""}`;
+  el.innerHTML = `<header class="card-head"><span class="candidate-kind">${kind}</span><div class="card-meta">
+      ${liveElsewhere}${acceptedHere ? `<span class="status-icon selected" title="Selected for ${esc(source)}">${icons.check}<span class="sr-only">Selected</span></span>` : ""}</div></header>
+    <button class="mini-wave-button" onclick="openEditor('${source}','${candidate.url}','${kind} take')" title="Edit ${kind} waveform">
+      <canvas class="mini-wave" data-url="${candidate.url}" aria-hidden="true"></canvas>
+      <span class="edit-cue">${icons.sliders}</span><span class="sr-only">Edit ${kind} waveform</span></button>
+    <div class="candidate-actions">
+      <button class="icon-button" onclick="play('${candidate.url}')" title="Preview" aria-label="Preview ${kind} take">${icons.play}</button>
+      ${acceptedHere ? "" : `<button class="button-with-label accept" onclick="acceptCandidate('${source}','${candidate.url}',this)">${icons.check}<span>Use</span></button>`}
+      <details class="assign-controls"><summary title="Assign to another event" aria-label="Assign to another event">${icons.route}</summary>
+        <div class="assign-popover"><select id="${id}-target" aria-label="Assign take to another event">${targetOptions(source)}</select>
+        <button class="icon-button" onclick="assignCandidate('${source}','${candidate.url}','${id}')" title="Assign to selected event" aria-label="Assign to selected event">${icons.arrow}</button></div></details>
+      <button class="icon-button danger" onclick="deleteCandidate('${candidate.url}')" title="Delete take" aria-label="Delete ${kind} take">${icons.trash}</button></div>`;
   wrap.appendChild(el);
+}
+function updateTakeCount(source) {
+  const wrap = document.getElementById("candidates-" + source);
+  wrap.querySelector(".empty-take")?.remove();
+  const count = wrap.querySelectorAll("[data-candidate='true']").length;
+  document.getElementById("count-" + source).textContent = `${count} take${count === 1 ? "" : "s"}`;
 }
 async function generateCandidate(name, button) {
   button.disabled = true; button.textContent = "generating…";
@@ -469,15 +664,16 @@ async function generateCandidate(name, button) {
     const prompt = document.getElementById("prompt-" + name).value;
     const data = await post("/api/generate", { sound:name, prompt });
     addCandidate(name, data.candidate);
+    updateTakeCount(name);
+    observeMiniWaveforms();
     play(data.candidate.url);
   } catch (error) { alert(error.message); }
-  finally { button.disabled = false; button.textContent = "Generate next →"; }
+  finally { button.disabled = false; button.innerHTML = `${icons.spark}<span>Generate</span>`; }
 }
 async function acceptCandidate(name, url, button) {
   try {
     await post("/api/accept", { sound:name, url });
-    button.textContent = "accepted ✓";
-    await render();
+    await render(name);
   } catch (error) { alert(error.message); }
 }
 async function assignCandidate(source, url, id) {
@@ -486,12 +682,14 @@ async function assignCandidate(source, url, id) {
   if (currentByName[target] && !confirm(`Replace the accepted ${target} sound with this candidate?`)) return;
   try {
     await post("/api/accept", { sound:target, url });
-    await render();
+    await render(source);
   } catch (error) { alert(error.message); }
 }
 async function deleteCandidate(url) {
   if (!confirm("Delete this candidate and any revisions derived from it? Accepted theme files are preserved.")) return;
-  try { await post("/api/delete", { url, cascade:true }); await render(); }
+  const card = document.querySelector(`[data-url="${CSS.escape(url)}"]`);
+  const source = card?.closest(".slot")?.id.replace("slot-", "") || null;
+  try { await post("/api/delete", { url, cascade:true }); await render(source); }
   catch (error) { alert(error.message); }
 }
 for (const input of document.querySelectorAll("[data-edit]")) {
@@ -685,26 +883,38 @@ class PickerState:
             raise ValueError(f"Audio file not found: {url}")
         return path
 
-    def _candidate_record(self, sound: str, path: Path) -> dict:
+    def _candidate_record(self, sound: str, path: Path, manifest: dict | None = None) -> dict:
         metadata = _read_metadata(path)
+        url = self._url_for(path)
+        manifest = manifest if manifest is not None else self.manifest()
+        sounds = manifest.get("sounds", {}) if isinstance(manifest, dict) else {}
+        accepted_in = [
+            name
+            for name, entry in sounds.items()
+            if isinstance(entry, dict)
+            and isinstance(entry.get("accepted_from"), dict)
+            and entry["accepted_from"].get("url") == url
+        ]
         return {
-            "url": self._url_for(path),
+            "url": url,
             "kind": metadata.get("kind", "generated"),
             "source_slot": metadata.get("source_slot", sound),
             "prompt": metadata.get("prompt"),
             "parent_url": metadata.get("parent_url"),
             "edits": metadata.get("edits"),
+            "accepted_in": accepted_in,
         }
 
     def _candidate_records(self, sound: str) -> list[dict]:
         directory = self.candidate_dir / sound
         if not directory.exists():
             return []
+        manifest = self.manifest()
         records = []
         for path in sorted(directory.glob("*.mp3"), key=lambda item: item.stat().st_mtime):
             if _read_metadata(path).get("deleted"):
                 continue
-            records.append(self._candidate_record(sound, path))
+            records.append(self._candidate_record(sound, path, manifest))
         return records
 
     def slot_info(self, category: str, name: str, config: dict) -> dict:
@@ -717,6 +927,9 @@ class PickerState:
             or entry.get("prompt")
             or build_prompt(self.vibe, config["modifier"]),
             "current": f"/files/{category}/{name}.mp3" if current.exists() else None,
+            "current_origin": entry.get("accepted_from")
+            if isinstance(entry.get("accepted_from"), dict)
+            else None,
             "candidates": self._candidate_records(name),
         }
 

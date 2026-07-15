@@ -6,6 +6,22 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.83] - 2026-07-15
+
+### Changed
+
+- Rebuilt the audio picker's main screen as a responsive event workbench with
+  always-visible waveform cards, a clear selected-take state, direct
+  waveform-to-editor interaction, compact icon actions, and contextual
+  cross-event assignment controls.
+
+### Fixed
+
+- Kept generated takes inline after deletion instead of collapsing their
+  containing list.
+- Made accepted candidates and revisions visibly persistent after reopening
+  the picker, including candidates selected for more than one event.
+
 ## [1.1.82] - 2026-07-15
 
 ### Added

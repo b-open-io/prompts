@@ -4,7 +4,7 @@ Generate cohesive sets of subtle UI sound effects for web applications using the
 
 ## What It Does
 
-Creates and audits "audio themes" — coordinated sets of short sounds that share a common aesthetic and map to semantic UI interactions (button clicks, distinct navigation/general hovers, notifications, navigation, modals, toggles, and wallet transactions). The local picker includes a visual waveform editor with draggable trim handles, selection playback, labeled effect sliders, non-destructive revisions, deletion, acceptance, and cross-slot reassignment. Output is a ready-to-use directory with MP3 files, provenance/history in `theme.json`, and TypeScript constants.
+Creates and audits "audio themes" — coordinated sets of short sounds that share a common aesthetic and map to semantic UI interactions (button clicks, distinct navigation/general hovers, notifications, navigation, modals, toggles, and wallet transactions). The local picker presents each event as an always-open deck of waveform cards: the live take is visibly selected, every generated take can be opened directly in the visual editor, and compact icon controls handle preview, acceptance, deletion, and cross-slot reassignment. Editing provides draggable trim handles, selection playback, labeled effect sliders, and non-destructive revisions. Output is a ready-to-use directory with MP3 files, provenance/history in `theme.json`, and TypeScript constants.
 
 ## Prerequisites
 

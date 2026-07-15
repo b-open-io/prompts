@@ -133,7 +133,9 @@ python scripts/sound_picker.py --vibe pixel-minimal --output-dir ./audio-theme
 Serves a local page with, per sound slot: a play button for the current file,
 an editable generation prompt (pre-filled from the vibe), "Generate next" for
 unlimited fresh candidates via ElevenLabs (auto-normalized), and compact
-candidate controls to:
+always-open waveform cards. The selected take uses a persistent visual state,
+and clicking any card's waveform opens the shared editor. Compact icon controls
+support:
 
 - accept the candidate into its current event slot;
 - assign a good wrong-slot candidate to any other event without regenerating;
