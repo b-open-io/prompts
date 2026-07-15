@@ -6,6 +6,17 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.99] - 2026-07-15
+
+### Changed
+
+- `visual-proposal` skill (0.0.7): document the reframe re-run. When the user
+  changes which options are in play or the principle separating them (not just
+  picks a winner), re-brief the advocates to re-propose and re-fire the judging
+  bench on the new points of contention rather than only editing the conclusion
+  text — grounding the re-run with the same rigor, and marking the prior round
+  superseded rather than deleting it.
+
 ## [1.1.98] - 2026-07-15
 
 ### Documentation

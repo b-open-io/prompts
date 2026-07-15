@@ -6,33 +6,33 @@ large mint — inscribe the artwork **once** and have every item reference that
 outpoint. A 10,000-item drop then costs one image plus a tiny reference per item,
 not 10,000 copies, and the same holds when items are minted on demand.
 
-These are not competing formats — they are two layers, both resolved by
-[OrdFS](ordfs.md):
+Produce a referenced item as an **`ord-fs/json` directory**, resolved by
+[OrdFS](ordfs.md). Its content-type honestly signals that the content must be
+resolved, and it fails safe — a consumer that doesn't resolve it sees a
+non-media type rather than mis-rendering a pointer as image bytes.
 
-- **`ref=ordfs` item (the pointer primitive)** — the item declares the source's
-  real media type and carries a one-hop pointer as a media-type parameter, so
-  every MIME-aware tool still sees an image. Use this for a single shared or
-  unique image:
-
-  ```
-  Content-Type: image/png; ref=ordfs
-  <imageOutpoint>
-  ```
-
-- **`ord-fs/json` directory item (the container)** — use this only when an item
-  bundles two or more named leaves (image plus per-item metadata or
-  attachments). Its entries may themselves be `ref=ordfs` pointers. A
-  single-entry directory is redundant with a `ref=ordfs` item; prefer the
-  primitive for a lone image.
+- **Single shared or unique image** — a one-entry directory using the `.`
+  default-entry key. OrdFS serves the `.` entry in place at the item's own URL
+  (see [Directories](ordfs.md#directories)), so no interior filename is needed:
 
   ```json
-  { "image.png": "<imageOutpoint>", "meta.json": "_1" }
+  { ".": "<imageOutpoint>" }
   ```
 
-A resolver also **accepts** a `text/uri-list` item (RFC 2483) whose body is a
-`/content/<imageOutpoint>` line — kept for interoperability with tools that emit
-it. It does the same job as `ref=ordfs` but loses the real media type on the
-item, so prefer `ref=ordfs` when producing new items.
+- **Multi-leaf item** — add named leaves for per-item metadata or attachments
+  alongside the default entry:
+
+  ```json
+  { ".": "<imageOutpoint>", "meta.json": "_1" }
+  ```
+
+The `<imageOutpoint>` pointer may be a same-transaction relative `_N` or an
+absolute `<txid>_<vout>` (cross-tx, e.g. mint-on-demand). A resolver also
+**accepts** a `text/uri-list` item (RFC 2483) for interoperability with tools
+that emit it, but new items are produced as `ord-fs/json`. (An earlier
+`ref=ordfs` media-type-parameter form was considered and dropped: declaring a
+real image type over a pointer body mis-renders in any consumer that reads the
+inscription without stripping the parameter.)
 
 #### Tradeable items, shared content
 

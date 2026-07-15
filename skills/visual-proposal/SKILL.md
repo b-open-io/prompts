@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.6
+version: 0.0.7
 description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
 ---
 
@@ -232,3 +232,15 @@ Proposals get revised as decisions settle. When the user changes an option's
 framing, flattens a decision, or adds facts, edit the same file and republish to
 the same URL with a bumped `label`. Keep the neutral stance unless the user asks
 for a recommendation.
+
+When the user **reframes the decision itself** — not just picks a winner, but
+changes which options are in play or the principle that separates them — re-run
+the advocacy, don't just rewrite prose. Re-brief the advocates on the new
+decision points and let them re-propose (with fresh cross-examination), then
+**re-fire the judging bench** on the new points of contention. A reframe can
+turn a split verdict into a unanimous one (or the reverse); a proposal that only
+edits its conclusion text after a reframe is stale under the hood. Ground the
+re-run with the same rigor as the first: verify the new facts against real code
+or spec before an advocate argues them. Mark the prior round as superseded
+rather than deleting it — the progression (round 1 → reframe → round 2) is itself
+useful to the reviewer.
