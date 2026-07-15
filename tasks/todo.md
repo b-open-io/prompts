@@ -4,7 +4,7 @@
 - [x] Add deterministic latest-compatible model selection with regression tests.
 - [x] Update Parker, public docs, changelog, skill/agent versions, and manifests.
 - [x] Validate and forward-test the source behavior.
-- [ ] Commit, push, refresh both plugin installs, and smoke-test the release.
+- [x] Commit, push, refresh both plugin installs, and smoke-test the release.
 
 ## Review
 
@@ -22,6 +22,11 @@
   generation, manifests, docs, diff checks, structural ClawNet validation, and
   generic skill validation (with the repository-required top-level `version`
   omitted from the temporary validator copy) pass.
+- Released commit `be137ce` as plugin 1.1.84 and synchronized `origin/master`.
+  Claude and Codex plugin caches both contain x-research 1.1.5; the standalone
+  Codex skill was upgraded through the skills manager, and the managed Parker
+  adapter is at 1.2.13. Fresh Claude and Codex sessions both selected
+  `grok-4.5` in dry-run mode without calling the paid Responses endpoint.
 
 # OpNS / 1sat.name ownership refresh
 
