@@ -1,3 +1,28 @@
+# x-research latest Grok routing
+
+- [x] Trace the skill, Parker agent, live xAI catalog, and official model guidance.
+- [x] Add deterministic latest-compatible model selection with regression tests.
+- [x] Update Parker, public docs, changelog, skill/agent versions, and manifests.
+- [x] Validate and forward-test the source behavior.
+- [ ] Commit, push, refresh both plugin installs, and smoke-test the release.
+
+## Review
+
+- The live xAI catalog exposes `grok-latest` on Grok 4.3 while Grok 4.5 is the
+  newest canonical general-purpose model. The previous prompt delegated that
+  ambiguous choice to the agent, and its stale ClawNet payload still encoded a
+  retired model that redirects to 4.3.
+- `select-model.sh` now chooses the newest canonical general-purpose model by
+  provider creation time, treats generic latest aliases as automatic intent,
+  validates versioned pins, and excludes specialized model families.
+- `research.sh` owns selection plus the Responses API call in one process. A
+  live smoke returned `grok-4.5` and `X_RESEARCH_ROUTING_OK`; an isolated
+  forward test also produced a Grok 4.5 dry-run request with no paid call.
+- Bash syntax, selector/wrapper regressions, 7 adapter install tests, Codex
+  generation, manifests, docs, diff checks, structural ClawNet validation, and
+  generic skill validation (with the repository-required top-level `version`
+  omitted from the temporary validator copy) pass.
+
 # OpNS / 1sat.name ownership refresh
 
 - [x] Clone and inspect the updated `b-open-io/1sat-name` product.

@@ -1,7 +1,7 @@
 ---
 name: x-research
-version: 1.1.4
-description: AI-powered X/Twitter research via xAI Grok. Returns AI SUMMARIES with analysis, not raw tweets. Use for "what's trending", "social sentiment", "summarize X discussion about", "analyze X conversation about", "research topic on X". For RAW tweet data, use x-user-timeline, x-tweet-search, x-tweet-fetch instead. Requires XAI_API_KEY.
+version: 1.1.5
+description: This skill should be used for AI-powered X/Twitter research via xAI Grok when the user asks "what's trending", "social sentiment", "summarize X discussion about", "analyze X conversation about", or "research topic on X". Returns AI summaries with analysis, not raw tweets. For raw tweet data, use x-user-timeline, x-tweet-search, or x-tweet-fetch. Requires XAI_API_KEY.
 allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_PLUGIN_ROOT}:*)
 ---
 
@@ -59,16 +59,29 @@ If unavailable, inform the user that XAI_API_KEY must be configured before using
 
 **Endpoint**: `https://api.x.ai/v1/responses`
 
-Set `XAI_RESEARCH_MODEL` explicitly. Before any request, list the models
-available to the current API key and select an ID that meets the workload's
-search, reasoning, latency, and cost requirements:
+Resolve the loaded skill directory once per shell call, then use its request
+wrapper. For Claude Code plugins, derive it from `CLAUDE_PLUGIN_ROOT`. For
+Codex, use the absolute directory of this loaded `SKILL.md`:
 
 ```bash
-curl -s https://api.x.ai/v1/models \
-  -H "Authorization: Bearer $XAI_API_KEY" | jq -r '.data[].id'
-
-: "${XAI_RESEARCH_MODEL:?Set XAI_RESEARCH_MODEL to one of the verified IDs above}"
+X_RESEARCH_SKILL_DIR="${CLAUDE_PLUGIN_ROOT}/skills/x-research"
+"$X_RESEARCH_SKILL_DIR/scripts/research.sh" <<'JSON'
+{"input":"[YOUR QUERY]","tools":[{"type":"web_search"},{"type":"x_search"}]}
+JSON
 ```
+
+Leave `XAI_RESEARCH_MODEL` unset, or set it to `auto`, `latest`, or
+`grok-latest`/`grok-4-latest`, to select the newest canonical general-purpose Grok model
+available to the current API key. The selector currently resolves that policy
+to `grok-4.5`; it advances automatically when xAI publishes a newer canonical
+model. Do not trust an alias merely because its name contains `latest`—the live
+catalog can retain a lagging alias. Set a versioned ID such as `grok-4.5`, or a
+versioned alias such as `grok-4.5-latest`, only to request a deliberate pin.
+The selector verifies explicit pins and always emits the canonical model ID.
+The wrapper selects and calls the model in one process, so model choice cannot
+disappear between separate shell tool calls. It accepts a request JSON object
+on stdin, overwrites any embedded `model`, and returns the raw Responses API
+JSON.
 
 **Available Search Tools**:
 - `web_search` - Searches the internet and browses web pages
@@ -79,27 +92,26 @@ curl -s https://api.x.ai/v1/models \
 ### Simple Query with Search Tools
 
 ```bash
-curl -s "https://api.x.ai/v1/responses" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d '{
-    "model": "'"$XAI_RESEARCH_MODEL"'",
+"$X_RESEARCH_SKILL_DIR/scripts/research.sh" <<'JSON' \
+  | tr -d '\000-\010\013\014\016-\037' \
+  | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+{
     "input": [{"role": "user", "content": "[YOUR QUERY]"}],
     "tools": [{"type": "web_search"}, {"type": "x_search"}]
-  }' | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+}
+JSON
 ```
 
 ### Query with Usage Tracking (Recommended)
 
 ```bash
-RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d '{
-    "model": "'"$XAI_RESEARCH_MODEL"'",
+RESPONSE=$("$X_RESEARCH_SKILL_DIR/scripts/research.sh" <<'JSON'
+{
     "input": [{"role": "user", "content": "[YOUR QUERY]"}],
     "tools": [{"type": "web_search"}, {"type": "x_search"}]
-  }')
+}
+JSON
+)
 
 # Extract usage stats
 TOOL_CALLS=$(echo "$RESPONSE" | jq -r '.usage.num_server_side_tools_used // 0')
@@ -152,50 +164,49 @@ echo "$RESPONSE" | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | sele
 ### X/Twitter Trending Topics
 
 ```bash
-curl -s "https://api.x.ai/v1/responses" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d '{
-    "model": "'"$XAI_RESEARCH_MODEL"'",
+"$X_RESEARCH_SKILL_DIR/scripts/research.sh" <<'JSON' \
+  | tr -d '\000-\010\013\014\016-\037' \
+  | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+{
     "input": [{"role": "user", "content": "What is currently trending on X? Include viral posts and major discussions."}],
     "tools": [{"type": "x_search"}]
-  }' | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+}
+JSON
 ```
 
 ### Developer Sentiment on a Topic
 
 ```bash
-curl -s "https://api.x.ai/v1/responses" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d '{
-    "model": "'"$XAI_RESEARCH_MODEL"'",
+"$X_RESEARCH_SKILL_DIR/scripts/research.sh" <<'JSON' \
+  | tr -d '\000-\010\013\014\016-\037' \
+  | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+{
     "input": [{"role": "user", "content": "What are developers saying about [TOPIC] on X? Include recent discussions and opinions."}],
     "tools": [{"type": "x_search"}, {"type": "web_search"}]
-  }' | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+}
+JSON
 ```
 
 ### News and Web Research
 
 ```bash
-curl -s "https://api.x.ai/v1/responses" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d '{
-    "model": "'"$XAI_RESEARCH_MODEL"'",
+"$X_RESEARCH_SKILL_DIR/scripts/research.sh" <<'JSON' \
+  | tr -d '\000-\010\013\014\016-\037' \
+  | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+{
     "input": [{"role": "user", "content": "Latest news and developments about [TOPIC]"}],
     "tools": [{"type": "web_search"}]
-  }' | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+}
+JSON
 ```
 
 ### Historical Research with Date Range
 
 ```bash
-curl -s "https://api.x.ai/v1/responses" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d '{
-    "model": "'"$XAI_RESEARCH_MODEL"'",
+"$X_RESEARCH_SKILL_DIR/scripts/research.sh" <<'JSON' \
+  | tr -d '\000-\010\013\014\016-\037' \
+  | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+{
     "input": [{"role": "user", "content": "What happened with [TOPIC] from January 9 through January 16, 2025?"}],
     "tools": [{
       "type": "x_search",
@@ -204,7 +215,8 @@ curl -s "https://api.x.ai/v1/responses" \
     }, {
       "type": "web_search"
     }]
-  }' | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
+}
+JSON
 ```
 
 ## Response Structure

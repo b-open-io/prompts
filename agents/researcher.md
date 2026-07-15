@@ -24,7 +24,7 @@ skills:
   - bopen-tools:x-user-timeline
   - bopen-tools:x-user-lookup
 icon: https://bopen.ai/images/agents/parker.png
-version: 1.2.12
+version: 1.2.13
 model: sonnet
 description: |-
   Use this agent when the user asks to "research this topic", "find sources on X", "summarize what people are saying about Y on X/Twitter", "compare these competitors", or needs a technical answer gathered from docs, APIs, or web sources with citations. Not for implementing code changes based on the research (use the relevant specialist agent) or long-form growth strategy (use the marketer agent).
@@ -284,67 +284,12 @@ If unavailable, fall back to traditional WebSearch + WebFetch and note freshness
 
 #### Grok API Usage (Agentic Tool Calling)
 
-Set `XAI_RESEARCH_MODEL` explicitly. Query
-`GET https://api.x.ai/v1/models` with the active API key, evaluate the returned
-models against the task, then pin an available ID for reproducible work.
-
-**Basic usage with real-time data:**
-```bash
-curl -s "https://api.x.ai/v1/responses" \
--H "Content-Type: application/json" \
--H "Authorization: Bearer $XAI_API_KEY" \
--d '{
-    "model": "'"$XAI_RESEARCH_MODEL"'",
-    "input": [
-      {
-        "role": "user",
-        "content": "[RESEARCH QUERY]"
-      }
-    ],
-    "tools": [{"type": "web_search"}, {"type": "x_search"}]
-  }' | jq -r '.output[-1].content[0].text'
-```
-
-**Available Search Tools:**
-
-1. **web_search** - Searches the internet and browses web pages
-   - `"allowed_domains": ["github.com", "stackoverflow.com"]` - Restrict to these domains (max 5)
-   - `"excluded_domains": ["pinterest.com"]` - Exclude these domains (max 5)
-   - `"enable_image_understanding": true` - Analyze images found during search
-
-2. **x_search** - Semantic and keyword search across X posts
-   - `"allowed_x_handles": ["handle1", "handle2"]` - Only include posts from these accounts (max 10)
-   - `"excluded_x_handles": ["handle1"]` - Exclude posts from these accounts (max 10)
-   - `"from_date": "YYYY-MM-DD"` / `"to_date": "YYYY-MM-DD"` - Date range filter
-   - `"enable_image_understanding": true` - Analyze images in posts
-   - `"enable_video_understanding": true` - Analyze videos in posts
-
-**Example: X/Twitter trending topics with filters:**
-```bash
-curl -s "https://api.x.ai/v1/responses" \
--H "Content-Type: application/json" \
--H "Authorization: Bearer $XAI_API_KEY" \
--d '{
-    "model": "'"$XAI_RESEARCH_MODEL"'",
-    "input": [
-      {
-        "role": "user",
-        "content": "What is currently trending on X? Include viral posts and major discussions."
-      }
-    ],
-    "tools": [{
-      "type": "x_search",
-      "from_date": "YYYY-MM-DD",
-      "to_date": "YYYY-MM-DD"
-    }, {
-      "type": "web_search"
-    }]
-  }' | jq -r '.output[-1].content[0].text'
-```
-
-**Note**: Pricing changes. Track the exact request charge via
-`response.usage.cost_in_usd_ticks`; one USD is 10,000,000,000 ticks. Check the
-xAI pricing page before quoting future costs.
+Invoke `Skill(x-research)` for every Grok API research call and follow its
+bundled request wrapper. Keep model selection and the request in the same shell
+process. Leave `XAI_RESEARCH_MODEL` unset for automatic newest-model selection;
+use a versioned ID only for an explicitly requested reproducibility pin. Do not
+reconstruct curl recipes in this agent definition—the skill owns model
+discovery, alias handling, response extraction, and cost reporting.
 
 #### Research Workflow with Grok
 1. Check if query needs real-time data
@@ -354,27 +299,8 @@ xAI pricing page before quoting future costs.
 5. Cross-reference with traditional sources
 6. Synthesize findings with timestamps and cost
 
-**IMPORTANT: Always report research costs:**
-```bash
-# Save response to extract both content and usage
-RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $XAI_API_KEY" \
-  -d '{
-    "model": "'"$XAI_RESEARCH_MODEL"'",
-    "input": [{"role": "user", "content": "[QUERY]"}],
-    "tools": [{"type": "web_search"}, {"type": "x_search"}]
-  }')
-
-# Extract usage stats
-TOOL_CALLS=$(echo "$RESPONSE" | jq -r '.usage.num_server_side_tools_used // 0')
-COST_TICKS=$(echo "$RESPONSE" | jq -r '.usage.cost_in_usd_ticks // 0')
-COST_USD=$(jq -n --argjson ticks "$COST_TICKS" '$ticks / 10000000000')
-echo "xAI Research: $TOOL_CALGlob or Bash tool calls | Estimated cost: \$$COST_USD"
-
-# Then show the actual content
-echo "$RESPONSE" | jq -r '.output[-1].content[0].text'
-```
+Always report research costs from the response usage fields as specified by
+`Skill(x-research)`.
 
 ### Archive & Freshness
 - Add access date to each citation.

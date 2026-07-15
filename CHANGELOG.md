@@ -6,6 +6,23 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.84] - 2026-07-15
+
+### Changed
+
+- Made `x-research` resolve the newest canonical general-purpose Grok model
+  from the live xAI catalog for every research task, while preserving verified
+  versioned model pins for reproducible work.
+- Routed Parker's Grok research through the skill-owned request wrapper instead
+  of duplicating model selection and response parsing in the agent prompt.
+
+### Fixed
+
+- Prevented lagging aliases such as `grok-latest` and `grok-4-latest` from
+  silently selecting Grok 4.3 when Grok 4.5 is available.
+- Kept model selection and the Responses API request in one process so a shell
+  tool boundary cannot discard the chosen model.
+
 ## [1.1.83] - 2026-07-15
 
 ### Changed

@@ -248,11 +248,17 @@ Skills are context-triggered capabilities. They activate automatically or can be
 ### X/Twitter
 | Skill | Description |
 |-------|-------------|
-| `x-research` | AI-powered X/Twitter research via xAI Grok (requires `XAI_API_KEY`) |
+| `x-research` | AI-powered X/Twitter research via the newest available general-purpose Grok model (requires `XAI_API_KEY`) |
 | `x-tweet-fetch` | Fetch individual tweets by ID via X API v2 |
 | `x-tweet-search` | Search recent X/Twitter posts by query (last 7 days) |
 | `x-user-lookup` | Look up X/Twitter user profiles by username |
 | `x-user-timeline` | Get recent tweets from an X/Twitter user |
+
+`x-research` resolves the live xAI model catalog at the start of each research
+task and selects the newest canonical general-purpose Grok model. Generic
+`latest` aliases are treated as automatic selection because provider aliases
+can lag; set a versioned `XAI_RESEARCH_MODEL` only when a reproducible pin is
+intentional.
 
 ### Content & Media
 | Skill | Description |

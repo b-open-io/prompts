@@ -314,10 +314,10 @@
     {
       "source_name": "researcher",
       "source_path": "agents/researcher.md",
-      "source_version": "1.2.12",
-      "source_hash": "sha256:247777d915dcbbf00690531539ba4ebeefe3843e2dfd6c7abfcc261c68059c90",
+      "source_version": "1.2.13",
+      "source_hash": "sha256:2a1df158c7c67c15f151642961b12150da232e302e2762c9b9e7500b0b58a30d",
       "generated_file": "bopen-researcher.toml",
-      "generated_hash": "sha256:7c8657a6fa319435f9a98d6c5760fce3a984e9135670f1a863f03370c9a0a4bf",
+      "generated_hash": "sha256:b28fb7b4ba49e93447f10e73dee4f3a225c8ecbfda42df508b5fe305e19fe72f",
       "agent_name": "bopen_researcher",
       "curated": true,
       "default_install": true
