@@ -6,6 +6,13 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.93] - 2026-07-15
+
+### Documentation
+
+- Documented Agent Master's loopback-plus-`Host` readiness strategy for local
+  Portless tools so the public runtime contract matches the shipped broker.
+
 ## [1.1.92] - 2026-07-15
 
 ### Fixed
