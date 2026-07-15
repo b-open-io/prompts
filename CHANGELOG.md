@@ -6,6 +6,25 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.85] - 2026-07-15
+
+### Added
+
+- Added an origin-restricted Agent Master broker that lets bopen.ai detect an
+  explicitly enabled desktop session and launch only Deck Creator, Visual
+  Planner, and Visual Wayfinder through fixed Portless namespaces.
+- Added an isolated static server for Visual Wayfinder so its active HTML runs
+  on `wayfinder.agent-master.localhost` instead of the privileged broker
+  origin.
+
+### Changed
+
+- Made the setup playground honor Portless-provided host, port, and public URL
+  values and require `--agent-master` before exposing the local broker API.
+- Protected website-to-desktop launches with an exact origin allowlist,
+  Private Network Access preflight support, and an ephemeral per-process
+  connection capability.
+
 ## [1.1.84] - 2026-07-15
 
 ### Changed

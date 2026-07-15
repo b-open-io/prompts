@@ -16,14 +16,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLAYGROUND_DIR = resolve(__dirname, "..", "playground");
 
 function usage(): never {
-  console.error(`Usage: bun skills/setup/scripts/playground_server.ts --runtime <${RUNTIME_IDS.join("|")}> [--port <number>] [--pack <toc.json|pack.json>] [--rebuild]`);
+  console.error(`Usage: bun skills/setup/scripts/playground_server.ts --runtime <${RUNTIME_IDS.join("|")}> [--port <number>] [--pack <toc.json|pack.json>] [--rebuild] [--agent-master]`);
   process.exit(1);
 }
 
-function parseArgs(argv: string[]): { runtime: Runtime; port: number; packPath?: string; rebuild: boolean } {
+function parseArgs(argv: string[]): { runtime: Runtime; port: number; packPath?: string; rebuild: boolean; agentMaster: boolean } {
   let runtime: string | undefined;
-  let port = 7788;
+  let port = Number.parseInt(process.env.PORT || "7788", 10);
   let rebuild = false;
+  let agentMaster = false;
   let packPath: string | undefined;
 
   for (let i = 0; i < argv.length; i++) {
@@ -36,6 +37,8 @@ function parseArgs(argv: string[]): { runtime: Runtime; port: number; packPath?:
       port = parsed;
     } else if (argv[i] === "--rebuild") {
       rebuild = true;
+    } else if (argv[i] === "--agent-master") {
+      agentMaster = true;
     } else if (argv[i] === "--pack") {
       const raw = argv[++i];
       if (!raw) usage();
@@ -43,12 +46,12 @@ function parseArgs(argv: string[]): { runtime: Runtime; port: number; packPath?:
     }
   }
 
-  if (!runtime || !isRuntime(runtime)) usage();
+  if (!runtime || !isRuntime(runtime) || !Number.isInteger(port) || port < 1 || port > 65535) usage();
   if (packPath && !existsSync(packPath)) {
     console.error(`Pack input not found: ${packPath}`);
     process.exit(1);
   }
-  return { runtime, port, packPath, rebuild };
+  return { runtime, port, packPath, rebuild, agentMaster };
 }
 
 function checkBun(): void {
@@ -71,7 +74,7 @@ function run(cmd: string[], cwd: string, env?: Record<string, string | undefined
   }
 }
 
-const { runtime, port, packPath, rebuild } = parseArgs(process.argv.slice(2));
+const { runtime, port, packPath, rebuild, agentMaster } = parseArgs(process.argv.slice(2));
 
 checkBun();
 
@@ -90,12 +93,20 @@ if (rebuild || !existsSync(nextBuildPath)) {
   run(["bun", "--bun", "next", "build", "--webpack"], PLAYGROUND_DIR);
 }
 
-console.error(`bopen-setup playground: http://127.0.0.1:${port}`);
+const host = process.env.HOST || "127.0.0.1";
+const browserUrl = process.env.PORTLESS_URL || `http://${host}:${port}`;
+console.error(`bopen-setup playground: ${browserUrl}`);
 console.error(`runtime arg: ${runtime}`);
+if (agentMaster) console.error("Agent Master broker: enabled");
 
-const proc = Bun.spawn(["bun", "--bun", "next", "start", "-p", String(port)], {
+const proc = Bun.spawn(["bun", "--bun", "next", "start", "-H", host, "-p", String(port)], {
   cwd: PLAYGROUND_DIR,
-  env: { ...process.env, BOPEN_SETUP_RUNTIME: runtime, BOPEN_SETUP_PACK: packPath },
+  env: {
+    ...process.env,
+    BOPEN_SETUP_RUNTIME: runtime,
+    BOPEN_SETUP_PACK: packPath,
+    BOPEN_AGENT_MASTER: agentMaster ? "1" : undefined,
+  },
   stdio: ["inherit", "inherit", "inherit"],
 });
 

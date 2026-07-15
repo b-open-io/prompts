@@ -468,6 +468,20 @@ the plugin detail view; they advertise a skill-owned dashboard or configurator
 without granting capabilities, persisting settings, or requiring the skill to
 own a separate build. This release uses that contract for **Visual Wayfinder**.
 
+When Agent Master is launched through Portless with `--agent-master`, it also
+exposes an origin-restricted local broker at
+`https://agent-master.localhost`. Skill pages on bopen.ai can detect that
+explicit session and request one of three compiled-in interfaces: Deck
+Creator, Visual Planner, or Visual Wayfinder. Each tool runs on its own named
+Portless origin; the website never submits an arbitrary command or filesystem
+path, and returned launch URLs are checked against the expected tool hostname.
+
+```bash
+portless agent-master bun skills/setup/scripts/playground_server.ts \
+  --runtime <claude|codex|grok|opencode|hermes|generic> \
+  --agent-master
+```
+
 Plugin and skill controls are declared in `settings.json` files validated by
 [`settings.schema.json`](settings.schema.json). The SessionStart hook may inject
 only declarations that opt into session context; sensitive values are always

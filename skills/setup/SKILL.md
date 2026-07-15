@@ -1,6 +1,6 @@
 ---
 name: setup
-version: 1.0.2
+version: 1.0.3
 description: This skill should be used when the user says "bopen setup", "setup ui", "harness install", "audit my setup", "install everything", "unified installer", "setup plan", "/bopen-setup", or wants a single view of which bOpen plugins, CLIs, env keys, third-party skills, agents, and hooks are installed across their agent harness. It audits live state, lets the user select what to fix, and emits a runtime-tailored instruction plan — it never installs anything itself. For hooks-only configuration (enabling/disabling a single hook without the full harness view) the hook-manager skill remains canonical; this skill's Overview and per-plugin tabs point there for that narrower job.
 ---
 
@@ -47,6 +47,18 @@ bun skills/setup/scripts/playground_server.ts --runtime <claude|codex|grok|openc
 
 A buildable Next.js app on port 7788; the launcher installs and builds on
 first run (needs network once), then starts instantly.
+
+**Agent Master + named local interfaces:**
+
+```bash
+portless agent-master bun skills/setup/scripts/playground_server.ts --runtime <claude|codex|grok|opencode|hermes|generic> --agent-master
+```
+
+This is the desktop-shell entrypoint. Portless supplies the app port and exposes
+the configurator at `https://agent-master.localhost`. The configurator also
+serves the origin-restricted Agent Master broker API used by bopen.ai to detect
+the local service and launch allowlisted skill interfaces. Install Portless
+globally (`npm install -g portless`); do not add it to the plugin dependencies.
 
 **Zero-install fallback (single file, works offline):**
 
