@@ -119,6 +119,7 @@ bunx skills add b-open-io/bopen-tools --skill agent-auditor
 bunx skills add b-open-io/bopen-tools --skill agent-decommissioning
 bunx skills add b-open-io/bopen-tools --skill agent-onboarding
 bunx skills add b-open-io/bopen-tools --skill advisor
+bunx skills add b-open-io/bopen-tools --skill auth-md
 bunx skills add b-open-io/bopen-tools --skill benchmark-skills
 bunx skills add b-open-io/bopen-tools --skill charting
 bunx skills add b-open-io/bopen-tools --skill check-version
@@ -328,6 +329,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 ### Integrations
 | Skill | Description |
 |-------|-------------|
+| `auth-md` | Design and validate WorkOS auth.md agent registration, ID-JAG, claim flows, Better Auth adapters, and delegated credential security without conflating adjacent protocols |
 | `geo-optimizer` | Audit for AI visibility and optimize for ChatGPT/GEO |
 | `mcp-apps` | Build secure MCP Apps with negotiated capabilities, exact CSP, structured data, and useful text fallbacks |
 | `plaid-integration` | Banking data via Plaid API |

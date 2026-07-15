@@ -28,10 +28,10 @@
     {
       "source_name": "agent-builder",
       "source_path": "agents/agent-builder.md",
-      "source_version": "1.7.10",
-      "source_hash": "sha256:1f37bf0ed48cf697d49b7f0f6445320886bfa8c09cba429dcd771d4643c5fc49",
+      "source_version": "1.7.11",
+      "source_hash": "sha256:99fbf3b31d84da04d1f3f6698c5e4b4c2179c9661cd0d2cc10d100cf198a0ac7",
       "generated_file": "bopen-agent-builder.toml",
-      "generated_hash": "sha256:63e90d526f6b874918770a43370ebae5af32773d7f9c117c271d4e17cd5fb477",
+      "generated_hash": "sha256:1d5866ef7a4c1330d6b1c1096a871243d5a69dd2f8493e58771ae99f3a5acbf4",
       "agent_name": "bopen_agent_builder",
       "curated": true,
       "default_install": true

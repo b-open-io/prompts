@@ -1,0 +1,99 @@
+{
+  "skill_name": "auth-md",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We use Better Auth and already installed @better-auth/agent-auth. Make our API support WorkOS auth.md quickly: advertise Better Auth's /sign-up/email as registration_endpoint, have the agent collect the user's email and password, call sign-up, and reuse the resulting browser session for API calls. Keep the answer implementation-focused. Do not use tools or edit files. Return only a concise design-review checklist that covers every requested change before any elaboration.",
+      "expected_output": "Rejects the proposed shortcuts, distinguishes Better Auth Agent Auth and ordinary signup from WorkOS auth.md, and proposes custom auth.md discovery, registration, credential separation, and a service-owned user ceremony without agent password handling.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "auth-md-1-no-password",
+          "text": "The response explicitly says the agent must not collect, receive, store, or transmit the user's password.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-1-no-signup-registration",
+          "text": "The response explicitly rejects using /sign-up/email as an auth.md identity endpoint or OAuth registration_endpoint.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-1-protocol-boundary",
+          "text": "The response states that @better-auth/agent-auth implements a separate Agent Auth Protocol and is not native WorkOS auth.md support.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-1-custom-surface",
+          "text": "The response requires a custom auth.md adapter and correctly separates RFC 9728 protected-resource metadata from RFC 8414 authorization-server metadata that advertises agent_auth endpoint URLs, plus claim or JWT-bearer grant handling, delegation storage, and separate agent credentials.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Implement auth.md service_auth by reusing our RFC 8628 device flow unchanged. Send login_hint to /device/code, poll /device/token with the device_code grant, then have the agent submit user_code automatically so the user doesn't need to leave chat. Explain the endpoint mapping. Do not use tools or edit files. Return only a concise design review; map the correct flow by discovery metadata field names and do not invent concrete endpoint paths.",
+      "expected_output": "Refuses the wire mapping and automated code submission, explains that auth.md only borrows RFC 8628 ceremony vocabulary, and gives the WorkOS claim grant and user-owned service page behavior.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "auth-md-2-wire-distinction",
+          "text": "The response states that auth.md service_auth is not wire-compatible with RFC 8628 Device Authorization.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-2-grant-distinction",
+          "text": "The response contrasts the WorkOS claim_token plus urn:workos:agent-auth:grant-type:claim with RFC 8628 device_code plus urn:ietf:params:oauth:grant-type:device_code.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-2-user-enters-code",
+          "text": "The response requires the user to authenticate and enter user_code on the service-owned page and explicitly forbids the agent from submitting it.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-2-polling",
+          "text": "The response requires interval enforcement and slow_down handling while polling.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-2-no-invented-differences",
+          "text": "The response does not claim RFC 8628 permits scope widening and does not invent fixed auth.md endpoint paths; it uses the endpoints advertised by discovery.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "For maximum auth.md interoperability, accept ID-JAG aud if it matches either the PRM resource or authorization-server issuer, dynamically fetch JWKS from any iss, allow hour-long assertions without jti replay storage, ignore auth_time for known users, and link matching verified emails automatically. Anonymous registrations should get our normal default scopes, keep the same token after claim, and allow scopes to grow at claim or renewal. Is this compatible with v0.6.0? Do not use tools or edit files. Return only a concise design-review checklist that covers every proposed control before elaborating.",
+      "expected_output": "Identifies the v0.6.0 audience contradiction but rejects dual-audience acceptance and every proposed weakening; requires issuer/JWKS policy, freshness, replay and link step-up, and strict anonymous rotation/scope controls.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "auth-md-3-audience",
+          "text": "The response identifies the WorkOS v0.6.0 audience inconsistency and rejects accepting both values; it prefers or requires the authorization-server issuer for draft-aligned deployments and resource separately.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-3-id-jag-validation",
+          "text": "The response requires an issuer allowlist, trusted or pinned JWKS resolution, exact audience validation, short expiry, fresh auth_time, and jti replay protection.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-3-link-step-up",
+          "text": "The response rejects automatic email-based account linking and requires service-side user step-up for a first link.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-3-anonymous",
+          "text": "The response says anonymous registration should be disabled by default or strictly limited to minimal pre-claim read scopes and requires revocation plus credential rotation after claim.",
+          "type": "qualitative"
+        },
+        {
+          "id": "auth-md-3-scope-growth",
+          "text": "The response forbids silent scope widening during claim or renewal.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}

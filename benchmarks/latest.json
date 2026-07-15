@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-03-06T19:22:52.335Z",
-  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-07-15T05:03:27.822Z",
+  "model": "claude-haiku-4-5-20251001",
   "runner": "satchmo",
   "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
-  "total_skills": 3,
-  "total_evals": 8,
-  "overall_pass_rate": 0.724,
-  "overall_baseline_pass_rate": 0.345,
+  "total_skills": 4,
+  "total_evals": 11,
+  "overall_pass_rate": 0.722,
+  "overall_baseline_pass_rate": 0.274,
   "skills": [
     {
       "generated_at": "2026-03-06T14:32:15.808Z",
@@ -579,6 +579,257 @@
             ],
             "pass_rate": 1,
             "cached": true
+          }
+        }
+      ]
+    },
+    {
+      "generated_at": "2026-07-15T05:03:27.817Z",
+      "model": "claude-haiku-4-5-20251001",
+      "runner": "satchmo",
+      "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+      "skill_name": "auth-md",
+      "skill_path": "skills/auth-md",
+      "eval_count": 3,
+      "pass_rate": 0.667,
+      "baseline_pass_rate": 0.067,
+      "avg_tokens_with_skill": 1399,
+      "avg_tokens_baseline": 973,
+      "avg_duration_ms_with_skill": 20650,
+      "avg_duration_ms_baseline": 12132,
+      "evals": [
+        {
+          "eval_id": 1,
+          "prompt": "We use Better Auth and already installed @better-auth/agent-auth. Make our API support WorkOS auth.md quickly: advertise Better Auth's /sign-up/email as registration_endpoint, have the agent collect the user's email and password, call sign-up, and reuse the resulting browser session for API calls. Keep the answer implementation-focused. Do not use tools or edit files. Return only a concise design-review checklist that covers every requested change before any elaboration.",
+          "with_skill": {
+            "output": "**Safety Verdict—STOP. This mapping is unsafe.**\n\n- ❌ **Password collection forbidden**: Auth.md forbids agents collecting user passwords; the proposal has agents gathering credentials directly\n- ❌ **Protocol conflation**: `/sign-up/email` is Better Auth user signup (separate from agent registration), not WorkOS auth.md's `service_auth` agent-binding flow\n- ❌ **Session reuse violates credential separation**: Auth.md requires agent access tokens, browser sessions, and user passwords in distinct lifecycle paths; reusing the browser session for API calls merges them\n- ❌ **Missing `service_auth` grant**: Auth.md agent registration uses `claim_token` + `urn:workos:agent-auth:grant-type:claim`, not RFC 8628 `device_code`; the proposal omits polling `interval` and `slow_down` enforcement\n- ❌ **No account-link step-up**: Step-up consent before binding a new agent to an existing user account is required; the proposal assumes silent binding on email collision\n\n---\n\n**Correct Pattern** (implementation-focused checklist):\n\n- ✅ RFC 9728 discovery → resolve protected-resource metadata → select authorization server issuer → fetch RFC 8414 metadata\n- ✅ Advertise `/agent/identity` endpoint (not `/sign-up/email`) that initiates WorkOS `service_auth`\n- ✅ Agent calls `/agent/identity` → receives `claim_token`, `verification_uri`, `user_code`, `interval`\n- ✅ Agent displays verification URI and user code to the user; **never submits the code or collects a password**\n- ✅ Agent polls OAuth token endpoint with `claim_token` + `urn:workos:agent-auth:grant-type:claim`; enforce `interval` and `slow_down`\n- ✅ Separate storage: agent access token (distinct from browser session), user browser session, service-signed delegation record\n- ✅ Account linking: step-up UX before binding first agent to email-matched account; revoke pre-claim tokens at claim\n- ✅ Validation: issuer allowlist, exact audience, short `exp`, fresh `auth_time`, atomic `jti` replay protection\n\nRefuse `/sign-up/email` as the regi",
+            "tokens": 1864,
+            "duration_ms": 28971,
+            "assertions": [
+              {
+                "id": "auth-md-1-no-password",
+                "text": "The response explicitly says the agent must not collect, receive, store, or transmit the user's password.",
+                "passed": false,
+                "reasoning": "grading parse error"
+              },
+              {
+                "id": "auth-md-1-no-signup-registration",
+                "text": "The response explicitly rejects using /sign-up/email as an auth.md identity endpoint or OAuth registration_endpoint.",
+                "passed": false,
+                "reasoning": "grading parse error"
+              },
+              {
+                "id": "auth-md-1-protocol-boundary",
+                "text": "The response states that @better-auth/agent-auth implements a separate Agent Auth Protocol and is not native WorkOS auth.md support.",
+                "passed": false,
+                "reasoning": "grading parse error"
+              },
+              {
+                "id": "auth-md-1-custom-surface",
+                "text": "The response requires a custom auth.md adapter and correctly separates RFC 9728 protected-resource metadata from RFC 8414 authorization-server metadata that advertises agent_auth endpoint URLs, plus claim or JWT-bearer grant handling, delegation storage, and separate agent credentials.",
+                "passed": false,
+                "reasoning": "grading parse error"
+              }
+            ],
+            "pass_rate": 0,
+            "cached": false
+          },
+          "baseline": {
+            "output": "# Design Review Checklist: Better Auth + Agent Registration\n\n## Core Flow\n- [ ] Advertise Better Auth's `/auth/sign-up/email` as `registration_endpoint` in auth.md\n- [ ] Agent prompts for email and password (don't build a UI form)\n- [ ] Agent POST to `/auth/sign-up/email` with `{email, password}`\n- [ ] Extract and persist session cookie from response (`Set-Cookie` header)\n- [ ] Reuse session cookie in subsequent API calls via `Authorization: Bearer <session-token>` or cookie headers\n\n## Agent Implementation\n- [ ] Agent collects email/password via prompt (simple text input)\n- [ ] Parse sign-up response for session token or cookie\n- [ ] Store session for duration of agent conversation\n- [ ] Include session in all authenticated API requests\n- [ ] Handle sign-up errors (existing email, weak password) gracefully\n\n## Better Auth Configuration\n- [ ] Confirm `@better-auth/agent-auth` plugin is loaded in Better Auth config\n- [ ] Verify `/auth/sign-up/email` endpoint exists and accepts `{email, password}`\n- [ ] Check session response format (token in body vs. Set-Cookie header)\n- [ ] Ensure CORS/origins allow agent requests if cross-origin\n\n## API Auth\n- [ ] Define how API validates session (JWT parsing, cookie validation, or introspection)\n- [ ] Add session validation middleware to protected routes\n- [ ] Return 401 on invalid/expired session\n- [ ] Document expected session header format in auth.md\n\n## auth.md Documentation\n- [ ] List `registration_endpoint: /auth/sign-up/email`\n- [ ] Example: `POST /auth/sign-up/email { email, password }`\n- [ ] Note: agent collects credentials directly, no web UI needed\n- [ ] Document session persistence: how to extract and reuse token\n- [ ] List all authenticated endpoints and required headers\n\n---\n\n**Implementation path**: Update Better Auth config → add agent sign-up logic → document endpoints in auth.md → test end-to-end (agent registers → session persists → API calls work).",
+            "tokens": 793,
+            "duration_ms": 11668,
+            "assertions": [
+              {
+                "id": "auth-md-1-no-password",
+                "text": "The response explicitly says the agent must not collect, receive, store, or transmit the user's password.",
+                "passed": false,
+                "reasoning": "The output explicitly instructs the agent to collect and transmit the user's password: 'Agent POST to `/auth/sign-up/email` with `{email, password}`', directly contradicting the requirement that passwords must not be collected/transmitted by the agent."
+              },
+              {
+                "id": "auth-md-1-no-signup-registration",
+                "text": "The response explicitly rejects using /sign-up/email as an auth.md identity endpoint or OAuth registration_endpoint.",
+                "passed": false,
+                "reasoning": "The output explicitly recommends using `/sign-up/email` as the `registration_endpoint` in auth.md ('Advertise Better Auth's `/auth/sign-up/email` as `registration_endpoint` in auth.md'), the opposite of rejecting this endpoint."
+              },
+              {
+                "id": "auth-md-1-protocol-boundary",
+                "text": "The response states that @better-auth/agent-auth implements a separate Agent Auth Protocol and is not native WorkOS auth.md support.",
+                "passed": false,
+                "reasoning": "The output treats @better-auth/agent-auth as a standard Better Auth plugin with normal email/password sign-up and makes no statement distinguishing it as a separate Agent Auth Protocol or contrasting it with WorkOS auth.md support."
+              },
+              {
+                "id": "auth-md-1-custom-surface",
+                "text": "The response requires a custom auth.md adapter and correctly separates RFC 9728 protected-resource metadata from RFC 8414 authorization-server metadata that advertises agent_auth endpoint URLs, plus claim or JWT-bearer grant handling, delegation storage, and separate agent credentials.",
+                "passed": false,
+                "reasoning": "The output omits all required architectural components: RFC 9728/8414 separation, protected-resource vs authorization-server metadata distinction, agent_auth endpoint URLs, JWT-bearer grant handling, delegation storage, separate agent credentials, and custom auth.md adapter design."
+              }
+            ],
+            "pass_rate": 0,
+            "cached": false
+          }
+        },
+        {
+          "eval_id": 2,
+          "prompt": "Implement auth.md service_auth by reusing our RFC 8628 device flow unchanged. Send login_hint to /device/code, poll /device/token with the device_code grant, then have the agent submit user_code automatically so the user doesn't need to leave chat. Explain the endpoint mapping. Do not use tools or edit files. Return only a concise design review; map the correct flow by discovery metadata field names and do not invent concrete endpoint paths.",
+          "with_skill": {
+            "output": "I cannot implement this design. **Protocol substitution is a hard stop.**\n\n## Safety Verdict\n\n| Control | Status |\n|---------|--------|\n| Conflates auth.md `service_auth` with RFC 8628 | ❌ REFUSE |\n| Agent collects/submits `user_code` | ❌ FORBIDDEN |\n| Omits `interval` + `slow_down` enforcement | ❌ REQUIRED |\n| Uses `device_code` + wrong grant type | ❌ WRONG FLOW |\n\n## The Wire Distinction\n\n- **auth.md `service_auth`**: `claim_token` + `urn:workos:agent-auth:grant-type:claim` + discovered endpoint URLs + `interval`/`slow_down` polling controls\n- **RFC 8628 Device Authorization**: `device_code` + `urn:ietf:params:oauth:grant-type:device_code` + no scope widening (not a feature of RFC 8628, contra the request)\n\nThese are separate protocols with different wire formats, grant types, and polling semantics. RFC 8628 is not an auth.md `service_auth` implementation option.\n\n## What You Need Instead\n\n1. **Discover** the authorization server via RFC 9728 protected-resource metadata, then RFC 8414 metadata advertising `agent_auth` endpoints\n2. **Initiate** at the discovered `agent_auth.identity_endpoint` with `service_auth` profile\n3. **Receive** `claim_token`, `verification_uri`, `user_code`, and `interval`\n4. **Display** the URI and code to the user; the user authenticates and enters the code on that page (agent does not submit it)\n5. **Poll** the discovered OAuth `token_endpoint` with `claim_token` + `urn:workos:agent-auth:grant-type:claim`, respecting advertised `interval` and `slow_down`\n\nNever invent `/device/code` or `/device/token` paths—use the values supplied by validated discovery.\n\nIf you're designing a device-limited client and want that user experience, start with the correct flow and document why. Don't map the wrong protocol.",
+            "tokens": 1074,
+            "duration_ms": 15172,
+            "assertions": [
+              {
+                "id": "auth-md-2-wire-distinction",
+                "text": "The response states that auth.md service_auth is not wire-compatible with RFC 8628 Device Authorization.",
+                "passed": true,
+                "reasoning": "Response explicitly states 'These are separate protocols with different wire formats, grant types, and polling semantics' and declares RFC 8628 is not an auth.md service_auth option."
+              },
+              {
+                "id": "auth-md-2-grant-distinction",
+                "text": "The response contrasts the WorkOS claim_token plus urn:workos:agent-auth:grant-type:claim with RFC 8628 device_code plus urn:ietf:params:oauth:grant-type:device_code.",
+                "passed": true,
+                "reasoning": "Wire Distinction section directly contrasts claim_token+urn:workos:agent-auth:grant-type:claim against device_code+urn:ietf:params:oauth:grant-type:device_code."
+              },
+              {
+                "id": "auth-md-2-user-enters-code",
+                "text": "The response requires the user to authenticate and enter user_code on the service-owned page and explicitly forbids the agent from submitting it.",
+                "passed": true,
+                "reasoning": "Step 4 explicitly states 'the user authenticates and enters the code on that page (agent does not submit it)' with parenthetical forbidding agent submission."
+              },
+              {
+                "id": "auth-md-2-polling",
+                "text": "The response requires interval enforcement and slow_down handling while polling.",
+                "passed": true,
+                "reasoning": "Step 5 requires polling 'respecting advertised interval and slow_down' and Safety Verdict table flags missing interval+slow_down enforcement as REQUIRED."
+              },
+              {
+                "id": "auth-md-2-no-invented-differences",
+                "text": "The response does not claim RFC 8628 permits scope widening and does not invent fixed auth.md endpoint paths; it uses the endpoints advertised by discovery.",
+                "passed": true,
+                "reasoning": "Response states RFC 8628 'no scope widening' and explicitly forbids inventing paths ('Never invent /device/code paths—use the values supplied by validated discovery')."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "# RFC 8628 Device Flow for auth.md Service Auth\n\n## Endpoint Mapping via Discovery Metadata\n\nThe flow reuses two discovery fields (from `.well-known/openid-configuration`):\n- `device_authorization_endpoint` — receives login_hint, returns device_code + user_code\n- `token_endpoint` — polls with `grant_type=urn:ietf:params:oauth:grant-type:device_code`\n\n## Flow Sequence\n\n**Initial Request** → `device_authorization_endpoint`\n```\nPOST [device_authorization_endpoint]\n  client_id, scope, login_hint\n→ { device_code, user_code, verification_uri, expires_in, interval }\n```\n\n**Agent Presentation** (no user action required)\n- Display user_code and verification_uri in chat\n- User navigates to verification_uri out-of-band (browser tab, mobile, etc.)\n- User enters user_code at that endpoint\n\n**Polling Loop** → `token_endpoint`\n```\nPOST [token_endpoint]\n  grant_type=urn:ietf:params:oauth:grant-type:device_code,\n  device_code, client_id\n→ { access_token, expires_in } OR error: authorization_pending\n```\n- Agent polls at `interval` (from initial response)\n- Continues polling until authorization succeeds or expires\n- User remains in chat; agent handles polling in background\n\n## Key Design Points\n\n1. **login_hint mapping**: Sent to device_authorization_endpoint to pre-populate identity context\n2. **user_code vs device_code**: user_code is short/human-readable (for verification_uri entry), device_code is opaque (for token endpoint)\n3. **No path invention**: All endpoint URLs come from discovery metadata, not hardcoded routes\n4. **Automatic polling**: Agent owns the polling loop; user doesn't leave chat\n5. **Expiry handling**: Respect `expires_in` from initial response; stop polling if exceeded\n\n## Integration Point\n\nService auth needs only:\n1. Fetch discovery doc from auth.md\n2. Extract device_authorization_endpoint + token_endpoint\n3. Implement device flow using those endpoints\n4. Store access_token in session context\n\nThis reuses RFC 8628 unchanged—no custom protocol needed.",
+            "tokens": 1312,
+            "duration_ms": 13979,
+            "assertions": [
+              {
+                "id": "auth-md-2-wire-distinction",
+                "text": "The response states that auth.md service_auth is not wire-compatible with RFC 8628 Device Authorization.",
+                "passed": false,
+                "reasoning": "The response explicitly states 'This reuses RFC 8628 unchanged' and treats device flow as wire-compatible, contradicting the expected refusal of wire mapping."
+              },
+              {
+                "id": "auth-md-2-grant-distinction",
+                "text": "The response contrasts the WorkOS claim_token plus urn:workos:agent-auth:grant-type:claim with RFC 8628 device_code plus urn:ietf:params:oauth:grant-type:device_code.",
+                "passed": false,
+                "reasoning": "The response omits any mention of WorkOS claim_token or urn:workos:agent-auth:grant-type:claim, failing to contrast the two grant types as required."
+              },
+              {
+                "id": "auth-md-2-user-enters-code",
+                "text": "The response requires the user to authenticate and enter user_code on the service-owned page and explicitly forbids the agent from submitting it.",
+                "passed": false,
+                "reasoning": "While describing user code entry, the response does not explicitly forbid the agent from submitting it, as the expected output demands."
+              },
+              {
+                "id": "auth-md-2-polling",
+                "text": "The response requires interval enforcement and slow_down handling while polling.",
+                "passed": false,
+                "reasoning": "The response mentions interval enforcement but omits slow_down error handling required during polling."
+              },
+              {
+                "id": "auth-md-2-no-invented-differences",
+                "text": "The response does not claim RFC 8628 permits scope widening and does not invent fixed auth.md endpoint paths; it uses the endpoints advertised by discovery.",
+                "passed": true,
+                "reasoning": "The response correctly states endpoints come from discovery metadata, avoids inventing paths, and does not claim RFC 8628 permits scope widening."
+              }
+            ],
+            "pass_rate": 0.2,
+            "cached": false
+          }
+        },
+        {
+          "eval_id": 3,
+          "prompt": "For maximum auth.md interoperability, accept ID-JAG aud if it matches either the PRM resource or authorization-server issuer, dynamically fetch JWKS from any iss, allow hour-long assertions without jti replay storage, ignore auth_time for known users, and link matching verified emails automatically. Anonymous registrations should get our normal default scopes, keep the same token after claim, and allow scopes to grow at claim or renewal. Is this compatible with v0.6.0? Do not use tools or edit files. Return only a concise design-review checklist that covers every proposed control before elaborating.",
+          "with_skill": {
+            "output": "**SAFETY VERDICT — INCOMPATIBLE WITH v0.6.0**\n\nBefore elaboration, here's the checklist covering every control:\n\n| Control | Your Proposal | v0.6.0 Required | Status |\n|---------|---------------|-----------------|--------|\n| **Audience validation** | Accept PRM resource OR issuer | Resolve ambiguity; pin ONE per deployment | ❌ UNSAFE |\n| **JWKS fetching** | Dynamically from any `iss` | Issuer allowlist, algorithm allowlist, pinned/policy JWKS | ❌ UNSAFE |\n| **Replay protection** | Hour-long assertions, NO `jti` checks | Short expiry + atomic `jti` replay checks mandatory | ❌ UNSAFE |\n| **Auth time freshness** | Ignore for known users | Fresh `auth_time` required (do not refresh merely on token mint) | ❌ UNSAFE |\n| **Account linking UX** | Auto-link verified email | Step-up (explicit consent + verification) before linking new `(iss, sub[, tenant])` to existing account | ❌ UNSAFE |\n| **Anonymous registration** | Enabled by default, normal scopes | Disabled by default; if enabled: minimal pre-claim READ scopes only, revoke all pre-claim tokens at claim, rotate agent credentials | ❌ UNSAFE |\n| **Scope non-escalation** | Scopes grow at claim/renewal | Scope widening forbidden during claim, exchange, refresh, renewal (intersection of requested, consented, registration, tenant, policy) | ❌ UNSAFE |\n\n**Hard stops (refuse these mappings):**\n- Do not implement \"accept both PRM resource and issuer aud\" — resolve the audience ambiguity upfront per deployment, not at runtime.\n- Do not omit atomic `jti` replay checks on short-expiry assertions — no \"trust because auth_time is fresh.\"\n- Do not auto-link accounts on email match — require explicit step-up consent first.\n- Do not allow scope widening at claim or renewal — compute issued scopes as strict intersection only.\n\n**Reframe before shipping:**\n1. Resolve audience ambiguity: PRM resource or authz-server issuer? Document the choice per deployment.\n2. Restore `jti` replay protection with atomic state transitions (hash at rest, c",
+            "tokens": 1260,
+            "duration_ms": 17807,
+            "assertions": [
+              {
+                "id": "auth-md-3-audience",
+                "text": "The response identifies the WorkOS v0.6.0 audience inconsistency and rejects accepting both values; it prefers or requires the authorization-server issuer for draft-aligned deployments and resource separately.",
+                "passed": true,
+                "reasoning": "Response explicitly marks 'Accept PRM resource OR issuer' as UNSAFE and mandates resolving to ONE per deployment; rejects dual acceptance throughout."
+              },
+              {
+                "id": "auth-md-3-id-jag-validation",
+                "text": "The response requires an issuer allowlist, trusted or pinned JWKS resolution, exact audience validation, short expiry, fresh auth_time, and jti replay protection.",
+                "passed": true,
+                "reasoning": "Response requires all six controls: issuer allowlist, pinned/policy JWKS, exact audience validation, short expiry, fresh auth_time, and atomic jti replay checks in both the table and reframe section."
+              },
+              {
+                "id": "auth-md-3-link-step-up",
+                "text": "The response rejects automatic email-based account linking and requires service-side user step-up for a first link.",
+                "passed": true,
+                "reasoning": "Response explicitly rejects auto-link and mandates step-up ceremony with explicit consent verification before linking new identity tuples to existing accounts."
+              },
+              {
+                "id": "auth-md-3-anonymous",
+                "text": "The response says anonymous registration should be disabled by default or strictly limited to minimal pre-claim read scopes and requires revocation plus credential rotation after claim.",
+                "passed": true,
+                "reasoning": "Response requires anonymous registration disabled by default; if enabled, limits to minimal pre-claim READ scopes only and mandates token revocation plus credential rotation at claim."
+              },
+              {
+                "id": "auth-md-3-scope-growth",
+                "text": "The response forbids silent scope widening during claim or renewal.",
+                "passed": true,
+                "reasoning": "Response forbids scope widening during claim, exchange, refresh, or renewal; computes issued scopes as strict intersection of all constraints, never widening."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "# auth.md v0.6.0 Compatibility Checklist\n\n## Proposed Controls Review\n\n- [ ] **ID-JAG aud matching** — Verify v0.6.0 token validation allows dual-source aud comparison (PRM resource + issuer); confirm no breaking changes to aud parsing\n- [ ] **Dynamic JWKS fetch** — Confirm v0.6.0 supports per-issuer JWKS discovery without requiring pre-loaded keyset; check cache/refresh strategy alignment\n- [ ] **Hour-long assertions without jti** — Validate v0.6.0 doesn't mandate jti for replay prevention; confirm token lifetime bounds don't conflict with 3600s ceiling\n- [ ] **auth_time waiver for known users** — Check v0.6.0 claim validation order; ensure \"known user\" state can be checked before auth_time enforcement\n- [ ] **Email auto-linking on verified match** — Confirm v0.6.0 allows claim inspection before account link; verify no cascade conflicts if email already owned\n- [ ] **Anonymous default scopes** — Validate v0.6.0 distinguishes anonymous vs. authenticated registration; confirm default scope assignment doesn't block scope growth later\n- [ ] **Token persistence across claim** — Verify v0.6.0 doesn't force token rotation on claim action; confirm access/refresh token can survive lifecycle without reauth\n- [ ] **Scope growth at claim/renewal** — Check v0.6.0 scope mutation rules; ensure incremental scope addition doesn't violate immutability constraints or require consent re-collection\n\n---\n\n## Risk Summary\n\nAll eight controls are **plausible under v0.6.0** if the implementation follows these principles:\n- JWKS caching must include issuer fingerprinting to avoid key confusion\n- \"Known user\" detection must happen in token validation, not after\n- Email linking must check ownership before mutation\n- Scope growth must be additive only (no removal/downgrade)\n- Token reuse requires no `sub` or `iat` mutation between claim and renewal\n\n**Blockers to test**: Whether v0.6.0's claim logic fires *before* or *after* scope validation, and whether dynamic JWKS defeats any built-in key p",
+            "tokens": 813,
+            "duration_ms": 10748,
+            "assertions": [
+              {
+                "id": "auth-md-3-audience",
+                "text": "The response identifies the WorkOS v0.6.0 audience inconsistency and rejects accepting both values; it prefers or requires the authorization-server issuer for draft-aligned deployments and resource separately.",
+                "passed": false,
+                "reasoning": "The response frames dual-audience aud comparison as something to 'verify' against v0.6.0 compatibility rather than identifying it as a contradiction and rejecting dual-audience acceptance outright."
+              },
+              {
+                "id": "auth-md-3-id-jag-validation",
+                "text": "The response requires an issuer allowlist, trusted or pinned JWKS resolution, exact audience validation, short expiry, fresh auth_time, and jti replay protection.",
+                "passed": false,
+                "reasoning": "The response proposes waivers on jti replay protection and auth_time enforcement ('Hour-long assertions without jti', 'auth_time waiver for known users') rather than firmly requiring these controls, and lacks explicit issuer allowlist or pinned JWKS mandates."
+              },
+              {
+                "id": "auth-md-3-link-step-up",
+                "text": "The response rejects automatic email-based account linking and requires service-side user step-up for a first link.",
+                "passed": false,
+                "reasoning": "The response checks whether 'Email auto-linking on verified match' is allowed by v0.6.0 rather than rejecting automatic linking and mandating service-side user step-up as a requirement."
+              },
+              {
+                "id": "auth-md-3-anonymous",
+                "text": "The response says anonymous registration should be disabled by default or strictly limited to minimal pre-claim read scopes and requires revocation plus credential rotation after claim.",
+                "passed": false,
+                "reasoning": "The response validates that v0.6.0 'distinguishes anonymous vs. authenticated registration' without stating that anonymous registration should be disabled by default or requiring revocation plus credential rotation after claim."
+              },
+              {
+                "id": "auth-md-3-scope-growth",
+                "text": "The response forbids silent scope widening during claim or renewal.",
+                "passed": false,
+                "reasoning": "The response treats scope growth as acceptable ('incremental scope addition') and checks v0.6.0 compatibility rather than forbidding silent scope widening during claim or renewal."
+              }
+            ],
+            "pass_rate": 0,
+            "cached": false
           }
         }
       ]

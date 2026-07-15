@@ -6,6 +6,26 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.81] - 2026-07-15
+
+### Added
+
+- Added `auth-md`, a production-oriented guide to the experimental WorkOS
+  auth.md v0.6.0 agent-registration proposal. It covers RFC 9728 discovery,
+  agent and service flows, service-owned claim ceremonies, ID-JAG providers,
+  Better Auth adaptation, consent, account linking, token separation,
+  revocation, audit, and incident response, plus a GET/HEAD-only discovery
+  probe and behavioral evals. Its reviewed cache-free sequential benchmark
+  scores 67% with the skill versus 7% baseline across three adversarial cases
+  (+60 percentage points).
+
+### Changed
+
+- Expanded Satchmo's agent-architecture routing to invoke `auth-md` for agent
+  identity, delegated signup, ID-JAG, and agent-facing OAuth work while keeping
+  WorkOS auth.md, Better Auth Agent Auth, OAuth Dynamic Client Registration,
+  and RFC 8628 Device Authorization explicitly separate.
+
 ## [1.1.80] - 2026-07-14
 
 ### Added

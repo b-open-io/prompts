@@ -1,0 +1,4 @@
+interface:
+  display_name: "auth.md"
+  short_description: "Design and validate safe auth.md agent registration"
+  default_prompt: "Use $bopen-tools:auth-md to design or validate a safe WorkOS auth.md agent-registration flow."

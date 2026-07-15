@@ -1,5 +1,39 @@
 # Dual Claude Code and Codex plugin port
 
+## WorkOS auth.md skill
+
+- [x] Verify WorkOS auth.md v0.6.0, the ID-JAG draft, RFC 9728, and Better Auth primary sources.
+- [x] Map the four distinct protocol families and define safe flow-selection guidance.
+- [x] Create `skills/auth-md` with a lean SKILL.md, focused references, a read-only discovery probe, and evals.
+- [x] Route Satchmo through the skill with synchronized skills/tools metadata and a patch version bump.
+- [x] Update README, CHANGELOG, inventories, and generated metadata without changing plugin manifests.
+- [x] Run targeted skill, script, agent, documentation, repository, terminology, and secret-safety validation.
+- [x] Review the exact diff and document release-only steps plus the separate Sigma Auth follow-up.
+
+### Review
+
+- Added the experimental WorkOS auth.md v0.6.0 skill with six focused
+  references, a GET/HEAD-only discovery probe, five deterministic probe tests,
+  and three protocol-confusion/security evals.
+- A cache-free sequential benchmark in an isolated copy scored 67% with the
+  skill versus 7% baseline (+60 percentage points). One correct with-skill
+  response received a zero because the judge returned unparsable grading JSON;
+  the reviewed result is preserved without replacing it with a favorable
+  earlier sample. Release `1.1.81` publishes the reviewed aggregate for
+  bopen.ai's ISR-backed benchmark page.
+- Satchmo now routes agent identity, delegated signup, auth.md, ID-JAG, and
+  agent-facing OAuth work through the skill at agent version `1.7.11`; the
+  generated Codex adapter and manifest are synchronized.
+- Both plugin manifests were synchronized at `1.1.81`, the release was pushed
+  to the default branch, and both host marketplaces were refreshed and
+  smoke-tested. The bopen-ai and Sigma repositories were not modified.
+- Sigma follow-up: choose service/provider roles; pin the ID-JAG audience
+  contract; publish RFC 9728 and authorization-server metadata; implement the
+  custom Better Auth adapter and service-owned claim ceremony; separate agent
+  tokens from browser sessions; enforce issuer/JWKS, expiry, `auth_time`,
+  `jti`, client, tenant, consent, account-link, scope, revocation, audit, and
+  incident controls; then run negative-path conformance tests with the probe.
+
 ## Visual Wayfinder and generative UI refresh
 
 - [x] Inspect Wayfinder, JSON Render, generative UI, MCP Apps, settings, skill,
