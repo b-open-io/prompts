@@ -6,6 +6,16 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.88] - 2026-07-15
+
+### Changed
+
+- Expanded `visual-proposal` with option-by-option cross-examination and an
+  optional independent judging bench. Judges may rank or name a winner only
+  when the user explicitly requests a recommendation or verdict; their fixed
+  lenses, rationales, tally, and dissent remain separate from the neutral
+  option cards and do not replace the human decision.
+
 ## [1.1.87] - 2026-07-15
 
 ### Added

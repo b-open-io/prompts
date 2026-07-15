@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.1
+version: 0.0.2
 description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
 ---
 
@@ -95,6 +95,33 @@ option**:
 Run the advocates concurrently because they are independent. Ground every
 advocate's claims in the same evidence used by the host; an advocate that
 invents facts is worse than no advocate.
+
+### Add debate or a judging bench only when useful
+
+Use two optional upgrades to make parallel advocacy more decision-useful:
+
+- **Cross-examination.** Ask each advocate not only to argue for their option but
+  to argue against each opponent by name — the sharpest, most specific weakness
+  of each rival relative to their own. The page then shows, per option, both the
+  case for it and how its rivals attack it, so the reviewer sees the collisions,
+  not three monologues.
+- **A judging panel.** Add judges only when the user explicitly requests a
+  recommendation, ranking, winner, or verdict. After the advocates, dispatch a
+  separate set of agents, distinct from every advocate, as judges. Give each
+  judge the full record: the problem, options, confirmed facts, and all
+  advocates' cases and rebuttals. Assign a distinct evaluative lens (e.g.
+  correctness/robustness,
+  efficiency/simplicity, ecosystem adoption/interop). Each judge names their
+  lens, picks a winner and runner-up, and states the deciding factor. The page
+  presents the verdicts in a clearly separated judgment section — a tally plus
+  each judge's one-line rationale. Keep verdict badges out of the neutral option
+  cards.
+
+Fix the judging lenses and evaluation rubric before showing judges the advocacy
+record. Present every judge's verdict, including dissent; never collapse a tally
+into objective truth. This remains within Rule 1 only because the user requested
+the recommendation and the host presents the attributed verdicts without adding
+one. The human reviewer makes the final call.
 
 ## The grounding rule
 
