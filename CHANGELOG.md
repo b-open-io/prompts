@@ -6,6 +6,14 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.86] - 2026-07-15
+
+### Changed
+
+- Added a production standalone build for the Agent Master broker so the
+  signed desktop app can run the local configurator without a bOpen Tools
+  checkout or a user-installed dependency tree.
+
 ## [1.1.85] - 2026-07-15
 
 ### Added

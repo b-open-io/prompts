@@ -475,6 +475,9 @@ explicit session and request one of three compiled-in interfaces: Deck
 Creator, Visual Planner, or Visual Wayfinder. Each tool runs on its own named
 Portless origin; the website never submits an arbitrary command or filesystem
 path, and returned launch URLs are checked against the expected tool hostname.
+The signed Agent Master desktop release uses this same broker as a Next.js
+standalone build bundled with its pinned Bun and Portless runtimes, so desktop
+users do not need a bOpen Tools checkout or global JavaScript tooling.
 
 ```bash
 portless agent-master bun skills/setup/scripts/playground_server.ts \
