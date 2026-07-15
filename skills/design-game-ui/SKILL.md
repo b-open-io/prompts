@@ -1,6 +1,6 @@
 ---
 name: design-game-ui
-version: 0.0.1
+version: 0.0.2
 description: >-
   This skill should be used when the user asks for "game UI", "app-to-game UI",
   "video game HUD", "controller navigation", "D-pad navigation", "TV app",
@@ -27,6 +27,7 @@ to gameplay/input-system engineering unless the task also includes menus or HUD.
 - Make Back predictable and non-destructive; process it against an explicit layer stack.
 - Keep critical television UI inside the selected safe area and test it at couch distance.
 - Pair important state changes with redundant visual and, where appropriate, audio, haptic, or narrated feedback.
+- Never make sound, haptics, motion, or color the only way to understand an action or state.
 - Validate on representative target devices and constrained hardware, not only in a desktop browser.
 
 ## Start with an interface inventory
@@ -68,6 +69,27 @@ Work in this order:
 6. **Inclusive paths** — Specify remapping, digital alternatives, text scaling, captions, color-independent cues, reduced motion, narration, localization, and RTL. Read `references/accessibility-localization.md`.
 7. **Proof** — Create a device matrix, focus traversal fixtures, performance budgets, onboarding checks, and telemetry plan. Read `references/validation-telemetry.md`.
 
+## Compose companion capabilities
+
+Keep this skill responsible for the interaction contract, then bring in only
+the capabilities required to produce or prove the requested result. Read
+`references/collaboration-and-companion-skills.md` before assigning work.
+
+The most common companion is `Skill(bopen-tools:ui-audio-theme)`. Invoke it
+when the user wants actual focus, activation, success, error, modal, or
+notification sounds rather than only an audio-event specification. Have
+**Frames** (`audio-specialist`) generate, audition, normalize, and integrate the
+sound set through its visual sound picker so the user can hear alternatives,
+regenerate a slot, and explicitly accept each result. Keep semantic event
+meaning, repeat suppression, accessibility, volume/off behavior, and acceptance
+criteria in the game-UI contract. Do not duplicate audio generation or picker
+logic in this skill.
+
+Use the same bounded handoff pattern for Lisa and Gemskills visual assets,
+Kris's 3D or diegetic UI, Theo's application integration, Torque's constrained
+hardware performance work, and Jason's traversal and device testing. Do not
+dispatch every collaborator by default.
+
 ## Convert pointer behavior deliberately
 
 Never map hover directly to focus without checking its meaning. Convert each pointer behavior explicitly:
@@ -87,15 +109,16 @@ Keep pointer input as an optional parallel path when the platform supports it. S
 Before implementation, return one cohesive contract containing all of the following:
 
 1. **Scope and assumptions** — target platforms, devices, viewing distance, performance tier, accessibility and localization requirements.
-2. **Content-preservation map** — existing route/surface/action/state owner → proposed shell/screen/HUD/overlay placement; flag anything removed or behaviorally changed.
-3. **Semantic action table** — action, purpose, availability, keyboard binding, controller binding, remote binding, hold/repeat behavior, rebinding policy, and visible glyph.
-4. **Focus specification** — focus containers and entry points, directional rules or explicit neighbors, wrap policy, scroll behavior, memory, recovery, disabled states, and pointer-to-focus handoff.
-5. **Layer and Back table** — ordered layers, input owner, focus trap, opening focus, close condition, Back result, and focus return target.
-6. **Screen and HUD plan** — safe area, hierarchy, visibility states, occlusion risks, notification queue budget, configurable modules, scale and opacity options.
-7. **Feedback specification** — focus, activation, error, success, connection, and destructive-event treatments across visuals, sound, haptics, narration, and reduced-motion mode.
-8. **Implementation phases** — shared input/focus foundation first, then shell, migrated screens, settings and overlays, polish, and platform hardening. Name existing state owners to preserve.
-9. **Validation matrix** — device × resolution × locale × accessibility mode × flow, with acceptance criteria and performance targets.
-10. **Telemetry and iteration plan** — navigation failures, abandoned flows, remaps, Back loops, focus recoveries, latency, onboarding completion, and privacy-safe review cadence.
+2. **Capability and ownership map** — needed lane, trigger, lead, companion skill or agent, input contract, deliverable, acceptance owner, and omitted lanes with reasons.
+3. **Content-preservation map** — existing route/surface/action/state owner → proposed shell/screen/HUD/overlay placement; flag anything removed or behaviorally changed.
+4. **Semantic action table** — action, purpose, availability, keyboard binding, controller binding, remote binding, hold/repeat behavior, rebinding policy, and visible glyph.
+5. **Focus specification** — focus containers and entry points, directional rules or explicit neighbors, wrap policy, scroll behavior, memory, recovery, disabled states, and pointer-to-focus handoff.
+6. **Layer and Back table** — ordered layers, input owner, focus trap, opening focus, close condition, Back result, and focus return target.
+7. **Screen and HUD plan** — safe area, hierarchy, visibility states, occlusion risks, notification queue budget, configurable modules, scale and opacity options.
+8. **Feedback specification** — focus, activation, error, success, connection, and destructive-event treatments across visuals, sound, haptics, narration, and reduced-motion mode. If sounds are produced, include stable event IDs and asset acceptance criteria.
+9. **Implementation phases** — shared input/focus foundation first, then shell, migrated screens, settings and overlays, polish, and platform hardening. Name existing state owners to preserve.
+10. **Validation matrix** — device × resolution × locale × accessibility mode × flow, with acceptance criteria and performance targets.
+11. **Telemetry and iteration plan** — navigation failures, abandoned flows, remaps, Back loops, focus recoveries, latency, onboarding completion, and privacy-safe review cadence.
 
 If the user requested code, implement against this contract in vertical slices. Prove controller-only completion for each slice before migrating the next screen.
 
@@ -112,3 +135,4 @@ Use platform conventions as constraints, not as interchangeable decoration. Reco
 - `references/hud-overlays-feedback.md` — HUD budgets, overlay layers, Back, notification queues, motion, audio, and haptics.
 - `references/accessibility-localization.md` — accessible input, narration, captions, color, motion, RTL, and text expansion.
 - `references/validation-telemetry.md` — device matrix, fixtures, onboarding, performance, analytics, and release gates.
+- `references/collaboration-and-companion-skills.md` — bounded handoffs to audio, visual, 3D, implementation, performance, and testing capabilities.

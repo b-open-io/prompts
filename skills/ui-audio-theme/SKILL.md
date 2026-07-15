@@ -1,12 +1,13 @@
 ---
-version: 1.0.5
+version: 1.0.6
 name: ui-audio-theme
 description: >-
   This skill should be used when the user asks to "generate a UI sound theme",
   "create button click sounds for my app", "design notification sounds", or
-  "build a coordinated audio theme for my dashboard or wallet app". Generates
-  cohesive UI audio themes with subtle, minimal sound effects mapped to
-  standard interaction constants (clicks, notifications, navigation
+  "build a coordinated audio theme for my dashboard or wallet app", "make game
+  menu sounds", "create HUD feedback sounds", or "design TV navigation sounds".
+  Generates cohesive UI audio themes with subtle, minimal sound effects mapped
+  to standard interaction constants (clicks, notifications, navigation
   transitions) via the ElevenLabs API, with an interactive local sound picker
   for auditioning candidates before accepting them into the theme.
 location: user
@@ -17,6 +18,20 @@ location: user
 Generate cohesive sets of subtle, minimal UI sound effects using ElevenLabs text-to-sound-effects API. Create "audio themes" — coordinated sets of sounds that share a common aesthetic and map to standard UI interaction constants.
 
 Requires `ELEVENLABS_API_KEY` set in the environment. See README.md for setup instructions.
+
+## Relationship to game and television UI
+
+This skill is the single owner of UI-sound candidate generation, visual
+audition, normalization, accepted asset manifests, and reusable sound-slot or
+picker improvements. `design-game-ui` owns the upstream semantic feedback-event
+map: what each event means, exactly when it fires, its required visual
+equivalent, repetition policy, accessibility, and acceptance criteria.
+
+When invoked from `design-game-ui`, consume that event map rather than
+redesigning navigation or inventing raw-key-triggered sounds. Frames owns audio
+production; the application engineer owns runtime playback lifecycle; the
+game-UI lead accepts the integrated behavior. `voice-clone` is separate and
+should be used only when the requested asset is spoken voice.
 
 ## Workflow
 
@@ -101,6 +116,13 @@ unlimited fresh candidates via ElevenLabs (auto-normalized), and per-candidate
 winning prompt in `theme.json`. Run it in the background, hand the user the
 URL, and continue once they've picked. No CSP constraints because it's
 localhost.
+
+The picker is the default review interface, not an optional polish step. Give
+the user the local URL and wait for explicit per-slot selections. Do not treat
+the first generated baseline as accepted, and do not substitute filenames or a
+written description for listening. After acceptance, return the recorded
+winning prompts and event-to-file manifest to Frames or the implementation
+owner.
 
 **B. Artifact audition board (Claude Code only, when a hosted page is
 preferred):** hosted Artifacts enforce a strict CSP — no external requests, so

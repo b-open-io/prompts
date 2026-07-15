@@ -6,6 +6,26 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.79] - 2026-07-14
+
+### Changed
+
+- Expanded `design-game-ui` with an explicit capability and ownership map for
+  UI audio, generated visuals, diegetic 3D, application integration,
+  constrained-device performance, and traversal testing. Ridd now invokes
+  `ui-audio-theme` and Frames when actual sound assets are requested while
+  retaining the semantic event, accessibility, repeat, and acceptance contract.
+- Documented bounded handoffs to Lisa and Gemskills, Kris, Theo, Torque, and
+  Jason, plus research escalation to Parker and `x-research`, so related
+  capabilities are composed when triggered rather than dispatched for every
+  game or television interface task. Narrowed Ridd's former generic audio-skill
+  trigger to requested sound production or an approved feedback-event map.
+- Clarified that `ui-audio-theme` is the single UI-sound production workflow
+  and made its local visual picker the default feedback loop for game HUD and
+  television navigation sounds. Generated baselines now require explicit
+  per-slot user audition and acceptance before Frames hands assets to the
+  runtime owner; `design-game-ui` retains only semantic event requirements.
+
 ## [1.1.78] - 2026-07-14
 
 ### Fixed

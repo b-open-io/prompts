@@ -117,12 +117,19 @@
 - [x] Run repository, skill, documentation, manifest, and installation tests.
 - [x] Patch-bump both manifests, commit explicit paths, push master, refresh
   both plugin installs, and smoke-test fresh Claude and Codex sessions.
+- [x] Add a bounded companion-capability map so Ridd composes Frames and
+  `ui-audio-theme`, Lisa/Gemskills, Kris, Theo, Torque, and Jason when their
+  production or validation lanes are triggered.
+- [x] Keep UI audio non-duplicative: `design-game-ui` supplies semantic events,
+  while Frames and `ui-audio-theme` own generation and the mandatory visual
+  picker feedback loop.
 
 ### Review
 
-- Added `design-game-ui` with seven focused references and a ten-part design
+- Added `design-game-ui` with eight focused references and an eleven-part design
   contract covering app preservation, semantic input, spatial focus, Back,
-  television constraints, HUD feedback, accessibility, and validation.
+  television constraints, HUD feedback, accessibility, validation, and
+  specialist ownership.
 - Ridd now owns 2D game/TV interface work; Kris explicitly owns diegetic and
   world-space interfaces. Seven forward scenarios verify those boundaries.
 - Established a reconstructed changelog baseline and exact README inventories,
@@ -137,3 +144,9 @@
   exposed an unsupported `_comment` field in the Codex hook manifest. The
   follow-up `1.1.78` patch removes it, adds a schema regression assertion, and
   repeats marketplace refresh plus fresh Claude/Codex smoke tests.
+- The `1.1.79` follow-up makes UI audio an explicit semantic handoff to Frames
+  through `ui-audio-theme` and documents bounded visual, 3D, framework,
+  performance, and QA composition without turning every request into a fan-out.
+- `ui-audio-theme` remains the only UI-sound generator and now explicitly
+  covers game menus, HUD feedback, and TV navigation. Its localhost visual
+  picker is the default approval interface; `voice-clone` remains separate.

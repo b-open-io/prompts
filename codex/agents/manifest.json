@@ -160,10 +160,10 @@
     {
       "source_name": "designer",
       "source_path": "agents/designer.md",
-      "source_version": "1.0.19",
-      "source_hash": "sha256:5087bb6fcfce4c20354875e3384c5365bffdde4fd9da23dbc7a9918bfb7e81ea",
+      "source_version": "1.0.20",
+      "source_hash": "sha256:220a957219262b9d023fd8f6fefee905f5245ccc2f8763cd501ba1bb03f6a156",
       "generated_file": "bopen-designer.toml",
-      "generated_hash": "sha256:551df8ca9745262160ae4625eee0d044319bd98838816a6eebf70047c836b220",
+      "generated_hash": "sha256:c4587ddc0e0e2d826c53e936474c0dbe01e44821b71c744187494ccda09521e5",
       "agent_name": "bopen_designer",
       "curated": false,
       "default_install": false

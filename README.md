@@ -260,7 +260,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `html-to-pdf` | Design print-ready collateral and render it through a Playwright PDF pipeline |
 | `humanize` | Remove AI writing patterns and restore natural voice |
 | `persona` | Capture writing style profiles and social intelligence |
-| `ui-audio-theme` | Generate cohesive UI audio themes with subtle sound effects |
+| `ui-audio-theme` | Generate and visually audition cohesive app, game HUD, and TV navigation sound themes |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
 ### Development & Quality
@@ -272,7 +272,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `code-audit-scripts` | Deterministic security and quality scans (secrets, debug artifacts) |
 | `confess` | Analyze and document code issues and technical debt |
 | `create-next-project` | Scaffold a new Next.js app with Bun and Biome |
-| `design-game-ui` | Convert app content into controller/remote-first game HUD and television interfaces |
+| `design-game-ui` | Convert app content into controller/remote-first game HUD and television interfaces, composing audio, visual, 3D, performance, and QA specialists as needed |
 | `ezkl` | Build and verify zero-knowledge machine-learning proofs with EZKL |
 | `free-roam-testing` | Explore a running app like a curious human to discover new bugs and UX failures |
 | `frontend-performance` | Optimize Next.js performance using Lighthouse and bundle analysis |
