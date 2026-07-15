@@ -38,6 +38,12 @@ export type SkillActivityState = {
 	isLive: boolean
 }
 
+export type SkillInterfaceState = {
+	skill: string
+	label: string
+	description?: string
+}
+
 export type PluginState = {
 	name: string
 	installedClaude: string | null
@@ -48,6 +54,7 @@ export type PluginState = {
 	hooks: HookState[]
 	hooksConfigPath: string | null
 	skillActivity?: Record<string, SkillActivityState>
+	skillInterfaces?: SkillInterfaceState[]
 }
 
 export type PackRuntime = "claude" | "codex" | "grok"

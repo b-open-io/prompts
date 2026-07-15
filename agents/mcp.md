@@ -3,9 +3,9 @@ name: mcp
 display_name: "Orbit"
 title: "MCP Specialist"
 icon: https://bopen.ai/images/agents/orbit.png
-version: 3.0.25
+version: 3.0.26
 description: |-
-  Use this agent when the user asks to "set up an MCP server", "connect Claude Code to my database via MCP", "fix this MCP connection error", "publish my MCP server to npm", or needs help with PostgreSQL/Redis/MongoDB/GitHub/Vercel MCP servers, package-manager detection, or the Tool Search Tool. Not for general third-party API integrations (use integration-expert) or building agent tool-calling logic (use agent-builder).
+  Use this agent when the user asks to "set up an MCP server", "build an MCP App", "add an interactive UI to an MCP tool", "connect Claude Code to my database via MCP", "fix this MCP connection error", "publish my MCP server to npm", or needs help with MCP Apps, JSON Render integration, PostgreSQL/Redis/MongoDB/GitHub/Vercel MCP servers, package-manager detection, or the Tool Search Tool. Not for general third-party API integrations (use integration-expert) or building agent tool-calling logic (use agent-builder).
 
   <example>
   Context: User wants to connect Claude Code to their PostgreSQL database via MCP so Claude can query it directly.
@@ -33,7 +33,7 @@ description: |-
   MCP server publishing workflow is one of Orbit's explicit responsibilities.
   </commentary>
   </example>
-tools: Bash, Read, Write, Edit, Grep, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps), Skill(plugin-dev:mcp-integration), Skill(npm-publish)
+tools: Bash, Read, Write, Edit, Grep, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps), Skill(bopen-tools:json-render-core), Skill(bopen-tools:json-render-react), Skill(bopen-tools:json-render-shadcn), Skill(bopen-tools:json-render-mcp), Skill(bopen-tools:json-render-directives), Skill(bopen-tools:json-render-devtools), Skill(plugin-dev:mcp-integration), Skill(npm-publish)
 model: sonnet
 color: orange
 ---
@@ -697,12 +697,23 @@ claude mcp add-json --user dev-tools '{
 
 ## MCP Apps (Interactive UIs in Chat)
 
-MCP Apps is the first official MCP extension (spec 2026-01-26), co-authored by Anthropic and OpenAI. It allows MCP servers to deliver interactive HTML UIs (widgets) that render inside chat hosts via sandboxed iframes. Instead of leaving it up to the LLM to decide how to show data, servers provide tailored visual experiences.
+MCP Apps is the official MCP UI extension. It allows MCP servers to deliver interactive HTML views that supporting hosts render in sandboxed iframes. Treat it as progressive enhancement: a tool must remain useful through ordinary MCP text when either side does not support the UI extension.
 
 - **Extension ID**: `io.modelcontextprotocol/ui`
 - **npm**: `@modelcontextprotocol/ext-apps`
-- **Supported hosts**: Claude (web + desktop), ChatGPT, VS Code Copilot, Goose, Postman
+- **Host support varies**: verify the current official client matrix and test each intended host; do not infer support from another product or transport
 - **Scaffolding**: Use the `create-mcp-app` agent skill (recommended, don't scaffold manually)
+
+At the last review, the stable baselines were `@modelcontextprotocol/ext-apps` 1.7.4 and `@json-render/mcp` 0.19.0. These are observations, not evergreen requirements. Before implementing or upgrading, verify the current stable versions and release notes from the official repositories:
+
+```bash
+bunx npm view @modelcontextprotocol/ext-apps version
+bunx npm view @modelcontextprotocol/sdk version
+bunx npm view @json-render/mcp version
+bunx npm view @json-render/core version
+```
+
+Inspect peer dependencies before choosing a version set. Prefer exact versions in lockfiles for production MCP Apps, and do not build against unreleased repository `main` behavior unless the user explicitly accepts that risk.
 
 ### How It Works
 
@@ -711,34 +722,44 @@ MCP gave AI tools the ability to DO things. MCP Apps gives those tools the abili
 1. **A tool with UI metadata** — `_meta.ui.resourceUri` points to a UI resource
 2. **A UI resource** — server serves a bundled HTML file when the host requests it
 
-When the model calls the tool, the host fetches the UI resource, renders it in a sandboxed iframe, and pushes the tool result to the app. The user interacts directly with the UI. The UI can call tools back on the server and update the model's context. The model stays informed but is no longer the bottleneck for every click.
+When the model calls the tool, a supporting host fetches the UI resource, renders it in a sandboxed iframe, and pushes the tool result to the app. The UI can call permitted tools and update the model's context. A host that did not negotiate the extension receives the same tool's text result without needing to render the view.
 
 ### Architecture
 
 Three entities: **Server** (tools + ui:// resources), **Host** (renders iframes, proxies calls), **View** (App class in sandboxed iframe).
+
+### Capability Negotiation and Fallback
+
+The server advertises `io.modelcontextprotocol/ui`, and the host independently advertises support. Only activate the embedded UI path when both sides negotiated the extension. Registration metadata does not prove that the current host can render the resource.
+
+Every UI-backed tool must therefore return:
+
+- concise text `content` that lets the model and non-UI hosts understand the result
+- validated `structuredContent` for the view, with no secrets or unnecessary PII
+- a static, predeclared `ui://` resource URI in nested `_meta.ui.resourceUri`
+
+Keep the tool's business operation independent of the renderer so the same result can be presented as an MCP App, local browser UI, or text fallback.
 
 ### Scaffolding with create-mcp-app Skill
 
 The recommended approach — NOT a CLI tool, it's an AI agent skill:
 ```bash
 # Via skills CLI (cross-platform)
-npx skills add modelcontextprotocol/ext-apps --skill create-mcp-app
+bunx skills add modelcontextprotocol/ext-apps --skill create-mcp-app
 ```
 Then ask: "Create an MCP App that displays [your use case]." The skill knows the architecture, patterns, and best practices. Works across agents: Claude Code, VS Code Copilot, Gemini CLI, Goose, Codex.
 
-Four skills available from the ext-apps repo:
+Relevant skills available from the ext-apps repo include:
 - `create-mcp-app` — scaffold new app from scratch
-- `migrate-oai-app` — convert OpenAI App to MCP Apps SDK
 - `add-app-to-server` — add UI to existing MCP server tools
 - `convert-web-app` — convert existing web app to MCP App
 
 ### Dependencies
 
 ```bash
-# Runtime
-npm install @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk hono
-# Dev
-npm install -D typescript vite vite-plugin-singlefile tsx
+# Verify versions and peer dependencies first, then install the compatible set
+bun add @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk hono
+bun add -d typescript vite vite-plugin-singlefile tsx
 ```
 
 Package subpaths:
@@ -825,8 +846,8 @@ registerAppTool(server, "my-tool", {
   inputSchema: { type: "object", properties: {} },
   _meta: { ui: { resourceUri } },
 }, async (args) => ({
-  content: [{ type: "text", text: "Text for model" }],
-  structuredContent: { richData: "for the UI" },
+  content: [{ type: "text", text: "Loaded the current project settings." }],
+  structuredContent: { project: { id: "project-1", mode: "guided" } },
 }));
 
 // UI resource — serves the bundled HTML file
@@ -834,10 +855,17 @@ registerAppResource(server, resourceUri, resourceUri,
   { mimeType: RESOURCE_MIME_TYPE },
   async () => ({
     contents: [{ uri: resourceUri, mimeType: RESOURCE_MIME_TYPE,
-      text: await fs.readFile(path.join(import.meta.dirname, "dist", "index.html"), "utf-8") }],
+      text: await fs.readFile(path.join(import.meta.dirname, "dist", "index.html"), "utf-8"),
+      _meta: { ui: { csp: {
+        connectDomains: ["https://api.example.com"],
+        resourceDomains: [],
+      } } },
+    }],
   })
 );
 ```
+
+Declare exact CSP allowlists on the resource content item. Avoid wildcard domains. Empty arrays are appropriate when the self-contained view needs no outbound connections or external assets.
 
 ### Core View Pattern
 
@@ -852,10 +880,10 @@ await app.connect();
 
 ### Building the View
 
-Bundle the entire UI into a single self-contained HTML file using Vite + `vite-plugin-singlefile`. No CDN, no asset management. Any framework works: React, Vue, Svelte, Preact, Solid, vanilla JS.
+A single self-contained HTML bundle using Vite and `vite-plugin-singlefile` is the most portable default. It minimizes CSP and asset-loading complexity, but it is not a protocol requirement: supporting hosts can load explicitly declared external resources when the resource CSP allows the exact domains. Any framework works; prefer the smallest runtime that serves the interaction.
 
 ```bash
-npm install -D vite vite-plugin-singlefile
+bun add -d vite vite-plugin-singlefile
 ```
 ```typescript
 // vite.config.ts
@@ -866,7 +894,7 @@ export default defineConfig({ plugins: [viteSingleFile()], build: { outDir: "dis
 
 ### App-Only Tools (UI-Driven Actions)
 
-Use `visibility: ["app"]` for tools that only the UI should call (refresh, pagination, filtering). This keeps them from cluttering the model's tool list.
+Use `visibility: ["app"]` for tools that only the UI should call, such as draft updates, refresh, pagination, filtering, and form submission. This keeps UI plumbing out of the model's tool list. The server must still authenticate, authorize, and validate every app-initiated call. Keep privileged administration or filesystem tools model-only unless direct UI access is explicitly required.
 
 ```typescript
 registerAppTool(server, "refresh-data", {
@@ -878,36 +906,26 @@ registerAppTool(server, "refresh-data", {
 
 ### Connecting to Hosts
 
-**Claude Desktop (stdio — spawned locally):**
-- Desktop spawns your server as a subprocess via `claude_desktop_config.json`, same as Claude Code CLI.
-- Uses `StdioServerTransport`. No HTTP tunnel required.
-- Example `claude_desktop_config.json`:
-  ```json
-  {
-    "mcpServers": {
-      "my-app": { "command": "bun", "args": ["run", "server.ts", "--stdio"] }
-    }
+Transport support and MCP Apps rendering support are separate questions. A client may connect to an MCP server over stdio or HTTP yet still lack `io.modelcontextprotocol/ui` support.
+
+Before documenting a host setup:
+
+1. Check the current official MCP Apps client matrix.
+2. Confirm which transport that host accepts.
+3. Verify that the negotiated capabilities include the UI extension.
+4. Exercise the text-only path as well as the embedded view.
+
+For local stdio-capable hosts, a typical configuration is:
+
+```json
+{
+  "mcpServers": {
+    "my-app": { "command": "bun", "args": ["run", "server.ts", "--stdio"] }
   }
-  ```
-- MCP Apps UI rendering works over stdio — no HTTP connector needed.
+}
+```
 
-**Claude Code CLI (stdio):**
-- Stdio via `.mcp.json` works directly with `StdioServerTransport`
-- Use `--stdio` flag for dual-mode servers
-
-**Claude.ai web (HTTP custom connector):**
-1. Run server locally: `bun run build && bun run serve` (HTTP on port 3001)
-2. Expose via Cloudflare tunnel: `npx cloudflared tunnel --url http://localhost:3001`
-3. Copy the tunnel URL (e.g., `https://random-name.trycloudflare.com`)
-4. In Claude: Profile > Settings > Connectors > Add custom connector
-5. Paste the tunnel URL (append `/mcp` if your route requires it)
-6. **Requires a paid Claude plan** (Pro, Max, or Team) for custom connectors
-
-**ChatGPT and other remote-only hosts:**
-- Must use HTTP. Expose server via tunnel, add the URL.
-
-**IMPORTANT — Stdio vs HTTP:**
-Plugin `.mcp.json` and `claude_desktop_config.json` both use stdio. HTTP is only needed for web-based hosts (Claude.ai web, ChatGPT). Do NOT add a local MCP server as a custom HTTP connector when it could be connected via stdio.
+For remote hosts, expose the Streamable HTTP endpoint through authenticated, production-grade infrastructure. A temporary tunnel is acceptable for local testing only. Never claim that Claude, ChatGPT, Codex, VS Code, or another host supports embedded MCP Apps without checking the current matrix and the exact product surface being used.
 
 ### Testing
 
@@ -915,11 +933,44 @@ Use the **basic-host** reference implementation from the ext-apps repo for local
 ```bash
 git clone https://github.com/modelcontextprotocol/ext-apps.git
 cd ext-apps/examples/basic-host
-npm install
-SERVERS='["http://localhost:3001/mcp"]' npm start
+bun install
+SERVERS='["http://localhost:3001/mcp"]' bun run start
 # Visit http://localhost:8080
 ```
-Debug panels show tool input, results, messages, and model context updates. Test here BEFORE deploying to Claude Desktop.
+Debug panels show tool input, results, messages, and model context updates. Test here before exercising the app in each intended host.
+
+### JSON Render Integration
+
+JSON Render is a good fit when an MCP App needs a constrained generative interface rather than a fixed screen. Keep a stable application shell and allow the model to generate only the decision canvas from an allowlisted catalog of components and actions.
+
+At the last review, `@json-render/mcp` 0.19.0 provided useful scaffolding through helpers such as `createMcpApp`, `registerJsonRenderTool`, `registerJsonRenderResource`, and `useJsonRenderApp`. Inspect the current package before adopting it. The 0.19.0 wrapper uses broad CSP defaults and serializes its spec through text-oriented tool output, so it is not by itself a hardened production boundary. Wrap or replace those defaults when the application needs exact CSP, validated `structuredContent`, explicit authorization, or renderer-independent fallbacks.
+
+Current JSON Render uses a flat spec with a root element ID and an `elements` map:
+
+```typescript
+const spec = {
+  root: "settings",
+  elements: {
+    settings: {
+      type: "Stack",
+      props: { gap: "md" },
+      children: ["mode"],
+    },
+    mode: {
+      type: "ChoiceCards",
+      props: {
+        label: "Operating mode",
+        options: ["guided", "autonomous"],
+      },
+      children: [],
+    },
+  },
+};
+```
+
+Do not generate against older nested-tree examples without checking the installed package schema. Validate every generated spec and action against the application catalog before rendering or executing it. Keep domain policy, secrets, and privileged mutations outside the generated spec. Return a renderer-independent answer envelope to the server so the same workflow can fall back to text or another UI.
+
+Useful current capabilities include deterministic directives for formatting and derived display values, edit modes for refining an existing spec, and development inspectors. Enable devtools only during development. Start production workflows with complete validated specs; add streaming or patch-based editing only when the added recovery and synchronization complexity is justified.
 
 ### Key Concepts
 
@@ -928,32 +979,36 @@ Debug panels show tool input, results, messages, and model context updates. Test
 - **Theming**: Host provides CSS custom properties (--color-background-primary, --color-text-primary, etc.). Always use with fallback defaults.
 - **Display modes**: inline (in chat flow), fullscreen (editors/dashboards), pip (persistent overlay)
 - **Security**: Sandboxed iframe, CSP (declare in _meta.ui.csp on the content item), host proxies all tool calls
-- **Progressive enhancement**: Tools work as normal text on non-UI hosts. Always include text `content` alongside `structuredContent`.
+- **Progressive enhancement**: Tools work through concise text `content` on non-UI hosts and provide validated `structuredContent` to supporting views.
 - **Model context updates**: UI can call `app.updateModelContext()` to keep the model informed about user interactions
 - **Bidirectional communication**: UI calls server tools, server returns data, UI updates — no new prompt needed, no context consumed
 - **Perceived latency reduction**: Handle partial streaming with `app.ontoolinputpartial` to show content before full input arrives
 
 ### Critical Implementation Rules
 
-1. **Capability declaration is MANDATORY.** Servers MUST advertise `io.modelcontextprotocol/ui` in experimental capabilities or hosts will never render iframes. This is the #1 most common mistake.
+1. **Negotiate capabilities.** Advertise `io.modelcontextprotocol/ui`, inspect host support, and preserve the text path when the extension is unavailable. Transport connectivity alone does not imply UI support.
 
-2. **CSP goes on the content item**, not the resource listing. Place `_meta.ui.csp` on the object inside the `contents` array returned by the resource callback.
+2. **CSP goes on the content item**, not the resource listing. Place nested `_meta.ui.csp` on the object inside the `contents` array and allowlist exact domains only.
 
-3. **MCP Apps render inline.** Tools using `registerAppTool` render via sandboxed iframes. NEVER instruct agents or skills to save HTML to files or tell users to open in a browser.
+3. **Design for both embedded and fallback presentation.** Supporting hosts may render inline, fullscreen, or picture-in-picture. Non-supporting hosts should receive useful text, and a local browser fallback may be appropriate for desktop products without negotiated MCP Apps support.
 
-4. **Plugin agents need MCP tool access.** If an agent declares `tools:` in its frontmatter, it restricts the agent to ONLY those tools — MCP server tools will NOT be available. **Omit the `tools:` field entirely** to give agents access to all tools including MCP tools.
+4. **Plugin agents need the necessary MCP tool access.** If agent frontmatter restricts tools, explicitly include the required MCP tools or remove the restriction after a least-privilege review.
 
-5. **Bundle to a single file — srcdoc iframes cannot resolve bare imports.** Use Vite + vite-plugin-singlefile. Views render in `srcdoc` iframes, so ALL JavaScript and CSS must be inlined. No CDN `<script src="">` tags — they do not work in srcdoc iframes. No external asset references of any kind.
+5. **Prefer a single-file bundle for portability.** External assets are allowed only when the host supports them and their exact domains are declared in CSP. Do not rely on bare imports or undeclared CDN assets.
 
-6. **Tool results need `_meta: { viewUUID: randomUUID() }`** to tell the host to create a new UI instance per invocation.
+6. **Use explicit application identity when state requires it.** A `viewUUID`, ticket revision, or nonce is an application pattern for distinct views and stale-submission protection, not an unconditional protocol field for every tool result.
 
 7. **Use a `createServer()` factory.** Each transport needs its own McpServer instance. Never share one McpServer across multiple transports.
 
-8. **Use Hono, not Express.** For HTTP mode use `WebStandardStreamableHTTPServerTransport` with Hono and `Bun.serve()`.
+8. **Use a compatible Streamable HTTP stack.** Hono with `WebStandardStreamableHTTPServerTransport` and `Bun.serve()` is the preferred lightweight pattern here, but verify current SDK examples rather than treating a framework choice as protocol law.
 
-9. **Use the create-mcp-app skill.** Don't scaffold manually. It knows the architecture and gets the boilerplate right.
+9. **Use the current upstream create-mcp-app skill.** Refresh it before scaffolding and compare generated code with the current extension specification.
 
-10. **Test with basic-host first.** The debug panels save you from guessing what's happening between app and host.
+10. **Test the whole compatibility matrix.** Use the reference host for protocol debugging, then test embedded, text-only, stale-state, CSP-denied, unauthorized, and malformed-`structuredContent` paths in each intended host.
+
+11. **Treat UI tools as untrusted entry points.** Mark UI-only actions with `_meta.ui.visibility: ["app"]`, but still authenticate, authorize, validate, rate-limit, and audit them server-side.
+
+12. **Keep renderer output non-authoritative.** JSON Render may describe presentation and permitted actions; the MCP server remains the source of truth and performs all consequential mutations.
 
 ### When to Recommend MCP Apps
 

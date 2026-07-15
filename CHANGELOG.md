@@ -6,6 +6,34 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.80] - 2026-07-14
+
+### Added
+
+- Added `visual-wayfinder`, a build-free visual decision workbench that wraps
+  one active Wayfinder ticket with choice cards, ranges, rankings, toggles,
+  tradeoff tables, consequence previews, a renderer-independent answer
+  envelope, and an accessible text fallback. A polished self-contained demo
+  documents the intended desktop and mobile experience.
+- Added Agent Master `skillInterfaces` discovery and an **Open Visual
+  Wayfinder** entry. The desktop configurator derives a trusted bopen.ai link
+  from plugin and skill slugs; it does not run the skill, persist its answers,
+  or add another build step.
+- Added a current `plugin-settings` skill covering Claude Code `userConfig`,
+  secure storage, settings boundaries, project-owned configuration, and the
+  Agent Master discovery contract.
+- Added pinned JSON Render 0.19 imports for MCP Apps, directives, and devtools,
+  alongside refreshed core, React, and shadcn guidance.
+
+### Changed
+
+- Refreshed `generative-ui`, `mcp-apps`, and Orbit's MCP specialist guidance
+  against JSON Render 0.19.0, MCP Apps SDK 1.7.4, the 2026-01-26 stable Apps
+  specification, and current Claude Code plugin settings. The guidance now
+  requires flat React specs, capability negotiation, exact resource CSP,
+  app-only submission tools, bounded `structuredContent`, useful text
+  fallbacks, and explicit production hardening around `@json-render/mcp`.
+
 ## [1.1.79] - 2026-07-14
 
 ### Changed

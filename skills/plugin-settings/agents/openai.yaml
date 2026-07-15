@@ -1,0 +1,6 @@
+interface:
+  display_name: "Plugin Settings"
+  short_description: "Design official, custom, and Agent Master settings"
+  default_prompt: >-
+    Use $bopen-tools:plugin-settings to design plugin configuration with clear
+    Claude Code settings boundaries and optional Agent Master discovery.

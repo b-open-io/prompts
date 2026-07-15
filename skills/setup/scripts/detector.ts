@@ -42,6 +42,12 @@ export type SkillActivityState = {
 
 export type SkillActivityMap = Record<string, SkillActivityState>;
 
+export type SkillInterfaceState = {
+  skill: string;
+  label: string;
+  description?: string;
+};
+
 export type PluginState = {
   name: string;
   installedClaude: string | null;
@@ -52,6 +58,7 @@ export type PluginState = {
   hooks: HookState[];
   hooksConfigPath: string | null;
   skillActivity?: SkillActivityMap;
+  skillInterfaces?: SkillInterfaceState[];
 };
 
 export type HarnessState = {
@@ -375,7 +382,31 @@ type SetupManifest = {
   agents?: Record<string, "bundled" | { script: string; check: string }>;
   hooks?: { manifest?: string; config?: string };
   skillSetupScripts?: Array<{ skill: string; script: string; purpose?: string }>;
+  skillInterfaces?: unknown;
 };
+
+const SKILL_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const MAX_SKILL_INTERFACES = 20;
+
+export function parseSkillInterfaces(value: unknown): SkillInterfaceState[] {
+  if (!Array.isArray(value)) return [];
+  const interfaces: SkillInterfaceState[] = [];
+  const seen = new Set<string>();
+
+  for (const entry of value.slice(0, MAX_SKILL_INTERFACES)) {
+    if (!entry || typeof entry !== "object") continue;
+    const { skill, label, description } = entry as Record<string, unknown>;
+    const normalizedLabel = typeof label === "string" ? label.trim() : "";
+    const normalizedDescription = typeof description === "string" ? description.trim() : undefined;
+    if (typeof skill !== "string" || skill.length > 80 || !SKILL_SLUG_RE.test(skill) || seen.has(skill)) continue;
+    if (normalizedLabel.length === 0 || normalizedLabel.length > 80) continue;
+    if (description !== undefined && (!normalizedDescription || normalizedDescription.length > 240)) continue;
+    seen.add(skill);
+    interfaces.push({ skill, label: normalizedLabel, ...(normalizedDescription ? { description: normalizedDescription } : {}) });
+  }
+
+  return interfaces;
+}
 
 // Resolves a per-platform install command map to a single command: exact
 // platform match, then "any", then — if neither exists but some other
@@ -397,7 +428,10 @@ export function resolveInstall(installMap: Record<string, string> | undefined, p
   return {};
 }
 
-async function evaluateManifestChecks(manifestPath: string, platform: string): Promise<{ checks: CheckState[]; hooksConfigPath: string | null }> {
+async function evaluateManifestChecks(
+  manifestPath: string,
+  platform: string,
+): Promise<{ checks: CheckState[]; hooksConfigPath: string | null; skillInterfaces: SkillInterfaceState[] }> {
   const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as SetupManifest;
   const checks: CheckState[] = [];
 
@@ -479,7 +513,11 @@ async function evaluateManifestChecks(manifestPath: string, platform: string): P
     });
   }
 
-  return { checks, hooksConfigPath: manifest.hooks?.config ?? null };
+  return {
+    checks,
+    hooksConfigPath: manifest.hooks?.config ?? null,
+    skillInterfaces: parseSkillInterfaces(manifest.skillInterfaces),
+  };
 }
 
 // --- Plugin cache discovery ---
@@ -679,6 +717,7 @@ export async function detectHarness(opts: {
       let checks: CheckState[] = [];
       let hooks: HookState[] = [];
       let hooksConfigPath: string | null = null;
+      let skillInterfaces: SkillInterfaceState[] = [];
 
       if (root) {
         const manifestPath = join(root, "setup", "manifest.json");
@@ -687,6 +726,7 @@ export async function detectHarness(opts: {
           const evaluated = await evaluateManifestChecks(manifestPath, platform);
           checks = evaluated.checks;
           hooksConfigPath = evaluated.hooksConfigPath;
+          skillInterfaces = evaluated.skillInterfaces;
         }
         hooks = await loadHookStates(root);
       }
@@ -701,6 +741,7 @@ export async function detectHarness(opts: {
         hooks,
         hooksConfigPath,
         skillActivity: filterSkillActivityForPlugin(skillActivity, name),
+        skillInterfaces,
       };
     })),
     opts.packPath ? loadPackState(opts.packPath, { catalog: marketplace.plugins }) : Promise.resolve(null),

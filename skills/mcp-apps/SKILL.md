@@ -1,293 +1,180 @@
 ---
 name: mcp-apps
-version: 0.1.1
-description: This skill provides guidance for building MCP Apps, the official MCP extension (io.modelcontextprotocol/ui) for rendering interactive HTML UIs inside MCP hosts. This skill should be used when the user asks to "create an MCP App", "add UI to MCP tool", "build interactive MCP", "MCP App server", "ui:// resource", "sandboxed iframe MCP", "interactive chat UI", "embed UI in chat", "MCP tool with interface", or needs to build interactive HTML applications that render inside Claude Desktop, ChatGPT, or VS Code Copilot.
+version: 0.1.2
+description: This skill provides guidance for building MCP Apps, the official io.modelcontextprotocol/ui extension for interactive HTML interfaces inside MCP hosts. This skill should be used when the user asks to "create an MCP App", "add UI to an MCP tool", "build interactive MCP", "ui:// resource", "sandboxed iframe MCP", "interactive chat UI", "embed UI in chat", "MCP tool with interface", or needs capability negotiation, resource CSP, app-only tools, host lifecycle, or progressive text fallbacks.
 ---
 
 # MCP Apps
 
-MCP Apps is the first official MCP extension (spec 2026-01-26, co-authored by Anthropic and OpenAI). It enables interactive HTML UIs rendered in sandboxed iframes inside MCP hosts. Extension ID: `io.modelcontextprotocol/ui`. npm package: `@modelcontextprotocol/ext-apps`.
+Build MCP tools that progressively enhance into sandboxed interactive interfaces. Keep every tool useful without UI support.
 
-MCP Apps bridge the gap between LLM tool calls and rich visual interfaces — the model sees text, users see interactive UIs.
+## Verify the Current Baseline
 
-## Quick Start
-
-The fastest path is the official `create-mcp-app` skill from the ext-apps repo:
+Check the live packages and clone the matching official examples before implementation:
 
 ```bash
-npx skills add modelcontextprotocol/ext-apps --skill create-mcp-app
+bun pm view @modelcontextprotocol/ext-apps version
+bun pm view @modelcontextprotocol/sdk version
+git clone --branch "v$(bun pm view @modelcontextprotocol/ext-apps version)" --depth 1 \
+  https://github.com/modelcontextprotocol/ext-apps.git /tmp/mcp-ext-apps
 ```
 
-Then ask the agent: "Create an MCP App that displays a color picker." For manual setup, see `references/build-guide.md`.
+The verified July 2026 baseline is Ext Apps `1.7.4` and MCP SDK `1.29.0`. Treat those as a tested snapshot, not an evergreen instruction. Use Node 20+ semantics or a compatible Bun runtime.
 
-## Architecture
+Prefer the installed official skills:
 
-Three layers:
+- `create-mcp-app` for a new server and View.
+- `add-app-to-server` for an existing MCP server.
+- `convert-web-app` for a standalone/MCP hybrid.
 
-1. **Server** — Exposes tools and `ui://` resources. Tools declare a `_meta.ui.resourceUri` pointing to the UI. Resources serve HTML via `RESOURCE_MIME_TYPE`.
-2. **Host** — The MCP client (Claude Desktop, ChatGPT, VS Code Copilot). Renders iframes, proxies tool calls from the View, enforces the security sandbox.
-3. **View** — The HTML app running inside the sandboxed iframe. Uses the `App` class from `@modelcontextprotocol/ext-apps` to communicate with the Host.
+Use this skill for cross-cutting architecture, security, and generative UI integration.
 
-The View is intentionally thin. All tool calls go through the Host proxy — the View never reaches the network or the MCP server directly.
+## Core Contract
 
-## Server Pattern
+Pair two static server registrations:
 
-Install the package:
+1. A model-visible tool that returns useful text and points to a `ui://` resource through nested `_meta.ui.resourceUri`.
+2. A predeclared resource that returns the HTML View with MIME type `text/html;profile=mcp-app`.
 
-```bash
-npm install @modelcontextprotocol/ext-apps
-```
-
-Register tools and resources using the helper functions:
+Pass dynamic data in tool results. Do not generate resource URIs per user, ticket, or request.
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import {
-  registerAppTool,
-  registerAppResource,
-  RESOURCE_MIME_TYPE,
-} from "@modelcontextprotocol/ext-apps/server";
-import { readFile } from "fs/promises";
+const resourceUri = "ui://visual-wayfinder/decision.html";
 
-const server = new McpServer({ name: "my-app", version: "1.0.0" });
+registerAppTool(server, "open-decision", {
+  description: "Open the current decision with an optional interactive view.",
+  inputSchema,
+  _meta: { ui: { resourceUri } },
+}, async (args) => ({
+  content: [{
+    type: "text",
+    text: summarizeDecision(await loadDecision(args)),
+  }],
+  structuredContent: {
+    decision: await loadDecision(args),
+  },
+}));
 
-// Register a tool that exposes a UI
-registerAppTool(
-  server,
-  "my-tool",
-  {
-    description: "Does something useful",
-    inputSchema: { type: "object", properties: {} },
+registerAppResource(server, {
+  uri: resourceUri,
+  name: "Decision workbench",
+  mimeType: RESOURCE_MIME_TYPE,
+}, async () => ({
+  contents: [{
+    uri: resourceUri,
+    mimeType: RESOURCE_MIME_TYPE,
+    text: await Bun.file("dist/decision.html").text(),
     _meta: {
-      ui: { resourceUri: "ui://myapp/index.html" },
-    },
-  },
-  async (args) => ({
-    content: [{ type: "text", text: "Model sees this text" }],
-    structuredContent: { data: "UI gets this rich data" },
-  })
-);
-
-// Register the HTML resource
-registerAppResource(
-  server,
-  "ui://myapp/index.html",
-  "ui://myapp/index.html",
-  { mimeType: RESOURCE_MIME_TYPE },
-  async () => ({
-    contents: [
-      {
-        uri: "ui://myapp/index.html",
-        mimeType: RESOURCE_MIME_TYPE,
-        text: await readFile("dist/index.html", "utf-8"),
+      ui: {
+        csp: {
+          connectDomains: [],
+          resourceDomains: [],
+        },
       },
-    ],
-  })
-);
+    },
+  }],
+}));
 ```
 
-`ui://` resources use the MIME type `text/html;profile=mcp-app`. They must be predeclared in the server manifest — dynamic resource generation is not permitted (security requirement for pre-scanning).
-
-## View Pattern
-
-The View is the HTML app. Install the client package:
-
-```bash
-npm install @modelcontextprotocol/ext-apps
-```
-
-```typescript
-import { App } from "@modelcontextprotocol/ext-apps";
-
-const app = new App({ name: "My App", version: "1.0.0" });
-
-// CRITICAL: Set handlers BEFORE calling connect()
-app.ontoolresult = (result) => {
-  // result.structuredContent has rich data for the UI
-  // result.content has text (what model sees)
-  renderData(result.structuredContent ?? result.content);
-};
-
-app.onhostcontextchanged = (ctx) => {
-  // Apply host theme, locale, timezone
-  applyTheme(ctx.theme);
-};
-
-// Connect after handlers are set
-await app.connect();
-```
-
-Set `ontoolresult` before or immediately after `connect()`. The initial tool result is buffered, so either order works, but setting handlers first is safer to avoid race conditions.
-
-## Lifecycle
-
-1. **Discovery** — Host reads server manifest, finds `io.modelcontextprotocol/ui` in experimental capabilities.
-2. **Init** — Host sends `ui/initialize`. Server responds with supported UI version.
-3. **Data** — Model calls tool → Host forwards `ui/notifications/tool-input` to View → Tool executes → Host forwards `ui/notifications/tool-result` to View.
-4. **Interactive** — View calls tools via `app.callServerTool()`. Host proxies them. Results flow back via `ontoolresult`.
-5. **Teardown** — Host sends `ui/notifications/resource-teardown` when the iframe is destroyed.
-
-## Tool Visibility
-
-Control which audience sees each tool:
-
-```typescript
-_meta: {
-  ui: {
-    resourceUri: "ui://myapp/index.html",
-    visibility: ["app"],  // UI-only, hidden from the model
-  }
-}
-```
-
-| Visibility | Default | Behavior |
-|---|---|---|
-| `["model", "app"]` | Yes | Both model and UI can call the tool |
-| `["app"]` | No | UI-only tool, hidden from LLM |
-| `["model"]` | No | LLM-only, View cannot call it |
-
-Use `["app"]` for tools that only make sense as UI interactions (pagination, sorting, drill-down).
-
-## Build
-
-MCP App Views must be compiled to a single self-contained HTML file. Use Vite with `vite-plugin-singlefile`:
-
-```bash
-bun add -d vite vite-plugin-singlefile
-```
-
-```typescript
-// vite.config.ts
-import { defineConfig } from "vite";
-import { viteSingleFile } from "vite-plugin-singlefile";
-
-export default defineConfig({
-  plugins: [viteSingleFile()],
-  build: {
-    rollupOptions: { input: "src/views/mcp-app.html" },
-    outDir: "dist",
-    emptyOutDir: false,
-  },
-});
-```
-
-Any framework works: React, Vue, Svelte, Preact, Solid, or vanilla JS/HTML. The View is just HTML — no special runtime.
-
-### CRITICAL: Why bundling is mandatory
-
-Views render inside `srcdoc` iframes. This means:
-- **Bare module imports fail** — `import { App } from "@modelcontextprotocol/ext-apps"` cannot resolve without a bundler
-- **CDN `<script src="">` tags fail** — external script tags don't work in srcdoc iframes
-- **ALL dependencies must be inlined** — JS, CSS, everything bundled into one HTML file
-- Install deps as npm packages (e.g., `bun add leaflet`), import them in your view TS file, and let Vite bundle them
-
-### Tool result viewUUID
-
-Tool results MUST include `_meta.viewUUID` for the host to create a UI instance:
-
-```typescript
-return {
-  content: [{ type: "text", text: "Summary for the model" }],
-  structuredContent: { data: richData },
-  _meta: { viewUUID: randomUUID() },
-};
-```
-
-## Theming
-
-The Host provides context via `app.onhostcontextchanged`:
-
-```typescript
-interface HostContext {
-  theme: "light" | "dark" | "system";
-  locale: string;          // e.g. "en-US"
-  timezone: string;        // e.g. "America/New_York"
-  displayMode: "inline" | "fullscreen" | "pip";
-  containerDimensions: { width: number; height: number };
-  platform: "desktop" | "web" | "mobile";
-}
-```
-
-CSS variables provided by the Host sandbox:
-
-```css
-:root {
-  --color-background-primary: /* host bg */;
-  --color-text-primary:       /* host text */;
-  --color-border:             /* host border */;
-  --color-accent:             /* host accent */;
-}
-```
-
-Always include default values — not all hosts provide all CSS variables:
-
-```css
-body {
-  background: var(--color-background-primary, #ffffff);
-  color: var(--color-text-primary, #000000);
-}
-```
-
-## Display Modes
-
-| Mode | Use Case |
-|---|---|
-| `inline` | Default. Embedded in the chat thread. Good for results, cards, small visualizations. |
-| `fullscreen` | Editors, dashboards, complex tools. Occupies the full panel. |
-| `pip` | Picture-in-picture. Persistent widget that survives scrolling (calendars, timers, music players). |
-
-Declare the preferred display mode in `_meta.ui`:
-
-```typescript
-_meta: {
-  ui: {
-    resourceUri: "ui://myapp/index.html",
-    displayMode: "fullscreen",
-  }
-}
-```
+Follow the current SDK signatures from the checked-out release. The exact resource registration overload and CSP field names are versioned APIs.
 
 ## Progressive Enhancement
 
-Tools degrade gracefully on hosts without UI support. Always populate both `content` (text for the model) and `structuredContent` (rich data for the View):
+Always return both:
+
+- `content`: concise, complete text for the model and non-UI hosts.
+- `structuredContent`: validated data intended for the View.
+
+Keep both payloads bounded. Do not put secrets, credentials, unnecessary PII, or privileged tracker state into either channel. Validate `structuredContent` again in the View before rendering.
+
+Negotiate `io.modelcontextprotocol/ui` support. Use the canonical client matrix rather than a remembered host list. When support is absent, continue through the normal text interaction or offer a standalone local/browser interface.
+
+## Tool Visibility and Authority
+
+Use:
+
+- Model-visible tools to open a View or request a meaningful domain operation.
+- `visibility: ["app"]` for safe UI-only actions such as submitting a draft, refreshing a read-only projection, pagination, or filtering.
+- `visibility: ["model"]` for privileged filesystem, tracker, shell, or administrative operations.
+
+Treat the View as untrusted input. Validate authorization, ownership, current revision/nonces, option IDs, numeric bounds, and domain invariants server-side. A UI submission must not bypass the normal domain workflow.
+
+## View Lifecycle
+
+Register all handlers before connecting:
 
 ```typescript
-async (args) => ({
-  content: [
-    { type: "text", text: `Found ${results.length} items: ${summary}` }
-  ],
-  structuredContent: { items: results, total: results.length },
-})
+const app = new App({ name: "Decision workbench", version: "1.0.0" });
+
+app.ontoolinput = (input) => renderPending(input);
+app.ontoolinputpartial = (input) => renderPartial(input);
+app.ontoolresult = (result) => renderResult(result);
+app.onhostcontextchanged = (context) => applyHostContext(context);
+app.onteardown = async () => {
+  await flushSmallPendingDraft();
+  return {};
+};
+
+await app.connect(new PostMessageTransport());
 ```
 
-Non-UI hosts display `content`. UI hosts pass `structuredContent` to the View. This is the key design principle: MCP Apps are an enhancement, not a replacement.
+Apply host theme, fonts, safe-area insets, container dimensions, and available display modes with fallbacks. Pause expensive animation or polling when the View is not visible.
 
-## Capability Negotiation
+Use `viewUUID` when per-view persistence or state recovery requires a stable instance identifier. Do not treat it as universally required for every tool result.
 
-Declare the extension in the server capabilities:
+## Packaging
 
-```typescript
-const server = new McpServer({
-  name: "my-app",
-  version: "1.0.0",
-  capabilities: {
-    experimental: {
-      "io.modelcontextprotocol/ui": { version: "0.1" },
-    },
-  },
-});
+Bundle JavaScript and CSS so browser imports resolve inside the sandbox. A single self-contained HTML file through Vite and `vite-plugin-singlefile` is the most portable default.
+
+Single-file output is not itself a protocol requirement. Multiple assets can work when the resource metadata declares exact origins and the target host supports them. Prefer single-file delivery unless bundle size or asset reuse provides a concrete reason not to.
+
+Use Bun for local project operations unless the owning project specifies another package manager:
+
+```bash
+bun add @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk zod
+bun add -d typescript vite vite-plugin-singlefile
+bun run build
 ```
 
-Hosts that do not support MCP Apps ignore this capability and fall back to standard tool behavior.
+## CSP and Security
 
-## Reference Files
+Declare CSP on the resource content returned to the host, following the installed SDK's current types. Start deny-by-default and add exact origins only:
 
-Detailed protocol and integration documentation:
+- `connectDomains` for API or socket destinations.
+- `resourceDomains` for scripts, styles, fonts, images, audio, or video.
+- `frameDomains` only for required nested frames.
 
-- **`references/protocol.md`** — JSON-RPC methods, capability negotiation, message schemas
-- **`references/security.md`** — Sandbox model, CSP, permissions, audit logging
-- **`references/patterns.md`** — App-only tools, streaming, multi-tool calls, state management
-- **`references/host-integration.md`** — AppBridge, @mcp-ui/client, AppRenderer, AppFrame
-- **`references/client-matrix.md`** — Host support (points to canonical source at modelcontextprotocol.io)
-- **`references/build-guide.md`** — Complete project setup, configuration files, testing with Claude and basic-host
-- **`references/draft-spec-details.md`** — Draft spec additions: new CSS variables (70+), container dimensions, sandbox proxy, device capabilities, Vercel deployment
+Never use wildcard or scheme-wide allowlists such as `*` or `https:`. Prefer server-side tools over direct View networking. Declare only required device permissions and handle denial.
+
+Audit every View-initiated tool call. Keep submission tools narrow, idempotent where practical, and protected against stale views.
+
+## Generative UI
+
+For JSON Render, invoke `json-render-core`, `json-render-react`, and the relevant catalog skill. Add `json-render-directives` for deterministic formatting/calculation and `json-render-devtools` during development.
+
+Pin a coherent stable JSON Render release. Use its flat `root`/`elements` React spec and validate before rendering.
+
+Treat `@json-render/mcp@0.19.0` as scaffolding. Its helper currently serializes specs through text and uses broad CSP defaults. Wrap or replace its result/resource boundary when production requirements call for `structuredContent`, exact CSP, or app-only submission tools.
+
+## Testing Gate
+
+Test all of the following:
+
+1. Text-only operation with UI capability absent.
+2. Rendering in the official `basic-host`.
+3. Every intended production host listed as supporting the negotiated extension.
+4. Light/dark themes, narrow and fullscreen layouts, keyboard use, and reduced motion.
+5. Exact CSP with no unexpected requests.
+6. Invalid, oversized, stale, and unauthorized submission payloads.
+7. Teardown and reconnect behavior.
+8. Build output without unresolved imports or undeclared assets.
+
+## References
+
+- `references/patterns.md` — App-only tools, state, results, and interaction patterns.
+- `references/security.md` — CSP, sandbox, validation, and threat model.
+- `references/client-matrix.md` — Pointer to the canonical support matrix.
+- `references/build-guide.md` — Bun-first setup and verification checklist.
+- Official specification: https://modelcontextprotocol.io/extensions/apps/overview
+- Official build guide: https://modelcontextprotocol.io/extensions/apps/build
+- Canonical client matrix: https://modelcontextprotocol.io/extensions/client-matrix

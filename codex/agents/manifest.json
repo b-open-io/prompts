@@ -226,10 +226,10 @@
     {
       "source_name": "mcp",
       "source_path": "agents/mcp.md",
-      "source_version": "3.0.25",
-      "source_hash": "sha256:ee28049b14166377c114f2935e828c005de0b1a5a2d094aa22557adf014f7806",
+      "source_version": "3.0.26",
+      "source_hash": "sha256:f1f26d5657d760a7879b5c5fb4f50538bdd13c27a3b017cee3d612303bca2247",
       "generated_file": "bopen-mcp.toml",
-      "generated_hash": "sha256:7cf0efeea6a5ba37d4c4edcff0da0dce2cf558dc6b32d2580392db2beaa996e6",
+      "generated_hash": "sha256:78067a17d55f5212b0ad517da3b4993a10d171b4e234b32de339b538df72b1de",
       "agent_name": "bopen_mcp",
       "curated": false,
       "default_install": false

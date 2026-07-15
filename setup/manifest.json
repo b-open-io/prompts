@@ -135,6 +135,13 @@
     "manifest": "hooks/manifest.json",
     "config": "~/.claude/bopen-tools/hooks-config.json"
   },
+  "skillInterfaces": [
+    {
+      "skill": "visual-wayfinder",
+      "label": "Open Visual Wayfinder",
+      "description": "Explore the visual decision workbench and its interactive question formats."
+    }
+  ],
   "skillSetupScripts": [
     {
       "skill": "x-tweet-search",

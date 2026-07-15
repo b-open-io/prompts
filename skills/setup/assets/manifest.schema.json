@@ -38,6 +38,13 @@
       "type": "array",
       "description": "Per-skill setup.sh-style scripts that provision credentials or local install state (e.g. an API token) beyond what the CLI/env/third-party-skill checks cover.",
       "items": { "$ref": "#/$defs/skillSetupScript" }
+    },
+    "skillInterfaces": {
+      "type": "array",
+      "description": "Optional user-facing interfaces for individual skills. Agent Master derives each destination from the plugin and skill slugs, so manifests cannot introduce arbitrary external URLs.",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/skillInterface" }
     }
   },
   "$defs": {
@@ -164,6 +171,31 @@
         "purpose": {
           "type": "string",
           "description": "One-line human-readable description of what the script provisions."
+        }
+      }
+    },
+    "skillInterface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "label"],
+      "properties": {
+        "skill": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 80,
+          "description": "The skill slug used to derive its trusted bopen.ai detail URL."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Short action label shown in Agent Master, e.g. \"Open Visual Wayfinder\"."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240,
+          "description": "Optional one-line explanation of the interface or settings surface."
         }
       }
     },

@@ -17,8 +17,8 @@ This repository provides:
 - **Runtime-specific hooks** that preserve the same safety and workflow intent
   on both hosts
 - **Agent Master setup UI** for auditing the local harness, viewing purchased
-  packs, and building runtime-specific setup plans without silently installing
-  anything
+  packs, opening advertised skill interfaces, and building runtime-specific
+  setup plans without silently installing anything
 - **Orchestration patterns** for a strong main model, native specialists,
   Grok implementation workers, and a read-only Fable advisor
 - **Claude Code slash commands** for common workflows
@@ -156,6 +156,7 @@ bunx skills add b-open-io/bopen-tools --skill paperclip-plugin-dev
 bunx skills add b-open-io/bopen-tools --skill perf-audit
 bunx skills add b-open-io/bopen-tools --skill persona
 bunx skills add b-open-io/bopen-tools --skill plaid-integration
+bunx skills add b-open-io/bopen-tools --skill plugin-settings
 bunx skills add b-open-io/bopen-tools --skill process-cleanup
 bunx skills add b-open-io/bopen-tools --skill publish-request
 bunx skills add b-open-io/bopen-tools --skill reinforce-skills
@@ -169,6 +170,7 @@ bunx skills add b-open-io/bopen-tools --skill software-factory
 bunx skills add b-open-io/bopen-tools --skill statusline-setup
 bunx skills add b-open-io/bopen-tools --skill threejs-r3f
 bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
+bunx skills add b-open-io/bopen-tools --skill visual-wayfinder
 bunx skills add b-open-io/bopen-tools --skill visual-review
 bunx skills add b-open-io/bopen-tools --skill voice-clone
 bunx skills add b-open-io/bopen-tools --skill wait-for-ci
@@ -206,7 +208,7 @@ bopen-tools members.
 - 📱 [**mobile**](agents/mobile.md) — Kira — Expo-first React Native, Swift, Kotlin, Flutter
 - 🖥️ [**native-desktop**](agents/native-desktop.md) — Ada — Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs
 - 🔗 [**integration-expert**](agents/integration-expert.md) — Maxim — API integrations, webhooks, third-party services
-- 🟠 [**mcp**](agents/mcp.md) — Orbit — MCP server setup, diagnostics, publishing to NPM, PostgreSQL/Redis/GitHub MCP
+- 🟠 [**mcp**](agents/mcp.md) — Orbit — MCP servers and Apps, capability negotiation, JSON Render delivery, diagnostics, and publishing
 - ⚡ [**nextjs**](agents/nextjs.md) — Theo — Next.js, React 19, Turbopack, Bun, Biome
 
 ### Specialized Domains
@@ -256,11 +258,12 @@ Skills are context-triggered capabilities. They activate automatically or can be
 |-------|-------------|
 | `charting` | Full-stack data visualization and charting |
 | `cli-demo-gif` | Generate CLI demo GIFs using vhs (Charmbracelet) |
-| `generative-ui` | Dynamic, AI-driven generative UI patterns |
+| `generative-ui` | Guardrailed JSON Render interfaces with flat specs, small catalogs, deterministic directives, and text fallbacks |
 | `html-to-pdf` | Design print-ready collateral and render it through a Playwright PDF pipeline |
 | `humanize` | Remove AI writing patterns and restore natural voice |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Generate and visually audition cohesive app, game HUD, and TV navigation sound themes |
+| `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
 ### Development & Quality
@@ -298,6 +301,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `hammertime` | Write behavioral guardrail rules for the HammerTime stop hook |
 | `hook-manager` | Discover and install automation hooks |
 | `orchestrator` | Keep the current main in control across specialists, workers, and an advisor |
+| `plugin-settings` | Choose official Claude Code configuration, project-owned state, or Agent Master skill-interface discovery without conflating them |
 | `coordinator` | Specify and dispatch bounded implementation work to external workers |
 | `advisor` | Obtain a read-only second opinion at a commitment boundary |
 | `reinforce-skills` | Inject skill/agent routing maps into CLAUDE.md |
@@ -325,6 +329,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | Skill | Description |
 |-------|-------------|
 | `geo-optimizer` | Audit for AI visibility and optimize for ChatGPT/GEO |
+| `mcp-apps` | Build secure MCP Apps with negotiated capabilities, exact CSP, structured data, and useful text fallbacks |
 | `plaid-integration` | Banking data via Plaid API |
 
 ### Organization
@@ -448,6 +453,12 @@ and missing requirements become explicit setup-plan steps. Launching setup with
 `--pack <toc.json|pack.json>` computes the pack's complete plugin closure and
 shows required-versus-installed dependencies for Claude Code, Codex, and Grok
 Build.
+
+Plugins may also declare optional `skillInterfaces` entries in
+`setup/manifest.json`. Agent Master renders these as trusted bopen.ai links in
+the plugin detail view; they advertise a skill-owned dashboard or configurator
+without granting capabilities, persisting settings, or requiring the skill to
+own a separate build. This release uses that contract for **Visual Wayfinder**.
 
 Plugin and skill controls are declared in `settings.json` files validated by
 [`settings.schema.json`](settings.schema.json). The SessionStart hook may inject

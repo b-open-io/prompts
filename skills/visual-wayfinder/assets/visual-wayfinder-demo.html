@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visual Wayfinder — Interactive Example</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07100f;
+      --panel: #0d1716;
+      --panel-2: #111e1c;
+      --panel-3: #172522;
+      --line: #263a36;
+      --line-bright: #39544e;
+      --text: #f1f6f4;
+      --muted: #91a7a1;
+      --dim: #637a74;
+      --mint: #71e6b5;
+      --mint-2: #2ebc87;
+      --mint-faint: rgba(113, 230, 181, .10);
+      --amber: #f0b76b;
+      --blue: #81b9ff;
+      --danger: #ff8c86;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .36);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 70% -10%, rgba(47, 190, 135, .12), transparent 33rem),
+        radial-gradient(circle at 4% 80%, rgba(51, 116, 104, .10), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    button, textarea, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, textarea:focus-visible, input:focus-visible {
+      outline: 3px solid rgba(113, 230, 181, .32);
+      outline-offset: 2px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 68px;
+      padding: 0 28px;
+      border-bottom: 1px solid rgba(57, 84, 78, .7);
+      background: rgba(7, 16, 15, .87);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand, .top-actions, .crumbs, .meta-row, .status, .button-row {
+      display: flex;
+      align-items: center;
+    }
+    .brand { gap: 13px; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(113, 230, 181, .34);
+      border-radius: 11px;
+      background: linear-gradient(145deg, rgba(113, 230, 181, .18), rgba(113, 230, 181, .03));
+      color: var(--mint);
+      box-shadow: inset 0 0 18px rgba(113, 230, 181, .08);
+    }
+    .brand-mark svg { width: 19px; height: 19px; }
+    .brand-name { font-size: 14px; font-weight: 690; letter-spacing: .01em; }
+    .brand-sub { color: var(--muted); font-size: 12px; }
+    .top-actions { gap: 10px; }
+    .draft-pill, .tag, .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(17, 30, 28, .72);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: .025em;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 9px rgba(113, 230, 181, .65); }
+    .icon-button {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      cursor: pointer;
+    }
+    .icon-button:hover { border-color: var(--line-bright); background: var(--panel-2); }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 238px minmax(480px, 1fr) 306px;
+      gap: 18px;
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 22px 24px 114px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(17, 30, 28, .86), rgba(12, 23, 21, .92));
+      box-shadow: 0 1px 0 rgba(255, 255, 255, .02) inset;
+    }
+
+    .context-rail, .preview-rail { align-self: start; position: sticky; top: 90px; }
+    .context-rail { padding: 16px; }
+    .rail-label, .eyebrow {
+      color: var(--dim);
+      font-size: 10px;
+      font-weight: 760;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .map-title { margin: 8px 0 4px; font-size: 15px; font-weight: 680; line-height: 1.35; }
+    .map-copy { margin: 0; color: var(--muted); font-size: 12px; }
+    .rail-divider { height: 1px; margin: 17px 0; background: var(--line); }
+    .ticket-stack { display: grid; gap: 7px; margin-top: 11px; }
+    .ticket {
+      position: relative;
+      padding: 10px 10px 10px 30px;
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .ticket::before {
+      position: absolute;
+      left: 10px;
+      top: 14px;
+      width: 8px;
+      height: 8px;
+      border: 1.5px solid var(--dim);
+      border-radius: 50%;
+      content: "";
+    }
+    .ticket.done::before { border-color: var(--mint-2); background: var(--mint-2); box-shadow: inset 0 0 0 2px var(--panel); }
+    .ticket.active {
+      border: 1px solid rgba(113, 230, 181, .21);
+      background: var(--mint-faint);
+      color: var(--text);
+    }
+    .ticket.active::before { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(113, 230, 181, .10); }
+    .ticket.fog { color: var(--dim); filter: blur(.2px); }
+    .fog-note {
+      display: flex;
+      gap: 9px;
+      margin-top: 13px;
+      padding: 11px;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      color: var(--dim);
+      font-size: 11px;
+    }
+
+    .workspace { min-width: 0; overflow: hidden; }
+    .workspace-head { padding: 25px 27px 23px; border-bottom: 1px solid var(--line); }
+    .crumbs { flex-wrap: wrap; gap: 7px; margin-bottom: 14px; color: var(--muted); font-size: 11px; }
+    .crumbs span + span::before { margin-right: 7px; color: var(--dim); content: "/"; }
+    h1 { max-width: 720px; margin: 0 0 9px; font-size: clamp(23px, 3vw, 33px); line-height: 1.13; letter-spacing: -.035em; }
+    .question-copy { max-width: 740px; margin: 0; color: var(--muted); font-size: 14px; }
+    .meta-row { flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .tag.active { border-color: rgba(113, 230, 181, .32); background: var(--mint-faint); color: var(--mint); }
+    .tag.claimed::before { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); content: ""; }
+
+    .generated-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 27px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7, 16, 15, .25);
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .generated-label span:last-child { color: var(--mint-2); }
+    .canvas { padding: 25px 27px 30px; }
+    .section + .section { margin-top: 29px; padding-top: 27px; border-top: 1px solid var(--line); }
+    .section-title { margin: 0 0 5px; font-size: 14px; font-weight: 720; }
+    .section-help { margin: 0 0 14px; color: var(--muted); font-size: 12px; }
+
+    .choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .choice {
+      position: relative;
+      display: flex;
+      scroll-margin: 100px 0 118px;
+      min-height: 124px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(8, 18, 16, .5);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .16s ease, transform .16s ease, background .16s ease;
+    }
+    .choice:hover { transform: translateY(-1px); border-color: var(--line-bright); }
+    .choice[aria-pressed="true"] {
+      border-color: var(--mint-2);
+      background: linear-gradient(145deg, rgba(113, 230, 181, .13), rgba(17, 30, 28, .78));
+      box-shadow: inset 0 0 0 1px rgba(113, 230, 181, .08), 0 12px 28px rgba(0, 0, 0, .12);
+    }
+    .radio-dot {
+      flex: 0 0 auto;
+      width: 17px;
+      height: 17px;
+      margin: 1px 11px 0 0;
+      border: 1.5px solid var(--line-bright);
+      border-radius: 50%;
+    }
+    .choice[aria-pressed="true"] .radio-dot { border: 5px solid var(--mint); background: #10201c; }
+    .choice strong { display: block; margin-bottom: 5px; font-size: 13px; }
+    .choice p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .rec {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 3px 6px;
+      border-radius: 5px;
+      background: rgba(113, 230, 181, .12);
+      color: var(--mint);
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .control-card { padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: rgba(8, 18, 16, .38); }
+    .control-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 13px; }
+    .control-head label, .control-head span:first-child { font-size: 12px; font-weight: 680; }
+    .control-value { color: var(--mint); font-family: var(--mono); font-size: 11px; }
+    input[type="range"] { width: 100%; height: 4px; margin: 8px 0 5px; accent-color: var(--mint-2); cursor: pointer; }
+    .range-scale { display: flex; justify-content: space-between; color: var(--dim); font-size: 9px; }
+    .toggle-list { display: grid; gap: 8px; }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 11px; background: rgba(8, 18, 16, .36); }
+    .toggle-copy strong { display: block; font-size: 11px; }
+    .toggle-copy span { color: var(--dim); font-size: 9px; }
+    .switch { position: relative; flex: 0 0 auto; width: 36px; height: 21px; border: 0; border-radius: 999px; background: #263a36; cursor: pointer; }
+    .switch::after { position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: #81958f; content: ""; transition: transform .16s ease, background .16s ease; }
+    .switch[aria-checked="true"] { background: var(--mint-2); }
+    .switch[aria-checked="true"]::after { transform: translateX(15px); background: #062018; }
+
+    .segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 11px; background: rgba(7, 16, 15, .64); }
+    .segment { padding: 8px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; }
+    .segment[aria-pressed="true"] { background: var(--panel-3); color: var(--text); box-shadow: 0 1px 0 rgba(255,255,255,.03) inset; }
+
+    .tradeoff-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 13px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+    th { color: var(--dim); font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    td { color: var(--muted); }
+    th:not(:first-child), td:not(:first-child) { text-align: center; }
+    tr:last-child td { border-bottom: 0; }
+    tr.selected td { background: var(--mint-faint); color: var(--text); }
+    .mini-grade { display: inline-flex; gap: 2px; }
+    .mini-grade i { width: 4px; height: 9px; border-radius: 2px; background: var(--line-bright); }
+    .mini-grade i.on { background: var(--mint-2); }
+
+    .field { margin-top: 12px; }
+    .field label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 11px; font-weight: 630; }
+    textarea {
+      width: 100%;
+      min-height: 98px;
+      resize: vertical;
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(7, 16, 15, .65);
+      color: var(--text);
+    }
+    textarea::placeholder { color: #526661; }
+    textarea:hover { border-color: var(--line-bright); }
+    .field-meta { display: flex; justify-content: space-between; margin-top: 5px; color: var(--dim); font-size: 9px; }
+    .error { color: var(--danger); }
+    .hidden { display: none !important; }
+
+    .preview-rail { overflow: hidden; }
+    .preview-head { padding: 17px 18px; border-bottom: 1px solid var(--line); }
+    .preview-title { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .preview-title strong { font-size: 13px; }
+    .preview-body { padding: 17px 18px; }
+    .preview-summary { margin: 0 0 17px; color: var(--muted); font-size: 12px; }
+    .metric + .metric { margin-top: 14px; }
+    .metric-row { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--muted); font-size: 10px; }
+    .metric-row output { color: var(--text); font-family: var(--mono); }
+    .meter { height: 5px; overflow: hidden; border-radius: 999px; background: #20332f; }
+    .meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--mint-2), var(--mint)); transition: width .2s ease; }
+    .decision-readout { margin-top: 18px; padding: 13px; border: 1px solid rgba(113,230,181,.2); border-radius: 11px; background: var(--mint-faint); }
+    .decision-readout .eyebrow { color: var(--mint-2); }
+    .decision-readout strong { display: block; margin-top: 4px; font-size: 13px; }
+    .assumptions { margin: 18px 0 0; padding: 14px 0 0; border-top: 1px solid var(--line); }
+    .assumptions summary { color: var(--muted); font-size: 10px; cursor: pointer; }
+    .assumptions ul { margin: 9px 0 0; padding-left: 16px; color: var(--dim); font-size: 10px; }
+
+    .submit-bar {
+      position: fixed;
+      z-index: 40;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      min-height: 84px;
+      padding: 13px max(28px, calc((100vw - 1490px) / 2));
+      border-top: 1px solid var(--line-bright);
+      background: rgba(8, 17, 16, .94);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 -16px 50px rgba(0, 0, 0, .30);
+    }
+    .boundary-note { display: flex; align-items: center; gap: 12px; }
+    .boundary-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--mint-faint); color: var(--mint); }
+    .boundary-note strong { display: block; font-size: 11px; }
+    .boundary-note span { display: block; color: var(--dim); font-size: 9px; }
+    .button-row { gap: 9px; }
+    .button {
+      min-height: 38px;
+      padding: 0 14px;
+      border: 1px solid var(--line-bright);
+      border-radius: 10px;
+      background: var(--panel-2);
+      font-size: 11px;
+      font-weight: 690;
+      cursor: pointer;
+    }
+    .button:hover { background: var(--panel-3); }
+    .button.primary { border-color: var(--mint); background: var(--mint); color: #061a14; box-shadow: 0 10px 25px rgba(46, 188, 135, .18); }
+    .button.primary:hover { background: #8af0c5; }
+    .button svg { width: 14px; margin-left: 7px; vertical-align: -2px; }
+
+    dialog {
+      width: min(620px, calc(100vw - 32px));
+      padding: 0;
+      border: 1px solid var(--line-bright);
+      border-radius: 18px;
+      background: #0d1816;
+      color: var(--text);
+      box-shadow: var(--shadow);
+    }
+    dialog::backdrop { background: rgba(0, 6, 5, .75); backdrop-filter: blur(4px); }
+    .dialog-head { display: flex; justify-content: space-between; align-items: start; padding: 20px 21px 16px; border-bottom: 1px solid var(--line); }
+    .dialog-head h2 { margin: 3px 0 0; font-size: 18px; }
+    .dialog-body { padding: 20px 21px; }
+    .success-note { padding: 12px 13px; border: 1px solid rgba(113,230,181,.22); border-radius: 11px; background: var(--mint-faint); color: var(--muted); font-size: 11px; }
+    pre { max-height: 320px; overflow: auto; margin: 14px 0 0; padding: 14px; border: 1px solid var(--line); border-radius: 11px; background: #07100f; color: #b9d9cf; font-family: var(--mono); font-size: 10px; line-height: 1.55; white-space: pre-wrap; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 21px 20px; }
+
+    @media (max-width: 1120px) {
+      .shell { grid-template-columns: 210px minmax(450px, 1fr); }
+      .preview-rail { position: static; grid-column: 2; }
+    }
+    @media (max-width: 790px) {
+      .topbar { padding: 0 16px; }
+      .brand-sub, .draft-pill { display: none; }
+      .shell { display: block; padding: 14px 12px 128px; }
+      .context-rail, .preview-rail { position: static; margin-bottom: 14px; }
+      .ticket-stack { grid-template-columns: 1fr 1fr; }
+      .workspace { margin-bottom: 14px; }
+      .choice-grid, .config-grid { grid-template-columns: 1fr; }
+      .workspace-head, .canvas { padding-left: 18px; padding-right: 18px; }
+      .submit-bar { align-items: stretch; flex-direction: column; padding: 10px 14px 13px; }
+      .button-row { display: grid; grid-template-columns: 1fr 1fr; }
+    }
+    @media (min-width: 791px) and (max-height: 760px) {
+      .shell { padding-bottom: 22px; }
+      .submit-bar { position: static; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19 10.2 4l2.5 7.3L20 14l-7.5 1.4L4 19Z"/><path d="m10.2 4 2.3 11.4"/></svg>
+      </div>
+      <div><div class="brand-name">Visual Wayfinder</div><div class="brand-sub">Decision workbench · interactive example</div></div>
+    </div>
+    <div class="top-actions">
+      <div class="draft-pill"><span class="dot"></span><span id="draftLabel">Draft saved locally</span></div>
+      <button class="icon-button" id="resetButton" aria-label="Reset example" title="Reset example">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4v6h6"/><path d="M5.2 15a8 8 0 1 0 .7-7.8L4 10"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <aside class="panel context-rail" aria-label="Wayfinder map context">
+      <div class="rail-label">Destination</div>
+      <h2 class="map-title">A configuration model people can trust</h2>
+      <p class="map-copy">Define how Agent Master exposes skill settings without making routine setup feel like systems administration.</p>
+      <div class="rail-divider"></div>
+      <div class="rail-label">Known route</div>
+      <div class="ticket-stack">
+        <div class="ticket done">Settings belong to skills</div>
+        <div class="ticket done">Desktop is the primary surface</div>
+        <div class="ticket active">Choose the autonomy model</div>
+        <div class="ticket">Define permission inheritance</div>
+        <div class="ticket fog">Migration behavior…</div>
+      </div>
+      <div class="fog-note"><span aria-hidden="true">◌</span><span>Further decisions remain intentionally uncharted until this answer clears the frontier.</span></div>
+    </aside>
+
+    <article class="panel workspace">
+      <header class="workspace-head">
+        <nav class="crumbs" aria-label="Decision context"><span>Agent Master</span><span>Skill settings</span><span>Active decision</span></nav>
+        <h1>How autonomous should the default skill experience be?</h1>
+        <p class="question-copy">Choose the starting model, then tune the controls that define its practical behavior. This decision sets a default; individual skills may still declare stricter boundaries.</p>
+        <div class="meta-row">
+          <span class="tag active">Grilling</span>
+          <span class="tag claimed">Claimed by this task</span>
+          <span class="tag">One active ticket</span>
+        </div>
+      </header>
+
+      <div class="generated-label"><span>Generated decision canvas · allowlisted components only</span><span>spec valid</span></div>
+
+      <div class="canvas" id="generatedCanvas">
+        <section class="section" aria-labelledby="modelTitle">
+          <h2 class="section-title" id="modelTitle">Select a default model</h2>
+          <p class="section-help">The recommendation reflects the current destination and decisions already made. It is not selected automatically.</p>
+          <div class="choice-grid" role="group" aria-label="Default collaboration model">
+            <button class="choice" data-choice="guided" aria-pressed="false">
+              <span class="radio-dot" aria-hidden="true"></span><span><strong>Guided</strong><p>Preview consequential changes and ask before proceeding. Maximum human control.</p></span>
+            </button>
+            <button class="choice" data-choice="adaptive" aria-pressed="true">
+              <span class="rec">Suggested</span><span class="radio-dot" aria-hidden="true"></span><span><strong>Adaptive</strong><p>Act within declared guardrails; escalate when confidence or permissions narrow.</p></span>
+            </button>
+            <button class="choice" data-choice="autonomous" aria-pressed="false">
+              <span class="radio-dot" aria-hidden="true"></span><span><strong>Autonomous</strong><p>Complete routine work end-to-end and report results. Fastest for experienced users.</p></span>
+            </button>
+            <button class="choice" data-choice="other" aria-pressed="false">
+              <span class="radio-dot" aria-hidden="true"></span><span><strong>Other</strong><p>Describe a different operating model or a hybrid that these choices do not capture.</p></span>
+            </button>
+          </div>
+          <div class="field hidden" id="otherField">
+            <label for="otherText">Describe the other model</label>
+            <textarea id="otherText" placeholder="Explain the model in concrete behavioral terms…" maxlength="500"></textarea>
+            <div class="field-meta"><span>This becomes part of the semantic answer.</span><span id="otherCount">0 / 500</span></div>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="configTitle">
+          <h2 class="section-title" id="configTitle">Tune the operating envelope</h2>
+          <p class="section-help">These settings update the consequence preview immediately. They do not write to the tracker.</p>
+          <div class="config-grid">
+            <div class="control-card">
+              <div class="control-head"><label for="automation">Routine automation</label><output class="control-value" id="automationValue">62%</output></div>
+              <input id="automation" type="range" min="0" max="100" step="1" value="62">
+              <div class="range-scale"><span>Ask first</span><span>Act first</span></div>
+            </div>
+            <div class="control-card">
+              <div class="control-head"><label for="risk">Escalation sensitivity</label><output class="control-value" id="riskValue">42%</output></div>
+              <input id="risk" type="range" min="0" max="100" step="1" value="42">
+              <div class="range-scale"><span>Only high risk</span><span>Any ambiguity</span></div>
+            </div>
+          </div>
+          <div class="toggle-list" style="margin-top:12px">
+            <div class="toggle-row"><div class="toggle-copy"><strong>Require approval for external writes</strong><span>Messages, releases, purchases, and remote mutations</span></div><button class="switch" data-toggle="approval" role="switch" aria-checked="true" aria-label="Require approval for external writes"></button></div>
+            <div class="toggle-row"><div class="toggle-copy"><strong>Preserve offline drafts</strong><span>Resume incomplete configuration without treating it as a decision</span></div><button class="switch" data-toggle="offline" role="switch" aria-checked="true" aria-label="Preserve offline drafts"></button></div>
+            <div class="toggle-row"><div class="toggle-copy"><strong>Override scope</strong><span>Decide where advanced users may tune autonomy</span></div><div class="segmented" role="group" aria-label="Override scope"><button class="segment" data-scope="global" aria-pressed="false">Global</button><button class="segment" data-scope="per-skill" aria-pressed="true">Per skill</button></div></div>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="tradeoffTitle">
+          <h2 class="section-title" id="tradeoffTitle">Compare the tradeoffs</h2>
+          <p class="section-help">Relative estimates from the current constraints. The selected row follows the choice above.</p>
+          <div class="tradeoff-wrap">
+            <table>
+              <thead><tr><th>Model</th><th>Human control</th><th>Flow speed</th><th>Setup cost</th></tr></thead>
+              <tbody>
+                <tr data-row="guided"><td>Guided</td><td><span class="mini-grade" aria-label="3 of 3"><i class="on"></i><i class="on"></i><i class="on"></i></span></td><td><span class="mini-grade" aria-label="1 of 3"><i class="on"></i><i></i><i></i></span></td><td>Low</td></tr>
+                <tr class="selected" data-row="adaptive"><td>Adaptive</td><td><span class="mini-grade" aria-label="3 of 3"><i class="on"></i><i class="on"></i><i class="on"></i></span></td><td><span class="mini-grade" aria-label="3 of 3"><i class="on"></i><i class="on"></i><i class="on"></i></span></td><td>Medium</td></tr>
+                <tr data-row="autonomous"><td>Autonomous</td><td><span class="mini-grade" aria-label="1 of 3"><i class="on"></i><i></i><i></i></span></td><td><span class="mini-grade" aria-label="3 of 3"><i class="on"></i><i class="on"></i><i class="on"></i></span></td><td>High</td></tr>
+                <tr data-row="other"><td>Other</td><td colspan="3">Defined by the description and rationale</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="rationaleTitle">
+          <h2 class="section-title" id="rationaleTitle">Capture the reasoning</h2>
+          <p class="section-help">Wayfinder preserves the rationale so later decisions can rely on it without reopening this question.</p>
+          <div class="field">
+            <label for="rationale">Why is this the right default? <span aria-hidden="true">*</span></label>
+            <textarea id="rationale" maxlength="700" placeholder="For example: Adaptive gives new users confidence while preserving a fast path for routine work…"></textarea>
+            <div class="field-meta"><span id="rationaleHint">Required before preparing the answer.</span><span id="rationaleCount">0 / 700</span></div>
+          </div>
+        </section>
+      </div>
+    </article>
+
+    <aside class="panel preview-rail" aria-label="Live consequence preview">
+      <header class="preview-head">
+        <div class="preview-title"><strong>Consequence preview</strong><span class="status-pill">Estimated</span></div>
+      </header>
+      <div class="preview-body">
+        <p class="preview-summary" id="previewSummary">Adaptive defaults balance flow with explicit escalation at uncertain boundaries.</p>
+        <div class="metric"><div class="metric-row"><span>Human control</span><output id="controlScore">79 / 100</output></div><div class="meter"><span id="controlMeter" style="width:79%"></span></div></div>
+        <div class="metric"><div class="metric-row"><span>Routine flow</span><output id="speedScore">79 / 100</output></div><div class="meter"><span id="speedMeter" style="width:79%"></span></div></div>
+        <div class="metric"><div class="metric-row"><span>Setup effort</span><output id="setupScore">70 / 100</output></div><div class="meter"><span id="setupMeter" style="width:70%"></span></div></div>
+        <div class="decision-readout"><div class="eyebrow">Current answer</div><strong id="currentChoice">Adaptive</strong></div>
+        <details class="assumptions"><summary>How these estimates are calculated</summary><ul><li>Derived locally from the visible controls.</li><li>No tracker state or network calls are involved.</li><li>Scores support discussion; they are not facts.</li></ul></details>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="submit-bar" data-static-boundary="true">
+    <div class="boundary-note"><div class="boundary-icon" aria-hidden="true">⌁</div><div><strong>Static Wayfinder boundary</strong><span>This host-owned control prepares an answer; only Wayfinder can resolve the ticket.</span></div></div>
+    <div class="button-row"><button class="button" id="textFallback">View text fallback</button><button class="button primary" id="submitButton">Review answer <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button></div>
+  </footer>
+
+  <dialog id="reviewDialog" aria-labelledby="dialogTitle">
+    <div class="dialog-head"><div><div class="eyebrow">Prepared for Wayfinder</div><h2 id="dialogTitle">Semantic answer envelope</h2></div><button class="icon-button" data-close aria-label="Close review">×</button></div>
+    <div class="dialog-body"><div class="success-note" id="dialogNote">No tracker write occurred. The host would now revision-check the ticket and hand this answer to the active Wayfinder session.</div><pre id="envelopeOutput"></pre></div>
+    <div class="dialog-actions"><button class="button" data-close>Return to draft</button><button class="button primary" id="confirmDemo">Hand to Wayfinder</button></div>
+  </dialog>
+
+  <script>
+    (() => {
+      const initial = Object.freeze({
+        choice: "adaptive",
+        automation: 62,
+        risk: 42,
+        approval: true,
+        offline: true,
+        scope: "per-skill",
+        other: "",
+        rationale: ""
+      });
+      let state = { ...initial };
+      const $ = (selector) => document.querySelector(selector);
+      const $$ = (selector) => [...document.querySelectorAll(selector)];
+      const clamp = (value) => Math.max(0, Math.min(100, Math.round(value)));
+      const names = { guided: "Guided", adaptive: "Adaptive", autonomous: "Autonomous", other: "Other" };
+      const summaries = {
+        guided: "Guided defaults maximize review and predictability, with more interruptions during routine work.",
+        adaptive: "Adaptive defaults balance flow with explicit escalation at uncertain boundaries.",
+        autonomous: "Autonomous defaults optimize flow, making strong permission boundaries especially important.",
+        other: "The custom model needs a concrete description before its consequences can be evaluated."
+      };
+
+      function calculate() {
+        const base = {
+          guided: { control: 95, speed: 48, setup: 25 },
+          adaptive: { control: 82, speed: 78, setup: 55 },
+          autonomous: { control: 55, speed: 94, setup: 72 },
+          other: { control: 68, speed: 68, setup: 50 }
+        }[state.choice];
+        return {
+          control: clamp(base.control - state.automation * .17 + state.risk * .13 + (state.approval ? 7 : 0)),
+          speed: clamp(base.speed + state.automation * .11 - state.risk * .08 - (state.approval ? 4 : 0)),
+          setup: clamp(base.setup + (state.offline ? 7 : 0) + (state.scope === "per-skill" ? 8 : 0))
+        };
+      }
+
+      function markDraft() {
+        $("#draftLabel").textContent = "Draft saved locally";
+      }
+
+      function render() {
+        $$(".choice").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.choice === state.choice)));
+        $$('[data-row]').forEach((row) => row.classList.toggle("selected", row.dataset.row === state.choice));
+        $("#otherField").classList.toggle("hidden", state.choice !== "other");
+        $("#automation").value = state.automation;
+        $("#risk").value = state.risk;
+        $("#automationValue").textContent = `${state.automation}%`;
+        $("#riskValue").textContent = `${state.risk}%`;
+        $$('[data-toggle]').forEach((button) => button.setAttribute("aria-checked", String(state[button.dataset.toggle])));
+        $$('[data-scope]').forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.scope === state.scope)));
+        $("#otherText").value = state.other;
+        $("#rationale").value = state.rationale;
+        $("#otherCount").textContent = `${state.other.length} / 500`;
+        $("#rationaleCount").textContent = `${state.rationale.length} / 700`;
+        $("#currentChoice").textContent = names[state.choice];
+        $("#previewSummary").textContent = summaries[state.choice];
+        const scores = calculate();
+        ["control", "speed", "setup"].forEach((key) => {
+          $(`#${key}Score`).textContent = `${scores[key]} / 100`;
+          $(`#${key}Meter`).style.width = `${scores[key]}%`;
+        });
+        markDraft();
+      }
+
+      function validate() {
+        const problems = [];
+        if (state.choice === "other" && !state.other.trim()) problems.push("Describe the Other model.");
+        if (!state.rationale.trim()) problems.push("Add a rationale for the decision.");
+        $("#rationaleHint").textContent = problems[0] || "Ready to prepare the semantic answer.";
+        $("#rationaleHint").classList.toggle("error", problems.length > 0);
+        if (state.choice === "other" && !state.other.trim()) $("#otherText").focus();
+        else if (!state.rationale.trim()) $("#rationale").focus();
+        return problems;
+      }
+
+      function envelope(channel = "visual") {
+        return {
+          schemaVersion: "visual-wayfinder.answer/v1",
+          map: { title: "A configuration model people can trust", url: "https://tracker.example/maps/agent-master-settings" },
+          ticket: {
+            id: "decision-autonomy-model",
+            title: "Choose the default autonomy model",
+            url: "https://tracker.example/tickets/autonomy-model",
+            expectedRevision: "demo-revision-7"
+          },
+          decision: {
+            kind: "configured-choice",
+            selections: [state.choice],
+            configuration: {
+              automationLevel: state.automation,
+              escalationSensitivity: state.risk,
+              requireApprovalForWrites: state.approval,
+              preserveOfflineDrafts: state.offline,
+              overrideScope: state.scope
+            },
+            other: state.choice === "other" ? state.other.trim() : null,
+            rationale: state.rationale.trim()
+          },
+          provenance: { channel, canvasId: "demo-canvas-local-only" }
+        };
+      }
+
+      function showEnvelope(channel) {
+        $("#envelopeOutput").textContent = JSON.stringify(envelope(channel), null, 2);
+        $("#dialogNote").textContent = channel === "text"
+          ? "This is the same decision expressed through the complete text fallback. No visual renderer is required."
+          : "No tracker write occurred. The host would now revision-check the ticket and hand this answer to the active Wayfinder session.";
+        $("#reviewDialog").showModal();
+      }
+
+      $$(".choice").forEach((button) => button.addEventListener("click", () => { state.choice = button.dataset.choice; render(); }));
+      $("#automation").addEventListener("input", (event) => { state.automation = Number(event.target.value); render(); });
+      $("#risk").addEventListener("input", (event) => { state.risk = Number(event.target.value); render(); });
+      $$('[data-toggle]').forEach((button) => button.addEventListener("click", () => { state[button.dataset.toggle] = !state[button.dataset.toggle]; render(); }));
+      $$('[data-scope]').forEach((button) => button.addEventListener("click", () => { state.scope = button.dataset.scope; render(); }));
+      $("#otherText").addEventListener("input", (event) => { state.other = event.target.value; render(); });
+      $("#rationale").addEventListener("input", (event) => { state.rationale = event.target.value; render(); });
+      $("#resetButton").addEventListener("click", () => { state = { ...initial }; render(); });
+      $("#submitButton").addEventListener("click", () => { if (!validate().length) showEnvelope("visual"); });
+      $("#textFallback").addEventListener("click", () => showEnvelope("text"));
+      $$('[data-close]').forEach((button) => button.addEventListener("click", () => $("#reviewDialog").close()));
+      $("#confirmDemo").addEventListener("click", () => {
+        $("#dialogNote").textContent = "Demo handoff complete. In production, Wayfinder would now continue grilling or record the resolution; this static example still made no tracker write.";
+        $("#confirmDemo").disabled = true;
+        $("#confirmDemo").textContent = "Prepared";
+      });
+      $("#reviewDialog").addEventListener("click", (event) => {
+        if (event.target === $("#reviewDialog")) $("#reviewDialog").close();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>

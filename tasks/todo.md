@@ -1,5 +1,38 @@
 # Dual Claude Code and Codex plugin port
 
+## Visual Wayfinder and generative UI refresh
+
+- [x] Inspect Wayfinder, JSON Render, generative UI, MCP Apps, settings, skill,
+  agent, frontend, and browser-testing guidance.
+- [x] Verify current JSON Render, MCP Apps, MCP SDK, and Claude Code settings
+  contracts from primary sources and live package metadata.
+- [x] Refresh the relevant pinned JSON Render imports and correct the React
+  flat-spec example against the published package schema.
+- [x] Build `visual-wayfinder` with a renderer-independent answer contract,
+  constrained component catalog, tracker boundary, and text fallback.
+- [x] Create and exercise a polished build-free desktop/mobile example UI.
+- [x] Refresh the authored generative UI, MCP Apps, plugin settings, and Orbit
+  guidance.
+- [x] Add optional Agent Master skill-interface discovery for Visual Wayfinder.
+- [x] Run repository validation, a fresh forward skill test, documentation and
+  manifest checks, then patch-release and smoke-test both plugin installs.
+
+### Review
+
+- Visual Wayfinder keeps Wayfinder and the tracker authoritative: UI state is
+  only a revision-checked draft, and the host-owned boundary submits a semantic
+  answer rather than a rendered component tree.
+- The self-contained demo exercises choice cards, an Other path, sliders,
+  switches, tradeoff preview, rationale, text fallback, and an explicit review
+  envelope. Desktop and 390 px mobile browser passes report no page errors.
+- Agent Master's new `skillInterfaces` field derives bopen.ai destinations from
+  validated plugin/skill slugs; it accepts no arbitrary URLs and adds no skill
+  build step.
+- The refreshed JSON Render imports are pinned to upstream `v0.19.0`. The
+  React guide corrects an upstream nested-tree example using the published flat
+  `root`/`elements` schema, and MCP guidance treats its adapter as scaffolding
+  until exact CSP and submission boundaries are supplied by the host.
+
 ## OPL-2949 hook friendliness
 
 - [x] Inventory bouncer, damage-control, publish-gate, and the requested Linear guard plus their output contracts.

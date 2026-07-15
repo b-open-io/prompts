@@ -1,6 +1,6 @@
 ---
 name: generative-ui
-version: 0.2.2
+version: 0.2.3
 description: >-
   This skill should be used when the user asks about "generative UI", "dynamic UI",
   "AI-generated interfaces", "json-render", "render JSON as UI", "generate a dashboard",
@@ -17,12 +17,21 @@ Produce JSON specs constrained to a catalog of predefined components. Never writ
 
 > For conceptual background, decision criteria, and common patterns, see `README.md`.
 
+## Current Baseline
+
+Verify package versions before implementation with `bun pm view <package> version`. The tested stable baseline is json-render `0.19.0` with React 19, Zod 4, and Tailwind 4. Pin a coherent release line; do not mix stable packages with unreleased `main` behavior.
+
+Use the flat React spec shape published by `@json-render/react`: `root` is an element key and `elements` is a map whose `children` arrays contain keys. Validate every generated spec before rendering and retry or fall back to text on failure.
+
 ## Renderer Selection
 
 | Need | Package | Skill |
 |------|---------|-------|
 | Web app UI | `@json-render/react` | `json-render-react` |
 | shadcn/ui components | `@json-render/shadcn` | `json-render-shadcn` |
+| MCP Apps adapter | `@json-render/mcp` | `json-render-mcp` |
+| Formatting and math | `@json-render/directives` | `json-render-directives` |
+| Development inspector | `@json-render/devtools*` | `json-render-devtools` |
 | Mobile native | `@json-render/react-native` | `json-render-react-native` |
 | Video compositions | `@json-render/remotion` | `json-render-remotion` |
 | HTML email | `@json-render/react-email` | `json-render-react-email` |
@@ -32,12 +41,22 @@ Produce JSON specs constrained to a catalog of predefined components. Never writ
 
 **Always invoke the renderer-specific skill** for implementation details. This skill covers when and why; the renderer skills cover how.
 
+For React work, invoke `json-render-core` and `json-render-react` together. Add `json-render-directives` for deterministic display calculations and `json-render-devtools` during development.
+
 ## Catalog Design Principles
 
 1. **Pick, don't spread** — Explicitly select components from `shadcnComponentDefinitions`. Never spread all 36 into your catalog.
 2. **Minimal catalog** — Start with 5-8 components. Add more only when the AI needs them.
 3. **Custom components** — Define with Zod schemas. Use slots for children, actions for interactivity.
 4. **Two entry points** — `@json-render/shadcn/catalog` (server-safe schemas) and `@json-render/shadcn` (React implementations).
+5. **Stable semantics outside the spec** — Keep authoritative IDs, permissions, and domain rules in application state or server code. Let the generated spec choose presentation, not truth.
+6. **Text escape hatch** — Every generated workflow needs an accessible plain-text fallback.
+
+## Refinement and Directives
+
+Use `patch`, `merge`, or `diff` edit modes to refine an existing surface instead of regenerating it wholesale. Start pilots with complete validated specs; add streaming only when progressive rendering materially improves the experience.
+
+Use standard directives for locale-aware formatting, arithmetic, concatenation, counts, truncation, pluralization, joins, and translation. Keep policy decisions and privileged calculations server-side; directives are deterministic presentation helpers.
 
 ## GemSkills Integration
 
@@ -56,16 +75,16 @@ Generate visual assets within generative UI workflows:
 
 ## MCP Apps Delivery
 
-Generative UI specs can be delivered directly inside chat hosts (Claude, ChatGPT, VS Code Copilot) via **MCP Apps**. The json-render React renderer runs inside a Vite-bundled single-file HTML served as a `ui://` resource.
+Generative UI specs can be delivered inside hosts that negotiate the MCP Apps extension. Serve a static `ui://` resource and pass dynamic data through tool results. Always return useful text `content` alongside UI data so unsupported hosts still work.
 
 **Delivery path:**
 1. AI generates a json-render spec (JSON)
-2. MCP tool returns the spec as `structuredContent` (a structured JSON response the host renders in the UI, separate from the text the model sees)
+2. MCP tool returns a text summary plus validated UI data, preferably in `structuredContent`
 3. The MCP App View (sandboxed iframe) receives it via `ontoolresult`
 4. View's embedded `<Renderer>` component renders the spec as interactive UI
 5. User interacts — View calls server tools for fresh data, re-renders
 
-This combines generative UI's guardrailed output with MCP Apps' context preservation and bidirectional data flow. No tab switching, no separate web app.
+This combines generative UI's guardrailed output with MCP Apps' context preservation and bidirectional data flow where supported.
 
 ```
 AI generates spec → MCP tool returns structuredContent
@@ -87,7 +106,9 @@ For building MCP Apps that deliver generative UI, use Skill(bopen-tools:mcp-apps
 | Email | `@json-render/react-email` | Email (HTML) |
 | Images | `@json-render/image` | Image file (PNG/SVG) |
 
-MCP Apps delivery is available for any renderer that targets the browser (React, shadcn). Bundle the renderer + catalog + registry into a single HTML file with Vite + `vite-plugin-singlefile`, serve it as a `ui://` resource.
+MCP Apps delivery is available for browser renderers. A single-file bundle is the most portable default, but it is not a protocol requirement when every referenced asset and origin is declared through exact resource CSP metadata.
+
+`@json-render/mcp@0.19.0` is useful scaffolding, not a complete production boundary: its helper serializes specs through text and uses broad CSP defaults. Wrap or replace that boundary when strict `structuredContent`, exact CSP, or app-only submission tools are required. Use the official MCP client matrix rather than assuming every host behaves the same.
 
 ## Dithered primitives
 

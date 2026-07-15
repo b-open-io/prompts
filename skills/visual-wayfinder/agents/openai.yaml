@@ -1,0 +1,4 @@
+interface:
+  display_name: "Visual Wayfinder"
+  short_description: "Turn one Wayfinder decision into a visual workbench"
+  default_prompt: "Use $visual-wayfinder to answer the active Wayfinder ticket with a safe interactive decision canvas."

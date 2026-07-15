@@ -9,6 +9,7 @@ import {
   fetchMarketplaceCatalog,
   listInstalledPlugins,
   listPortableSkills,
+  parseSkillInterfaces,
   readSkillActivity,
   resolveHookConfigPaths,
   resolveHookEnabled,
@@ -124,6 +125,79 @@ describe("pack dependency discovery", () => {
 
     const skills = await listPortableSkills([shared, claude, join(dir, "missing")]);
     expect(skills).toEqual(["react-doctor", "webapp-testing"]);
+  });
+});
+
+describe("skill interface discovery", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), "detector-skill-interface-"));
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  test("passes manifest-declared skill interfaces through the plugin state contract", async () => {
+    const claudeCache = join(dir, "claude-cache");
+    const codexCache = join(dir, "codex-cache");
+    const pluginRoot = join(claudeCache, "b-open-io", "bopen-tools", "1.2.3");
+    await Promise.all([
+      mkdir(join(pluginRoot, "setup"), { recursive: true }),
+      mkdir(codexCache, { recursive: true }),
+    ]);
+    await writeFile(
+      join(pluginRoot, "setup", "manifest.json"),
+      JSON.stringify({
+        plugin: "bopen-tools",
+        skillInterfaces: [
+          {
+            skill: "visual-wayfinder",
+            label: "Open Visual Wayfinder",
+            description: "Interactive decision workbench.",
+          },
+        ],
+      }),
+    );
+
+    const state = await detectHarness({
+      runtimeArg: "generic",
+      pluginCacheRoots: { claude: claudeCache, codex: codexCache },
+      portableSkillRoots: [],
+      marketplaceCache: {
+        fetched: true,
+        error: null,
+        fetchedAt: "2026-07-14T00:00:00.000Z",
+        versions: new Map([["bopen-tools", "1.2.3"]]),
+      },
+      env: {
+        BOPEN_SKILL_ACTIVITY_FILE: join(dir, "missing-activity.jsonl"),
+        BOPEN_CLAUDE_PROJECTS_DIR: join(dir, "missing-projects"),
+      },
+    });
+
+    expect(state.plugins.find((plugin) => plugin.name === "bopen-tools")?.skillInterfaces).toEqual([
+      {
+        skill: "visual-wayfinder",
+        label: "Open Visual Wayfinder",
+        description: "Interactive decision workbench.",
+      },
+    ]);
+  });
+
+  test("drops malformed and duplicate entries before they reach the UI", () => {
+    expect(
+      parseSkillInterfaces([
+        { skill: "visual-wayfinder", label: "  Open Visual Wayfinder  " },
+        { skill: "visual-wayfinder", label: "Duplicate" },
+        { skill: "../outside", label: "Unsafe" },
+        { skill: "missing-label" },
+        { skill: "bad-description", label: "Bad", description: {} },
+        { skill: "too-long", label: "x".repeat(81) },
+      ]),
+    ).toEqual([{ skill: "visual-wayfinder", label: "Open Visual Wayfinder" }]);
+    expect(parseSkillInterfaces({ skill: "visual-wayfinder", label: "Wrong shape" })).toEqual([]);
   });
 });
 

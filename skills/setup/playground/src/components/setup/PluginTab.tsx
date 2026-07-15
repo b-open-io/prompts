@@ -228,6 +228,39 @@ function HooksSection({
 	)
 }
 
+function SkillInterfacesSection({ plugin }: { plugin: PluginState }) {
+	const interfaces = plugin.skillInterfaces ?? []
+	if (interfaces.length === 0) return null
+
+	return (
+		<SectionShell label="SKILL INTERFACES">
+			{interfaces.map((entry) => {
+				const href = skillBopenUrl(plugin.name, entry.skill)
+				return (
+					<Row key={entry.skill}>
+						<div className="min-w-48 flex-1">
+							<a
+								href={href}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="font-medium text-primary hover:underline"
+							>
+								{entry.label} ↗
+							</a>
+							{entry.description && (
+								<div className="text-[0.75rem] text-muted-foreground">{entry.description}</div>
+							)}
+							<div className="mt-0.5 font-mono text-[0.65rem] text-muted-foreground">
+								{entry.skill}
+							</div>
+						</div>
+					</Row>
+				)
+			})}
+		</SectionShell>
+	)
+}
+
 export function PluginTab({
 	plugin,
 	selection,
@@ -254,6 +287,7 @@ export function PluginTab({
 
 			{plugin.hasSetupManifest && (
 				<>
+					<SkillInterfacesSection plugin={plugin} />
 					{CHECK_SECTIONS.map(({ kind, label }) => (
 						<CheckSection
 							key={kind}

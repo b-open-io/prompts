@@ -11,6 +11,8 @@ Generative UI is AI generating **JSON specs** constrained to a **catalog** of pr
 
 This is NOT "AI writes arbitrary code." It's structured generation within strict boundaries.
 
+The stable baseline verified in July 2026 is json-render `0.19.0`. Check the registry before implementation and pin compatible versions rather than copying examples from unreleased `main`.
+
 ## When to Use Generative UI vs Static Components
 
 | Use Static Components When | Use Generative UI When |
@@ -32,12 +34,34 @@ The json-render framework has five core concepts:
 - **Spec** — JSON output from AI conforming to the schema
 - **SpecStream** — JSONL streaming for progressive spec building
 - **Registry** — `defineRegistry()` maps catalog entries to renderer implementations
+- **Directives** — deterministic formatting, math, string, count, and i18n expressions
+- **Devtools** — development-only inspection for specs, state, actions, streams, and catalogs
 
 **Workflow:**
 1. Define a schema with `defineSchema`
 2. Create a catalog with `defineCatalog` (pick only the components you need)
 3. AI generates a spec (JSON) constrained to your catalog
 4. A renderer turns the spec into platform-specific UI via a registry
+
+For React, generate the published flat graph shape:
+
+```json
+{
+  "root": "decision",
+  "elements": {
+    "decision": {
+      "type": "Card",
+      "props": { "title": "Choose a rollout" },
+      "children": ["choices"]
+    },
+    "choices": {
+      "type": "ChoiceCards",
+      "props": { "options": { "$state": "/question/options" } },
+      "children": []
+    }
+  }
+}
+```
 
 For full API details, see the `json-render-core` skill.
 
@@ -61,6 +85,9 @@ Same catalog definition, different registries. One spec renders to web (React), 
 |------|---------|-------|
 | Web app UI | `@json-render/react` | `json-render-react` |
 | shadcn/ui components | `@json-render/shadcn` | `json-render-shadcn` |
+| MCP Apps adapter | `@json-render/mcp` | `json-render-mcp` |
+| Formatting and math | `@json-render/directives` | `json-render-directives` |
+| Inspector | `@json-render/devtools*` | `json-render-devtools` |
 | Mobile native | `@json-render/react-native` | `json-render-react-native` |
 | Video compositions | `@json-render/remotion` | `json-render-remotion` |
 | HTML email | `@json-render/react-email` | `json-render-react-email` |
@@ -70,9 +97,9 @@ Same catalog definition, different registries. One spec renders to web (React), 
 
 ## MCP Apps Delivery
 
-Generative UI specs can be delivered directly inside chat hosts (Claude, ChatGPT, VS Code Copilot) via **MCP Apps**. The json-render React renderer runs inside a Vite-bundled single-file HTML served as a `ui://` resource.
+Generative UI specs can be delivered inside hosts that negotiate **MCP Apps**. The renderer runs in a sandboxed `ui://` resource while the tool keeps a useful text fallback.
 
-This combines generative UI's guardrailed output with MCP Apps' context preservation and bidirectional data flow — no tab switching, no separate web app.
+Use a single-file build as the portable default, exact CSP allowlists, and app-only helper tools for UI submissions. Do not assume a host supports MCP Apps until capability negotiation confirms it. Treat `@json-render/mcp` as scaffolding and harden its result/CSP boundary for production.
 
 For building MCP Apps that deliver generative UI, use `Skill(bopen-tools:mcp-apps)`.
 

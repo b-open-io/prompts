@@ -18,18 +18,43 @@
     },
     "json-render-core": {
       "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
       "sourceType": "github",
-      "computedHash": "8e5a55ec66896a82173ab1c84c3dc264069d4a3a2fac6e927b2a40d2fba9e323"
+      "skillPath": "skills/core/SKILL.md",
+      "computedHash": "ff1d5f1daa4736237aab6c37b7642ae8e623d65b8cb2eb9916c6ba33384efb81"
+    },
+    "json-render-devtools": {
+      "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
+      "sourceType": "github",
+      "skillPath": "skills/devtools/SKILL.md",
+      "computedHash": "6fcfb1f4db31e1299ca64f2fbddc54d02c14968c6a9fa5b15b864dd0da09f7d0"
+    },
+    "json-render-directives": {
+      "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
+      "sourceType": "github",
+      "skillPath": "skills/directives/SKILL.md",
+      "computedHash": "776cfa67f51752193c406dc23b39f0a69c69bb90c929fb115a5f914263e24fa2"
     },
     "json-render-image": {
       "source": "vercel-labs/json-render",
       "sourceType": "github",
       "computedHash": "94214f44c2b0cf794eb17c34e742488d1a72823bd4a6ade41892c3d872baf5f7"
     },
+    "json-render-mcp": {
+      "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
+      "sourceType": "github",
+      "skillPath": "skills/mcp/SKILL.md",
+      "computedHash": "8601f81c837895c306f30bf75ec494606f9213ae0c13d758c07059ff78540326"
+    },
     "json-render-react": {
       "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
       "sourceType": "github",
-      "computedHash": "6f960b3e9d728a3ffc617e123b49f4239325137e8ad5ebdf8248b503bb308cb9"
+      "skillPath": "skills/react/SKILL.md",
+      "computedHash": "42e6c3acd47b1f2374b7401fae31c5b496a3e12b0949289c9f5b60513c519316"
     },
     "json-render-react-email": {
       "source": "vercel-labs/json-render",
@@ -48,8 +73,10 @@
     },
     "json-render-shadcn": {
       "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
       "sourceType": "github",
-      "computedHash": "b09982175f109a3b6392bdda43bca48061dfe8ff2655ed3206b811fafb0028a7"
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "d6a9be8eeedea18343b5b15d6ac481a55436fe40db4b65d59858388072c239c4"
     },
     "macos-design": {
       "source": "ceorkm/macos-design-skill",
