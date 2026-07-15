@@ -17,7 +17,9 @@
 
 ## Why this matters
 
-The reference-shared-content model (plans 001/002) depends on the OrdFS resolver actually serving referenced content in production. Code review confirmed `pkg/ordfs` *supports* the model (directory traversal, outpoint + relative-vout pointers, 0-sat bitcom-`B` leaf content, `{outpoint}:-1` latest for 1-sat roots), loading txs via `beef.Storage` and parsing on the fly. But two things are unverified on the deployed stack, and one capability (listing a collection's members) may be missing for UIs/marketplaces.
+The reference-shared-content model (plans 001/002) depends on the OrdFS resolver actually serving referenced content in production. Code review confirmed `pkg/ordfs` *supports* the model (directory traversal, outpoint + relative-vout pointers, 0-sat bitcom-`B` leaf content, `{outpoint}:-1` latest for 1-sat roots), loading txs via `beef.Storage` and parsing on the fly. But two things are unverified on the deployed stack, one capability (listing a collection's members) may be missing for UIs/marketplaces, and the settled encoding decision (2026-07-15) adds two resolver behaviors the current code lacks.
+
+**Settled encoding decision to encode here (do not re-litigate):** the SDK PRODUCES `ref=ordfs` (pointer primitive, real MIME + media-type parameter) and `ord-fs/json` (multi-leaf container); the resolver must (a) RESOLVE `ref=ordfs` — a media-type-parameter parser + the headers in `content-ref.md` (today: zero hits, `grep "ref=ordfs"` → none), and (b) ACCEPT `text/uri-list` on read for interop — one exact-match branch reusing the existing pointer resolver (today `text/uri-list` is raw-served at `routes.go:141`). The resolver accepts three encodings; the SDK produces two. Membership is orthogonal to all of them: it keys on MAP, never on the inscription body.
 
 ## Current state (confirmed by code read)
 
@@ -44,26 +46,34 @@ The reference-shared-content model (plans 001/002) depends on the OrdFS resolver
 
 **Part B — collection-member listing API (conditional; build ONLY if Part C says yes):**
 - Add a read endpoint that lists collectionItem outpoints for a given `collectionId` by querying the existing MAP/txo index — NOT a new index shape. Likely in the `pkg/txo`/lookup layer with a route alongside the existing ordfs routes. Return outpoints + minimal MAP (mintNumber, rarityLabel) for UI listing.
+- **Membership invariant (settled — Q2):** membership keys ONLY on MAP (`collectionId` + `subType:collectionItem` + valid AIP), NEVER on the inscription body or content-type. A `ref=ordfs`, `ord-fs/json`, `text/uri-list`, or `base64Content` item are all byte-identical at the MAP layer, so the listing admits them identically and must not inspect the leaf to decide membership. There is no collection indexer yet, so this listing DEFINES the rule.
 
 **Part C — decision (do this before Part B):**
-- Determine whether the marketplace/UI needs a server-side collection-member list, or whether the client already enumerates members another way (e.g. via an existing 1sat API / overlay). If a suitable listing already exists, mark Part B REJECTED with the reference.
+- Determine whether the marketplace/UI needs a server-side collection-member list, or whether the client already enumerates members another way (e.g. via an existing 1sat API / overlay). If a suitable listing already exists, mark Part B REJECTED with the reference — but the MAP-only keying rule stands wherever membership is computed.
+
+**Part D — resolver reference branches (settled encoding decision; pairs with plan 001):**
+- Add a `ref=ordfs` resolve path: parse the media-type parameter on the item's content-type (e.g. `image/png; ref=ordfs`), read the pointer from the body, resolve it through the EXISTING pointer resolver, and serve the resolved bytes under the declared real MIME plus the response headers `content-ref.md` specifies (`X-Content-Outpoint`, `?raw` passthrough, one-hop / cycle caps). Today `grep "ref=ordfs"` → zero hits.
+- Add a `text/uri-list` ACCEPT branch (read-only interop): one exact-match branch at the raw-serve site (`routes.go:141`) reusing the pointer resolver (`routes.go:227-279`) so a `text/uri-list` item follows its first URI instead of being served as text. The resolver never emits uri-list; it only accepts it.
 
 **Out of scope:**
 - Changing `parseOutput` to accept raw (non-bitcom-`B`) OP_RETURN — only if a STOP finding shows the SDK (plan 001) emits raw OP_RETURN leaves, which it should not.
 - The spend-chain / `:-1` algorithm.
+- PRODUCING `text/uri-list` anywhere — accept-only.
 
 ## Steps
 
 1. **Config finding (Part A):** read the three config files; write a 5–10 line finding under "Execution findings" in `/Users/satchmo/code/prompts/plans/ordfs-collections/README.md`: does prod `beef`/`spends` include a remote fallback? If NO, the recommendation is a config/deploy change (add the JungleBus backend), not code. **Verify**: finding recorded; `go build ./...` still exit 0 (no code touched).
 2. **Live B-leaf round-trip (Part A):** run the documented curl against the deployed host; record served vs 404. **Verify**: result recorded (VERIFIED or UNVERIFIED with the exact repro command).
 3. **Listing decision (Part C):** document whether a member-listing endpoint is needed and where members are otherwise enumerated. **Verify**: decision recorded with a one-line rationale.
-4. **(Conditional) Build listing endpoint (Part B):** only if Step 3 says yes. Add the route + handler + a `go test` covering one collection with two members. **Verify**: `go test ./...` passes; new endpoint returns the two members.
+4. **(Conditional) Build listing endpoint (Part B):** only if Step 3 says yes. Add the route + handler + a `go test` covering one collection with two members, one `base64Content` and one `ref=ordfs` — assert BOTH are returned (proves membership ignores the leaf). **Verify**: `go test ./...` passes; new endpoint returns both members.
+5. **Resolver reference branches (Part D):** add the `ref=ordfs` resolve path and the `text/uri-list` accept branch per scope. Add `go test` covering: a `ref=ordfs` item served under its real MIME with the correct headers; a `text/uri-list` item that follows its URI. **Verify**: `go build ./... && go vet ./... && go test ./...` all pass; `grep -rn "ref=ordfs" pkg/ordfs` now shows the parser.
 
 ## Done criteria
 
 - [ ] Part A finding recorded (beef/spends fallback status + B-leaf round-trip result)
-- [ ] Part C decision recorded (listing needed? where members are enumerated)
-- [ ] If Part B built: `go build ./...` + `go test ./...` pass; endpoint returns members for a `collectionId`
+- [ ] Part C decision recorded (listing needed? where members are enumerated) with the MAP-only keying rule stated
+- [ ] If Part B built: `go build ./...` + `go test ./...` pass; endpoint returns BOTH a `base64Content` and a `ref=ordfs` member for a `collectionId`
+- [ ] Part D: `ref=ordfs` resolves under real MIME + `content-ref.md` headers; `text/uri-list` items follow their URI; `go test ./...` passes
 - [ ] `/Users/satchmo/code/prompts/plans/ordfs-collections/README.md` status row updated
 
 ## STOP conditions

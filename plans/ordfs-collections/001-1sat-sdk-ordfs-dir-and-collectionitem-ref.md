@@ -32,6 +32,7 @@ A large collection mint (e.g. 10,000 items) or a mint-on-purchase flow currently
   - `mintCollectionItem` (~line 369): an `Action` whose input requires `base64Content: string` (~line 41/69/169/255) — the item image is embedded as bytes. There is **no** way to point at existing content.
   - `CollectionItemSubTypeData` type comes from `@1sat/types` (imported ~line 18).
 - **The API decision already reached on PR #13** (encode this — do not re-litigate): signing protocol is **implied by output type**, not a caller choice — a signed 1-sat ordinal uses SIGMA, a signed 0-sat B output uses AIP. So the entry API carries only `sign?: boolean`, never a protocol enum. Default: unsigned B leaves; root ordinal signed.
+- **The encoding decision (settled 2026-07-15 — encode this, do not re-litigate):** the three content-reference encodings are not rival alternatives; they are different layers. `ref=ordfs` is the **pointer primitive** (the item declares the source's real MIME, e.g. `image/png`, and carries a one-hop pointer as a media-type parameter). `ord-fs/json` is the **container** (bundles ≥2 named leaves, which may themselves be refs). `text/uri-list` is a redundant second pointer primitive — **read-only interop only**. The rule is **produce two, accept three**: this SDK PRODUCES `ref=ordfs` for a single shared/unique image and `ord-fs/json` when an item bundles multiple leaves; it NEVER produces `text/uri-list`. The resolver (plan 003) additionally ACCEPTS `text/uri-list` on read for interop. `ref=ordfs` is a first-class OrdFS capability spec'd in `content-ref.md`; single-entry `ord-fs/json` is redundant with `ref=ordfs` and must not be used for a lone image.
 - Repo conventions: TypeScript, `bun` monorepo (`packages/*`), Biome for lint/format, actions follow the `Action<Input, Output>` pattern (see any existing action in `packages/actions/src/` such as `inscriptions/index.ts` for the shape — match its input-schema + `execute` structure).
 
 ## Commands you will need
@@ -97,11 +98,12 @@ Validation an entry must satisfy (throw on violation): exactly one of (`content`
 
 In `packages/actions/src/collections/index.ts`, extend the `mintCollectionItem` input so content is EITHER `base64Content` (existing) OR `ref` (new):
 
-- Input: add optional `ref?: string` (same format as Step 1). Require exactly one of `base64Content` | `ref`.
-- When `ref` is set, the item's inscription content is a `text/uri-list` body pointing at the reference, contentType `text/uri-list` — e.g. body = `/content/${ref}` (or the bare `ref` when it is a relative `_N`). Do NOT embed image bytes.
+- Input: add optional `ref?: string` (same format as Step 1) and an optional `refContentType?: string` (the source's real MIME, e.g. `image/png`; required with `ref`). Require exactly one of `base64Content` | `ref`.
+- When `ref` is set, the item's inscription is a **`ref=ordfs` pointer** (the pointer primitive per the settled encoding decision): the contentType is the source's real MIME with the `ref=ordfs` media-type parameter (e.g. `image/png; ref=ordfs`), and the body is the pointer — the bare `ref` (a relative `_N` or an absolute `txid_0` / `txid_0:-1`) per `content-ref.md`. Do NOT embed image bytes, and do NOT emit `text/uri-list`.
 - The MAP envelope is produced by the UNCHANGED `buildCollectionItemMap` — `subType:collectionItem` + `subTypeData` (collectionId, mintNumber, rank, rarityLabel, traits, attachments) exactly as today. The item is still a 1-sat ordinal; AIP signing (existing behavior) is unchanged.
+- Multi-leaf items (an item needing ≥2 named files) go through the `ord-fs/json` container path (the `OrdfsDirEntry[]` API from Step 1), NOT `mintCollectionItem`'s single `ref`. A single-entry directory is redundant with `ref=ordfs` — do not use it for a lone image.
 
-**The invariant to preserve:** an item minted with `ref` must produce the SAME MAP output (same `subType`/`subTypeData` bytes) as one minted with `base64Content` — only the inscription *content* differs (a `text/uri-list` reference vs image bytes).
+**The invariant to preserve:** an item minted with `ref` must produce the SAME MAP output (same `subType`/`subTypeData` bytes) as one minted with `base64Content` — only the inscription *content* differs (a `ref=ordfs` pointer vs image bytes).
 
 **Verify**: `bun run --filter '@1sat/actions' build` → exit 0.
 
@@ -114,7 +116,7 @@ In `packages/actions/src/collections/index.ts`, extend the `mintCollectionItem` 
 ### Step 4: Tests
 
 - `packages/actions/src/ordfs/outputs.test.ts` (create or extend): entry validation (content xor ref; bad ref rejected); an entry with `ref` produces no new content output; `as` override changes 1-sat vs 0-sat.
-- `packages/actions/src/collections/collections.test.ts` (find the existing collection test; extend it): mint an item with `ref` and assert (a) the MAP `subType`/`subTypeData` bytes equal those of a `base64Content` item with identical metadata, and (b) the inscription content is `text/uri-list` with the ref body. Model the assertions on the existing collection test in this file.
+- `packages/actions/src/collections/collections.test.ts` (find the existing collection test; extend it): mint an item with `ref` and assert (a) the MAP `subType`/`subTypeData` bytes equal those of a `base64Content` item with identical metadata, and (b) the inscription content-type is the real MIME plus the `ref=ordfs` parameter (e.g. `image/png; ref=ordfs`) and the body is the pointer — NOT `text/uri-list`. Model the assertions on the existing collection test in this file.
 
 **Verify**: `bun test` → all pass including the new cases.
 
@@ -138,4 +140,4 @@ In `packages/actions/src/collections/index.ts`, extend the `mintCollectionItem` 
 
 - Reviewer scrutiny: confirm the MAP-shape invariance test actually compares bytes, and that AIP signing on the item is unchanged.
 - Follow-up deferred: exposing `ref`/`as` on the `inscribeOrdfsDir` action surface (kept minimal here); a `mintCollection` variant whose root is itself an ord-fs directory (see plan README "root dual-role" open question) — deliberately out of scope until the maintainers decide.
-- The `text/uri-list` body format must stay compatible with the OrdFS resolver (`/content/<pointer>`); if the resolver's accepted pointer forms change (plan 003), revisit.
+- The produced `ref=ordfs` pointer body and its accepted forms must stay compatible with the OrdFS resolver spec in `content-ref.md`; if the resolver's accepted pointer forms change (plan 003), revisit. The resolver ACCEPTS `text/uri-list` too (interop), but this SDK never emits it — keep the produce/accept asymmetry intact.

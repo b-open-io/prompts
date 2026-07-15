@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.4
+version: 0.0.5
 description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
 ---
 
@@ -95,6 +95,20 @@ option**:
 Run the advocates concurrently because they are independent. Ground every
 advocate's claims in the same evidence used by the host; an advocate that
 invents facts is worse than no advocate.
+
+### A premise-challenging voice
+
+The advocates above argue *among* the presented options. Often the most valuable
+viewpoint disputes the framing itself — the whole option space rests on an
+assumption worth questioning ("this doesn't need to be a collection at all — mint
+a fungible token"; "don't build this, buy it"; "the real fork is upstream of these
+three"). When such a voice is real, give it a card too, on equal footing, but mark
+it clearly as **challenging the premise, not picking an option** — it argues a
+different axis, so it is not scored against the option advocates and the judging
+bench does not rule on it. Fold what it surfaces into the open questions as an
+**upstream decision** the reviewer settles before the option-level one. A proposal
+that can name its own load-bearing assumption is more honest than one that argues
+only within it.
 
 ### Add debate or a judging bench only when useful
 

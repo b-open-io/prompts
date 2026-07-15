@@ -6,6 +6,18 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.96] - 2026-07-15
+
+### Changed
+
+- `visual-proposal` skill (0.0.5): added the premise-challenging voice — an
+  advocate that disputes a proposal's load-bearing assumption ("does this even
+  need to be a collection?") rather than picking among the presented options.
+  It gets an equal-weight card marked as challenging the framing, is not scored
+  against the option advocates or ruled on by the judging bench, and what it
+  surfaces folds into the open questions as an upstream decision the reviewer
+  settles first.
+
 ## [1.1.95] - 2026-07-15
 
 ### Fixed

@@ -6,20 +6,33 @@ large mint — inscribe the artwork **once** and have every item reference that
 outpoint. A 10,000-item drop then costs one image plus a tiny reference per item,
 not 10,000 copies, and the same holds when items are minted on demand.
 
-Two forms work, both resolved by [OrdFS](ordfs.md):
+These are not competing formats — they are two layers, both resolved by
+[OrdFS](ordfs.md):
 
-- **`text/uri-list` item** — the item's content is a reference to the shared image:
+- **`ref=ordfs` item (the pointer primitive)** — the item declares the source's
+  real media type and carries a one-hop pointer as a media-type parameter, so
+  every MIME-aware tool still sees an image. Use this for a single shared or
+  unique image:
 
   ```
-  /content/<imageOutpoint>.png
+  Content-Type: image/png; ref=ordfs
+  <imageOutpoint>
   ```
 
-- **Directory item** — the item is an `ord-fs/json` [directory](ordfs.md#directories)
-  whose entries point at the shared image (and any per-item files):
+- **`ord-fs/json` directory item (the container)** — use this only when an item
+  bundles two or more named leaves (image plus per-item metadata or
+  attachments). Its entries may themselves be `ref=ordfs` pointers. A
+  single-entry directory is redundant with a `ref=ordfs` item; prefer the
+  primitive for a lone image.
 
   ```json
   { "image.png": "<imageOutpoint>", "meta.json": "_1" }
   ```
+
+A resolver also **accepts** a `text/uri-list` item (RFC 2483) whose body is a
+`/content/<imageOutpoint>` line — kept for interoperability with tools that emit
+it. It does the same job as `ref=ordfs` but loses the real media type on the
+item, so prefer `ref=ordfs` when producing new items.
 
 #### Tradeable items, shared content
 
