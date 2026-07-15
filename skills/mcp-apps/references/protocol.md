@@ -370,7 +370,11 @@ try {
 
 | Protocol Version | Extension Version | Status |
 |---|---|---|
-| MCP 2025-11-05 | 0.1 | Current |
+| MCP 2025-11-05 | 0.1 | Versioned compatibility contract |
 | MCP 2024-11-05 | — | Not supported |
 
-Always negotiate the version explicitly. Forward-compatibility is handled via `onFallbackRequest` in the host integration layer (see `references/host-integration.md`).
+Fetch the current MCP Apps specification before implementation, then negotiate
+the selected version explicitly. The rows above document known protocol
+boundaries; they do not declare the newest release. Forward-compatibility is
+handled via `onFallbackRequest` in the host integration layer (see
+`references/host-integration.md`).

@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.5
+version: 0.0.6
 description: >-
   Always active when a capable current main session in Claude Code or Codex is
   planning non-trivial implementation and cheaper or specialized executors are
@@ -120,17 +120,17 @@ isolation or an explicit user request justifies a separate Codex process.
 **grok (Grok Build CLI) dispatch shape:**
 ```bash
 PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)   # unique per dispatch — parallel lanes on a shared path corrupt each other
-WORKER_MODEL="${BOPEN_WORKER_MODEL:-grok-4.5}"
 grok models                                  # inspect the COMPLETE output; confirm the exact ID below exists
+: "${BOPEN_WORKER_MODEL:?Set BOPEN_WORKER_MODEL to a verified ID from grok models}"
+WORKER_MODEL="$BOPEN_WORKER_MODEL"
 printf '%s\n' "<one-line imperative; details in SPEC-*.md>" > "$PROMPT_FILE"
 grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" --permission-mode acceptEdits \
   --sandbox workspace --output-format plain --cwd <repo>
 ```
 - **Preflight with `grok models`** — one command verifies the binary AND
   auth and lists the available model IDs. Read the complete, untruncated
-  output. Set `BOPEN_WORKER_MODEL` when the user wants another available
-  model; otherwise use the explicit `grok-4.5` default. **Pin the resulting
-  model explicitly** and confirm the exact ID appears in that complete output
+  output. Set `BOPEN_WORKER_MODEL` to the selected available model. **Pin the
+  resulting model explicitly** and confirm the exact ID appears in that output
   — never ride the CLI default, which may change independently.
 - `acceptEdits`, never `--always-approve`: the worker edits files; you re-run
   verification yourself. (Its permission mode may also have blocked it from

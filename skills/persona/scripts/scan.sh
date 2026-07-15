@@ -12,7 +12,7 @@ USE_POOL=false
 TOPICS_FILE="$PERSONA_DIR/topics.json"
 CACHE_FILE="$PERSONA_DIR/last-scan.json"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-XAI_RESEARCH_MODEL="${XAI_RESEARCH_MODEL:-grok-4.5}"
+XAI_RESEARCH_MODEL="${XAI_RESEARCH_MODEL:-}"
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -24,6 +24,11 @@ while [ $# -gt 0 ]; do
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
+
+if [ -z "$XAI_RESEARCH_MODEL" ]; then
+    echo "Error: set XAI_RESEARCH_MODEL to an ID verified with GET https://api.x.ai/v1/models"
+    exit 1
+fi
 
 if [ -z "$XAI_API_KEY" ]; then
     echo "Error: XAI_API_KEY is not set"

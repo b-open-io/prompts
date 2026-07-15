@@ -1,6 +1,6 @@
 ---
 name: linear-planning
-version: 1.0.3
+version: 1.0.4
 description: This skill should be used when the user wants to plan a project, feature, or bug fix using Linear as the agent control plane. Use when the user says "plan this in Linear", "create Linear tickets", "break this down into tasks", "push to Linear", "set up our board for this feature", or wants to turn a description or spec into well-structured, agent-ready Linear issues. Requires the official Linear MCP server to be configured.
 ---
 
@@ -135,7 +135,7 @@ Create the parent issue (epic) first:
 
   ## Repo Context
   - Repo: ~/code/myapp
-  - Framework: Next.js 15, Bun, Tailwind v4
+  - Framework: versions detected from package.json, Bun runtime
   - Conventions: Biome linting, TypeScript strict, shadcn/ui
 
   ## Child Issues

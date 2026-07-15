@@ -25,7 +25,7 @@ You are [AGENT_NAME] on the [TEAM_NAME] agent team.
 
 ## Project Details
 - **Repo**: [ABSOLUTE_PATH_TO_REPO]
-- **Framework**: [e.g., Next.js 15, Bun runtime, Biome linting]
+- **Framework**: [detected framework and runtime versions, plus linting]
 - **Key paths**: [e.g., src/components/, app/api/, __tests__/]
 - **Conventions**: [e.g., Tailwind v4, no npm (Bun only), TypeScript strict]
 - **Gotchas**: [e.g., Don't touch the auth module, Stripe is in test mode]
@@ -73,7 +73,7 @@ UI specialist responsible for all billing-related components: PricingCard, Billi
 
 ## Project Details
 - **Repo**: ~/code/myapp
-- **Framework**: Next.js 15, Bun, Tailwind v4, shadcn/ui (new-york style)
+- **Framework**: Next.js and Tailwind versions from package.json, Bun, shadcn/ui (new-york style)
 - **Key paths**: Components go in src/components/billing/. Export from src/components/billing/index.ts
 - **Conventions**: TypeScript strict, no inline styles, use cn() for class merging, Tailwind v4 (no @apply)
 - **Gotchas**: This is a dark-mode-first app. All colors must be theme-aware (CSS vars, not hard-coded).
@@ -95,7 +95,7 @@ Invoke `Skill(frontend-design)` before designing any component.
 
 **Always include:**
 - Absolute repo path (agents don't know `~/code/myapp` resolves to what without context)
-- Framework versions (Next.js 14 vs 15 have different APIs; Tailwind v3 vs v4 have different syntax)
+- Installed framework versions and the matching API or syntax contract
 - Key file paths for outputs (where should the agent write its work?)
 - Project conventions the agent must follow (Bun, Biome, TypeScript strict, etc.)
 - The skills section — always, for every agent

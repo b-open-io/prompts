@@ -1,6 +1,6 @@
 ---
 name: paperclip-plugin-dev
-version: 1.1.1
+version: 1.1.2
 description: >-
   This skill should be used when the user asks to
   "scaffold a Paperclip plugin", "write a Paperclip plugin manifest",
@@ -16,7 +16,11 @@ Build Paperclip plugins based on the actual SDK source code, validator source co
 
 ## SDK Version
 
-`@paperclipai/plugin-sdk` is published on npm under calver (`YYYY.MDD.patch`). Latest stable as of 2026-07-14: **`2026.707.0`** (a `canary` dist-tag tracks upstream). Check `npm view @paperclipai/plugin-sdk version` before starting work. Entry points: `.` (worker: `definePlugin`, `runWorker`), `./ui` + `./ui/hooks` + `./ui/types` (UI bridge), `./types`, `./protocol`, `./testing` (`createTestHarness`, environment-driver harnesses), `./bundlers` (`createPluginBundlerPresets` — ESM output), and `./dev-server` (`startPluginDevServer`).
+`@paperclipai/plugin-sdk` is published on npm under calver
+(`YYYY.MDD.patch`), with a `canary` dist-tag for prereleases. Before starting
+work, run `npm view @paperclipai/plugin-sdk version dist-tags exports --json`,
+inspect the installed package exports, and pin the selected release in the
+project. Do not copy a remembered SDK version or entry-point list.
 
 ## Critical Lessons — Read First
 

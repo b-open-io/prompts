@@ -12,7 +12,8 @@ Generate tokens at: `vercel.com/account/tokens`
 
 ## Billing Charges API
 
-Returns historical billing charges in FOCUS v1.3 format.
+Returns historical billing charges in FOCUS format. Verify the current schema
+version in Vercel's live API documentation before parsing fields.
 
 ```
 GET https://api.vercel.com/v1/billing/charges
@@ -45,7 +46,7 @@ curl -H "Authorization: Bearer $VERCEL_TOKEN" \
 
 ### Response Format
 
-The response is **newline-delimited JSONL** (not a JSON array). Each line is one charge record in FOCUS v1.3 format.
+The response is **newline-delimited JSONL** (not a JSON array). Each line is one charge record in the currently documented FOCUS format.
 
 ```jsonl
 {"BilledCost":"0.0240","EffectiveCost":"0.0240","BillingPeriodStart":"2026-03-13T00:00:00Z","BillingPeriodEnd":"2026-03-14T00:00:00Z","ServiceName":"Bandwidth","ResourceId":"dpl_xxxxx","Tags":{"projectName":"my-app","teamSlug":"my-team"}}
@@ -64,7 +65,7 @@ curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
 curl -s ... | jq -s '[.[] | {service: .ServiceName, cost: (.BilledCost | tonumber), project: .Tags.projectName}]'
 ```
 
-## FOCUS v1.3 Field Reference
+## FOCUS Field Reference
 
 FOCUS (FinOps Open Cost and Usage Specification) is the industry standard format. Key fields:
 

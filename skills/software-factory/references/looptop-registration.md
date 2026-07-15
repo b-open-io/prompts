@@ -2,9 +2,10 @@
 
 A factory worker is **registered with looptop at configuration time, paused** —
 registration is observability, scheduling is autonomy, and conflating them is
-how a "working factory" shows an empty looptop. Verified against looptop
-source (`src/core/{discover,state,plist,types}.ts`, v0.1.1); the package also
-ships `spec/loop.schema.json`.
+how a "working factory" shows an empty looptop. Before authoring registration,
+verify the contract against the installed looptop
+`src/core/{discover,state,plist,types}.ts` and `spec/loop.schema.json`; both are
+the live source for the installed version.
 
 ## Discovery
 

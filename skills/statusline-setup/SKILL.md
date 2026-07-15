@@ -1,7 +1,7 @@
 ---
 name: statusline-setup
 description: This skill should be used when the user asks to "create a status line", "customize status line", "set up statusline", "configure Claude Code status bar", "install ccstatusline", "add project colors to status line", "show git branch in status", "display token usage", or mentions Peacock colors, powerline, or status line configuration.
-version: 0.0.2
+version: 0.0.3
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
 disable-model-invocation: true
 ---
@@ -88,7 +88,7 @@ The status line command receives structured JSON via stdin:
 
 | Field | Description |
 |-------|-------------|
-| `model.id` | Model identifier (e.g., "claude-opus-4-6") |
+| `model.id` | Model identifier (e.g., "provider/model-id") |
 | `model.display_name` | Human-readable name (e.g., "Opus") |
 | `workspace.current_dir` | Current working directory |
 | `workspace.project_dir` | Original project directory |

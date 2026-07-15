@@ -1,7 +1,7 @@
 ---
 name: nextjs-upgrade
-description: "Upgrade a Next.js project to the latest version (v16) with Turbopack, async Dynamic APIs, Biome, and React 19.2. This skill should be used when the user says 'upgrade Next.js', 'migrate to Next.js 16', 'update my Next.js app', 'run the Next.js codemod', 'my Next.js version is outdated', or when a migration plan is needed before making Next.js changes. Also invoke when the agent needs baseline build metrics for before/after comparison, or when checking whether a project needs async API migration, middleware-to-proxy migration, or Biome adoption."
-version: 1.0.0
+description: "Assess and upgrade a Next.js project after resolving the target release from current official documentation. Includes tested automation and breaking-change guidance for the Next.js 15 to 16 migration. Use when the user says 'upgrade Next.js', 'migrate to Next.js 16', 'update my Next.js app', 'run the Next.js codemod', 'my Next.js version is outdated', or when a migration plan or baseline build comparison is needed."
+version: 1.0.1
 user-invocable: true
 allowed-tools:
   - Bash
@@ -12,7 +12,11 @@ allowed-tools:
 
 # Next.js Upgrade
 
-Upgrade Next.js projects to v16 without burning context on detection logic and build mechanics. Everything deterministic is handled by scripts. Your job is to run them, interpret the JSON, and make the code changes.
+Resolve the requested target from the current Next.js release and upgrade guides,
+then compare it with the installed project. The bundled upgrade-path script is
+specifically tested for Next.js 15 to 16. Use its detection and measurement
+scripts for other targets, but derive migration steps from the matching official
+guide instead of presenting the v16 plan as current.
 
 ## Why Scripts Handle Detection and Measurement
 
@@ -20,7 +24,9 @@ Scanning package.json, checking lock files, parsing build output — that's pure
 
 ## Quick Start
 
-Three scripts. Run them in order.
+For a Next.js 15 to 16 migration, run the bundled scripts in this order. For any
+other target, run detection and measurement, then use the matching live upgrade
+guide and codemod documentation.
 
 ### Step 1: Detect project state
 

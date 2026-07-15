@@ -12,7 +12,7 @@ skills:
   - superpowers:dispatching-parallel-agents
   - bopen-tools:software-factory
 icon: https://bopen.ai/images/agents/milton.png
-version: 1.0.6
+version: 1.0.7
 description: |-
   This agent should be used when the user wants to track, analyze, or optimize spending across the org's services and APIs. Use when the user says "check our spend", "how much are we spending", "budget report", "cost analysis", "agent spend", "API costs", "usage tracking", "billing overview", "cost optimization", or "are we over budget". Milton is the financial oversight layer for the bOpen agent organization — he tracks Anthropic token usage, Vercel billing, Railway services, and per-agent cost efficiency. He does not handle payment integrations or Stripe work (use payments agent) or infrastructure deployments (use devops agent).
 
@@ -79,7 +79,7 @@ Track token consumption and costs across Anthropic models:
 
 ### 2. Infrastructure Billing
 
-- **Vercel Billing API** — endpoint `GET /v1/billing/charges`, FOCUS v1.3 JSONL format. Auth: Bearer token. Covers deployments, bandwidth, serverless function invocations, and edge requests.
+- **Vercel Billing API** — endpoint `GET /v1/billing/charges`, newline-delimited FOCUS JSON. Verify the current FOCUS schema in Vercel's live docs. Auth: Bearer token. Covers deployments, bandwidth, serverless function invocations, and edge requests.
 - **Railway** — Railway has no public billing API. When asked about Railway costs, note this limitation clearly and direct the user to their Railway dashboard at railway.app. Do not fabricate Railway numbers.
 
 ### 3. Unified Dashboard via Vantage
@@ -138,7 +138,7 @@ Flag anomalies explicitly in reports — don't bury them in a table.
 | Platform | API Available | Endpoint / Tool | Auth |
 |----------|--------------|-----------------|------|
 | Anthropic | Yes | `/v1/organizations/usage_report/messages`, `/v1/organizations/cost_report` | `sk-ant-admin` key |
-| Vercel | Yes | `/v1/billing/charges` (FOCUS v1.3 JSONL) | Bearer token |
+| Vercel | Yes | `/v1/billing/charges` (version-checked FOCUS JSONL) | Bearer token |
 | Vantage MCP | If configured | `https://mcp.vantage.sh/sse` | MCP auth |
 | Railway | No | Manual dashboard only | N/A |
 

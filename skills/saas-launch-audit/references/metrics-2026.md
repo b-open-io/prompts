@@ -209,10 +209,9 @@ Compare your metrics to:
 
 ### Public Benchmarks (2026)
 
-General guidance (varies by model/provider):
-- OpenAI GPT-4: ~$0.01-0.03 per 1K tokens
-- Claude: Similar range
-- Open source (self-hosted): Lower but with infra costs
+Model pricing changes frequently. Fetch the provider's current model catalog and
+official pricing page, record the exact model ID and retrieval date, then
+calculate token, tool, cache, and infrastructure costs from the live rates.
 
 Target unit economics:
 - AI cost should be < 30% of revenue

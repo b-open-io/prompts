@@ -1,6 +1,6 @@
 ---
 name: persona
-version: 1.0.2
+version: 1.0.3
 description: >-
   Capture writing style profiles, track a pool of users, scan social
   intelligence, and apply style-matching to draft content. Use when asked

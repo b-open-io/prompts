@@ -21,7 +21,7 @@ SCAN_PATH=""
 TOPIC=""
 PARTS=3
 OUTPUT=""
-MODEL="${PERSONA_CLAUDE_MODEL:-claude-sonnet-5}"
+MODEL="${PERSONA_CLAUDE_MODEL:-}"
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -34,6 +34,11 @@ while [ $# -gt 0 ]; do
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
+
+if [ -z "$MODEL" ]; then
+    echo "Error: set PERSONA_CLAUDE_MODEL (or pass --model) to an ID verified against the current Anthropic models API"
+    exit 1
+fi
 
 # Require ANTHROPIC_API_KEY
 if [ -z "$ANTHROPIC_API_KEY" ]; then

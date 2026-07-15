@@ -13,10 +13,12 @@ actually available to the account before dispatching:
 
 ```bash
 grok models          # lists available models; verify your target is present
-WORKER_MODEL="${BOPEN_WORKER_MODEL:-grok-4.5}"
+: "${BOPEN_WORKER_MODEL:?Set BOPEN_WORKER_MODEL to a verified ID from grok models}"
+WORKER_MODEL="$BOPEN_WORKER_MODEL"
 ```
 
-`grok-4.5` is the current default; pin a specific ID for reproducible work.
+Pin the verified ID for reproducible work; do not inherit a changing CLI
+default.
 
 ## Usage with the grok dispatch shape
 

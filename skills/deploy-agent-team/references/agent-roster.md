@@ -12,7 +12,7 @@ Full bopen-tools agent roster with `subagent_type` identifiers and the skills to
 | **nextjs** | `bopen-tools:nextjs` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
 | **native-desktop** | `bopen-tools:native-desktop` | sonnet | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs |
 | **designer** | `bopen-tools:designer` | sonnet | UI components, Tailwind, shadcn/ui, design systems, accessibility |
-| **agent-builder** | `bopen-tools:agent-builder` | opus | AI agent systems, tool-calling, LLM integration, Vercel AI SDK |
+| **agent-builder** | `bopen-tools:agent-builder` | opus | AI SDK v7 agents, tool-calling, durable runtime selection, conditional eve evaluation |
 | **database** | `bopen-tools:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
 | **integration-expert** | `bopen-tools:integration-expert` | sonnet | REST APIs, webhooks, third-party services |
 | **code-auditor** | `bopen-tools:code-auditor` | opus | Security review, vulnerability scanning, code quality |
@@ -145,6 +145,9 @@ Always run `Skill(bopen-tools:saas-launch-audit)` before a production deploy.
 - `Skill(bopen-tools:deploy-agent-team)` — invoke when implementing team coordination patterns
 
 Invoke `Skill(ai-sdk)` first for any Vercel AI SDK or agent framework work.
+For bOpen runtime decisions, preserve the approved conditional posture: eve
+must stay behind the bOpen-owned ACL/persistence proxy and pass the hard Phase-2
+go/no-go; failed seam proofs select the v7-native runtime.
 ```
 
 ### documentation-writer

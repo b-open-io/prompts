@@ -3,7 +3,7 @@ name: mcp
 display_name: "Orbit"
 title: "MCP Specialist"
 icon: https://bopen.ai/images/agents/orbit.png
-version: 3.0.24
+version: 3.0.25
 description: |-
   Use this agent when the user asks to "set up an MCP server", "connect Claude Code to my database via MCP", "fix this MCP connection error", "publish my MCP server to npm", or needs help with PostgreSQL/Redis/MongoDB/GitHub/Vercel MCP servers, package-manager detection, or the Tool Search Tool. Not for general third-party API integrations (use integration-expert) or building agent tool-calling logic (use agent-builder).
 
@@ -1127,16 +1127,22 @@ fi
 ```
 
 #### Python MCP Servers (Redis, etc.)
+
+Before using the Git source below, verify Redis MCP's current official install
+command and resolve `<verified-ref>` to a reviewed release tag or commit from
+the upstream repository. Keep that ref in deployment configuration so updates
+are explicit.
+
 ```bash
 # Primary: uvx (modern)
 if command -v uvx &> /dev/null; then
-    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/0"
 # Fallback: pip install + direct execution
 elif command -v pip3 &> /dev/null; then
     echo "⚠️  uvx preferred for Redis MCP. Installing uv first:"
     Visit https://docs.astral.sh/uv/ to install uv
     source ~/.bashrc || source ~/.zshrc
-    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/0"
 else
     echo "❌ No Python package manager available. Install uv:"
     echo "  Visit https://docs.astral.sh/uv/ to install uv"
@@ -1163,7 +1169,7 @@ fi
 
 # Test Redis MCP server availability
 if command -v uvx &> /dev/null; then
-    uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --help 2>/dev/null && echo "✅ Redis MCP available via uvx"
+    uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --help 2>/dev/null && echo "✅ Redis MCP available via uvx"
 fi
 ```
 
@@ -1260,13 +1266,13 @@ claude mcp add postgres-remote -s user "npx -y @modelcontextprotocol/server-post
 if command -v uvx &> /dev/null; then
     echo "✅ uvx available"
     # Install Redis MCP
-    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/0"
 else
     echo "❌ uvx not available. Installing uv..."
     Visit https://docs.astral.sh/uv/ to install uv
     source ~/.bashrc || source ~/.zshrc
     # Retry after installation
-    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+    claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/0"
 fi
 
 # Alternative: Manual git installation (if uvx fails)
@@ -1279,10 +1285,10 @@ cd ../..
 claude mcp add redis-local -s user "python3 $REDIS_MCP_PATH --url redis://localhost:6379/0"
 
 # With authentication (uvx method)
-claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://:password@localhost:6379/0"
+claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://:password@localhost:6379/0"
 
 # Remote Redis (uvx method)
-claude mcp add redis-remote -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://remote-host:6379/0"
+claude mcp add redis-remote -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://remote-host:6379/0"
 
 # Docker alternative (if Python setup fails)
 docker run -d --name redis-mcp \
@@ -1444,11 +1450,11 @@ fi
 
 # Redis - requires uvx, install if needed
 if command -v uvx &> /dev/null; then
-    claude mcp add redis-dev -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/1"
+    claude mcp add redis-dev -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/1"
 else
     echo "Installing uv for Redis MCP..."
     Visit https://docs.astral.sh/uv/ to install uv && source ~/.zshrc
-    claude mcp add redis-dev -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/1"
+    claude mcp add redis-dev -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/1"
 fi
 
 # MongoDB - use bunx if available, fallback to npx
@@ -1462,7 +1468,7 @@ fi
 claude mcp add postgres-staging -s user "bunx @modelcontextprotocol/server-postgres postgresql://staging-host:5432/staging_db" 2>/dev/null || \
 claude mcp add postgres-staging -s user "npx -y @modelcontextprotocol/server-postgres postgresql://staging-host:5432/staging_db"
 
-claude mcp add redis-staging -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://staging-host:6379/0"
+claude mcp add redis-staging -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://staging-host:6379/0"
 
 # Production (read-only recommended)
 claude mcp add postgres-prod -s user "bunx @modelcontextprotocol/server-postgres postgresql://readonly_user:pass@prod-host:5432/prod_db" 2>/dev/null || \
@@ -1543,7 +1549,7 @@ fi
 if redis-cli ping 2>/dev/null | grep -q PONG; then
     echo "✅ Redis found"
     if [[ $HAS_UVX == "true" ]]; then
-        claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0"
+        claude mcp add redis-local -s user "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/0"
         echo "  📦 Installed via uvx (required)"
     else
         echo "  ❌ uvx required for Redis MCP but not available"
@@ -1643,13 +1649,13 @@ bunx mongodb-mcp-server --connectionString mongodb://user:pass@localhost:27017/t
 ```bash
 # Test with uvx (preferred method)
 echo "Testing Redis MCP with uvx..."
-uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0 2>&1 | head -20
+uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/0 2>&1 | head -20
 
 # Test with different database
-uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/1 2>&1 | head -20
+uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/1 2>&1 | head -20
 
 # Test with authentication
-uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://:password@localhost:6379/0 2>&1 | head -20
+uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://:password@localhost:6379/0 2>&1 | head -20
 ```
 
 ### Validate Prerequisites Step-by-Step
@@ -2099,7 +2105,7 @@ test_command "npx -y @modelcontextprotocol/server-postgres --help" "PostgreSQL M
 test_command "bunx @modelcontextprotocol/server-postgres --help" "PostgreSQL MCP (bunx)" 10
 test_command "bunx mongodb-mcp-server --help" "MongoDB MCP (bunx)" 10
 test_command "npx -y mongodb-mcp-server --help" "MongoDB MCP (npx)" 10
-test_command "uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --help" "Redis MCP (uvx)" 15
+test_command "uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --help" "Redis MCP (uvx)" 15
 
 echo -e "\n${BLUE}🔍 Current MCP Configuration:${NC}"
 if claude mcp list &>/dev/null; then
@@ -2255,9 +2261,9 @@ diagnose_redis() {
     
     # Test Redis MCP package
     echo "Testing Redis MCP package access..."
-    if timeout 15s uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --help &>/dev/null; then
+    if timeout 15s uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --help &>/dev/null; then
         echo -e "${GREEN}✅ Redis MCP package accessible${NC}"
-        echo -e "${YELLOW}💡 Use: claude mcp add redis-local -s user 'uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0'${NC}"
+        echo -e "${YELLOW}💡 Use: claude mcp add redis-local -s user 'uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/0'${NC}"
     else
         echo -e "${RED}❌ Redis MCP package not accessible${NC}"
         echo -e "${YELLOW}💡 Check internet connection and GitHub access${NC}"
@@ -2367,7 +2373,7 @@ bunx mongodb-mcp-server --connectionString mongodb://localhost:27017/test --read
 
 # Capture Redis MCP errors
 echo "Capturing Redis MCP errors..."
-uvx --from git+https://github.com/redis/mcp-redis.git@0.2.0 redis-mcp-server --url redis://localhost:6379/0 2>&1 | tee redis-mcp-debug.log
+uvx --from git+https://github.com/redis/mcp-redis.git@<verified-ref> redis-mcp-server --url redis://localhost:6379/0 2>&1 | tee redis-mcp-debug.log
 ```
 
 #### Advanced Debug Testing

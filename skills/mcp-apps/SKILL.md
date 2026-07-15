@@ -1,6 +1,6 @@
 ---
 name: mcp-apps
-version: 0.1.0
+version: 0.1.1
 description: This skill provides guidance for building MCP Apps, the official MCP extension (io.modelcontextprotocol/ui) for rendering interactive HTML UIs inside MCP hosts. This skill should be used when the user asks to "create an MCP App", "add UI to MCP tool", "build interactive MCP", "MCP App server", "ui:// resource", "sandboxed iframe MCP", "interactive chat UI", "embed UI in chat", "MCP tool with interface", or needs to build interactive HTML applications that render inside Claude Desktop, ChatGPT, or VS Code Copilot.
 ---
 

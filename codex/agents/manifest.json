@@ -28,10 +28,10 @@
     {
       "source_name": "agent-builder",
       "source_path": "agents/agent-builder.md",
-      "source_version": "1.7.9",
-      "source_hash": "sha256:291633b4a3fd0fc8e651c39e750d90b75b3acbacc732a959bebd213d9028823a",
+      "source_version": "1.7.10",
+      "source_hash": "sha256:1f37bf0ed48cf697d49b7f0f6445320886bfa8c09cba429dcd771d4643c5fc49",
       "generated_file": "bopen-agent-builder.toml",
-      "generated_hash": "sha256:e7b3163afb7ba975ae495541abb217f927be32b35f4e307907fbe13ae4d088d9",
+      "generated_hash": "sha256:63e90d526f6b874918770a43370ebae5af32773d7f9c117c271d4e17cd5fb477",
       "agent_name": "bopen_agent_builder",
       "curated": true,
       "default_install": true
@@ -39,10 +39,10 @@
     {
       "source_name": "architecture-reviewer",
       "source_path": "agents/architecture-reviewer.md",
-      "source_version": "1.1.16",
-      "source_hash": "sha256:b58d8fc5877eec1e19d2525a44cbf2df75cab025c86d02fd48643c161c24e5ac",
+      "source_version": "1.1.17",
+      "source_hash": "sha256:5bd41e8ef9323b1da558b9f1e55a83bf0af71c92edf11c6b2dd15061a6e9d6ee",
       "generated_file": "bopen-architecture-reviewer.toml",
-      "generated_hash": "sha256:b1a40edd214c81d85d14a5cc91c1e921d8d9161ee89b560d56102414c47713e3",
+      "generated_hash": "sha256:c3eabc9de797a696c971e465a8c1e518c55a209da8e4ddef037a5bf6dcfcf99b",
       "agent_name": "bopen_architecture_reviewer",
       "curated": true,
       "default_install": true
@@ -50,10 +50,10 @@
     {
       "source_name": "audio-specialist",
       "source_path": "agents/audio-specialist.md",
-      "source_version": "1.0.9",
-      "source_hash": "sha256:72ef5ab15f8d10fe878fe7c6ae9a27811415a3b6554673f44f9e39a8d1752cb1",
+      "source_version": "1.0.10",
+      "source_hash": "sha256:ed82d6f332f7f36a58c169ccd4706566c98f691fb8a1735ca25c625938dd49e9",
       "generated_file": "bopen-audio-specialist.toml",
-      "generated_hash": "sha256:396800207cbd00b0c28cc02d75cf695afbebf74117273f147f3f0f1a694468b4",
+      "generated_hash": "sha256:207b4dde49acf356d7b5794cf90bd1b535c7531dab638f0bfe49054fabdbce4f",
       "agent_name": "bopen_audio_specialist",
       "curated": false,
       "default_install": false
@@ -83,10 +83,10 @@
     {
       "source_name": "cfo",
       "source_path": "agents/cfo.md",
-      "source_version": "1.0.6",
-      "source_hash": "sha256:8aa8bc89878bd774ebe8322a2642ca80de5c36fcbe2c64519ae58d32441e1d93",
+      "source_version": "1.0.7",
+      "source_hash": "sha256:0e052baeed658bb3b46b8930e847cec889e7adf37943cb0b5d0c53074380ca8a",
       "generated_file": "bopen-cfo.toml",
-      "generated_hash": "sha256:332eab8293e77319a44c94d8d436ea96a9af2f2e1a46ac5217d36aa2d3ec7bc9",
+      "generated_hash": "sha256:337d939c55db05a67a470801fb0eee27b35e34f24b33e706010ace4c72dd137d",
       "agent_name": "bopen_cfo",
       "curated": false,
       "default_install": false
@@ -94,10 +94,10 @@
     {
       "source_name": "code-auditor",
       "source_path": "agents/code-auditor.md",
-      "source_version": "1.4.8",
-      "source_hash": "sha256:41e259659f29440242d9cec2460b4f7121223a51e701fa284e8ce374318f13f8",
+      "source_version": "1.4.9",
+      "source_hash": "sha256:9755f986b87501d8de036948e63550db059487239285932886d816b8dd7bac64",
       "generated_file": "bopen-code-auditor.toml",
-      "generated_hash": "sha256:5945cabf8677243c4824a878fa28ac7e8926eaf1a30053a5688538986168dbb6",
+      "generated_hash": "sha256:5afeaad84bb3c81b9b87f78c9fc7491a847fe48c170fdea11e91df501fdd11e5",
       "agent_name": "bopen_code_auditor",
       "curated": true,
       "default_install": true
@@ -226,10 +226,10 @@
     {
       "source_name": "mcp",
       "source_path": "agents/mcp.md",
-      "source_version": "3.0.24",
-      "source_hash": "sha256:51ca61ba6b77c2954c2bdbf956a4a309d8c782b633551eb1a6899bf893531d76",
+      "source_version": "3.0.25",
+      "source_hash": "sha256:ee28049b14166377c114f2935e828c005de0b1a5a2d094aa22557adf014f7806",
       "generated_file": "bopen-mcp.toml",
-      "generated_hash": "sha256:59664393178978de92a6486c57b2afeb5330e279edbd2fb3c218cb5f55b4395b",
+      "generated_hash": "sha256:7cf0efeea6a5ba37d4c4edcff0da0dce2cf558dc6b32d2580392db2beaa996e6",
       "agent_name": "bopen_mcp",
       "curated": false,
       "default_install": false
@@ -259,10 +259,10 @@
     {
       "source_name": "nextjs",
       "source_path": "agents/nextjs.md",
-      "source_version": "1.1.6",
-      "source_hash": "sha256:4808eb8bd3b79f2232131e7af4a58bc67506583ffaef1a6696f425ed43cb7d30",
+      "source_version": "1.1.7",
+      "source_hash": "sha256:744f5a7df9f5962908bd014d3da840a4aec0547e53933d389b85af8662adac95",
       "generated_file": "bopen-nextjs.toml",
-      "generated_hash": "sha256:8255c373236aec4f599af04ef44486bb0de4e005e851c62b1b1046a91962fa93",
+      "generated_hash": "sha256:5b5442747b548be3f5c62779eccff81556cf61649373ba0b99cbbb41304a4840",
       "agent_name": "bopen_nextjs",
       "curated": false,
       "default_install": false
@@ -314,10 +314,10 @@
     {
       "source_name": "researcher",
       "source_path": "agents/researcher.md",
-      "source_version": "1.2.11",
-      "source_hash": "sha256:dce68d0d398c1205f7b6b1824b4c28cdc1183d12bf585c3de141f41879d57e1e",
+      "source_version": "1.2.12",
+      "source_hash": "sha256:247777d915dcbbf00690531539ba4ebeefe3843e2dfd6c7abfcc261c68059c90",
       "generated_file": "bopen-researcher.toml",
-      "generated_hash": "sha256:cfc947111252c78c9148610f7c0455c8fe2f3b6145a2f5f6dd0b2869851f6fe7",
+      "generated_hash": "sha256:7c8657a6fa319435f9a98d6c5760fce3a984e9135670f1a863f03370c9a0a4bf",
       "agent_name": "bopen_researcher",
       "curated": true,
       "default_install": true

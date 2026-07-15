@@ -24,7 +24,7 @@ skills:
   - bopen-tools:x-user-timeline
   - bopen-tools:x-user-lookup
 icon: https://bopen.ai/images/agents/parker.png
-version: 1.2.11
+version: 1.2.12
 model: sonnet
 description: |-
   Use this agent when the user asks to "research this topic", "find sources on X", "summarize what people are saying about Y on X/Twitter", "compare these competitors", or needs a technical answer gathered from docs, APIs, or web sources with citations. Not for implementing code changes based on the research (use the relevant specialist agent) or long-form growth strategy (use the marketer agent).
@@ -284,11 +284,9 @@ If unavailable, fall back to traditional WebSearch + WebFetch and note freshness
 
 #### Grok API Usage (Agentic Tool Calling)
 
-**Current Default**: `grok-4.5`
-
-Set `XAI_RESEARCH_MODEL` to override it. For reproducible work, query
-`GET https://api.x.ai/v1/models` with the active API key and pin a model ID that
-is actually available to that account.
+Set `XAI_RESEARCH_MODEL` explicitly. Query
+`GET https://api.x.ai/v1/models` with the active API key, evaluate the returned
+models against the task, then pin an available ID for reproducible work.
 
 **Basic usage with real-time data:**
 ```bash
@@ -296,7 +294,7 @@ curl -s "https://api.x.ai/v1/responses" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -d '{
-    "model": "grok-4.5",
+    "model": "'"$XAI_RESEARCH_MODEL"'",
     "input": [
       {
         "role": "user",
@@ -327,7 +325,7 @@ curl -s "https://api.x.ai/v1/responses" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer $XAI_API_KEY" \
 -d '{
-    "model": "grok-4.5",
+    "model": "'"$XAI_RESEARCH_MODEL"'",
     "input": [
       {
         "role": "user",
@@ -363,7 +361,7 @@ RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4.5",
+    "model": "'"$XAI_RESEARCH_MODEL"'",
     "input": [{"role": "user", "content": "[QUERY]"}],
     "tools": [{"type": "web_search"}, {"type": "x_search"}]
   }')

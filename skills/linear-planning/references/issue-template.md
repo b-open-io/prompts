@@ -19,7 +19,7 @@ See: `docs/specs/feature-name.md`
 
 ## Repo Context
 - **Repo**: ~/code/myapp (or absolute path)
-- **Framework**: [e.g., Next.js 15, Bun runtime, Tailwind v4]
+- **Framework**: [detected framework and runtime versions]
 - **Key paths**: [e.g., src/components/, app/api/, __tests__/]
 - **Conventions**: [e.g., Biome linting, TypeScript strict, shadcn/ui]
 
@@ -156,7 +156,7 @@ but the route handler is at `/api/invoices/${id}` (plural).
 **Always include:**
 - Exact file paths (relative to repo root)
 - Line numbers for bug locations when known
-- The framework version (Next.js 14 vs 15 API differences matter)
+- The installed framework version and matching API contract
 - Whether to create vs update vs delete files
 - What NOT to touch (boundaries)
 

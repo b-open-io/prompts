@@ -64,7 +64,7 @@ curl -H "x-api-key: $ANTHROPIC_ADMIN_KEY" \
   "data": [
     {
       "timestamp": "2026-03-13T00:00:00Z",
-      "model": "claude-sonnet-4-5",
+      "model": "example-model-a",
       "input_tokens": 1240000,
       "output_tokens": 320000,
       "cache_read_input_tokens": 480000,
@@ -73,7 +73,7 @@ curl -H "x-api-key: $ANTHROPIC_ADMIN_KEY" \
     },
     {
       "timestamp": "2026-03-13T00:00:00Z",
-      "model": "claude-haiku-4-5",
+      "model": "example-model-b",
       "input_tokens": 9800000,
       "output_tokens": 1100000,
       "cache_read_input_tokens": 2100000,
@@ -136,19 +136,19 @@ curl -H "x-api-key: $ANTHROPIC_ADMIN_KEY" \
     {
       "date": "2026-03-13",
       "workspace": "production",
-      "description": "claude-sonnet-4-5 input tokens",
+      "description": "example-model-a input tokens",
       "cost": "4.8600"
     },
     {
       "date": "2026-03-13",
       "workspace": "production",
-      "description": "claude-sonnet-4-5 output tokens",
+      "description": "example-model-a output tokens",
       "cost": "19.2000"
     },
     {
       "date": "2026-03-13",
       "workspace": "agents",
-      "description": "claude-haiku-4-5 input tokens",
+      "description": "example-model-b input tokens",
       "cost": "0.9800"
     }
   ],

@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-version: 0.0.4
+version: 0.0.5
 description: >-
   Use this skill when a capable current Claude Code or Codex main session
   should coordinate native specialist agents, external implementation workers
@@ -108,8 +108,8 @@ or a broader repository snapshot than the assignment needs.
    specialists are useful, which implementation units fit Grok, and whether a
    Fable consult reaches a real commitment boundary.
 3. **Preflight lanes.** Verify native agent availability. For Grok, inspect the
-   complete `grok models` output and confirm
-   `${BOPEN_WORKER_MODEL:-grok-4.5}` exists before dispatch. For Fable, verify
+   complete `grok models` output, require `BOPEN_WORKER_MODEL`, and confirm its
+   exact value exists before dispatch. For Fable, verify
    Claude CLI authentication and use
    `${BOPEN_ADVISOR_MODEL:-fable}` without claiming that alias is permanently
    the latest model.

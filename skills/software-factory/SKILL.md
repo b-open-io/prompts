@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.5
+version: 0.0.6
 description: Use this skill when designing, configuring, or hardening a software factory — an AI developer workflow where agents iterate toward a goal — a goal an agent iterates toward on its own with a real verification gate, persistent state, and a stop condition. Invoke it when the user mentions "build a loop", "agentic loop", "self-iterating agent", "run this on a schedule/cron", "/loop or /goal", "Ralph loop", "maker-checker", "fleet of agents", "autonomous workflow", "AI developer workflow", "ADW", "software factory", "agentic SDLC", or wants an agent to keep working a goal unattended until it's verifiably done. Also use when scoping whether a loop is even worth building, when picking a verification gate, when deciding what a loop is allowed to touch (blast radius), or when a loop is burning tokens without producing accepted work.
 ---
 
@@ -60,6 +60,21 @@ The dedup-vs-open-tickets step is what stops discovery from re-filing the same i
 At factory scale, a **router** sits above all worker types: work arrives typed (chore, bug, feature, hotfix), and the router picks the workflow and the model tier for it — a workhorse maker for volume, a state-of-the-art model only where planning or checking earns it. Speed-critical work (hotfixes) can **race**: several isolated agents attack the same fix in parallel and the first one through the gate wins. Isolation progresses with maturity — git worktrees are a great place to start and a poor place to end; sandboxes give full isolation plus a place a human can step into mid-run.
 
 **On Claude Code specifically**, staged fan-outs inside a loop pass — find → adversarially verify → synthesize, judge panels, loop-until-dry discovery — can run as a native `Workflow` (deterministic script, live `/workflows` progress, resumable). This is framework-dependent and opt-in-gated; see `skills/coordinator/references/native-workflows.md` for when it applies. On other runtimes, the manual wave protocols in `wave-coordinator` do the same job.
+
+### Agent runtime selection
+
+Keep the factory's ticket/state backend separate from runtime checkpoints. For
+AI SDK v7 applications, use `WorkflowAgent` when tool steps, approvals, and
+stream reconnection need workflow durability. Use `HarnessAgent` when an
+established sandboxed coding runtime should own the session, after verifying
+the experimental harness package against the installed docs.
+
+For bOpen systems covered by the eve adoption plan, treat eve as a conditional
+candidate behind the bOpen-owned ACL/persistence proxy. The Phase-2 seam tests
+must prove ownership, Postgres durability, restart/resume, dynamic agent
+resolution, and deterministic subagent dispatch. A failed proof selects the
+v7-native runtime behind the same application conversation and persistence
+contracts.
 
 ## Maintenance workers & looptop
 

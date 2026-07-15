@@ -1,6 +1,6 @@
 ---
 name: cost-tracking
-version: 1.0.1
+version: 1.0.2
 description: >-
   This skill should be used when tracking API spend, analyzing billing data,
   monitoring service costs, running budget reports, or optimizing agent spend
@@ -49,7 +49,8 @@ Full parameter reference and response shapes: `references/anthropic-api.md`.
 **Billing API:** `GET /v1/billing/charges`
 - Auth: Bearer token (same Vercel API token)
 - Params: `from`, `to`, `teamId` or `slug`
-- Response: newline-delimited JSONL, FOCUS v1.3 format
+- Response: newline-delimited JSONL in the FOCUS version declared by the live
+  Vercel API documentation; verify its field schema before parsing.
 - Granularity: 1-day, max 1 year range
 
 **Spend Management Webhooks:** fire at 50%/75%/100% of configured budget.

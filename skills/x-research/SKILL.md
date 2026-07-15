@@ -1,6 +1,6 @@
 ---
 name: x-research
-version: 1.1.3
+version: 1.1.4
 description: AI-powered X/Twitter research via xAI Grok. Returns AI SUMMARIES with analysis, not raw tweets. Use for "what's trending", "social sentiment", "summarize X discussion about", "analyze X conversation about", "research topic on X". For RAW tweet data, use x-user-timeline, x-tweet-search, x-tweet-fetch instead. Requires XAI_API_KEY.
 allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_PLUGIN_ROOT}:*)
 ---
@@ -59,15 +59,15 @@ If unavailable, inform the user that XAI_API_KEY must be configured before using
 
 **Endpoint**: `https://api.x.ai/v1/responses`
 
-**Current Default**: `grok-4.5`
-
-Set `XAI_RESEARCH_MODEL` to override it. Before a long-lived deployment or a
-reproducible run, list the models available to the current API key and pin an ID
-that meets the workload's search, reasoning, latency, and cost requirements:
+Set `XAI_RESEARCH_MODEL` explicitly. Before any request, list the models
+available to the current API key and select an ID that meets the workload's
+search, reasoning, latency, and cost requirements:
 
 ```bash
 curl -s https://api.x.ai/v1/models \
   -H "Authorization: Bearer $XAI_API_KEY" | jq -r '.data[].id'
+
+: "${XAI_RESEARCH_MODEL:?Set XAI_RESEARCH_MODEL to one of the verified IDs above}"
 ```
 
 **Available Search Tools**:
@@ -83,7 +83,7 @@ curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4.5",
+    "model": "'"$XAI_RESEARCH_MODEL"'",
     "input": [{"role": "user", "content": "[YOUR QUERY]"}],
     "tools": [{"type": "web_search"}, {"type": "x_search"}]
   }' | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
@@ -96,7 +96,7 @@ RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4.5",
+    "model": "'"$XAI_RESEARCH_MODEL"'",
     "input": [{"role": "user", "content": "[YOUR QUERY]"}],
     "tools": [{"type": "web_search"}, {"type": "x_search"}]
   }')
@@ -156,7 +156,7 @@ curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4.5",
+    "model": "'"$XAI_RESEARCH_MODEL"'",
     "input": [{"role": "user", "content": "What is currently trending on X? Include viral posts and major discussions."}],
     "tools": [{"type": "x_search"}]
   }' | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
@@ -169,7 +169,7 @@ curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4.5",
+    "model": "'"$XAI_RESEARCH_MODEL"'",
     "input": [{"role": "user", "content": "What are developers saying about [TOPIC] on X? Include recent discussions and opinions."}],
     "tools": [{"type": "x_search"}, {"type": "web_search"}]
   }' | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
@@ -182,7 +182,7 @@ curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4.5",
+    "model": "'"$XAI_RESEARCH_MODEL"'",
     "input": [{"role": "user", "content": "Latest news and developments about [TOPIC]"}],
     "tools": [{"type": "web_search"}]
   }' | tr -d '\000-\010\013\014\016-\037' | jq -r '[.output[] | select(.type=="message")][-1].content[0].text'
@@ -195,7 +195,7 @@ curl -s "https://api.x.ai/v1/responses" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -d '{
-    "model": "grok-4.5",
+    "model": "'"$XAI_RESEARCH_MODEL"'",
     "input": [{"role": "user", "content": "What happened with [TOPIC] from January 9 through January 16, 2025?"}],
     "tools": [{
       "type": "x_search",
@@ -272,10 +272,10 @@ Old format (deprecated):
 }
 ```
 
-New format (use this):
+New format (use this after verifying a current model ID):
 ```json
 {
-  "model": "grok-4.5",
+  "model": "<verified-current-model-id>",
   "input": [...],
   "tools": [{"type": "web_search"}, {"type": "x_search"}]
 }

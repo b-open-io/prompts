@@ -81,7 +81,8 @@ Wrapper recipe (the agent prompt, not the script):
    file ownership.
 2. Launch with `run_in_background: true`:
    `codex exec --sandbox workspace-write --cd <repo> "<one-liner; details in SPEC>"`
-   (grok: `grok --prompt-file <f> -m "${BOPEN_WORKER_MODEL:-grok-4.5}"
+   (grok: first verify `BOPEN_WORKER_MODEL` against complete `grok models`
+   output, then run `grok --prompt-file <f> -m "$BOPEN_WORKER_MODEL"
    --permission-mode acceptEdits --sandbox workspace --cwd <repo>`).
 3. Poll the output file every 30-60s: on error signatures (sandbox
    PermissionDenied, auth failures, "environment blocker") kill and report

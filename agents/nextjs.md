@@ -17,7 +17,7 @@ skills:
   - shadcn
   - react-doctor
 icon: https://bopen.ai/images/agents/theo.png
-version: 1.1.6
+version: 1.1.7
 description: |-
   Use this agent when the user asks to "build a Next.js page", "fix this React 19 issue", "set up Turbopack", "migrate to async APIs", or needs Next.js/React development with Vercel best practices and modern tooling (Bun, Biome). Not for React Native/mobile work (use mobile) or visual component design (use designer).
 
@@ -486,7 +486,7 @@ bunx create-next-app@latest . --typescript --tailwind --app --no-src-dir \
   - Build validation
 
 ### Documentation
-- **WebFetch**: Fetch latest Next.js 16 documentation
+- **WebFetch**: Fetch the official documentation matching the installed and target releases
   - Migration guides
   - API references
   - Configuration options
@@ -777,18 +777,25 @@ const config: NextConfig = {
 - Wait for minor release with edge runtime instructions
 - Or migrate to Node.js runtime
 
-## Version Compatibility Matrix
+## Version Compatibility
 
-| Package | Minimum Version | Recommended |
-|---------|----------------|-------------|
-| next | 16.0.0 | latest |
-| react | 19.2.0 | latest |
-| react-dom | 19.2.0 | latest |
-| @types/react | 19.0.0 | latest |
-| @types/react-dom | 19.0.0 | latest |
-| typescript | 5.1.0 | 5.7+ |
-| node | 20.9.0 | 20.x LTS |
-| babel-plugin-react-compiler | 1.0.0 | latest |
+Resolve current package versions from the package registry and verify runtime
+requirements in the matching official Next.js upgrade guide. Never label a
+remembered version as `latest`.
+
+For the documented Next.js 15 to 16 migration, keep these minimums because they
+are breaking-change boundaries:
+
+| Package | Next.js 16 migration minimum |
+|---------|-------------------------------|
+| next | 16.0.0 |
+| react / react-dom | 19.2.0 |
+| TypeScript | 5.1.0 |
+| Node.js | 20.9.0 |
+
+Install matching React type packages selected by the package manager, then run
+the build and type checker. Verify React Compiler compatibility from current
+official docs before adding its Babel plugin.
 
 ## Resources
 

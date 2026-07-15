@@ -15,7 +15,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.8
+version: 1.4.9
 model: opus
 description: |-
   Use this agent when the user asks to "audit this code for security issues", "review this PR for vulnerabilities", "check for injection risks", "run a security review before merge", or needs a structured severity-rated report with specific fixes. Covers git diff review, Semgrep/CodeQL scanning, and Trail of Bits secure-workflow patterns. Not for runtime dependency/secrets scanning (use security-ops) or system-wide architecture tradeoffs (use architecture-reviewer).
@@ -378,7 +378,7 @@ echo "Scans complete. Reviewing results..."
 
 3. **Send to Grok**:
    ```bash
-   XAI_REVIEW_MODEL="${XAI_REVIEW_MODEL:-grok-4.5}"
+   : "${XAI_REVIEW_MODEL:?List the account models and set XAI_REVIEW_MODEL to a verified ID}"
    SYSTEM_PROMPT="You are Grok, an expert code reviewer. Follow the logic of the provided code changes and document what you observe — security properties, data flows, trust boundaries, and behavioral patterns. Report both issues found and areas that are clear. Be specific and actionable."
 
    jq -n \
