@@ -53,7 +53,9 @@ A large collection mint (e.g. 10,000 items) or a mint-on-purchase flow currently
 - `packages/actions/src/ordfs/outputs.ts` — finalize the `OrdfsDirEntry` shape + `buildOrdFsDirOutputs` options.
 - `packages/actions/src/ordfs/index.ts` — keep `inscribeOrdfsDir`'s simple `files` path; expose the richer entry shape.
 - `packages/actions/src/collections/index.ts` — add an optional `ref` content path to `mintCollectionItem` (and the item builder), WITHOUT changing the MAP output shape.
-- Corresponding `*.test.ts` in `packages/actions/src/ordfs/` and `packages/actions/src/collections/` (create/extend).
+- `packages/actions/src/tokens/index.ts` — add an optional `collectionItem` path to `deployBsv21Mint` / `deployBsv21Auth` so a token deploy can carry standard `collectionItem` MAP + AIP as a script suffix (the BSV-21-token-as-collectionItem seam). Grounded: `BSV21Options` already exposes `parent`/`scriptSuffix` (templates `bsv21.ts:547-576`), and a shipped precedent combines `P2PKH + non-image inscription + MAP + AIP` in one output (`registry/package-tx.ts:53-243`). The deploy actions today build a single output with NO MAP/AIP path (`tokens/index.ts:1182-1187`, `1309-1311`) — wire it in; do not change the `bsv-20` JSON (membership lives in MAP only).
+- **Fix the pre-existing AIP gap:** `mintCollection`/`mintCollectionItem` do not currently apply an AIP signature at all, though the spec requires collection/item authorship signing (`collections.md`, `collectionitem-subtype.md`). Apply AIP (reuse `applyAip`/`applyBapAip`, `signing/aip.ts:116-160`) to items — including token-deploy members — so membership is provable. Take ownership of this per repo convention rather than leaving it broken.
+- Corresponding `*.test.ts` in `packages/actions/src/ordfs/`, `packages/actions/src/collections/`, and `packages/actions/src/tokens/` (create/extend).
 
 **Out of scope (do NOT touch):**
 - The MAP metadata shape in `buildCollectionItemMap` / `buildCollectionMap` — `subType`, `subTypeData` keys, and their JSON encoding must stay byte-identical. Indexers depend on it.
@@ -119,6 +121,14 @@ In `packages/actions/src/collections/index.ts`, extend the `mintCollectionItem` 
 - `packages/actions/src/collections/collections.test.ts` (find the existing collection test; extend it): mint an item with `ref` and assert (a) the MAP `subType`/`subTypeData` bytes equal those of a `base64Content` item with identical metadata, and (b) the inscription content-type is the real MIME plus the `ref=ordfs` parameter (e.g. `image/png; ref=ordfs`) and the body is the pointer — NOT `text/uri-list`. Model the assertions on the existing collection test in this file.
 
 **Verify**: `bun test` → all pass including the new cases.
+
+### Step 5: BSV-21-token-as-collectionItem deploy path
+
+In `packages/actions/src/tokens/index.ts`, add an optional `collectionItem?: { collectionId: string; name?: string; traits?: ...; rarityLabel?: string }` input to `deployBsv21Mint` and `deployBsv21Auth`. When set, append a `collectionItem` MAP envelope (`subType:collectionItem`, `subTypeData` = the given fields; OMIT `mintNumber`/`rank` — they are meaningless for a fungible member) plus an AIP signature as the deploy output's `scriptSuffix`, and set the ordinal `parent` field to the collection outpoint. Do NOT add any collection field to the `bsv-20` JSON. Support both supply models unchanged: `deploy+mint` (fixed) and `deploy+auth` (mint-over-time; the auth UTXO holder mints supply later).
+
+**The invariant:** the deploy output's `collectionItem` MAP bytes must equal those a `mintCollectionItem` would produce for the same `collectionId`/metadata — a token member and an NFT member are indistinguishable at the MAP layer. Test it: assert byte-equality of the MAP suffix between a token-deploy member and an NFT item with identical `subTypeData`.
+
+**Verify**: `bun test packages/actions/src/tokens` passes; the token-deploy member carries `application/bsv-20` content AND a `collectionItem` MAP+AIP suffix; `bun run --filter '@1sat/actions' build` → exit 0.
 
 ## Done criteria
 

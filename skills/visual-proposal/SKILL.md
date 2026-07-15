@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.5
+version: 0.0.6
 description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
 ---
 
@@ -102,13 +102,26 @@ The advocates above argue *among* the presented options. Often the most valuable
 viewpoint disputes the framing itself — the whole option space rests on an
 assumption worth questioning ("this doesn't need to be a collection at all — mint
 a fungible token"; "don't build this, buy it"; "the real fork is upstream of these
-three"). When such a voice is real, give it a card too, on equal footing, but mark
-it clearly as **challenging the premise, not picking an option** — it argues a
-different axis, so it is not scored against the option advocates and the judging
-bench does not rule on it. Fold what it surfaces into the open questions as an
-**upstream decision** the reviewer settles before the option-level one. A proposal
-that can name its own load-bearing assumption is more honest than one that argues
-only within it.
+three"). Give such a voice a card too, on equal footing. But then make one call,
+and make it honestly:
+
+- **If the voice only questions the framing** (no concrete, buildable
+  alternative), keep it as a marked premise-challenge: it argues a different
+  axis, so it is not scored against the option advocates and the bench does not
+  rule on it. Fold what it surfaces into the open questions as an **upstream
+  decision** the reviewer settles first.
+- **If the voice proposes a concrete, buildable alternative** (a real fourth
+  option — "mint a BSV-21 token instead"), it is NOT a sidebar. Promote it to a
+  **first-class option**: full cross-examination (the other advocates attack it
+  by name, it attacks each of them), and the judging bench **re-runs to include
+  it**. Sidelining a real competing option as "just a premise-challenge" is the
+  most common way this skill under-serves a live decision — if it can be built
+  and compared, it gets argued and judged like everything else.
+
+The tell is buildability: a different *axis* can still be a real option. When it
+is, verify its feasibility with the same grounding rigor as every other option
+(read the actual code/spec — see the grounding rule) before letting an advocate
+champion it, so the fourth card is as evidence-backed as the first three.
 
 ### Add debate or a judging bench only when useful
 

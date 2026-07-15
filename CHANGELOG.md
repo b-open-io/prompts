@@ -6,6 +6,18 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.97] - 2026-07-15
+
+### Changed
+
+- `visual-proposal` skill (0.0.6): a premise-challenging voice that proposes a
+  concrete, buildable alternative is now promoted to a first-class option —
+  full cross-examination (advocates attack it by name, it attacks them) and the
+  judging bench re-runs to include it — rather than being sidelined as a
+  non-judged sidebar. Only a voice that questions the framing without offering a
+  buildable option stays a marked premise-challenge. Added the buildability tell
+  and a reminder to ground the fourth option with the same rigor as the rest.
+
 ## [1.1.96] - 2026-07-15
 
 ### Changed

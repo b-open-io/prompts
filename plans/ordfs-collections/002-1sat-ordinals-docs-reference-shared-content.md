@@ -31,9 +31,10 @@ The spec already documents ord-fs directories, pointer forms, `seq`/`:-1`, and `
 **In scope:**
 - `reference-inscriptions.md` — add the "Referencing shared content (collections & large mints)" section (text below).
 - `ordfs.md` — add ONE cross-link line in the Directories section pointing to the new section.
+- `adding-metadata/collectionitem-subtype.md` — add a "Fungible (BSV-21) collection members" subsection (text in `_bsv21-collection-member-section.md`). This is a documentation ADDITION that acknowledges an already-valid on-chain shape (a `bsv-20` deploy carrying standard `collectionItem` MAP+AIP); it does NOT change any existing field or envelope.
 
 **Out of scope:**
-- Any change to `adding-metadata/collections.md` or `collectionitem-subtype.md` — the MAP spec does not change.
+- Any change to the EXISTING fields/envelope in `adding-metadata/collections.md` or `collectionitem-subtype.md` — the MAP shape does not change; only the new fungible-members subsection is added.
 - `SUMMARY.md` restructuring beyond adding the new section if it is a new page (it is a section within an existing page, so SUMMARY likely needs no change — confirm).
 
 ## Steps
@@ -49,6 +50,12 @@ Append after the "Multiple Files" section the exact text in `_reference-shared-c
 In the "Directories" section of `ordfs.md`, add one line: a pointer to the new section, e.g. under "Practical notes": "To share one image across many collection items instead of re-inscribing it, see [Referencing shared content](reference-inscriptions.md#referencing-shared-content-collections--large-mints)."
 
 **Verify**: the anchor matches GitBook's slug for the new heading (lowercase, spaces→`-`, `&`→``, `()` dropped). Confirm by checking how existing intra-doc links in `ordfs.md` are slugged.
+
+### Step 3: Document fungible (BSV-21) collection members in `collectionitem-subtype.md`
+
+Append the exact text in `_bsv21-collection-member-section.md` (in this plan folder) after the transaction-structure example in `adding-metadata/collectionitem-subtype.md`. It documents that a BSV-21 `deploy+mint` or `deploy+auth` output may carry standard `collectionItem` MAP+AIP (membership in MAP, `bsv-20` JSON unchanged); that the member is the deploy/genesis outpoint (`tokenId`), not a held unit; that `mintNumber`/`rank` are omitted for fungible members; that the token `icon` serves as the preview; and the two supply models — fixed (`deploy+mint`) for capped editions and auth (`deploy+auth`) for mint-over-time / access passes ([BSV-21 auth tokens](https://docs.1satordinals.com/fungible-tokens/bsv-21)). This is grounded: the on-chain shape is already valid (a 1-sat `application/bsv-20` deploy can carry a MAP+AIP script suffix — shipped precedent `buildPackageOutputs` in 1sat-sdk `packages/actions/src/registry/package-tx.ts`), so this is a docs acknowledgment, not a protocol change.
+
+**Verify**: `grep -c "Fungible (BSV-21) collection members" collectionitem-subtype.md` → `1`; the `../fungible-tokens/bsv-21.md` and `signing.md` links resolve; no existing field/example in the file is modified.
 
 ## Done criteria
 

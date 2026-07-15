@@ -16,6 +16,20 @@ The three content-reference encodings are not rival alternatives — they are di
 
 **Membership never reads the leaf.** A referenced item is byte-identical at the MAP layer, so membership keys on `collectionId` + `subType:collectionItem` + AIP — encoding is fully orthogonal. There is no collection indexer yet, so plan 003's listing DEFINES this rule.
 
+## BSV-21 token members — the hybrid (audited 2026-07-15)
+
+A collection member need not be a distinct NFT. A collection (e.g. "bOpen.ai Products") can hold **BSV-21 token members** — the $10 desktop app, prompt-pack tokens, or album tracks — where holding one unit = owning that product. The seam: a BSV-21 `deploy` output (content type `application/bsv-20`, a genuine 1-sat ordinal) carries the **standard `collectionItem` MAP + AIP as a script suffix**; the `bsv-20` JSON stays clean (membership is MAP-only). The member is the **deploy/genesis outpoint** (`tokenId`), not a held unit; metadata inherits by resolving `tokenId`, exactly as `sym`/`icon`/`dec` already do.
+
+- **Supply model is a product decision, not a collection concern.** Fixed supply (`deploy+mint`) fits capped editions — e.g. an album where each track is a member token with N tradeable units, one unit granting play rights. Auth tokens (`deploy+auth` → `mint`) fit access passes / mint-over-time: the auth-UTXO holder (the distributor's server key) mints one unit per sale. See [BSV-21 auth tokens](https://docs.1satordinals.com/fungible-tokens/bsv-21).
+- **Image:** the token's `icon` field (an ordinal/B:// outpoint reference) is the member's preview — no separate OrdFS content reference needed for token members.
+- **`mintNumber`/`rank` are omitted** for fungible members; `traits`/`rarityLabel` (if used) describe the token type, not a serial position.
+
+**Feasibility (grounded in 1sat-sdk + 1sat-stack reads):**
+- ✅ **Works at the protocol/script layer as-is.** A 1-sat `application/bsv-20` deploy can carry a MAP+AIP suffix — shipped precedent combines `P2PKH + non-image inscription + MAP + AIP` in one output (`registry/package-tx.ts:53-243`); dual classification is already supported by the additive indexer parser (bsv21 reads the envelope, MAP reads the OP_RETURN suffix — no collision).
+- 🛠️ **Needs SDK action code** (plan 001 Step 5): `deployBsv21Mint`/`deployBsv21Auth` build a single output with no MAP/AIP path today; `BSV21Options.scriptSuffix`/`parent` already support wiring it in. Plus a pre-existing gap: `mintCollection`/`mintCollectionItem` apply no AIP at all despite the spec requiring it.
+- ⛔ **Needs indexer code** (plan 003 Parts B/E): the stack indexes NO `collectionId` today (only `map:type:`; `collectionId` is nested in `subTypeData` JSON) — so no collection is enumerable yet, token or NFT. The BSV-21 overlay also discards MAP into a separate store, so a `tokenId → collection` resolver is needed for the balance×membership wallet view.
+- 📄 **Needs a docs acknowledgment** (plan 002 Step 3): `collectionitem-subtype.md` gains a "Fungible (BSV-21) collection members" subsection ([`_bsv21-collection-member-section.md`](./_bsv21-collection-member-section.md)). No existing field changes.
+
 ## Confirmed backend facts (cited across plans)
 
 1sat-stack `pkg/ordfs` supports: `ord-fs/json` traversal, outpoint + relative-vout (`_N`) pointers, 0-sat bitcom-`B` leaf content by outpoint, and `{outpoint}:-1` latest for the 1-sat root (spend-chain crawl); it loads txs via `beef.Storage` and parses on the fly (does not gate on the output index). Caveats: `beef`/`spends` chains must include a remote (JungleBus) fallback; leaves must be bitcom-`B` (not raw OP_RETURN); `:-1` is 1-sat-only (B leaves and directory-traversed leaves resolve pinned).
@@ -49,13 +63,14 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (reason) | REJECTED (rational
 ## Open design questions to resolve with the maintainers (before/while executing 001)
 
 1. **Does the indexer admit a reference-content item as a collection member? — SETTLED.** There is no collection indexer yet, so plan 003's listing DEFINES the rule: membership keys on MAP `collectionId` + `subType:collectionItem` + AIP, never the inscription body. A `ref=ordfs`, `ord-fs/json`, `text/uri-list`, or `base64Content` item is byte-identical at the MAP layer, so all are admitted identically with rarity/traits intact. Purely additive. (Cite in the PR #13 comment.)
-2. **NFT collection vs fungible BSV-21 pass (upstream of these plans).** These plans assume the item is a distinct NFT `collectionItem`. If the units are interchangeable — identical hold-to-access passes, e.g. the bopen.ai Licenses — a BSV-21 token is a simpler, already-specified model: deploy carries the image once, every minted unit is the token, resale is native transfer, and no collection spec or membership indexer is needed. The only material on-chain difference is wallet display (a fungible token balance vs an NFT tile in collection items), which turns on whether units are distinct or interchangeable. Decide per SKU; the two models can coexist in one product line. These plans cover only the NFT-collection path.
+2. **NFT item vs fungible BSV-21 member — per SKU, and they coexist.** See the "BSV-21 token members" section above for the audited seam. A distinct NFT `collectionItem` (per-unit art, rarity, provenance) and a fungible BSV-21-token member (interchangeable units, hold-to-access, native resale) can both live in ONE collection via the same `collectionItem` MAP+AIP. Choose per SKU by whether units are distinct or interchangeable; the material difference is wallet display (an NFT tile vs a token balance). Feasibility is audited: works at the protocol layer, needs SDK action code (plan 001 Step 5) + indexer code (plan 003 Parts B/E) + a docs acknowledgment (plan 002 Step 3).
 3. **Root: classic vs dual-role.** These plans keep the collection root a classic `image/*` MAP collection (max compat) and apply references only at the item level. If the maintainers want the root to *be* an ord-fs directory (single tradeable tree), that's a follow-up plan — it needs the root to still surface a referenced image preview + carry `subType:collection` MAP.
 4. **Signing:** items stay AIP (collection authorship, matching key) even with reference content; the SIGMA/AIP-by-output-type rule is the ordfs content-signing convention and is orthogonal to collection membership. Confirm.
 
 ## Reference material (in this folder)
 
-- [`_reference-shared-content-section.md`](./_reference-shared-content-section.md) — the exact docs text for plan 002.
+- [`_reference-shared-content-section.md`](./_reference-shared-content-section.md) — the exact docs text for plan 002 (reference-inscriptions.md).
+- [`_bsv21-collection-member-section.md`](./_bsv21-collection-member-section.md) — the exact docs text for plan 002 Step 3 (collectionitem-subtype.md).
 - [`_pr13-comment-draft.md`](./_pr13-comment-draft.md) — the PR #13 comment (fill in `<DOCS_PR_URL>` before posting).
 
 ## Execution findings
