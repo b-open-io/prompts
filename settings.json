@@ -1,0 +1,29 @@
+{
+  "$schema": "./settings.schema.json",
+  "version": 1,
+  "owner": "bopen-tools",
+  "settings": [
+    {
+      "source": "env",
+      "key": "BOPEN_WORKER_MODEL",
+      "type": "string",
+      "default": "grok-4.5",
+      "tier": "model",
+      "label": "Worker model",
+      "description": "Default external implementation worker selected by coordinator.",
+      "sessionContext": true,
+      "contextKey": "models.worker"
+    },
+    {
+      "source": "env",
+      "key": "BOPEN_ADVISOR_MODEL",
+      "type": "string",
+      "default": "fable",
+      "tier": "model",
+      "label": "Advisor model",
+      "description": "Default read-only advisor model family.",
+      "sessionContext": true,
+      "contextKey": "models.advisor"
+    }
+  ]
+}

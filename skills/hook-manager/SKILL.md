@@ -14,7 +14,7 @@ than trusting a memorized list:
 cat "$(ls -d ~/.claude/plugins/cache/b-open-io/bopen-tools/*/ | sort -V | tail -1)hooks/manifest.json"
 ```
 
-Each entry carries `name`, `event`, `matcher`, `runtimes`, `summary`, and
+Each entry carries `name`, `event`, `matcher`, `tier`, `runtimes`, `summary`, and
 `description`. Hooks register automatically when the plugin is installed;
 this skill controls which ones actually run.
 
@@ -54,10 +54,9 @@ yet. Do not interrupt their task; offer setup at a natural pause. The flow:
 
 1. Read the manifest (command above) and present the hooks in two tiers via
    AskUserQuestion (multiSelect):
-   - **Guards (recommended on)**: bouncer, damage-control, publish-gate —
+   - **Guards (recommended on)**: entries with `tier: "guard"` —
      they prevent work loss, secret exposure, and unticketed publishes.
-   - **Workflow (preference)**: agent-browser-solo, session-context,
-     hammertime, browser-intent.
+   - **Workflow (preference)**: entries with `tier: "workflow"`.
 2. Run the prerequisite checks below and fold findings into the
    recommendation (e.g. agent-browser-solo without agent-browser installed
    silently falls back to native WebFetch — still safe to leave on).

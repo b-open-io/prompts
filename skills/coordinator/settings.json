@@ -1,0 +1,43 @@
+{
+  "$schema": "../../settings.schema.json",
+  "version": 1,
+  "owner": "bopen-tools:coordinator",
+  "settings": [
+    {
+      "source": "~/.claude/bopen-tools/settings.json",
+      "key": "skills.coordinator.workflow",
+      "type": "enum",
+      "default": "native-when-authorized",
+      "options": ["native-when-authorized", "manual", "off"],
+      "tier": "workflow",
+      "label": "Workflow mode",
+      "description": "Use native workflows only when the host supports them and the user opted in.",
+      "sessionContext": true,
+      "contextKey": "coordinator.workflow"
+    },
+    {
+      "source": "~/.claude/bopen-tools/settings.json",
+      "key": "skills.coordinator.orchestration",
+      "type": "enum",
+      "default": "adaptive",
+      "options": ["adaptive", "single-agent", "always-coordinate"],
+      "tier": "workflow",
+      "label": "Orchestration",
+      "description": "Choose whether coordinator adapts, stays in one agent, or coordinates every non-trivial task.",
+      "sessionContext": true,
+      "contextKey": "coordinator.orchestration"
+    },
+    {
+      "source": "~/.claude/bopen-tools/settings.json",
+      "key": "skills.coordinator.subagents",
+      "type": "enum",
+      "default": "specialists",
+      "options": ["specialists", "allow-general", "off"],
+      "tier": "workflow",
+      "label": "Sub-agents",
+      "description": "Prefer the installed specialist roster before generic sub-agents.",
+      "sessionContext": true,
+      "contextKey": "coordinator.subagents"
+    }
+  ]
+}

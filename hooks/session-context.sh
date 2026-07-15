@@ -43,6 +43,213 @@ is_plugin_repo() {
     || [[ -f "${root}/.codex-plugin/plugin.json" ]]
 }
 
+# Resolve only settings that explicitly opt into SessionStart context. The
+# declaration files are data (never commands), JSON sources are restricted to
+# the user's home directory, and only validated scalars are emitted. Failure is
+# a silent empty section so config can never block a session from starting.
+resolved_settings_context() {
+  command -v python3 >/dev/null 2>&1 || return 0
+  BOPEN_SETTINGS_SCRIPT_DIR="$SCRIPT_DIR" \
+  BOPEN_SETTINGS_CWD="$cwd" \
+  BOPEN_SETTINGS_CACHE_ROOT="${BOPEN_PLUGIN_CACHE_ROOT:-${HOME}/.claude/plugins/cache/b-open-io}" \
+  python3 - <<'PY'
+import glob
+import json
+import os
+import re
+from pathlib import Path
+
+MAX_SETTINGS = 20
+MAX_LINES = 24
+MAX_VALUE = 100
+MAX_LINE = 180
+MAX_SECTION = 1800
+VALID_KEY = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+home = Path(os.path.expanduser("~")).resolve()
+script_dir = Path(os.environ.get("BOPEN_SETTINGS_SCRIPT_DIR", ".")).resolve()
+plugin_root = script_dir.parent
+cwd = Path(os.environ.get("BOPEN_SETTINGS_CWD", ".")).resolve()
+cache_root = Path(os.path.expanduser(os.environ.get("BOPEN_SETTINGS_CACHE_ROOT", "")))
+settings_override = os.environ.get("BOPEN_SETTINGS_CONFIG", "")
+
+def read_json(path):
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            value = json.load(handle)
+        return value if isinstance(value, dict) else None
+    except Exception:
+        return None
+
+def latest_plugin_roots(root):
+    roots = []
+    try:
+        plugins = sorted(path for path in root.iterdir() if path.is_dir())
+    except Exception:
+        return roots
+    for plugin in plugins:
+        try:
+            versions = sorted(
+                (path for path in plugin.iterdir() if path.is_dir()),
+                key=lambda path: tuple(
+                    (0, int(part)) if part.isdigit() else (1, part.lower())
+                    for part in re.split(r"([0-9]+)", path.name)
+                    if part
+                ),
+            )
+        except Exception:
+            continue
+        if versions:
+            roots.append(versions[-1])
+    return roots
+
+def declaration_paths(root):
+    paths = [root / "settings.json"]
+    paths.extend(Path(path) for path in glob.glob(str(root / "skills" / "*" / "settings.json")))
+    return paths
+
+manifest_paths = declaration_paths(plugin_root)
+for installed_root in latest_plugin_roots(cache_root):
+    if installed_root.resolve() != plugin_root:
+        manifest_paths.extend(declaration_paths(installed_root))
+
+source_cache = {}
+resolved = []
+seen = set()
+
+def scalar_matches(kind, value, options):
+    if kind == "boolean":
+        return isinstance(value, bool)
+    if kind == "number":
+        return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if kind == "string":
+        return isinstance(value, str)
+    if kind == "enum":
+        return isinstance(options, list) and value in options
+    return False
+
+def dotted_value(value, key):
+    current = value
+    for part in key.split("."):
+        if not isinstance(current, dict) or part not in current:
+            return None, False
+        current = current[part]
+    return current, True
+
+def json_source(source):
+    if source == "~/.claude/bopen-tools/settings.json" and settings_override:
+        raw = settings_override
+    else:
+        raw = source
+    expanded = Path(os.path.expanduser(raw)).resolve()
+    try:
+        expanded.relative_to(home)
+    except Exception:
+        return None
+    key = str(expanded)
+    if key not in source_cache:
+        source_cache[key] = read_json(expanded) or {}
+    return source_cache[key]
+
+for manifest_path in manifest_paths:
+    manifest = read_json(manifest_path)
+    if not manifest or manifest.get("version") != 1 or not isinstance(manifest.get("settings"), list):
+        continue
+    owner = manifest.get("owner")
+    if not isinstance(owner, str) or not owner:
+        continue
+    for declaration in manifest["settings"]:
+        if len(resolved) >= MAX_SETTINGS or not isinstance(declaration, dict):
+            break
+        if declaration.get("sessionContext") is not True or declaration.get("sensitive") is True:
+            continue
+        source = declaration.get("source")
+        key = declaration.get("key")
+        kind = declaration.get("type")
+        tier = declaration.get("tier")
+        default = declaration.get("default")
+        options = declaration.get("options")
+        context_key = declaration.get("contextKey", key)
+        identity = (owner, key)
+        if (
+            identity in seen
+            or not isinstance(source, str)
+            or not isinstance(key, str)
+            or not isinstance(context_key, str)
+            or not VALID_KEY.fullmatch(key)
+            or not VALID_KEY.fullmatch(context_key)
+            or tier not in {"guard", "workflow", "model", "skill"}
+            or not scalar_matches(kind, default, options)
+        ):
+            continue
+        seen.add(identity)
+        value = None
+        configured = False
+        if source == "env":
+            raw = os.environ.get(key)
+            if raw not in (None, ""):
+                value, configured = raw, True
+        else:
+            source_value = json_source(source)
+            if source_value is not None:
+                value, configured = dotted_value(source_value, key)
+        if not configured or not scalar_matches(kind, value, options):
+            value, configured = default, False
+        text = str(value).lower() if isinstance(value, bool) else str(value)
+        text = " ".join(text.split())[:MAX_VALUE]
+        resolved.append((context_key, text, tier, configured))
+
+lines = ["[BOPEN-SETTINGS] Resolved config for this session:"]
+for key, value, tier, configured in resolved:
+    origin = "configured" if configured else "default"
+    lines.append(f"- {key}={value} [{tier}; {origin}]")
+
+hook_manifest = read_json(plugin_root / "hooks" / "manifest.json") or {}
+hooks = hook_manifest.get("hooks") if isinstance(hook_manifest.get("hooks"), list) else []
+config_paths = [
+    os.environ.get("BOPEN_HOOKS_CONFIG", ""),
+    str(cwd / ".claude" / "bopen-hooks.json"),
+    str(home / ".claude" / "bopen-tools" / "hooks-config.json"),
+]
+configs = [read_json(path) for path in config_paths if path]
+for tier in ("guard", "workflow"):
+    on, off = [], []
+    for hook in hooks:
+        if not isinstance(hook, dict) or hook.get("tier", "workflow") != tier:
+            continue
+        name = hook.get("name")
+        if not isinstance(name, str) or not VALID_KEY.fullmatch(name):
+            continue
+        enabled = True
+        for config in configs:
+            verdict = (config or {}).get("hooks", {}).get(name) if isinstance((config or {}).get("hooks"), dict) else None
+            if isinstance(verdict, bool):
+                enabled = verdict
+                break
+        (on if enabled else off).append(name)
+    if on or off:
+        state = f"on={','.join(on) or '-'}; off={','.join(off) or '-'}"
+        lines.append(f"- hooks.{tier}: {state}")
+
+router_path = Path(os.path.expanduser(os.environ.get("BOPEN_ROUTER_INDEX", str(home / ".claude" / "bopen-tools" / "router-index.json"))))
+router = read_json(router_path)
+if router:
+    count = router.get("entry_count")
+    if not isinstance(count, int):
+        entries = router.get("entries")
+        count = len(entries) if isinstance(entries, list) else 0
+    lines.append(f"- router-index=present ({count} entries)")
+else:
+    lines.append("- router-index=missing")
+
+safe_lines = [line[:MAX_LINE] for line in lines[:MAX_LINES]]
+output = "\n".join(safe_lines)
+if len(output) > MAX_SECTION:
+    output = output[: MAX_SECTION - 2] + "\n…"
+print(output)
+PY
+}
+
 # Gather context ------------------------------------------------------------
 
 branch="(not a git repo)"
@@ -121,6 +328,13 @@ if [[ -n "$context_file" ]]; then
 else
   context="## Session Context (active workspace)
 - Cwd: ${cwd}"
+fi
+
+settings_context=$(resolved_settings_context 2>/dev/null || true)
+if [[ -n "$settings_context" ]]; then
+  context="${context}
+
+${settings_context}"
 fi
 
 # Invocation contract: static, hand-curated, kept small on purpose (see

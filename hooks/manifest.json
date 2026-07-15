@@ -7,6 +7,7 @@
       "path": "hooks/agent-browser-solo.sh",
       "event": "PreToolUse",
       "matcher": "WebFetch",
+      "tier": "workflow",
       "runtimes": ["claude"],
       "summary": "Services WebFetch through a real browser instead of plain HTTP.",
       "description": "Intercepts WebFetch and fetches the page with agent-browser (headless Chrome) in an isolated session, delivering JS-rendered extracted text to the model in the same turn — one fetch, one quiet transcript line, no retry. Client-rendered pages that return a 10-byte shell over HTTP come back as complete content in about 1.5 seconds. Fetched text is sanitized, capped at 30KB, and wrapped in untrusted-data markers; near-empty results and missing-binary cases fall back to native WebFetch. Claude-only: Codex has no WebFetch tool to intercept — its counterpart is the browser-intent hook."
@@ -16,6 +17,7 @@
       "path": "hooks/bouncer.sh",
       "event": "PreToolUse",
       "matcher": "Bash",
+      "tier": "guard",
       "runtimes": ["claude", "codex"],
       "summary": "Blocks destructive git commands before they run.",
       "description": "Hard-blocks working-tree-destroying git operations (reset --hard, clean -f, checkout --, restore of worktree files, stash clear) while allowing their safe counterparts like unstaging and restore --staged. Runs on every Bash call in both Claude Code and Codex runtimes."
@@ -25,6 +27,7 @@
       "path": "hooks/damage-control.sh",
       "event": "PreToolUse",
       "matcher": "Bash|Write|Edit|Read",
+      "tier": "guard",
       "runtimes": ["claude", "codex"],
       "summary": "Confirmation tier for risky operations; zero-access guard for secrets.",
       "description": "Asks for user confirmation on risky-but-legitimate operations (stash drop, force pushes other than --force-with-lease) and hard-blocks writes to secret files like .env while allowing templates such as .env.example. On Codex, confirmation-tier operations deny with an actionable reason since Codex has no ask flow."
@@ -34,6 +37,7 @@
       "path": "hooks/publish-gate.sh",
       "event": "PreToolUse",
       "matcher": "Bash",
+      "tier": "guard",
       "runtimes": ["claude", "codex"],
       "summary": "Gates package publishing behind Linear ticket verification.",
       "description": "Detects publish commands (npm/bun publish, clawnet publish, including inside shell chains) and verifies an approved Linear ticket exists before allowing them. On-chain publishes additionally require an explicit irreversibility acknowledgment. Fails closed on API errors, timeouts, and missing credentials."
@@ -43,6 +47,7 @@
       "path": "hooks/session-context.sh",
       "event": "SessionStart",
       "matcher": "*",
+      "tier": "workflow",
       "runtimes": ["claude", "codex"],
       "summary": "Injects repo and plugin context at session start.",
       "description": "Summarizes the working repository (branch, recent commits, files changed in the last commit) and the installed plugin inventory into the session's opening context so the agent starts oriented."
@@ -52,6 +57,7 @@
       "path": "hooks/hammertime.py",
       "event": "Stop",
       "matcher": "*",
+      "tier": "workflow",
       "runtimes": ["claude", "codex"],
       "summary": "Corpus-tuned end-of-turn rule enforcement.",
       "description": "Evaluates the assistant's turn against rules mined from real production transcripts (F1 0.89 on the tuning corpus) and blocks the stop when a rule fires — for example, dismissing errors as pre-existing instead of fixing them. Rules are managed via the hammertime skill."
@@ -61,6 +67,7 @@
       "path": "hooks/browser-intent.sh",
       "event": "UserPromptSubmit",
       "matcher": "*",
+      "tier": "workflow",
       "runtimes": ["codex"],
       "summary": "Steers browser-shaped prompts toward agent-browser.",
       "description": "Detects prompts that involve browser work (URLs, navigation, form filling, login, screenshots, SPAs) and injects static guidance preferring agent-browser when installed. Never fetches or injects page content itself. Codex counterpart of agent-browser-solo: Codex has no WebFetch tool to intercept, so this hook steers at the prompt level instead."
@@ -70,6 +77,7 @@
       "path": "hooks/prompt-router.sh",
       "event": "UserPromptSubmit",
       "matcher": "*",
+      "tier": "workflow",
       "runtimes": ["claude"],
       "summary": "Points prompts at the matching installed skill before the model responds.",
       "description": "Scores the submitted prompt against ~/.claude/bopen-tools/router-index.json (built by scripts/build-router-index.py from every installed b-open-io plugin) and, above threshold, injects a short pointer at the best-matching Skill or roster subagent_type — at most the top two matches, capped at 500 chars. Requires either one matched trigger phrase or two matched keywords; skips prompts under 15 chars and slash commands. Never echoes the raw prompt back into the injected context. The directive is always phrased conditionally (\"...unless its instructions are already loaded in your context this session\") since the model's own context is the only accurate judge of that, not the transcript. Router-side session memory in ~/.claude/bopen-tools/router-state/<session_id>.json caps a given id at two firings per session with a minimum 10-prompt gap between them, pruning state older than 7 days on every write. Claude-only: matches on Skill()/subagent_type semantics Codex doesn't share."
@@ -79,6 +87,7 @@
       "path": "hooks/roster-guard.sh",
       "event": "PreToolUse",
       "matcher": "Task",
+      "tier": "workflow",
       "runtimes": ["claude"],
       "summary": "Suggests a roster specialist when a Task dispatch targets a generic agent.",
       "description": "When a Task call's subagent_type is \"general-purpose\" or \"Explore\", scores the dispatch prompt/description against the AGENT entries in the router index and, above threshold, emits additionalContext naming the closest-matching roster subagent_type. Carries no permissionDecision at all — additionalContext is a standalone PreToolUse field, so the permission flow is left completely untouched rather than implicitly allowed. Steps aside silently if the router index is missing or nothing matches. Claude-only: Codex has no Task tool or subagent_type namespace to guard."
@@ -88,6 +97,7 @@
       "path": "hooks/skill-activity.sh",
       "event": "PreToolUse",
       "matcher": "Skill",
+      "tier": "workflow",
       "runtimes": ["claude"],
       "summary": "Records recent skill invocations for local activity displays.",
       "description": "Appends each Claude Skill tool invocation to a local JSONL activity file with its timestamp, session id, and skill id, pruning entries older than seven days on every write. Produces no hook output and never changes tool permissions or context; missing dependencies, malformed input, and filesystem failures are silent no-ops. Claude-only: Codex does not expose Claude's Skill tool matcher."
