@@ -122,6 +122,11 @@ def parse_frontmatter(text: str) -> dict[str, str]:
 
 
 EXAMPLE_BLOCK_RE = re.compile(r"<example", re.IGNORECASE)
+NEGATIVE_ROUTING_RE = re.compile(
+    r"\b(?:this (?:skill|agent) should not be used|it should not be used|"
+    r"do not use|not for)\b",
+    re.IGNORECASE,
+)
 
 
 def description_head(description: str) -> str:
@@ -130,7 +135,9 @@ def description_head(description: str) -> str:
     assistant narration, not user-intent phrasing, and would otherwise pollute
     the trigger set with near-arbitrary full sentences."""
     m = EXAMPLE_BLOCK_RE.search(description)
-    return description[: m.start()] if m else description
+    head = description[: m.start()] if m else description
+    negative = NEGATIVE_ROUTING_RE.search(head)
+    return head[: negative.start()] if negative else head
 
 
 def extract_triggers(description: str) -> list[str]:
@@ -141,7 +148,11 @@ def extract_triggers(description: str) -> list[str]:
         if phrase and not phrase.isdigit():
             phrases.add(phrase)
 
-    plain = TAG_RE.sub(" ", head)
+    # Quoted phrases are already high-signal triggers. Do not also index their
+    # component words (for example, "build" or "interface") as broad positive
+    # keywords; that turns exact examples into unrelated false positives.
+    plain = QUOTE_RE.sub(" ", head)
+    plain = TAG_RE.sub(" ", plain)
     plain = URL_RE.sub(" ", plain)
     keywords: set[str] = set()
     for w in WORD_RE.findall(plain):

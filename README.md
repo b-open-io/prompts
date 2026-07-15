@@ -16,9 +16,15 @@ This repository provides:
 - **Cross-agent skills** shared by Claude Code and Codex
 - **Runtime-specific hooks** that preserve the same safety and workflow intent
   on both hosts
+- **Agent Master setup UI** for auditing the local harness, viewing purchased
+  packs, and building runtime-specific setup plans without silently installing
+  anything
 - **Orchestration patterns** for a strong main model, native specialists,
   Grok implementation workers, and a read-only Fable advisor
 - **Claude Code slash commands** for common workflows
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
+historical baseline.
 
 ## Installation
 
@@ -76,6 +82,23 @@ discovered. Installed runtime agent names use the `bopen_` prefix and
 underscores, such as `bopen_agent_builder` and `bopen_code_auditor`. Generated
 filenames retain the readable `bopen-*.toml` convention.
 
+### Updating
+
+Use each host's marketplace update path; do not copy files into a plugin cache
+or rely on `git pull` to refresh an installed plugin.
+
+```bash
+# Claude Code
+claude plugin update bopen-tools@b-open-io
+
+# Codex: refresh the marketplace snapshot before reinstalling/updating
+codex plugin marketplace upgrade
+codex plugin add bopen-tools@b-open-io
+```
+
+Start a fresh Claude Code or Codex session after updating so cached plugin
+metadata, skills, agents, and hooks are reloaded.
+
 ### Skills only
 
 For other agentic frameworks, install individual skills:
@@ -84,8 +107,12 @@ For other agentic frameworks, install individual skills:
 bunx skills add b-open-io/bopen-tools --skill <skill-name>
 ```
 
+The list below is the authored bopen-tools inventory. Third-party skills are
+tracked separately in [`skills-lock.json`](skills-lock.json) and keep their
+upstream provenance.
+
 <details>
-<summary><strong>Curated skills — click to expand</strong></summary>
+<summary><strong>Authored skills — click to expand</strong></summary>
 
 ```bash
 bunx skills add b-open-io/bopen-tools --skill agent-auditor
@@ -95,14 +122,20 @@ bunx skills add b-open-io/bopen-tools --skill advisor
 bunx skills add b-open-io/bopen-tools --skill benchmark-skills
 bunx skills add b-open-io/bopen-tools --skill charting
 bunx skills add b-open-io/bopen-tools --skill check-version
+bunx skills add b-open-io/bopen-tools --skill chrome-cdp
+bunx skills add b-open-io/bopen-tools --skill clawnet-cli
 bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
 bunx skills add b-open-io/bopen-tools --skill code-audit-scripts
 bunx skills add b-open-io/bopen-tools --skill codex-agent-setup
 bunx skills add b-open-io/bopen-tools --skill confess
 bunx skills add b-open-io/bopen-tools --skill coordinator
+bunx skills add b-open-io/bopen-tools --skill cost-tracking
 bunx skills add b-open-io/bopen-tools --skill create-next-project
 bunx skills add b-open-io/bopen-tools --skill deploy-agent-team
+bunx skills add b-open-io/bopen-tools --skill design-game-ui
 bunx skills add b-open-io/bopen-tools --skill devops-scripts
+bunx skills add b-open-io/bopen-tools --skill ezkl
+bunx skills add b-open-io/bopen-tools --skill free-roam-testing
 bunx skills add b-open-io/bopen-tools --skill front-desk
 bunx skills add b-open-io/bopen-tools --skill frontend-performance
 bunx skills add b-open-io/bopen-tools --skill generative-ui
@@ -110,6 +143,7 @@ bunx skills add b-open-io/bopen-tools --skill geo-optimizer
 bunx skills add b-open-io/bopen-tools --skill github-stars
 bunx skills add b-open-io/bopen-tools --skill hammertime
 bunx skills add b-open-io/bopen-tools --skill hook-manager
+bunx skills add b-open-io/bopen-tools --skill html-to-pdf
 bunx skills add b-open-io/bopen-tools --skill humanize
 bunx skills add b-open-io/bopen-tools --skill hunter-skeptic-referee
 bunx skills add b-open-io/bopen-tools --skill linear-planning
@@ -118,16 +152,20 @@ bunx skills add b-open-io/bopen-tools --skill nextjs-upgrade
 bunx skills add b-open-io/bopen-tools --skill notebooklm
 bunx skills add b-open-io/bopen-tools --skill npm-publish
 bunx skills add b-open-io/bopen-tools --skill orchestrator
+bunx skills add b-open-io/bopen-tools --skill paperclip-plugin-dev
 bunx skills add b-open-io/bopen-tools --skill perf-audit
 bunx skills add b-open-io/bopen-tools --skill persona
 bunx skills add b-open-io/bopen-tools --skill plaid-integration
 bunx skills add b-open-io/bopen-tools --skill process-cleanup
+bunx skills add b-open-io/bopen-tools --skill publish-request
 bunx skills add b-open-io/bopen-tools --skill reinforce-skills
 bunx skills add b-open-io/bopen-tools --skill remind
 bunx skills add b-open-io/bopen-tools --skill runtime-context
 bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
+bunx skills add b-open-io/bopen-tools --skill setup
 bunx skills add b-open-io/bopen-tools --skill shaders
 bunx skills add b-open-io/bopen-tools --skill skill-publish
+bunx skills add b-open-io/bopen-tools --skill software-factory
 bunx skills add b-open-io/bopen-tools --skill statusline-setup
 bunx skills add b-open-io/bopen-tools --skill threejs-r3f
 bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
@@ -172,7 +210,7 @@ bopen-tools members.
 - ⚡ [**nextjs**](agents/nextjs.md) — Theo — Next.js, React 19, Turbopack, Bun, Biome
 
 ### Specialized Domains
-- 🔷 [**creative-developer**](agents/creative-developer.md) — Kris — Three.js, R3F, shaders, physics, interactive 3D prototypes
+- 🔷 [**creative-developer**](agents/creative-developer.md) — Kris — Three.js, R3F, shaders, physics, diegetic and world-space interfaces
 - 🗺️ [**cartographer**](agents/cartographer.md) — Leaf — MapLibre, Mapbox, Leaflet, CesiumJS, geospatial data
 - 💚 [**payments**](agents/payments.md) — Mina — Payment integrations, Plaid, financial operations
 - 🤖 [**agent-builder**](agents/agent-builder.md) — Satchmo — AI agent systems, tool-calling, multi-agent orchestration
@@ -181,13 +219,16 @@ bopen-tools members.
 - 🗂️ [**project-manager**](agents/project-manager.md) — Wags — Linear planning, issue tracking, project organization
 
 ### Content & Communication
-- 🟣 [**designer**](agents/designer.md) — Ridd — UI/UX, Tailwind, shadcn/ui, accessibility, dark mode
+- 🟣 [**designer**](agents/designer.md) — Ridd — Web UI/UX plus game HUDs, controller/remote navigation, and ten-foot TV interfaces
 - 🔷 [**documentation-writer**](agents/documentation-writer.md) — Flow — READMEs, API docs, PRDs, guides
 - 🎵 [**audio-specialist**](agents/audio-specialist.md) — Frames — ElevenLabs audio, sound effects, music generation
 - 🩷 [**researcher**](agents/researcher.md) — Parker — Web research, docs, APIs, parallel research strategies
 - 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
 
 ### Organization & Operations
+- 👑 [**ceo**](agents/ceo.md) — Chief — Organization strategy, delegation, ownership, and executive decisions
+- 💰 [**cfo**](agents/cfo.md) — Milton — Cost visibility, budgets, and financial operations
+- 🎓 [**trainer**](agents/trainer.md) — Satoshi — Agent training, standards, and knowledge transfer
 - 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup
 - 💼 [**executive-assistant**](agents/executive-assistant.md) — Tina — Google Workspace, scheduling, communications
 - 🌐 [**account-manager**](agents/account-manager.md) — Kurt — Public-facing sales, visitor qualification, bOpen.io chat
@@ -216,6 +257,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `charting` | Full-stack data visualization and charting |
 | `cli-demo-gif` | Generate CLI demo GIFs using vhs (Charmbracelet) |
 | `generative-ui` | Dynamic, AI-driven generative UI patterns |
+| `html-to-pdf` | Design print-ready collateral and render it through a Playwright PDF pipeline |
 | `humanize` | Remove AI writing patterns and restore natural voice |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Generate cohesive UI audio themes with subtle sound effects |
@@ -225,16 +267,23 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | Skill | Description |
 |-------|-------------|
 | `benchmark-skills` | Write evals for skills and measure impact vs baseline |
+| `chrome-cdp` | Drive Chrome through a Bun-native Chrome DevTools Protocol CLI |
+| `clawnet-cli` | Work with the ClawNet registry, identities, skills, and attestations |
 | `code-audit-scripts` | Deterministic security and quality scans (secrets, debug artifacts) |
 | `confess` | Analyze and document code issues and technical debt |
 | `create-next-project` | Scaffold a new Next.js app with Bun and Biome |
+| `design-game-ui` | Convert app content into controller/remote-first game HUD and television interfaces |
+| `ezkl` | Build and verify zero-knowledge machine-learning proofs with EZKL |
+| `free-roam-testing` | Explore a running app like a curious human to discover new bugs and UX failures |
 | `frontend-performance` | Optimize Next.js performance using Lighthouse and bundle analysis |
 | `github-stars` | Add GitHub star counts and social proof widgets |
 | `hunter-skeptic-referee` | Adversarial bug hunting with three isolated agents |
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm with changelog and version management |
+| `paperclip-plugin-dev` | Build and review Paperclip plugins against the worker and UI contracts |
 | `perf-audit` | Run local performance audits without network calls |
 | `shaders` | Custom shaders for Three.js and WebGL |
+| `software-factory` | Design autonomous agent workflows with a real verification gate, bounded state, and stop conditions |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |
 | `visual-review` | Turn a PR, branch, or diff into a visual HTML review page |
 
@@ -252,6 +301,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `coordinator` | Specify and dispatch bounded implementation work to external workers |
 | `advisor` | Obtain a read-only second opinion at a commitment boundary |
 | `reinforce-skills` | Inject skill/agent routing maps into CLAUDE.md |
+| `publish-request` | Prepare a human-reviewed release request without executing the publish |
 | `skill-publish` | Publish and version bump plugins |
 | `wave-coordinator` | Dispatch 5+ parallel agents with context budget management |
 
@@ -259,6 +309,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | Skill | Description |
 |-------|-------------|
 | `check-version` | Check if bopen-tools plugin is up to date |
+| `cost-tracking` | Track and report model and agent operating costs |
 | `devops-scripts` | Shell scripts for infrastructure health checks |
 | `linear-planning` | Plan projects and features using Linear |
 | `notebooklm` | Query Google NotebookLM for source-grounded answers |
@@ -266,6 +317,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `remind` | Search and recall previous Claude Code conversation sessions |
 | `runtime-context` | Detect agent execution environment (Claude Code, Vercel Sandbox, etc.) |
 | `saas-launch-audit` | Audit SaaS applications for launch readiness |
+| `setup` | Audit the local agent harness and build a runtime-specific setup plan in Agent Master |
 | `statusline-setup` | Configure custom statusline for Claude Code |
 | `wait-for-ci` | Wait for CI/CD pipelines to complete and act on results |
 
@@ -284,17 +336,22 @@ Skills are context-triggered capabilities. They activate automatically or can be
 
 Slash commands are a Claude Code surface. Codex users invoke the corresponding
 skills in natural language or with `$skill-name`. Claude commands use category
-subdirectories: `/category:command` or `/command` for root-level commands.
+subdirectories, so nested files become category-prefixed commands while
+root-level files keep their filename as the command.
 
 - `/bug-hunt` - Adversarial bug hunt with 3 isolated agents — supports path or branch diff mode
 - `/prime` - Context warm-up — loads git state, plugin inventory, and project conventions
 - `/question` - Read-only Q&A mode — answers questions about the codebase without making changes
 - `/diagnose` - Fan out 3-5 agents to investigate a bug from every angle simultaneously
+- `/factory-init` - Design and scaffold an autonomous agent loop with explicit goals, gates, state, and stop conditions
 - `/impact` - Map the full blast radius before changing a file or function
 - `/review-wave` - 4 specialized reviewers examine changes simultaneously (security, perf, correctness, style)
 - `/hammertime` - HammerTime behavioral rules — status dashboard (no args) or create a rule from a description
 - `/hammertime:status` - HammerTime status dashboard (alias for `/hammertime` with no args)
 - `/hammertime:manage` - Interactive rule management — enable, disable, remove, view, test rules
+- `/hammertime:start` - Resume the HammerTime stop hook
+- `/hammertime:stop` - Pause HammerTime until it is explicitly resumed
+- `/visual-review` - Build a self-contained visual recap of a PR, branch, commit, or working-tree diff
 - `/utils:context` - Generate repo context snapshot for agents
 
 ## Automation Hooks
@@ -307,10 +364,13 @@ capabilities for each host.
 | Hook | Claude Code | Codex | Description |
 |------|-------------|-------|-------------|
 | `session-context` | SessionStart | SessionStart | Injects bounded branch, history, and plugin context |
+| `prompt-router` | UserPromptSubmit | — | Injects concise skill and agent routing hints with session deduplication |
 | `bouncer` | Bash PreToolUse | Shell PreToolUse | Validates commands against safety rules |
 | `damage-control` | Bash/write/edit PreToolUse | Shell/`apply_patch` PreToolUse | Protects sensitive paths and destructive operations |
 | `publish-gate` | Bash PreToolUse | Shell PreToolUse | Guards publish commands behind release checks |
 | browser guidance | `agent-browser-solo` on WebFetch | `browser-intent` on UserPromptSubmit | Encourages isolated browser automation without injecting page content into privileged hook context; ordinary Claude WebSearch remains native |
+| `roster-guard` | Task PreToolUse | — | Warns when a generic Claude subagent is used where a roster specialist fits |
+| `skill-activity` | Skill PreToolUse | — | Records bounded skill activity for the session UI and diagnostics |
 | `hammertime` | Stop | Stop | Applies behavioral guardrails and can request another turn |
 
 On first use, Codex may ask you to review and trust plugin hooks. Inspect the
@@ -372,6 +432,36 @@ Rules live under the selected HammerTime home. See the
 [hammertime skill](skills/hammertime/SKILL.md) for the full rule authoring
 guide.
 
+## Agent Master and Unified Setup
+
+The `setup` skill launches a local Agent Master UI that re-detects the current
+harness on every refresh. It inventories bOpen plugins, Codex agent delivery,
+CLIs, environment-key presence, third-party skills, and hook state; the UI then
+turns selected gaps into a runtime-specific instruction plan for a human or
+parent agent to execute. The zero-install fallback remains read-only. In the
+playground, pack dependencies run only after an explicit **Install missing**
+action and only from validated manifest fields.
+
+Agent Master also exposes a signed-in **My Packs** library. Purchased packs are
+matched to the current machine, their plugin dependencies are checked locally,
+and missing requirements become explicit setup-plan steps. Launching setup with
+`--pack <toc.json|pack.json>` computes the pack's complete plugin closure and
+shows required-versus-installed dependencies for Claude Code, Codex, and Grok
+Build.
+
+Plugin and skill controls are declared in `settings.json` files validated by
+[`settings.schema.json`](settings.schema.json). The SessionStart hook may inject
+only declarations that opt into session context; sensitive values are always
+excluded. See [settings declarations](docs/settings-declarations.md) for the
+contract.
+
+Ask an agent to use `bopen-tools:setup`, or launch the fallback directly from
+an installed plugin root:
+
+```bash
+bun skills/setup/scripts/server.ts --runtime <claude|codex|grok|opencode|hermes|generic> [--pack <toc.json|pack.json>]
+```
+
 ## Custom Statusline
 
 **Moved to Plugin:** Statusline is now distributed as the `claude-peacock` plugin.
@@ -410,21 +500,25 @@ prompts/
 ├── .codex-plugin/          # Codex plugin manifest
 ├── .agents/plugins/        # Codex marketplace manifest
 ├── agents/                 # Canonical authored agent personas
+├── bots/                   # ClawNet deployment metadata
 ├── codex/agents/           # Generated Codex TOML adapters
 ├── commands/               # Claude Code slash commands
-│   ├── bug-hunt.md         #   /bug-hunt
-│   ├── hammertime.md       #   /hammertime
-│   ├── hammertime/         #   /hammertime:status, /hammertime:manage
-│   ├── docs/               #   /docs:* commands
-│   └── utils/              #   /utils:* commands
+│   ├── factory-init.md      #   /factory-init
+│   ├── hammertime/         #   /hammertime:* controls
+│   └── utils/              #   /utils:context
 ├── hooks/                  # Shared scripts + host-specific hook manifests
 ├── skills/                 # Cross-agent skills (each has SKILL.md)
+├── setup/manifest.json      # Declarative Agent Master dependency inventory
+├── settings.json            # Repository-level settings declarations
+├── settings.schema.json     # Settings declaration schema
 ├── benchmarks/             # Benchmark results (latest.json)
 ├── scripts/
 │   ├── codex-agents/       # Adapter generator and safe installer
 │   └── benchmark.tsx       # Skill benchmark CLI
-├── references/             # Reference documentation
+├── docs/                   # Design notes and user-facing contracts
+├── references/             # Shared agent reference documentation
 ├── tsconfig.json           # JSX config for benchmark CLI
+├── CHANGELOG.md
 ├── README.md
 └── QUICKSTART.md
 ```
@@ -450,7 +544,13 @@ and agent setup flows so upgrades remain reproducible.
 
 ## Skill Benchmarks
 
-Every skill ships with evals that prove it works. Each eval runs twice — once with the skill injected, once as a bare baseline — and an LLM judge scores each assertion. The delta is the signal.
+Skills with benchmark coverage keep eval cases in
+`skills/<name>/evals/evals.json`. Each eval runs twice — once with the skill
+injected and once as a bare baseline — and an LLM judge scores each assertion.
+The delta is the signal. Not every authored skill has coverage yet; the CLI
+runs the skills that currently include an `evals/` directory, and new or
+materially changed skills should add focused cases where the behavior can be
+judged reliably.
 
 Live results: **[bopen.ai/benchmarks](https://bopen.ai/benchmarks)**
 
@@ -652,12 +752,13 @@ Run `/context` to see token usage and which skills are being truncated.
 1. **Use agents for expertise** - They have specialized knowledge
 2. **Slash commands for speed**
 3. **Combine tools** - Agents + commands = powerful workflows
-4. **Keep updated** - Pull latest from this repo to get new agents/prompts
+4. **Keep updated** - Use the marketplace update commands in the Installation section, then start a fresh session
 
 ## Need Help?
 
 - **New to Claude Code?** See our [Quick Start Guide](QUICKSTART.md)
-- **Browse examples:** Check the `design/` and `development/` directories
+- **Browse the toolkit:** Start with [agents/](agents/), [skills/](skills/),
+  [commands/](commands/), and the shared [references/](references/)
 
 ## Contributing
 
@@ -668,6 +769,8 @@ When adding new content:
 4. **Skills** go in `skills/`
 5. Use the prompt-engineer agent for creating commands
 6. Test thoroughly before committing
+7. Update [CHANGELOG.md](CHANGELOG.md) for every user-visible plugin change
+8. Update this README whenever public inventory, setup, or release instructions change
 
 ## Skill Provenance
 

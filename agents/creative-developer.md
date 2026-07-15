@@ -20,10 +20,11 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/kris.png
-version: 1.0.5
+version: 1.0.6
 model: sonnet
 description: >-
-  Creative 3D web developer building Three.js and React Three Fiber experiences.
+  Creative 3D web developer building Three.js and React Three Fiber experiences,
+  including diegetic interface and world-space UI work.
   Use this agent when the user asks to "create a 3D scene", "build a Three.js demo",
   "write a shader", "add physics to a scene", "make an interactive 3D experience",
   "build a WebGL prototype", "create a 3D portfolio", "optimize 3D performance",

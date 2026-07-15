@@ -99,3 +99,39 @@
   agents, and received `PUBLISHED_AGENT_OK` from `bopen_front_desk` in a fresh
   `gpt-5.6-sol` session. SessionStart, UserPromptSubmit, and Stop hooks all
   completed in that published-plugin smoke test.
+
+## Game and television interface design capability
+
+- [x] Turn the X and primary-platform research into a focused `design-game-ui`
+  skill with progressive reference material and a concrete output contract.
+- [x] Route Ridd to the new skill and preserve the boundary with 3D/diegetic
+  interface work and framework-specific application engineering.
+- [x] Add the new skill to every generated/distributed discovery surface and
+  validate it with forward-trigger and non-trigger scenarios.
+- [x] Create the skill's catalog artwork through Lisa and Gemskills, then
+  register and optimize it in the bOpen.AI catalog.
+- [x] Establish and backfill `CHANGELOG.md`, reconcile the README with the
+  actual plugin inventory, and add automated documentation-drift checks.
+- [x] Update publishing guidance so every plugin change maintains the
+  changelog and public-surface changes maintain the README.
+- [x] Run repository, skill, documentation, manifest, and installation tests.
+- [x] Patch-bump both manifests, commit explicit paths, push master, refresh
+  both plugin installs, and smoke-test fresh Claude and Codex sessions.
+
+### Review
+
+- Added `design-game-ui` with seven focused references and a ten-part design
+  contract covering app preservation, semantic input, spatial focus, Back,
+  television constraints, HUD feedback, accessibility, and validation.
+- Ridd now owns 2D game/TV interface work; Kris explicitly owns diegetic and
+  world-space interfaces. Seven forward scenarios verify those boundaries.
+- Established a reconstructed changelog baseline and exact README inventories,
+  backed by a CI documentation guard and corrected dual-host publishing flow.
+- Lisa generated eight referenced drafts; the approved D-pad/HUD emblem is
+  registered, optimized, typechecked, and published in bOpen.AI commit
+  `f5b1c36`.
+- Pre-release gates pass: 329 hook tests, 7 installer tests, manifest parity,
+  documentation inventory, generated adapters, YAML parsing, Python compile,
+  catalog-art validation, bOpen.AI typecheck, and whitespace checks.
+- Release target: both plugin manifests at `1.1.77`, followed by marketplace
+  refresh and fresh Claude/Codex smoke tests.

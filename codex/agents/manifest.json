@@ -72,10 +72,10 @@
     {
       "source_name": "ceo",
       "source_path": "agents/ceo.md",
-      "source_version": "1.0.6",
-      "source_hash": "sha256:db4789e6ed58cce046ccaa56c53e1a598bec834991f6057748aec06e95c97dca",
+      "source_version": "1.0.7",
+      "source_hash": "sha256:b1285b389df6ec58d4b8f50f0b008ec4df153a047d93e0a2ae19547523bdc27c",
       "generated_file": "bopen-ceo.toml",
-      "generated_hash": "sha256:8cab8981bb31bb42eaccb275fcec9e88258304262f75d13c457c5d614e2312d8",
+      "generated_hash": "sha256:1bb120086b8ecf62ec7f45dd897bc501877826e0eb1d41392da7714ddd873251",
       "agent_name": "bopen_ceo",
       "curated": false,
       "default_install": false
@@ -127,10 +127,10 @@
     {
       "source_name": "creative-developer",
       "source_path": "agents/creative-developer.md",
-      "source_version": "1.0.5",
-      "source_hash": "sha256:a614131afa40240fd457f697cc911fe3ce8e75c918bf4943a9543484b10489ff",
+      "source_version": "1.0.6",
+      "source_hash": "sha256:ad7ff7ab0e85fc8ff7e9a3217bb31f43208a55d54175f575569a43384f0606b0",
       "generated_file": "bopen-creative-developer.toml",
-      "generated_hash": "sha256:ce7b68473c660fbf9d62897eff6b412c1d3b6e9bc464baf5ddec5a717c57d582",
+      "generated_hash": "sha256:109b908316f6980479d740f4a232fd5b7f26971ea2163a673b2129dcbf024135",
       "agent_name": "bopen_creative_developer",
       "curated": false,
       "default_install": false
@@ -160,10 +160,10 @@
     {
       "source_name": "designer",
       "source_path": "agents/designer.md",
-      "source_version": "1.0.18",
-      "source_hash": "sha256:e66edd68bdd3bb4bc48e0e4ad9457f3139f3db06775989b286b9def3dbec382e",
+      "source_version": "1.0.19",
+      "source_hash": "sha256:5087bb6fcfce4c20354875e3384c5365bffdde4fd9da23dbc7a9918bfb7e81ea",
       "generated_file": "bopen-designer.toml",
-      "generated_hash": "sha256:bc8077f51ccaf74d2b9e2942da633e7db34af617dff8e28aaa0457a14acafef4",
+      "generated_hash": "sha256:551df8ca9745262160ae4625eee0d044319bd98838816a6eebf70047c836b220",
       "agent_name": "bopen_designer",
       "curated": false,
       "default_install": false
@@ -204,10 +204,10 @@
     {
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
-      "source_version": "1.1.10",
-      "source_hash": "sha256:ced4cab9792abf18aabf8849b6ec057ea9ecc5706fb75e01c74ba419ebf2ce63",
+      "source_version": "1.1.11",
+      "source_hash": "sha256:b778a6ab2373d6410c717a38b3db2750c8f6fbacf923816ae8ca56029f5e47d4",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:2be89b90536c91356fa3ea8bad05ab691cca01ac29d90dbe78f3255c5ddfdc10",
+      "generated_hash": "sha256:d6e12b25357347c162d3775dbcd67c2c7f950891ee48d50147915256d2734d89",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true

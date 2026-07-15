@@ -26,7 +26,7 @@ mkdir -p "$NEW_SKILLS"
 cat > "$NEW_SKILLS/SKILL.md" <<'EOF'
 ---
 name: foo-skill
-description: Use this skill when the user asks to "build a foo widget" or needs foo bar baz automation.
+description: Use this skill when the user asks to "build a foo widget" or needs foo bar baz automation. It should not be used for diegetic controls or three-dimensional interfaces.
 ---
 Body.
 EOF
@@ -66,6 +66,10 @@ assert_not_contains "build-router-index skips older version" "pluginA:old-skill"
 
 triggers=$(jq -r '.entries[] | select(.id=="pluginA:foo-skill") | .triggers[]' "$OUT_FILE" 2>/dev/null)
 assert_contains "build-router-index captures quoted phrase" "build a foo widget" "$triggers"
+build_keyword=$(jq -r '.entries[] | select(.id=="pluginA:foo-skill") | .triggers[] | select(.=="build")' "$OUT_FILE" 2>/dev/null)
+assert_eq "build-router-index does not duplicate quoted words" "" "$build_keyword"
+assert_not_contains "build-router-index excludes negative clause" "diegetic" "$triggers"
+assert_not_contains "build-router-index excludes negative clause tail" "interfaces" "$triggers"
 
 agent_triggers=$(jq -r '.entries[] | select(.id=="pluginA:bar-agent") | .triggers[]' "$OUT_FILE" 2>/dev/null)
 assert_not_contains "build-router-index excludes example dialogue" "i'll use the bar-agent to handle unrelated dialogue text here" "$agent_triggers"

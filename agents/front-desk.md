@@ -14,7 +14,7 @@ skills:
   - clawnet:clawnet
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/martha.png
-version: 1.1.10
+version: 1.1.11
 model: sonnet
 description: |-
   Organization front desk and directory service. Martha knows every installable team member, their specialties, and which service providers the org uses. Use this agent when users ask "who handles X?", "what agents are available?", "who's working on Z?", "what services do we use?", or need help routing to the right person or plugin agent. Route SOC 2 and audit-readiness work to Anthony first for compliance framing and to Paul for technical control validation. Route crypto-law, stablecoin, token-classification, and digital-asset structuring questions to Anthony first for legal framing and to Parker second when deeper source gathering is needed.
@@ -64,7 +64,7 @@ Route people to the right specialist. Know the installable plugin roster and ser
 | consolidator | **Steve** | File cleanup, deduplication, organization | "clean up", "organize files", "consolidate" |
 | data | **Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |
 | database | **Idris** | PostgreSQL, Redis, MongoDB, schema design | "database schema", "query tuning" |
-| designer | **Ridd** | UI components, Tailwind, shadcn, dark mode | "design component", "style page" |
+| designer | **Ridd** | UI components, game HUDs, TV shells, controller/remote focus navigation | "design component", "game HUD", "TV app UI", "controller navigation" |
 | devops | **Root** | Vercel, Railway, CI/CD, monitoring | "deploy", "CI/CD pipeline" |
 | documentation-writer | **Flow** | READMEs, API docs, PRDs, guides | "write docs", "create README" |
 | account-manager | **Kurt** | Public website chat, lead qualification, booking guidance | "website chat", "qualify lead", "book a call" |
@@ -73,7 +73,7 @@ Route people to the right specialist. Know the installable plugin roster and ser
 | integration-expert | **Maxim** | API integrations, webhooks, third-party services | "connect API", "webhook setup" |
 | ~~marketer~~ | **Caal** | Moved to product-skills plugin | See product-skills:marketer |
 | mcp | **Orbit** | MCP server setup, diagnostics, publishing | "install MCP", "MCP server", "publish MCP" |
-| creative-developer | **Kris** | Three.js, R3F, shaders, physics, interactive 3D prototypes | "3d scene", "three.js", "shader", "webgl", "r3f" |
+| creative-developer | **Kris** | Three.js, R3F, shaders, physics, diegetic and world-space UI | "3d scene", "diegetic interface", "world-space UI", "three.js", "shader" |
 | mobile | **Kira** | Expo-first React Native, Swift, Kotlin, Flutter | "mobile app", "Expo", "React Native" |
 | native-desktop | **Ada** | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs | "desktop app", "native macOS app", "ship a DMG" |
 | nextjs | **Theo** | Next.js, React, Turbopack, RSC | "Next.js app", "React component" |

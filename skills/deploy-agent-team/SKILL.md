@@ -1,6 +1,6 @@
 ---
 name: deploy-agent-team
-version: 1.0.4
+version: 1.0.5
 description: This skill should be used when the user says "deploy a team", "spin up agents to work on this", "use all our agents", "coordinate specialists", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full bopen-tools specialist roster.
 disable-model-invocation: true
 ---
@@ -50,7 +50,7 @@ model.
 | **researcher** | `bopen-tools:researcher` | Libraries, APIs, docs, competitive analysis |
 | **nextjs** | `bopen-tools:nextjs` | Next.js, React, Vercel, RSC, app router |
 | **native-desktop** | `bopen-tools:native-desktop` | Native SDK, Zig, WebViews, menu-bar apps, signed DMGs |
-| **designer** | `bopen-tools:designer` | UI, Tailwind, shadcn/ui, accessibility |
+| **designer** | `bopen-tools:designer` | UI, game HUDs, TV shells, directional focus, Tailwind, accessibility |
 | **agent-builder** | `bopen-tools:agent-builder` | AI SDK v7 agents, durable runtime selection, conditional eve evaluation |
 | **database** | `bopen-tools:database` | Schema, queries, PostgreSQL, Redis, Convex |
 | **integration-expert** | `bopen-tools:integration-expert` | REST APIs, webhooks, third-party services |

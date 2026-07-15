@@ -11,7 +11,7 @@ Full bopen-tools agent roster with `subagent_type` identifiers and the skills to
 | **researcher** | `bopen-tools:researcher` | sonnet | Libraries, APIs, docs, competitive analysis, web sources |
 | **nextjs** | `bopen-tools:nextjs` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
 | **native-desktop** | `bopen-tools:native-desktop` | sonnet | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs |
-| **designer** | `bopen-tools:designer` | sonnet | UI components, Tailwind, shadcn/ui, design systems, accessibility |
+| **designer** | `bopen-tools:designer` | sonnet | UI components, game HUDs, TV shells, controller/remote focus, design systems, accessibility |
 | **agent-builder** | `bopen-tools:agent-builder` | opus | AI SDK v7 agents, tool-calling, durable runtime selection, conditional eve evaluation |
 | **database** | `bopen-tools:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
 | **integration-expert** | `bopen-tools:integration-expert` | sonnet | REST APIs, webhooks, third-party services |
@@ -52,6 +52,7 @@ Invoke these BEFORE writing any security findings.
 - `Skill(frontend-design)` — invoke for UI component and layout guidance
 - `Skill(web-design-guidelines)` — invoke for design system rules and patterns
 - `Skill(ui-audio-theme)` — invoke for audio/motion design patterns
+- `Skill(bopen-tools:design-game-ui)` — invoke for game HUDs, TV interfaces, controller/remote input maps, and spatial focus navigation
 - `Skill(vercel-react-best-practices)` — invoke for React + Vercel performance rules
 
 Invoke `Skill(frontend-design)` first before designing any component.

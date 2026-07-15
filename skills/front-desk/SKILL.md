@@ -1,6 +1,6 @@
 ---
 name: front-desk
-version: 1.0.4
+version: 1.0.5
 description: >-
   This skill should be used in Claude Code or Codex when the user asks "who
   handles X?", "what agents are available?", "how do I contact Y?", "team
@@ -27,7 +27,7 @@ Match the user's need to the right specialist:
 | BSV transactions, wallets | **David** (bitcoin) | bsv-skills |
 | Ordinals, NFTs, tokens | **Uno Satoj** (ordinals) | 1sat-skills |
 | Agent architecture | **Satchmo** (agent-builder) | bopen-tools |
-| UI/UX design | **Ridd** (designer) | bopen-tools |
+| UI/UX, game HUD, TV app, controller/remote navigation | **Ridd** (designer) | bopen-tools |
 | Performance | **Torque** (optimizer) | bopen-tools |
 | Security audit | **Jerry** (code-auditor) | bopen-tools |
 | Architecture review | **Kayle** (architecture-reviewer) | bopen-tools |
@@ -44,7 +44,7 @@ Match the user's need to the right specialist:
 | Database | **Idris** (database) | bopen-tools |
 | MCP servers | **Orbit** (mcp) | bopen-tools |
 | Research | **Parker** (researcher) | bopen-tools |
-| 3D / creative dev | **Kris** (creative-developer) | bopen-tools |
+| 3D / diegetic / world-space UI | **Kris** (creative-developer) | bopen-tools |
 | Mobile / Expo / React Native | **Kira** (mobile) | bopen-tools |
 | Audio / media | **Frames** (audio-specialist) | bopen-tools |
 | Data pipelines | **Data Accumulator** (data) | bopen-tools |
