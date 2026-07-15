@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.3
+version: 0.0.4
 description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
 ---
 
@@ -158,6 +158,8 @@ Adapt to the subject — not every section always applies — but the usual spin
    on their merits, not on what happens to be built already. Include it whenever
    a proposal touches an existing system; it grounds a reviewer (and an external
    maintainer) fast and prevents "wait, does this already exist?" confusion.
+   **Make every reference in this section a clickable link** — to the repo, file,
+   PR, or doc page — so the reviewer clicks straight through to the real thing.
 4. **The approach / principle** — the core idea, and the constraint it respects
    (e.g. "changes X, leaves Y untouched"). Before/after helps here.
 5. **The decision(s)** — where options exist, the neutral comparison (Rule 1),
@@ -173,6 +175,12 @@ Adapt to the subject — not every section always applies — but the usual spin
 
 - Self-contained: inline all CSS/JS, embed assets as data URIs, no external
   requests (the Artifact CSP blocks them). Diagrams are SVG/Canvas, not `<img>`.
+- Link out to browsable sources: whenever the page names something with a URL —
+  a repo, file, PR, issue, doc page, deployed app — make it a clickable
+  `<a target="_blank" rel="noreferrer">` so the reviewer clicks straight through
+  to the real thing. The CSP blocks *embedding* external resources, not `<a>`
+  *navigation*, so outbound links open fine. Don't leave a repo/file path as
+  dead text when it could be a link.
 - Theme-aware: token-level light/dark, `prefers-color-scheme` plus a
   `data-theme` toggle that overrides both ways. **SVG paint via CSS classes or
   `style`, never `fill="var(--x)"` presentation attributes — `var()` does not

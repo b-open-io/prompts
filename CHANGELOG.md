@@ -6,6 +6,17 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.94] - 2026-07-15
+
+### Changed
+
+- `visual-proposal` skill (0.0.4): link out to browsable sources. Whenever a
+  proposal names something with a URL — a repo, file, PR, issue, doc page, or
+  deployed app — it must be a clickable `<a target="_blank">`, since the Artifact
+  CSP blocks embedding external resources but not outbound navigation. The
+  landscape section in particular links every repo/file/PR reference so the
+  reviewer clicks straight through to the real code.
+
 ## [1.1.93] - 2026-07-15
 
 ### Documentation
