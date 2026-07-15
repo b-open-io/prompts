@@ -224,7 +224,7 @@ bopen-tools members.
 ### Content & Communication
 - 🟣 [**designer**](agents/designer.md) — Ridd — Web UI/UX plus game HUDs, controller/remote navigation, and ten-foot TV interfaces
 - 🔷 [**documentation-writer**](agents/documentation-writer.md) — Flow — READMEs, API docs, PRDs, guides
-- 🎵 [**audio-specialist**](agents/audio-specialist.md) — Frames — ElevenLabs audio, sound effects, music generation
+- 🎵 [**audio-specialist**](agents/audio-specialist.md) — Frames — ElevenLabs audio, UI-audio audits and wiring, waveform editing, sound effects, and music generation
 - 🩷 [**researcher**](agents/researcher.md) — Parker — Web research, docs, APIs, parallel research strategies
 - 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
 
@@ -263,7 +263,7 @@ Skills are context-triggered capabilities. They activate automatically or can be
 | `html-to-pdf` | Design print-ready collateral and render it through a Playwright PDF pipeline |
 | `humanize` | Remove AI writing patterns and restore natural voice |
 | `persona` | Capture writing style profiles and social intelligence |
-| `ui-audio-theme` | Generate and visually audition cohesive app, game HUD, and TV navigation sound themes |
+| `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 

@@ -50,10 +50,10 @@
     {
       "source_name": "audio-specialist",
       "source_path": "agents/audio-specialist.md",
-      "source_version": "1.0.10",
-      "source_hash": "sha256:ed82d6f332f7f36a58c169ccd4706566c98f691fb8a1735ca25c625938dd49e9",
+      "source_version": "1.0.11",
+      "source_hash": "sha256:7b17e0cec9d8ff3aa3bbafc88683f15e05ae11295b4bcfa0b7a0c4c2c45dd37a",
       "generated_file": "bopen-audio-specialist.toml",
-      "generated_hash": "sha256:207b4dde49acf356d7b5794cf90bd1b535c7531dab638f0bfe49054fabdbce4f",
+      "generated_hash": "sha256:c277181b5f1d7e53af7f23ee22e89c580d4f91f1f241a31c0cbcb9b2e6d3f7f5",
       "agent_name": "bopen_audio_specialist",
       "curated": false,
       "default_install": false

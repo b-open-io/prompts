@@ -19,6 +19,16 @@
       "duration_ms": 500,
       "prompt": "Subtle, clean digital minimal interface sounds, warning action tap, short UI sound, minimal interface feedback"
     },
+    "item-hover": {
+      "file": "navigation/item-hover.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, clean digital minimal interface sounds, general interactive item hover focus, short UI sound, minimal interface feedback"
+    },
+    "nav-item-hover": {
+      "file": "navigation/nav-item-hover.mp3",
+      "duration_ms": 500,
+      "prompt": "Subtle, clean digital minimal interface sounds, primary navigation item hover focus, short UI sound, minimal interface feedback"
+    },
     "nav-tab-switch": {
       "file": "navigation/nav-tab-switch.mp3",
       "duration_ms": 500,
@@ -55,5 +65,5 @@
       "prompt": "Subtle, clean digital minimal interface sounds, confirmation success celebration, UI sound, minimal interface feedback"
     }
   },
-  "typescript_constants": "// Auto-generated UI Audio Theme Constants\n\nexport const UI_SOUNDS = {\n  BUTTON_CLICK_PRIMARY: \"./buttons/button-click-primary.mp3\",\n  BUTTON_CLICK_SECONDARY: \"./buttons/button-click-secondary.mp3\",\n  BUTTON_CLICK_DESTRUCTIVE: \"./buttons/button-click-destructive.mp3\",\n  NAV_TAB_SWITCH: \"./navigation/nav-tab-switch.mp3\",\n  NAV_BACK: \"./navigation/nav-back.mp3\",\n  NOTIFICATION_SUCCESS: \"./feedback/notification-success.mp3\",\n  NOTIFICATION_ERROR: \"./feedback/notification-error.mp3\",\n  TOGGLE_ON: \"./states/toggle-on.mp3\",\n  TOGGLE_OFF: \"./states/toggle-off.mp3\",\n  TX_CONFIRMED: \"./transactions/tx-confirmed.mp3\"\n} as const;\n\nexport type UISoundKey = keyof typeof UI_SOUNDS;"
+  "typescript_constants": "// Auto-generated UI Audio Theme Constants\n\nexport const UI_SOUNDS = {\n  BUTTON_CLICK_PRIMARY: \"./buttons/button-click-primary.mp3\",\n  BUTTON_CLICK_SECONDARY: \"./buttons/button-click-secondary.mp3\",\n  BUTTON_CLICK_DESTRUCTIVE: \"./buttons/button-click-destructive.mp3\",\n  ITEM_HOVER: \"./navigation/item-hover.mp3\",\n  NAV_ITEM_HOVER: \"./navigation/nav-item-hover.mp3\",\n  NAV_TAB_SWITCH: \"./navigation/nav-tab-switch.mp3\",\n  NAV_BACK: \"./navigation/nav-back.mp3\",\n  NOTIFICATION_SUCCESS: \"./feedback/notification-success.mp3\",\n  NOTIFICATION_ERROR: \"./feedback/notification-error.mp3\",\n  TOGGLE_ON: \"./states/toggle-on.mp3\",\n  TOGGLE_OFF: \"./states/toggle-off.mp3\",\n  TX_CONFIRMED: \"./transactions/tx-confirmed.mp3\"\n} as const;\n\nexport type UISoundKey = keyof typeof UI_SOUNDS;"
 }

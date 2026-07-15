@@ -1,0 +1,283 @@
+{
+  "schema_version": 1,
+  "app": {
+    "name": "example-app",
+    "root": ".",
+    "base_url": "http://127.0.0.1:3000"
+  },
+  "audit": {
+    "reviewed_at": "2026-01-01T00:00:00Z",
+    "reviewer": "audio integration agent",
+    "source_revision": "replace-with-git-revision"
+  },
+  "coverage": {
+    "routes": {
+      "status": "reviewed",
+      "items": [
+        "/ — global navigation, cards, calls to action",
+        "/wallet — send flow and transaction history"
+      ]
+    },
+    "overlays": {
+      "status": "reviewed",
+      "items": [
+        "mobile navigation drawer",
+        "tooltips",
+        "send confirmation dialog"
+      ]
+    },
+    "async": {
+      "status": "reviewed",
+      "items": [
+        "form submission pending/success/error",
+        "wallet broadcast pending/confirmed/error"
+      ]
+    },
+    "auth": {
+      "status": "reviewed",
+      "items": [
+        "sign-in success/error",
+        "sign-out"
+      ]
+    },
+    "payment": {
+      "status": "reviewed",
+      "items": [
+        "checkout submit",
+        "payment success/error"
+      ]
+    },
+    "blockchain": {
+      "status": "reviewed",
+      "items": [
+        "wallet signature request",
+        "transaction broadcast",
+        "transaction confirmation"
+      ]
+    },
+    "keyboard": {
+      "status": "reviewed",
+      "items": [
+        "Enter/Space activation",
+        "Escape dismissal",
+        "arrow-key menu navigation"
+      ]
+    },
+    "gamepad": {
+      "status": "not_applicable",
+      "items": [],
+      "reason": "The application does not expose gamepad input."
+    }
+  },
+  "interactions": [
+    {
+      "id": "global.main-nav-hover",
+      "label": "Pointer enters a main navigation item",
+      "domains": [
+        "routes"
+      ],
+      "triggers": [
+        "pointerenter"
+      ],
+      "decision": {
+        "type": "sound",
+        "sound": "nav-item-hover"
+      },
+      "source_evidence": [
+        {
+          "path": "src/components/SoundProvider.tsx",
+          "line": 1,
+          "observation": "Delegated hover handling recognizes main navigation items and emits the semantic main-nav-hover event."
+        }
+      ],
+      "browser_evidence": [
+        {
+          "url": "http://127.0.0.1:3000/",
+          "steps": [
+            "Click once to unlock browser audio.",
+            "Move the pointer across two main navigation links."
+          ],
+          "observation": "Each newly entered navigation item receives visible hover styling and one quiet nav hover cue; nested child movement does not retrigger it.",
+          "result": "pass"
+        }
+      ],
+      "visual_alternative": {
+        "verified": true,
+        "description": "The hovered navigation label changes foreground and focus-ring styling."
+      },
+      "repetition": {
+        "policy": "throttle per semantic target",
+        "details": "At most one cue per newly entered item within 90 ms; cue volume is lower than click feedback.",
+        "verified": true
+      }
+    },
+    {
+      "id": "global.interactive-item-hover",
+      "label": "Pointer enters a non-navigation interactive item",
+      "domains": [
+        "routes",
+        "overlays"
+      ],
+      "triggers": [
+        "pointerenter"
+      ],
+      "decision": {
+        "type": "sound",
+        "sound": "item-hover"
+      },
+      "source_evidence": [
+        {
+          "path": "src/components/SoundProvider.tsx",
+          "line": 1,
+          "observation": "The hover classifier excludes main navigation and real tooltip reveals from the general interactive-item event."
+        }
+      ],
+      "browser_evidence": [
+        {
+          "url": "http://127.0.0.1:3000/",
+          "steps": [
+            "Click once to unlock browser audio.",
+            "Move between interactive cards and secondary controls."
+          ],
+          "observation": "Each item has visible hover feedback and the item-hover cue, distinct from main navigation and tooltip cues.",
+          "result": "pass"
+        }
+      ],
+      "visual_alternative": {
+        "verified": true,
+        "description": "Interactive items visibly change border, background, or elevation on hover."
+      },
+      "repetition": {
+        "policy": "throttle per semantic target",
+        "details": "At most one cue per newly entered item within 90 ms; child pointer transitions are deduplicated.",
+        "verified": true
+      }
+    },
+    {
+      "id": "global.tooltip-reveal",
+      "label": "A real tooltip becomes visible",
+      "domains": [
+        "overlays",
+        "keyboard"
+      ],
+      "triggers": [
+        "hover delay completes",
+        "focus reveals tooltip"
+      ],
+      "decision": {
+        "type": "sound",
+        "sound": "tooltip-show"
+      },
+      "source_evidence": [
+        {
+          "path": "src/components/Tooltip.tsx",
+          "line": 1,
+          "observation": "The sound fires from tooltip open-state transition, not from generic pointerover."
+        }
+      ],
+      "browser_evidence": [
+        {
+          "url": "http://127.0.0.1:3000/",
+          "steps": [
+            "Hover or focus the information affordance until its tooltip opens."
+          ],
+          "observation": "The visible tooltip and tooltip-show cue occur together exactly once.",
+          "result": "pass"
+        }
+      ],
+      "visual_alternative": {
+        "verified": true,
+        "description": "Tooltip text is visibly rendered and remains available without audio."
+      },
+      "repetition": {
+        "policy": "once per closed-to-open transition",
+        "details": "Pointer movement inside an already open tooltip does not replay the cue.",
+        "verified": true
+      }
+    },
+    {
+      "id": "wallet.transaction-broadcast-success",
+      "label": "A BSV transaction is successfully broadcast",
+      "domains": [
+        "async",
+        "payment",
+        "blockchain"
+      ],
+      "triggers": [
+        "broadcast API resolves successfully"
+      ],
+      "decision": {
+        "type": "sound",
+        "sound": "tx-sent"
+      },
+      "source_evidence": [
+        {
+          "path": "src/features/wallet/send.ts",
+          "line": 1,
+          "observation": "tx-sent is emitted only after a successful broadcast response, not when the submit button is pressed."
+        }
+      ],
+      "browser_evidence": [
+        {
+          "url": "http://127.0.0.1:3000/wallet",
+          "steps": [
+            "Submit a valid transaction in a test wallet.",
+            "Wait for the broadcast response."
+          ],
+          "observation": "The success receipt and tx-sent cue occur once after broadcast succeeds; rejected broadcasts use error feedback instead.",
+          "result": "pass"
+        }
+      ],
+      "visual_alternative": {
+        "verified": true,
+        "description": "A persistent success receipt displays the transaction id and status."
+      },
+      "repetition": {
+        "policy": "once per transaction id",
+        "details": "Re-renders and status polling deduplicate on transaction id.",
+        "verified": true
+      }
+    },
+    {
+      "id": "auth.password-field-input",
+      "label": "User types in a password field",
+      "domains": [
+        "auth",
+        "keyboard"
+      ],
+      "triggers": [
+        "text input"
+      ],
+      "decision": {
+        "type": "silence",
+        "reason": "Per-keystroke audio is noisy, can disclose input cadence, and adds no semantic confirmation."
+      },
+      "source_evidence": [
+        {
+          "path": "src/features/auth/SignInForm.tsx",
+          "line": 1,
+          "observation": "The field updates form state without emitting a UI audio event."
+        }
+      ],
+      "browser_evidence": [
+        {
+          "url": "http://127.0.0.1:3000/sign-in",
+          "steps": [
+            "Type several characters in the password field."
+          ],
+          "observation": "Input remains intentionally silent while visible masked text confirms entry.",
+          "result": "pass"
+        }
+      ],
+      "visual_alternative": {
+        "verified": true,
+        "description": "Masked glyphs and form validation visibly reflect input state."
+      },
+      "repetition": {
+        "policy": "intentional silence",
+        "details": "No sound is emitted for repeated text input.",
+        "verified": true
+      }
+    }
+  ]
+}

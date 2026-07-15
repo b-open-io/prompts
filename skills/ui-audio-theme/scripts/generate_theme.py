@@ -29,6 +29,8 @@ SOUND_CATEGORIES = {
         "button-click-destructive": {"duration": 0.5, "modifier": "warning action tap"},
     },
     "navigation": {
+        "item-hover": {"duration": 0.5, "modifier": "subtle interactive item hover focus"},
+        "nav-item-hover": {"duration": 0.5, "modifier": "primary navigation item hover focus"},
         "nav-tab-switch": {"duration": 0.5, "modifier": "tab switch transition"},
         "nav-back": {"duration": 0.5, "modifier": "back navigation swipe"},
         "nav-forward": {"duration": 0.5, "modifier": "forward navigation"},
@@ -259,13 +261,31 @@ def generate_theme(
     if normalize:
         require_ffmpeg()
     results = []
-    manifest = {
-        "name": "custom" if len(vibe) > 50 else vibe.replace(" ", "-"),
-        "version": "1.0.0",
+    manifest_path = output_dir / "theme.json"
+    manifest = {}
+    if manifest_path.exists():
+        try:
+            existing = json.loads(manifest_path.read_text())
+            if isinstance(existing, dict):
+                manifest = existing
+        except (OSError, json.JSONDecodeError):
+            # A malformed manifest should not prevent regenerating the actual
+            # assets. The fresh manifest below becomes the repaired source of
+            # truth.
+            manifest = {}
+    manifest.update({
+        "name": manifest.get("name") or (
+            "custom" if len(vibe) > 50 else vibe.replace(" ", "-")
+        ),
+        "version": manifest.get("version", "1.0.0"),
         "generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "vibe": vibe,
-        "sounds": {}
-    }
+        # Regeneration and category-limited generation are additive. Preserve
+        # every accepted slot that is not part of this run.
+        "sounds": manifest.get("sounds", {})
+        if isinstance(manifest.get("sounds", {}), dict)
+        else {},
+    })
 
     # Filter categories if specified
     cats_to_generate = categories or list(SOUND_CATEGORIES.keys())
@@ -332,7 +352,6 @@ def generate_theme(
     manifest["typescript_constants"] = ts_constants
 
     # Write manifest
-    manifest_path = output_dir / "theme.json"
     with open(manifest_path, "w") as f:
         json.dump(manifest, f, indent=2)
     print(f"\nTheme manifest written to {manifest_path}")

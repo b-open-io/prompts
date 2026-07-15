@@ -15,6 +15,12 @@ Comprehensive reference for creating subtle, effective UI audio themes.
 | Interaction | Confirmation, feedback | Click, tap, tactile |
 | Loading | Progress, patience | Subtle rhythm, continuation |
 
+Keep `nav-item-hover`, general `item-hover`, and `tooltip-show` semantically
+separate. The first two describe browsing/selectable targets with different
+scope; the last describes an overlay becoming visible after its reveal delay.
+Similar timbre is acceptable, but sharing one slot prevents independent tuning
+of repetition-heavy hover feedback.
+
 ### Frequency Guidelines
 
 The more frequently a sound plays, the more subtle it must be:
@@ -241,6 +247,20 @@ Before finalizing an audio theme:
 - [ ] Sounds tested on mobile speakers
 - [ ] Sounds tested with headphones
 - [ ] No sounds conflict with screen readers
+
+## Non-Destructive Picker Editing
+
+Treat generated clips and accepted revisions as immutable sources. Render trim,
+attack, release, gain, reverb, and delay changes into new candidate files and
+record the parent, normalized edit recipe, source slot, and prompt. Snapshot the
+current accepted file before replacing it. Undo is then an explicit reassignment
+to an earlier revision, not an attempt to reverse a lossy transform.
+
+Use a short release (about 5–15 ms) as the first repair for a sharp end click.
+Leave MP3 encoding headroom after effects, validate numeric ranges before
+building ffmpeg filters, and never interpolate request text into a shell
+command. Deleting candidate audio must not delete the accepted runtime copy;
+retain tombstone metadata when provenance or revision history references it.
 
 ## Resources
 

@@ -6,6 +6,37 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.82] - 2026-07-15
+
+### Added
+
+- Added a visual waveform editor to `ui-audio-theme` with draggable and
+  keyboard-adjustable trim handles, click-to-seek, selection playback, labeled
+  fade/volume/reverb/delay sliders, reset, and non-destructive revision saves.
+- Added an existing-product UI-audio audit workflow, event-map template, and
+  validator covering routes, overlays, async work, authentication, payments,
+  blockchain operations, keyboard navigation, gamepad input, visual
+  alternatives, and repetition policy.
+- Added first-class `item-hover`, `nav-item-hover`, `tx-pending`, and
+  `tx-confirmed` theme slots, with transaction-boundary and tooltip-separation
+  guidance for application integrations.
+
+### Changed
+
+- Expanded Frames, the audio specialist, to invoke `ui-audio-theme` for
+  existing-site audits, semantic wiring reviews, theme generation, visual
+  editing, and accepted-asset handoff.
+- Made the picker compact around one shared editor and added cross-event
+  assignment, candidate deletion, accepted-sound history, and legacy theme-file
+  adoption without requiring regeneration.
+
+### Fixed
+
+- Preserved existing manifest entries during single-slot or category-limited
+  regeneration instead of erasing previously accepted sounds.
+- Removed the vague `soften edge` shortcut and exposed its underlying audio
+  concepts as explicit fade-in and fade-out controls.
+
 ## [1.1.81] - 2026-07-15
 
 ### Added
