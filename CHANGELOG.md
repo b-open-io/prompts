@@ -6,6 +6,29 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.87] - 2026-07-15
+
+### Added
+
+- Added `visual-proposal`, a grounded, diagram-led workflow for presenting
+  unbuilt designs, RFCs, roadmaps, and neutral option comparisons as a single
+  self-contained, theme-aware HTML page.
+- Added a five-plan OrdFS collection roadmap with explicit TODO gates,
+  cross-repo dependencies, stop conditions, linked source material, and a
+  dedicated findings section. Publishing these plans does not approve their
+  implementation.
+
+### Fixed
+
+- Made Agent Master wait for a successful tool-specific readiness probe and
+  expected product marker, preventing a wildcard broker 404 from being treated
+  as a successfully launched Deck Creator, Visual Planner, or Visual Wayfinder.
+- Restored setup-playground typechecking by keeping the pack-dependency test
+  fixture synchronized with the required harness-state contract.
+- Reconciled the OrdFS plan's shared-content draft with its compatibility
+  invariant: collection and collectionItem MAP envelopes and AIP authorship
+  remain unchanged while only item content becomes a reference.
+
 ## [1.1.86] - 2026-07-15
 
 ### Changed

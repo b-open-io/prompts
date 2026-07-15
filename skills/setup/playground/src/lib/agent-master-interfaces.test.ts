@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { interfaceUrl, listLocalInterfaces } from "./agent-master-interfaces"
+import { interfaceUrl, listLocalInterfaces, waitForReady } from "./agent-master-interfaces"
 
 describe("Agent Master local interface routing", () => {
 	test("uses isolated Portless subdomains for server-backed tools", () => {
@@ -23,5 +23,43 @@ describe("Agent Master local interface routing", () => {
 			"gemskills:visual-planner",
 			"bopen-tools:visual-wayfinder",
 		])
+	})
+})
+
+describe("Agent Master local interface readiness", () => {
+	test("does not treat a wildcard 404 as a ready interface", async () => {
+		let requests = 0
+		const server = Bun.serve({
+			port: 0,
+			fetch() {
+				requests += 1
+				if (requests === 1) return new Response("Parent wildcard route", { status: 404 })
+				return new Response("<title>Deck Playground</title>")
+			},
+		})
+
+		try {
+			await waitForReady(server.url.toString(), "<title>Deck Playground</title>", 1_000)
+			expect(requests).toBeGreaterThanOrEqual(2)
+		} finally {
+			server.stop(true)
+		}
+	})
+
+	test("requires the expected product marker on a successful response", async () => {
+		const server = Bun.serve({
+			port: 0,
+			fetch() {
+				return Response.json({ product: "wrong-interface", status: "ready" })
+			},
+		})
+
+		try {
+			await expect(
+				waitForReady(server.url.toString(), '"product":"visual-wayfinder"', 50),
+			).rejects.toThrow("readiness marker missing")
+		} finally {
+			server.stop(true)
+		}
 	})
 })

@@ -43,6 +43,7 @@ const state: HarnessState = {
 	],
 	portableSkills: ["react-doctor"],
 	marketplace: { fetched: true, error: null, fetchedAt: "2026-07-14T00:00:00.000Z" },
+	pack: null,
 }
 
 describe("pack dependency diff", () => {

@@ -35,6 +35,11 @@ type ManagedProcess = {
 	url: string
 }
 
+type ReadinessProbe = {
+	path: string
+	marker: string
+}
+
 const INTERFACES: readonly InterfaceDefinition[] = [
 	{
 		id: "gemskills:deck-creator",
@@ -261,7 +266,21 @@ function registeredPortlessUrl(portless: string, portlessName: string, fallback:
 	return match?.[0] ? new URL(match[0]).origin : fallback
 }
 
-async function waitForReady(url: string, timeoutMs = 30_000): Promise<void> {
+function readinessProbe(id: LocalInterfaceId): ReadinessProbe {
+	if (id === "bopen-tools:visual-wayfinder") {
+		return { path: "/health", marker: '"product":"visual-wayfinder"' }
+	}
+	if (id === "gemskills:deck-creator") {
+		return { path: "/", marker: "<title>Deck Playground</title>" }
+	}
+	return { path: "/", marker: "<title>Visual Planner</title>" }
+}
+
+export async function waitForReady(
+	url: string,
+	expectedMarker: string,
+	timeoutMs = 30_000,
+): Promise<void> {
 	const deadline = Date.now() + timeoutMs
 	let lastError: unknown
 	while (Date.now() < deadline) {
@@ -273,8 +292,13 @@ async function waitForReady(url: string, timeoutMs = 30_000): Promise<void> {
 				redirect: "manual",
 				signal: controller.signal,
 			})
-			if (response.status < 500) return
-			lastError = new Error(`HTTP ${response.status}`)
+			if (!response.ok) {
+				lastError = new Error(`HTTP ${response.status}`)
+			} else {
+				const body = await response.text()
+				if (body.includes(expectedMarker)) return
+				lastError = new Error("readiness marker missing")
+			}
 		} catch (error) {
 			lastError = error
 		} finally {
@@ -317,7 +341,9 @@ async function spawnManagedInterface(
 	try {
 		await Bun.sleep(250)
 		managed.url = registeredPortlessUrl(portless, portlessName, fallbackUrl)
-		await Promise.race([waitForReady(managed.url), exited])
+		const probe = readinessProbe(id)
+		const probeUrl = new URL(probe.path, `${managed.url}/`).toString()
+		await Promise.race([waitForReady(probeUrl, probe.marker), exited])
 		return managed.url
 	} catch (error) {
 		managedProcesses().delete(id)

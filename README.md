@@ -171,6 +171,7 @@ bunx skills add b-open-io/bopen-tools --skill software-factory
 bunx skills add b-open-io/bopen-tools --skill statusline-setup
 bunx skills add b-open-io/bopen-tools --skill threejs-r3f
 bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
+bunx skills add b-open-io/bopen-tools --skill visual-proposal
 bunx skills add b-open-io/bopen-tools --skill visual-wayfinder
 bunx skills add b-open-io/bopen-tools --skill visual-review
 bunx skills add b-open-io/bopen-tools --skill voice-clone
@@ -270,6 +271,7 @@ intentional.
 | `humanize` | Remove AI writing patterns and restore natural voice |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes |
+| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
@@ -543,6 +545,7 @@ prompts/
 │   ├── hammertime/         #   /hammertime:* controls
 │   └── utils/              #   /utils:context
 ├── hooks/                  # Shared scripts + host-specific hook manifests
+├── plans/                  # Reviewed planning deliverables; implementation remains separately gated
 ├── skills/                 # Cross-agent skills (each has SKILL.md)
 ├── setup/manifest.json      # Declarative Agent Master dependency inventory
 ├── settings.json            # Repository-level settings declarations
