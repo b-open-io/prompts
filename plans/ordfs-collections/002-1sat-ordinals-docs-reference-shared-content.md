@@ -3,7 +3,7 @@
 > **Target repo**: `~/code/1sat-ordinals` (github `BitcoinSchema/1sat-ordinals`) — the GitBook source for docs.1satordinals.com.
 > **Executor instructions**: This is a docs-only change. No build/test system; verification is a Markdown render check and link validity. Use the repo's own branch/commit convention (conventional commits like `docs: …`), NOT an internal `OPL-` scheme.
 >
-> **Drift check (run first)**: `git -C ~/code/1sat-ordinals fetch origin && git -C ~/code/1sat-ordinals diff --stat origin/master -- reference-inscriptions.md ordfs.md adding-metadata/collections.md`. If those changed, reconcile before editing.
+> **Drift check (run first)**: `git -C ~/code/1sat-ordinals fetch origin && git -C ~/code/1sat-ordinals diff --stat origin/master -- reference-inscriptions.md ordfs.md adding-metadata/collections.md adding-metadata/collectionitem-subtype.md`. If those changed, reconcile before editing.
 
 ## Status
 
@@ -61,8 +61,8 @@ Append the exact text in `_bsv21-collection-member-section.md` (in this plan fol
 
 - [ ] The new section is present in `reference-inscriptions.md` and renders without broken links
 - [ ] `ordfs.md` cross-links to it with a working anchor
-- [ ] No change to `adding-metadata/*`
-- [ ] `git status` shows only the two docs files changed
+- [ ] No existing collection/collectionItem field or example is modified; the only `adding-metadata/*` change is the new fungible-members subsection
+- [ ] `git status` shows only `reference-inscriptions.md`, `ordfs.md`, and `adding-metadata/collectionitem-subtype.md` changed
 - [ ] `/Users/satchmo/code/prompts/plans/ordfs-collections/README.md` status row updated
 
 ## STOP conditions

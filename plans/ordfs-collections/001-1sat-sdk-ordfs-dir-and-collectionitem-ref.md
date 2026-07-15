@@ -2,9 +2,9 @@
 
 > **Target repo**: `~/code/1sat-sdk` (github `b-open-io/1sat-sdk`).
 > **Base branch**: `feat/ordfs-directory-writing` (this is PR #13). Do NOT start from `master` — the ordfs builder primitives only exist on this branch.
-> **Executor instructions**: Follow step by step. Run every verification command and confirm the expected result before the next step. Honor STOP conditions — do not improvise. This plan is design-complete; it does not require reading any external conversation.
+> **Executor instructions**: Follow step by step. Run every verification command and confirm the expected result before the next step. Honor STOP conditions — do not improvise. The content-reference design is complete; the documented AIP `[-1]` mismatch is an explicit reconciliation gate before implementation.
 >
-> **Drift check (run first)**: `git -C ~/code/1sat-sdk fetch origin && git -C ~/code/1sat-sdk diff --stat origin/feat/ordfs-directory-writing -- packages/actions/src/ordfs packages/actions/src/collections`. If the files below changed since this plan was written, compare the "Current state" excerpts against live code before proceeding; on mismatch treat as a STOP condition.
+> **Drift check (run first)**: `git -C ~/code/1sat-sdk fetch origin && git -C ~/code/1sat-sdk diff --stat origin/feat/ordfs-directory-writing -- packages/actions/src/ordfs packages/actions/src/collections packages/actions/src/tokens packages/actions/src/signing packages/types/src/index.ts`. If the files below changed since this plan was written, compare the "Current state" excerpts against live code before proceeding; on mismatch treat as a STOP condition.
 
 ## Status
 
@@ -28,9 +28,9 @@ A large collection mint (e.g. 10,000 items) or a mint-on-purchase flow currently
   - `index.ts` — `inscribeOrdfsDir({ files, map, sign })` action.
   - Compiled `dist/ordfs/*.js` exists; treat `src/ordfs/*.ts` as source of truth.
 - `packages/actions/src/collections/index.ts` — collection + collectionItem mint. Key facts (read the file to confirm line numbers before editing; they may have shifted):
-  - `buildCollectionItemMap(...)` (~line 143): emits MAP `{ app, type:"ord", name, subType:"collectionItem", subTypeData: JSON.stringify({ collectionId, mintNumber?, rank?, rarityLabel?, traits?, attachments? }) }`.
+  - `buildCollectionItemMap(...)` (~line 143): emits MAP `{ app, type:"ord", name, subType:"collectionItem", subTypeData: JSON.stringify({ collectionId, mintNumber?, rank?, traits?, attachments? }) }`. The shared type also supports `rarityLabel`, but the action currently omits it.
   - `mintCollectionItem` (~line 369): an `Action` whose input requires `base64Content: string` (~line 41/69/169/255) — the item image is embedded as bytes. There is **no** way to point at existing content.
-  - `CollectionItemSubTypeData` type comes from `@1sat/types` (imported ~line 18).
+  - `CollectionItemSubTypeData` type comes from `@1sat/types` (imported ~line 18). Its current `rarityLabel?: RarityLabels` disagrees with the published collection-item spec, which defines one string label; reconcile that type as part of this plan before exposing the field.
 - **The API decision already reached on PR #13** (encode this — do not re-litigate): signing protocol is **implied by output type**, not a caller choice — a signed 1-sat ordinal uses SIGMA, a signed 0-sat B output uses AIP. So the entry API carries only `sign?: boolean`, never a protocol enum. Default: unsigned B leaves; root ordinal signed.
 - **The encoding decision (settled 2026-07-15 — encode this, do not re-litigate):** the three content-reference encodings are not rival alternatives; they are different layers. `ref=ordfs` is the **pointer primitive** (the item declares the source's real MIME, e.g. `image/png`, and carries a one-hop pointer as a media-type parameter). `ord-fs/json` is the **container** (bundles ≥2 named leaves, which may themselves be refs). `text/uri-list` is a redundant second pointer primitive — **read-only interop only**. The rule is **produce two, accept three**: this SDK PRODUCES `ref=ordfs` for a single shared/unique image and `ord-fs/json` when an item bundles multiple leaves; it NEVER produces `text/uri-list`. The resolver (plan 003) additionally ACCEPTS `text/uri-list` on read for interop. `ref=ordfs` is a first-class OrdFS capability spec'd in `content-ref.md`; single-entry `ord-fs/json` is redundant with `ref=ordfs` and must not be used for a lone image.
 - Repo conventions: TypeScript, `bun` monorepo (`packages/*`), Biome for lint/format, actions follow the `Action<Input, Output>` pattern (see any existing action in `packages/actions/src/` such as `inscriptions/index.ts` for the shape — match its input-schema + `execute` structure).
@@ -52,16 +52,16 @@ A large collection mint (e.g. 10,000 items) or a mint-on-purchase flow currently
 **In scope:**
 - `packages/actions/src/ordfs/outputs.ts` — finalize the `OrdfsDirEntry` shape + `buildOrdFsDirOutputs` options.
 - `packages/actions/src/ordfs/index.ts` — keep `inscribeOrdfsDir`'s simple `files` path; expose the richer entry shape.
-- `packages/actions/src/collections/index.ts` — add an optional `ref` content path to `mintCollectionItem` (and the item builder), WITHOUT changing the MAP output shape.
-- `packages/actions/src/tokens/index.ts` — add an optional `collectionItem` path to `deployBsv21Mint` / `deployBsv21Auth` so a token deploy can carry standard `collectionItem` MAP + AIP as a script suffix (the BSV-21-token-as-collectionItem seam). Grounded: `BSV21Options` already exposes `parent`/`scriptSuffix` (templates `bsv21.ts:547-576`), and a shipped precedent combines `P2PKH + non-image inscription + MAP + AIP` in one output (`registry/package-tx.ts:53-243`). The deploy actions today build a single output with NO MAP/AIP path (`tokens/index.ts:1182-1187`, `1309-1311`) — wire it in; do not change the `bsv-20` JSON (membership lives in MAP only).
-- **Fix the pre-existing AIP gap:** `mintCollection`/`mintCollectionItem` do not currently apply an AIP signature at all, though the spec requires collection/item authorship signing (`collections.md`, `collectionitem-subtype.md`). Apply AIP (reuse `applyAip`/`applyBapAip`, `signing/aip.ts:116-160`) to items — including token-deploy members — so membership is provable. Take ownership of this per repo convention rather than leaving it broken.
+- `packages/actions/src/collections/index.ts` — add an optional `ref` content path to `mintCollectionItem` (and the item builder), and expose the already-specified optional string `rarityLabel`; otherwise preserve the MAP shape. Keep `name` required and `app` defaulted exactly as today.
+- `packages/types/src/index.ts` — correct `CollectionItemSubTypeData.rarityLabel` from the collection-level `RarityLabels` record to the spec's item-level `string`, with a type-level regression test or build fixture.
+- `packages/actions/src/tokens/index.ts` — add an optional `collectionItem` path to `deployBsv21Mint` / `deployBsv21Auth` so a token deploy can carry standard `collectionItem` MAP + AIP after its inscription envelope (the BSV-21-token-as-collectionItem seam). Grounded: the template options expose `parent`/`scriptSuffix` (`templates/src/bsv21/bsv21.ts`), while `BSV21.lock(lockingScript)` uses its argument as the suffix, so the action must compose P2PKH + MAP before calling `lock`, then append AIP to that complete script. A shipped precedent combines P2PKH + non-image inscription + MAP + AIP in one output (`registry/package-tx.ts:53-243`). The deploy actions today build a single output with NO MAP/AIP path (`tokens/index.ts:1182-1187`, `1309-1311`) — wire it in; do not change the `bsv-20` JSON (membership lives in MAP only).
+- **Fix the pre-existing AIP gap:** `mintCollection`/`mintCollectionItem` do not currently apply an AIP signature at all, though the spec requires collection/item authorship signing (`collections.md`, `collectionitem-subtype.md`). The documented ordinal form uses AIP `[-1]` over the entire output, while `applyAip`/`applyBapAip` currently sign only Bitcom data and emit no `-1`; do NOT claim those helpers satisfy the spec unchanged. First reconcile this with the SDK/template and stack verifier, then apply the agreed whole-output signing form to the collection root and all items — including token-deploy members — using the same resolved BAP identity so membership is provable.
 - Corresponding `*.test.ts` in `packages/actions/src/ordfs/`, `packages/actions/src/collections/`, and `packages/actions/src/tokens/` (create/extend).
 
 **Out of scope (do NOT touch):**
-- The MAP metadata shape in `buildCollectionItemMap` / `buildCollectionMap` — `subType`, `subTypeData` keys, and their JSON encoding must stay byte-identical. Indexers depend on it.
-- `mintCollection` (the collection root mint) — the collection stays a classic `image/*` MAP `subType:collection` ordinal. This plan only touches items + the ordfs builder.
-- `@1sat/types` type definitions — reuse existing types; do not add fields to `CollectionItemSubTypeData`.
-- Anything in `packages/client`, `packages/templates` beyond what the ordfs builder already imports.
+- The MAP metadata shape in `buildCollectionItemMap` / `buildCollectionMap` apart from exposing the already-specified optional `rarityLabel`; existing inputs must retain byte-identical `subType`, `subTypeData`, and JSON encoding. Indexers depend on it.
+- Changing the collection root's content or MAP shape — `mintCollection` stays a classic `image/*` MAP `subType:collection` ordinal; only its missing compliant AIP signature is added.
+- Anything in `packages/client`; template/verifier changes are allowed only when required by the explicit AIP reconciliation gate.
 
 ## Steps
 
@@ -102,7 +102,7 @@ In `packages/actions/src/collections/index.ts`, extend the `mintCollectionItem` 
 
 - Input: add optional `ref?: string` (same format as Step 1) and an optional `refContentType?: string` (the source's real MIME, e.g. `image/png`; required with `ref`). Require exactly one of `base64Content` | `ref`.
 - When `ref` is set, the item's inscription is a **`ref=ordfs` pointer** (the pointer primitive per the settled encoding decision): the contentType is the source's real MIME with the `ref=ordfs` media-type parameter (e.g. `image/png; ref=ordfs`), and the body is the pointer — the bare `ref` (a relative `_N` or an absolute `txid_0` / `txid_0:-1`) per `content-ref.md`. Do NOT embed image bytes, and do NOT emit `text/uri-list`.
-- The MAP envelope is produced by the UNCHANGED `buildCollectionItemMap` — `subType:collectionItem` + `subTypeData` (collectionId, mintNumber, rank, rarityLabel, traits, attachments) exactly as today. The item is still a 1-sat ordinal; AIP signing (existing behavior) is unchanged.
+- The MAP envelope is produced by `buildCollectionItemMap` — `subType:collectionItem` + `subTypeData` (collectionId, mintNumber, rank, rarityLabel, traits, attachments). Correct the shared type and add the currently omitted optional string `rarityLabel`, but otherwise keep its serialized shape unchanged. The item remains a 1-sat ordinal; add the missing spec-compliant AIP signature described in scope.
 - Multi-leaf items (an item needing ≥2 named files) go through the `ord-fs/json` container path (the `OrdfsDirEntry[]` API from Step 1), NOT `mintCollectionItem`'s single `ref`. A single-entry directory is redundant with `ref=ordfs` — do not use it for a lone image.
 
 **The invariant to preserve:** an item minted with `ref` must produce the SAME MAP output (same `subType`/`subTypeData` bytes) as one minted with `base64Content` — only the inscription *content* differs (a `ref=ordfs` pointer vs image bytes).
@@ -118,15 +118,15 @@ In `packages/actions/src/collections/index.ts`, extend the `mintCollectionItem` 
 ### Step 4: Tests
 
 - `packages/actions/src/ordfs/outputs.test.ts` (create or extend): entry validation (content xor ref; bad ref rejected); an entry with `ref` produces no new content output; `as` override changes 1-sat vs 0-sat.
-- `packages/actions/src/collections/collections.test.ts` (find the existing collection test; extend it): mint an item with `ref` and assert (a) the MAP `subType`/`subTypeData` bytes equal those of a `base64Content` item with identical metadata, and (b) the inscription content-type is the real MIME plus the `ref=ordfs` parameter (e.g. `image/png; ref=ordfs`) and the body is the pointer — NOT `text/uri-list`. Model the assertions on the existing collection test in this file.
+- `packages/actions/src/collections/collections.test.ts` (find the existing collection test; extend it): mint an item with `ref` and assert (a) the MAP `subType`/`subTypeData` bytes equal those of a `base64Content` item with identical metadata, (b) the inscription content-type is the real MIME plus the `ref=ordfs` parameter (e.g. `image/png; ref=ordfs`) and the body is the pointer — NOT `text/uri-list`, and (c) collection root and item AIP signatures use the agreed whole-output form, validate, and have the same signer. Model the assertions on the existing collection test in this file.
 
 **Verify**: `bun test` → all pass including the new cases.
 
 ### Step 5: BSV-21-token-as-collectionItem deploy path
 
-In `packages/actions/src/tokens/index.ts`, add an optional `collectionItem?: { collectionId: string; name?: string; traits?: ...; rarityLabel?: string }` input to `deployBsv21Mint` and `deployBsv21Auth`. When set, append a `collectionItem` MAP envelope (`subType:collectionItem`, `subTypeData` = the given fields; OMIT `mintNumber`/`rank` — they are meaningless for a fungible member) plus an AIP signature as the deploy output's `scriptSuffix`, and set the ordinal `parent` field to the collection outpoint. Do NOT add any collection field to the `bsv-20` JSON. Support both supply models unchanged: `deploy+mint` (fixed) and `deploy+auth` (mint-over-time; the auth UTXO holder mints supply later).
+In `packages/actions/src/tokens/index.ts`, add an optional `collectionItem?: { collectionId: string; name: string; app?: string; traits?: ...; rarityLabel?: string }` input to `deployBsv21Mint` and `deployBsv21Auth`; default `app` to `1sat-wallet`, matching `mintCollectionItem`. Require `collectionId` here to be an absolute `<txid>_<vout>` outpoint (a token deploy cannot use a same-transaction `_N` collection reference). When set, compose P2PKH + a `collectionItem` MAP envelope (`subType:collectionItem`, `subTypeData` = the given fields; OMIT `mintNumber`/`rank` — they are meaningless for a fungible member), build the BSV-21 inscription with that suffix and the decoded collection outpoint as `parent`, then append the agreed whole-output AIP signature. Reuse one MAP builder so required fields/defaults cannot drift. Do NOT add any collection field to the `bsv-20` JSON. Support both supply models unchanged: `deploy+mint` (fixed) and `deploy+auth` (mint-over-time; the auth UTXO holder mints supply later).
 
-**The invariant:** the deploy output's `collectionItem` MAP bytes must equal those a `mintCollectionItem` would produce for the same `collectionId`/metadata — a token member and an NFT member are indistinguishable at the MAP layer. Test it: assert byte-equality of the MAP suffix between a token-deploy member and an NFT item with identical `subTypeData`.
+**The invariant:** the deploy output's `collectionItem` MAP protocol bytes (excluding the separate AIP protocol) must equal those a `mintCollectionItem` would produce for the same `collectionId`/metadata — a token member and an NFT member are indistinguishable at the MAP layer. Test it: decode both outputs and assert byte-equality of their MAP protocol payloads for identical `subTypeData`; separately assert that each AIP validates.
 
 **Verify**: `bun test packages/actions/src/tokens` passes; the token-deploy member carries `application/bsv-20` content AND a `collectionItem` MAP+AIP suffix; `bun run --filter '@1sat/actions' build` → exit 0.
 
@@ -142,12 +142,13 @@ In `packages/actions/src/tokens/index.ts`, add an optional `collectionItem?: { c
 ## STOP conditions
 
 - `buildCollectionItemMap` or `CollectionItemSubTypeData` would need to change to support `ref` — STOP; the whole point is zero MAP-shape change.
+- The maintainers have not resolved the mismatch between documented ordinal AIP `[-1]` whole-output signing and the current Bitcom-only helper/verifier semantics — STOP; do not ship a second, falsely "spec-compliant" signature form.
 - The ordfs builder on the branch differs materially from the "Current state" description (different function names/signatures) — STOP and report the actual shape.
 - Existing collection or ordfs tests fail and the fix requires touching an out-of-scope file — STOP.
 - You cannot produce a `ref` item whose MAP bytes match a `base64Content` item — STOP; this is the acceptance invariant, not negotiable.
 
 ## Maintenance notes
 
-- Reviewer scrutiny: confirm the MAP-shape invariance test actually compares bytes, and that AIP signing on the item is unchanged.
+- Reviewer scrutiny: confirm the MAP-shape invariance test compares decoded MAP protocol bytes, and that the newly added AIP signatures validate for classic, referenced, and token-deploy members.
 - Follow-up deferred: exposing `ref`/`as` on the `inscribeOrdfsDir` action surface (kept minimal here); a `mintCollection` variant whose root is itself an ord-fs directory (see plan README "root dual-role" open question) — deliberately out of scope until the maintainers decide.
 - The produced `ref=ordfs` pointer body and its accepted forms must stay compatible with the OrdFS resolver spec in `content-ref.md`; if the resolver's accepted pointer forms change (plan 003), revisit. The resolver ACCEPTS `text/uri-list` too (interop), but this SDK never emits it — keep the produce/accept asymmetry intact.

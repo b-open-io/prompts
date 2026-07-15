@@ -13,16 +13,19 @@ In this case:
   `<txid>_0`), not any individual held or transferred unit. Metadata inherits to
   holders by resolving `tokenId` back to its deploy outpoint — the same way
   `sym`/`dec`/`icon` already inherit per the BSV-21 spec. One token type is one
-  collection member; holding any nonzero balance of that type is "owning" it.
+  collection member. An application may treat a nonzero balance as ownership
+  or access; BSV-21 itself proves the balance but does not enforce product rights.
 - `mintNumber` and `rank` do not apply to a fungible member and should be
   omitted.
 - `traits` / `rarityLabel`, if present, describe the token type as a whole
   rather than an edition or serial position.
-- The token's own `icon` field (an ordinal or B:// outpoint reference) may serve
-  as the item's preview image in place of a separate `previewUrl` / attachment.
-- As with any collection member, set the ordinal `parent` field (field 3) to the
-  collection's outpoint in addition to `subTypeData.collectionId`, and sign with
-  AIP per [Signing](signing.md).
+- The token's own `icon` field (an inscription-origin or B-protocol-file
+  outpoint) may serve as the item's preview image in place of a separate
+  `previewUrl` / attachment.
+- Canonical membership is `subTypeData.collectionId` plus an AIP identity
+  matching the collection root. When `collectionId` is an absolute outpoint,
+  the ordinal `parent` field (field 3) may duplicate it as a navigation hint;
+  it is not required, and a same-transaction `_N` reference cannot use it.
 
 ### Supply model
 

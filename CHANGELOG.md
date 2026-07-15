@@ -6,6 +6,21 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.98] - 2026-07-15
+
+### Documentation
+
+- Synchronized the public `visual-proposal` inventory with 0.0.6: a concrete,
+  buildable premise challenge becomes a first-class option in advocacy and
+  judging.
+- Hardened the OrdFS collection implementation plans after source-level review:
+  exposed the item rarity type mismatch, required complete MAP fields and
+  normalized collection IDs, separated MAP-byte invariance from AIP validation,
+  gated authoritative membership on a collection-matching signer, and made the
+  documented whole-output AIP mismatch an explicit stop condition. Also
+  reconciled the docs plan's changed-file criteria and clarified token icon,
+  parent, and application-level ownership semantics.
+
 ## [1.1.97] - 2026-07-15
 
 ### Changed
