@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.8
+version: 0.0.9
 description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
 ---
 
@@ -37,10 +37,14 @@ them a verdict.** When the page presents alternatives:
 - An option that "no server implements yet" or "is non-standard" is described by
   that fact, not branded a loser — an implementation gap common to every path is
   not a disqualifier. State the fact; let the reviewer judge its weight.
-- **Only include a recommendation if the user explicitly asked for one.** If
-  they did, put it in a clearly separated "author's lean" block that names it as
-  a lean and an open call — never as a badge on one option that visually pre-empts
-  the choice. Default: no recommendation at all.
+- **Only include an _author's_ recommendation if the user explicitly asked for
+  one.** If they did, put it in a clearly separated "author's lean" block that
+  names it as a lean and an open call — never as a badge on one option that
+  visually pre-empts the choice. Default: no author recommendation at all. (This
+  governs the *author's own* verdict. A **judging bench** — a panel of named,
+  attributed, usually-split verdicts with flip-conditions — is a different thing
+  and is part of the default flow for a real decision; see the judging bench
+  section below.)
 
 Stop after writing "the one to reject" or "best option" and replace the verdict
 with the underlying evidence. Leave the decision to the reviewer.
@@ -92,9 +96,10 @@ different option**:
 - In the page, present each key decision as a **panel of the N viewpoints**,
   equal visual weight, each attributed to its advocate. The reviewer reads three
   arguing positions per decision and decides — which is exactly the goal.
-- This does NOT override Rule 1: add no author verdict. The panel
-  is three advocates arguing; the author stays the neutral host. If the user
-  later asks who's right, that's a separate ask.
+- This does NOT override Rule 1: add no *author* verdict. The panel is the
+  advocates arguing; the author stays the neutral host. The judging bench
+  (below) then rules by default — a panel of attributed, usually-split judges,
+  which is not the author deciding.
 
 Run the advocates concurrently because they are independent. Ground every
 advocate's claims in the same evidence used by the host; an advocate that
@@ -153,35 +158,42 @@ is, verify its feasibility with the same grounding rigor as every other option
 (read the actual code/spec — see the grounding rule) before letting an advocate
 champion it, so the fourth card is as evidence-backed as the first three.
 
-### Add debate or a judging bench only when useful
+### The standard flow: advocates → cross-examination → judging bench
 
-Use two optional upgrades to make parallel advocacy more decision-useful:
+For a real decision, run **all three by default** — advocacy, cross-examination,
+AND a judging bench. This is the shape that makes a proposal decision-useful
+rather than a bare list, and it is what this skill is *for*. Do NOT treat the
+bench as an opt-in the user must request; running advocates but no judges is the
+most common way this skill under-delivers.
 
-- **Cross-examination.** Ask each advocate not only to argue for their option but
-  to argue against each opponent by name — the sharpest, most specific weakness
-  of each rival relative to their own. The page then shows, per option, both the
-  case for it and how its rivals attack it, so the reviewer sees the collisions,
-  not three monologues.
-- **A judging panel.** Add judges only when the user explicitly requests a
-  recommendation, ranking, winner, or verdict. After the advocates, dispatch a
-  separate set of agents, distinct from every advocate, as judges. Give each
-  judge the full record: the problem, options, confirmed facts, and all
-  advocates' cases and rebuttals. Assign a distinct evaluative lens (e.g.
-  correctness/robustness,
+- **Cross-examination (default).** Each advocate argues for their option AND
+  against each opponent by name — the sharpest, most specific weakness of each
+  rival relative to their own. The page then shows, per option, both the case for
+  it and how its rivals attack it, so the reviewer sees the collisions, not three
+  monologues.
+- **The judging bench (default).** After the advocates, dispatch a separate set
+  of agents — **distinct from every advocate** — as judges. **This runs by
+  default and does not violate Rule 1**, because a bench is a panel of
+  *attributed, usually-split* verdicts with flip-conditions, not the author
+  handing down one foregone conclusion. Give each judge the full record: the
+  problem, options, confirmed facts, and all advocates' cases and rebuttals.
+  Assign a distinct evaluative lens (e.g. correctness/robustness,
   efficiency/simplicity, ecosystem adoption/interop). Each judge names their
   lens, picks a winner and runner-up, states the deciding factor, and — the most
   decision-useful part — the single condition that would FLIP their verdict
   ("would flip if …"). Those flip-conditions are the real tiebreakers, so keep
-  them: they tell the reviewer exactly which fact to go check. The page presents
-  the verdicts in a clearly separated judgment section — a tally, each judge's
-  one-line rationale, and their flip-condition. Keep verdict badges out of the
+  them: they tell the reviewer exactly which fact to go check. Present the
+  verdicts in a clearly separated judgment section — a tally, each judge's
+  one-line rationale, and their flip-condition. Keep verdict badges OFF the
   neutral option cards.
 
-Fix the judging lenses and evaluation rubric before showing judges the advocacy
-record. Present every judge's verdict, including dissent; never collapse a tally
-into objective truth. This remains within Rule 1 only because the user requested
-the recommendation and the host presents the attributed verdicts without adding
-one. The human reviewer makes the final call.
+Skip the bench only when there is genuinely no decision to resolve (a pure
+explainer or status page), or the user explicitly asks for options-only with no
+assessment. Fix the judging lenses and evaluation rubric before showing judges
+the advocacy record. Present every judge's verdict, including dissent; never
+collapse a tally into objective truth. This stays within Rule 1 because the
+*author* adds no verdict of their own — the split, attributed bench does, and
+the human reviewer still makes the final call.
 
 **Show the agents — avatar, name, role.** When advocates or judges appear, give
 each a real identity: their avatar, name, and one-line role on the card that

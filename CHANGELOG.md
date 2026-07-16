@@ -6,6 +6,19 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.101] - 2026-07-16
+
+### Fixed
+
+- `visual-proposal` skill (0.0.9): the judging bench now runs by DEFAULT as part
+  of the standard flow (advocates → cross-examination → judges), instead of only
+  when the user explicitly asked for a verdict. Fresh runs were producing three
+  advocates and no judges because the bench was gated behind an explicit request.
+  Clarified that this does not violate Rule 1: a bench is a panel of attributed,
+  usually-split verdicts with flip-conditions — not the *author* handing down one
+  foregone conclusion — so neutrality is preserved while the proposal stays
+  decision-useful. Skip the bench only for a page with no real decision.
+
 ## [1.1.100] - 2026-07-16
 
 ### Changed
