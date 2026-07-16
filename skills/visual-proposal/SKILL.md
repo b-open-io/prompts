@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.9
+version: 0.0.10
 description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
 ---
 
@@ -158,13 +158,14 @@ is, verify its feasibility with the same grounding rigor as every other option
 (read the actual code/spec — see the grounding rule) before letting an advocate
 champion it, so the fourth card is as evidence-backed as the first three.
 
-### The standard flow: advocates → cross-examination → judging bench
+### The standard flow: advocates → cross-examination → judging bench → the CEO's final call
 
-For a real decision, run **all three by default** — advocacy, cross-examination,
-AND a judging bench. This is the shape that makes a proposal decision-useful
-rather than a bare list, and it is what this skill is *for*. Do NOT treat the
-bench as an opt-in the user must request; running advocates but no judges is the
-most common way this skill under-delivers.
+For a real decision, run **all four stages by default** — advocacy,
+cross-examination, a judging bench, AND the CEO's final call. This is the shape
+that makes a proposal decision-useful rather than a bare list, and it is what
+this skill is *for*. Do NOT treat the bench or the CEO as an opt-in the user must
+request; running advocates but no judges is the most common way this skill
+under-delivers.
 
 - **Cross-examination (default).** Each advocate argues for their option AND
   against each opponent by name — the sharpest, most specific weakness of each
@@ -195,6 +196,26 @@ collapse a tally into objective truth. This stays within Rule 1 because the
 *author* adds no verdict of their own — the split, attributed bench does, and
 the human reviewer still makes the final call.
 
+### The CEO's final call (runs LAST, after everything else)
+
+After every advocate and every judge has weighed in, **Chief — the CEO
+(`Agent(bopen-tools:ceo)`) — comes in and makes the final call.** He is the last
+stage, never run until the rest is complete. He is like one more judge, but a
+decisive one: he weighs the whole thing holistically for the **business and the
+user**, not the tech alone — the true cost of technical debt (priced as
+interest), scope creep, reversibility, and whether the change actually serves the
+user. Give him the FULL record: the problem, the options, the confirmed facts,
+every advocate's case and rebuttal, and every judge's verdict and flip-condition.
+
+Unlike the neutral judges, the CEO **does decide** — that is his role, and it
+does not break Rule 1 because it is an attributed agent's recommendation from the
+business's vantage, not the author editorializing, and the human still overrides.
+Present his call as a distinct **final section** with his avatar, name, and role:
+his decision stated plainly, one or two sentences of business/user reasoning, and
+**the single thing that would change his mind.** The reviewer's Agree /
+Agree-with-caveats / Disagree control on this call is the required CEO selector in
+the interactive choices (below).
+
 **Show the agents — avatar, name, role.** When advocates or judges appear, give
 each a real identity: their avatar, name, and one-line role on the card that
 carries their argument or verdict. It makes the page feel authored by the panel
@@ -204,6 +225,17 @@ advocates confirmed it against the code), attribute it visually — cluster thos
 agents' avatars on that fact's card (straddling its top edge reads as a group
 sign-off) instead of writing "everyone agreed." An avatar cluster conveys
 consensus and who-verified at a glance.
+
+### Readability — run humanize on every voice
+
+The whole point is a page that's easy to follow. Text written by a panel of
+agents drifts into AI tics (setup-and-dismiss, tricolons, hedged filler) that
+make it a slog. So: **ask every dispatched agent — each advocate, each judge,
+and the CEO — to run `Skill(bopen-tools:humanize)` on its returned prose before
+it hands it back.** Then, when you assemble the page, **you (the host) run
+`Skill(bopen-tools:humanize)` over the final copy** — the theses, verdicts,
+captions, and the CEO's decision — so the whole thing reads in one clear human
+voice. Crisp, skimmable, no throat-clearing.
 
 ## The grounding rule
 
@@ -233,12 +265,19 @@ Adapt to the subject — not every section always applies — but the usual spin
    (e.g. "changes X, leaves Y untouched"). Before/after helps here.
 5. **The decision(s)** — where options exist, the neutral comparison (Rule 1),
    diagram-led (Rule 2): a matrix, per-option structure diagrams, commonalities,
-   differences, challenges.
+   differences, challenges. This is where the **advocate panel**, **judging
+   bench**, and **CEO's final call** live (the standard flow above).
 6. **Architecture** — how it's put together if adopted.
 7. **Evidence** — what's confirmed vs open (cite the sources).
 8. **Roadmap / plan** — sequenced steps, dependencies. Number only if it's a
    real sequence.
 9. **Open questions** — what still needs deciding, each with the trade-off.
+10. **Your call** — selectable option cards for every decision + a copy-response
+    button, so the reviewer answers in-page and pastes a clean, versioned reply
+    back to the agent. Always includes the Agree / Agree-with-caveats / Disagree
+    control on the CEO's final call. See
+    [references/interactive-choices.md](references/interactive-choices.md) for the
+    drop-in component (CSS + markup + copy script).
 
 ## Craft (via artifact-design)
 

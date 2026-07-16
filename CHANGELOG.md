@@ -6,6 +6,28 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.102] - 2026-07-16
+
+### Added
+
+- `visual-proposal` skill (0.0.10): a **CEO final-call** stage — after the
+  advocates and judges, `Agent(bopen-tools:ceo)` (Chief) makes the last, decisive
+  call, weighing the business and the user holistically (technical debt priced as
+  interest, scope creep, reversibility, user benefit), with the single thing that
+  would change his mind. Added a drop-in **interactive-choices** component
+  (`references/interactive-choices.md`): selectable radio-style option cards for
+  every decision plus a copy-response button that emits a clean, version- and
+  link-stamped block for pasting back to the agent — including the required
+  Agree / Agree-with-caveats / Disagree control on the CEO's call. Wired
+  `Skill(bopen-tools:humanize)` into the flow: every advocate/judge/CEO humanizes
+  its return, and the host humanizes the final page copy.
+- `ceo` agent (Chief, 1.0.8): a **Decision Lens** section for making the final
+  call on a technical proposal — speed-and-quality via staged release gates (not
+  a binary), technical debt as a priced loan, scope guarded by "what do we stop?"
+  and banking freed capacity into debt paydown, a checkable user-advocacy gate,
+  tie-breaking authority, and engaging the architecture directly. Grounded in
+  current (2026) engineering-leadership thinking.
+
 ## [1.1.101] - 2026-07-16
 
 ### Fixed
