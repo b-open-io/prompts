@@ -6,6 +6,21 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.100] - 2026-07-16
+
+### Changed
+
+- `visual-proposal` skill (0.0.8): make the multi-agent advocacy panel the
+  DEFAULT for any proposal with a real option-decision (no longer opt-in), and
+  add a lean "Casting the panel" section — pick real named agents from the roster
+  (Front Desk / the `agents/*.md` files), then run the new bundled
+  `scripts/embed-avatars.sh` to source each avatar (local
+  `~/code/bopen-ai/public/images/agents/{slug}.png` or the published
+  `bopen.ai/...`), downscale, and emit an inline `window.AV` data-URI map (the
+  Artifact CSP blocks external images). Moves the repetitive fetch/downscale/embed
+  work out of prose and into a script, so agents reproduce the named roster
+  advocates, avatars, and judging panel instead of a plain writeup.
+
 ## [1.1.99] - 2026-07-15
 
 ### Changed

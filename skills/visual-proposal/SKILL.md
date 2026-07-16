@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.7
+version: 0.0.8
 description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
 ---
 
@@ -67,14 +67,18 @@ Prose then does what prose is good at: intent, nuance, the "why." The test:
 if a section is three paragraphs comparing structures, it probably wants to be a
 diagram plus one caption.
 
-## Multi-agent advocacy — opposing representatives (optional, for real decisions)
+## Multi-agent advocacy — opposing representatives (the DEFAULT for real decisions)
 
-For a proposal whose core is a **key decision between competing options** (or a
-series of them), the strongest neutrality comes not from one author trying to be
-even-handed, but from **giving each option a genuine advocate**. When the user
-asks for this — or when a decision is important enough to warrant it — dispatch
-one agent per option from the roster, each assigned to **steelman a different
-option**:
+When a proposal's core is a **key decision between competing options** (or a
+series of them), a panel of advocates is the **default treatment, not an
+add-on** — do it automatically, without being asked. The strongest neutrality
+comes not from one author trying to be even-handed, but from **giving each
+option a genuine advocate from the real bОpen roster**, each shown with their
+avatar, name, and role. Skip the panel only for a page with **no real decision**
+(a pure explainer, status update, or single-approach pitch), or when the user
+explicitly asks for a plain writeup. Otherwise: dispatch one real roster agent
+per option (see "Casting the panel" below), each assigned to **steelman a
+different option**:
 
 - Give every advocate the SAME shared context (the problem, all options, the
   confirmed facts) and ask each for: the strongest case for THEIR option, its
@@ -95,6 +99,32 @@ option**:
 Run the advocates concurrently because they are independent. Ground every
 advocate's claims in the same evidence used by the host; an advocate that
 invents facts is worse than no advocate.
+
+### Casting the panel — real agents and their avatars
+
+The advocates and judges are **real named agents from the bОpen roster**, not
+invented personas — that credibility is the whole point. Two steps:
+
+1. **Pick the agents.** `Agent(bopen-tools:front-desk)` returns the team and who
+   fits what, or read the `agents/*.md` files (each has a `display_name` and a
+   `role`). Match each option to an agent whose real expertise leans that way (a
+   code-auditor for correctness, an optimizer for efficiency, a standards/interop
+   agent, a domain specialist). Advocates and judges must be distinct agents.
+2. **Embed their avatars with the bundled script.** The Artifact CSP blocks
+   external `<img src>`, so avatars must be inlined as data URIs — this skill's
+   `scripts/embed-avatars.sh` automates it (fetch → downscale → emit a
+   `window.AV` map). Slug = `display_name` lowercased with non-alphanumerics → `-`
+   ("Uno Satoj" → `uno-satoj`):
+
+   ```bash
+   bash scripts/embed-avatars.sh uno-satoj torque maxim
+   ```
+
+   Paste the printed `<script>` block into the page and give each panelist an
+   `<img data-a="uno-satoj">`; the block wires every `src` on load. Show the
+   **avatar + name + one-line role** on each card. If the script warns a slug has
+   no avatar, use that agent's initials in a colored circle — never ship a
+   faceless panel.
 
 ### A premise-challenging voice
 
