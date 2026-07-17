@@ -6,6 +6,12 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.109] - 2026-07-17
+
+### Changed
+
+- `nextjs` (Theo, 1.1.9): react-doctor is now a completion gate on ALL nontrivial React/Next.js work, not just new projects — run `npx -y react-doctor@latest . --verbose --diff`, add zero findings, treat a regression like a failing test. New projects still must hit a full score of 100.
+
 ## [1.1.108] - 2026-07-17
 
 ### Changed
