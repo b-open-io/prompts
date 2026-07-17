@@ -2,6 +2,38 @@
 
 This reference covers how to design effective HammerTime rules across all three scoring layers. It includes the builtin `project-owner` rule as an annotated case study, common regex patterns, and threshold tuning guidance.
 
+## More Rule-Trigger Examples
+
+Beyond the trigger phrases in SKILL.md's "When to Create a Rule" section, watch for these too:
+
+- "From now on, run tests before committing" (imperative)
+- "I want you to use the visual planner for architecture decisions" (imperative)
+- "I've told you three times to check types" → rule to verify types (implicit — repeated frustration)
+
+## Schema Field Details
+
+A few optional fields have behavior worth knowing precisely, beyond the one-line summary in SKILL.md's Content Rule Schema:
+
+- **`check_git_state`** — When `true`, the hook runs `git status --porcelain`, `git log @{u}..HEAD`, and `git ls-files --others --exclude-standard` before blocking. If the working tree is clean and all commits are pushed, the rule is skipped entirely (both the direct-block and Haiku phase paths). Useful for rules about pushing or committing work, so they don't fire when there is genuinely nothing to push.
+- **`evaluate_full_turn`** — When `true`, the hook reads the session transcript to score every assistant message since the user's last message, rather than only the final message.
+- **`max_iterations`** — Caps blocks per session (default: 3, `0` for unlimited). This exists to prevent infinite loops when a rule is too broad or can't be satisfied.
+
+## Writing Rule Text — A Third Bad Example
+
+Write the rule text as if explaining the problem to an agent that has never heard of this rule before — it won't have any other context when the hook blocks it.
+
+Beyond "Be better at linting" and "Don't do that" (too vague, no context), a third failure mode is being too terse: `"Lint rule."` gives the agent nothing to act on — the error message built from this text would be useless. Rule text needs enough words (SKILL.md's Step 2 sets a 15-word floor) to carry what to do, what not to do, and why.
+
+## Resolving Skill Names — Two Techniques
+
+SKILL.md's Step 7 covers searching with `Skill(find-skills)`. A second technique, when the plugin name is already known, is to construct the fully-qualified ID directly by prefixing the skill name with its plugin: `Skill(simplify)` → `bopen-tools:simplify`. Use whichever is faster; `find-skills` is the safer default when the plugin isn't obvious.
+
+## Full-Turn vs Last-Message Evaluation
+
+By default, HammerTime scores only the final assistant message. Set `"evaluate_full_turn": true` to score ALL assistant text since the user's last message.
+
+Use full-turn for rules about dismissing work, skipping process steps, or any violation that happens during execution rather than in the final summary — this catches violations in intermediate messages (e.g., dismissing an error in message 3, then finishing with "Done." in message 5). Last-message scoring is sufficient for format rules and output style rules, where the violation (if any) is only visible in the final response.
+
 ## Anatomy of a Well-Designed Rule
 
 A strong rule has:
@@ -182,6 +214,28 @@ Layer 3 is optional. Use it when:
 Skip it when:
 - The violation is about *absence* of behavior (didn't run tests) rather than *presence* of dismissal
 - The rule is simple enough that keywords + patterns suffice
+
+## Skill Invocation in Rules
+
+The `skill` field triggers automatic skill invocation when a rule fires. The block message appends `Invoke Skill(<id>) to address this.`
+
+| Rule detects | Skill invoked | Effect |
+|-------------|---------------|--------|
+| Model skips tests | `superpowers:test-driven-development` | Redirects to TDD workflow |
+| Model ignores lint | `bopen-tools:simplify` | Runs code simplification |
+| Model skips architecture planning | `gemskills:visual-planner` | Forces visual planning step |
+| Model writes insecure code | `bopen-tools:code-audit-scripts` | Runs security audit |
+
+Resolve informal skill names with `Skill(find-skills)` before setting the `skill` field — don't guess at fully-qualified IDs.
+
+## Mode Inference
+
+The hook infers whether to auto-fix or ask the user based on the rule text:
+
+- **Fix mode**: Rule contains "fix all", "always fix", "fix any", "fix every" → block message says "Fix these issues NOW"
+- **Ask mode**: Everything else → block message says "Ask the user whether to fix"
+
+Write rule text accordingly to control the behavior — this is a side effect of word choice in Step 2 of the SKILL.md workflow, not a separate configuration field.
 
 ## Case Study: The `project-owner` Rule
 

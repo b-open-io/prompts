@@ -6,7 +6,22 @@ manifests share the same release version.
 
 ## Unreleased
 
-## [1.1.106] - 2026-07-17
+## [1.1.107] - 2026-07-17
+
+### Changed
+
+- Context-efficiency pass on two heavy skills — detail relocated to `references/`
+  via progressive disclosure, no information lost, triggers unchanged:
+  - `create-next-project` (2.0.3): SKILL.md 3851 → 1967 words (663 → 266 lines);
+    build-team, database-provisioning, and deployment-workflow detail moved to
+    new reference files.
+  - `hammertime` (1.0.1): SKILL.md 2460 → 1998 words; schema-field internals,
+    extra examples, and skill-invocation/mode-inference tables moved to
+    `references/rule-design.md`. Corpus-driven methodology preserved.
+  - Core orchestration manuals (coordinator, software-factory, visual-proposal,
+    advisor) were deliberately left full — they are meant to load when triggered.
+  - The `convert-web-app` refactor was reverted: it is a third-party symlinked
+    skill (skills-lock.json / modelcontextprotocol ext-apps) and belongs upstream.
 
 ### Changed
 

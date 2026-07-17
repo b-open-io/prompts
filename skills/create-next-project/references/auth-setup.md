@@ -249,7 +249,7 @@ app.use(betterAuth);
 export default app;
 ```
 
-Also create `convex/_generated/` stub files so the build passes before a Convex deployment exists. See the main SKILL.md Phase 4 for the full stub file contents.
+Also create `convex/_generated/` stub files so the build passes before a Convex deployment exists. See `references/database-provisioning.md` for the full stub file contents.
 
 ### Turso/libSQL
 
