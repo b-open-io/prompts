@@ -6,6 +6,12 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.108] - 2026-07-17
+
+### Changed
+
+- Refreshed third-party vendored skills to latest via `skills update` (macos-design, wayfinder; skills-lock hashes updated). The ext-apps and json-render sources need a per-source `npx skills add <source> -y` refresh (flagged as follow-up).
+
 ## [1.1.107] - 2026-07-17
 
 ### Changed
