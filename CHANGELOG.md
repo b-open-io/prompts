@@ -6,7 +6,23 @@ manifests share the same release version.
 
 ## Unreleased
 
-## [1.1.102] - 2026-07-16
+## [1.1.103] - 2026-07-16
+
+### Added
+
+- `claudex` skill (0.0.1): a standalone escape hatch for running the Claude Code
+  harness on **GPT-5.6 Sol** via a local **CLIProxyAPI**, billed against a
+  ChatGPT/Codex subscription — for when Anthropic usage runs out mid-session. The
+  normal `claude` command is untouched; `claudex` is a separate zsh alias that
+  reroutes one invocation through the proxy. Crisis-triggering description fires
+  on "my usage ran out" / "run Claude Code on GPT-5.6 Sol"; the one-time macOS
+  setup (Homebrew install, conf edit, launchd service, browser OAuth, alias) and
+  the drift troubleshooting live in `references/`. Chosen over folding into
+  `setup` or a docs-only note because only a live skill description can fire at
+  the moment the wall hits.
+- `setup` manifest: a `cliproxyapi` CLI row (used by `claudex`) so a general
+  harness audit surfaces a missing or dead proxy and points at the skill —
+  audit-only, no install logic added to `setup`.
 
 ### Added
 

@@ -82,6 +82,16 @@
       "install": {
         "any": "npm install -g looptop"
       }
+    },
+    {
+      "name": "cliproxyapi",
+      "usedBy": [
+        "claudex"
+      ],
+      "check": "command -v cliproxyapi",
+      "install": {
+        "darwin": "brew install cliproxyapi"
+      }
     }
   ],
   "env": [

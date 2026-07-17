@@ -124,6 +124,7 @@ bunx skills add b-open-io/bopen-tools --skill benchmark-skills
 bunx skills add b-open-io/bopen-tools --skill charting
 bunx skills add b-open-io/bopen-tools --skill check-version
 bunx skills add b-open-io/bopen-tools --skill chrome-cdp
+bunx skills add b-open-io/bopen-tools --skill claudex
 bunx skills add b-open-io/bopen-tools --skill clawnet-cli
 bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
 bunx skills add b-open-io/bopen-tools --skill code-audit-scripts
@@ -322,6 +323,7 @@ intentional.
 | Skill | Description |
 |-------|-------------|
 | `check-version` | Check if bopen-tools plugin is up to date |
+| `claudex` | Run the Claude Code harness on GPT-5.6 Sol via a local CLIProxyAPI — an escape hatch when Anthropic usage runs out |
 | `cost-tracking` | Track and report model and agent operating costs |
 | `devops-scripts` | Shell scripts for infrastructure health checks |
 | `linear-planning` | Plan projects and features using Linear |
