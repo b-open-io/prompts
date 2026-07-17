@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "notes": "Maps this skill's 30 semantic UI events (see SKILL.md Sound Categories) onto cuelume's fixed 14-sound palette (https://github.com/Danilaa1/cuelume). 'coverage' is good/approximate/poor: good = cuelume's sound is a direct semantic fit; approximate = usable but loses a distinction our event map cares about; poor = cuelume has no real match, kept only as a functional stopgap. 'elevenlabs_recommended' is true wherever the event is bespoke, branded, high-trust (transactions), or otherwise better served by a generated sample per references/cuelume-web-delivery.md. See that file for full rationale before wiring a cuelume-backed theme.",
+  "categories": {
+    "buttons": ["button-click-primary", "button-click-secondary", "button-click-destructive"],
+    "navigation": ["item-hover", "nav-item-hover", "nav-tab-switch", "nav-back", "nav-forward", "nav-menu-open", "nav-menu-close"],
+    "feedback": ["notification-success", "notification-error", "notification-warning", "notification-info", "notification-badge"],
+    "states": ["toggle-on", "toggle-off", "checkbox-check", "checkbox-uncheck", "loading-start", "loading-complete"],
+    "modals": ["modal-open", "modal-close", "tooltip-show", "dropdown-open", "dropdown-close"],
+    "transactions": ["tx-sent", "tx-received", "tx-pending", "tx-confirmed"]
+  },
+  "map": {
+    "button-click-primary": {
+      "cuelume_sound": "press",
+      "attribute": "data-cuelume-press",
+      "pair_attribute": "data-cuelume-release",
+      "pair_sound": "release",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "Main action buttons map cleanly onto cuelume's native press/release pair."
+    },
+    "button-click-secondary": {
+      "cuelume_sound": "tick",
+      "attribute": "data-cuelume-press",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "A lighter click than primary; tick is quieter/thinner than press."
+    },
+    "button-click-destructive": {
+      "cuelume_sound": "error",
+      "attribute": "data-cuelume-press",
+      "coverage": "approximate",
+      "elevenlabs_recommended": true,
+      "note": "cuelume has no dedicated 'danger confirm' tone; error is the closest available, though it was designed for failure states. Prefer an ElevenLabs sample tuned specifically for destructive actions."
+    },
+    "item-hover": {
+      "cuelume_sound": "whisper",
+      "attribute": "data-cuelume-hover",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "Assigned whisper (quieter) instead of the chime default so it stays audibly distinct from nav-item-hover, per SKILL.md's requirement to keep item-hover and nav-item-hover semantically separate."
+    },
+    "nav-item-hover": {
+      "cuelume_sound": "chime",
+      "attribute": "data-cuelume-hover",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "cuelume's default hover sound; used here for primary navigation to keep it distinct from the quieter item-hover."
+    },
+    "nav-tab-switch": {
+      "cuelume_sound": "tick",
+      "attribute": "data-cuelume-press",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": null
+    },
+    "nav-back": {
+      "cuelume_sound": "tick",
+      "attribute": "data-cuelume-press",
+      "coverage": "approximate",
+      "elevenlabs_recommended": false,
+      "note": "cuelume has no directional (back vs forward) variants; both use the same tick. Acceptable for most apps since neither event is high-frequency."
+    },
+    "nav-forward": {
+      "cuelume_sound": "tick",
+      "attribute": "data-cuelume-press",
+      "coverage": "approximate",
+      "elevenlabs_recommended": false,
+      "note": "Same tick as nav-back; see that entry. Use ElevenLabs samples only if the product specifically needs an audible left/right distinction."
+    },
+    "nav-menu-open": {
+      "cuelume_sound": "page",
+      "attribute": "data-cuelume-press",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "page reads as a drawer/panel entering; paired with droplet on close for a distinct open/close pair."
+    },
+    "nav-menu-close": {
+      "cuelume_sound": "droplet",
+      "attribute": "data-cuelume-press",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "Distinct from nav-menu-open's page sound so open/close are audibly different, even though cuelume has no dedicated 'menu-close' sound name."
+    },
+    "notification-success": {
+      "cuelume_sound": "success",
+      "attribute": "play(\"success\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "Direct semantic match; use the imperative play() call since success notifications are rarely tied to a pointer gesture."
+    },
+    "notification-error": {
+      "cuelume_sound": "error",
+      "attribute": "play(\"error\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": null
+    },
+    "notification-warning": {
+      "cuelume_sound": "error",
+      "attribute": "play(\"error\")",
+      "coverage": "poor",
+      "elevenlabs_recommended": true,
+      "note": "cuelume has no mid-urgency caution tone distinct from error (sound-design-guide.md calls for 'distinct but not alarming'). Reusing error blurs warning and error. Use an ElevenLabs sample tuned between success and error."
+    },
+    "notification-info": {
+      "cuelume_sound": "chime",
+      "attribute": "play(\"chime\")",
+      "coverage": "approximate",
+      "elevenlabs_recommended": false,
+      "note": "Borrowed from the hover palette; functional but not a purpose-built informational tone."
+    },
+    "notification-badge": {
+      "cuelume_sound": "sparkle",
+      "attribute": "play(\"sparkle\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "Short, bright, low-weight — fits a badge/counter increment."
+    },
+    "toggle-on": {
+      "cuelume_sound": "toggle",
+      "attribute": "data-cuelume-toggle",
+      "coverage": "approximate",
+      "elevenlabs_recommended": false,
+      "note": "cuelume's toggle sound plays on click regardless of resulting state; see toggle-off for the shared-sound limitation."
+    },
+    "toggle-off": {
+      "cuelume_sound": "toggle",
+      "attribute": "data-cuelume-toggle",
+      "coverage": "poor",
+      "elevenlabs_recommended": true,
+      "note": "Identical to toggle-on — cuelume's toggle has no on/off directional variant. If the product needs audibly distinct on/off states, use two ElevenLabs samples instead."
+    },
+    "checkbox-check": {
+      "cuelume_sound": "tick",
+      "attribute": "data-cuelume-press",
+      "coverage": "approximate",
+      "elevenlabs_recommended": false,
+      "note": null
+    },
+    "checkbox-uncheck": {
+      "cuelume_sound": "tick",
+      "attribute": "data-cuelume-press",
+      "coverage": "poor",
+      "elevenlabs_recommended": false,
+      "note": "Identical to checkbox-check — no check/uncheck distinction in cuelume's palette. Low-stakes enough that most apps can accept this; flagged for products that specifically need the distinction."
+    },
+    "loading-start": {
+      "cuelume_sound": "loading",
+      "attribute": "play(\"loading\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": null
+    },
+    "loading-complete": {
+      "cuelume_sound": "ready",
+      "attribute": "play(\"ready\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": null
+    },
+    "modal-open": {
+      "cuelume_sound": "bloom",
+      "attribute": "play(\"bloom\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": null
+    },
+    "modal-close": {
+      "cuelume_sound": "droplet",
+      "attribute": "play(\"droplet\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": null
+    },
+    "tooltip-show": {
+      "cuelume_sound": "whisper",
+      "attribute": "play(\"whisper\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "Quiet reveal cue matches the 'once per closed-to-open transition' repetition policy in event-map-template.json."
+    },
+    "dropdown-open": {
+      "cuelume_sound": "bloom",
+      "attribute": "play(\"bloom\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "Reuses the modal-open sound family for consistency across overlay-opening events."
+    },
+    "dropdown-close": {
+      "cuelume_sound": "droplet",
+      "attribute": "play(\"droplet\")",
+      "coverage": "good",
+      "elevenlabs_recommended": false,
+      "note": "Reuses the modal-close sound family for consistency across overlay-closing events."
+    },
+    "tx-sent": {
+      "cuelume_sound": "chime",
+      "attribute": "play(\"chime\")",
+      "coverage": "poor",
+      "elevenlabs_recommended": true,
+      "note": "Fires after a broadcast succeeds (see sound-design-guide.md Integration Gotchas). cuelume has no money-movement semantic; chime is a generic stand-in that undersells the moment. Use a bespoke ElevenLabs sample for wallet/transaction apps."
+    },
+    "tx-received": {
+      "cuelume_sound": "sparkle",
+      "attribute": "play(\"sparkle\")",
+      "coverage": "poor",
+      "elevenlabs_recommended": true,
+      "note": "Receiver-facing 'payment in' moment — high-trust and worth a distinctive branded sound. sparkle is a functional placeholder only."
+    },
+    "tx-pending": {
+      "cuelume_sound": "loading",
+      "attribute": "play(\"loading\")",
+      "coverage": "approximate",
+      "elevenlabs_recommended": true,
+      "note": "Generic loading works mechanically for the waiting state, but a wallet app's pending-transaction cue is worth a purpose-built sample matching its other transaction sounds."
+    },
+    "tx-confirmed": {
+      "cuelume_sound": "success",
+      "attribute": "play(\"success\")",
+      "coverage": "approximate",
+      "elevenlabs_recommended": true,
+      "note": "Functionally correct (first confirmed/fulfilled transition) but shares the same sound as notification-success; a transaction confirmation is a rarer, higher-trust event that benefits from its own bespoke tone per sound-design-guide.md's frequency guidelines."
+    }
+  }
+}

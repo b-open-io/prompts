@@ -271,7 +271,7 @@ intentional.
 | `html-to-pdf` | Design print-ready collateral and render it through a Playwright PDF pipeline |
 | `humanize` | Remove AI writing patterns and restore natural voice |
 | `persona` | Capture writing style profiles and social intelligence |
-| `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes |
+| `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
 | `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs a default panel of named roster-agent advocates (with avatars) → cross-examination → a judging bench → the CEO's holistic final call, humanizes every voice, and ends with selectable option cards + a copy-response button that pastes a version-stamped reply back to the agent |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |

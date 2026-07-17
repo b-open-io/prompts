@@ -1,5 +1,5 @@
 ---
-version: 1.1.0
+version: 1.1.1
 name: ui-audio-theme
 description: >-
   This skill should be used when the user asks to "generate a UI sound theme",
@@ -10,7 +10,10 @@ description: >-
   wired", "review UI audio wiring", or "edit a generated UI sound". Generates,
   audits, edits, and wires cohesive UI audio themes mapped to semantic
   interactions via ElevenLabs and ffmpeg, with an interactive local picker for
-  auditioning, revising, reassigning, and accepting candidates.
+  auditioning, revising, reassigning, and accepting candidates. Also covers a
+  synthesized web micro-interaction delivery path via cuelume and a
+  production-agnostic interaction taxonomy for choosing a distinct sound per
+  named moment.
 location: user
 ---
 
@@ -19,6 +22,24 @@ location: user
 Generate cohesive sets of subtle, minimal UI sound effects using ElevenLabs text-to-sound-effects API. Create "audio themes" — coordinated sets of sounds that share a common aesthetic and map to standard UI interaction constants.
 
 Requires `ELEVENLABS_API_KEY` set in the environment. See README.md for setup instructions.
+
+## Delivery paths
+
+This skill produces UI audio two ways, chosen per event rather than per app:
+
+- **ElevenLabs samples** (the default pipeline below) — AI-generated `.mp3`/`.wav`
+  files for bespoke or branded cues, ambient and voice audio, and any target that
+  needs a shippable file (game/TV/desktop, per `design-game-ui`).
+- **Synthesized web micro-interactions via cuelume** — deterministic, professionally
+  tuned Web Audio sounds wired in two lines, for the high-frequency, low-stakes clicks
+  (hover, press/release, toggle, success, error) that make a web UI feel responsive.
+  See `references/cuelume-web-delivery.md` for when to reach for it and how to wire it,
+  and `assets/cuelume-event-map.json` for the per-event fit.
+
+Before choosing sounds for any event on either path, pick a named *moment* from
+`references/interaction-taxonomy.md`. Its 14-moment vocabulary and restraint rules —
+a distinct sound per moment, the hover throttle, paired press/release, silent fallback —
+are production-agnostic and apply whether the clip came from ElevenLabs or cuelume.
 
 ## Relationship to game and television UI
 
@@ -35,6 +56,11 @@ redesigning navigation or inventing raw-key-triggered sounds. Frames owns audio
 production; the application engineer owns runtime playback lifecycle; the
 game-UI lead accepts the integrated behavior. `voice-clone` is separate and
 should be used only when the requested asset is spoken voice.
+
+cuelume-backed web micro-interactions (`references/cuelume-web-delivery.md`) are
+web-only — they play through the browser's Web Audio API and never produce a file, so
+they are out of scope for the game/TV/desktop file targets this section describes.
+Those targets stay on the ElevenLabs pipeline, which writes files.
 
 ## Workflow
 
@@ -203,6 +229,12 @@ the vibe words for timbre; let the app's volume setting control loudness.
 
 ## Sound Categories
 
+Each constant below maps to a named *moment* in `references/interaction-taxonomy.md`,
+which defines its intended character and keeps `press` vs `release` and `toggle` vs
+`tick` genuinely distinct. Note: `press`/`release` as a pointerdown/pointerup pair are
+folded into the `button-click-*` constants today; the taxonomy names them explicitly so
+a future generator or a cuelume-backed wiring can split them.
+
 ### Buttons
 | Constant | Description |
 |----------|-------------|
@@ -296,7 +328,10 @@ audio-theme/
 - `scripts/audit_theme.py` — Validate an existing app's semantic event map against its theme
 - `references/audit-and-wiring.md` — Existing-product inventory, wiring, and evidence workflow
 - `references/sound-design-guide.md` — Detailed sound design best practices
+- `references/interaction-taxonomy.md` — The 14-moment vocabulary + restraint rules (production-agnostic)
+- `references/cuelume-web-delivery.md` — Synthesized web micro-interaction delivery via cuelume
 - `assets/vibe-presets.json` — Predefined vibe configurations
+- `assets/cuelume-event-map.json` — Our semantic events mapped onto cuelume's 14 sounds
 - `assets/theme-template.json` — Example output manifest
 - `assets/event-map-template.json` — Auditable interaction-to-sound map template
 - `README.md` — Prerequisites, design philosophy, integration examples (React hook, Howler.js), accessibility guidance

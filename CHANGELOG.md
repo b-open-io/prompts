@@ -6,7 +6,29 @@ manifests share the same release version.
 
 ## Unreleased
 
-## [1.1.103] - 2026-07-16
+## [1.1.104] - 2026-07-16
+
+### Added
+
+- `ui-audio-theme` skill (1.1.1): synthesized UI sound support, adopting lessons
+  from the MIT [cuelume](https://github.com/Danilaa1/cuelume) library. Two new
+  references and an asset:
+  - `references/interaction-taxonomy.md` — a production-agnostic 14-moment
+    vocabulary (chime, tick, press, release, toggle, success, error, page,
+    loading, ready…) with the restraint rules that keep UI audio from becoming
+    noise (a distinct sound per moment, hover throttle, paired press/release,
+    silent fallback), mapped onto the skill's event-map coverage domains.
+  - `references/cuelume-web-delivery.md` + `assets/cuelume-event-map.json` — a
+    synthesized **web** micro-interaction delivery path via cuelume for crisp,
+    deterministic clicks, chosen per event alongside the ElevenLabs sample
+    pipeline (which stays for bespoke/branded/ambient/voice and any file target
+    like game/TV/desktop). All 30 semantic events are mapped to cuelume's 14
+    sounds with per-event coverage ratings and an `elevenlabs_recommended` flag.
+  - SKILL.md gains a "Delivery paths" section and taxonomy pointers. cuelume is
+    an external dependency the consuming app installs; it is not vendored into
+    this repo. A native recipe synth that renders audio files (for game/desktop
+    targets cuelume cannot serve) is a deliberate follow-up, gated on the first
+    concrete file-export need.
 
 ### Added
 
