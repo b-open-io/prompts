@@ -6,6 +6,19 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.105] - 2026-07-17
+
+### Changed
+
+- `humanize` skill (1.0.8): added an "Assistant & Formatting Tells" section to
+  `references/structures.md` covering the output-layer signatures our prose rules
+  didn't already catch — sycophantic openers, collaborative closers, knowledge-
+  cutoff disclaimers, curly quotes, emoji on headings, Title Case headings,
+  mechanical boldface, and inline-header vertical lists. Adapted from the
+  24-pattern checklist in the MIT [ericosiu/ai-marketing-skills](https://github.com/ericosiu/ai-marketing-skills)
+  (our skill already covered the other ~20 patterns in more depth). Benchmarked
+  core rules and scoring untouched.
+
 ## [1.1.104] - 2026-07-16
 
 ### Added

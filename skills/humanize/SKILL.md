@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 1.0.7
+version: 1.0.8
 description: >-
   Invoke this skill whenever producing text that a human will read — emails,
   messages, documentation, reports, blog posts, announcements, commit messages,

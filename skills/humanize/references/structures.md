@@ -210,3 +210,26 @@ AI fakes comprehensiveness by spanning a fake spectrum. The range sounds inclusi
 - "everyone from beginners to experts"
 
 **Fix:** Name the actual audience ("for teams of 5–50") or cut the range and make a concrete claim.
+
+## Assistant & Formatting Tells
+
+Output-layer signatures that leak from chat-assistant training rather than from
+prose style. They rarely show up in human-written documents and are quick to
+scrub. (This set is adapted from the 24-pattern checklist in
+[ericosiu/ai-marketing-skills](https://github.com/ericosiu/ai-marketing-skills)
+(`x-longform-post`), MIT — the items our prose rules above don't already cover.)
+
+| Tell | Example | Fix |
+|------|---------|-----|
+| Sycophantic opener | "Great question!" / "Excellent point!" | Cut. Answer the thing. |
+| Collaborative closer | "I hope this helps!" / "Let me know if you need anything else." | Cut. The content is the help. |
+| Knowledge-cutoff disclaimer | "As of my last update…" / "I may not have the latest…" | Cut, or state the actual date of the fact. |
+| Curly/smart quotes | "word" / 'word' auto-substituted | Use straight quotes unless the house style is deliberately typographic. |
+| Emoji on headings/bullets | "## 🚀 Getting Started" / "• ✅ Done" | Remove decorative emoji from structure. |
+| Title Case In Every Heading | "How To Configure The Server" | Sentence case: "How to configure the server." |
+| Mechanical boldface | random **phrases** bolded for weight, several per paragraph | Bold only true labels/terms; let sentences carry emphasis. |
+| Inline-header vertical list | every item is "**Label:** value" stacked | Use a real list or prose; reserve the bold-label form for genuine definitions. |
+
+**Fix:** These are surface artifacts — a find-and-replace pass usually clears
+them. They matter most in copy that ships to users or gets pasted from a chat
+transcript.
