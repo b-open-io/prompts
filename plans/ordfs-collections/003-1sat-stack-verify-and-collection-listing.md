@@ -1,5 +1,14 @@
 # Plan 003: 1sat-stack — verify B-leaf/`:-1` resolution on the deployed stack, and decide the collection-member listing API
 
+> **SUPERSEDED (2026-07-17)** — Dave (shruggr) shipped this on `1sat-stack` master:
+> `pkg/collection` (OPL-2993, merged PR #9) with `map:subType` / `map:collectionId`
+> parse events, a discovery topic `tm_1sat_collection`, per-collection `tm_col_{id}`,
+> mint-only admission, `collectionId` from `subTypeData` only, dropped `kind`,
+> collection/item naming, and `ref=ordfs` removed. The collection-member listing API
+> is now the overlay's job (see `docs/plans/2026-07-16-collection-overlay.md` on the
+> stack). Our remaining work is SDK-side only: emit MAP that matches
+> `pkg/collection/mapdata.go` (done in PR #21 / #19). Kept for history.
+
 > **Target repo**: `~/code/1sat-stack` (github `b-open-io/1sat-stack`), Go (`module github.com/b-open-io/1sat-stack`).
 > **Executor instructions**: Part A is a **verification/investigation** task (read + a live round-trip), producing a written finding. Part B is a conditional design spec, only built if Part C decides it's needed. Do NOT change resolver parsing unless a STOP-condition finding forces it.
 >
