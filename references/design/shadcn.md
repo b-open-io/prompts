@@ -1,5 +1,19 @@
 # shadcn/ui Comprehensive Guide
 
+> **Authority: `Skill(shadcn)` (the official skill from the shadcn/ui team) is the
+> source of truth for the current CLI and components — always defer to it.**
+> Much of the CLI content below predates **CLI v4 (2026)** and is inaccurate now:
+> the interactive `init` prompts shown here are gone, and the `--style`,
+> `--base-color`, `--src-dir`, and `--css-variables` flags (plus the
+> `registry:build` / `registry:mcp` types) are **removed and will error**. CLI v4
+> uses non-interactive `init -d`, design-system **presets** (`--preset <code>`:
+> vega/nova/maia/lyra/mira/luma/sera), **project templates** (`--template`),
+> `registry:base` (whole design system) and `registry:font` (typography), Base UI
+> as an alternative primitive base (`--base base-ui`), and new chat components
+> (MessageScroller, Message, Bubble, Attachment, Marker). Treat the sections below
+> as conceptual background (theming ideas, composition patterns) only, and verify
+> every command against `Skill(shadcn)` or `bunx shadcn@latest --help` first.
+
 ## Overview
 
 shadcn/ui is a collection of reusable components built on Radix UI and Tailwind CSS. Components are copied into your project, not installed as dependencies - giving you full control.

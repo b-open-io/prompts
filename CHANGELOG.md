@@ -6,6 +6,25 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.106] - 2026-07-17
+
+### Changed
+
+- shadcn accuracy pass across the design agents, aligning them to the official
+  `Skill(shadcn)` (vercel plugin) and CLI v4:
+  - `designer` (Ridd, 1.0.21) — fixed a wrong flag (`--base base` → `--base base-ui`),
+    reframed `Skill(shadcn)` as the authority, corrected non-interactive init
+    (`-d`/`-f`, not `--yes`), and added the CLI v4 additions most agents didn't know:
+    project templates (`init --template`), `registry:base`, `registry:font`
+    (typography as a first-class registry — the "type sets"), the full style-preset
+    set (vega/nova/maia/lyra/mira/luma/sera), Base UI, and the new chat components
+    (MessageScroller, Message, Bubble, Attachment, Marker). Deprecated flags noted.
+  - `nextjs` (Theo, 1.1.8) — same authority framing + recent-additions summary.
+  - `agent-builder` (1.7.12) — added the "AI Elements requires `--base radix`" caveat.
+  - `references/design/shadcn.md` — prepended a staleness banner; the 1113-line doc
+    predates CLI v4 (interactive init, removed `--style`/`--base-color`/`--css-variables`)
+    and now defers to `Skill(shadcn)`. Full trim tracked for the skill-efficiency pass.
+
 ## [1.1.105] - 2026-07-17
 
 ### Changed

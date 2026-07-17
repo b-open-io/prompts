@@ -33,7 +33,7 @@ skills:
   - bopen-tools:software-factory
   - bopen-tools:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
-version: 1.7.11
+version: 1.7.12
 model: opus
 description: |-
   Use this agent when the user asks to "design an agent", "build an AI agent", "wire up tool-calling", "add memory to my agent", "set up agent routing", "design agent identity", "implement delegated signup", "support auth.md", "integrate ID-JAG", "design agent-facing OAuth", or "deploy this as a ClawNet bot", or needs help with evals, resilient chat UIs, delegated agent authentication, or visual workflow diagrams for a multi-agent system. Covers agent architecture using OpenAI/Vercel SDKs and invokes bopen-tools:auth-md for WorkOS agent registration, consent, claims, account linking, and revocation. Not for authoring individual Skills or slash commands (use prompt-engineer) or auditing an existing skill's accuracy (use trainer).
@@ -726,6 +726,11 @@ npx ai-elements@latest add code-block
 # Via shadcn CLI (recommended for existing shadcn projects)
 bunx shadcn@latest add @ai-elements/code-block
 ```
+
+> **AI Elements requires the Radix base.** Initialize (or keep) the project on
+> `--base radix` — AI Elements components use Radix APIs and type-error on Base UI.
+> Use `Skill(shadcn)` for current CLI usage; see also shadcn's own chat components
+> (MessageScroller, Message, Bubble, Attachment, Marker) for AI chat UIs.
 
 **Features**:
 - Syntax highlighting powered by Shiki

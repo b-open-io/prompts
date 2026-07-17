@@ -35,7 +35,7 @@ skills:
   - html-to-pdf
   - bopen-tools:design-game-ui
 icon: https://bopen.ai/images/agents/ridd.png
-version: 1.0.20
+version: 1.0.21
 model: sonnet
 description: Creates beautiful, accessible UI components and directional interfaces using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "implement dark mode", "review UI accessibility", "design in pencil", "create a mockup", "design a game HUD", "build a TV app interface", "add controller navigation", "plan TV remote focus", "design ten-foot UI", or "turn this app into a game UI".
 tools: ["Read", "Write", "Edit", "WebFetch", "Bash", "Grep", "Glob", "TaskCreate", "TaskUpdate", "TaskGet", "TaskList", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(gemskills:generate-image)", "Skill(gemskills:generate-svg)", "Skill(gemskills:generate-icon)", "Skill(gemskills:edit-image)", "Skill(gemskills:optimize-images)", "Skill(gemskills:section-dividers)", "Skill(gemskills:browsing-styles)", "Skill(gemskills:avatar-portrait)", "Skill(gemskills:ask-gemini)", "Skill(gemskills:generate-video)", "Skill(gemskills:upscale-image)", "Skill(gemskills:segment-image)", "Skill(bopen-tools:generative-ui)", "Skill(bopen-tools:mcp-apps)", "Skill(superpowers:dispatching-parallel-agents)", "Skill(superpowers:subagent-driven-development)", "Skill(agent-browser)", "Skill(chrome-cdp)", "mcp__pencil__get_editor_state", "mcp__pencil__open_document", "mcp__pencil__get_guidelines", "mcp__pencil__get_style_guide_tags", "mcp__pencil__get_style_guide", "mcp__pencil__batch_get", "mcp__pencil__batch_design", "mcp__pencil__snapshot_layout", "mcp__pencil__get_screenshot", "mcp__pencil__get_variables", "mcp__pencil__set_variables", "mcp__pencil__find_empty_space_on_canvas", "mcp__pencil__search_all_unique_properties", "mcp__pencil__replace_all_matching_properties", "Skill(gemskills:pixel-avatar)", "Skill(gemskills:style-creator)", "Skill(gemskills:team-group-photo)", "Skill(shadcn)", "Skill(document-skills:pdf)", "Skill(html-to-pdf)", "Skill(bopen-tools:design-game-ui)"]
@@ -95,7 +95,7 @@ cat tailwind.config.* 2>/dev/null | head -50
 
 ## Key Tools & Resources
 
-- **Component Library**: shadcn/ui v4 (Radix UI or Base UI + Tailwind). Presets: nova, vega, maia, lyra, mira. Use `bunx shadcn@latest info --json` to inspect a project's config.
+- **Component Library**: shadcn/ui (CLI v4, Radix or Base UI + Tailwind) via `Skill(shadcn)`. Style presets: vega, nova, maia, lyra, mira, luma, sera (or a custom code from `ui.shadcn.com/create`). Design systems and fonts ship as `registry:base` / `registry:font`. Use `bunx shadcn@latest info` to inspect a project's config.
 - **Styling**: Tailwind CSS v4 with CSS variables
 - **Theme Editor**: tweakcn.com for visual shadcn/ui theming
 - **Code Quality**: Biome formatter + Ultracite preset
@@ -313,25 +313,41 @@ Always implement: hover, focus, active, disabled, loading, error
 
 ### shadcn/ui CLI v4
 
-**Available presets:** nova, vega, maia, lyra, mira
-**Available bases:** radix (default), base (Base UI)
+**`Skill(shadcn)` is the authority for current CLI flags, presets, and components.**
+Invoke it for anything below; the snapshot here is orientation, and shadcn moves
+fast. Run `bunx shadcn@latest info` on a project before assuming its config.
+
+**Named style presets:** vega (classic), nova (compact), maia (soft/rounded),
+lyra (boxy/mono), mira (dense), luma (fluid), sera (editorial) — plus custom
+preset codes from `ui.shadcn.com/create`. A preset bundles colors, theme, icons,
+fonts, and radius into one shareable code.
+**Primitive bases:** `radix` and `base-ui`. New projects may default to Base UI;
+**AI Elements requires `--base radix`** (it uses Radix APIs and type-errors on Base UI).
+
+**Recent (CLI v4, 2026) — invoke `Skill(shadcn)` for specifics:**
+- **Project templates ("projects"):** `init --template <next|vite|react-router|astro|laravel|tanstack-start>` scaffolds a whole app, not just components.
+- **`registry:base`** distributes an entire design system (components, deps, CSS vars, fonts, config) as one install.
+- **`registry:font` ("type sets"):** fonts are now a first-class registry type — install/configure typography the way you install components.
+- **New chat components:** MessageScroller, Message, Bubble, Attachment, Marker.
+- **Deprecated/removed (error if used):** `--style`, `--base-color`, `--src-dir`, `--css-variables`, and the `registry:build` / `registry:mcp` types → use `registry:base` / `registry:font`.
 
 #### Initialization
 ```bash
-# Init with preset (recommended)
-bunx shadcn@latest init --preset nova --yes
+# Non-interactive init with a preset (use -d/-f, NOT --yes: -y still prompts for the base library)
+bunx shadcn@latest init --preset nova -f
 
-# Init with Base UI instead of Radix
-bunx shadcn@latest init --base base --preset nova --yes
+# Explicit base library
+bunx shadcn@latest init -d --base radix
+bunx shadcn@latest init -d --base base-ui
 
-# Init with RTL support
-bunx shadcn@latest init --preset nova --rtl --yes
+# Scaffold a full project template
+bunx shadcn@latest init --template vite -d --monorepo
 
-# Init monorepo
-bunx shadcn@latest init --template vite --monorepo --yes
+# RTL support
+bunx shadcn@latest init --preset nova --rtl -f
 
 # Custom preset code from ui.shadcn.com/create
-bunx shadcn@latest init --preset adtk27v --yes
+bunx shadcn@latest init --preset adtk27v -f
 ```
 
 #### Adding Components (with safety flags)

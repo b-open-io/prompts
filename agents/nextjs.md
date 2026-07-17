@@ -17,7 +17,7 @@ skills:
   - shadcn
   - react-doctor
 icon: https://bopen.ai/images/agents/theo.png
-version: 1.1.7
+version: 1.1.8
 description: |-
   Use this agent when the user asks to "build a Next.js page", "fix this React 19 issue", "set up Turbopack", "migrate to async APIs", or needs Next.js/React development with Vercel best practices and modern tooling (Bun, Biome). Not for React Native/mobile work (use mobile) or visual component design (use designer).
 
@@ -1109,7 +1109,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(vercel-react-best-practices)` — **Always invoke before any RSC, streaming, or route handler work.**
 - `Skill(vercel-composition-patterns)` — layout and composition patterns for complex RSC trees.
 - `Skill(bopen-tools:create-next-project)` — invoke when scaffolding a new Next.js project.
-- `Skill(shadcn)` — invoke for any component/theme work: adding components, switching or applying a preset (`nova`, `vega`, `maia`, `lyra`, `mira`), or inspecting `components.json`. Never hand-edit files under `components/ui` — regenerate them through the CLI (`shadcn add --overwrite` or a preset re-init) instead.
+- `Skill(shadcn)` — **the authority** for any component/theme work; invoke it rather than relying on memory (shadcn moves fast). Covers adding components, applying a style preset (`vega`, `nova`, `maia`, `lyra`, `mira`, `luma`, `sera`, or a custom `ui.shadcn.com/create` code), scaffolding a project template (`init --template <next|vite|…>`), design-system/typography registries (`registry:base` / `registry:font`), the Radix-vs-Base-UI base choice (`--base radix|base-ui`; AI Elements needs `radix`), and inspecting `components.json` via `shadcn info`. Non-interactive init uses `-d`/`-f`, not `--yes` (which still prompts for the base library). Never hand-edit files under `components/ui` — regenerate through the CLI (`shadcn add --overwrite` or a preset re-init).
 - `Skill(react-doctor)` — invoke after any nontrivial React/Next.js change to catch security, performance, correctness, and architecture issues before calling the work done.
 - `Skill(semgrep)` — invoke to scan for XSS, injection, and other security patterns in Next.js code.
 
