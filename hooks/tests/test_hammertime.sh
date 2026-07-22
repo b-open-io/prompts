@@ -121,12 +121,86 @@ iter_b=$(jq -r '.rule_iterations["no-ship-it"] // 0' "$HT_HOME/state.json")
 # Fresh session starts at 1 after one block
 assert_eq "hammertime session B iteration starts fresh" "1" "$iter_b"
 
-# 5) Missing last message + null transcript → quiet exit
+# 5) cwd_prefix scopes content-rule evaluation to CLAUDE_PROJECT_DIR
+cat > "$HT_HOME/rules.json" <<'JSON'
+[
+  {
+    "name": "scoped-ship-it",
+    "rule": "Never say ship it without tests.",
+    "enabled": true,
+    "keywords": ["ship it"],
+    "confidence_threshold": 1,
+    "cwd_prefix": ["/work/other", "/work/scoped-repo"]
+  }
+]
+JSON
+input=$(jq -n --arg m "$msg" \
+  '{session_id:"scope-match", last_assistant_message:$m, cwd:"/hook/input/is-not-the-scope"}')
+CLAUDE_PROJECT_DIR="/work/scoped-repo/packages/app" run_ht "$input"
+assert_contains "hammertime matching cwd_prefix blocks" '"decision": "block"' "$HOOK_STDOUT"
+
+input=$(jq -n --arg m "$msg" \
+  '{session_id:"scope-miss", last_assistant_message:$m, cwd:"/work/scoped-repo"}')
+CLAUDE_PROJECT_DIR="/work/unrelated" run_ht "$input"
+assert_not_contains "hammertime nonmatching cwd_prefix skips" '"decision": "block"' "$HOOK_STDOUT"
+
+cat > "$HT_HOME/rules.json" <<'JSON'
+[
+  {
+    "name": "scoped-timer",
+    "rule": "Keep working in the scoped project.",
+    "enabled": true,
+    "deadline": "2999-01-01T00:00:00",
+    "keywords": [],
+    "max_iterations": 0,
+    "cwd_prefix": "/work/timer-repo"
+  }
+]
+JSON
+input=$(jq -n --arg m "$CLEAN_MSG" '{session_id:"scope-timer-miss", last_assistant_message:$m}')
+CLAUDE_PROJECT_DIR="/work/unrelated" run_ht "$input"
+assert_not_contains "hammertime nonmatching timer cwd_prefix skips" '"decision": "block"' "$HOOK_STDOUT"
+
+input=$(jq -n --arg m "$CLEAN_MSG" '{session_id:"scope-timer-match", last_assistant_message:$m}')
+CLAUDE_PROJECT_DIR="/work/timer-repo/app" run_ht "$input"
+assert_contains "hammertime matching timer cwd_prefix blocks" '"decision": "block"' "$HOOK_STDOUT"
+
+cat > "$HT_HOME/rules.json" <<'JSON'
+[
+  {
+    "name": "malformed-scope",
+    "rule": "Never say ship it without tests.",
+    "enabled": true,
+    "keywords": ["ship it"],
+    "confidence_threshold": 1,
+    "cwd_prefix": 42
+  }
+]
+JSON
+input=$(jq -n --arg m "$msg" '{session_id:"scope-malformed", last_assistant_message:$m}')
+CLAUDE_PROJECT_DIR="/work/scoped-repo" run_ht "$input"
+assert_not_contains "hammertime malformed cwd_prefix skips" '"decision": "block"' "$HOOK_STDOUT"
+assert_contains "hammertime malformed cwd_prefix warns" "malformed cwd_prefix" "$HOOK_STDERR"
+
+# 6) Missing last message + null transcript → quiet exit
 input='{"session_id":"empty","transcript_path":null}'
 run_ht "$input"
 assert_exit "hammertime empty message exit" "0" "$HOOK_EXIT"
 
-# 6) Codex-format transcript adapter (tolerant)
+# 7) Codex-format transcript adapter (tolerant)
+cat > "$HT_HOME/rules.json" <<'JSON'
+[
+  {
+    "name": "no-ship-it",
+    "rule": "Never say ship it without tests.",
+    "enabled": true,
+    "keywords": ["ship it", "shipping it", "lgtm ship"],
+    "confidence_threshold": 1,
+    "max_iterations": 2,
+    "evaluate_full_turn": false
+  }
+]
+JSON
 TX=$(mktemp)
 cat > "$TX" <<'JSONL'
 {"type":"event_msg","payload":{"type":"user_message","message":"please fix"}}
@@ -137,6 +211,26 @@ input=$(jq -n --arg p "$TX" --arg m "$msg" \
 run_ht "$input"
 assert_contains "hammertime codex transcript still blocks on last_msg" '"decision": "block"' "$HOOK_STDOUT"
 rm -f "$TX"
+
+# 8) Pure per-project scoping predicate and malformed-scope warnings
+if python3 "$TESTS_DIR/test_hammertime_scope.py"; then
+  PASS=$((PASS + 1))
+  printf '  PASS  hammertime cwd_prefix unit tests\n'
+else
+  FAIL=$((FAIL + 1))
+  failures+=("hammertime cwd_prefix unit tests")
+  printf '  FAIL  hammertime cwd_prefix unit tests\n'
+fi
+
+# 9) Production scorer corpus, including quoted/documentation false positives
+if python3 "$ROOT/../skills/hammertime/evals/test_scorer.py"; then
+  PASS=$((PASS + 1))
+  printf '  PASS  hammertime scorer corpus\n'
+else
+  FAIL=$((FAIL + 1))
+  failures+=("hammertime scorer corpus")
+  printf '  FAIL  hammertime scorer corpus\n'
+fi
 
 rm -rf "$HT_HOME"
 unset BOPEN_HAMMERTIME_HOME HAMMERTIME_DEBUG

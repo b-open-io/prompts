@@ -57,7 +57,11 @@
     "qualifiers": "\\b(?:non-?critical|cosmetic|minor|style|optional|trivial)\\b",
     "confidence_threshold": 5,
     "skill": null,
-    "evaluate_full_turn": true
+    "evaluate_full_turn": true,
+    "cwd_prefix": [
+      "~/code/frontend",
+      "/srv/frontend"
+    ]
   },
   {
     "name": "use-tdd-for-testing",

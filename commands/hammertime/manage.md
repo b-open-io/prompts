@@ -13,22 +13,23 @@ Guide the user through managing their HammerTime rules interactively.
 Delegate to a subagent to read and format the current rules. Do not read rule files in the main context.
 
 ```
-Agent(prompt: "Read HammerTime rules and return a numbered list.
+Agent(prompt: "Read HammerTime rules and return a Markdown table.
 
 BUILTIN RULES (always present):
 1. project-owner (builtin, enabled) — Fix all errors instead of dismissing them as pre-existing. (evaluate_full_turn: true)
 
 Read ~/.claude/hammertime/rules.json (may not exist — that means no user rules).
-For each user rule, show: number, name, enabled/disabled status, one-line rule text.
+Use columns: #, Rule, Status, Scope, Summary. Show cwd_prefix in Scope, joining
+arrays with commas; show 'global' when cwd_prefix is absent.
 For timer rules (rules with a 'deadline' field), also show the deadline and remaining time (or 'EXPIRED').
 
-Return ONLY the numbered list, nothing else.",
+Return ONLY the table, nothing else.",
 subagent_type: "general-purpose")
 ```
 
 ## Step 2: Present options
 
-Show the subagent's numbered list, then present:
+Show the subagent's rules table, then present:
 
 ```
 ## What would you like to do?
@@ -53,6 +54,7 @@ Ask: "Describe the behavior you want to enforce (e.g., 'always run tests before 
 
 Then generate the rule:
 - Derive `name`, `rule`, `keywords` (4-8), `intent_patterns` (2-4 regex), optional `dismissal_verbs`, `qualifiers`
+- If the description names a specific repository or path, set `cwd_prefix` to that string; use an array for multiple paths. Otherwise omit it for global scope.
 - Set `enabled: true`, `confidence_threshold: 5`
 - Show the generated rule and ask the user to confirm before saving
 
@@ -70,7 +72,7 @@ Delegate to a subagent to read and format the full rule config:
 
 ```
 Agent(prompt: "Read ~/.claude/hammertime/rules.json and return the full config for rule '<name>'.
-Show: name, rule text, enabled, keywords (numbered), intent_patterns (with explanation of what each catches), dismissal_verbs, qualifiers, confidence_threshold, evaluate_full_turn, skill.
+Show: name, rule text, enabled, cwd_prefix (or global when absent), keywords (numbered), intent_patterns (with explanation of what each catches), dismissal_verbs, qualifiers, confidence_threshold, evaluate_full_turn, skill.
 If it's the builtin 'project-owner' rule, use the hardcoded values: 15 keywords, 8 intent patterns, co-occurrence configured, threshold 5, evaluate_full_turn true.",
 subagent_type: "general-purpose")
 ```

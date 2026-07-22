@@ -95,6 +95,7 @@ Use the phrases extracted from real log examples — not hypothetical guesses �
 - `enabled`: true
 - `confidence_threshold`: 5
 - `max_iterations`: 3
+- `cwd_prefix`: if the description names a specific repository or path, set that path as a string; use an array for multiple paths. Omit when the rule should be global.
 
 #### Step 3: Output test cases
 
@@ -120,11 +121,11 @@ For builtin rules, add an override entry with `enabled: false` to disable.
 1. Write the updated rules array to `~/.claude/hammertime/rules.json` (create `~/.claude/hammertime/` directory if needed)
 2. Show the **complete rules table** — all rules, not just the one that changed. Use sequential numbering starting from 1 (matching array order). Include the builtin `project-owner` rule as #0.
 
-   | # | Rule | Status | Threshold | Full Turn |
-   |---|---|---|---|---|
-   | 0 | `project-owner` (builtin) | enabled | 5 | yes |
-   | 1 | `rule-name` | enabled/disabled | N | yes/no |
-   | ... | ... | ... | ... | ... |
+   | # | Rule | Status | Scope | Threshold | Full Turn |
+   |---|---|---|---|---|---|
+   | 0 | `project-owner` (builtin) | enabled | global | 5 | yes |
+   | 1 | `rule-name` | enabled/disabled | prefix or global | N | yes/no |
+   | ... | ... | ... | ... | ... | ... |
 
 3. Check if HammerTime is paused: `test -f ~/.claude/hammertime/disabled && echo "PAUSED"`. If paused, warn: **"Note: HammerTime is currently paused. This rule has been saved but won't fire until you run `/hammertime:start`."**
 4. Remind: **"Restart Claude Code for changes to take effect."**

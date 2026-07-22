@@ -408,13 +408,22 @@ HammerTime is a behavioral guardrail system that runs on every assistant respons
 direct block. The verifier runs only when `ANTHROPIC_API_KEY` is configured;
 otherwise an ambiguous match blocks conservatively. When it runs, it sends the
 rule and up to the last 4,000 characters of the assistant response to
-Anthropic.
+Anthropic. Complete single-quoted, double-quoted, and backtick-delimited spans
+are excluded from deterministic scoring so examples, documentation, and search
+terms do not masquerade as the assistant's own behavior.
 
 **Loop safety:** Each rule has a `max_iterations` field (default: 3). The hook
 tracks blocks per session and auto-allows exit when the limit is hit. Counters
 reset on new sessions. Set `0` for unlimited. Existing Claude installations
 continue to use `~/.claude/hammertime`; otherwise the cross-host default is
 `~/.bopen-tools/hammertime`. Set `BOPEN_HAMMERTIME_HOME` to override it.
+
+**Per-project rules:** Set `cwd_prefix` to a path string or an array of path
+strings to evaluate a rule only in matching projects; omit it for a global
+rule. HammerTime uses `CLAUDE_PROJECT_DIR` exactly when that environment
+variable is set, otherwise `os.getcwd()`, and applies string `startswith`
+matching after expanding `~` in each configured prefix. A malformed
+`cwd_prefix` is skipped with a stderr warning instead of failing the hook.
 
 **Full-turn evaluation:** Rules can opt into scoring ALL assistant messages since the user's last message (not just the final one). This catches violations in intermediate responses — e.g., the model dismisses an error mid-turn, then the final message just says "Done." Set `"evaluate_full_turn": true` on a rule to enable. The hook reads the session transcript JSONL backwards (last 2MB max).
 

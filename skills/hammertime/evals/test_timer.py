@@ -15,19 +15,22 @@ import sys
 import tempfile
 import shutil
 
+# Isolate the hook resolver before importing HammerTime so evals never touch a
+# developer's real rules or state.
+TEST_HOME = tempfile.mkdtemp(prefix="hammertime-timer-eval-")
+os.environ["BOPEN_HAMMERTIME_HOME"] = TEST_HOME
+
 # Import from the hook
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", "hooks"))
 from hammertime import (
+    _hammertime_paths,
     build_block_message,
     cleanup_expired_timers,
     load_rules,
-    load_state,
-    save_state,
-    compile_user_rule,
-    USER_RULES_PATH,
-    STATE_PATH,
 )
 from datetime import datetime, timedelta
+
+USER_RULES_PATH = _hammertime_paths()["rules"]
 
 
 def _setup_temp_rules(rules_data):
@@ -474,5 +477,8 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
-    success = run_tests(verbose=args.verbose)
+    try:
+        success = run_tests(verbose=args.verbose)
+    finally:
+        shutil.rmtree(TEST_HOME, ignore_errors=True)
     sys.exit(0 if success else 1)

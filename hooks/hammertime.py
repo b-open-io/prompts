@@ -79,6 +79,16 @@ _start_time = time.monotonic()
 # --- Sentence splitter (compiled once) ---
 SENT_SPLIT = re.compile(r'[.!?\n]+')
 
+# Quoted examples, inline code, and search terms describe language rather than
+# perform the behavior being scored. Exclude complete quoted spans before all
+# three scoring layers while leaving contractions such as "don't" intact.
+QUOTED_SPAN = re.compile(
+    r'"(?:\\.|[^"\\])*"'
+    r"|`(?:\\.|[^`\\])*`"
+    r"|(?<!\w)'(?:\\.|[^'\\])+'(?!\w)",
+    re.DOTALL,
+)
+
 # --- Project-owner intent patterns (compiled once at import) ---
 # These were tuned against real production logs where Claude deflected errors.
 # Each pattern targets a specific deflection structure found in the wild.
@@ -228,6 +238,56 @@ def load_rules():
     return [r for r in rules if r.get("enabled", True)]
 
 
+def session_project_dir():
+    """Return the project directory used for per-rule scoping."""
+    if "CLAUDE_PROJECT_DIR" in os.environ:
+        return os.environ["CLAUDE_PROJECT_DIR"]
+    return os.getcwd()
+
+
+def valid_cwd_prefix(value):
+    """Return whether cwd_prefix is a string or an array containing only strings."""
+    return isinstance(value, str) or (
+        isinstance(value, list) and all(isinstance(prefix, str) for prefix in value)
+    )
+
+
+def rule_applies_to_project(rule, project_dir):
+    """Pure predicate for whether a rule applies to the given project directory."""
+    if "cwd_prefix" not in rule:
+        return True
+
+    value = rule["cwd_prefix"]
+    if not valid_cwd_prefix(value):
+        return False
+
+    prefixes = [value] if isinstance(value, str) else value
+    return any(project_dir.startswith(os.path.expanduser(prefix)) for prefix in prefixes)
+
+
+def scope_rules_to_project(rules, project_dir):
+    """Filter rules by cwd_prefix, warning and skipping malformed scopes."""
+    scoped_rules = []
+    for rule in rules:
+        if "cwd_prefix" in rule and not valid_cwd_prefix(rule["cwd_prefix"]):
+            rule_name = rule.get("name", "unknown")
+            warning = (
+                f"[HammerTime] Warning: rule '{rule_name}' has malformed cwd_prefix; "
+                "expected a string or an array of strings; skipping rule."
+            )
+            print(warning, file=sys.stderr)
+            debug_log(f"SCOPE: {warning}")
+            continue
+        if rule_applies_to_project(rule, project_dir):
+            scoped_rules.append(rule)
+        else:
+            debug_log(
+                f"SCOPE: rule '{rule.get('name', 'unknown')}' does not apply to "
+                f"project_dir={project_dir!r}, skipping"
+            )
+    return scoped_rules
+
+
 def load_state():
     """Load iteration tracking state. Returns empty dict if missing or corrupt."""
     state_path = _hammertime_paths()["state"]
@@ -259,7 +319,8 @@ def score_message(text, rules):
     Returns list of (rule, score, breakdown) tuples where score > 0.
     breakdown is a dict with kw, intent, cluster counts and matched_keywords list.
     """
-    text_lower = text.lower()
+    scored_text = QUOTED_SPAN.sub("", text)
+    text_lower = scored_text.lower()
     sentences = None  # Lazy-split for Layer 3, cached across rules
     results = []
 
@@ -279,7 +340,7 @@ def score_message(text, rules):
         matched_intents = []
         intent_patterns = rule.get("intent_patterns", [])
         for pat in intent_patterns:
-            m = pat.search(text)
+            m = pat.search(scored_text)
             if m:
                 intent_count += 1
                 matched_intents.append(m.group(0))
@@ -289,7 +350,7 @@ def score_message(text, rules):
         qualifier_re = rule.get("qualifiers")
         if dismissal_re and qualifier_re:
             if sentences is None:
-                sentences = SENT_SPLIT.split(text)
+                sentences = SENT_SPLIT.split(scored_text)
             for sent in sentences:
                 if dismissal_re.search(sent) and qualifier_re.search(sent):
                     cluster_count = 1
@@ -911,9 +972,11 @@ def main():
     if removed:
         debug_log(f"TIMER: cleaned up {len(removed)} expired timer(s): {removed}")
 
-    rules = load_rules()
+    project_dir = session_project_dir()
+    debug_log(f"SCOPE: project_dir={project_dir!r}")
+    rules = scope_rules_to_project(load_rules(), project_dir)
     if not rules:
-        debug_log("EXIT: no enabled rules")
+        debug_log("EXIT: no enabled rules for this project")
         sys.exit(0)
 
     # Load iteration state for loop safety (max_iterations)

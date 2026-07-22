@@ -1,6 +1,6 @@
 ---
 name: hammertime
-version: 1.0.1
+version: 1.0.2
 description: >-
   This skill should be used when the user mentions a behavioral rule they want
   enforced, says "always do X", "never do Y", "stop doing Z", "from now on",
@@ -69,6 +69,7 @@ Content rules are JSON objects in an array with these fields:
 - `evaluate_full_turn` — `true` scores every assistant message since the user's last message; `false`/omitted scores only the final message (default: `false`)
 - `max_iterations` — max blocks per session before auto-allowing exit (default: 3, `0` for unlimited)
 - `check_git_state` — `true` makes the hook check `git status`/unpushed commits first and skip the rule entirely if the tree is clean and pushed (default: `false`)
+- `cwd_prefix` — string or array of strings limiting the rule to project directories that start with an expanded prefix; omit for a global rule
 
 **Timer-specific:** `deadline` — an ISO 8601 datetime string. Its presence turns a rule into a timer rule, bypassing content scoring entirely.
 
@@ -83,6 +84,11 @@ See `examples/rules.json` for worked rules covering every field, and `references
 | **3 — Co-occurrence** | Dismissal verb + qualifier in same sentence | +3 | Highest-confidence signal |
 
 Score thresholds: **0** exits immediately, **1–4** goes to Haiku verification (~500ms, ~$0.001), **5+** blocks directly. `confidence_threshold` controls the direct-block cutoff (default: 5). For scoring math, threshold-tuning guidance, and the full `project-owner` case study, see `references/rule-design.md`.
+
+Before scoring, the hook removes complete single-quoted, double-quoted, and
+backtick-delimited spans. This keeps quoted examples, documentation phrases,
+and search terms from being mistaken for the assistant's own behavior while
+preserving contractions such as `don't`.
 
 ## Creating a Rule — Workflow
 
@@ -100,6 +106,14 @@ Good: "Fix all lint errors before stopping. Do not report them without fixing. T
 Bad: "Be better at linting." / "Don't do that." — agent has no idea what "that" is (`references/rule-design.md` has a third failure mode: being too terse).
 
 **Minimum 15 words** — shorter text won't give the agent enough context to act.
+
+If the description names a specific repository or path, set `cwd_prefix` to
+that path. Use an array when the same rule applies to multiple repository
+prefixes. Preserve `~` when convenient; the hook expands it before matching.
+Omit `cwd_prefix` when the description is not project-specific so the rule
+remains global. At evaluation time, the project directory is exactly
+`CLAUDE_PROJECT_DIR` when that environment variable is set, otherwise
+`os.getcwd()`; matching uses string-prefix semantics.
 
 ### Step 3: Extract keywords (4-8)
 

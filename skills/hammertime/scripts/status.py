@@ -29,6 +29,18 @@ BUILTIN_RULES = [
 ]
 
 
+def format_scope(rule):
+    """Format cwd_prefix for compact Markdown rule tables."""
+    if "cwd_prefix" not in rule:
+        return "global"
+    value = rule["cwd_prefix"]
+    if isinstance(value, str):
+        return f"`{value}`"
+    if isinstance(value, list) and all(isinstance(prefix, str) for prefix in value):
+        return ", ".join(f"`{prefix}`" for prefix in value) or "none"
+    return "invalid"
+
+
 def main():
     now = datetime.now()
 
@@ -63,8 +75,8 @@ def main():
     # --- Print timer rules ---
     if timer_rules:
         print("## Active Timers\n")
-        print("| # | Name | Deadline | Remaining | Rule |")
-        print("|---|------|----------|-----------|------|")
+        print("| # | Name | Scope | Deadline | Remaining | Rule |")
+        print("|---|------|-------|----------|-----------|------|")
         for i, r in enumerate(timer_rules):
             deadline_str = r["deadline"]
             try:
@@ -79,17 +91,17 @@ def main():
             except (ValueError, TypeError):
                 remaining = "INVALID"
             enabled = "on" if r.get("enabled", True) else "off"
-            print(f"| {i + 1} | `{r['name']}` | {deadline_str} | {remaining} | {r.get('rule', '')[:60]} |")
+            print(f"| {i + 1} | `{r['name']}` | {format_scope(r)} | {deadline_str} | {remaining} | {r.get('rule', '')[:60]} |")
         print()
 
     # --- Print content rules ---
     print("## Content Rules\n")
-    print("| # | Rule | Status | Keywords | Patterns | Co-occur | Threshold | Full Turn | Skill |")
-    print("|---|------|--------|----------|----------|----------|-----------|-----------|-------|")
+    print("| # | Rule | Status | Scope | Keywords | Patterns | Co-occur | Threshold | Full Turn | Skill |")
+    print("|---|------|--------|-------|----------|----------|----------|-----------|-----------|-------|")
 
     # Builtin
     b = BUILTIN_RULES[0]
-    print(f"| 0 | `project-owner` (builtin) | enabled | {b['keywords']} | {b['intent_patterns']} | yes | {b['confidence_threshold']} | yes | — |")
+    print(f"| 0 | `project-owner` (builtin) | enabled | global | {b['keywords']} | {b['intent_patterns']} | yes | {b['confidence_threshold']} | yes | — |")
 
     # User content rules
     for i, r in enumerate(content_rules):
@@ -102,7 +114,7 @@ def main():
         ft = "yes" if r.get("evaluate_full_turn") else "no"
         skill = r.get("skill") or "—"
         git = " (git)" if r.get("check_git_state") else ""
-        print(f"| {i + 1} | `{name}` | {enabled} | {kw} | {patterns} | {co} | {threshold} | {ft} | {skill}{git} |")
+        print(f"| {i + 1} | `{name}` | {enabled} | {format_scope(r)} | {kw} | {patterns} | {co} | {threshold} | {ft} | {skill}{git} |")
 
     print()
 
