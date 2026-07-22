@@ -97,6 +97,9 @@ Three layers of detection, each more specific than the last:
 - **5+** — Clear violation. Block directly, skip Haiku.
 
 The `confidence_threshold` field (default: 5) controls where the direct-block cutoff sits.
+Complete single-quoted, double-quoted, and backtick-delimited spans are removed
+before these layers run, preventing quoted examples, documentation phrases,
+and search terms from scoring as behavior.
 
 ### Why corpus-driven rules matter
 
@@ -108,6 +111,7 @@ Rules derived from guessing what a violation looks like produce brittle results.
 |---|---|
 | Synthetic keywords guessed from description | 0.14 |
 | After mining 10 real session logs | 0.89 |
+| After excluding quoted/meta spans | 1.00 |
 
 The gap is large because the model's actual dismissal language ("this appears to be pre-existing", "errors are unchanged", "not from our changes") rarely matches the phrases a human would guess ("pre-existing issue", "not my fault"). When you create a rule, HammerTime searches your conversation logs for real examples of the behavior, then derives keywords and patterns from how the model actually talks.
 
@@ -192,6 +196,7 @@ Rules are JSON objects in `~/.claude/hammertime/rules.json`. You rarely need to 
 | `evaluate_full_turn` | No | Score all assistant messages in the turn, not just the last (default: false) |
 | `max_iterations` | No | Max blocks per session before allowing exit (default: 3, 0 = unlimited) |
 | `check_git_state` | No | Skip rule if working tree is clean and commits are pushed (default: false) |
+| `cwd_prefix` | No | String or array of strings; evaluate only when `CLAUDE_PROJECT_DIR` (or `os.getcwd()` when unset) starts with an expanded prefix. Omit for global scope. |
 | `deadline` | No | ISO 8601 datetime — makes this a timer rule; auto-deleted when expired |
 
 See `SKILL.md` for the full rule creation workflow and scoring details.

@@ -6,6 +6,19 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.110] - 2026-07-21
+
+### Added
+
+- `hammertime` (1.0.2): rules can now declare `cwd_prefix` as a path string or
+  array of path strings. Scoped content and timer rules run only when
+  `CLAUDE_PROJECT_DIR` (or the process working directory when unset) starts
+  with an expanded prefix; malformed scopes warn on stderr and are skipped.
+  Rule authoring guidance and status/management tables now expose scope while
+  preserving global behavior for rules without the field. Deterministic
+  scoring now excludes complete quoted and inline-code spans, taking the
+  project-owner corpus from F1 0.89 to 1.00 without losing true positives.
+
 ## [1.1.109] - 2026-07-17
 
 ### Changed

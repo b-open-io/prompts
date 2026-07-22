@@ -1,5 +1,14 @@
 # Lessons
 
+## A failing diagnostic is unfinished work until resolved or explicitly waived (2026-07-21)
+
+Do not issue a completion report while any command run during the task still
+exits nonzero. First determine whether the command exposes a product defect, a
+broken test, or an intentionally non-gating benchmark. Fix product and test
+defects, rerun the command, and make the final report lead with the final green
+evidence. If a genuinely non-gating diagnostic must remain red, obtain an
+explicit waiver rather than labeling it separate and stopping.
+
 ## Dirty sibling repositories contain work, not obstacles (2026-07-15)
 
 When a related repository is dirty, inspect and understand every changed and

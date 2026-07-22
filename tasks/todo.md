@@ -1,3 +1,28 @@
+# HammerTime per-project scoping
+
+- [x] Inspect the worktree, hook, tests, commands, skill docs, manifests, and release docs.
+- [x] Add deterministic `cwd_prefix` filtering using the session project directory.
+- [x] Extend HammerTime tests for global, matching, non-matching, array, tilde, and malformed scopes.
+- [x] Document scope authoring and display Scope in rule tables.
+- [x] Patch-bump synchronized plugin manifests and HammerTime skill metadata.
+- [x] Run targeted tests, repository checks, and review the uncommitted diff.
+
+## Review
+
+- `session_project_dir()` uses `CLAUDE_PROJECT_DIR` when the variable exists and
+  otherwise `os.getcwd()`; `rule_applies_to_project()` expands each configured
+  prefix and uses lexical `startswith` matching.
+- Rules without `cwd_prefix` remain global. A string or all-string array is
+  valid; malformed values and mixed arrays warn on stderr and are skipped.
+- The full hook harness passes 338 tests and the isolated timer eval passes
+  13/13. Manifest, documentation, JSON, rendered status, scope-unit, and
+  whitespace checks pass.
+- Quoted/example spans are removed before deterministic scoring; the
+  project-owner corpus now passes 27/27 with F1 1.00 and is wired into the
+  full hook harness as a regression gate.
+- Both plugin manifests are synchronized at `1.1.110`; no commit or push was
+  performed.
+
 # x-research latest Grok routing
 
 - [x] Trace the skill, Parker agent, live xAI catalog, and official model guidance.
