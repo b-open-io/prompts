@@ -102,3 +102,86 @@ Against Anthropic's `plugin-dev:agent-development` guidance (descriptions
 
 Average description is ~1,420 chars — above the recommended band, with the
 worst case at nearly 3× the ceiling and 11 examples where 4 is the maximum.
+
+### OPL-3209 step 2 — compress agent frontmatter
+
+| Metric | Before | After | Delta |
+|---|---:|---:|---:|
+| Agent description bytes | 44,016 | 12,053 | −73% |
+| Agent `<example>` blocks | 81 | 0 | −100% |
+| Agent `tools:` bytes | 14,865 | 4,527 | −70% |
+| Model-visible startup tokens | ~25,705 | ~15,130 | −41% |
+
+Descriptions keep two things: the quoted trigger phrases, and an explicit
+"Not for X (use Y)" boundary. With 31 agents competing for the same requests,
+the boundaries do more disambiguation work than worked examples did.
+
+`tools:` lists collapsed enumerated `Skill(...)` grants into a single bare
+`Skill`. That *widens* access rather than narrowing it — an agent listing 40
+specific skills could use only those 40. Base tool scoping is untouched,
+including `Bash(git:*)` and `Bash(mv:*)` restrictions. `code-auditor`,
+`security-ops`, `devops`, and `payments` keep explicit lists because their
+least-privilege scoping is load-bearing.
+
+One bug worth recording: `designer.md` used JSON-array `tools:` syntax, so the
+comma-splitting rewrite silently no-opped on it. Caught by diffing every
+`tools:` line rather than trusting the aggregate byte count — the totals
+looked fine while one file was untouched. Aggregate metrics hide per-file
+failures.
+
+## Anthropic's July 2026 guidance, and where it contradicts us
+
+Mid-work, Anthropic published
+["The new rules of context engineering for Claude 5 generation models"](https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models)
+by Thariq Shihipar. Anthropic removed **over 80% of Claude Code's own system
+prompt** with "no measurable loss on our coding evaluations."
+
+Two points land directly on this work:
+
+**It validates dropping the examples.** The post states that giving examples
+"actually constrains them to a certain exploration space," and recommends
+designing better interfaces instead. That is the opposite of the
+`plugin-dev:agent-development` skill we consulted, which specifies 2–4
+`<example>` blocks per agent. We had already dropped all 81 examples on the
+argument that boundaries disambiguate better; the newer first-party guidance
+supports it. **The bundled plugin-dev guidance is now partly stale on this
+point** — a live instance of our own rule about verifying fast-moving platform
+guidance against current docs rather than a cached skill's snapshot.
+
+**It challenges compression as a phase.** The headline lesson was *delete*,
+not densify. A catalog covering "every known practice you might run into"
+should become "a tree of files that can be loaded at the right time." Read
+strictly, that argues for going straight at structure — packs and deferred
+loading — rather than treating description compression as load-bearing.
+Compression keeps all 31 agents permanently resident; it makes each cheaper
+without asking whether each belongs.
+
+The honest reading: compression bought a measured 41% for a few hours' work
+and no install migration, which is worth having. But it is not the fix, and
+the post is a good argument against declaring victory on it.
+
+Three caveats we should not paper over:
+
+1. Our compressed descriptions are dense with quoted trigger phrases. If the
+   "examples constrain exploration" finding generalizes from behavioral
+   instructions to discovery metadata, trigger-phrase stuffing may be the same
+   anti-pattern in a different coat. Unresolved; the routing eval should
+   settle it.
+2. Anthropic's "no measurable loss" was measured on *coding evals*, not on
+   routing accuracy under a 31-agent catalog. It does not retire our risk.
+3. The post's remedies — model judgment, ToolSearch deferred loading,
+   tree-of-files — are Claude-side capabilities. Codex's hard catalog cap has
+   no such escape hatch. This is evidence the two hosts are diverging, and
+   that one shared compress-then-split plan may be the wrong shape.
+
+Also relevant to OPL-3188: the post's CLAUDE.md guidance is "keep it
+lightweight, briefly describe what the repo is for, spend most of the tokens
+on gotchas, avoid stating the obvious." Our CLAUDE.md is 26 KB.
+
+## Validation status
+
+Not yet validated. `benchmarks/fixtures/agent-routing-cases.json` holds 30
+cases — direct, boundary, ambiguous, and negative — where every boundary case
+targets a pair of agents whose descriptions carry an explicit "not for X"
+clause. Recording results needs fresh Claude and Codex sessions, which
+OPL-3193 owns. No version bump has shipped; the release waits on that run.

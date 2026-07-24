@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "description": "Agent-selection routing cases for OPL-3209. Every boundary case targets a pair of agents whose compressed descriptions carry an explicit 'Not for X, use Y' clause. If dropping the worked <example> blocks hurt routing, the boundary cases are where it shows.",
+  "notes": "Scored with scripts/evaluate-skill-routing.py; 'skills' in that schema means the selected resource name. Results must be recorded from fresh Claude and Codex sessions.",
+  "cases": [
+    {
+      "id": "direct-map-clustering",
+      "kind": "direct",
+      "prompt": "Add marker clustering to the map so pins group together at low zoom.",
+      "expected_skills": ["cartographer"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["designer", "nextjs"]
+    },
+    {
+      "id": "direct-nextjs-page",
+      "kind": "direct",
+      "prompt": "Build a Next.js page for our pricing tiers using the existing layout.",
+      "expected_skills": ["nextjs"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["designer", "mobile"]
+    },
+    {
+      "id": "direct-write-tests",
+      "kind": "direct",
+      "prompt": "Write unit tests for this date-parsing module, covering edge cases.",
+      "expected_skills": ["tester"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["code-auditor", "optimizer"]
+    },
+    {
+      "id": "direct-linear-tickets",
+      "kind": "direct",
+      "prompt": "Break this billing feature into Linear issues for the team.",
+      "expected_skills": ["project-manager"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["documentation-writer", "ceo"]
+    },
+    {
+      "id": "boundary-code-audit-vs-security-ops",
+      "kind": "boundary",
+      "prompt": "Audit this pull request diff for injection risks before we merge it.",
+      "expected_skills": ["code-auditor"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["security-ops", "architecture-reviewer"]
+    },
+    {
+      "id": "boundary-security-ops-vs-code-audit",
+      "kind": "boundary",
+      "prompt": "Scan our dependencies for known CVEs and check nothing leaked a secret.",
+      "expected_skills": ["security-ops"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["code-auditor"]
+    },
+    {
+      "id": "boundary-architecture-vs-consolidator",
+      "kind": "boundary",
+      "prompt": "Map the dependencies across our twelve services and propose a refactor.",
+      "expected_skills": ["architecture-reviewer"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["consolidator", "code-auditor"]
+    },
+    {
+      "id": "boundary-consolidator-vs-architecture",
+      "kind": "boundary",
+      "prompt": "We have five different formatDate helpers scattered around. Merge them.",
+      "expected_skills": ["consolidator"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["architecture-reviewer", "optimizer"]
+    },
+    {
+      "id": "boundary-database-vs-data",
+      "kind": "boundary",
+      "prompt": "This query takes eight seconds on a 40M row table. Speed it up.",
+      "expected_skills": ["database"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["data", "optimizer"]
+    },
+    {
+      "id": "boundary-data-vs-database",
+      "kind": "boundary",
+      "prompt": "Build an ETL pipeline pulling from Stripe and Salesforce into BigQuery.",
+      "expected_skills": ["data"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["database", "integration-expert"]
+    },
+    {
+      "id": "boundary-payments-vs-integration",
+      "kind": "boundary",
+      "prompt": "Add Stripe checkout for our subscription tiers with webhook verification.",
+      "expected_skills": ["payments"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["integration-expert"]
+    },
+    {
+      "id": "boundary-integration-vs-payments",
+      "kind": "boundary",
+      "prompt": "Pull new contacts from HubSpot every hour and upsert them into our DB.",
+      "expected_skills": ["integration-expert"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["payments", "data"]
+    },
+    {
+      "id": "boundary-optimizer-vs-designer",
+      "kind": "boundary",
+      "prompt": "Our LCP is 4.2s. Fix it, but do not change how the page looks.",
+      "expected_skills": ["optimizer"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["designer", "nextjs"]
+    },
+    {
+      "id": "boundary-designer-vs-optimizer",
+      "kind": "boundary",
+      "prompt": "Design a settings component and wire up dark mode with shadcn.",
+      "expected_skills": ["designer"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["optimizer", "creative-developer"]
+    },
+    {
+      "id": "boundary-mobile-vs-nextjs",
+      "kind": "boundary",
+      "prompt": "Our React Native FlatList drops frames on Android. Fix the scrolling.",
+      "expected_skills": ["mobile"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["nextjs", "optimizer"]
+    },
+    {
+      "id": "boundary-creative-vs-designer",
+      "kind": "boundary",
+      "prompt": "Write a GLSL shader for this Three.js scene and add post-processing.",
+      "expected_skills": ["creative-developer"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["designer"]
+    },
+    {
+      "id": "boundary-mcp-vs-integration",
+      "kind": "boundary",
+      "prompt": "My GitHub MCP server stopped working and Claude says the tool is gone.",
+      "expected_skills": ["mcp"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["integration-expert", "devops"]
+    },
+    {
+      "id": "boundary-prompt-engineer-vs-agent-builder",
+      "kind": "boundary",
+      "prompt": "My slash command fails with permission denied on the git push step.",
+      "expected_skills": ["prompt-engineer"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["agent-builder", "trainer"]
+    },
+    {
+      "id": "boundary-agent-builder-vs-prompt-engineer",
+      "kind": "boundary",
+      "prompt": "Design an agent that calls tools, keeps memory, and routes to specialists.",
+      "expected_skills": ["agent-builder"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["prompt-engineer", "trainer"]
+    },
+    {
+      "id": "boundary-trainer-vs-prompt-engineer",
+      "kind": "boundary",
+      "prompt": "The 1sat API changed, so our ordinals skill is probably stale now.",
+      "expected_skills": ["trainer"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["prompt-engineer"]
+    },
+    {
+      "id": "boundary-cfo-vs-payments",
+      "kind": "boundary",
+      "prompt": "How much are we spending on Anthropic this month? Break it down.",
+      "expected_skills": ["cfo"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["payments", "data"]
+    },
+    {
+      "id": "boundary-devops-vs-code-auditor",
+      "kind": "boundary",
+      "prompt": "Deploy this bot as a Vercel Sandbox and wire up the heartbeat cron.",
+      "expected_skills": ["devops"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["code-auditor", "security-ops"]
+    },
+    {
+      "id": "boundary-native-desktop-vs-mobile",
+      "kind": "boundary",
+      "prompt": "Build a native macOS menu-bar app that opens our dashboard in a window.",
+      "expected_skills": ["native-desktop"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["mobile", "designer"]
+    },
+    {
+      "id": "boundary-front-desk-vs-account-manager",
+      "kind": "boundary",
+      "prompt": "Who on the team handles authentication work?",
+      "expected_skills": ["front-desk"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["account-manager"]
+    },
+    {
+      "id": "boundary-account-manager-vs-front-desk",
+      "kind": "boundary",
+      "prompt": "Can bOpen build an agent that reacts to blockchain events? What's the cost?",
+      "expected_skills": ["account-manager"],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["front-desk"]
+    },
+    {
+      "id": "ambiguous-perf-regression-source-unknown",
+      "kind": "ambiguous",
+      "prompt": "The dashboard got slow this week and I do not know why yet.",
+      "expected_skills": ["optimizer"],
+      "acceptable_alternatives": ["database", "architecture-reviewer", "data"],
+      "forbidden_skills": []
+    },
+    {
+      "id": "ambiguous-readme-or-prd",
+      "kind": "ambiguous",
+      "prompt": "We need something written up before the team starts on the referral feature.",
+      "expected_skills": ["documentation-writer"],
+      "acceptable_alternatives": ["project-manager"],
+      "forbidden_skills": []
+    },
+    {
+      "id": "negative-trivial-edit",
+      "kind": "negative",
+      "prompt": "Rename the variable foo to bar in utils.ts.",
+      "expected_skills": [],
+      "acceptable_alternatives": [],
+      "forbidden_skills": [
+        "consolidator",
+        "architecture-reviewer",
+        "nextjs",
+        "code-auditor"
+      ]
+    },
+    {
+      "id": "negative-plain-question",
+      "kind": "negative",
+      "prompt": "What does the -u flag do in git push?",
+      "expected_skills": [],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["devops", "documentation-writer", "front-desk"]
+    },
+    {
+      "id": "negative-out-of-catalog",
+      "kind": "negative",
+      "prompt": "Help me draft a birthday message for my sister.",
+      "expected_skills": [],
+      "acceptable_alternatives": [],
+      "forbidden_skills": ["documentation-writer", "account-manager"]
+    }
+  ]
+}
