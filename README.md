@@ -614,7 +614,7 @@ routing:
 # Static skill/agent/command inventory and weight
 python3 scripts/plugin-weight.py --format markdown
 
-# Exact host snapshots
+# Host snapshots (exact Codex omission counts need a runtime JSONL event file)
 python3 scripts/capture-codex-context.py --model gpt-5.6-sol
 python3 scripts/capture-claude-context.py --source-root .
 
@@ -628,7 +628,10 @@ python3 scripts/run-plugin-harness.py
 The reports distinguish startup routing metadata from on-demand skill bodies,
 Claude's legacy command entries from source skills, and authored skills from
 third-party symlinks. Recorded fixtures keep unit tests independent of live
-models; live host probes remain a separate release tier.
+models; live host probes remain a separate release tier. Codex's static
+`prompt-input` view does not include its runtime budget warning, so the Codex
+snapshot reports omitted skills as unknown unless supplied a recorded
+`codex exec --json` event stream.
 
 See [the context harness guide](docs/plugin-context-harness.md) for baseline
 measurements and commands, and
@@ -838,6 +841,10 @@ python3 scripts/plugin-weight.py --format markdown
 python3 scripts/capture-claude-context.py --source-root .
 python3 scripts/capture-codex-context.py
 ```
+
+For an exact Codex omission count, capture a fresh `codex exec --json` run and
+pass the JSONL file with `--events-file`; the static prompt alone cannot expose
+the runtime budget-warning event.
 
 Claude's `SLASH_COMMAND_TOOL_CHAR_BUDGET` can increase its listing allowance,
 but that also increases the permanent startup prompt. Treat it as a diagnostic

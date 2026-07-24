@@ -75,6 +75,20 @@ class CodexContextTests(unittest.TestCase):
         )
         snapshot = CAPTURE.parse_prompt(wrapped)
         self.assertEqual(snapshot["visible_skills"], ["bopen-tools:humanize"])
+        self.assertIsNone(snapshot["omitted_skill_count"])
+        self.assertFalse(snapshot["catalog_warning_observed"])
+
+    def test_runtime_event_supplies_authoritative_omission_count(self) -> None:
+        events = (
+            '{"type":"item.completed","item":{"type":"error","message":'
+            '"Exceeded skills context budget of 2%. All skill descriptions '
+            'were removed and 76 additional skills were not included in the '
+            'model-visible skills list."}}\n'
+        )
+        snapshot = CAPTURE.parse_runtime_events(events)
+        self.assertTrue(snapshot["catalog_warning_observed"])
+        self.assertEqual(snapshot["omitted_skill_count"], 76)
+        self.assertTrue(snapshot["all_descriptions_removed"])
 
 
 if __name__ == "__main__":

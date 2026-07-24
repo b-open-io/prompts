@@ -6,6 +6,17 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.113] - 2026-07-24
+
+### Fixed
+
+- Corrected the Codex context snapshot so a static `prompt-input` capture no
+  longer misreports zero omitted skills when the runtime budget warning is
+  unavailable. Optional `codex exec --json` events now provide the
+  authoritative omission count and description-removal state, and the live
+  harness accepts the recorded event stream without adding model calls to the
+  deterministic tier.
+
 ## [1.1.112] - 2026-07-24
 
 ### Added

@@ -42,6 +42,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="include installed Claude/Codex context and parity probes",
     )
+    parser.add_argument(
+        "--codex-events-file",
+        type=Path,
+        help="optional recorded `codex exec --json` JSONL for exact omission count",
+    )
     parser.add_argument("--output", type=Path)
     return parser.parse_args()
 
@@ -80,11 +85,16 @@ def main() -> int:
     if args.hooks:
         checks.append(("hook regressions", ["bash", "hooks/tests/run-tests.sh"]))
     if args.live:
+        codex_context = [sys.executable, "scripts/capture-codex-context.py"]
+        if args.codex_events_file:
+            codex_context.extend(
+                ["--events-file", str(args.codex_events_file.resolve())]
+            )
         checks.extend(
             [
                 (
                     "Codex startup context",
-                    [sys.executable, "scripts/capture-codex-context.py"],
+                    codex_context,
                 ),
                 (
                     "Claude startup cost",

@@ -103,25 +103,81 @@ def parse_prompt(text: str) -> dict[str, Any]:
         if (parsed := _skill_line(line)) is not None
     ]
     omitted_match = OMITTED_RE.search(block)
-    omitted = int(omitted_match.group(1)) if omitted_match else 0
+    omitted = int(omitted_match.group(1)) if omitted_match else None
     names = [name for name, _ in skills]
     descriptions = [description for _, description in skills if description]
+    warning_observed = omitted_match is not None
     return {
         "prompt_bytes": len(normalized.encode("utf-8")),
         "skills_block_bytes": len(block.encode("utf-8")),
         "visible_skill_count": len(skills),
         "omitted_skill_count": omitted,
-        "implicit_skill_count": len(skills) + omitted,
+        "implicit_skill_count": (
+            len(skills) + omitted if omitted is not None else None
+        ),
         "descriptions_retained": len(descriptions),
-        "all_descriptions_removed": bool(
-            re.search(
-                r"all skill descriptions were removed", block, re.IGNORECASE
+        "catalog_warning_observed": warning_observed,
+        "all_descriptions_removed": (
+            bool(
+                re.search(
+                    r"all skill descriptions were removed", block, re.IGNORECASE
+                )
             )
+            if warning_observed
+            else None
         ),
         "bopen_tools_visible_count": sum(
             name.startswith("bopen-tools:") for name in names
         ),
         "visible_skills": names,
+    }
+
+
+def parse_runtime_events(text: str) -> dict[str, Any]:
+    """Extract the authoritative budget warning from `codex exec --json` JSONL."""
+    messages: list[str] = []
+    for line in text.splitlines():
+        if not line.strip().startswith("{"):
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        def visit(value: Any) -> None:
+            if isinstance(value, dict):
+                for key, child in value.items():
+                    if key in {"message", "text"} and isinstance(child, str):
+                        messages.append(child)
+                    else:
+                        visit(child)
+            elif isinstance(value, list):
+                for child in value:
+                    visit(child)
+
+        visit(payload)
+    warning = next(
+        (message for message in messages if OMITTED_RE.search(message)),
+        None,
+    )
+    omitted_match = OMITTED_RE.search(warning or "")
+    return {
+        "catalog_warning_observed": warning is not None,
+        "omitted_skill_count": (
+            int(omitted_match.group(1)) if omitted_match else None
+        ),
+        "all_descriptions_removed": (
+            bool(
+                re.search(
+                    r"all skill descriptions were removed",
+                    warning or "",
+                    re.IGNORECASE,
+                )
+            )
+            if warning
+            else None
+        ),
+        "warning": warning,
     }
 
 
@@ -152,7 +208,14 @@ def markdown(snapshot: dict[str, Any]) -> str:
         f"- Context window: {model.get('context_window', 'not captured')}",
         f"- Skill budget: {model.get('skill_budget_tokens', 'not captured')}",
         f"- Visible skills: {prompt['visible_skill_count']}",
-        f"- Omitted skills: {prompt['omitted_skill_count']}",
+        (
+            "- Omitted skills: "
+            + (
+                str(prompt["omitted_skill_count"])
+                if prompt["omitted_skill_count"] is not None
+                else "unknown (no runtime warning event supplied)"
+            )
+        ),
         f"- Descriptions retained: {prompt['descriptions_retained']}",
         f"- Skills block: {prompt['skills_block_bytes']:,} bytes",
         f"- bopen-tools visible: {prompt['bopen_tools_visible_count']}",
@@ -165,6 +228,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prompt-file", type=Path)
     parser.add_argument("--models-file", type=Path)
+    parser.add_argument(
+        "--events-file",
+        type=Path,
+        help="recorded `codex exec --json` JSONL containing startup warnings",
+    )
     parser.add_argument("--model")
     parser.add_argument("--probe", default="plugin context snapshot")
     parser.add_argument("--codex-home", type=Path)
@@ -188,6 +256,23 @@ def main() -> int:
             "schema_version": 1,
             "prompt": parse_prompt(prompt_text),
         }
+        if args.events_file:
+            runtime = parse_runtime_events(
+                args.events_file.read_text(encoding="utf-8")
+            )
+            snapshot["runtime_warning"] = runtime
+            if runtime["catalog_warning_observed"]:
+                snapshot["prompt"]["catalog_warning_observed"] = True
+                snapshot["prompt"]["omitted_skill_count"] = runtime[
+                    "omitted_skill_count"
+                ]
+                snapshot["prompt"]["implicit_skill_count"] = (
+                    snapshot["prompt"]["visible_skill_count"]
+                    + runtime["omitted_skill_count"]
+                )
+                snapshot["prompt"]["all_descriptions_removed"] = runtime[
+                    "all_descriptions_removed"
+                ]
         if args.models_file or not args.prompt_file:
             models_text = (
                 args.models_file.read_text(encoding="utf-8")

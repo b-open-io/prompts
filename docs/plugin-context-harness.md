@@ -7,7 +7,7 @@ plugin contents.
 
 ## Current baseline
 
-The 1.1.111 source tree measured on 2026-07-24 contains:
+The 1.1.112 source tree measured on 2026-07-24 contains:
 
 - 85 discoverable skill folders: 69 authored and 16 third-party symlinks
 - 78 Claude-implicit and 83 Codex-implicit skills
@@ -21,10 +21,12 @@ commands in its Skills component group. The exact number varies with host
 version and installed plugin state, which is why it is captured rather than
 hardcoded as a release threshold.
 
-A live Codex `gpt-5.6-sol` snapshot reported a 272,000-token model window and a
-5,440-token skill budget. The current probe rendered 302 skill identities and
-zero descriptions. A prior startup in the same environment discovered 373
-implicit skills and omitted 71 after removing every description. Catalog
+A live Codex `gpt-5.6-sol` static snapshot reported a 272,000-token model window
+and a 5,440-token skill budget. The probe rendered 300 skill identities and zero
+descriptions. `codex debug prompt-input` does not expose the runtime
+budget-warning event, so it cannot prove how many additional skills were
+omitted. A fresh `codex exec --json` run in the same environment reported that
+every description was removed and 76 additional skills were omitted. Catalog
 cardinality must therefore be measured in every fresh host profile.
 
 Codex's installed bopen-tools package currently contains the 69 authored skills
@@ -73,6 +75,23 @@ python3 scripts/capture-codex-context.py \
   --model gpt-5.6-sol \
   --output /tmp/codex-context.json
 ```
+
+The static prompt snapshot reports the omission count as unknown unless a
+runtime event stream is supplied. To capture the exact startup warning, run a
+fresh, model-backed probe and pass its JSONL output to the parser:
+
+```bash
+codex exec --json --ephemeral --skip-git-repo-check \
+  'Reply exactly CONTEXT_PROBE_OK.' \
+  < /dev/null > /tmp/codex-events.jsonl
+
+python3 scripts/capture-codex-context.py \
+  --events-file /tmp/codex-events.jsonl \
+  --output /tmp/codex-context.json
+```
+
+The runtime probe may consume model quota. Keep it in the live release tier,
+not deterministic unit tests.
 
 For deterministic tests, provide recorded inputs:
 
@@ -171,7 +190,8 @@ python3 scripts/run-plugin-harness.py --hooks
 Add installed-host probes after publishing:
 
 ```bash
-python3 scripts/run-plugin-harness.py --hooks --live
+python3 scripts/run-plugin-harness.py --hooks --live \
+  --codex-events-file /tmp/codex-events.jsonl
 ```
 
 The complete release sequence is:
