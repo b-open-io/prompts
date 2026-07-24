@@ -6,6 +6,37 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.2.0] - 2026-07-24
+
+### Changed
+
+- **bopen-tools is now a small core.** The catalog splits into nine optional
+  modules: orchestration, plugin-dev, review, web, creative, mcp, ops, research,
+  and public-agents. Core keeps session context, setup and hook management,
+  completion auditing, session recall, routing, identity work, and every hook.
+- Core falls to 15 skills and 3 agents, roughly 1,932 estimated startup tokens
+  against ~25,705 before this work began.
+- Modules live in `modules/` in this repository, each with its own Claude and
+  Codex manifests, and register in both marketplaces by relative source path.
+  Nothing is duplicated between core and modules.
+- Third-party symlinked skills moved with their module, with targets adjusted
+  for the extra directory depth, so vendor ownership and `skills-lock.json`
+  provenance are unchanged.
+
+### Fixed
+
+- Relocating agents broke 28 Codex adapter directories, whose `AGENTS.md`
+  symlink pointed at an agent file that had moved. Each adapter moved with its
+  agent; adapters for agents that left the repository were removed.
+- Repointed every in-repo reference to a relocated resource, including the skill
+  and agent maps in `CLAUDE.md`.
+
+### Note
+
+`setup` and `visual-wayfinder` stay in core because Agent Master bundles both
+into the signed desktop app and resolves them at `skills/<name>`.
+
+
 ## [1.1.120] - 2026-07-24
 
 ### Fixed

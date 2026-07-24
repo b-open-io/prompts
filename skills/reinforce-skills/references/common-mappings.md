@@ -34,11 +34,11 @@ These skills ship with plugins and are available to anyone who installs the plug
 | Trigger | Skill |
 |---------|-------|
 | self-audit, find-mistakes | bopen-tools:confess |
-| quality-check, review-work, critique-change, diff-review | bopen-tools:visual-review |
+| quality-check, review-work, critique-change, diff-review | bopen-review:visual-review |
 | humanize, clean-ai-slop, remove-ai-patterns | bopen-tools:humanize |
 | refresh-skill-map | bopen-tools:reinforce-skills |
-| npm-publish | bopen-tools:npm-publish |
-| benchmark-skills, write-evals, test-skill-quality | bopen-tools:benchmark-skills |
+| npm-publish | bopen-plugin-dev:npm-publish |
+| benchmark-skills, write-evals, test-skill-quality | bopen-plugin-dev:benchmark-skills |
 
 ### BSV Skills
 
@@ -74,28 +74,28 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 
 | Trigger | Agent |
 |---------|-------|
-| security-audit, vulnerability-review | bopen-tools:code-auditor |
-| design-ui, create-component, style-page | bopen-tools:designer |
-| write-docs, readme, api-docs | bopen-tools:documentation-writer |
-| database-schema, query-optimization | bopen-tools:database |
-| nextjs-feature, react-component | bopen-tools:nextjs |
-| api-integration, webhook, third-party | bopen-tools:integration-expert |
-| devops, ci-cd, deployment | bopen-tools:devops |
-| payments, stripe, checkout | bopen-tools:payments |
-| performance-optimization, bundle-size | bopen-tools:optimizer |
-| mobile-app, expo, react-native | bopen-tools:mobile |
-| desktop-app, native-macos, menu-bar-app, ship-dmg | bopen-tools:native-desktop |
-| mcp-server, mcp-config | bopen-tools:mcp |
-| research, gather-info, web-research | bopen-tools:researcher |
+| security-audit, vulnerability-review | bopen-review:code-auditor |
+| design-ui, create-component, style-page | bopen-web:designer |
+| write-docs, readme, api-docs | bopen-research:documentation-writer |
+| database-schema, query-optimization | bopen-ops:database |
+| nextjs-feature, react-component | bopen-web:nextjs |
+| api-integration, webhook, third-party | bopen-ops:integration-expert |
+| devops, ci-cd, deployment | bopen-ops:devops |
+| payments, stripe, checkout | bopen-ops:payments |
+| performance-optimization, bundle-size | bopen-web:optimizer |
+| mobile-app, expo, react-native | bopen-web:mobile |
+| desktop-app, native-macos, menu-bar-app, ship-dmg | bopen-creative:native-desktop |
+| mcp-server, mcp-config | bopen-mcp:mcp |
+| research, gather-info, web-research | bopen-research:researcher |
 | agent-design, ai-agent | bopen-orchestration:agent-builder |
 | marketing-copy, growth | product-skills:marketer |
-| data-pipeline, analytics | bopen-tools:data |
+| data-pipeline, analytics | bopen-ops:data |
 | legal-review, privacy-policy, tos | product-skills:legal |
-| testing, e2e-tests, unit-tests | bopen-tools:tester |
-| skill-benchmarking, eval-writing, measure-skill | bopen-tools:tester |
+| testing, e2e-tests, unit-tests | bopen-review:tester |
+| skill-benchmarking, eval-writing, measure-skill | bopen-review:tester |
 | code-review, post-step-review | superpowers:code-reviewer |
-| file-consolidation, cleanup, organize | bopen-tools:consolidator |
-| architecture-review | bopen-tools:architecture-reviewer |
+| file-consolidation, cleanup, organize | bopen-review:consolidator |
+| architecture-review | bopen-review:architecture-reviewer |
 | project-planning, roadmap, linear | bopen-tools:project-manager |
 
 ### BSV / Blockchain Agents
@@ -131,5 +131,5 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 For a full-stack Next.js app with BSV auth and a design system:
 
 ```
-<!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|design-ui,create-component→Agent(bopen-tools:designer)|security-review,audit→Agent(bopen-tools:code-auditor)|write-docs,readme→Agent(bopen-tools:documentation-writer)|nextjs-feature,react→Agent(bopen-tools:nextjs)|sigma-auth,bitcoin-oauth→Agent(sigma-auth:sigma-auth-guide)|generate-image,visual→Agent(gemskills:content)|test,e2e→Agent(bopen-tools:tester)<!-- AGENT-MAP-END -->
+<!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|design-ui,create-component→Agent(bopen-web:designer)|security-review,audit→Agent(bopen-review:code-auditor)|write-docs,readme→Agent(bopen-research:documentation-writer)|nextjs-feature,react→Agent(bopen-web:nextjs)|sigma-auth,bitcoin-oauth→Agent(sigma-auth:sigma-auth-guide)|generate-image,visual→Agent(gemskills:content)|test,e2e→Agent(bopen-review:tester)<!-- AGENT-MAP-END -->
 ```

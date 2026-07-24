@@ -92,7 +92,7 @@ Read in full (`/Users/satchmo/code/prompts/agents/ceo.md`). Chief assumes:
 - Dashboard Review via `GET /api/companies/{companyId}/dashboard`
 - Project Setup via `POST /api/companies/{companyId}/projects` +
   `POST /api/projects/{projectId}/workspaces`
-- Agent Hiring: define role → `Skill(bopen-tools:agent-onboarding)` →
+- Agent Hiring: define role → `Skill(bopen-plugin-dev:agent-onboarding)` →
   "Register the agent in Paperclip with proper role, reportsTo, budget"
 - OpenClaw Invites (CEO-only): `POST /api/companies/{companyId}/openclaw/invite-prompt`
 - Approvals: `GET /api/approvals/{approvalId}` + issues, approve/reject via

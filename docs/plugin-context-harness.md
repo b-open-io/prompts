@@ -159,9 +159,9 @@ from the existing skill-output benchmark:
     {
       "id": "visual-review-direct",
       "prompt": "Show me what changed on this branch as a review page.",
-      "expected_skills": ["bopen-tools:visual-review"],
+      "expected_skills": ["bopen-review:visual-review"],
       "acceptable_alternatives": [],
-      "forbidden_skills": ["bopen-tools:free-roam-testing"]
+      "forbidden_skills": ["bopen-review:free-roam-testing"]
     }
   ]
 }

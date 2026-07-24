@@ -28,33 +28,39 @@ historical baseline.
 
 ## Installation
 
-`bopen-tools` is the core: session context, setup and hook management,
-completion auditing, session recall, routing, and the hooks. Everything else
-ships as an optional **module** you install alongside it.
+`bopen-tools` is the **core**: session context, setup and hook management,
+completion auditing, session recall, routing, identity work, and every hook.
+Everything else ships as an optional **module** you install alongside it.
 
 `pack` in this project always means a premium prompt pack. Plugin
 distributions are modules.
-
-### Modules
-
-| Module | Install | Contents |
-|---|---|---|
-| `bopen-orchestration` | `/plugin install bopen-orchestration@b-open-io` | coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex, and the agent-builder persona |
-
-Modules declare `bopen-tools` as a dependency, so installing one pulls the core
-automatically. Install only the modules you need: Codex allocates roughly two
-percent of the model's context window to skills across *every* installed
-plugin, so an unused module costs budget that another plugin could have used.
-
-
-### Claude Code
 
 ```bash
 /plugin install bopen-tools@b-open-io
 ```
 
-Claude Code discovers the plugin's agents, skills, commands, and Claude-specific
-hooks directly.
+### Modules
+
+| Module | Contents |
+|---|---|
+| `bopen-orchestration` | coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
+| `bopen-plugin-dev` | agent lifecycle, benchmarks, plugin settings, publishing; prompt-engineer, trainer |
+| `bopen-review` | visual review and proposals, code audit scripts, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
+| `bopen-web` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection; designer, nextjs, optimizer, mobile |
+| `bopen-creative` | Three.js, shaders, game UI, macOS design, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
+| `bopen-mcp` | MCP Apps and the json-render framework; mcp |
+| `bopen-ops` | deployment scripts, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
+| `bopen-research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
+| `bopen-public-agents` | personas for public surfaces; account-manager |
+
+```bash
+/plugin install bopen-orchestration@b-open-io
+codex plugin add bopen-orchestration@b-open-io
+```
+
+Install only what you need. Codex allocates roughly two percent of the model's
+context window to skills across *every* installed plugin, so an unused module
+spends budget another plugin could have used.
 
 ### Codex
 
@@ -134,64 +140,21 @@ upstream provenance.
 <summary><strong>Authored skills — click to expand</strong></summary>
 
 ```bash
-bunx skills add b-open-io/bopen-tools --skill agent-auditor
-bunx skills add b-open-io/bopen-tools --skill agent-decommissioning
-bunx skills add b-open-io/bopen-tools --skill agent-onboarding
 bunx skills add b-open-io/bopen-tools --skill auth-md
-bunx skills add b-open-io/bopen-tools --skill benchmark-skills
-bunx skills add b-open-io/bopen-tools --skill charting
 bunx skills add b-open-io/bopen-tools --skill check-version
-bunx skills add b-open-io/bopen-tools --skill chrome-cdp
-bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
-bunx skills add b-open-io/bopen-tools --skill code-audit-scripts
 bunx skills add b-open-io/bopen-tools --skill codex-agent-setup
 bunx skills add b-open-io/bopen-tools --skill confess
-bunx skills add b-open-io/bopen-tools --skill cost-tracking
-bunx skills add b-open-io/bopen-tools --skill create-next-project
-bunx skills add b-open-io/bopen-tools --skill design-game-ui
-bunx skills add b-open-io/bopen-tools --skill devops-scripts
 bunx skills add b-open-io/bopen-tools --skill ezkl
-bunx skills add b-open-io/bopen-tools --skill free-roam-testing
 bunx skills add b-open-io/bopen-tools --skill front-desk
-bunx skills add b-open-io/bopen-tools --skill frontend-performance
-bunx skills add b-open-io/bopen-tools --skill generative-ui
-bunx skills add b-open-io/bopen-tools --skill github-stars
 bunx skills add b-open-io/bopen-tools --skill hammertime
 bunx skills add b-open-io/bopen-tools --skill hook-manager
-bunx skills add b-open-io/bopen-tools --skill html-to-pdf
 bunx skills add b-open-io/bopen-tools --skill humanize
-bunx skills add b-open-io/bopen-tools --skill hunter-skeptic-referee
 bunx skills add b-open-io/bopen-tools --skill linear-planning
-bunx skills add b-open-io/bopen-tools --skill mcp-apps
-bunx skills add b-open-io/bopen-tools --skill nextjs-upgrade
-bunx skills add b-open-io/bopen-tools --skill notebooklm
-bunx skills add b-open-io/bopen-tools --skill npm-publish
-bunx skills add b-open-io/bopen-tools --skill perf-audit
-bunx skills add b-open-io/bopen-tools --skill persona
-bunx skills add b-open-io/bopen-tools --skill plaid-integration
-bunx skills add b-open-io/bopen-tools --skill plugin-settings
-bunx skills add b-open-io/bopen-tools --skill process-cleanup
-bunx skills add b-open-io/bopen-tools --skill publish-request
 bunx skills add b-open-io/bopen-tools --skill reinforce-skills
 bunx skills add b-open-io/bopen-tools --skill remind
 bunx skills add b-open-io/bopen-tools --skill runtime-context
 bunx skills add b-open-io/bopen-tools --skill setup
-bunx skills add b-open-io/bopen-tools --skill shaders
-bunx skills add b-open-io/bopen-tools --skill shadscan
-bunx skills add b-open-io/bopen-tools --skill skill-publish
-bunx skills add b-open-io/bopen-tools --skill statusline-setup
-bunx skills add b-open-io/bopen-tools --skill threejs-r3f
-bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
-bunx skills add b-open-io/bopen-tools --skill visual-proposal
 bunx skills add b-open-io/bopen-tools --skill visual-wayfinder
-bunx skills add b-open-io/bopen-tools --skill visual-review
-bunx skills add b-open-io/bopen-tools --skill voice-clone
-bunx skills add b-open-io/bopen-tools --skill wait-for-ci
-bunx skills add b-open-io/bopen-tools --skill x-research
-bunx skills add b-open-io/bopen-tools --skill x-tweet-fetch
-bunx skills add b-open-io/bopen-tools --skill x-tweet-search
-bunx skills add b-open-io/bopen-tools --skill x-user-lookup
-bunx skills add b-open-io/bopen-tools --skill x-user-timeline
 ```
 
 </details>
@@ -206,46 +169,21 @@ and user-created agents stay in their owning projects and are not cataloged as
 bopen-tools members.
 
 ### Development & Architecture
-- 🔵 [**prompt-engineer**](agents/prompt-engineer.md) — Zack — Slash commands, agent skills, YAML frontmatter, Claude Code config
-- 🏗️ [**architecture-reviewer**](agents/architecture-reviewer.md) — Kayle — Large-scale system design, refactoring, multi-file analysis
-- 🔴 [**code-auditor**](agents/code-auditor.md) — Jerry — Security vulnerabilities, comprehensive code audits
-- 🛡️ [**security-ops**](agents/security-ops.md) — Paul — Runtime security, dependency scanning, supply chain analysis, OWASP
-- 🚀 [**optimizer**](agents/optimizer.md) — Torque — Runtime performance, bundle analysis, Core Web Vitals
-- 🧪 [**tester**](agents/tester.md) — Jason — Testing strategies, evals, skill benchmarking, CI automation
-- 🧹 [**consolidator**](agents/consolidator.md) — Steve — File organization, deduplication, naming conventions
 
 ### Platform & Infrastructure
-- 🟠 [**devops**](agents/devops.md) — Root — Vercel + Railway + Bun stack, CI/CD, security scanning
-- 🟢 [**database**](agents/database.md) — Idris — PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, Convex
-- 📱 [**mobile**](agents/mobile.md) — Kira — Expo-first React Native, Swift, Kotlin, Flutter
-- 🖥️ [**native-desktop**](agents/native-desktop.md) — Ada — Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs
-- 🔗 [**integration-expert**](agents/integration-expert.md) — Maxim — API integrations, webhooks, third-party services
-- 🟠 [**mcp**](agents/mcp.md) — Orbit — MCP servers and Apps, capability negotiation, JSON Render delivery, diagnostics, and publishing
-- ⚡ [**nextjs**](agents/nextjs.md) — Theo — Next.js, React 19, Turbopack, Bun, Biome
 
 ### Specialized Domains
-- 🔷 [**creative-developer**](agents/creative-developer.md) — Kris — Three.js, R3F, shaders, physics, diegetic and world-space interfaces
-- 🗺️ [**cartographer**](agents/cartographer.md) — Leaf — MapLibre, Mapbox, Leaflet, CesiumJS, geospatial data
-- 💚 [**payments**](agents/payments.md) — Mina — Payment integrations, Plaid, financial operations
-- 📊 [**data**](agents/data.md) — Data Accumulator — Data processing, analytics, ETL pipelines
 - 📣 **marketer** — Caal — Moved to `product-skills:marketer`
 - 🗂️ [**project-manager**](agents/project-manager.md) — Wags — Linear planning, issue tracking, project organization
 
 ### Content & Communication
-- 🟣 [**designer**](agents/designer.md) — Ridd — Web UI/UX plus game HUDs, controller/remote navigation, and ten-foot TV interfaces
-- 🔷 [**documentation-writer**](agents/documentation-writer.md) — Flow — READMEs, API docs, PRDs, guides
-- 🎵 [**audio-specialist**](agents/audio-specialist.md) — Frames — ElevenLabs audio, UI-audio audits and wiring, waveform editing, sound effects, and music generation
-- 🩷 [**researcher**](agents/researcher.md) — Parker — Web research, docs, APIs, parallel research strategies
 - 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
 
 ### Organization & Operations
-- 🎓 [**trainer**](agents/trainer.md) — Satoshi — Agent training, standards, and knowledge transfer
 - 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup
-- 💼 [**executive-assistant**](agents/executive-assistant.md) — Tina — Google Workspace, scheduling, communications
-- 🌐 [**account-manager**](agents/account-manager.md) — Kurt — Public-facing sales, visitor qualification, bOpen.io chat
 
 **Usage:** In Claude Code, request the plugin agent by name (for example,
-`bopen-tools:code-auditor`). In Codex, use its installed adapter name (for
+`bopen-review:code-auditor`). In Codex, use its installed adapter name (for
 example, `bopen_code_auditor`). If a Codex adapter is missing, run the setup
 skill rather than pretending the specialist was spawned.
 
@@ -676,7 +614,6 @@ Add evals alongside any skill at `skills/<name>/evals/evals.json`:
 bun run scripts/benchmark.tsx
 
 # Run a single skill
-bun run scripts/benchmark.tsx --skill geo-optimizer
 
 # Custom model or concurrency (use an ID available to your account)
 bun run scripts/benchmark.tsx --model "${BENCHMARK_MODEL_ID:?set BENCHMARK_MODEL_ID}" --concurrency 5
@@ -731,7 +668,7 @@ Agents can be explicitly requested for specific tasks. Use Claude plugin IDs or
 Codex adapter IDs according to the current host:
 
 ```
-"Use bopen-tools:prompt-engineer to create a deployment command"   # Claude
+"Use bopen-plugin-dev:prompt-engineer to create a deployment command"   # Claude
 "Have bopen_code_auditor review the authentication boundary"      # Codex
 "Ask bopen_designer to review this component system"              # Codex
 ```

@@ -19,7 +19,7 @@ cat > "$FIXTURE_INDEX" <<'EOF'
     },
     {
       "kind": "agent",
-      "id": "bopen-tools:researcher",
+      "id": "bopen-research:researcher",
       "triggers": ["research the docs and gather sources", "research", "docs", "gather", "sources"],
       "hint": "Multi-source technical research with citations."
     }
@@ -61,7 +61,7 @@ assert_eq "prompt-router slash-command silent" "" "$HOOK_STDOUT"
 # --- fires at most once, caps at top 2, and reports an agent match correctly ---
 research_input=$(jq -n '{prompt:"please research the docs and gather sources on this", session_id:"sess-research"}')
 run_hook "prompt-router.sh" "claude" "$research_input"
-assert_contains "prompt-router agent match subagent_type wording" "subagent_type bopen-tools:researcher" "$HOOK_STDOUT"
+assert_contains "prompt-router agent match subagent_type wording" "subagent_type bopen-research:researcher" "$HOOK_STDOUT"
 match_count=$(printf '%s' "$HOOK_STDOUT" | grep -o "\[BOPEN-ROUTER\]" | wc -l | tr -d ' ')
 assert_eq "prompt-router fires exactly once" "1" "$match_count"
 

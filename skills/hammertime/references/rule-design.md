@@ -224,7 +224,7 @@ The `skill` field triggers automatic skill invocation when a rule fires. The blo
 | Model skips tests | `superpowers:test-driven-development` | Redirects to TDD workflow |
 | Model ignores lint | `bopen-tools:simplify` | Runs code simplification |
 | Model skips architecture planning | `gemskills:visual-planner` | Forces visual planning step |
-| Model writes insecure code | `bopen-tools:code-audit-scripts` | Runs security audit |
+| Model writes insecure code | `bopen-review:code-audit-scripts` | Runs security audit |
 
 Resolve informal skill names with `Skill(find-skills)` before setting the `skill` field — don't guess at fully-qualified IDs.
 

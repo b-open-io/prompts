@@ -205,7 +205,7 @@
 ### Review
 
 - Added command-specific safe alternatives to bouncer and damage-control denials while preserving Claude stdout/exit-0 and Codex stderr/exit-2 contracts.
-- Added a consistent `bopen-tools:publish-request` path to every publish-gate denial, including internal, API, approval, and on-chain acknowledgment failures.
+- Added a consistent `bopen-plugin-dev:publish-request` path to every publish-gate denial, including internal, API, approval, and on-chain acknowledgment failures.
 - Extended hook tests to assert that friendly alternatives appear in both runtime output forms; the full prompts hook suite passes 308 tests.
 - Did not restore `linear-commit-guard.sh`: commit `b38b8fa` removed it when linear-sync became a standalone plugin, and its current source checkout is already dirty with unrelated changes. That fix must be made and committed in a clean linear-sync worktree.
 - Left both plugin manifests unchanged and did not push.

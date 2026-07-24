@@ -210,7 +210,7 @@ Mean delta 0.8. Every positive case depends entirely on the plugin being present
 
 ## What the suite caught first
 
-Before it measured anything about compression, the eval found four defects in our own test harness. The first skill-routing run scored 41.7% and read as a catalog-wide routing failure. It was two bugs: cases declared `allowed_tools: []`, hiding the skill catalog, and the grader regex omitted the optional `bopen-tools:` prefix that the agent graders already allowed, so a correct answer of `bopen-tools:visual-review` scored as wrong. With both defects fixed, the real uncompressed baseline came out at 83.3%, which is the number every later comparison is measured against.
+Before it measured anything about compression, the eval found four defects in our own test harness. The first skill-routing run scored 41.7% and read as a catalog-wide routing failure. It was two bugs: cases declared `allowed_tools: []`, hiding the skill catalog, and the grader regex omitted the optional `bopen-tools:` prefix that the agent graders already allowed, so a correct answer of `bopen-review:visual-review` scored as wrong. With both defects fixed, the real uncompressed baseline came out at 83.3%, which is the number every later comparison is measured against.
 
 A third defect: repeated `--case` flags silently run only the last glob, which made an agent regression check pass on two cases while reporting success for ten. A fourth: a case can expect a skill belonging to a *different* plugin, unreachable from the plugin under test, and that failure is indistinguishable from a routing miss. Auditing every expected skill name against the plugin's actual inventory is what surfaced it, and it should run before anyone trusts a suite's failures.
 

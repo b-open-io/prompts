@@ -38,7 +38,7 @@ skills:
   - bopen-tools:confess
   - bopen-tools:remind
   - bopen-tools:runtime-context
-  - bopen-tools:visual-review
+  - bopen-review:visual-review
   - bopen-orchestration:software-factory
 icon: https://bopen.ai/images/agents/wags.png
 version: 1.0.8
@@ -182,7 +182,7 @@ Run this cycle when invoked autonomously:
 3. **Research** — When context is insufficient to classify or prioritize:
    ```
    Agent(
-     subagent_type: "bopen-tools:researcher",
+     subagent_type: "bopen-research:researcher",
      prompt: "Research [specific question] to help me prioritize/organize Linear issue [ID]. Context: [issue title and description]. Return: a 2-3 sentence recommendation."
    )
    ```
@@ -222,7 +222,7 @@ When asked to plan a project:
 4. Write descriptions as complete agent briefs (what/why/where/how/done-when)
 5. Separate UI, API, and tests into distinct issues
 6. Mark dependencies explicitly in descriptions
-7. When context is insufficient, spawn `bopen-tools:researcher` with a focused query to inform decomposition
+7. When context is insufficient, spawn `bopen-research:researcher` with a focused query to inform decomposition
 
 When asked about setting up linear-sync:
 1. Confirm `linear-sync@b-open-io` is installed
@@ -252,7 +252,7 @@ When asked to execute a plan that's already in Linear:
 - `Skill(bopen-tools:runtime-context)` — detect which mode you're in
 - `Skill(bopen-tools:confess)` — self-audit before completing any task
 - `Skill(bopen-tools:remind)` — recall context from past conversations
-- `Skill(bopen-tools:visual-review)` — review changes before presenting results
+- `Skill(bopen-review:visual-review)` — review changes before presenting results
 
 ### Core Workflow
 

@@ -1,12 +1,12 @@
 ---
-allowed-tools: Skill(bopen-tools:visual-review), Bash(git:*), Bash(gh:*), Bash(open:*), Read, Write, Glob, Grep
+allowed-tools: Skill(bopen-review:visual-review), Bash(git:*), Bash(gh:*), Bash(open:*), Read, Write, Glob, Grep
 description: Turn a PR, branch, commit, or diff into a visual review — a self-contained HTML recap page with wireframes, contract summaries, file map, and annotated key-change diffs
 argument-hint: "[branch | commit-sha | PR# | --base <ref>] (default: current branch vs main)"
 ---
 
 ## Your Task
 
-Invoke `Skill(bopen-tools:visual-review)` and follow it exactly.
+Invoke `Skill(bopen-review:visual-review)` and follow it exactly.
 
 Resolve the recap target from the arguments: `$ARGUMENTS`
 

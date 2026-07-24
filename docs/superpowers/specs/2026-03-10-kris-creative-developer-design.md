@@ -50,7 +50,7 @@ Kris is a **studio artist, not a site builder**. He produces assets and prototyp
 |-------|---------|
 | `Skill(remotion-best-practices)` | 3D video output; has `rules/3d.md` with R3F patterns |
 | `Skill(vercel-react-best-practices)` | React fundamentals (R3F is React) |
-| `Skill(bopen-tools:frontend-performance)` | FPS profiling, draw call analysis |
+| `Skill(bopen-web:frontend-performance)` | FPS profiling, draw call analysis |
 | `Skill(agent-browser)` | Preview and screenshot 3D scenes |
 | `Skill(gemskills:generate-image)` | Textures, HDR environments, reference images |
 | `Skill(gemskills:generate-svg)` | SVG assets for HUD/overlay elements |
@@ -60,7 +60,7 @@ Kris is a **studio artist, not a site builder**. He produces assets and prototyp
 | `Skill(gemskills:browsing-styles)` | Visual style exploration before creating |
 | `Skill(superpowers:dispatching-parallel-agents)` | Fan out work |
 | `Skill(superpowers:subagent-driven-development)` | Systematic execution |
-| `Skill(bopen-tools:mcp-apps)` | Deliver 3D as MCP App in Claude Desktop |
+| `Skill(bopen-mcp:mcp-apps)` | Deliver 3D as MCP App in Claude Desktop |
 
 ## Skills — Custom to Build (2)
 

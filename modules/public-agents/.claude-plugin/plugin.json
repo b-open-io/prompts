@@ -1,0 +1,14 @@
+{
+  "name": "bopen-public-agents",
+  "version": "0.1.0",
+  "description": "Personas for public-facing surfaces, intended for deployments that answer visitors rather than developers",
+  "author": {
+    "name": "b-open-io",
+    "url": "https://github.com/b-open-io"
+  },
+  "repository": "https://github.com/b-open-io/prompts",
+  "keywords": [
+    "bopen",
+    "public-agents"
+  ]
+}

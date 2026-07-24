@@ -136,7 +136,7 @@ export const PACK_CATALOG = [
 					"gemskills:style-creator",
 					"gemskills:generate-image",
 					"gemskills:generate-svg",
-					"bopen-tools:html-to-pdf",
+					"bopen-creative:html-to-pdf",
 				],
 				agents: ["Ridd", "Lisa", "Flow"],
 				sample: false,
@@ -152,8 +152,8 @@ export const PACK_CATALOG = [
 					"frontend-design",
 					"web-design-guidelines",
 					"vercel-react-best-practices",
-					"bopen-tools:frontend-performance",
-					"bopen-tools:visual-review",
+					"bopen-web:frontend-performance",
+					"bopen-review:visual-review",
 				],
 				agents: ["Ridd", "Theo", "Torque"],
 				sample: false,
@@ -169,7 +169,7 @@ export const PACK_CATALOG = [
 					"gemskills:generate-image",
 					"gemskills:generate-video",
 					"gemskills:section-dividers",
-					"bopen-tools:cli-demo-gif",
+					"bopen-creative:cli-demo-gif",
 				],
 				agents: ["Caal", "Ridd", "Lisa", "Frames"],
 				sample: false,
@@ -185,7 +185,7 @@ export const PACK_CATALOG = [
 					"gemskills:generate-icon",
 					"gemskills:generate-svg",
 					"vercel-react-best-practices",
-					"bopen-tools:ui-audio-theme",
+					"bopen-creative:ui-audio-theme",
 				],
 				agents: ["Ridd", "Kris", "Frames"],
 				sample: false,
@@ -196,7 +196,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Ridd and Theo migrate an existing codebase off scattered hardcoded colors, spacing, and type onto a single shadcn token source of truth, then use a visual-diff recap to prove no screen regressed. Kills the drift between what the design says and what the code renders.",
-				skills: ["shadcn", "web-design-guidelines", "frontend-design", "bopen-tools:visual-review"],
+				skills: ["shadcn", "web-design-guidelines", "frontend-design", "bopen-review:visual-review"],
 				agents: ["Ridd", "Theo"],
 				sample: false,
 			},
@@ -206,7 +206,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Ridd and Theo sweep an app so nothing hard-codes a color: every surface, data-viz palette, and interaction sound flips correctly between light and dark. The theme stops being a half-finished afterthought.",
-				skills: ["web-design-guidelines", "frontend-design", "bopen-tools:ui-audio-theme"],
+				skills: ["web-design-guidelines", "frontend-design", "bopen-creative:ui-audio-theme"],
 				agents: ["Ridd", "Theo"],
 				sample: false,
 			},
@@ -217,9 +217,9 @@ export const PACK_CATALOG = [
 				summary:
 					"Kris builds an animated 3D centerpiece with real shaders and Torque tunes it so the flashy hero ships without wrecking load performance on mobile. A showcase moment that survives a Lighthouse run.",
 				skills: [
-					"bopen-tools:threejs-r3f",
-					"bopen-tools:shaders",
-					"bopen-tools:frontend-performance",
+					"bopen-creative:threejs-r3f",
+					"bopen-creative:shaders",
+					"bopen-web:frontend-performance",
 				],
 				agents: ["Kris", "Torque"],
 				sample: false,
@@ -230,7 +230,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Ridd and Theo wire a generative-UI surface so the product renders dashboards and forms from model output safely, giving each user a layout that adapts to the data they actually have in front of them.",
-				skills: ["bopen-tools:generative-ui", "bopen-tools:mcp-apps", "shadcn"],
+				skills: ["bopen-web:generative-ui", "bopen-mcp:mcp-apps", "shadcn"],
 				agents: ["Ridd", "Theo"],
 				sample: false,
 			},
@@ -240,7 +240,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Frames and Ridd map an app's clicks, notifications, navigation, and error states to one coordinated sound set tied to interaction constants, so the audio feels composed as a single identity — a rarely-done polish layer that makes a product feel expensive.",
-				skills: ["bopen-tools:ui-audio-theme"],
+				skills: ["bopen-creative:ui-audio-theme"],
 				agents: ["Frames", "Ridd"],
 				sample: false,
 			},
@@ -260,7 +260,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Ridd and Theo build an analytics surface that picks the right chart for each metric, encodes categories with an accessible palette, and stays readable in both themes. No more pie charts where a bar chart belonged.",
-				skills: ["bopen-tools:charting", "shadcn", "web-design-guidelines"],
+				skills: ["bopen-web:charting", "shadcn", "web-design-guidelines"],
 				agents: ["Ridd", "Theo"],
 				sample: false,
 			},
@@ -270,7 +270,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Ridd wires an HTML-to-PDF pipeline into the product so it can emit print-ready, on-brand collateral — certificates, one-pagers, receipts, invoices — on demand, so generating a printable document becomes something the app does for itself at runtime.",
-				skills: ["bopen-tools:html-to-pdf", "gemskills:generate-svg"],
+				skills: ["bopen-creative:html-to-pdf", "gemskills:generate-svg"],
 				agents: ["Ridd"],
 				sample: false,
 			},
@@ -353,7 +353,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Torque and Lisa optimize every image on the site — compression, correct sizing, responsive delivery, modern formats — cutting page weight with no layout change and no touch to application logic.",
-				skills: ["gemskills:optimize-images", "bopen-tools:frontend-performance"],
+				skills: ["gemskills:optimize-images", "bopen-web:frontend-performance"],
 				agents: ["Torque", "Lisa"],
 				sample: false,
 			},
@@ -363,7 +363,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Torque produces a clean, embeddable demo GIF of a terminal session or product flow, ready to drop into a README or landing page. The kind of asset that makes a tool look real in three seconds.",
-				skills: ["bopen-tools:cli-demo-gif"],
+				skills: ["bopen-creative:cli-demo-gif"],
 				agents: ["Torque"],
 				sample: false,
 			},
@@ -393,7 +393,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Frames and Lisa generate a narrated feature video with a cloned or scripted voice track, ready for social or the homepage. A launch asset that used to require a video contractor.",
-				skills: ["gemskills:generate-video", "bopen-tools:voice-clone"],
+				skills: ["gemskills:generate-video", "bopen-creative:voice-clone"],
 				agents: ["Frames", "Lisa"],
 				sample: false,
 			},
@@ -423,7 +423,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Ridd generates print-ready collateral straight from the brand system — business cards, postcards, one-pagers — via an HTML-to-CSS print pipeline, no separate design tool required. Good for business cards and one-pagers; not a prepress substitute for packaging.",
-				skills: ["bopen-tools:html-to-pdf", "gemskills:generate-svg"],
+				skills: ["bopen-creative:html-to-pdf", "gemskills:generate-svg"],
 				agents: ["Ridd"],
 				sample: false,
 			},
@@ -447,7 +447,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"Flow documents the brand foundation, Ridd designs against a locked style, Theo ships it in shadcn, and every step is traceable from the voice-and-style docs down to the merged code. A new brand becomes a live site nobody has to reverse-engineer later.",
-				skills: ["gemskills:style-creator", "shadcn", "bopen-tools:visual-review"],
+				skills: ["gemskills:style-creator", "shadcn", "bopen-review:visual-review"],
 				agents: ["Flow", "Ridd", "Theo"],
 				sample: false,
 			},
@@ -457,7 +457,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"Kris builds a 3D centerpiece, Frames layers a coordinated sound identity, and Ridd does the final UI polish pass — a sequenced handoff where each stage builds on the last to produce a premium flagship page.",
-				skills: ["bopen-tools:threejs-r3f", "bopen-tools:ui-audio-theme", "frontend-design"],
+				skills: ["bopen-creative:threejs-r3f", "bopen-creative:ui-audio-theme", "frontend-design"],
 				agents: ["Kris", "Frames", "Ridd"],
 				sample: false,
 			},
@@ -467,7 +467,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"Lisa builds a themed deck, Frames turns it into a narrated video, and Lisa cuts it down into social clips — one story reused across three formats without re-briefing anyone. The clearest demonstration of chained asset production paying for itself.",
-				skills: ["gemskills:deck-creator", "gemskills:generate-video", "bopen-tools:voice-clone"],
+				skills: ["gemskills:deck-creator", "gemskills:generate-video", "bopen-creative:voice-clone"],
 				agents: ["Lisa", "Frames"],
 				sample: true,
 			},
@@ -865,7 +865,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Caal and Parker draft a week of posts in the founder's captured voice and run each through a de-AI pass before scheduling, since a steady posting cadence correlates with materially higher AI-citation rates for the person behind the account.",
-				skills: ["marketing-skills:social", "bopen-tools:persona", "bopen-tools:humanize"],
+				skills: ["marketing-skills:social", "bopen-research:persona", "bopen-tools:humanize"],
 				agents: ["Caal", "Parker"],
 				sample: false,
 			},
@@ -876,8 +876,8 @@ export const PACK_CATALOG = [
 				summary:
 					"Parker pulls a cited summary of what's trending and what competitors are saying on X this week, so content and positioning react to real signal you can trace back to specific posts and accounts.",
 				skills: [
-					"bopen-tools:x-research",
-					"bopen-tools:x-tweet-search",
+					"bopen-research:x-research",
+					"bopen-research:x-tweet-search",
 					"marketing-skills:competitor-profiling",
 				],
 				agents: ["Parker"],
@@ -946,7 +946,7 @@ export const PACK_CATALOG = [
 				skills: [
 					"1sat:ordinals-marketplace",
 					"bsv-skills:check-bsv-price",
-					"bopen-tools:x-research",
+					"bopen-research:x-research",
 				],
 				agents: ["Ordi"],
 				sample: false,
@@ -987,7 +987,7 @@ export const PACK_CATALOG = [
 				summary:
 					"Parker pulls trend data, Caal builds the SEO/GEO strategy and a content calendar tuned for AI-answer citation, so every planned topic traces back to a real search or social signal Parker surfaced.",
 				skills: [
-					"bopen-tools:x-research",
+					"bopen-research:x-research",
 					"marketing-skills:content-strategy",
 					"marketing-skills:ai-seo",
 				],
@@ -1016,8 +1016,8 @@ export const PACK_CATALOG = [
 				summary:
 					"Parker scans trends, Caal drafts against the founder's captured voice profile and runs a de-AI pass before scheduling — a recurring content pipeline that sounds like the founder and publishes at the steady cadence AI crawlers reward as an expertise signal.",
 				skills: [
-					"bopen-tools:x-research",
-					"bopen-tools:persona",
+					"bopen-research:x-research",
+					"bopen-research:persona",
 					"marketing-skills:social",
 					"bopen-tools:humanize",
 				],
@@ -1040,7 +1040,7 @@ export const PACK_CATALOG = [
 				class: "foundation",
 				summary:
 					"Caal captures a voice profile from the founder's real writing so every future draft stays on-brand and recognizably human. The foundation the humanize pass and every content playbook lean on.",
-				skills: ["bopen-tools:persona", "marketing-skills:copywriting"],
+				skills: ["bopen-research:persona", "marketing-skills:copywriting"],
 				agents: ["Caal"],
 				sample: false,
 			},
@@ -1205,13 +1205,13 @@ export const PACK_CATALOG = [
 				summary:
 					"Theo, Idris, Root, Jason, Jerry, and Torque take a product from empty repo to a running, authenticated, billed, deployed, tested, and security-reviewed skeleton, with auth handed to a named specialist and a review step, since auth and billing are exactly where scaffolding agents make the costliest mistakes.",
 				skills: [
-					"bopen-tools:create-next-project",
+					"bopen-web:create-next-project",
 					"bopen-orchestration:software-factory",
 					"bopen-orchestration:wave-coordinator",
 					"sigma-auth:setup-nextjs",
-					"bopen-tools:devops-scripts",
-					"bopen-tools:wait-for-ci",
-					"bopen-tools:perf-audit",
+					"bopen-ops:devops-scripts",
+					"bopen-ops:wait-for-ci",
+					"bopen-web:perf-audit",
 				],
 				agents: ["Theo", "Idris", "Root", "Jason", "Jerry", "Torque"],
 				sample: false,
@@ -1226,8 +1226,8 @@ export const PACK_CATALOG = [
 					"bopen-orchestration:software-factory",
 					"bopen-orchestration:wave-coordinator",
 					"bopen-orchestration:coordinator",
-					"bopen-tools:free-roam-testing",
-					"bopen-tools:cost-tracking",
+					"bopen-review:free-roam-testing",
+					"bopen-ops:cost-tracking",
 				],
 				agents: ["Root", "Satchmo", "Jason", "Kayle"],
 				sample: false,
@@ -1241,9 +1241,9 @@ export const PACK_CATALOG = [
 				skills: [
 					"audit-context-building:audit-context-building",
 					"differential-review:differential-review",
-					"bopen-tools:hunter-skeptic-referee",
+					"bopen-review:hunter-skeptic-referee",
 					"superpowers:systematic-debugging",
-					"bopen-tools:wait-for-ci",
+					"bopen-ops:wait-for-ci",
 				],
 				agents: ["Kayle", "Jerry", "Jason", "Root"],
 				sample: false,
@@ -1255,9 +1255,9 @@ export const PACK_CATALOG = [
 				summary:
 					"Theo, Kira, Idris, and Jason build synchronized Next.js and React Native surfaces against one backend and one Playwright suite, so the two clients never drift into separate codebases.",
 				skills: [
-					"bopen-tools:create-next-project",
+					"bopen-web:create-next-project",
 					"vercel-react-native-skills",
-					"bopen-tools:generative-ui",
+					"bopen-web:generative-ui",
 					"webapp-testing",
 				],
 				agents: ["Theo", "Kira", "Idris", "Jason"],
@@ -1271,10 +1271,10 @@ export const PACK_CATALOG = [
 					"Orbit, Theo, Root, and Jason ship a product usable both as a normal web app and as a tool inside Claude Desktop, ChatGPT, Cursor, and VS Code from day one, published and CI-gated so the MCP surface ships and stays tested alongside the web app.",
 				skills: [
 					"plugin-dev:mcp-integration",
-					"bopen-tools:mcp-apps",
-					"bopen-tools:create-mcp-app",
-					"bopen-tools:npm-publish",
-					"bopen-tools:wait-for-ci",
+					"bopen-mcp:mcp-apps",
+					"bopen-mcp:create-mcp-app",
+					"bopen-plugin-dev:npm-publish",
+					"bopen-ops:wait-for-ci",
 				],
 				agents: ["Orbit", "Theo", "Root", "Jason"],
 				sample: false,
@@ -1328,7 +1328,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Orbit makes the product callable by any MCP host — Claude Desktop, ChatGPT, Cursor, VS Code — without a second integration effort, with the tool contract designed to be safe and discoverable.",
-				skills: ["plugin-dev:mcp-integration", "bopen-tools:mcp-apps"],
+				skills: ["plugin-dev:mcp-integration", "bopen-mcp:mcp-apps"],
 				agents: ["Orbit"],
 				sample: false,
 			},
@@ -1339,9 +1339,9 @@ export const PACK_CATALOG = [
 				summary:
 					"Theo and Orbit build a generative-UI surface that renders from model output via json-render without raw HTML injection, so users get dashboards and forms that recompose around whatever data the model returns.",
 				skills: [
-					"bopen-tools:generative-ui",
-					"bopen-tools:json-render-core",
-					"bopen-tools:json-render-react",
+					"bopen-web:generative-ui",
+					"bopen-mcp:json-render-core",
+					"bopen-mcp:json-render-react",
 				],
 				agents: ["Theo", "Orbit"],
 				sample: false,
@@ -1352,7 +1352,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Jason and Root add Playwright end-to-end coverage and wire it as a CI gate that blocks merges, replacing we-will-add-tests-later with an enforced bar.",
-				skills: ["webapp-testing", "bopen-tools:wait-for-ci"],
+				skills: ["webapp-testing", "bopen-ops:wait-for-ci"],
 				agents: ["Jason", "Root"],
 				sample: false,
 			},
@@ -1362,7 +1362,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Theo runs a codemod-driven migration to Turbopack and async APIs, with a react-doctor pass to catch re-render and hook regressions, so a feature keeps working across the platform major.",
-				skills: ["bopen-tools:nextjs-upgrade", "react-doctor"],
+				skills: ["bopen-web:nextjs-upgrade", "react-doctor"],
 				agents: ["Theo"],
 				sample: false,
 			},
@@ -1402,7 +1402,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Idris and Root add scheduled, monitored work with real observability on Convex cron, replacing fire-and-forget setTimeout calls that silently fail.",
-				skills: ["convex-cron-jobs", "bopen-tools:devops-scripts"],
+				skills: ["convex-cron-jobs", "bopen-ops:devops-scripts"],
 				agents: ["Idris", "Root"],
 				sample: false,
 			},
@@ -1412,7 +1412,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Satchmo and Root instrument an agent workflow with per-request cost tracking and a budget ceiling, so monthly bills stop swinging 2-3x quarter over quarter. Cost volatility is the top 2026 pain point for teams running agentic workflows.",
-				skills: ["bopen-tools:cost-tracking"],
+				skills: ["bopen-ops:cost-tracking"],
 				agents: ["Satchmo", "Root"],
 				sample: false,
 			},
@@ -1435,7 +1435,7 @@ export const PACK_CATALOG = [
 				skills: [
 					"static-analysis:semgrep",
 					"static-analysis:codeql",
-					"bopen-tools:code-audit-scripts",
+					"bopen-review:code-audit-scripts",
 				],
 				agents: ["Paul"],
 				sample: false,
@@ -1446,7 +1446,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Torque returns a scored, prioritized fix list covering blocking scripts, oversized bundles, unoptimized images, and render-blocking CSS, ranked so you can act on the biggest wins the same day.",
-				skills: ["bopen-tools:perf-audit", "bopen-tools:frontend-performance"],
+				skills: ["bopen-web:perf-audit", "bopen-web:frontend-performance"],
 				agents: ["Torque"],
 				sample: true,
 			},
@@ -1480,7 +1480,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Jerry, Kayle, and Jason run a Hunter-Skeptic-Referee pass that produces high-fidelity bug reports without single-model sycophancy — the multi-agent review pattern that outperforms one-prompt review on anything non-trivial.",
-				skills: ["bopen-tools:hunter-skeptic-referee"],
+				skills: ["bopen-review:hunter-skeptic-referee"],
 				agents: ["Jerry", "Kayle", "Jason"],
 				sample: false,
 			},
@@ -1500,7 +1500,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Jason explores staging like a real user and surfaces the bugs a scripted suite never thinks to try, returning a reproducible list before those defects reach production.",
-				skills: ["bopen-tools:free-roam-testing"],
+				skills: ["bopen-review:free-roam-testing"],
 				agents: ["Jason"],
 				sample: false,
 			},
@@ -1510,7 +1510,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Root turns CI status into a blocking gate that holds every downstream step until the pipeline is green, so nothing builds on a broken commit.",
-				skills: ["bopen-tools:wait-for-ci"],
+				skills: ["bopen-ops:wait-for-ci"],
 				agents: ["Root"],
 				sample: false,
 			},
@@ -1520,7 +1520,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Root and Orbit run a clean, reproducible release with the version bumped, changelog written, and tag pushed in one pass, so the published package matches exactly what's in the repo.",
-				skills: ["bopen-tools:npm-publish", "bopen-tools:check-version"],
+				skills: ["bopen-plugin-dev:npm-publish", "bopen-tools:check-version"],
 				agents: ["Root", "Orbit"],
 				sample: false,
 			},
@@ -1530,7 +1530,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Orbit runs the MCP publish checklist — npx compatibility, package.json fields, discovery metadata, install docs — so the server installs cleanly on a teammate's machine the first time they run it.",
-				skills: ["plugin-dev:mcp-integration", "bopen-tools:npm-publish"],
+				skills: ["plugin-dev:mcp-integration", "bopen-plugin-dev:npm-publish"],
 				agents: ["Orbit"],
 				sample: false,
 			},
@@ -1550,7 +1550,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Torque compresses images and trims the largest bundle contributors, cutting page weight and JavaScript payload without a redesign or any change to how the product behaves.",
-				skills: ["gemskills:optimize-images", "bopen-tools:perf-audit"],
+				skills: ["gemskills:optimize-images", "bopen-web:perf-audit"],
 				agents: ["Torque"],
 				sample: false,
 			},
@@ -1608,7 +1608,7 @@ export const PACK_CATALOG = [
 					"static-analysis:semgrep",
 					"static-analysis:codeql",
 					"webapp-testing",
-					"bopen-tools:wait-for-ci",
+					"bopen-ops:wait-for-ci",
 				],
 				agents: ["Kayle", "Theo", "Jason", "Jerry"],
 				sample: true,
@@ -1620,10 +1620,10 @@ export const PACK_CATALOG = [
 				summary:
 					"Theo builds, Torque runs a perf audit, Jason tests, and Root deploys, with each handoff blocking the next, so a feature is measured for speed and covered by tests before it ever reaches a user.",
 				skills: [
-					"bopen-tools:create-next-project",
-					"bopen-tools:perf-audit",
+					"bopen-web:create-next-project",
+					"bopen-web:perf-audit",
 					"webapp-testing",
-					"bopen-tools:wait-for-ci",
+					"bopen-ops:wait-for-ci",
 				],
 				agents: ["Theo", "Torque", "Jason", "Root"],
 				sample: false,
@@ -1635,7 +1635,7 @@ export const PACK_CATALOG = [
 				summary:
 					"Paul sweeps for exposure, Jerry audits the affected code, Kayle makes the risk call, and Root ships the patch, so an incident moves through one ordered path with a single owner at each step.",
 				skills: [
-					"bopen-tools:code-audit-scripts",
+					"bopen-review:code-audit-scripts",
 					"static-analysis:semgrep",
 					"static-analysis:codeql",
 					"audit-context-building:audit-context-building",
@@ -1651,9 +1651,9 @@ export const PACK_CATALOG = [
 					"Kayle assesses impact, Theo runs the codemod, Jason regression-tests, and Root verifies CI — so a major-version upgrade lands without a surprise outage.",
 				skills: [
 					"audit-context-building:audit-context-building",
-					"bopen-tools:nextjs-upgrade",
+					"bopen-web:nextjs-upgrade",
 					"webapp-testing",
-					"bopen-tools:wait-for-ci",
+					"bopen-ops:wait-for-ci",
 				],
 				agents: ["Kayle", "Theo", "Jason", "Root"],
 				sample: false,
@@ -1668,7 +1668,7 @@ export const PACK_CATALOG = [
 					"plugin-dev:mcp-integration",
 					"plugin-dev:command-development",
 					"webapp-testing",
-					"bopen-tools:npm-publish",
+					"bopen-plugin-dev:npm-publish",
 				],
 				agents: ["Orbit", "Zack", "Jason", "Root"],
 				sample: false,
@@ -1682,7 +1682,7 @@ export const PACK_CATALOG = [
 				skills: [
 					"plugin-dev:agent-development",
 					"plugin-dev:skill-development",
-					"bopen-tools:benchmark-skills",
+					"bopen-plugin-dev:benchmark-skills",
 				],
 				agents: ["Satchmo", "Zack", "Kayle", "Jason"],
 				sample: false,
@@ -1716,7 +1716,7 @@ export const PACK_CATALOG = [
 				class: "foundation",
 				summary:
 					"Root documents the pipeline provider, required checks, deploy targets, and secrets policy, so deploy and CI playbooks plug into the buyer's actual pipeline on their first run.",
-				skills: ["bopen-tools:wait-for-ci", "bopen-tools:devops-scripts"],
+				skills: ["bopen-ops:wait-for-ci", "bopen-ops:devops-scripts"],
 				agents: ["Root"],
 				sample: false,
 			},
@@ -1726,7 +1726,7 @@ export const PACK_CATALOG = [
 				class: "foundation",
 				summary:
 					"A fill-in-the-blank doc capturing lint rules, commit style, PR size limits, and merge blockers, so review and test playbooks enforce the buyer's actual bar on every change they touch.",
-				skills: ["bopen-tools:code-audit-scripts"],
+				skills: ["bopen-review:code-audit-scripts"],
 				agents: ["Jerry", "Jason", "Kayle"],
 				sample: false,
 			},
@@ -1746,7 +1746,7 @@ export const PACK_CATALOG = [
 				class: "foundation",
 				summary:
 					"Satchmo and Root document which staff are installed, their budget and model tier, and the escalation path, so blueprint and chain playbooks know which agents exist in this org and when to escalate to a human.",
-				skills: ["bopen-tools:cost-tracking", "bopen-orchestration:coordinator"],
+				skills: ["bopen-ops:cost-tracking", "bopen-orchestration:coordinator"],
 				agents: ["Satchmo", "Root"],
 				sample: false,
 			},
@@ -1854,9 +1854,9 @@ export const PACK_CATALOG = [
 				summary:
 					"Chief, Milton, and Martha stand up the same heartbeat-delegation, budget-gate, and agent-onboarding system bOpen runs internally, scoped to your company and wired to your own tools so it runs real operations on day one.",
 				skills: [
-					"bopen-tools:cost-tracking",
+					"bopen-ops:cost-tracking",
 					"bopen-tools:front-desk",
-					"bopen-tools:agent-onboarding",
+					"bopen-plugin-dev:agent-onboarding",
 				],
 				agents: ["Chief", "Milton", "Martha"],
 				sample: false,
@@ -1868,7 +1868,7 @@ export const PACK_CATALOG = [
 				summary:
 					"Milton, Tina, and Chief turn metrics into a narrative, a deck, a board cadence, and a running data appendix you can defend, so the update becomes a repeatable process the team can run each quarter. It's built as the operator's first draft to restructure and sign off on before anything reaches investors.",
 				skills: [
-					"bopen-tools:cost-tracking",
+					"bopen-ops:cost-tracking",
 					"pm-data-analytics:cohort-analysis",
 					"gemskills:deck-creator",
 				],
@@ -1911,7 +1911,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Milton wires a live burn-rate view across your AI and infra spend so you know the number before the invoice surprises you. The dashboard covers our own AI/infra spend; general-ledger data still has to be supplied.",
-				skills: ["bopen-tools:cost-tracking", "bopen-tools:charting"],
+				skills: ["bopen-ops:cost-tracking", "bopen-web:charting"],
 				agents: ["Milton"],
 				sample: false,
 			},
@@ -2033,7 +2033,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Milton produces a real cohort retention chart with week-over-week curves, ready to drop into the board deck. Assumes the buyer supplies query access or exported data.",
-				skills: ["pm-data-analytics:cohort-analysis", "bopen-tools:charting"],
+				skills: ["pm-data-analytics:cohort-analysis", "bopen-web:charting"],
 				agents: ["Milton"],
 				sample: false,
 			},
@@ -2043,7 +2043,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Milton reports exactly what you spent and on what, every month, without manual reconciliation — so infra and AI burn is a number you already know before the invoice arrives.",
-				skills: ["bopen-tools:cost-tracking"],
+				skills: ["bopen-ops:cost-tracking"],
 				agents: ["Milton"],
 				sample: true,
 			},
@@ -2093,7 +2093,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Tina pulls the relevant threads, docs, metrics, and open questions so you walk into the board meeting with the full picture already assembled the day before.",
-				skills: ["bopen-tools:notebooklm"],
+				skills: ["bopen-research:notebooklm"],
 				agents: ["Tina"],
 				sample: false,
 			},
@@ -2103,7 +2103,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Parker pulls a cited weekly read on competitor moves and market sentiment from real social signal, so positioning reacts to what's actually happening.",
-				skills: ["pm-market-research:competitor-analysis", "bopen-tools:x-research"],
+				skills: ["pm-market-research:competitor-analysis", "bopen-research:x-research"],
 				agents: ["Parker"],
 				sample: false,
 			},
@@ -2166,7 +2166,7 @@ export const PACK_CATALOG = [
 				skills: [
 					"pm-execution:brainstorm-okrs",
 					"bopen-tools:linear-planning",
-					"bopen-tools:cost-tracking",
+					"bopen-ops:cost-tracking",
 				],
 				agents: ["Chief", "Wags", "Milton"],
 				sample: true,
@@ -2205,7 +2205,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"A spend spike gets explained to investors before they ask: Milton catches the anomaly, Chief reprioritizes, and Tina turns it into an investor-ready communication.",
-				skills: ["bopen-tools:cost-tracking"],
+				skills: ["bopen-ops:cost-tracking"],
 				agents: ["Milton", "Chief", "Tina"],
 				sample: false,
 			},
@@ -2215,7 +2215,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"A compliance gap becomes funded remediation work: Anthony finds the gap, Paul validates the technical control, and Milton budgets the fix so the work has money and an owner attached.",
-				skills: ["product-skills:soc2-gap-analysis", "bopen-tools:cost-tracking"],
+				skills: ["product-skills:soc2-gap-analysis", "bopen-ops:cost-tracking"],
 				agents: ["Anthony", "Paul", "Milton"],
 				sample: false,
 			},
@@ -2255,7 +2255,7 @@ export const PACK_CATALOG = [
 				class: "foundation",
 				summary:
 					"Milton documents budget ceilings, approval thresholds, cost centers, and sign-off owners, so cost reporting and budget chains route through your real approval structure.",
-				skills: ["bopen-tools:cost-tracking"],
+				skills: ["bopen-ops:cost-tracking"],
 				agents: ["Milton"],
 				sample: true,
 			},
@@ -2431,7 +2431,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Mina wires bank account verification and ACH pulls with a proper Plaid Link flow, so bank-linked payments work without a fragile hand-built integration.",
-				skills: ["bopen-tools:plaid-integration"],
+				skills: ["bopen-ops:plaid-integration"],
 				agents: ["Mina"],
 				sample: false,
 			},
@@ -2698,7 +2698,7 @@ export const PACK_CATALOG = [
 				skills: [
 					"stripe:connect-recommend",
 					"static-analysis:semgrep",
-					"bopen-tools:devops-scripts",
+					"bopen-ops:devops-scripts",
 				],
 				agents: ["Mina", "Jerry", "Root"],
 				sample: false,
@@ -2723,7 +2723,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"Mina builds the metering, Idris designs the usage ledger, and Milton reports revenue, so metered usage and reported revenue reconcile to the same numbers across every system in the chain.",
-				skills: ["stripe:stripe-best-practices", "bopen-tools:cost-tracking"],
+				skills: ["stripe:stripe-best-practices", "bopen-ops:cost-tracking"],
 				agents: ["Mina", "Idris", "Milton"],
 				sample: false,
 			},

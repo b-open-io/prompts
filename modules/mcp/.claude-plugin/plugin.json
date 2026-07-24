@@ -1,0 +1,14 @@
+{
+  "name": "bopen-mcp",
+  "version": "0.1.0",
+  "description": "MCP servers and MCP Apps, including the json-render framework for interactive in-chat UI",
+  "author": {
+    "name": "b-open-io",
+    "url": "https://github.com/b-open-io"
+  },
+  "repository": "https://github.com/b-open-io/prompts",
+  "keywords": [
+    "bopen",
+    "mcp"
+  ]
+}

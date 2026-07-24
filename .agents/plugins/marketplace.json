@@ -29,6 +29,102 @@
       "category": "Developer Tools"
     },
     {
+      "name": "bopen-plugin-dev",
+      "source": {
+        "source": "local",
+        "path": "./modules/plugin-dev"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "bopen-review",
+      "source": {
+        "source": "local",
+        "path": "./modules/review"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "bopen-web",
+      "source": {
+        "source": "local",
+        "path": "./modules/web"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "bopen-creative",
+      "source": {
+        "source": "local",
+        "path": "./modules/creative"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "bopen-mcp",
+      "source": {
+        "source": "local",
+        "path": "./modules/mcp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "bopen-ops",
+      "source": {
+        "source": "local",
+        "path": "./modules/ops"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "bopen-research",
+      "source": {
+        "source": "local",
+        "path": "./modules/research"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "bopen-public-agents",
+      "source": {
+        "source": "local",
+        "path": "./modules/public-agents"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
       "name": "gemskills",
       "source": {
         "source": "url",

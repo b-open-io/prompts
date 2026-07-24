@@ -58,7 +58,7 @@ The most effective pattern: a rule detects bad behavior, and a skill provides th
 |---|---|---|
 | Skips tests | `superpowers:test-driven-development` | Redirects to TDD workflow |
 | Skips architecture planning | `gemskills:visual-planner` | Forces visual planning step |
-| Writes insecure code | `bopen-tools:code-audit-scripts` | Runs security audit |
+| Writes insecure code | `bopen-review:code-audit-scripts` | Runs security audit |
 | Finishes without self-review | `bopen-tools:confess` | Forces self-audit |
 
 ### Anti-laziness rules

@@ -284,7 +284,7 @@ describe("emitPlan", () => {
           detail: "/Users/alice/private/repo/skill",
         },
         {
-          id: "setup-script:bopen-tools:persona",
+          id: "setup-script:bopen-research:persona",
           kind: "setup-script",
           name: "persona",
           installed: false,
@@ -299,7 +299,7 @@ describe("emitPlan", () => {
         {
           name: "bopen-tools",
           installPlugin: false,
-          checks: ["third-party-skill:example", "setup-script:bopen-tools:persona"],
+          checks: ["third-party-skill:example", "setup-script:bopen-research:persona"],
           hooks: {},
         },
       ],

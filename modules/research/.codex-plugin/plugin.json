@@ -1,0 +1,29 @@
+{
+  "name": "bopen-research",
+  "version": "0.1.0",
+  "description": "Multi-source research, X/Twitter analysis, writing-style capture, and documentation",
+  "author": {
+    "name": "b-open-io",
+    "url": "https://github.com/b-open-io"
+  },
+  "repository": "https://github.com/b-open-io/prompts",
+  "keywords": [
+    "bopen",
+    "research"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "bOpen Research",
+    "shortDescription": "Research sources, analyse X, and write docs.",
+    "longDescription": "Multi-source research, X/Twitter analysis, writing-style capture, and documentation",
+    "developerName": "b-open-io",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Skills"
+    ],
+    "websiteURL": "https://github.com/b-open-io/prompts",
+    "defaultPrompt": [
+      "Research sources, analyse X, and write docs."
+    ]
+  }
+}

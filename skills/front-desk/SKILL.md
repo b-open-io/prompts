@@ -61,7 +61,7 @@ agent registries even when the persona and source prompt are shared.
 Use the plugin-qualified Claude agent ID:
 
 ```
-Agent(subagent_type="bopen-tools:designer", prompt="Design a dashboard component")
+Agent(subagent_type="bopen-web:designer", prompt="Design a dashboard component")
 Agent(subagent_type="bsv-skills:bitcoin", prompt="Build a BSV transaction")
 Agent(subagent_type="1sat-skills:ordinals", prompt="Mint an ordinal inscription")
 ```
@@ -73,13 +73,13 @@ Use an installed Codex custom agent named `bopen_<agent_name>`, for example:
 | Persona | Claude agent ID | Codex custom agent |
 |---------|-----------------|--------------------|
 | Satchmo | `bopen-orchestration:agent-builder` | `bopen_agent_builder` |
-| Ridd | `bopen-tools:designer` | `bopen_designer` |
-| Jerry | `bopen-tools:code-auditor` | `bopen_code_auditor` |
-| Kayle | `bopen-tools:architecture-reviewer` | `bopen_architecture_reviewer` |
-| Jason | `bopen-tools:tester` | `bopen_tester` |
-| Flow | `bopen-tools:documentation-writer` | `bopen_documentation_writer` |
-| Parker | `bopen-tools:researcher` | `bopen_researcher` |
-| Zack | `bopen-tools:prompt-engineer` | `bopen_prompt_engineer` |
+| Ridd | `bopen-web:designer` | `bopen_designer` |
+| Jerry | `bopen-review:code-auditor` | `bopen_code_auditor` |
+| Kayle | `bopen-review:architecture-reviewer` | `bopen_architecture_reviewer` |
+| Jason | `bopen-review:tester` | `bopen_tester` |
+| Flow | `bopen-research:documentation-writer` | `bopen_documentation_writer` |
+| Parker | `bopen-research:researcher` | `bopen_researcher` |
+| Zack | `bopen-plugin-dev:prompt-engineer` | `bopen_prompt_engineer` |
 
 Ask Codex to delegate to the installed custom agent by that exact name. Do not
 invent Claude `Agent(...)` call syntax in Codex; Codex chooses and spawns the

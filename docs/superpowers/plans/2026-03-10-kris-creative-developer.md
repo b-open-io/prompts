@@ -427,7 +427,7 @@ tools: >-
   Skill(shaders),
   Skill(remotion-best-practices),
   Skill(vercel-react-best-practices),
-  Skill(bopen-tools:frontend-performance),
+  Skill(bopen-web:frontend-performance),
   Skill(agent-browser),
   Skill(gemskills:generate-image),
   Skill(gemskills:generate-svg),
@@ -435,7 +435,7 @@ tools: >-
   Skill(gemskills:visual-planner),
   Skill(gemskills:deck-creator),
   Skill(gemskills:browsing-styles),
-  Skill(bopen-tools:mcp-apps),
+  Skill(bopen-mcp:mcp-apps),
   Skill(superpowers:dispatching-parallel-agents),
   Skill(superpowers:subagent-driven-development)
 color: cyan

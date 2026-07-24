@@ -97,7 +97,7 @@ def run_case(
         }
 
     raw = str(payload.get("result", "")).strip()
-    # Model may answer "bopen-tools:code-auditor" or wrap the name in quotes.
+    # Model may answer "bopen-review:code-auditor" or wrap the name in quotes.
     name = raw.strip().strip("`\"'")
     name = name.split("\n")[0].strip()
     name = re.sub(r"^[a-z0-9-]+:", "", name)

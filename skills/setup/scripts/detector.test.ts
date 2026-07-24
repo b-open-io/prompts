@@ -338,7 +338,7 @@ describe("skill activity", () => {
         JSON.stringify({ ts: nowSeconds - 300, session_id: "older-live", skill: "bopen-orchestration:advisor" }),
         JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-live", skill: "bopen-orchestration:advisor" }),
         JSON.stringify({ ts: nowSeconds - 30, session_id: "stale-session", skill: "bopen-tools:hook-manager" }),
-        JSON.stringify({ ts: nowSeconds - 20, session_id: "missing-session", skill: "bopen-tools:persona" }),
+        JSON.stringify({ ts: nowSeconds - 20, session_id: "missing-session", skill: "bopen-research:persona" }),
       ].join("\n"),
     );
 
@@ -365,7 +365,7 @@ describe("skill activity", () => {
     expect(activity["bopen-orchestration:advisor"].sessionId).toBe("latest-live");
     expect(activity["bopen-orchestration:advisor"].isLive).toBe(true);
     expect(activity["bopen-tools:hook-manager"].isLive).toBe(false);
-    expect(activity["bopen-tools:persona"].isLive).toBe(false);
+    expect(activity["bopen-research:persona"].isLive).toBe(false);
   });
 
   test("rejects future transcript mtimes and unsafe session ids", async () => {
@@ -377,7 +377,7 @@ describe("skill activity", () => {
       activityFile,
       [
         JSON.stringify({ ts: nowSeconds - 10, session_id: "future-session", skill: "bopen-orchestration:advisor" }),
-        JSON.stringify({ ts: nowSeconds - 5, session_id: "../escape", skill: "bopen-tools:persona" }),
+        JSON.stringify({ ts: nowSeconds - 5, session_id: "../escape", skill: "bopen-research:persona" }),
       ].join("\n"),
     );
     const transcript = join(slug, "future-session.jsonl");
@@ -393,7 +393,7 @@ describe("skill activity", () => {
     });
 
     expect(activity["bopen-orchestration:advisor"].isLive).toBe(false);
-    expect(activity["bopen-tools:persona"].isLive).toBe(false);
+    expect(activity["bopen-research:persona"].isLive).toBe(false);
   });
 
   test("detectHarness attaches full skill ids only to their exact plugin namespace", async () => {

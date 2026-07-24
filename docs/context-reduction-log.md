@@ -384,7 +384,7 @@ failure. It was two defects in the harness:
    with it the skill catalog. The model was answering `NONE` because it could
    not see any skills at all.
 2. The grader regex omitted the optional `bopen-tools:` prefix that the agent
-   graders already allowed. The model was answering `bopen-tools:visual-review`
+   graders already allowed. The model was answering `bopen-review:visual-review`
    — correct — and being scored wrong.
 
 With both fixed the uncompressed baseline is 13/16 cases, 83.3%. Three cases

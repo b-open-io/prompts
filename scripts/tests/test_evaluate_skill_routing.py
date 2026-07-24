@@ -26,9 +26,9 @@ class SkillRoutingEvaluationTests(unittest.TestCase):
         cases = [
             {
                 "id": "direct",
-                "expected_skills": ["bopen-tools:visual-review"],
+                "expected_skills": ["bopen-review:visual-review"],
                 "acceptable_alternatives": [],
-                "forbidden_skills": ["bopen-tools:free-roam-testing"],
+                "forbidden_skills": ["bopen-review:free-roam-testing"],
             },
             {
                 "id": "negative",
@@ -41,7 +41,7 @@ class SkillRoutingEvaluationTests(unittest.TestCase):
             {
                 "case_id": "direct",
                 "host": "claude",
-                "invoked_skills": ["bopen-tools:visual-review"],
+                "invoked_skills": ["bopen-review:visual-review"],
             },
             {
                 "case_id": "negative",
@@ -59,16 +59,16 @@ class SkillRoutingEvaluationTests(unittest.TestCase):
             [
                 {
                     "id": "boundary",
-                    "expected_skills": ["bopen-tools:visual-review"],
+                    "expected_skills": ["bopen-review:visual-review"],
                     "acceptable_alternatives": [],
-                    "forbidden_skills": ["bopen-tools:free-roam-testing"],
+                    "forbidden_skills": ["bopen-review:free-roam-testing"],
                 }
             ],
             [
                 {
                     "case_id": "boundary",
                     "host": "codex",
-                    "invoked_skills": ["bopen-tools:free-roam-testing"],
+                    "invoked_skills": ["bopen-review:free-roam-testing"],
                 }
             ],
         )
