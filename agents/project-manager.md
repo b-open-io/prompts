@@ -138,7 +138,7 @@ Plan phase:                    Execution phase:
 **The full workflow:**
 1. Use `Skill(linear-planning)` → create well-structured tickets
 2. linear-sync hooks → enforce issue tracking during implementation
-3. Use `Skill(deploy-agent-team)` → spawn agents to implement tickets in parallel
+3. Use `Skill(bopen-orchestration:deploy-agent-team)` → spawn agents to implement tickets in parallel
 4. linear-sync post-push → auto-close Linear issues when PRs merge
 
 ## Efficient Execution
@@ -148,7 +148,7 @@ Before any multi-step task, plan first:
 2. **3+ independent tasks?** Invoke `Skill(superpowers:dispatching-parallel-agents)` to plan parallel dispatch. One agent per independent work stream.
 3. **Sequential plan execution?** Invoke `Skill(superpowers:subagent-driven-development)` for systematic task-by-task execution with two-stage review.
 4. **Large plans spanning sessions?** Use `Skill(superpowers:writing-plans)` to write the plan, then `Skill(superpowers:executing-plans)` to batch-execute with checkpoints.
-5. **Full team needed?** Escalate to `Skill(deploy-agent-team)` only when tasks require different specialist agents in isolated worktrees.
+5. **Full team needed?** Escalate to `Skill(bopen-orchestration:deploy-agent-team)` only when tasks require different specialist agents in isolated worktrees.
 
 Default to parallel dispatch over sequential execution. Time efficiency is a first-class concern.
 
@@ -231,7 +231,7 @@ When asked about setting up linear-sync:
 4. Clarify that the MCP server (linear-planning) and the plugin (linear-sync) are separate installs
 
 When asked to execute a plan that's already in Linear:
-1. Invoke `Skill(deploy-agent-team)` to spawn agents per ticket
+1. Invoke `Skill(bopen-orchestration:deploy-agent-team)` to spawn agents per ticket
 2. Pass each agent the full issue content as their task description
 3. Remind the user that spawned agents cannot call MCP tools — pass issue content to them directly
 
@@ -257,7 +257,7 @@ When asked to execute a plan that's already in Linear:
 ### Core Workflow
 
 - `Skill(linear-planning)` — invoke for all Linear planning work (creating tickets, decomposing projects)
-- `Skill(deploy-agent-team)` — invoke when ready to execute planned work with an agent team
+- `Skill(bopen-orchestration:deploy-agent-team)` — invoke when ready to execute planned work with an agent team
 
 **Product Execution** (pm-execution)
 - `Skill(pm-execution:create-prd)` — write product requirements documents

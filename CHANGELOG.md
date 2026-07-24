@@ -6,6 +6,30 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.117] - 2026-07-24
+
+### Changed
+
+- **bopen-tools is now the core.** Orchestration moves out to the first optional
+  module, `bopen-orchestration`: coordinator, advisor, orchestrator,
+  wave-coordinator, software-factory, deploy-agent-team, claudex, and the
+  agent-builder persona. Those coordinator-family skills cite each other, which
+  made them the cleanest first extraction.
+- Modules live in `modules/` inside this repository, each with its own Claude
+  and Codex manifests, and register in the marketplace through a relative source
+  path. No second repository is involved, so nothing is duplicated and nothing
+  can drift.
+- `bopen-orchestration` declares `bopen-tools` as a dependency, so installing
+  the module pulls the core.
+- Core startup surface reaches roughly 12,160 estimated tokens, down from
+  ~25,705 before this work began — a 53% reduction.
+
+### Note on terminology
+
+Plugin distributions are **modules**. `pack` stays reserved for the premium
+prompt packs sold on bopen.ai, which Agent Master manages.
+
+
 ## [1.1.116] - 2026-07-24
 
 ### Removed

@@ -28,6 +28,25 @@ historical baseline.
 
 ## Installation
 
+`bopen-tools` is the core: session context, setup and hook management,
+completion auditing, session recall, routing, and the hooks. Everything else
+ships as an optional **module** you install alongside it.
+
+`pack` in this project always means a premium prompt pack. Plugin
+distributions are modules.
+
+### Modules
+
+| Module | Install | Contents |
+|---|---|---|
+| `bopen-orchestration` | `/plugin install bopen-orchestration@b-open-io` | coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex, and the agent-builder persona |
+
+Modules declare `bopen-tools` as a dependency, so installing one pulls the core
+automatically. Install only the modules you need: Codex allocates roughly two
+percent of the model's context window to skills across *every* installed
+plugin, so an unused module costs budget that another plugin could have used.
+
+
 ### Claude Code
 
 ```bash
@@ -118,21 +137,17 @@ upstream provenance.
 bunx skills add b-open-io/bopen-tools --skill agent-auditor
 bunx skills add b-open-io/bopen-tools --skill agent-decommissioning
 bunx skills add b-open-io/bopen-tools --skill agent-onboarding
-bunx skills add b-open-io/bopen-tools --skill advisor
 bunx skills add b-open-io/bopen-tools --skill auth-md
 bunx skills add b-open-io/bopen-tools --skill benchmark-skills
 bunx skills add b-open-io/bopen-tools --skill charting
 bunx skills add b-open-io/bopen-tools --skill check-version
 bunx skills add b-open-io/bopen-tools --skill chrome-cdp
-bunx skills add b-open-io/bopen-tools --skill claudex
 bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
 bunx skills add b-open-io/bopen-tools --skill code-audit-scripts
 bunx skills add b-open-io/bopen-tools --skill codex-agent-setup
 bunx skills add b-open-io/bopen-tools --skill confess
-bunx skills add b-open-io/bopen-tools --skill coordinator
 bunx skills add b-open-io/bopen-tools --skill cost-tracking
 bunx skills add b-open-io/bopen-tools --skill create-next-project
-bunx skills add b-open-io/bopen-tools --skill deploy-agent-team
 bunx skills add b-open-io/bopen-tools --skill design-game-ui
 bunx skills add b-open-io/bopen-tools --skill devops-scripts
 bunx skills add b-open-io/bopen-tools --skill ezkl
@@ -151,7 +166,6 @@ bunx skills add b-open-io/bopen-tools --skill mcp-apps
 bunx skills add b-open-io/bopen-tools --skill nextjs-upgrade
 bunx skills add b-open-io/bopen-tools --skill notebooklm
 bunx skills add b-open-io/bopen-tools --skill npm-publish
-bunx skills add b-open-io/bopen-tools --skill orchestrator
 bunx skills add b-open-io/bopen-tools --skill paperclip-plugin-dev
 bunx skills add b-open-io/bopen-tools --skill perf-audit
 bunx skills add b-open-io/bopen-tools --skill persona
@@ -166,7 +180,6 @@ bunx skills add b-open-io/bopen-tools --skill setup
 bunx skills add b-open-io/bopen-tools --skill shaders
 bunx skills add b-open-io/bopen-tools --skill shadscan
 bunx skills add b-open-io/bopen-tools --skill skill-publish
-bunx skills add b-open-io/bopen-tools --skill software-factory
 bunx skills add b-open-io/bopen-tools --skill statusline-setup
 bunx skills add b-open-io/bopen-tools --skill threejs-r3f
 bunx skills add b-open-io/bopen-tools --skill ui-audio-theme
@@ -175,7 +188,6 @@ bunx skills add b-open-io/bopen-tools --skill visual-wayfinder
 bunx skills add b-open-io/bopen-tools --skill visual-review
 bunx skills add b-open-io/bopen-tools --skill voice-clone
 bunx skills add b-open-io/bopen-tools --skill wait-for-ci
-bunx skills add b-open-io/bopen-tools --skill wave-coordinator
 bunx skills add b-open-io/bopen-tools --skill x-research
 bunx skills add b-open-io/bopen-tools --skill x-tweet-fetch
 bunx skills add b-open-io/bopen-tools --skill x-tweet-search
@@ -216,7 +228,6 @@ bopen-tools members.
 - 🔷 [**creative-developer**](agents/creative-developer.md) — Kris — Three.js, R3F, shaders, physics, diegetic and world-space interfaces
 - 🗺️ [**cartographer**](agents/cartographer.md) — Leaf — MapLibre, Mapbox, Leaflet, CesiumJS, geospatial data
 - 💚 [**payments**](agents/payments.md) — Mina — Payment integrations, Plaid, financial operations
-- 🤖 [**agent-builder**](agents/agent-builder.md) — Satchmo — AI agent systems, tool-calling, multi-agent orchestration
 - 📊 [**data**](agents/data.md) — Data Accumulator — Data processing, analytics, ETL pipelines
 - 📣 **marketer** — Caal — Moved to `product-skills:marketer`
 - 🗂️ [**project-manager**](agents/project-manager.md) — Wags — Linear planning, issue tracking, project organization
@@ -294,7 +305,6 @@ intentional.
 | `perf-audit` | Run local performance audits without network calls |
 | `shaders` | Custom shaders for Three.js and WebGL |
 | `shadscan` | Drive the shadscan analyzer to audit and raise a shadcn app's UI-fundamentals score, and gate it in CI |
-| `software-factory` | Design autonomous agent workflows with a real verification gate, bounded state, and stop conditions |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |
 | `visual-review` | Turn a PR, branch, or diff into a visual HTML review page |
 
@@ -305,23 +315,17 @@ intentional.
 | `agent-decommissioning` | Retire and remove agents from the team |
 | `agent-onboarding` | End-to-end checklist for adding a new agent |
 | `codex-agent-setup` | Explicitly install, check, update, or uninstall Codex custom-agent adapters |
-| `deploy-agent-team` | Spin up parallel agents to work on tasks |
 | `hammertime` | Write behavioral guardrail rules for the HammerTime stop hook |
 | `hook-manager` | Discover and install automation hooks |
-| `orchestrator` | Keep the current main in control across specialists, workers, and an advisor |
 | `plugin-settings` | Choose official Claude Code configuration, project-owned state, or Agent Master skill-interface discovery without conflating them |
-| `coordinator` | Specify and dispatch bounded implementation work to external workers |
-| `advisor` | Obtain a read-only second opinion at a commitment boundary |
 | `reinforce-skills` | Inject skill/agent routing maps into CLAUDE.md |
 | `publish-request` | Prepare a human-reviewed release request without executing the publish |
 | `skill-publish` | Publish and version bump plugins |
-| `wave-coordinator` | Dispatch 5+ parallel agents with context budget management |
 
 ### Operations & DevOps
 | Skill | Description |
 |-------|-------------|
 | `check-version` | Check if bopen-tools plugin is up to date |
-| `claudex` | Run the Claude Code harness on GPT-5.6 Sol via a local CLIProxyAPI — an escape hatch when Anthropic usage runs out |
 | `cost-tracking` | Track and report model and agent operating costs |
 | `devops-scripts` | Shell scripts for infrastructure health checks |
 | `linear-planning` | Plan projects and features using Linear |
