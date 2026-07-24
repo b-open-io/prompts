@@ -203,7 +203,7 @@ the human reviewer still makes the final call.
 ### The CEO's final call (runs LAST, after everything else)
 
 After every advocate and every judge has weighed in, **Chief — the CEO
-(`Agent(bopen-tools:ceo)`) — comes in and makes the final call.** He is the last
+(`Agent(paperclip:ceo)`) — comes in and makes the final call.** He is the last
 stage, never run until the rest is complete. He is like one more judge, but a
 decisive one: he weighs the whole thing holistically for the **business and the
 user**, not the tech alone — the true cost of technical debt (priced as

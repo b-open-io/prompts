@@ -166,7 +166,6 @@ bunx skills add b-open-io/bopen-tools --skill mcp-apps
 bunx skills add b-open-io/bopen-tools --skill nextjs-upgrade
 bunx skills add b-open-io/bopen-tools --skill notebooklm
 bunx skills add b-open-io/bopen-tools --skill npm-publish
-bunx skills add b-open-io/bopen-tools --skill paperclip-plugin-dev
 bunx skills add b-open-io/bopen-tools --skill perf-audit
 bunx skills add b-open-io/bopen-tools --skill persona
 bunx skills add b-open-io/bopen-tools --skill plaid-integration
@@ -240,8 +239,6 @@ bopen-tools members.
 - 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
 
 ### Organization & Operations
-- 👑 [**ceo**](agents/ceo.md) — Chief — Organization strategy, delegation, ownership, and executive decisions
-- 💰 [**cfo**](agents/cfo.md) — Milton — Cost visibility, budgets, and financial operations
 - 🎓 [**trainer**](agents/trainer.md) — Satoshi — Agent training, standards, and knowledge transfer
 - 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup
 - 💼 [**executive-assistant**](agents/executive-assistant.md) — Tina — Google Workspace, scheduling, communications
@@ -301,7 +298,6 @@ intentional.
 | `hunter-skeptic-referee` | Adversarial bug hunting with three isolated agents |
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm with changelog and version management |
-| `paperclip-plugin-dev` | Build and review Paperclip plugins against the worker and UI contracts |
 | `perf-audit` | Run local performance audits without network calls |
 | `shaders` | Custom shaders for Three.js and WebGL |
 | `shadscan` | Drive the shadscan analyzer to audit and raise a shadcn app's UI-fundamentals score, and gate it in CI |

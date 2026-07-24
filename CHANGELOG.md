@@ -6,6 +6,25 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.118] - 2026-07-24
+
+### Removed
+
+- The `ceo` and `cfo` personas and `paperclip-plugin-dev`, which are
+  organization simulation and Paperclip tooling. They now ship as the
+  `paperclip` plugin, so a coding session no longer pays startup context for
+  them. The `ceo` body carried seven references to a `Skill(paperclip)` that
+  exists in no published plugin; that gap is recorded in the new repository
+  rather than silently carried over.
+
+### Changed
+
+- `visual-proposal` references Chief through `Agent(paperclip:ceo)`.
+- Three agent-routing cases covering relocated agents are retired from the
+  fixture, leaving 27.
+- Authored skills fall to 58 and agents to 28.
+
+
 ## [1.1.117] - 2026-07-24
 
 ### Changed
