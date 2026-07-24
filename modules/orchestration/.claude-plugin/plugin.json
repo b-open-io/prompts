@@ -13,8 +13,5 @@
     "workers",
     "loops",
     "dispatch"
-  ],
-  "dependencies": [
-    "bopen-tools"
   ]
 }

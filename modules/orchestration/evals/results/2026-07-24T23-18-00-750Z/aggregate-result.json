@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "claude_version": "2.1.219",
+  "started_at": "2026-07-24T23:18:00.750Z",
+  "duration_seconds": 3,
+  "cost_usd": 0.040519,
+  "partial": false,
+  "plugins": [
+    {
+      "name": "orchestration",
+      "path": "/Users/satchmo/code/prompts/modules/orchestration"
+    }
+  ],
+  "cases": [
+    {
+      "name": "skill-advisor",
+      "dir": "evals/skill-advisor",
+      "source": "prose",
+      "score": 0,
+      "pass_rate": 0,
+      "runs": [
+        {
+          "score": 0,
+          "turns": 1,
+          "cost_usd": 0.040519,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": false,
+              "weight": 1,
+              "explanation": "pattern not found in last_message"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-vyI50P/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:18:00.767Z",
+          "duration_seconds": 3
+        }
+      ]
+    }
+  ]
+}

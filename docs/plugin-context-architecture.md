@@ -72,8 +72,22 @@ auto-installed dependencies once nothing needs them. Cross-module references
 therefore have a supported expression, and a skill moving to another repository
 stays reachable.
 
-Codex's handling of `dependencies` is untested and blocks the compatibility
-plan until verified.
+**A declared dependency stops the plugin loading when it is absent.** With
+`dependencies: ["bopen-tools"]` in its manifest, `bopen-orchestration` installs
+correctly but its skills are invisible in any context where the core is not also
+present — the loader skips the plugin silently instead of reporting the missing
+dependency. Running its eval suite against the module alone scored 0/5 with every
+case answering that no skill applied; removing the field scored 5/5 with nothing
+else changed.
+
+The first module therefore ships without `dependencies`. Its references to core
+skills are prose recommendations in roster documents, so the module functions
+alone and those references resolve for anyone who also has the core installed.
+Use the field only where a module genuinely cannot function without another
+plugin, and expect silent non-loading rather than an error when that plugin is
+missing.
+
+Codex's handling of `dependencies` remains untested.
 
 ### The Codex budget is global and proportional
 

@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0",
+  "claude_version": "2.1.219",
+  "started_at": "2026-07-24T23:17:20.490Z",
+  "duration_seconds": 15,
+  "cost_usd": 0.20267624999999997,
+  "partial": false,
+  "plugins": [
+    {
+      "name": "orchestration",
+      "path": "/Users/satchmo/code/prompts/modules/orchestration"
+    }
+  ],
+  "cases": [
+    {
+      "name": "skill-advisor",
+      "dir": "evals/skill-advisor",
+      "source": "prose",
+      "score": 0,
+      "pass_rate": 0,
+      "runs": [
+        {
+          "score": 0,
+          "turns": 1,
+          "cost_usd": 0.040519,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": false,
+              "weight": 1,
+              "explanation": "pattern not found in last_message"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-KcRJil/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:17:20.510Z",
+          "duration_seconds": 3
+        }
+      ]
+    },
+    {
+      "name": "skill-claudex",
+      "dir": "evals/skill-claudex",
+      "source": "prose",
+      "score": 0,
+      "pass_rate": 0,
+      "runs": [
+        {
+          "score": 0,
+          "turns": 1,
+          "cost_usd": 0.040569,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": false,
+              "weight": 1,
+              "explanation": "pattern not found in last_message"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-KYGLpC/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:17:23.401Z",
+          "duration_seconds": 3
+        }
+      ]
+    },
+    {
+      "name": "skill-coordinator",
+      "dir": "evals/skill-coordinator",
+      "source": "prose",
+      "score": 0,
+      "pass_rate": 0,
+      "runs": [
+        {
+          "score": 0,
+          "turns": 1,
+          "cost_usd": 0.040550249999999996,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": false,
+              "weight": 1,
+              "explanation": "pattern not found in last_message"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-rfUxwf/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:17:26.631Z",
+          "duration_seconds": 3
+        }
+      ]
+    },
+    {
+      "name": "skill-software-factory",
+      "dir": "evals/skill-software-factory",
+      "source": "prose",
+      "score": 0,
+      "pass_rate": 0,
+      "runs": [
+        {
+          "score": 0,
+          "turns": 1,
+          "cost_usd": 0.040519,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": false,
+              "weight": 1,
+              "explanation": "pattern not found in last_message"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-QQFANC/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:17:29.429Z",
+          "duration_seconds": 3
+        }
+      ]
+    },
+    {
+      "name": "skill-wave-coordinator",
+      "dir": "evals/skill-wave-coordinator",
+      "source": "prose",
+      "score": 0,
+      "pass_rate": 0,
+      "runs": [
+        {
+          "score": 0,
+          "turns": 1,
+          "cost_usd": 0.040519,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": false,
+              "weight": 1,
+              "explanation": "pattern not found in last_message"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-5xbLaA/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:17:32.135Z",
+          "duration_seconds": 3
+        }
+      ]
+    }
+  ]
+}

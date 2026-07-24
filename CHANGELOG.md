@@ -6,6 +6,20 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.120] - 2026-07-24
+
+### Fixed
+
+- `bopen-orchestration` no longer declares `dependencies: ["bopen-tools"]`. A
+  declared dependency makes the loader skip the plugin silently wherever that
+  dependency is absent: the module's eval suite scored 0/5 against the module
+  alone, with every case reporting that no skill applied, and 5/5 with the field
+  removed and nothing else changed. The module's references to core skills are
+  prose recommendations, so it functions alone.
+- Moved the five orchestration routing cases into the module, so each
+  distribution owns the cases that exercise it.
+
+
 ## [1.1.119] - 2026-07-24
 
 ### Changed

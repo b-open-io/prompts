@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0",
+  "claude_version": "2.1.219",
+  "started_at": "2026-07-24T23:19:26.769Z",
+  "duration_seconds": 18,
+  "cost_usd": 0.236745,
+  "partial": false,
+  "plugins": [
+    {
+      "name": "orchestration",
+      "path": "/Users/satchmo/code/prompts/modules/orchestration"
+    }
+  ],
+  "cases": [
+    {
+      "name": "skill-advisor",
+      "dir": "evals/skill-advisor",
+      "source": "prose",
+      "score": 1,
+      "pass_rate": 1,
+      "runs": [
+        {
+          "score": 1,
+          "turns": 1,
+          "cost_usd": 0.04738775,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": true,
+              "weight": 1,
+              "explanation": "matched ^\\s*(bopen-orchestration:)?(advisor)\\s*$"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-AirAIo/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:19:26.786Z",
+          "duration_seconds": 3
+        }
+      ]
+    },
+    {
+      "name": "skill-claudex",
+      "dir": "evals/skill-claudex",
+      "source": "prose",
+      "score": 1,
+      "pass_rate": 1,
+      "runs": [
+        {
+          "score": 1,
+          "turns": 1,
+          "cost_usd": 0.047418999999999996,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": true,
+              "weight": 1,
+              "explanation": "matched ^\\s*(bopen-orchestration:)?(claudex)\\s*$"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-bvf13S/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:19:29.626Z",
+          "duration_seconds": 4
+        }
+      ]
+    },
+    {
+      "name": "skill-coordinator",
+      "dir": "evals/skill-coordinator",
+      "source": "prose",
+      "score": 1,
+      "pass_rate": 1,
+      "runs": [
+        {
+          "score": 1,
+          "turns": 1,
+          "cost_usd": 0.047219,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": true,
+              "weight": 1,
+              "explanation": "matched ^\\s*(bopen-orchestration:)?(coordinator)\\s*$"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-ikhcGi/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:19:33.391Z",
+          "duration_seconds": 6
+        }
+      ]
+    },
+    {
+      "name": "skill-software-factory",
+      "dir": "evals/skill-software-factory",
+      "source": "prose",
+      "score": 1,
+      "pass_rate": 1,
+      "runs": [
+        {
+          "score": 1,
+          "turns": 1,
+          "cost_usd": 0.0472315,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": true,
+              "weight": 1,
+              "explanation": "matched ^\\s*(bopen-orchestration:)?(software-factory)\\s*$"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-SBzrPu/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:19:39.261Z",
+          "duration_seconds": 3
+        }
+      ]
+    },
+    {
+      "name": "skill-wave-coordinator",
+      "dir": "evals/skill-wave-coordinator",
+      "source": "prose",
+      "score": 1,
+      "pass_rate": 1,
+      "runs": [
+        {
+          "score": 1,
+          "turns": 1,
+          "cost_usd": 0.047487749999999995,
+          "judge_cost_usd": 0,
+          "graders": [
+            {
+              "name": "expected-skill",
+              "passed": true,
+              "weight": 1,
+              "explanation": "matched ^\\s*(bopen-orchestration:)?(wave-coordinator|dispatching-parallel-agents)\\s*$"
+            }
+          ],
+          "trace_path": "/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-3JoZh9/out/trace.jsonl",
+          "error": null,
+          "started_at": "2026-07-24T23:19:42.185Z",
+          "duration_seconds": 3
+        }
+      ]
+    }
+  ]
+}
