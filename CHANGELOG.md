@@ -6,6 +6,35 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.112] - 2026-07-24
+
+### Added
+
+- Plugin context diagnostics: `plugin-weight.py` inventories skill, agent, and
+  command routing/on-demand weight; exact Claude and Codex snapshot tools parse
+  live or recorded host output; install-parity checks compare source, packaged,
+  and installed inventories without modifying caches.
+- Deterministic context-harness tests cover multiline frontmatter, symlinked
+  third-party skills, host invocation policies, prompt/detail parsing, semantic
+  version ordering, and inventory drift.
+- A recorded-result skill-routing evaluator reports precision, recall,
+  omissions, forbidden activations, and confusion data independently from the
+  existing output-quality benchmark.
+- `run-plugin-harness.py` provides deterministic, hook, and live-host release
+  tiers, with architecture and operator guides under `docs/`.
+- Refreshed five stale generated Codex agent adapters and their ownership
+  manifest from the 1.1.111 authored agent sources.
+
+### Changed
+
+- Replaced the README's fixed-budget workaround with host-specific diagnostics,
+  explicit-only policy guidance, and the planned small-core/optional-domain-pack
+  architecture. This release does not change skill descriptions, routing,
+  invocation policy, hooks, or public capabilities.
+- Stabilized the session-context hook fixture by preventing its intentionally
+  prepared router index from being treated as stale, eliminating a macOS
+  cleanup race with the asynchronous index builder.
+
 ## [1.1.111] - 2026-07-24
 
 ### Added

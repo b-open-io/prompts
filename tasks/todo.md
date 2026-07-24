@@ -1,3 +1,28 @@
+# OPL-3181 — Plugin context safety and harness release
+
+- [x] Research Claude/Codex catalog budgets and inventory weight.
+- [x] Create the approved Linear epic and child issue tree.
+- [x] OPL-3182: add a deterministic static plugin-weight reporter.
+- [x] OPL-3183: add an exact Codex startup-context snapshot/parser.
+- [x] OPL-3184: add an exact Claude startup-cost snapshot/parser.
+- [x] OPL-3185: add source/package/install inventory parity checks.
+- [x] OPL-3189: document the domain-plugin architecture and migration plan.
+- [ ] OPL-3193: add activation/routing eval schema, fixtures, and reporting
+  (recorded-result scorer complete; fresh-host event adapters remain).
+- [ ] OPL-3194: document and automate the cross-host release test matrix
+  (deterministic/hook/live tiers complete; packed-artifact and retained live
+  activation evidence remain).
+- [x] Update public docs and the changelog.
+- [ ] Patch-bump both manifests together.
+- [ ] Run deterministic, host, packaging, documentation, and smoke checks.
+- [ ] Commit explicit reviewed paths, push, refresh both plugin installs, and
+  verify the published version.
+- [ ] Close only Linear issues whose acceptance criteria are proven complete.
+
+## Review
+
+Pending implementation and release evidence.
+
 # HammerTime per-project scoping
 
 - [x] Inspect the worktree, hook, tests, commands, skill docs, manifests, and release docs.

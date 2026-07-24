@@ -147,6 +147,12 @@ jq -n '{
   }]
 }' > "$PLUGIN_CACHE/extra/1.10.0/settings.json"
 
+# Keep this test focused on settings discovery. A stale router index would
+# intentionally launch the asynchronous index builder into the isolated HOME,
+# racing the fixture cleanup below and intermittently leaving Python cache
+# directories behind on macOS.
+touch "$SETTINGS_HOME/.claude/bopen-tools/router-index.json"
+
 printf '%s' "$input" | HOME="$SETTINGS_HOME" \
   BOPEN_PLUGIN_CACHE_ROOT="$PLUGIN_CACHE" \
   BOPEN_ROUTER_INDEX="$SETTINGS_HOME/.claude/bopen-tools/router-index.json" \

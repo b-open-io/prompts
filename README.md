@@ -573,7 +573,10 @@ prompts/
 ├── benchmarks/             # Benchmark results (latest.json)
 ├── scripts/
 │   ├── codex-agents/       # Adapter generator and safe installer
-│   └── benchmark.tsx       # Skill benchmark CLI
+│   ├── benchmark.tsx       # Skill output-quality benchmark CLI
+│   ├── plugin-weight.py    # Static catalog/context inventory
+│   ├── capture-*-context.py # Exact Claude/Codex host snapshots
+│   └── run-plugin-harness.py # Deterministic + live release matrix
 ├── docs/                   # Design notes and user-facing contracts
 ├── references/             # Shared agent reference documentation
 ├── tsconfig.json           # JSX config for benchmark CLI
@@ -600,6 +603,37 @@ The repository avoids parallel hand-maintained copies:
 Do not manually copy plugin contents into `~/.claude` or `~/.codex`, and do not
 symlink agent definitions into a versioned plugin cache. Use the marketplace
 and agent setup flows so upgrades remain reproducible.
+
+## Plugin Context Harness
+
+Large plugin catalogs consume model context before a task begins. bopen-tools
+ships additive diagnostics that measure this cost without changing skill
+routing:
+
+```bash
+# Static skill/agent/command inventory and weight
+python3 scripts/plugin-weight.py --format markdown
+
+# Exact host snapshots
+python3 scripts/capture-codex-context.py --model gpt-5.6-sol
+python3 scripts/capture-claude-context.py --source-root .
+
+# Source versus installed Claude/Codex inventories
+python3 scripts/check-plugin-install-parity.py --auto-detect
+
+# Deterministic repository release tier
+python3 scripts/run-plugin-harness.py
+```
+
+The reports distinguish startup routing metadata from on-demand skill bodies,
+Claude's legacy command entries from source skills, and authored skills from
+third-party symlinks. Recorded fixtures keep unit tests independent of live
+models; live host probes remain a separate release tier.
+
+See [the context harness guide](docs/plugin-context-harness.md) for baseline
+measurements and commands, and
+[the domain-plugin architecture](docs/plugin-context-architecture.md) for the
+planned core/optional-pack migration.
 
 ## Skill Benchmarks
 
@@ -785,26 +819,40 @@ Or use `/permissions` to add them interactively.
 
 ## Claude Code Skill Limits & Configuration
 
-Claude Code has a default **15,000 character budget** for skill metadata. When you have many skills installed, some may be truncated from Claude's context.
+Claude Code and Codex budget only part of the model context for skill routing
+metadata. With a large global catalog, hosts may first remove descriptions and
+then omit skills that no longer fit.
 
 ### Symptoms
 - `/skills` shows fewer skills than expected
 - Claude doesn't recognize skills you know are installed
-- "75 of 107 skills" type messages
+- A startup warning reports descriptions removed or additional skills omitted
 
-### Fix: Increase the Budget
+### Diagnose Before Changing the Budget
 
-Add to your shell profile (`~/.zshrc` or `~/.bashrc`):
+Run the context harness to separate plugin weight from the rest of the installed
+catalog:
 
 ```bash
-export SLASH_COMMAND_TOOL_CHAR_BUDGET=30000
+python3 scripts/plugin-weight.py --format markdown
+python3 scripts/capture-claude-context.py --source-root .
+python3 scripts/capture-codex-context.py
 ```
 
-Then restart your terminal and Claude Code.
+Claude's `SLASH_COMMAND_TOOL_CHAR_BUDGET` can increase its listing allowance,
+but that also increases the permanent startup prompt. Treat it as a diagnostic
+or temporary compatibility setting, not the primary architecture.
+
+For skills that are intentionally manual, Claude's
+`disable-model-invocation: true` and Codex's
+`policy.allow_implicit_invocation: false` remove them from implicit routing
+while preserving direct invocation. Policy changes require routing tests before
+release.
 
 ### Check Current Status
 
-Run `/context` to see token usage and which skills are being truncated.
+Run `/context` or `/doctor` in Claude, and use
+`codex debug prompt-input` through the provided snapshot script in Codex.
 
 ## Tips & Best Practices
 
