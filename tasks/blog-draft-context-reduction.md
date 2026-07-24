@@ -1,14 +1,18 @@
-## What 1.1.115 changed
+## What shipped
 
-bopen-tools ships 31 agents, 85 skills, 14 commands, and 11 hooks. Every agent and skill puts routing metadata into the model's context at session start, on every request, whether or not the session uses it. Two passes over that metadata cut the always-on surface roughly in half, verified against a 26-case eval suite run before and after each change.
+bopen-tools began the day as one plugin holding 31 agents, 85 skills, 14 commands, and 11 hooks. Every agent and skill puts routing metadata into the model's context at session start, on every request, whether the session uses it or not.
 
-| Model-visible startup surface | Bytes | Est. tokens |
+Three changes later — compressing that metadata, relocating resources that belonged to other plugins, and splitting the first optional module out of the monolith — the core costs less than half what it did.
+
+| Measured on the installed plugin | Before | After |
 |---|---:|---:|
-| Before | 102,819 | ~25,705 |
-| After the agent pass (1.1.114) | 60,518 | ~15,142 |
-| After the skill pass (1.1.115) | **53,550** | **~13,388** |
+| bopen-tools always-on | 29,260 tok | **14,094 tok** |
+| Agent catalog | 15,660 tok | 4,590 tok |
+| Skills / agents in core | 94 / 31 | 83 / 28 |
 
-A 48% reduction. Claude Code's own projected always-on cost for the installed plugin fell from 29,260 tokens to 18,313 after the agent pass alone.
+A 52% reduction in what a session pays before it does anything. The orchestration module costs a further 1,112 tokens, and only for sessions that actually install it.
+
+Every step was verified against a routing eval run before and after the change, using a runner Claude Code shipped three weeks ago and never announced.
 
 ## Agents were 54% of the cost
 
@@ -208,7 +212,7 @@ Mean delta 0.8. Every positive case depends entirely on the plugin being present
 
 Before it measured anything about compression, the eval found four defects in our own test harness. The first skill-routing run scored 41.7% and read as a catalog-wide routing failure. It was two bugs: cases declared `allowed_tools: []`, hiding the skill catalog, and the grader regex omitted the optional `bopen-tools:` prefix that the agent graders already allowed, so a correct answer of `bopen-tools:visual-review` scored as wrong. With both defects fixed, the real uncompressed baseline came out at 83.3%, which is the number every later comparison is measured against.
 
-A third defect: repeated `--case` flags silently run only the last glob, which made an agent regression check pass on two cases while reporting success for ten. A fourth: a case can expect a skill belonging to a *different* plugin, unreachable from the plugin under test, and that failure is indistinguishable from a routing miss. Auditing every expected skill name against the plugin's actual inventory is what surfaced it, and is a check worth running before trusting any suite's failures.
+A third defect: repeated `--case` flags silently run only the last glob, which made an agent regression check pass on two cases while reporting success for ten. A fourth: a case can expect a skill belonging to a *different* plugin, unreachable from the plugin under test, and that failure is indistinguishable from a routing miss. Auditing every expected skill name against the plugin's actual inventory is what surfaced it, and it should run before anyone trusts a suite's failures.
 
 Two cases were then repaired, once their before-and-after delta had already been recorded. `skill-check-version` asked whether a publish had succeeded when the skill compares the installed version against GitHub. `skill-agent-browser` expected a skill from another plugin and became `skill-chrome-cdp`, the browser skill this plugin actually ships. Both now pass three runs out of three, and neither had anything to do with the descriptions under test.
 
@@ -226,8 +230,58 @@ Skill routing across 16 cases at three runs each, before and after the skill pas
 
 The full 26-case suite scores 25/26 at 98.7%, with all ten agent cases at 100%. An earlier agent-only comparison built on a custom runner had already shown precision holding at 100% across both the verbose and compressed catalogs, with identical prompts costing 29% fewer tokens.
 
-## Where the remaining weight sits
+## Splitting the monolith
 
-Codex needs a different fix. It enforces a hard ceiling on catalog size independent of description length: a fresh `codex exec --json` run against a catalog with every description stripped still omitted 76 skills. Cardinality binds on that host, so the only thing that moves it is reducing how many resources load by default — splitting the monolith into a small resident core plus optional domain packs that install on their own.
+Compression made each entry cheaper. It did nothing about how many entries there are, and on Codex that is the binding constraint: the skill budget is two percent of the selected model's context window — `context_window * 2 // 100`, about 5,440 tokens on a 272,000-token model — and it is shared across **every installed plugin**, not allocated per plugin. A fresh `codex exec --json` run against a catalog with every description stripped still omitted 76 skills. Only loading fewer resources moves that host.
 
-That split is specified in an architecture RFC and not yet built. What exists now is the tooling to land it safely: a weight report covering both halves of the catalog with budget gates attached, and an eval suite that scores any candidate change against the current release before it ships.
+### One repository, many plugins
+
+The obvious fear about splitting is duplication: two repositories, two copies of shared files, and drift between them within a month. That fear turns out to be unfounded, because both marketplaces already resolve a plugin from a subdirectory of the marketplace repository.
+
+Anthropic's own official marketplace uses a bare relative path for its first-party entries:
+
+```json
+{ "name": "agent-sdk-dev", "source": "./plugins/agent-sdk-dev" }
+```
+
+and OpenAI's Codex marketplace uses the object form:
+
+```json
+{ "name": "linear", "source": { "source": "local", "path": "./plugins/linear" } }
+```
+
+So modules became subdirectories of the same repository, each with its own Claude and Codex manifests, exactly as the root already had. Nothing is copied, so nothing can drift. `plugin.json` also accepts a `dependencies` array, so a module declares the core and installing one pulls the other.
+
+The first module is `bopen-orchestration`: coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex, and the agent-builder persona. Those coordinator-family skills cite each other by name, which made them the tightest cluster in the dependency graph and the cleanest thing to lift out first.
+
+### Boundaries drawn from references, not taxonomy
+
+The test for every boundary was whether someone would plausibly install one side without the other, and the evidence came from which skills and agents cite each other. `setup` is referenced by chrome-cdp, claudex, cost-tracking, create-next-project, and deploy-agent-team. `front-desk` is referenced by agent-onboarding, agent-decommissioning, and codex-agent-setup. Those two anchor the core; the coordinator family anchors orchestration.
+
+One naming decision was load-bearing. bopen.ai already sells premium prompt packs, and the desktop app manages them, so calling plugin distributions packs would have overloaded the word across the product, the docs, and the UI. They are **modules**; `pack` stays reserved.
+
+## Relocating what never belonged
+
+Splitting a catalog is a good moment to notice what should not be in it at all.
+
+| Resource | Moved to | Why |
+|---|---|---|
+| `clawnet-cli` | clawnet | Duplicate of a skill that plugin already shipped |
+| `geo-optimizer`, `saas-launch-audit` | product-skills | Go-to-market, not developer tooling |
+| `ceo`, `cfo`, `paperclip-plugin-dev` | new paperclip plugin | Organization simulation |
+
+The clawnet case shows why. Our copy was a 2.6 KB stub against clawnet's 21 KB guide and looked like pure redundancy, but it carried three sections the larger skill lacked: the vault composition, ORDFS server-side directory traversal, and the agent `icon:` frontmatter field. Deleting it as an obvious duplicate would have quietly destroyed all three. Consolidation means reading both copies first.
+
+`geo-optimizer` had a similar wrinkle in the other direction: it overlapped product-skills' existing `ai-seo-optimization` on AI-search optimisation, so both descriptions now name each other as boundaries and stop competing for the same request.
+
+## What the downstream looked like
+
+The premium prompt packs carried 886 plugin-prefixed references across 79 distinct names in 216 files, and every resource that moved invalidated its references. Rewriting them exposed rot that predated the split: `visual-recap` and `critique` had become `visual-review`, `loop-engineering` had become `software-factory`, `payment-specialist` had become `payments`, and five names carried a `bopen-tools:` prefix for skills bopen-tools never provided.
+
+The site's own build guard caught the last mile — a pack citing a skill from a plugin missing from the install map fails the build before a broken instruction can ship. That check now has a companion that walks every `plugin:resource` reference in the repository and fails on any that names something its plugin does not provide. Two of its first three runs found bugs in the checker itself: a plugin whose repository directory does not match its name, and a regex that read `json-render-core` as a reference to `json-render`.
+
+## What is still ahead
+
+Eight more modules are specified and not yet built: plugin-dev, review, web, creative, mcp, ops, research, and a public-agents distribution for personas whose audience is strangers on a public surface. That last one is separated by audience, not domain, because an agent embedded in a website widget should not carry `Write` and `Bash` the way a terminal persona can.
+
+Two relocations are blocked on uncommitted work sitting in other repositories, which is a scheduling problem and its own argument for doing this incrementally and publishing each step.
