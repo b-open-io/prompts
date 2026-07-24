@@ -2,7 +2,7 @@
 
 bopen-tools began the day as one plugin holding 31 agents, 85 skills, 14 commands, and 11 hooks. Every agent and skill puts routing metadata into the model's context at session start, on every request, whether the session uses it or not.
 
-Three changes later — compressing that metadata, relocating resources that belonged to other plugins, and splitting the first optional module out of the monolith — the core costs less than half what it did.
+Three changes later — compressing that metadata, relocating resources that belonged to other plugins, and splitting the first optional module out of the monolith — the core costs less than half what it did. The numbers below are from release 1.1.120.
 
 | Measured on the installed plugin | Before | After |
 |---|---:|---:|
@@ -250,7 +250,13 @@ and OpenAI's Codex marketplace uses the object form:
 { "name": "linear", "source": { "source": "local", "path": "./plugins/linear" } }
 ```
 
-So modules became subdirectories of the same repository, each with its own Claude and Codex manifests, exactly as the root already had. Nothing is copied, so nothing can drift. `plugin.json` also accepts a `dependencies` array, so a module declares the core and installing one pulls the other.
+So modules became subdirectories of the same repository, each with its own Claude and Codex manifests, exactly as the root already had. Nothing is copied, so nothing can drift.
+
+### A dependency that fails quietly
+
+`plugin.json` accepts a `dependencies` array, documented as the plugins that must be enabled for this one to function, so declaring the core looked like the obvious way to express the relationship. The module installed correctly with it. Its skills were then invisible to any session that did not also have the core, because the loader skips a plugin whose declared dependency is missing without saying so.
+
+The eval caught it immediately: the orchestration suite scored 0/5 against the module alone, every case reporting that no skill applied, and 5/5 with the field removed and nothing else changed. The module now ships without it. Its references to core skills are recommendations in roster documents, so it works alone and those references resolve for anyone who has both installed. Reach for `dependencies` only when a module genuinely cannot function without another plugin, and expect silence instead of an error when that plugin is absent.
 
 The first module is `bopen-orchestration`: coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex, and the agent-builder persona. Those coordinator-family skills cite each other by name, which made them the tightest cluster in the dependency graph and the cleanest thing to lift out first.
 
