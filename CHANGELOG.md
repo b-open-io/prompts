@@ -6,6 +6,28 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.116] - 2026-07-24
+
+### Removed
+
+- `clawnet-cli`, which duplicated a skill of the same name in the clawnet
+  plugin. That copy was a 2.6 KB stub against clawnet's 21 KB guide, but it
+  carried three sections clawnet lacked — the v0.0.33 vault composition, ORDFS
+  server-side directory traversal, and the agent `icon:` frontmatter field —
+  so those were merged upstream before removal rather than dropped.
+- `geo-optimizer` and `saas-launch-audit`, now shipped by product-skills where
+  the rest of the go-to-market work lives. `geo-optimizer` overlapped
+  `ai-seo-optimization` on AI-search optimisation, so both descriptions now name
+  each other as boundaries.
+
+### Changed
+
+- Agent tool grants and the premium pack catalog reference the relocated skills
+  through their new plugin prefixes.
+- Authored skills fall from 69 to 66; the model-visible startup surface reaches
+  roughly 13,050 estimated tokens, down from ~25,705 before this work began.
+
+
 ## [1.1.115] - 2026-07-24
 
 ### Changed
