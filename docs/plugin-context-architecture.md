@@ -23,7 +23,7 @@ permanent prompt tax and cannot be the architectural fix.
    installation path.
 2. Keep deterministic hooks separate from model-visible routing metadata.
 3. Avoid a convenience umbrella that automatically re-enables every optional
-   pack.
+   module.
 4. Keep Claude and Codex invocation policies explicit and testable.
 5. Treat agents as part of the startup catalog; splitting skills alone is
    insufficient.

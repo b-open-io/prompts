@@ -44,7 +44,7 @@ Skills are declared differently depending on the runtime:
 
 | Runtime | Declaration | How skills load |
 |---------|------------|----------------|
-| **Claude Code** | Agent frontmatter: `tools: Skill(clawnet-cli)` | Plugin system provides at runtime |
+| **Claude Code** | Agent frontmatter: `tools: Skill(clawnet:clawnet-cli)` | Plugin system provides at runtime |
 | **Vercel Sandbox** | `bot.json`: `"skills": ["clawnet-cli"]` | `createSkillTool()` reads `./skills/` dir |
 | **Both** | Reference same `SKILL.md` files | Different loaders, same content |
 

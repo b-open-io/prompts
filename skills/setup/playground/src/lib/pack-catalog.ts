@@ -2391,7 +2391,7 @@ export const PACK_CATALOG = [
 				class: "blueprint",
 				summary:
 					"Stand up agent-to-agent commerce on BSV rails: the x402 skill wires BRC-31 authenticated requests and BRC-29 payments over the x-bsv-payment header, paired with ClawNet identity so every paying agent is attributable. Requires MetaNet Client; this is the BSV-native x402, a different protocol from Coinbase's EVM x402.",
-				skills: ["x402:x402", "bopen-tools:clawnet-cli", "bsv-skills:create-bap-identity"],
+				skills: ["x402:x402", "clawnet:clawnet-cli", "bsv-skills:create-bap-identity"],
 				agents: ["Mina", "David", "Uno Satoj"],
 				sample: false,
 			},
@@ -2763,7 +2763,7 @@ export const PACK_CATALOG = [
 				class: "foundation",
 				summary:
 					"Write the payment policy your autonomous agents operate under: spend ceilings per task and per day, counterparty allow-lists keyed to ClawNet/BAP identity, receipt retention, and the escalation path when a payment request exceeds policy. A fill-in foundation document that the x402 and payments playbooks reference at run time.",
-				skills: ["x402:x402", "bopen-tools:clawnet-cli"],
+				skills: ["x402:x402", "clawnet:clawnet-cli"],
 				agents: ["Mina", "David"],
 				sample: false,
 			},

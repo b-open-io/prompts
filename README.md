@@ -125,7 +125,6 @@ bunx skills add b-open-io/bopen-tools --skill charting
 bunx skills add b-open-io/bopen-tools --skill check-version
 bunx skills add b-open-io/bopen-tools --skill chrome-cdp
 bunx skills add b-open-io/bopen-tools --skill claudex
-bunx skills add b-open-io/bopen-tools --skill clawnet-cli
 bunx skills add b-open-io/bopen-tools --skill cli-demo-gif
 bunx skills add b-open-io/bopen-tools --skill code-audit-scripts
 bunx skills add b-open-io/bopen-tools --skill codex-agent-setup
@@ -282,7 +281,6 @@ intentional.
 |-------|-------------|
 | `benchmark-skills` | Write evals for skills and measure impact vs baseline |
 | `chrome-cdp` | Drive Chrome through a Bun-native Chrome DevTools Protocol CLI |
-| `clawnet-cli` | Work with the ClawNet registry, identities, skills, and attestations |
 | `code-audit-scripts` | Deterministic security and quality scans (secrets, debug artifacts) |
 | `confess` | Analyze and document code issues and technical debt |
 | `create-next-project` | Scaffold a new Next.js app with Bun and Biome |
