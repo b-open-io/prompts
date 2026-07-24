@@ -1,6 +1,10 @@
 ---
 name: wait-for-ci
-description: "Wait for CI/CD pipelines to complete after pushing code, then act on results. This skill should be used after git push, after creating a PR, when the user says 'wait for CI', 'check if the build passes', 'monitor the pipeline', 'wait for checks', 'is CI green?', or whenever the agent needs to verify that pushed code passes CI before proceeding. Also use when an agent workflow involves push-then-verify cycles, deployment monitoring, or needs to block on CI results before taking the next step. Supports GitHub Actions, GitLab CI, and Vercel deployments."
+description: >-
+  Wait for CI/CD pipelines to finish after a push, then act on the result. Use after git push or
+  opening a PR, and for "wait for CI", "check if the build passes", "monitor the pipeline", "is
+  CI green?", or any push-then-verify cycle that must block on results. Supports GitHub Actions,
+  GitLab CI, and Vercel deployments.
 user-invocable: true
 allowed-tools:
   - Bash

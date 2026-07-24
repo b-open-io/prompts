@@ -1,6 +1,10 @@
 ---
 name: check-version
-description: "Check if the bopen-tools plugin is up to date by comparing local vs GitHub versions. Use this skill at the start of any session where the agent needs current skill/agent definitions, when the user asks 'is everything up to date?', 'check for updates', 'am I on the latest version?', or when you suspect skills may have changed since last install. Also use proactively when a skill seems to behave differently than documented or when instructions reference features you don't recognize. Completes in under 100ms."
+description: >-
+  Compare the installed bopen-tools version against GitHub to confirm skill and agent
+  definitions are current. Use at session start, for "is everything up to date?", "check for
+  updates", "am I on the latest version?", or when a skill behaves differently than documented
+  or references features you do not recognize. Completes in under 100ms.
 user-invocable: true
 allowed-tools:
   - Bash

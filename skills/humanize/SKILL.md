@@ -2,14 +2,9 @@
 name: humanize
 version: 1.0.8
 description: >-
-  Invoke this skill whenever producing text that a human will read — emails,
-  messages, documentation, reports, blog posts, announcements, commit messages,
-  or any prose draft. Trigger signals include: task is a writing or editing task,
-  output will be sent or published, user says "humanize", "make this sound less
-  AI", "de-AI this", "this sounds like ChatGPT", "make it sound more natural",
-  or "edit this". Do not wait for the user to ask — apply this automatically
-  before delivering any human-facing draft. Skipping this means delivering text
-  with predictable AI patterns that erodes trust and sounds generated.
+  Strip AI writing patterns from any prose a human will read — emails, docs, reports, posts,
+  commit messages. Apply automatically before delivering a draft, and on "humanize", "make this
+  sound less AI", "de-AI this", "this sounds like ChatGPT", or "edit this".
 user-invocable: false
 ---
 
@@ -102,6 +97,7 @@ After writing any prose, you must do a concrete revision pass before delivering.
 3. **Check for indirect repetition.** Read each pair of consecutive sentences. Does the second just restate the first in different words? Delete the restating sentence.
 4. **Read the last sentence of each paragraph.** Count the words. If more than one ending is under 15 words, rewrite the short ones to be 20+ words with specific details.
 5. **Check for "nice-to-have", "table stakes", "false economy"** and the other AI vocabulary. Replace with plain language.
+6. **Search for "worth".** It grades something without committing to a claim — "worth noting", "worth doing", "worth avoiding", "worth migrating to" — and is one of the strongest single-word AI tells. Replace every hit with the consequence itself. In a heading it is always wrong: "The Mistake Worth Publishing" should say what the section covers.
 
 Do this revision pass silently — don't mention it in your output. Just deliver the cleaned text.
 

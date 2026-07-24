@@ -1,8 +1,11 @@
 ---
 name: charting
 version: 1.0.0
-description: |-
-  Full-stack data visualization and charting intelligence. This skill should be used when the user asks to "create a chart", "visualize this data", "build a dashboard", "plot this", "graph these metrics", "show me a chart of", "make a bar chart", "create a line graph", "build a heatmap", or needs help choosing the right chart type, selecting a charting library, or engineering the data pipeline from raw database state to rendered visualization. Covers chart selection, data transformation, library choice by scale, performance optimization, and accessibility.
+description: >-
+  Data visualization and charting. Use for "create a chart", "visualize this data", "build a
+  dashboard", "plot this", "graph these metrics", "make a bar chart", "build a heatmap", or help
+  choosing a chart type, picking a charting library by data scale, or building the pipeline from
+  raw database state to rendered visualization.
 ---
 
 # Charting Intelligence & Data-to-Viz Pipeline Engineering

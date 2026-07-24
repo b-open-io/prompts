@@ -2,14 +2,10 @@
 name: advisor
 version: 0.0.3
 description: >-
-  Active when a Claude Code or Codex main session needs an independent,
-  read-only second opinion at a commitment boundary. Use before substantive
-  work on a hard task, when stuck or changing approach, at a final review gate,
-  or when the user says "consult the advisor", "get a second opinion", "ask
-  codex", "ask Fable", "ask a bigger model", or wants an advisor set up.
-  Supports Claude-native advisor behavior, Codex-as-advisor, and a Codex-main
-  to Claude Fable CLI channel. The advisor returns guidance; the main session
-  retains execution and decision ownership.
+  Get an independent read-only second opinion at a commitment boundary, before substantive work
+  on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
+  the advisor", "get a second opinion", "ask codex", "ask Fable", or "ask a bigger model". The
+  advisor returns guidance; the main session keeps execution and decision ownership.
 ---
 
 # Advisor

@@ -86,3 +86,6 @@ coverage/
 .vercel
 .env*.local
 __pycache__/
+
+# plugin eval run artifacts (regenerated per run)
+evals/results/

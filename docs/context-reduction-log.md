@@ -255,6 +255,162 @@ descriptions too — just masked.
 32,549 median per case) and 28% lower cost. That is the number that matters —
 not the static byte count, but what a real session actually pays.
 
+## What compression could and could not have broken
+
+Two structural facts bound the risk, and both are checkable rather than argued.
+
+**Agent bodies were never touched.** Comparing every `agents/*.md` body between
+the pre-compression commit and HEAD reports zero changed files. Only frontmatter
+moved. That matters because of where each part loads:
+
+| Component | When it loads |
+|---|---|
+| Agent `description` | Every request, always |
+| Agent body (its system prompt) | Only when that agent is invoked |
+| Skill `description` | Every request, always |
+| `SKILL.md` body, `references/`, `scripts/` | Only when that skill is invoked |
+
+Progressive disclosure already covers the bodies. Compression only touched the
+always-on layer, so an agent's domain knowledge, workflows, and documentation
+tables are byte-identical to what shipped before. The removed `<example>` blocks
+were routing examples of the form "user says X, delegate to this agent," never
+API usage or code the model would need to do the work.
+
+**Skill descriptions never contained examples.** Scanning all 85 for `<example>`
+returns zero, so the example removal was agent-only by necessity.
+
+The residual risk is narrower than "did we break the agents" and worth naming
+precisely: for a skill covering something the model has no prior knowledge of —
+`claudex`, `CLIProxyAPI`, `SKILL-MAP`, `ID-JAG`, `cuelume` — the description is
+the entire discovery mechanism, and a dropped distinctive term cannot be
+recovered from what the model already knows. That is the constraint the skill
+pass below is written against, and the reason every coined term survives it.
+
+## When `plugin eval` arrived
+
+Both boundaries land on consecutive published versions, so the dating is exact
+rather than inferred across a gap.
+
+| Version | Published | `plugin eval` | `tengu_walnut_spire` | `CLAUDE_CODE_WALNUT_SPIRE` |
+|---|---|:-:|:-:|:-:|
+| 2.1.197 | 2026-06-30 | — | — | — |
+| 2.1.198 | 2026-07-01 | yes | yes | — |
+| 2.1.206 | 2026-07-09 | yes | yes | — |
+| 2.1.207 | 2026-07-10 | yes | yes | yes |
+| 2.1.219 | 2026-07-24 | yes | yes | yes |
+
+2.1.197 contains no hits for `Run eval cases` or the `evals/**/case.yaml`
+schema string; 2.1.198 contains both. The 2.1.207 binary was pulled from npm
+(`@anthropic-ai/claude-code-darwin-arm64`) to close the only gap in the local
+version cache.
+
+Neither release announced it. The full 5,248-line public `CHANGELOG.md`
+mentions `plugin eval` nowhere, and searching it for "walnut" returns nothing;
+every "eval" hit refers to hook evaluators or the auto-mode classifier. The
+2.1.198 entry lists background subagents and Claude in Chrome going GA, the
+2.1.207 entry lists auto mode on Bedrock. The rollout shape is visible in the
+two steps: server-gated on July 1, then a local environment override added on
+July 10.
+
+One limit on that claim. This is string-presence analysis of shipped binaries,
+so it dates when the code and gate string appeared, not when Anthropic enabled
+the server-side flag for any account. Anyone with `tengu_walnut_spire` switched
+on could have had the feature from July 1 without touching the env var.
+
+## The native eval runner, exercised
+
+`claude plugin eval` is not merely available behind the flag; it runs. With
+`CLAUDE_CODE_WALNUT_SPIRE=1` set, a suite of `evals/<case>/prompt.md` plus
+`graders/*.md` executes end-to-end and writes both JSON and a self-contained
+HTML report.
+
+The grader types are `regex`, `tool_order`, `tool_used`, `file_exists`, `llm`,
+and `baseline`. The `regex` grader is deterministic and free to score, which
+removes the reason we originally kept a separate runner — an earlier draft of
+this log claimed the native path forced an LLM judge, and that was wrong.
+
+Ten agent-routing cases at three runs each, against the 1.1.114 source tree:
+
+```
+10 case(s) · 118s · $4.43 · overallScore 1.0 · overallPassRate 1.0
+```
+
+`--ablation with-without` adds a no-plugin baseline arm and reports the delta:
+
+| Case | With plugin | Without plugin |
+|---|---:|---:|
+| `boundary-code-audit-vs-security-ops` | 100% | 0% |
+| `boundary-data-vs-database` | 100% | 0% |
+| `boundary-database-vs-data` | 100% | 0% |
+| `boundary-devops-vs-code-auditor` | 100% | 0% |
+| `boundary-optimizer-vs-designer` | 100% | 0% |
+| `boundary-security-ops-vs-code-audit` | 100% | 0% |
+| `direct-map-clustering` | 100% | 0% |
+| `direct-write-tests` | 100% | 0% |
+| `negative-out-of-catalog` | 100% | 100% |
+| `negative-plain-question` | 100% | 100% |
+
+Mean delta 0.8 across the suite. Every positive case depends entirely on the
+plugin being installed, and both negative cases pass in either arm, which is
+the correct behaviour — with no catalog present there is nothing to over-route
+to. This is the measurement that says what the catalog is actually buying.
+
+## The skill pass
+
+Twenty-five authored skill descriptions rewritten, 15,514 → 8,149 characters
+across that set. Skill descriptions overall fall from 36,635 to 29,618 bytes.
+
+Two rules governed it. The sixteen third-party skills in `skills/` are
+symlinks to upstream-owned content carrying their own `.clawnet` attestation,
+and the rewriter refuses to touch a symlinked directory rather than relying on
+the author to remember. Second, every coined term survives verbatim —
+`claudex`, `CLIProxyAPI`, `GPT-5.6 Sol`, `SKILL-MAP`, `AGENT-MAP`, `auth.md`,
+`service_auth`, `ID-JAG`, `cuelume`, `ADW`, `monkey test` — because for a skill
+covering something outside the model's training, the description is the only
+discovery handle and a dropped term is unrecoverable.
+
+What came out was boilerplate rather than signal: the "This skill should be
+used when the user asks to…" preamble, `Covers:` enumerations of implementation
+detail, consequence sentences of the "Skipping this means…" form, and trigger
+phrases that only paraphrased a neighbouring trigger. All of that content lives
+in the `SKILL.md` body, which loads on invocation.
+
+### The eval caught two of our own bugs before it caught anything else
+
+The first skill-routing run scored 41.7% and read as a catalog-wide routing
+failure. It was two defects in the harness:
+
+1. The cases declared `allowed_tools: []`, which removes the Skill tool and
+   with it the skill catalog. The model was answering `NONE` because it could
+   not see any skills at all.
+2. The grader regex omitted the optional `bopen-tools:` prefix that the agent
+   graders already allowed. The model was answering `bopen-tools:visual-review`
+   — correct — and being scored wrong.
+
+With both fixed the uncompressed baseline is 13/16 cases, 83.3%. Three cases
+sit below full marks and none of them indicate a description problem:
+`skill-remind` and `skill-agent-browser` fail because the eval sandbox is an
+empty temporary workspace with no session history to search and no site to
+open, so the model reasons the task is not actionable and answers `NONE`;
+`skill-check-version` is a case we specified wrong, testing whether a publish
+succeeded when the skill checks whether the local install is current.
+
+Those three stayed unchanged for the before/after comparison, since rewriting a
+case after seeing its baseline destroys the comparison it exists to support.
+Once the delta was recorded, two of them were repaired as test cases:
+
+- `skill-check-version` asked whether a publish had succeeded. The skill
+  compares the installed version against GitHub, so the case now asks that
+  instead and passes 3/3.
+- `skill-agent-browser` expected a skill that lives in a different plugin
+  entirely and was therefore unreachable from `plugin eval .`. It is replaced
+  by `skill-chrome-cdp`, which is the browser skill this plugin actually ships,
+  and passes 3/3.
+
+A fourth harness defect, then: a case can expect a skill the plugin under test
+does not contain, and the failure looks identical to a routing miss. Auditing
+every expected name against the real inventory is what surfaced it.
+
 ## `claude plugin eval`, and how to turn it on
 
 Claude Code ships a plugin eval runner that would have replaced most of

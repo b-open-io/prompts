@@ -2,18 +2,10 @@
 version: 1.1.1
 name: ui-audio-theme
 description: >-
-  This skill should be used when the user asks to "generate a UI sound theme",
-  "create button click sounds for my app", "design notification sounds", or
-  "build a coordinated audio theme for my dashboard or wallet app", "make game
-  menu sounds", "create HUD feedback sounds", "design TV navigation sounds",
-  "audit the sounds on my existing site", "check that transaction sounds are
-  wired", "review UI audio wiring", or "edit a generated UI sound". Generates,
-  audits, edits, and wires cohesive UI audio themes mapped to semantic
-  interactions via ElevenLabs and ffmpeg, with an interactive local picker for
-  auditioning, revising, reassigning, and accepting candidates. Also covers a
-  synthesized web micro-interaction delivery path via cuelume and a
-  production-agnostic interaction taxonomy for choosing a distinct sound per
-  named moment.
+  Generate, audit, edit, and wire cohesive UI sound themes through ElevenLabs and ffmpeg, with
+  an interactive local picker for auditioning candidates. Use for "generate a UI sound theme",
+  "create button click sounds", "design notification sounds", "make game menu sounds", "audit
+  the sounds on my site", or "review UI audio wiring". Covers cuelume web delivery.
 location: user
 ---
 

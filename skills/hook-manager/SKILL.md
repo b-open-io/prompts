@@ -1,7 +1,10 @@
 ---
 name: hook-manager
 version: 2.0.0
-description: Manage bopen-tools plugin hooks — list, enable, disable, diagnose, and run first-time setup. This skill should be used when the user asks to "list hooks", "disable a hook", "enable a hook", "hook setup", "which hooks are running", "turn off the publish gate", "hooks config", or when session context contains a [BOPEN-HOOKS-SETUP] directive.
+description: >-
+  List, enable, or disable individual bopen-tools hooks and check their prerequisites. Use for
+  "list hooks", "enable a hook", "disable a hook", "hook setup", "hooks config", or a
+  [BOPEN-HOOKS-SETUP] directive. For the full harness view, use setup.
 ---
 
 # Hook Manager

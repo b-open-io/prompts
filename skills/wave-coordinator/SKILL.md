@@ -2,13 +2,9 @@
 name: wave-coordinator
 version: 1.0.4
 description: >-
-  This skill should be used in Claude Code or Codex when dispatching more agents
-  than the host can run concurrently, when context budget management is needed,
-  or when generating multiple variations of the same output. Coordinates native
-  Claude agents, Codex custom or built-in subagents, and mixed worker lanes with
-  wave sizing, context budget tracking, and directive diversity. Use when the
-  user says "fan out", "generate variations", "batch agents", "wave dispatch",
-  or asks for large-scale subagent work.
+  Dispatch many subagents in coordinated waves with per-wave review. Use for "fan out agents",
+  "wave dispatch", "batch agents", "generate N variations", or any fan-out beyond about five
+  parallel subagents that needs batching, ordering, and result reconciliation.
 ---
 
 # Wave Coordinator

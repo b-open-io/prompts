@@ -1,7 +1,11 @@
 ---
 name: visual-proposal
 version: 0.0.10
-description: This skill should be used when the user asks to "make a visual proposal", "write this up so I can share it", "present these options visually", "diagram the trade-offs", "turn this plan into something reviewable", or requests a shareable design pitch, architecture proposal, RFC, options comparison, or visual roadmap for work that has not been built. It produces one self-contained, theme-aware HTML page led by grounded diagrams. Use visual-review instead for completed code changes; do not use this skill for internal task tracking.
+description: >-
+  Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has
+  not been built. Use for "make a visual proposal", "present these options visually", "diagram
+  the trade-offs", "turn this plan into something reviewable", or a shareable design pitch, RFC,
+  or options comparison. Use visual-review for completed code changes.
 ---
 
 # Visual Proposal

@@ -6,6 +6,41 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.115] - 2026-07-24
+
+### Changed
+
+- Compressed 25 authored skill descriptions to routing metadata, 15,514 to
+  8,149 characters across that set. Skill descriptions overall fall from 36,635
+  to 29,618 bytes. Every coined term the model cannot infer — `claudex`,
+  `CLIProxyAPI`, `SKILL-MAP`, `AGENT-MAP`, `service_auth`, `ID-JAG`, `cuelume`,
+  `ADW`, `monkey test` — is preserved verbatim, because for those skills the
+  description is the only discovery handle. The rewriter refuses to write into
+  a symlinked directory, so the 16 vendored third-party skills are untouched.
+- Model-visible startup surface falls from ~15,142 to ~13,388 estimated tokens,
+  and from ~25,705 before the agent pass — a 48% cumulative reduction.
+
+### Added
+
+- An `evals/` suite of 26 cases in the native `claude plugin eval` format,
+  covering agent selection and skill selection across direct, boundary,
+  ambiguous, and negative routing.
+
+### Fixed
+
+- `skill-check-version` tested whether a publish succeeded; the skill compares
+  the installed version against GitHub. The case now matches the skill.
+- Replaced `skill-agent-browser`, which expected a skill belonging to a
+  different plugin and was unreachable from this one, with `skill-chrome-cdp`.
+
+### Validation
+
+Skill routing over 16 cases at three runs each went from 83.3% to 91.7% with no
+case regressing. The full 26-case suite scores 25/26 (98.7%), with agent cases
+at 10/10. A `--ablation with-without` run reports mean delta 0.8: every positive
+case passes at 100% with the plugin and 0% without it, while negative cases pass
+in both arms.
+
 ## [1.1.114] - 2026-07-24
 
 ### Changed

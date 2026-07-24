@@ -1,14 +1,11 @@
 ---
 name: auth-md
 description: >-
-  This skill should be used when the user asks to "implement auth.md",
-  "add agent registration", "design delegated agent signup", "support
-  service_auth", "mint or verify an ID-JAG", "build an agent identity
-  provider", "make Better Auth support auth.md", or review agent-facing OAuth,
-  account linking, consent, claims, revocation, and discovery architecture.
-  Covers the experimental WorkOS auth.md v0.6.0 proposal and prevents
-  conflation with Better Auth Agent Auth Protocol, OAuth Dynamic Client
-  Registration, ordinary email signup, and RFC 8628 Device Authorization.
+  Implement or review the experimental WorkOS auth.md v0.6.0 agent-identity proposal. Use for
+  "implement auth.md", "add agent registration", "design delegated agent signup", "support
+  service_auth", "mint or verify an ID-JAG", "build an agent identity provider", or agent-facing
+  OAuth consent, claims, and revocation. Distinct from Better Auth Agent Auth Protocol, OAuth
+  Dynamic Client Registration, and RFC 8628 Device Authorization.
 ---
 
 # WorkOS auth.md

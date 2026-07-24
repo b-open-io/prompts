@@ -1,7 +1,11 @@
 ---
 name: free-roam-testing
 version: 0.0.2
-description: Use this skill to run a discovery loop that explores a running app the way a curious or chaotic human would — randomized, unscripted paths, weird inputs, edge interactions — to surface NEW bugs, broken flows, confusing UX, and slow spots, then file them as deduplicated tickets. Invoke it when the user says "free roam", "explore the app", "monkey test", "find issues I don't know about", "exploratory testing", "use it like a real user", "discovery loop", "surface new bugs", or wants an agent to poke around an app autonomously and report what's broken. This is the producer half of the loop architecture — it feeds tickets to the execution loop. NOT for scripted regression tests (that's the tester agent's verification gate). Always respects a never-touch list and a blast-radius boundary before mutating anything.
+description: >-
+  Explore a running app on randomized unscripted paths to surface new bugs, broken flows, and
+  confusing UX, then file deduplicated tickets. Use for "free roam", "explore the app", "monkey
+  test", "exploratory testing", "find issues I don't know about", or "discovery loop". Respects
+  a never-touch list and blast-radius boundary. Not for scripted regression tests.
 ---
 
 # Free-Roam Testing

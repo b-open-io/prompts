@@ -2,13 +2,10 @@
 name: generative-ui
 version: 0.2.3
 description: >-
-  This skill should be used when the user asks about "generative UI", "dynamic UI",
-  "AI-generated interfaces", "json-render", "render JSON as UI", "generate a dashboard",
-  "create dynamic components", "AI UI generation", "MCP App UI", "deliver UI in chat",
-  "interactive chat interface", or needs to decide whether to use static components vs
-  AI-generated UI. Covers the json-render framework, renderer selection, catalog design,
-  MCP Apps delivery (ui:// resources for in-chat interactive UIs), and integration with
-  gemskills for visual asset generation.
+  Decide between static components and AI-generated interfaces, and build the latter. Use for
+  "generative UI", "dynamic UI", "json-render", "render JSON as UI", "AI UI generation", "MCP
+  App UI", "deliver UI in chat", or "interactive chat interface". Covers the json-render
+  framework, renderer and catalog selection, and MCP Apps delivery through ui:// resources.
 ---
 
 # Generative UI

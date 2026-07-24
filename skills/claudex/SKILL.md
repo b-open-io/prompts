@@ -1,15 +1,10 @@
 ---
 name: claudex
-description: >
-  This skill should be used when a Claude Code session needs to keep working
-  after Anthropic usage runs out, or when the user asks to run the Claude Code
-  harness on GPT-5.6 Sol. Trigger phrases include "my Anthropic usage ran out",
-  "I'm out of Claude usage", "usage limit reached, what now", "keep working on
-  another model", "run Claude Code on GPT-5.6 Sol", "use GPT-5.6 Sol as the
-  model", "set up claudex", "claudex isn't working", "route the harness through
-  CLIProxyAPI", or "bill against my ChatGPT/Codex subscription". It stands up a
-  local proxy so the Claude Code CLI runs on OpenAI's Codex backend as an escape
-  hatch, and diagnoses that setup when it drifts. macOS + Homebrew.
+description: >-
+  Run the Claude Code harness on GPT-5.6 Sol through a local CLIProxyAPI proxy when Anthropic
+  usage runs out, and diagnose that setup when it drifts. Use for "my Anthropic usage ran out",
+  "keep working on another model", "run Claude Code on GPT-5.6 Sol", "set up claudex", "claudex
+  isn't working", or "bill against my Codex subscription". macOS + Homebrew.
 version: 0.0.1
 user-invocable: true
 ---

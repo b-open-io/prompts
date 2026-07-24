@@ -2,14 +2,11 @@
 name: orchestrator
 version: 0.0.5
 description: >-
-  Use this skill when a capable current Claude Code or Codex main session
-  should coordinate native specialist agents, external implementation workers
-  such as Grok, and an independent advisor such as Fable. Trigger for
-  "orchestrate this", "use Grok workers", "use Fable as advisor", "Codex main
-  with workers", "delegate implementation but keep control here", cross-model
-  workflows, or complex work that needs a main-seat plan, parallel specialists,
-  worker dispatch, second opinions, review, verification, and git ownership.
-  Do not hardcode or replace the user's current main model.
+  Coordinate native specialist agents, external implementation workers such as Grok, and an
+  independent advisor such as Fable from a capable main session. Use for "orchestrate this",
+  "use Grok workers", "use Fable as advisor", "Codex main with workers", "delegate
+  implementation but keep control here", or cross-model workflows. Never replaces the user's
+  current main model.
 ---
 
 # Orchestrator

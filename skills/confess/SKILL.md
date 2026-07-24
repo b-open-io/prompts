@@ -1,7 +1,11 @@
 ---
 name: confess
 version: 1.0.2
-description: "Invoke this skill BEFORE ending any session, marking a task done, or saying 'complete'. Also invoke when the user says 'are you sure?', 'did you miss anything?', 'anything else?', 'what did I miss?', 'confess', or 'audit your work'. This is a proactive self-audit — do not wait to be asked. Skipping this means shipping incomplete work, broken references, untested paths, or unmentioned concerns the agent noticed but buried. Covers: incomplete changes, untested assumptions, pattern violations, hidden concerns, and cleanup debt."
+description: >-
+  Proactive self-audit covering incomplete changes, untested assumptions, pattern violations,
+  buried concerns, and cleanup debt. Invoke before ending a session, marking a task done, or
+  saying "complete", and when the user asks "are you sure?", "did you miss anything?", "anything
+  else?", or "audit your work". Do not wait to be asked.
 user-invocable: false
 ---
 

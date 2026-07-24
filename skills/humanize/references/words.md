@@ -120,6 +120,29 @@ Metaphor-nouns that say nothing about the actual subject.
 - framework (overused — say what the structure actually is)
 - solution (tech cliche — say what it does)
 
+## "Worth" as Hedged Evaluation
+
+`worth` is one of the strongest single-word AI tells in technical writing. It
+lets the writer grade something without committing to a claim, and models reach
+for it constantly. Every use below is cuttable.
+
+- it's worth noting that (note it, or delete it)
+- worth mentioning (mention it)
+- worth considering (say what you'd do)
+- worth doing / worth having / worth keeping (say why, with a number or reason)
+- worth avoiding (say what breaks if you don't)
+- worth migrating to (say what it gives you)
+- a change worth making (make it, or state the effect)
+- X is worth the tradeoff (name the tradeoff and who it favors)
+
+Also flag it in headings, where it reads as invented significance: "The Mistake
+Worth Publishing", "The Metric Worth Watching", "A Lesson Worth Learning".
+A heading should say what the section contains.
+
+FIX: state the consequence directly. "The `--ablation` arm is worth migrating
+to" carries no information; "The `--ablation` arm runs a no-plugin baseline
+automatically, which our runner does not" tells the reader what they get.
+
 ## Transitions That Add Nothing
 
 Formal connectors that signal AI composition.

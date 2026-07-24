@@ -1,7 +1,12 @@
 ---
 name: visual-review
 version: 0.0.2
-description: Use this skill to turn a PR, branch, commit, or working-tree diff into a visual recap — a single self-contained, theme-aware HTML page with before/after UI wireframes, schema/API contract summaries, a file footprint map, and annotated key-change diffs — so a reviewer sees the SHAPE of a change before reading raw lines. Invoke it when the user asks to critique a change, review a diff visually, run a code review or diff review, or says "recap this PR", "visual recap", "show me what this branch changed", "summarize this diff visually", "make this PR reviewable", "explain what changed", or before reviewing any large, multi-file, UI-heavy, or schema/API-touching change. Code-review agents (code-auditor, architecture-reviewer) should produce one as the opening artifact of any big review. NOT for small single-file diffs — those review faster as a raw diff via `bunx critique --web --open`.
+description: >-
+  Turn a PR, branch, commit, or working-tree diff into one self-contained HTML recap page with
+  before/after wireframes, contract summaries, a file map, and annotated diffs. Use for "recap
+  this PR", "visual recap", "review this diff visually", "show me what this branch changed",
+  "critique this change", or before any large or UI-heavy review. Not for small single-file
+  diffs.
 ---
 
 # Visual Review

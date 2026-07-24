@@ -2,13 +2,10 @@
 name: coordinator
 version: 0.0.6
 description: >-
-  Always active when a capable current main session in Claude Code or Codex is
-  planning non-trivial implementation and cheaper or specialized executors are
-  available, including native subagents, Grok workers, Codex workers, or
-  lower-tier Claude agents. Trigger before code is written to decide where each
-  unit executes. Keep planning, specs, design intent, review, verification, and
-  git in the main seat; dispatch bounded code-writing volume with explicit
-  ownership and acceptance criteria.
+  Route bounded code-writing volume from a capable main session to cheaper or specialized
+  executors — native subagents, Grok workers, Codex workers — while planning, design intent,
+  review, verification, and git stay in the main seat. Use for "dispatch to workers", "plan big
+  execute small", "race worker lanes", "model arbitrage", or "spec and dispatch".
 ---
 
 # Coordinator

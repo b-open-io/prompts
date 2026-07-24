@@ -1,7 +1,11 @@
 ---
 name: setup
 version: 1.0.3
-description: This skill should be used when the user says "bopen setup", "setup ui", "harness install", "audit my setup", "install everything", "unified installer", "setup plan", "/bopen-setup", or wants a single view of which bOpen plugins, CLIs, env keys, third-party skills, agents, and hooks are installed across their agent harness. It audits live state, lets the user select what to fix, and emits a runtime-tailored instruction plan — it never installs anything itself. For hooks-only configuration (enabling/disabling a single hook without the full harness view) the hook-manager skill remains canonical; this skill's Overview and per-plugin tabs point there for that narrower job.
+description: >-
+  Audit which bOpen plugins, CLIs, env keys, third-party skills, agents, and hooks are installed
+  across the harness, then emit a runtime-tailored instruction plan; it installs nothing itself.
+  Use for "bopen setup", "setup ui", "harness install", "audit my setup", "install everything",
+  or "unified installer". For a single hook, use hook-manager.
 ---
 
 # Setup

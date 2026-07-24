@@ -2,15 +2,10 @@
 name: front-desk
 version: 1.0.5
 description: >-
-  This skill should be used in Claude Code or Codex when the user asks "who
-  handles X?", "what agents are available?", "how do I contact Y?", "team
-  roster", "what services do we use?", "who should I talk to about Z?", "what
-  skills are available?", "where do I find skill X?", or needs help routing to
-  the right agent or service provider. Also use when checking agent-adapter
-  availability, finding/installing skills, sending emails on behalf of the org,
-  or drafting communications. Route SOC 2,
-  audit readiness, policy drafting, and evidence-gathering questions to Anthony
-  in product-skills, with Paul in bopen-tools for technical control validation.
+  Route to the right agent, skill, or service provider. Use for "who handles X?", "what agents
+  are available?", "team roster", "what skills are available?", "where do I find skill X?", or
+  "who should I talk to about Z?". Also covers agent-adapter availability, installing skills,
+  and org email drafting. Route SOC 2 and audit readiness to Anthony in product-skills.
 user-invocable: false
 ---
 

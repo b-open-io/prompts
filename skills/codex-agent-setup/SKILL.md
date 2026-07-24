@@ -1,13 +1,9 @@
 ---
 name: codex-agent-setup
-description: >
-  Explicit-only installer for bopen-tools Codex custom agents. Use ONLY when the
-  user explicitly asks to install, update, check, uninstall, or set up Codex
-  agents / custom agents from this plugin — phrases include "install codex
-  agents", "setup codex agents", "update codex agents", "check codex agents",
-  "install all codex agents", "uninstall codex agents", "project codex agents",
-  "user codex agents", or "install bopen agents into .codex". Never auto-invoke.
-  Never silently modify global Codex configuration.
+description: >-
+  Generate and install Codex agent adapters so plugin personas are invocable from the Codex CLI.
+  Use for "set up codex agents", "install the codex adapters", "make these agents work in
+  Codex", or when a persona is missing from a Codex session.
 disable-model-invocation: true
 user-invocable: true
 metadata:

@@ -1,6 +1,9 @@
 ---
 name: visual-wayfinder
-description: This skill should be used when the user asks to "open Visual Wayfinder", "answer a Wayfinder ticket visually", "turn this decision into a configurator", "show Wayfinder choices as a dashboard", "prototype the Wayfinder questionnaire", or wants interactive choice cards, tradeoff controls, rankings, ranges, toggles, and consequence previews for one active Wayfinder decision. It wraps the Wayfinder skill and JSON Render; it never replaces the tracker or resolves more than the active decision.
+description: >-
+  Generate a navigable visual map of a codebase or system for orientation. Use when the user
+  asks to "map this codebase", "show me how this fits together", "give me a tour", or needs a
+  visual orientation artifact before working in unfamiliar code.
 ---
 
 # Visual Wayfinder
