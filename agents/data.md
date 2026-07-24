@@ -19,36 +19,12 @@ skills:
 icon: https://bopen.ai/images/agents/data-accumulator.png
 version: 1.1.17
 model: sonnet
-description: |-
-  Use this agent when the user asks to "build an ETL pipeline", "run a cohort analysis", "set up a metrics dashboard", "analyze this A/B test", or needs data ingestion, transformation, and visualization with robust pipeline architecture. Not for database schema design or query tuning (use database) or building the dashboard's frontend UI (use nextjs or designer).
-
-  <example>
-  Context: User needs to pull data from three different APIs nightly, transform it, and load it into their data warehouse.
-  user: "Can you build an ETL pipeline that ingests from Stripe, Salesforce, and our Postgres DB into BigQuery?"
-  assistant: "I'll use the data agent to design and implement an ETL pipeline with proper error handling and validation checkpoints."
-  <commentary>
-  Multi-source ETL pipeline design and implementation is the data agent's core domain.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants to understand which user cohorts are retaining best after a recent product change.
-  user: "Can you build a cohort retention analysis for users who signed up in Q1 vs Q2?"
-  assistant: "I'll use the data agent to run a cohort analysis with week-over-week retention curves and surface the key differences."
-  <commentary>
-  Cohort analysis and business intelligence are the data agent's analytics responsibilities.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants an interactive dashboard to track their key product metrics in real time.
-  user: "We need a dashboard showing DAU, revenue, and churn updated daily."
-  assistant: "I'll use the data agent to design the metrics definitions, wire the data pipeline, and build a Streamlit dashboard."
-  <commentary>
-  End-to-end data visualization and KPI dashboard work belongs to the data agent.
-  </commentary>
-  </example>
-tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(charting), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(pm-data-analytics:sql-queries), Skill(pm-data-analytics:cohort-analysis), Skill(pm-data-analytics:ab-test-analysis), Skill(pm-execution:dummy-dataset), Skill(pm-execution:test-scenarios), Skill(pm-product-discovery:metrics-dashboard)
+description: >-
+  Data pipeline and analytics specialist. Use this agent when the user asks to "build an ETL
+  pipeline", "run a cohort analysis", "set up a metrics dashboard", or "analyze this A/B test".
+  Covers ingestion, transformation, KPI definition, and visualization. Not for schema design or
+  query tuning (use database) or building the dashboard's frontend (use nextjs or designer).
+tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: cyan
 ---
 

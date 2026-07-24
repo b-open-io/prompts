@@ -11,36 +11,13 @@ skills:
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/idris.png
 version: 1.2.17
-description: |-
-  Use this agent when the user asks to "design this schema", "speed up this slow query", "plan a zero-downtime migration", "set up indexing", or needs help with PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, or Convex — including GUI tool setup, backups, connection pooling, and migration safety. Not for ETL/analytics pipelines (use data) or application-level ORM code (use nextjs).
-
-  <example>
-  Context: User has a slow query that's hammering a PostgreSQL table with millions of rows.
-  user: "This query takes 8 seconds and it runs on every page load. Can you fix it?"
-  assistant: "I'll use the database agent to run EXPLAIN ANALYZE, identify missing indexes, and rewrite the query."
-  <commentary>
-  Query performance on a known database engine — Idris's core domain.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User is designing a schema for a multi-tenant SaaS app and isn't sure whether to use row-level security or separate schemas.
-  user: "Should we use RLS or schema-per-tenant for our Postgres setup?"
-  assistant: "I'll use the database agent to evaluate both approaches against your scale and isolation requirements."
-  <commentary>
-  Schema design and multi-tenancy strategy are exactly what Idris handles.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User needs to migrate a production table without downtime.
-  user: "We need to add a NOT NULL column to a 50M row table. How do we do that safely?"
-  assistant: "I'll use the database agent to write a zero-downtime migration using the expand-contract pattern."
-  <commentary>
-  Safe schema migrations with backfill logic — Idris's area of expertise.
-  </commentary>
-  </example>
-tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(agent-browser), Skill(simplify), Skill(superpowers:dispatching-parallel-agents)
+description: >-
+  Database specialist for PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, and Convex. Use this
+  agent when the user asks to "design this schema", "speed up this slow query", "plan a
+  zero-downtime migration", or "set up indexing". Also covers connection pooling, backups, and
+  multi-tenancy strategy. Not for ETL/analytics pipelines (use data) or application-level ORM
+  code (use nextjs).
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: green
 model: opus
 ---

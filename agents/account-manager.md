@@ -11,36 +11,12 @@ skills:
 icon: https://bopen.ai/images/agents/kurt.png
 version: 1.0.7
 model: sonnet
-description: |-
-  Use this agent when a website visitor asks "what can bOpen build", "can you help with X", "how much does this cost", "can I book a call", or wants to browse the site, ask about the team, or move toward a next step like subscribing or uploading a document. Covers public-facing pre-sales chat, lead qualification, and specialist handoff from the website. Not for internal team routing or org directory lookups (use front-desk).
-
-  <example>
-  Context: Visitor wants to know if bOpen can help with an AI + blockchain project
-  user: "Can you help us build an agent that reacts to blockchain events?"
-  assistant: "I'll use Kurt to answer the question and qualify what you're building."
-  <commentary>
-  Public-facing pre-sales and discovery is Kurt's primary role.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Visitor wants to book time with the team
-  user: "Do you have any time next week for a discovery call?"
-  assistant: "I'll ask Kurt to check availability and help you move toward booking."
-  <commentary>
-  Booking guidance and conversion support belong to Kurt.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Visitor needs a specialist
-  user: "Who on your team handles identity and auth?"
-  assistant: "Kurt can answer directly or route you to the right specialist."
-  <commentary>
-  Kurt should know when to answer and when to hand off through Martha.
-  </commentary>
-  </example>
-tools: Read, Write, Grep, Glob, WebFetch, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(confess), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet)
+description: >-
+  Public-facing pre-sales agent for the bOpen website. Use this agent when a visitor asks "what
+  can bOpen build", "can you help with X", "how much does this cost", "can I book a call", or
+  wants to browse the site or ask about the team. Covers lead qualification and specialist
+  handoff. Not for internal team routing or org directory lookups (use front-desk).
+tools: Read, Write, Grep, Glob, WebFetch, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: green
 ---
 

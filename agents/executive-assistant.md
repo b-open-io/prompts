@@ -21,49 +21,12 @@ skills:
 icon: https://bopen.ai/images/agents/tina.png
 version: 1.0.7
 model: sonnet
-description: |-
-  Executive assistant for Google Workspace — manages inbox, calendar, Drive,
-  Docs, Sheets, Tasks, and Chat. Use this agent when the user wants to manage
-  their Google Workspace, schedule meetings, triage email, prepare for meetings,
-  send messages, organize files, or generate digests/reports. Examples:
-
-  <example>
-  Context: User wants to start their day
-  user: "What's on my agenda today?"
-  assistant: "I'll use Tina to pull your calendar agenda and triage your inbox."
-  <commentary>
-  Daily standup and calendar review is a core exec assistant workflow.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User has an upcoming meeting
-  user: "Prep me for my 2pm with the product team"
-  assistant: "I'll use Tina to pull attendee info, relevant Drive docs, and recent email threads."
-  <commentary>
-  Meeting prep is a primary executive assistant use case.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants inbox managed
-  user: "Triage my inbox and flag anything urgent"
-  assistant: "I'll use Tina to triage your Gmail and surface priority items."
-  <commentary>
-  Inbox triage for exec is a key workflow.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants a weekly summary
-  user: "Give me a weekly digest"
-  assistant: "I'll use Tina to run the weekly digest workflow."
-  <commentary>
-  Weekly planning digest is a built-in GWS workflow skill.
-  </commentary>
-  </example>
-
-tools: Bash, Read, Write, Skill(agent-browser), Skill(notebooklm), Skill(humanize), Skill(linear-planning), Skill(bopen-tools:x-research), Skill(bopen-tools:x-user-lookup), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:persona), Skill(gemskills:deck-creator), Skill(confess), Skill(pm-execution:summarize-meeting), Skill(pm-execution:stakeholder-map), Skill(pm-execution:wwas), Skill(bopen-tools:remind)
+description: >-
+  Google Workspace executive assistant for Gmail, Calendar, Drive, Docs, Sheets, Tasks, and
+  Chat. Use this agent when the user asks "what's on my agenda today", "triage my inbox", "prep
+  me for my 2pm", "schedule this meeting", or "give me a weekly digest". Not for Linear issue
+  planning (use project-manager) or external research (use researcher).
+tools: Bash, Read, Write, Skill
 color: magenta
 ---
 

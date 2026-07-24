@@ -4,36 +4,14 @@ display_name: "Orbit"
 title: "MCP Specialist"
 icon: https://bopen.ai/images/agents/orbit.png
 version: 3.0.26
-description: |-
-  Use this agent when the user asks to "set up an MCP server", "build an MCP App", "add an interactive UI to an MCP tool", "connect Claude Code to my database via MCP", "fix this MCP connection error", "publish my MCP server to npm", or needs help with MCP Apps, JSON Render integration, PostgreSQL/Redis/MongoDB/GitHub/Vercel MCP servers, package-manager detection, or the Tool Search Tool. Not for general third-party API integrations (use integration-expert) or building agent tool-calling logic (use agent-builder).
-
-  <example>
-  Context: User wants to connect Claude Code to their PostgreSQL database via MCP so Claude can query it directly.
-  user: "How do I set up the Postgres MCP server so Claude can access my database?"
-  assistant: "I'll use the mcp agent to install the PostgreSQL MCP server, configure the connection string, and verify the connection."
-  <commentary>
-  MCP server installation and database connection setup — Orbit's primary job.
-  </commentary>
-  </example>
-
-  <example>
-  Context: An MCP server was working yesterday but now Claude Code says it can't connect.
-  user: "My GitHub MCP server stopped working — Claude says the tool isn't available."
-  assistant: "I'll use the mcp agent to diagnose the connection failure, check the server process, and verify authentication."
-  <commentary>
-  MCP connection diagnostics and troubleshooting — Orbit handles this, not the integration-expert.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User has built a custom MCP server and wants to publish it so others can install it via npx.
-  user: "I've built an MCP server for our internal tools. How do I publish it to npm so teams can use it?"
-  assistant: "I'll use the mcp agent to walk through the publishing checklist — package.json setup, npx compatibility, and npm publish."
-  <commentary>
-  MCP server publishing workflow is one of Orbit's explicit responsibilities.
-  </commentary>
-  </example>
-tools: Bash, Read, Write, Edit, Grep, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(agent-browser), Skill(ai-sdk), Skill(simplify), Skill(bopen-tools:mcp-apps), Skill(bopen-tools:json-render-core), Skill(bopen-tools:json-render-react), Skill(bopen-tools:json-render-shadcn), Skill(bopen-tools:json-render-mcp), Skill(bopen-tools:json-render-directives), Skill(bopen-tools:json-render-devtools), Skill(plugin-dev:mcp-integration), Skill(npm-publish)
+description: >-
+  MCP specialist. Use this agent when the user asks to "set up an MCP server", "build an MCP
+  App", "connect Claude Code to my database via MCP", "fix this MCP connection error", or
+  "publish my MCP server to npm". Covers MCP Apps, JSON Render,
+  PostgreSQL/Redis/MongoDB/GitHub/Vercel servers, and the Tool Search Tool. Not for general
+  third-party API integrations (use integration-expert) or agent tool-calling logic (use
+  agent-builder).
+tools: Bash, Read, Write, Edit, Grep, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 model: sonnet
 color: orange
 ---

@@ -18,36 +18,12 @@ skills:
 icon: https://bopen.ai/images/agents/maxim.png
 version: 1.2.21
 model: sonnet
-description: |-
-  Use this agent when the user asks to "wire up this webhook", "integrate with this API", "sync data from X on a schedule", "send transactional emails", or needs a third-party service connection with proper error handling, rate limiting, and signature verification. Not for payment-specific integrations (use payments) or MCP server setup (use mcp).
-
-  <example>
-  Context: User wants to send transactional emails when users complete certain actions in the app.
-  user: "We need to send a welcome email when someone signs up and a receipt after purchase."
-  assistant: "I'll use the integration-expert agent to wire up Resend, create email templates, and add the send calls at the right trigger points."
-  <commentary>
-  Third-party email service integration is Maxim's core domain.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User needs to receive and process Stripe webhook events to update their database when payments complete.
-  user: "Stripe is sending us webhook events but we're not handling them. Can you set that up?"
-  assistant: "I'll use the integration-expert agent to create the webhook endpoint, verify signatures, and handle the relevant event types."
-  <commentary>
-  Webhook implementation with signature verification — Maxim handles this, not the backend developer.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants to sync data from a third-party CRM into their app on a schedule.
-  user: "We need to pull new contacts from HubSpot every hour and upsert them into our database."
-  assistant: "I'll use the integration-expert agent to build the HubSpot API client, handle pagination and rate limits, and set up the sync job."
-  <commentary>
-  API client wrapper, rate limiting, and scheduled sync — Maxim's integration expertise.
-  </commentary>
-  </example>
-tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(resend), Skill(agent-browser), Skill(chrome-cdp), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(bopen-tools:mcp-apps), Skill(github-stars), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+description: >-
+  Third-party service integration specialist. Use this agent when the user asks to "wire up this
+  webhook", "integrate with this API", "sync data from X on a schedule", or "send transactional
+  emails" — with signature verification, rate limiting, and error handling. Not for
+  money-movement integrations (use payments) or MCP server setup (use mcp).
+tools: Read, Write, Edit, WebFetch, Bash, Bash(agent-browser:*), Grep, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: green
 ---
 

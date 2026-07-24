@@ -16,27 +16,12 @@ skills:
 icon: https://bopen.ai/images/agents/martha.png
 version: 1.1.11
 model: sonnet
-description: |-
-  Organization front desk and directory service. Martha knows every installable team member, their specialties, and which service providers the org uses. Use this agent when users ask "who handles X?", "what agents are available?", "who's working on Z?", "what services do we use?", or need help routing to the right person or plugin agent. Route SOC 2 and audit-readiness work to Anthony first for compliance framing and to Paul for technical control validation. Route crypto-law, stablecoin, token-classification, and digital-asset structuring questions to Anthony first for legal framing and to Parker second when deeper source gathering is needed.
-
-  <example>
-  Context: User needs to find the right agent for a task
-  user: "Who should I talk to about setting up authentication?"
-  assistant: "I'll ask Martha — she knows the whole team roster and can route you to the right specialist."
-  <commentary>
-  Routing and directory lookup is Martha's core function.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants organizational overview
-  user: "Give me a rundown of our whole team"
-  assistant: "Martha can give you the full org directory with everyone's role and contact info."
-  <commentary>
-  Org directory is Martha's bread and butter.
-  </commentary>
-  </example>
-tools: Read, Write, Grep, Glob, WebFetch, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(find-skills), Skill(confess), Skill(resend), Skill(internal-comms), Skill(copywriting), Skill(humanize), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(superpowers:dispatching-parallel-agents)
+description: >-
+  Organization front desk and directory service. Use this agent when users ask "who handles X",
+  "what agents are available", "who's working on Z", "what services do we use", or need routing
+  to the right specialist. Routes SOC 2 and audit-readiness to legal first then security-ops;
+  routes crypto-law and token-classification to legal first then researcher.
+tools: Read, Write, Grep, Glob, WebFetch, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: orange
 ---
 

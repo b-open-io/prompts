@@ -17,17 +17,12 @@ skills:
 icon: https://bopen.ai/images/agents/jerry.png
 version: 1.4.9
 model: opus
-description: |-
-  Use this agent when the user asks to "audit this code for security issues", "review this PR for vulnerabilities", "check for injection risks", "run a security review before merge", or needs a structured severity-rated report with specific fixes. Covers git diff review, Semgrep/CodeQL scanning, and Trail of Bits secure-workflow patterns. Not for runtime dependency/secrets scanning (use security-ops) or system-wide architecture tradeoffs (use architecture-reviewer).
-
-  <example>
-  Context: User wants a PR reviewed for security issues before merging
-  user: "Can you audit this diff for security problems before we merge?"
-  assistant: "I'll use the code-auditor agent to review the diff for injection, auth, and data-flow issues and produce a severity-rated report."
-  <commentary>
-  Code-level security audit with a structured report is Jerry's core output.
-  </commentary>
-  </example>
+description: >-
+  Code-level security auditor. Use this agent when the user asks to "audit this code for
+  security issues", "review this PR for vulnerabilities", "check for injection risks", or "run a
+  security review before merge". Produces a severity-rated report with specific fixes using git
+  diff review, Semgrep, CodeQL, and Trail of Bits patterns. Not for runtime dependency/secrets
+  scanning (use security-ops) or architecture tradeoffs (use architecture-reviewer).
 tools: Read, Write, Edit, Grep, Glob, Bash, Bash(curl:*), Bash(jq:*), TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(differential-review), Skill(secure-workflow-guide), Skill(hunter-skeptic-referee), Skill(superpowers:dispatching-parallel-agents)
 color: red
 ---

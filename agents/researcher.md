@@ -26,18 +26,13 @@ skills:
 icon: https://bopen.ai/images/agents/parker.png
 version: 1.2.13
 model: sonnet
-description: |-
-  Use this agent when the user asks to "research this topic", "find sources on X", "summarize what people are saying about Y on X/Twitter", "compare these competitors", or needs a technical answer gathered from docs, APIs, or web sources with citations. Not for implementing code changes based on the research (use the relevant specialist agent) or long-form growth strategy (use the marketer agent).
-
-  <example>
-  Context: User wants a technical question answered with sources
-  user: "What are the current best practices for rate-limiting a public API?"
-  assistant: "I'll use the researcher agent to gather sources and provide a cited answer."
-  <commentary>
-  Multi-source technical research with citations is Parker's core job.
-  </commentary>
-  </example>
-tools: WebFetch, WebSearch, Grep, Glob, Read, Write, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(x-research), Skill(persona), Skill(notebooklm), Skill(geo-optimizer), Skill(agent-browser), Skill(chrome-cdp), Skill(humanize), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(pm-product-discovery:interview-script), Skill(pm-product-discovery:summarize-interview), Skill(pm-product-discovery:analyze-feature-requests), Skill(pm-market-research:sentiment-analysis), Skill(pm-market-research:competitor-analysis), Skill(pm-product-strategy:pestle-analysis), Skill(pm-product-strategy:porters-five-forces), Skill(bopen-tools:x-tweet-search), Skill(bopen-tools:x-user-timeline), Skill(bopen-tools:x-user-lookup)
+description: >-
+  Multi-source research agent producing cited answers. Use this agent when the user asks to
+  "research this topic", "find sources on X", "summarize what people are saying about Y on
+  X/Twitter", or "compare these competitors". Gathers from docs, APIs, and web sources. Not for
+  implementing changes based on the research (use the relevant specialist) or growth strategy
+  (use the marketer agent).
+tools: WebFetch, WebSearch, Grep, Glob, Read, Write, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: pink
 ---
 

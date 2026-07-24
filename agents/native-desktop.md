@@ -12,36 +12,13 @@ skills:
   - bopen-tools:check-version
   - superpowers:dispatching-parallel-agents
 version: 1.0.0
-description: |-
-  Use this agent when the user asks to "build a desktop app", "build a native macOS app", "create a menu-bar app", "port this Electron app", "ship a DMG", "use the Native SDK", or "wrap this web app in a desktop shell", or needs desktop application work with the Vercel Native SDK and Zig toolchain. Legacy Wails, Electron, and ElectroBun knowledge is for migrations to the Native SDK. Route mobile applications to mobile, browser-only interfaces to nextjs or designer, and general deployment infrastructure to devops.
-
-  <example>
-  Context: User wants a lightweight macOS menu-bar application with a native window and a hosted dashboard.
-  user: "Build a native macOS menu-bar app that opens our dashboard in a desktop window."
-  assistant: "I'll use the native-desktop agent to scaffold the Native SDK app, define the window and menu-bar commands, secure the WebView origins, and validate the Zig build."
-  <commentary>
-  Native SDK window, menu-bar, WebView, and Zig build work belongs to Ada.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User has an Electron application and wants a smaller native desktop shell.
-  user: "Port this Electron app to the Native SDK without rewriting the web UI."
-  assistant: "I'll use the native-desktop agent to inventory the Electron lifecycle and bridge surface, preserve the existing UI in a secured WebView, and migrate the shell to the Native SDK."
-  <commentary>
-  This is a legacy desktop-shell migration whose destination is the preferred Native SDK stack.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User has a working Native SDK app and needs a production macOS release.
-  user: "Sign this app and ship a notarized DMG through our bopen.ai download flow."
-  assistant: "I'll use the native-desktop agent to verify the release version, smoke-test the binary, package and sign the app, notarize and staple the DMG, and validate the commerce release handoff."
-  <commentary>
-  Native packaging, Apple release requirements, DMG integrity, and the bopen.ai commerce handoff are Ada's release responsibilities.
-  </commentary>
-  </example>
-tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(macos-design), Skill(ui-audio-theme), Skill(visual-review), Skill(confess), Skill(agent-browser), Skill(bopen-tools:check-version), Skill(superpowers:dispatching-parallel-agents)
+description: >-
+  Desktop application specialist for the Vercel Native SDK and Zig toolchain. Use this agent
+  when the user asks to "build a desktop app", "build a native macOS menu-bar app", "port this
+  Electron app", "ship a notarized DMG", or "wrap this web app in a desktop shell". Legacy
+  Wails/Electron knowledge is for migrations to the Native SDK. Not for mobile (use mobile),
+  browser-only UI (use nextjs), or general deployment (use devops).
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 model: sonnet
 color: teal
 ---

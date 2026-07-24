@@ -19,54 +19,13 @@ skills:
 icon: https://bopen.ai/images/agents/torque.png
 version: 1.2.21
 model: opus
-description: |-
-  Performance optimization specialist focused on CLI tools, profiling, bundle analysis, and runtime optimization. Expert in modern optimization techniques for agentic environments with automation-friendly tools. Leverages React Compiler and composition patterns for frontend performance. Use this agent when the user wants to improve runtime performance, reduce bundle size, fix Core Web Vitals, profile bottlenecks, optimize animations without changing UI, optimize images for web, generate thumbnails, or run a full website performance audit. Examples:
-
-  <example>
-  Context: User has a slow Next.js landing page with poor Lighthouse scores.
-  user: "Our LCP is 4.2s and TBT is 800ms. Fix it without touching the design."
-  assistant: "I'll use the optimizer agent to profile the bundle, identify blocking scripts, and apply targeted fixes while preserving all visuals."
-  <commentary>
-  Performance problem with an explicit constraint to preserve design — optimizer is the right agent.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants faster animations without visual regression.
-  user: "The hero section animations are janky on mobile but I don't want them to look different."
-  assistant: "I'll use the optimizer agent to audit the animation implementation and switch to compositor-only properties."
-  <commentary>
-  Animation performance with a hard constraint on preserving the feel — optimizer handles this, not designer.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants bundle size reduced.
-  user: "Our JS bundle is 2.4MB. Can we cut it down?"
-  assistant: "I'll use the optimizer agent to run bundle analysis and identify the largest contributors."
-  <commentary>
-  Bundle optimization task — optimizer's core domain.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants images optimized for production.
-  user: "Our images directory is 80MB and pages load slowly."
-  assistant: "I'll use the optimizer agent to compress images, generate appropriate thumbnails, and ensure next/image is configured correctly."
-  <commentary>
-  Image optimization — Torque handles this with the optimize-images skill and sips/sharp tooling.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants a full site performance assessment.
-  user: "Run a full performance audit on our site."
-  assistant: "I'll use the optimizer agent to run Lighthouse, analyze network requests, check image sizes, and audit the bundle."
-  <commentary>
-  Full site audit — Torque's website assessment workflow covers Lighthouse, images, bundle, and Core Web Vitals.
-  </commentary>
-  </example>
-tools: Bash, Read, Grep, Glob, Write, Edit, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(vercel-react-best-practices), Skill(vercel-composition-patterns), Skill(frontend-performance), Skill(gemskills:optimize-images), Skill(saas-launch-audit), Skill(plugin-dev:skill-development), Skill(agent-browser), Skill(visual-review), Skill(confess), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(bopen-tools:perf-audit)
+description: >-
+  Performance specialist for profiling, bundle analysis, Core Web Vitals, and image
+  optimization. Use this agent when the user asks to "fix our LCP", "reduce bundle size",
+  "profile this bottleneck", "make animations less janky", "optimize these images", or "run a
+  full performance audit" — especially with a constraint to preserve the existing design. Not
+  for visual redesign (use designer) or security review (use code-auditor).
+tools: Bash, Read, Grep, Glob, Write, Edit, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: green
 ---
 

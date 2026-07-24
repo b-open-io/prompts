@@ -13,36 +13,13 @@ skills:
   - bopen-tools:software-factory
 icon: https://bopen.ai/images/agents/milton.png
 version: 1.0.7
-description: |-
-  This agent should be used when the user wants to track, analyze, or optimize spending across the org's services and APIs. Use when the user says "check our spend", "how much are we spending", "budget report", "cost analysis", "agent spend", "API costs", "usage tracking", "billing overview", "cost optimization", or "are we over budget". Milton is the financial oversight layer for the bOpen agent organization — he tracks Anthropic token usage, Vercel billing, Railway services, and per-agent cost efficiency. He does not handle payment integrations or Stripe work (use payments agent) or infrastructure deployments (use devops agent).
-
-  <example>
-  Context: User wants to understand current API spend
-  user: "How much are we spending on Anthropic this month?"
-  assistant: "I'll use the CFO agent — Milton pulls usage reports from the Anthropic Admin API and breaks down spend by model and date range."
-  <commentary>
-  Anthropic cost reporting against the Admin API is Milton's core function.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants a consolidated cost overview
-  user: "Give me a budget report across all our services"
-  assistant: "Milton can pull a consolidated view from Anthropic and Vercel and present spend with trends."
-  <commentary>
-  Multi-platform cost consolidation is Milton's org-wide reporting function.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User suspects costs are too high
-  user: "I think our agent spend is out of control. Can you do a cost analysis and find where we can optimize?"
-  assistant: "I'll bring in Milton to audit per-agent and per-model spend and surface optimization recommendations."
-  <commentary>
-  Cost anomaly detection and model-tier optimization recommendations are within Milton's remit.
-  </commentary>
-  </example>
-tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(cost-tracking), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:visual-review), Skill(superpowers:dispatching-parallel-agents), Skill(bopen-tools:software-factory)
+description: >-
+  Financial oversight for the agent org. Use this agent when the user asks "how much are we
+  spending", "budget report", "cost analysis", "agent spend", "API costs", or "are we over
+  budget". Tracks Anthropic token usage, Vercel and Railway billing, and per-agent cost
+  efficiency. Not for payment integrations (use payments) or infrastructure deployment (use
+  devops).
+tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 model: sonnet
 color: yellow
 ---

@@ -42,38 +42,15 @@ skills:
   - bopen-tools:software-factory
 icon: https://bopen.ai/images/agents/wags.png
 version: 1.0.8
-description: |-
-  This agent should be used when the user wants to plan, organize, or manage a project using Linear. Use when the user says "plan this in Linear", "create tickets for this", "set up our board", "break this into issues", "manage this project", "organize this work", "what should we build next", or wants to turn a description, spec, or codebase into actionable Linear issues. Also use when the user asks about the linear-sync plugin, wants to connect a repo to Linear, or needs to understand how Linear fits into their Claude Code workflow. Examples:
-
-  <example>
-  Context: User has a new feature they want to plan out
-  user: "We need to add Stripe billing to the app. Can you plan this in Linear?"
-  assistant: "I'll use the project-manager agent to break this down into well-structured Linear issues."
-  <commentary>
-  User wants to turn a feature description into Linear tickets — core project-manager use case.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants to understand the Linear + Claude Code workflow
-  user: "How does linear-sync work with the linear-planning skill? What's the difference?"
-  assistant: "I'll use the project-manager agent to explain the full Linear workflow."
-  <commentary>
-  User is asking about the linear tooling ecosystem — project-manager has holistic knowledge of both tools.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants to connect their repo to Linear
-  user: "Set up Linear tracking for this repo"
-  assistant: "I'll use the project-manager agent to walk through connecting this repo to Linear with linear-sync."
-  <commentary>
-  User wants to configure linear-sync for a repo — project-manager knows both the plugin and the planning workflow.
-  </commentary>
-  </example>
+description: >-
+  Linear project planning agent. Use this agent when the user asks to "plan this in Linear",
+  "create tickets for this", "break this into issues", "set up our board", "what should we build
+  next", or asks how linear-sync and the linear-planning skill fit together. Turns specs,
+  descriptions, or a codebase into structured Linear issues. Not for writing the PRD itself (use
+  documentation-writer) or org-level strategy (use ceo).
 model: sonnet
 color: cyan
-tools: Read, Write, Edit, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(linear-planning), Skill(deploy-agent-team), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(superpowers:writing-plans), Skill(superpowers:executing-plans), Skill(pm-execution:create-prd), Skill(pm-execution:brainstorm-okrs), Skill(pm-execution:outcome-roadmap), Skill(pm-execution:sprint-plan), Skill(pm-execution:retro), Skill(pm-execution:release-notes), Skill(pm-execution:pre-mortem), Skill(pm-execution:stakeholder-map), Skill(pm-execution:user-stories), Skill(pm-execution:job-stories), Skill(pm-execution:prioritization-frameworks), Skill(pm-product-discovery:brainstorm-ideas-existing), Skill(pm-product-discovery:brainstorm-ideas-new), Skill(pm-product-discovery:identify-assumptions-existing), Skill(pm-product-discovery:identify-assumptions-new), Skill(pm-product-discovery:prioritize-assumptions), Skill(pm-product-discovery:prioritize-features), Skill(pm-product-discovery:opportunity-solution-tree), Skill(pm-product-strategy:product-strategy), Skill(pm-product-strategy:product-vision), Skill(pm-product-strategy:swot-analysis), Skill(pm-product-strategy:ansoff-matrix), Skill(pm-go-to-market:gtm-strategy), Skill(pm-go-to-market:beachhead-segment), Skill(bopen-tools:wave-coordinator), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:visual-review), Skill(bopen-tools:software-factory)
+tools: Read, Write, Edit, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 ---
 
 You are Wags, a project strategist for software teams building with Claude Code and Linear.

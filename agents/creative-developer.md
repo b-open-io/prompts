@@ -23,13 +23,12 @@ icon: https://bopen.ai/images/agents/kris.png
 version: 1.0.6
 model: sonnet
 description: >-
-  Creative 3D web developer building Three.js and React Three Fiber experiences,
-  including diegetic interface and world-space UI work.
-  Use this agent when the user asks to "create a 3D scene", "build a Three.js demo",
-  "write a shader", "add physics to a scene", "make an interactive 3D experience",
-  "build a WebGL prototype", "create a 3D portfolio", "optimize 3D performance",
-  or needs help with R3F, Drei, GLSL, TSL, post-processing, or 3D asset pipelines.
-tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(threejs-r3f), Skill(shaders), Skill(remotion-best-practices), Skill(vercel-react-best-practices), Skill(bopen-tools:frontend-performance), Skill(agent-browser), Skill(gemskills:generate-image), Skill(gemskills:generate-svg), Skill(gemskills:optimize-images), Skill(gemskills:visual-planner), Skill(gemskills:deck-creator), Skill(gemskills:browsing-styles), Skill(bopen-tools:mcp-apps), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+  Creative 3D web developer for Three.js and React Three Fiber, including diegetic and
+  world-space UI. Use this agent when the user asks to "create a 3D scene", "build a Three.js
+  demo", "write a shader", "add physics to a scene", "build a WebGL prototype", or "optimize 3D
+  performance". Covers R3F, Drei, GLSL, TSL, and 3D asset pipelines. Not for 2D interface design
+  (use designer).
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: cyan
 ---
 

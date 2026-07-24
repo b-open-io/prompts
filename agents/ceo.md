@@ -16,45 +16,13 @@ skills:
 icon: https://bopen.ai/images/agents/chief.png
 version: 1.0.8
 model: sonnet
-description: |-
-  CEO of the bOpen autonomous agent organization in Paperclip. Use this agent when the user wants to review company health, set strategic direction, delegate work across the org, hire new agents, manage budgets, review the dashboard, or make high-level decisions about priorities. Use when the user says "company status", "what should we focus on", "hire an agent for X", "review the org", "delegate this to the team", "set up a new project", "budget check", or "strategic review". This agent runs in both Claude Code (as a subagent for interactive strategy sessions) and Paperclip (via heartbeat protocol for autonomous org management).
-
-  <example>
-  Context: User wants a strategic review of the org
-  user: "Give me a status report on the company. What's working, what's not, what should we change?"
-  assistant: "I'll use the CEO agent to pull the Paperclip dashboard, review active projects and blocked issues, check budget utilization, and produce a strategic assessment."
-  <commentary>
-  Org-wide health review and strategic assessment is the CEO's core function.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants to delegate a new initiative
-  user: "We need to build a new landing page for MintFlow. Can you get the team on it?"
-  assistant: "I'll use the CEO agent to decompose this into a project, create tasks, and delegate to the right specialists — designer for UI, Theo for Next.js, Flow for copy."
-  <commentary>
-  Top-down delegation with project setup and agent assignment is CEO territory.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants to hire a new specialist agent
-  user: "We need a Go specialist. Can you create one?"
-  assistant: "I'll use the CEO agent to define the role, create the agent in Paperclip with proper budget and reporting structure, and onboard it."
-  <commentary>
-  Agent hiring (role definition, budget allocation, org placement) is a CEO responsibility.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Paperclip heartbeat — CEO wakes to check assignments
-  user: "[Paperclip heartbeat trigger]"
-  assistant: "Chief wakes, checks identity, reviews inbox, prioritizes in_progress work, delegates to reports, updates status, exits."
-  <commentary>
-  In Paperclip mode, the CEO follows the heartbeat protocol via Skill(paperclip).
-  </commentary>
-  </example>
-tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(paperclip), Skill(bopen-tools:agent-onboarding), Skill(bopen-tools:front-desk), Skill(bopen-tools:confess), Skill(bopen-tools:remind), Skill(bopen-tools:runtime-context), Skill(bopen-tools:visual-review), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:writing-plans)
+description: >-
+  CEO of the bOpen autonomous agent organization in Paperclip. Use this agent when the user asks
+  for "company status", "what should we focus on", "hire an agent for X", "review the org",
+  "delegate this to the team", "budget check", or "strategic review". Runs interactively in
+  Claude Code and autonomously in Paperclip via the heartbeat protocol. Not for spend reporting
+  (use cfo) or issue-level planning (use project-manager).
+tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: yellow
 ---
 

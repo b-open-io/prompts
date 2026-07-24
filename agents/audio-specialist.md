@@ -18,8 +18,12 @@ skills:
 icon: https://bopen.ai/images/agents/frames.png
 version: 1.0.11
 model: sonnet
-description: Use this agent for ElevenLabs audio generation, existing-product UI audio audits and wiring, sound-theme editing, voiceovers, music, and voice cloning, plus xAI/Grok image generation. Invoke for requests such as "review the sounds on my site", "wire transaction sounds", "edit this UI sound", or "generate a UI audio theme". Use gemskills:content for Gemini or Luma image generation and Veo video generation.
-tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(gemskills:deck-creator), Skill(ui-audio-theme), Skill(voice-clone), Skill(agent-browser), Skill(remotion-best-practices), Skill(gemskills:generate-image), Skill(gemskills:generate-video), Skill(gemskills:browsing-styles), Skill(simplify), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+description: >-
+  Audio agent for ElevenLabs generation, UI sound themes, voiceovers, music, and voice cloning.
+  Use this agent when the user asks to "review the sounds on my site", "wire transaction
+  sounds", "edit this UI sound", or "generate a UI audio theme". Use gemskills:content for
+  Gemini/Luma image and Veo video generation instead.
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: orange
 ---
 

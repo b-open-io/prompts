@@ -6,6 +6,28 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- Compressed all 31 agent descriptions to routing metadata: trigger phrases and
+  explicit "not for X, use Y" boundaries, with the worked `<example>` blocks
+  removed. Agent descriptions fall from 44,016 to 12,053 bytes. No agent
+  capability, persona, or system prompt changed.
+- Replaced enumerated `Skill(...)` grants in agent `tools:` lists with a single
+  bare `Skill` grant, which widens skill access rather than narrowing it, and
+  cuts agent tool lists from 14,865 to 4,527 bytes. Base tool scoping is
+  unchanged, including `Bash(git:*)`-style restrictions. The security- and
+  publish-sensitive agents — code-auditor, security-ops, devops, payments —
+  keep their explicit lists.
+- Model-visible startup surface falls from ~25,705 to ~15,130 estimated tokens.
+
+### Added
+
+- `scripts/plugin-weight.py` now measures agent `tools:` bytes and description
+  example counts, reports a combined model-visible startup total, and gates on
+  `--max-agent-description-chars`, `--max-agent-examples`, and
+  `--max-startup-tokens`. The report previously showed agents as a bare count,
+  so a budget gate built on it would have guarded skills only.
+
 ## [1.1.113] - 2026-07-24
 
 ### Fixed

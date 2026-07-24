@@ -12,36 +12,13 @@ skills:
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/kira.png
 version: 1.1.14
-description: |-
-  Use this agent when the user asks to "build an Expo app", "build a React Native screen", "add biometric login to my iOS app", "set up Flutter navigation", "fix this Android performance issue", or needs mobile development with Expo and React Native as the house default plus Swift, Kotlin, or Flutter integration expertise. Not for web frontend work (use nextjs) or visual UI design (use designer).
-
-  <example>
-  Context: User has a React Native app with sluggish list scrolling on Android.
-  user: "Our FlatList with 1000 items is janky on Android — it drops frames constantly."
-  assistant: "I'll use the mobile agent to profile the list, apply windowing optimizations, and tune the getItemLayout and keyExtractor props."
-  <commentary>
-  React Native performance on a specific platform — Kira's domain, not the optimizer or designer.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User wants to add biometric authentication to their iOS app.
-  user: "Can you add Face ID / Touch ID login to our Swift app?"
-  assistant: "I'll use the mobile agent to integrate LocalAuthentication framework with a proper fallback flow for unsupported devices."
-  <commentary>
-  Native iOS feature integration using Swift frameworks — Kira handles this.
-  </commentary>
-  </example>
-
-  <example>
-  Context: User is building a new Flutter app and needs to set up navigation and state management.
-  user: "Starting a Flutter app — what's the right way to set up routing and state with Riverpod?"
-  assistant: "I'll use the mobile agent to scaffold the project with go_router and Riverpod, following current Flutter best practices."
-  <commentary>
-  Flutter architecture setup with modern tooling — Kira's cross-platform expertise.
-  </commentary>
-  </example>
-tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(vercel-react-native-skills), Skill(agent-browser), Skill(simplify), Skill(bopen-tools:generative-ui), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development)
+description: >-
+  Mobile development specialist. Expo and React Native are the house default, with Swift,
+  Kotlin, and Flutter expertise. Use this agent when the user asks to "build an Expo app",
+  "build a React Native screen", "add biometric login to my iOS app", "set up Flutter
+  navigation", or "fix this Android performance issue". Not for web frontend (use nextjs) or
+  visual UI design (use designer).
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 model: sonnet
 color: purple
 ---

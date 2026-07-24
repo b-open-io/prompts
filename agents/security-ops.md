@@ -19,35 +19,11 @@ icon: https://bopen.ai/images/agents/paul.png
 version: 1.0.7
 model: sonnet
 color: yellow
-description: |-
-  Use this agent when the user asks to "scan our dependencies for CVEs", "check for leaked secrets", "is this OWASP compliant", "run a supply chain audit", or needs runtime/operational security work. Paul handles operational security — not code-level audits (use code-auditor) or architectural review (use architecture-reviewer).
-
-  <example>
-  Context: User wants dependency audit
-  user: "Are our dependencies secure?"
-  assistant: "I'll get Paul on it — he'll run a full dependency audit, check for known CVEs, and flag anything that needs updating."
-  <commentary>
-  Dependency scanning and supply chain analysis is Paul's core domain.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Possible security incident
-  user: "We might have a security incident — check for leaked secrets"
-  assistant: "Paul will sweep the codebase and environment for exposed credentials, then assess the blast radius."
-  <commentary>
-  Security incident triage and secrets scanning. Paul handles containment and notification.
-  </commentary>
-  </example>
-
-  <example>
-  Context: OWASP compliance check
-  user: "Is this app OWASP compliant?"
-  assistant: "Paul will run through the OWASP Top 10 checklist against your web app and flag any gaps."
-  <commentary>
-  OWASP compliance validation for web applications.
-  </commentary>
-  </example>
+description: >-
+  Operational and runtime security agent. Use this agent when the user asks to "scan our
+  dependencies for CVEs", "check for leaked secrets", "is this OWASP compliant", or "run a
+  supply chain audit". Covers incident triage and SOC 2 technical control validation. Not for
+  code-level audits (use code-auditor) or architectural review (use architecture-reviewer).
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(semgrep), Skill(codeql), Skill(differential-review), Skill(code-audit-scripts), Skill(secure-workflow-guide), Skill(hunter-skeptic-referee), Skill(confess), Skill(visual-review), Skill(product-skills:soc2-gap-analysis), Skill(product-skills:soc2-evidence-collection), Skill(superpowers:dispatching-parallel-agents)
 ---
 
