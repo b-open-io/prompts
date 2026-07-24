@@ -13,15 +13,31 @@
   (deterministic/hook/live tiers complete; packed-artifact and retained live
   activation evidence remain).
 - [x] Update public docs and the changelog.
-- [ ] Patch-bump both manifests together.
-- [ ] Run deterministic, host, packaging, documentation, and smoke checks.
-- [ ] Commit explicit reviewed paths, push, refresh both plugin installs, and
+- [x] Patch-bump both manifests together.
+- [x] Run deterministic, host, packaging, documentation, and smoke checks.
+- [x] Commit explicit reviewed paths, push, refresh both plugin installs, and
   verify the published version.
-- [ ] Close only Linear issues whose acceptance criteria are proven complete.
+- [x] Close only Linear issues whose acceptance criteria are proven complete.
 
 ## Review
 
-Pending implementation and release evidence.
+- Released bopen-tools `1.1.112` in commit `321c925`; `origin/master..master`
+  was empty immediately after the release push.
+- The static inventory reports 85 source skills (69 authored and 16
+  third-party), 78 Claude-implicit skills, 83 Codex-implicit skills, 36,635
+  description bytes, 31 agents, and 14 commands.
+- Twelve context-harness unit tests, the full hook suite, manifest/docs checks,
+  generated Codex adapter checks, Claude validation, and a dereferenced packed
+  inventory comparison pass.
+- Installed Claude and Codex roots both report `1.1.112`; the live harness and
+  install-parity check pass with the known 16-symlink Codex packaging warning.
+- Fresh host smokes returned `CLAUDE_CONTEXT_HARNESS_OK` and
+  `CODEX_CONTEXT_HARNESS_OK`. The fresh Codex run reproduced the target startup
+  warning with every description removed and 76 additional skills omitted.
+- OPL-3182, OPL-3183, OPL-3184, OPL-3185, OPL-3189, and the completed prior
+  pass OPL-3045 are Done. OPL-3193 and OPL-3194 remain In Progress because live
+  activation adapters, retained host evidence, and benchmark integration are
+  not yet complete; behavior-changing migration issues remain Todo.
 
 # HammerTime per-project scoping
 
