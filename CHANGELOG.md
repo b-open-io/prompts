@@ -6,6 +6,27 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.111] - 2026-07-24
+
+### Added
+
+- `shadscan` (1.0.0): new skill that drives the `@shadscan/cli` static analyzer
+  through an audit → fix → re-score loop against shadcn/React apps, covering the
+  six scored categories (foundation, interaction, states, accessibility, forms,
+  production-polish), the AI-agent handoff modes (`--format prompt`,
+  `--apply --agent claude`), and the CI score gate (`--fail-under`, GitHub
+  Action, pre-commit). Deep flag reference, JSON notes, and a per-category fix
+  playbook live in `references/reference.md`.
+
+### Changed
+
+- `designer` (Ridd, 1.0.22), `nextjs` (Theo, 1.1.10), and `tester` (Jason,
+  1.3.17): wired the new `shadscan` skill into the shadcn-capable line with a
+  maker/checker split — Ridd is the primary fixer (categories map onto his
+  accessibility/states/forms patterns), Theo the secondary fixer for structural
+  and composition findings, and Jason owns the CI `--fail-under` gate rather
+  than applying UI fixes.
+
 ## [1.1.110] - 2026-07-21
 
 ### Added
