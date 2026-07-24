@@ -1,5 +1,5 @@
 ---
-allowed-tools: Skill(bopen-tools:software-factory), Skill(bopen-tools:linear-planning), Read, Write, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList
+allowed-tools: Skill(bopen-orchestration:software-factory), Skill(bopen-tools:linear-planning), Read, Write, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList
 description: Interactively design and scaffold an autonomous agent loop in this project (goal, gate, state, stop conditions, heartbeat)
 argument-hint: "[goal or feature the loop should work toward]"
 ---
@@ -33,7 +33,7 @@ Otherwise, design the loop:
 
 ### Step 1: Load the methodology
 
-Invoke `Skill(bopen-tools:software-factory)`. It defines the five building blocks,
+Invoke `Skill(bopen-orchestration:software-factory)`. It defines the five building blocks,
 the two loop types, blast-radius tiering, stop conditions, and the failure-mode
 guards. Everything below follows it.
 

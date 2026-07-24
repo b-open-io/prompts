@@ -14,7 +14,7 @@ cat > "$FIXTURE_INDEX" <<'EOF'
   "entries": [
     {
       "kind": "skill",
-      "id": "bopen-tools:software-factory",
+      "id": "bopen-orchestration:software-factory",
       "triggers": ["set up a factory worker loop", "factory", "loop", "worker"],
       "hint": "Design and harden an autonomous loop."
     }
@@ -39,7 +39,7 @@ if [[ -f "$state_file" ]]; then
 else
   FAIL=$((FAIL + 1)); failures+=("prompt-router dedup: state file not written"); printf '  FAIL  prompt-router dedup: state file written\n'
 fi
-recorded_count=$(jq -r '.fires["bopen-tools:software-factory"].count // 0' "$state_file" 2>/dev/null)
+recorded_count=$(jq -r '.fires["bopen-orchestration:software-factory"].count // 0' "$state_file" 2>/dev/null)
 assert_eq "prompt-router dedup: state file records id with count 1" "1" "$recorded_count"
 
 # --- same factory prompt again immediately → second firing suppressed ---
@@ -48,7 +48,7 @@ assert_exit "prompt-router dedup: second call exit 0" "0" "$HOOK_EXIT"
 assert_eq "prompt-router dedup: second firing suppressed" "" "$HOOK_STDOUT"
 
 # --- count is untouched by the suppressed attempt (no phantom re-fire) ---
-recorded_count2=$(jq -r '.fires["bopen-tools:software-factory"].count // 0' "$state_file" 2>/dev/null)
+recorded_count2=$(jq -r '.fires["bopen-orchestration:software-factory"].count // 0' "$state_file" 2>/dev/null)
 assert_eq "prompt-router dedup: count still 1 after suppressed attempt" "1" "$recorded_count2"
 
 # --- a third call, still within the 10-prompt gap, also stays silent ---
@@ -62,7 +62,7 @@ for _ in $(seq 1 9); do
 done
 run_hook "prompt-router.sh" "claude" "$factory_input"
 assert_contains "prompt-router dedup: re-nudge allowed after 10-prompt gap" "[BOPEN-ROUTER]" "$HOOK_STDOUT"
-recorded_count3=$(jq -r '.fires["bopen-tools:software-factory"].count // 0' "$state_file" 2>/dev/null)
+recorded_count3=$(jq -r '.fires["bopen-orchestration:software-factory"].count // 0' "$state_file" 2>/dev/null)
 assert_eq "prompt-router dedup: fire count now 2" "2" "$recorded_count3"
 
 # --- a fourth firing never happens — max 2 fires per session, ever ---

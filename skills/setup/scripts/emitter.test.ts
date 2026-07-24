@@ -90,7 +90,7 @@ describe("emitPlan", () => {
     expect(plan).toContain("## Execution rules");
     expect(plan).toContain("## Final verification and report");
     expect(plan).not.toContain("## Plugins");
-    expect(plan).not.toContain("bopen-tools:coordinator");
+    expect(plan).not.toContain("bopen-orchestration:coordinator");
     expect(plan).not.toContain("Refresh");
   });
 

@@ -37,7 +37,7 @@ class CodexContextTests(unittest.TestCase):
             "prefix\n<skills_instructions>\n"
             "## Skills\n"
             "- imagegen: Generate images. (file: /tmp/imagegen/SKILL.md)\n"
-            "- bopen-tools:advisor: (file: /tmp/advisor/SKILL.md)\n"
+            "- bopen-orchestration:advisor: (file: /tmp/advisor/SKILL.md)\n"
             "⚠ Exceeded skills context budget of 2%. "
             "All skill descriptions were removed and 71 additional skills "
             "were not included in the model-visible skills list.\n"

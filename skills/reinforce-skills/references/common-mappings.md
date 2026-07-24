@@ -87,7 +87,7 @@ Agent maps use the `plugin:agent-name` format matching the `subagent_type` param
 | desktop-app, native-macos, menu-bar-app, ship-dmg | bopen-tools:native-desktop |
 | mcp-server, mcp-config | bopen-tools:mcp |
 | research, gather-info, web-research | bopen-tools:researcher |
-| agent-design, ai-agent | bopen-tools:agent-builder |
+| agent-design, ai-agent | bopen-orchestration:agent-builder |
 | marketing-copy, growth | product-skills:marketer |
 | data-pipeline, analytics | bopen-tools:data |
 | legal-review, privacy-policy, tos | product-skills:legal |

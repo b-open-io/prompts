@@ -285,10 +285,10 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 90_000, session_id: "old-session", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 90_000, session_id: "old-session", skill: "bopen-orchestration:advisor" }),
         "not json",
-        JSON.stringify({ ts: nowSeconds - 120, session_id: "first-recent", skill: "bopen-tools:advisor" }),
-        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-session", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 120, session_id: "first-recent", skill: "bopen-orchestration:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-session", skill: "bopen-orchestration:advisor" }),
         JSON.stringify({ ts: nowSeconds - 30, session_id: "missing-skill" }),
         JSON.stringify({ ts: "not-a-number", session_id: "bad-ts", skill: "bopen-tools:ignored" }),
         JSON.stringify({ ts: nowSeconds - 10, session_id: "other-session", skill: "other-plugin:helper" }),
@@ -303,7 +303,7 @@ describe("skill activity", () => {
       nowSeconds,
     });
 
-    expect(activity["bopen-tools:advisor"]).toEqual({
+    expect(activity["bopen-orchestration:advisor"]).toEqual({
       lastInvokedAt: nowSeconds - 60,
       sessionId: "latest-session",
       count24h: 2,
@@ -335,8 +335,8 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 300, session_id: "older-live", skill: "bopen-tools:advisor" }),
-        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-live", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 300, session_id: "older-live", skill: "bopen-orchestration:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-live", skill: "bopen-orchestration:advisor" }),
         JSON.stringify({ ts: nowSeconds - 30, session_id: "stale-session", skill: "bopen-tools:hook-manager" }),
         JSON.stringify({ ts: nowSeconds - 20, session_id: "missing-session", skill: "bopen-tools:persona" }),
       ].join("\n"),
@@ -362,8 +362,8 @@ describe("skill activity", () => {
       nowSeconds,
     });
 
-    expect(activity["bopen-tools:advisor"].sessionId).toBe("latest-live");
-    expect(activity["bopen-tools:advisor"].isLive).toBe(true);
+    expect(activity["bopen-orchestration:advisor"].sessionId).toBe("latest-live");
+    expect(activity["bopen-orchestration:advisor"].isLive).toBe(true);
     expect(activity["bopen-tools:hook-manager"].isLive).toBe(false);
     expect(activity["bopen-tools:persona"].isLive).toBe(false);
   });
@@ -376,7 +376,7 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 10, session_id: "future-session", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 10, session_id: "future-session", skill: "bopen-orchestration:advisor" }),
         JSON.stringify({ ts: nowSeconds - 5, session_id: "../escape", skill: "bopen-tools:persona" }),
       ].join("\n"),
     );
@@ -392,7 +392,7 @@ describe("skill activity", () => {
       nowSeconds,
     });
 
-    expect(activity["bopen-tools:advisor"].isLive).toBe(false);
+    expect(activity["bopen-orchestration:advisor"].isLive).toBe(false);
     expect(activity["bopen-tools:persona"].isLive).toBe(false);
   });
 
@@ -401,7 +401,7 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 60, session_id: "bopen-session", skill: "bopen-tools:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "bopen-session", skill: "bopen-orchestration:advisor" }),
         JSON.stringify({ ts: nowSeconds - 30, session_id: "similar-session", skill: "bopen-tools-extra:helper" }),
       ].join("\n")
     );
@@ -426,7 +426,7 @@ describe("skill activity", () => {
     });
 
     expect(state.plugins.find((plugin) => plugin.name === "bopen-tools")?.skillActivity).toEqual({
-      "bopen-tools:advisor": {
+      "bopen-orchestration:advisor": {
         lastInvokedAt: nowSeconds - 60,
         sessionId: "bopen-session",
         count24h: 1,

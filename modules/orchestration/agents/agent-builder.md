@@ -18,7 +18,7 @@ skills:
   - superpowers:subagent-driven-development
   - superpowers:executing-plans
   - superpowers:writing-plans
-  - bopen-tools:deploy-agent-team
+  - bopen-orchestration:deploy-agent-team
   - bopen-tools:agent-onboarding
   - bopen-tools:agent-decommissioning
   - gemskills:visual-planner
@@ -30,7 +30,7 @@ skills:
   - clawnet:clawnet
   - bopen-tools:generative-ui
   - bopen-tools:mcp-apps
-  - bopen-tools:software-factory
+  - bopen-orchestration:software-factory
   - bopen-tools:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
 version: 1.7.12
@@ -71,7 +71,7 @@ bulk incident response part of the architecture rather than deferred hardening.
 
 ## Loop Architecture — I am the point person
 
-When a project needs an autonomous **loop** — an agent that iterates toward a goal on its own with a real verification gate, persistent state, and a stop condition — I own the design. I invoke `Skill(bopen-tools:software-factory)`, assemble its building blocks, then delegate the pieces:
+When a project needs an autonomous **loop** — an agent that iterates toward a goal on its own with a real verification gate, persistent state, and a stop condition — I own the design. I invoke `Skill(bopen-orchestration:software-factory)`, assemble its building blocks, then delegate the pieces:
 
 - **The gate** → `tester` (Jason) implements and runs the required verification rung.
 - **State (tickets as memory)** → `project-manager` wires Linear / GitHub Issues / repo-vault.
@@ -79,7 +79,7 @@ When a project needs an autonomous **loop** — an agent that iterates toward a 
 - **Maker/checker separation** → `code-auditor` / `hunter-skeptic-referee`.
 - **Cost-per-accepted-change** → `CFO` (Milton).
 - **Discovery (free roam)** → `Skill(bopen-tools:free-roam-testing)` surfaces new work; the execution loop consumes it.
-- **Fleets at scale** → `Skill(bopen-tools:wave-coordinator)`.
+- **Fleets at scale** → `Skill(bopen-orchestration:wave-coordinator)`.
 
 Non-negotiables I enforce: **the gate is the loop** (no objective gate ⇒ it's not a loop, don't build it); **blast radius governs autonomy** (irreversible actions stay human-gated regardless of accept rate); and **prove → harden → automate** (never schedule something I haven't proven by hand). For a new loop, run `/factory-init` or walk the config questionnaire directly.
 
@@ -1481,7 +1481,7 @@ When designing or executing multi-agent systems, invoke the relevant superpower 
 | `Skill(superpowers:subagent-driven-development)` | Executing a plan task-by-task with a fresh subagent per task + two-stage review (spec compliance, then code quality) |
 | `Skill(superpowers:executing-plans)` | Running a plan across parallel sessions where human handoff between tasks is acceptable |
 | `Skill(superpowers:writing-plans)` | Before dispatching any agents — write the plan first so subagents get full context |
-| `Skill(bopen-tools:deploy-agent-team)` | Deploy a full bopen-tools agent team — TeamCreate, spawn specialists, task management, coordinate and shutdown |
+| `Skill(bopen-orchestration:deploy-agent-team)` | Deploy a full bopen-tools agent team — TeamCreate, spawn specialists, task management, coordinate and shutdown |
 
 ### Decision guide
 

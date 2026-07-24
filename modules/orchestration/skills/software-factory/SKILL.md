@@ -55,7 +55,7 @@ In the factory analogy, a loop *is* a factory worker — a worker with one speci
 
 The worker roster:
 
-- **Execution worker** (execution loop) — pulls a ticket, works it, gates it, closes it. Run via `Skill(superpowers:subagent-driven-development)` or a fleet via `Skill(bopen-tools:wave-coordinator)`.
+- **Execution worker** (execution loop) — pulls a ticket, works it, gates it, closes it. Run via `Skill(superpowers:subagent-driven-development)` or a fleet via `Skill(bopen-orchestration:wave-coordinator)`.
 - **Discovery worker** (discovery loop) — runs the product like a user, surfaces bugs nobody knew existed, and files deduped tickets for the execution worker to pick up. Owned by `Skill(bopen-tools:free-roam-testing)`.
 - **Maintenance worker** (maintenance loop) — recurring upkeep that keeps the factory itself healthy rather than shipping a ticket. See "Maintenance workers & looptop" below.
 

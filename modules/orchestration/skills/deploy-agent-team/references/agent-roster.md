@@ -12,7 +12,7 @@ Full bopen-tools agent roster with `subagent_type` identifiers and the skills to
 | **nextjs** | `bopen-tools:nextjs` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
 | **native-desktop** | `bopen-tools:native-desktop` | sonnet | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs |
 | **designer** | `bopen-tools:designer` | sonnet | UI components, game HUDs, TV shells, controller/remote focus, design systems, accessibility |
-| **agent-builder** | `bopen-tools:agent-builder` | opus | AI SDK v7 agents, tool-calling, durable runtime selection, conditional eve evaluation |
+| **agent-builder** | `bopen-orchestration:agent-builder` | opus | AI SDK v7 agents, tool-calling, durable runtime selection, conditional eve evaluation |
 | **database** | `bopen-tools:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
 | **integration-expert** | `bopen-tools:integration-expert` | sonnet | REST APIs, webhooks, third-party services |
 | **code-auditor** | `bopen-tools:code-auditor` | opus | Security review, vulnerability scanning, code quality |
@@ -143,7 +143,7 @@ Always run `Skill(product-skills:saas-launch-audit)` before a production deploy.
 ## Your Available Skills
 - `Skill(ai-sdk)` — invoke before any Vercel AI SDK work for current API patterns
 - `Skill(superpowers:dispatching-parallel-agents)` — invoke when designing multi-agent orchestration
-- `Skill(bopen-tools:deploy-agent-team)` — invoke when implementing team coordination patterns
+- `Skill(bopen-orchestration:deploy-agent-team)` — invoke when implementing team coordination patterns
 
 Invoke `Skill(ai-sdk)` first for any Vercel AI SDK or agent framework work.
 For bOpen runtime decisions, preserve the approved conditional posture: eve

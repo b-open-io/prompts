@@ -30,12 +30,12 @@ assert_eq "skill-activity invocation session" "session-one" "$(printf '%s' "$fir
 assert_eq "skill-activity invocation numeric timestamp" "number" "$(printf '%s' "$first_line" | jq -r '.ts | type')"
 
 # 2. A second invocation appends instead of overwriting the first.
-second_input=$(jq -n '{tool_name:"Skill", tool_input:{skill:"bopen-tools:software-factory"}, session_id:"session-one"}')
+second_input=$(jq -n '{tool_name:"Skill", tool_input:{skill:"bopen-orchestration:software-factory"}, session_id:"session-one"}')
 run_hook "skill-activity.sh" "claude" "$second_input"
 assert_exit "skill-activity second invocation exit" "0" "$HOOK_EXIT"
 assert_eq "skill-activity second invocation line count" "2" "$(wc -l < "$BOPEN_SKILL_ACTIVITY_FILE" | tr -d ' ')"
 assert_eq "skill-activity second invocation keeps first" "bopen-tools:hook-manager" "$(sed -n '1p' "$BOPEN_SKILL_ACTIVITY_FILE" | jq -r '.skill')"
-assert_eq "skill-activity second invocation appends second" "bopen-tools:software-factory" "$(sed -n '2p' "$BOPEN_SKILL_ACTIVITY_FILE" | jq -r '.skill')"
+assert_eq "skill-activity second invocation appends second" "bopen-orchestration:software-factory" "$(sed -n '2p' "$BOPEN_SKILL_ACTIVITY_FILE" | jq -r '.skill')"
 
 # 3. Every write prunes an eight-day-old line while retaining fresh lines.
 now=$(date +%s)

@@ -6,6 +6,17 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.119] - 2026-07-24
+
+### Changed
+
+- Repointed every remaining reference to relocated resources: the skill and
+  agent maps in `CLAUDE.md`, four agent bodies, `commands/factory-init.md`, the
+  README, and the setup playground's pack catalog now name
+  `bopen-orchestration`, `paperclip`, `product-skills`, or `clawnet` for the
+  resources those plugins now own.
+
+
 ## [1.1.118] - 2026-07-24
 
 ### Removed

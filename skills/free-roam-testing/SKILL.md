@@ -10,7 +10,7 @@ description: >-
 
 # Free-Roam Testing
 
-Scripted tests check what you already thought to check. **Free roam finds what you didn't.** This skill drives the actual running app along randomized, human-like paths to surface new issues, then files them as deduplicated tickets that an execution worker works systematically. It is **the discovery worker of a software factory** — the producer half of the worker architecture in `Skill(bopen-tools:software-factory)` (loop and worker are used interchangeably there).
+Scripted tests check what you already thought to check. **Free roam finds what you didn't.** This skill drives the actual running app along randomized, human-like paths to surface new issues, then files them as deduplicated tickets that an execution worker works systematically. It is **the discovery worker of a software factory** — the producer half of the worker architecture in `Skill(bopen-orchestration:software-factory)` (loop and worker are used interchangeably there).
 
 The value comes from *unpredictability*: a real user clicks the wrong thing, pastes an emoji into a number field, hits back mid-submit, opens two tabs, and abandons a checkout. Reproduce that texture and you find the bugs that scripted suites never touch.
 
@@ -77,7 +77,7 @@ Free roam has no natural "done", so bound it explicitly:
 
 ## Hand-off to the execution loop
 
-You are the producer. You do **not** fix what you find — you file it. The execution loop (`Skill(superpowers:subagent-driven-development)` / `Skill(bopen-tools:wave-coordinator)`) consumes the tickets and works them systematically with a verification gate. Keeping discovery and execution separate is the point: one surfaces breadth, the other resolves depth.
+You are the producer. You do **not** fix what you find — you file it. The execution loop (`Skill(superpowers:subagent-driven-development)` / `Skill(bopen-orchestration:wave-coordinator)`) consumes the tickets and works them systematically with a verification gate. Keeping discovery and execution separate is the point: one surfaces breadth, the other resolves depth.
 
 ## References
 

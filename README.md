@@ -743,7 +743,7 @@ retain the plan, judgment, verification, and git ownership while other lanes do
 bounded work:
 
 ```text
-Use $bopen-tools:orchestrator. Keep this Codex session in the main seat, use
+Use $bopen-orchestration:orchestrator. Keep this Codex session in the main seat, use
 native bopen specialists for research and review, grok-4.5 for bounded worker
 tasks, and Fable only for read-only second opinions at commitment boundaries.
 ```

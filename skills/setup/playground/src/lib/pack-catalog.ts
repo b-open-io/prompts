@@ -1206,8 +1206,8 @@ export const PACK_CATALOG = [
 					"Theo, Idris, Root, Jason, Jerry, and Torque take a product from empty repo to a running, authenticated, billed, deployed, tested, and security-reviewed skeleton, with auth handed to a named specialist and a review step, since auth and billing are exactly where scaffolding agents make the costliest mistakes.",
 				skills: [
 					"bopen-tools:create-next-project",
-					"bopen-tools:software-factory",
-					"bopen-tools:wave-coordinator",
+					"bopen-orchestration:software-factory",
+					"bopen-orchestration:wave-coordinator",
 					"sigma-auth:setup-nextjs",
 					"bopen-tools:devops-scripts",
 					"bopen-tools:wait-for-ci",
@@ -1223,9 +1223,9 @@ export const PACK_CATALOG = [
 				summary:
 					"Root, Satchmo, Jason, and Kayle wire an unattended build-verify-ship loop scoped to a real blast radius, with a stop condition and cost tracking so it keeps shipping verified work within a budget. Directly answers the 2026 finding that teams wiring up agent loops without a verification gate are the ones that spend without shipping.",
 				skills: [
-					"bopen-tools:software-factory",
-					"bopen-tools:wave-coordinator",
-					"bopen-tools:coordinator",
+					"bopen-orchestration:software-factory",
+					"bopen-orchestration:wave-coordinator",
+					"bopen-orchestration:coordinator",
 					"bopen-tools:free-roam-testing",
 					"bopen-tools:cost-tracking",
 				],
@@ -1286,9 +1286,9 @@ export const PACK_CATALOG = [
 				summary:
 					"Satchmo, Kayle, Root, and Zack set up a main-seat/worker-lane split with a second-opinion advisor gate, so cheaper and specialized executors each run under an explicit spec while the main seat keeps planning, review, verification, and git.",
 				skills: [
-					"bopen-tools:coordinator",
-					"bopen-tools:wave-coordinator",
-					"bopen-tools:advisor",
+					"bopen-orchestration:coordinator",
+					"bopen-orchestration:wave-coordinator",
+					"bopen-orchestration:advisor",
 					"plugin-dev:agent-development",
 				],
 				agents: ["Satchmo", "Kayle", "Root", "Zack"],
@@ -1746,7 +1746,7 @@ export const PACK_CATALOG = [
 				class: "foundation",
 				summary:
 					"Satchmo and Root document which staff are installed, their budget and model tier, and the escalation path, so blueprint and chain playbooks know which agents exist in this org and when to escalate to a human.",
-				skills: ["bopen-tools:cost-tracking", "bopen-tools:coordinator"],
+				skills: ["bopen-tools:cost-tracking", "bopen-orchestration:coordinator"],
 				agents: ["Satchmo", "Root"],
 				sample: false,
 			},

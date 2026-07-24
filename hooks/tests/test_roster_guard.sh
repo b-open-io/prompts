@@ -16,7 +16,7 @@ cat > "$FIXTURE_INDEX" <<'EOF'
   "entries": [
     {
       "kind": "skill",
-      "id": "bopen-tools:software-factory",
+      "id": "bopen-orchestration:software-factory",
       "triggers": ["factory", "loop", "worker"],
       "hint": "Design and harden an autonomous loop."
     },

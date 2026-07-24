@@ -13,7 +13,7 @@ cat > "$FIXTURE_INDEX" <<'EOF'
   "entries": [
     {
       "kind": "skill",
-      "id": "bopen-tools:software-factory",
+      "id": "bopen-orchestration:software-factory",
       "triggers": ["set up a factory worker loop", "factory", "loop", "worker"],
       "hint": "Design and harden an autonomous loop."
     },
@@ -40,7 +40,7 @@ run_hook "prompt-router.sh" "claude" "$factory_input"
 assert_exit "prompt-router factory exit" "0" "$HOOK_EXIT"
 assert_json "prompt-router factory json" "$HOOK_STDOUT"
 assert_contains "prompt-router factory marker" "[BOPEN-ROUTER]" "$HOOK_STDOUT"
-assert_contains "prompt-router factory skill id" "bopen-tools:software-factory" "$HOOK_STDOUT"
+assert_contains "prompt-router factory skill id" "bopen-orchestration:software-factory" "$HOOK_STDOUT"
 
 # --- silent on a short prompt ---
 short_input=$(jq -n '{prompt:"hi", session_id:"sess-short"}')

@@ -51,7 +51,7 @@ model.
 | **nextjs** | `bopen-tools:nextjs` | Next.js, React, Vercel, RSC, app router |
 | **native-desktop** | `bopen-tools:native-desktop` | Native SDK, Zig, WebViews, menu-bar apps, signed DMGs |
 | **designer** | `bopen-tools:designer` | UI, game HUDs, TV shells, directional focus, Tailwind, accessibility |
-| **agent-builder** | `bopen-tools:agent-builder` | AI SDK v7 agents, durable runtime selection, conditional eve evaluation |
+| **agent-builder** | `bopen-orchestration:agent-builder` | AI SDK v7 agents, durable runtime selection, conditional eve evaluation |
 | **database** | `bopen-tools:database` | Schema, queries, PostgreSQL, Redis, Convex |
 | **integration-expert** | `bopen-tools:integration-expert` | REST APIs, webhooks, third-party services |
 | **code-auditor** | `bopen-tools:code-auditor` | Security review, vulnerability scanning |

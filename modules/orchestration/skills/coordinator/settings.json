@@ -1,7 +1,7 @@
 {
   "$schema": "../../settings.schema.json",
   "version": 1,
-  "owner": "bopen-tools:coordinator",
+  "owner": "bopen-orchestration:coordinator",
   "settings": [
     {
       "source": "~/.claude/bopen-tools/settings.json",

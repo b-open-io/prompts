@@ -22,7 +22,7 @@ skills:
   - bopen-tools:wait-for-ci
   - bopen-tools:devops-scripts
   - bopen-tools:check-version
-  - bopen-tools:software-factory
+  - bopen-orchestration:software-factory
 icon: https://bopen.ai/images/agents/root.png
 version: 1.3.8
 description: >-
@@ -30,7 +30,7 @@ description: >-
   asks to "deploy this to Vercel", "set up CI/CD", "wire up a ClawNet bot deployment", or "add
   monitoring". Covers Bitcoin auth patterns and Semgrep/CodeQL in pipelines. Not for code-level
   security audits (use code-auditor) or dependency scanning outside CI (use security-ops).
-tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(npm-publish), Skill(product-skills:saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(bopen-tools:wait-for-ci), Skill(bopen-tools:devops-scripts), Skill(bopen-tools:check-version), Skill(bopen-tools:software-factory)
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(npm-publish), Skill(product-skills:saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(bopen-tools:wait-for-ci), Skill(bopen-tools:devops-scripts), Skill(bopen-tools:check-version), Skill(bopen-orchestration:software-factory)
 model: sonnet
 color: orange
 ---
@@ -39,7 +39,7 @@ You are the DevOps Specialist, an expert in our specific infrastructure stack: V
 
 ## Loop Heartbeat, Connectors & the Promotion Gate
 
-In an autonomous loop I own the **heartbeat** (what makes it run unattended), the **connectors** (what lets it *act* instead of suggest), and the **promotion gate** (when it's allowed to go autonomous). See `Skill(bopen-tools:software-factory)`.
+In an autonomous loop I own the **heartbeat** (what makes it run unattended), the **connectors** (what lets it *act* instead of suggest), and the **promotion gate** (when it's allowed to go autonomous). See `Skill(bopen-orchestration:software-factory)`.
 
 - **Heartbeat** — wire the trigger only *after* the loop is proven by hand: `/loop` (interval), `/goal` (until a condition is true), lifecycle hooks, `CronCreate`/`ScheduleWakeup`, or GitHub Actions. Findings come to the user; they're not the one checking.
 - **Connectors** — the difference between "here's the fix" and a loop that opens the PR, links the ticket, and pings the channel once the build is green, by itself.

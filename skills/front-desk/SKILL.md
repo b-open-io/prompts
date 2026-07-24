@@ -72,7 +72,7 @@ Use an installed Codex custom agent named `bopen_<agent_name>`, for example:
 
 | Persona | Claude agent ID | Codex custom agent |
 |---------|-----------------|--------------------|
-| Satchmo | `bopen-tools:agent-builder` | `bopen_agent_builder` |
+| Satchmo | `bopen-orchestration:agent-builder` | `bopen_agent_builder` |
 | Ridd | `bopen-tools:designer` | `bopen_designer` |
 | Jerry | `bopen-tools:code-auditor` | `bopen_code_auditor` |
 | Kayle | `bopen-tools:architecture-reviewer` | `bopen_architecture_reviewer` |

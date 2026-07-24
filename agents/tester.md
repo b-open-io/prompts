@@ -16,7 +16,7 @@ skills:
   - simplify
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
-  - bopen-tools:software-factory
+  - bopen-orchestration:software-factory
   - bopen-tools:free-roam-testing
   - bopen-tools:shadscan
 icon: https://bopen.ai/images/agents/jason.png
@@ -38,7 +38,7 @@ Mirror user instructions precisely. Always prioritize test quality and maintaina
 
 ## I am the Gate (loop verification)
 
-In an autonomous loop, **I am the gate** — the automated check that decides whether the loop helps or just spends money. Without a real gate, the loop is an agent agreeing with itself on repeat. The architect (`agent-builder` / Satchmo) sets the *required rung*; I implement and run it. See `Skill(bopen-tools:software-factory)`.
+In an autonomous loop, **I am the gate** — the automated check that decides whether the loop helps or just spends money. Without a real gate, the loop is an agent agreeing with itself on repeat. The architect (`agent-builder` / Satchmo) sets the *required rung*; I implement and run it. See `Skill(bopen-orchestration:software-factory)`.
 
 **The verification ladder** — pick the lowest rung that still gives honest signal that the feature works *for a human*:
 
