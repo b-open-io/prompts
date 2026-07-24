@@ -1,32 +1,24 @@
-## The Panel Pointed at the Wrong Skill
+## What 1.1.114 changed
 
-Claude Code's usage panel told us 11% of a day's usage came from the bopen-tools plugin. Underneath that number sat a per-skill breakdown, and it named `runtime-context` at 9% and `check-version` at 1%, with a caveat attached: these are "independent characteristics of your usage, not a breakdown."
+bopen-tools ships 31 agents, 85 skills, 14 commands, and 11 hooks. Every one of those agents and skills puts routing metadata into the model's context at session start, on every request, whether or not the session ever uses it. Release 1.1.114 cuts that standing cost by 37% and holds routing accuracy steady, verified against a 30-case eval run on both the old and new catalogs.
 
-We measured the two named skills directly. `runtime-context` costs 170 always-on tokens and 1,200 on invocation. `check-version` costs 190 always-on and 550 on invocation. Neither is expensive by any reasonable measure, and optimizing either would have won nothing worth the afternoon it would have cost.
+| Measured on the installed plugin | 1.1.113 | 1.1.114 | Delta |
+|---|---:|---:|---:|
+| Agent catalog | 15,660 | 4,590 | −71% |
+| Skill catalog | 13,730 | 13,770 | — |
+| **Always-on total** | **29,260** | **18,313** | **−37%** |
 
-The panel's percentage tracks sessions a skill was loaded in, correlated against session length. That statistic points at whatever loads earliest in a session; it says nothing about which tokens actually cost the most. If we had trusted the breakdown, we would have spent the afternoon shaving 170-token skills, and the real cost would have sat untouched one layer up, in the plugin's agent catalog.
+## Agents were 54% of the cost
 
-## Measuring the Catalog Directly
+`scripts/capture-claude-context.py` reads Claude Code's projected component costs and splits them by kind. At 1.1.113 the agent catalog accounted for 15,660 of 29,260 always-on tokens, and the fifteen most expensive individual components in the entire plugin were all agents. The median skill cost 150 tokens; `cartographer` alone cost 1,100.
 
-`scripts/capture-claude-context.py` measures the model-visible startup cost directly instead of inferring it from session correlation. At 1.1.113, bopen-tools cost 29,260 always-on tokens:
+That ratio decided the order of the work. Thirty-one agents carry more weight than ninety-three skill entries, so the agent catalog was where one pass could move the number furthest while leaving packaging and installation alone, and while removing no capability any user could reach.
 
-| Component | Always-on tokens | Share |
-|---|---:|---:|
-| Agents (31) | 15,660 | 54% |
-| Skills (93 entries) | 13,730 | 46% |
-| **Total** | **29,260** | |
+`scripts/plugin-weight.py` now measures that surface directly. It reports agent description bytes and `tools:` list bytes alongside the skill figures, counts the `<example>` blocks in each description, and sums everything into a single `model_visible_startup_tokens`. Gates cap per-agent description size, per-agent example count, the aggregate startup total, and duplicate resource names across the catalog. Any CI budget check built on that report now covers both halves of the plugin, including the half that grows every time someone adds a specialist.
 
-Thirty-one agents against ninety-three skill entries — a third of the catalog by count, carrying more than half the weight. The 15 most expensive individual components in the whole plugin were all agents. None were skills. The existing remediation plan, written before this measurement existed, had agent work sequenced last, behind two waves of skill-packaging changes that would have touched the smaller half of the problem first.
+## 73% off the descriptions
 
-## The Tool Was Blind in One Eye
-
-`plugin_inventory.py` already collected `agent_description_bytes` per resource, so the claim that agent cost went unmeasured turns out to be wrong. What actually happened: the markdown report rendered agents as a bare count, "Agents: 31," with no size breakdown next to it, and `tools:` list weight was never measured at all. A CI budget gate built on that report, the kind OPL-3196 was heading toward, would have passed indefinitely as the agent catalog grew, because nothing in the report's numbers would have moved.
-
-The fix landed in `plugin_inventory.py` and `plugin-weight.py`: per-resource `tools_metrics` and `example_count`, catalog totals for `agent_description_chars`, `agent_tools_bytes`, and `agent_example_count`, a combined `model_visible_startup_bytes`/`estimated_tokens` figure, and three new gates — `--max-agent-description-chars`, `--max-agent-examples`, `--max-startup-tokens`. One of the new tests covers the case that would have hidden the problem again: an agent with no `tools:` key at all has to report a zero count rather than a missing field.
-
-## Descriptions Ran Three Times Anthropic's Own Guidance
-
-Anthropic's `plugin-dev:agent-development` skill recommends 200-1,000 characters per agent description and 2-4 worked `<example>` blocks. Measured against the baseline catalog:
+Anthropic's `plugin-dev:agent-development` guidance recommends 200–1,000 characters per agent description with 2–4 worked `<example>` blocks. The baseline catalog averaged roughly 1,420 characters, with the largest entries carrying far more:
 
 | Agent | Examples | Description bytes |
 |---|---:|---:|
@@ -36,9 +28,7 @@ Anthropic's `plugin-dev:agent-development` skill recommends 200-1,000 characters
 | `trainer` | 4 | 2,067 |
 | `native-desktop` | 3 | 2,048 |
 
-The catalog average was roughly 1,420 characters, already outside the recommended band. The single worst case, `cartographer`, ran nearly three times the byte ceiling and carried 11 examples against a guidance cap of four.
-
-## The Compression
+Every description now keeps the quoted trigger phrases a request matches against, plus an explicit boundary naming the agent it gets confused with — `code-auditor` defers dependency scanning to `security-ops`, `data` defers query tuning to `database`. With 31 agents competing to answer the same request, those boundary clauses carry the disambiguation that 81 worked examples were carrying before.
 
 | Metric | Before | After | Delta |
 |---|---:|---:|---:|
@@ -47,80 +37,59 @@ The catalog average was roughly 1,420 characters, already outside the recommende
 | Agent `tools:` bytes | 14,865 | 4,527 | −70% |
 | Model-visible startup tokens | ~25,705 | ~15,142 | −41% |
 
-Every description kept two things: the quoted trigger phrases a request would match against, and an explicit "not for X, use Y" boundary against the agents it gets confused with most. With 31 agents competing to answer the same request, the boundary clause turned out to carry more disambiguating weight than a worked example ever did.
+The `tools:` change widens access while cutting bytes. An agent whose frontmatter enumerated `Skill(a), Skill(b), …` for forty entries could reach exactly those forty; collapsing that to a bare `Skill` grant gives it the whole catalog for 95 bytes. Base tool scoping stayed untouched, including `Bash(git:*)`-style restrictions, and `code-auditor`, `security-ops`, `devops`, and `payments` kept their explicit lists because least-privilege scoping is load-bearing for those four.
 
-The `tools:` change is worth spelling out because it runs against intuition. Collapsing an enumerated `Skill(a, b, c, ...)` grant down to a bare `Skill` grant widens access. An agent that previously listed 40 specific skills could only reach those 40; now it can reach the whole catalog. Base tool scoping was left alone, including `Bash(git:*)`-style restrictions, and four agents kept their explicit lists on purpose — `code-auditor`, `security-ops`, `devops`, and `payments` — because least-privilege scoping is the point of the agent.
+## Why the examples came out
 
-One bug from this pass is worth recording on its own. `designer.md` used JSON-array syntax for its `tools:` field, so the comma-splitting rewrite silently no-opped on that one file. Every other agent compressed correctly, which is exactly how the failure hid inside a byte count that looked perfectly healthy across all thirty-one files. It surfaced only once every individual `tools:` line was diffed against source, which is far more reliable than trusting a single aggregate byte count.
+Anthropic's [The new rules of context engineering for Claude 5 generation models](https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models) reports removing over 80% of Claude Code's own system prompt with no measurable loss on their coding evaluations. The finding that applies most directly to a plugin catalog is about examples: giving a model examples "actually constrains them to a certain exploration space." For routing metadata, a worked example both costs tokens and narrows the range of phrasings the model treats as a match.
 
-## A Contradiction We're Not Going to Resolve in Our Favor
+That supersedes the 2–4 example recommendation still carried in the bundled `plugin-dev:agent-development` skill, and it is worth checking current platform documentation before treating any bundled skill's snapshot as authoritative. All 81 example blocks came out on that basis, leaving the trigger phrases and boundary clauses to carry the matching work at roughly a quarter of the byte cost.
 
-Partway through this work, Anthropic published [The new rules of context engineering for Claude 5 generation models](https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models). They cut over 80% of Claude Code's own system prompt with no measurable loss on their coding evaluations, and stated that giving a model examples "actually constrains them to a certain exploration space."
+The same post makes a second argument that compression does not satisfy. It calls for progressive disclosure: a catalog covering "every known practice you might run into" should become "a tree of files that can be loaded at the right time." Shortening 31 agent descriptions makes each one cheaper to keep resident and does nothing about how many stay resident, which is the structural problem described at the end of this post.
 
-That validates the decision to drop all 81 `<example>` blocks. It also makes the bundled `plugin-dev:agent-development` guidance we'd consulted — 2-4 examples per agent — partly stale on this specific point, which is its own small proof of a rule we already tell ourselves: verify fast-moving platform guidance against current docs before trusting a cached skill's snapshot.
+## Testing a plugin before it ships
 
-But the same post argues for something we didn't do. Its framing calls for deletion: a catalog covering "every known practice you might run into" should become "a tree of files loaded at the right time." Read that way, the honest move was to go straight at structure — split the monolith, defer what isn't needed at startup. Compression keeps all 31 agents permanently resident and makes each one cheaper without asking whether it belongs at all.
+Routing accuracy is what description compression puts at risk, so it needed measuring before release. Two flags on the Claude Code CLI make that possible without publishing anything: `claude -p` runs a session headless and non-interactive, one process per case, and `--plugin-dir <path>` loads a plugin straight from a source tree for that session, with no marketplace entry and no restart. Pointing `CLAUDE_CONFIG_DIR` at a scratch directory adds a clean profile per run, keeping the installed copy of the plugin and any project settings out of the measurement.
 
-Compression bought a measured 41% reduction for a few hours of work and no install migration required, which is real and worth having, even though it is not the fix the post is describing.
+Together those let a git worktree at an old commit and the current working tree run the identical 30-case suite against identical prompts, which is what makes a before-and-after comparison meaningful. `scripts/run-agent-routing.py` wraps the loop, samples each case, and writes JSONL that the existing precision-and-recall scorer reads without modification.
 
-Two caveats sit unresolved past what the routing eval below could settle. Our compressed descriptions are dense with quoted trigger phrases, and if "examples constrain exploration" generalizes from behavioral instructions to discovery metadata, trigger-phrase stuffing may turn out to be the same anti-pattern wearing a different coat — the eval wasn't designed to test that specific question, so it stays open. Anthropic's "no measurable loss" claim was measured against coding evals only; it says nothing about routing accuracy across a 31-agent catalog, so it doesn't retire our risk.
+The probe asks the model which agent it would delegate to and stops there. Letting the delegation proceed would run the full subagent, folding its output quality into a measurement meant to capture the selection decision, at a cost of minutes and dollars for every case in the suite.
 
-## Testing a Plugin Before It's Published
+## Routing held at 100% precision
 
-`scripts/run-agent-routing.py` runs headless Claude sessions with `claude -p`, non-interactive, one process per test case. Two flags make it possible to validate a plugin that hasn't shipped anywhere: `--plugin-dir` loads a plugin straight from a source tree for that one session, with no marketplace step and no restart, and pointing `CLAUDE_CONFIG_DIR` at a scratch directory gives each run a clean profile so the already-installed plugin, project settings, and user memory can't leak into the result.
-
-The probe asks the model only for a selection, stopping short of an actual delegation. A real delegation runs the whole subagent, which costs minutes and dollars per case and folds the subagent's own output quality into the measurement, obscuring the routing decision itself. What gets measured is which agent name the model picks when it can see the catalog and nothing else — exactly the property description compression puts at risk.
-
-## The Mistake Worth Publishing
-
-The first before/after comparison ran one sample per arm and looked like compression had *improved* routing accuracy. One more run of the same comparison took that result apart.
+The eval covers 30 cases across four kinds: direct requests with an obvious owner, boundary pairs where two agents plausibly compete, ambiguous requests with several defensible answers, and negative cases where no agent should be selected at all. Every boundary case targets a pair whose descriptions name each other in a boundary clause, so a failure there points at the exact wording that stopped disambiguating.
 
 | Arm | Runs | Precision | Recall | Cases unstable across runs | Median tokens/case |
 |---|---:|---:|---:|---:|---:|
-| Before (verbose) | 2 | 100.0% | 92.6%, 85.2% | 4 / 30 | 45,729 |
-| After (compressed) | 3 | 100.0% | 96.3% (majority) | 2 / 30 | 32,549 |
+| Verbose descriptions | 2 | 100.0% | 92.6%, 85.2% | 4 / 30 | 45,729 |
+| Compressed descriptions | 3 | 100.0% | 96.3% (majority) | 2 / 30 | 32,549 |
 
-Precision held at 100% in both arms across every run — the model never once picked a forbidden agent, verbose or compressed. A third run of the compressed arm scored 100% precision and 92.6% recall, a different pair of misses than the first compressed run produced. Comparing all three runs together, four cases flip:
+Precision held at 100% in every run on both catalogs, meaning the model never selected an agent the case marked forbidden. The compressed catalog also flipped its answer on half as many cases between otherwise identical runs, which is the more useful signal for anyone tuning a large agent roster.
 
-| Case | Expected | Verbose | Compressed | Compressed, third run |
-|---|---|---|---|---|
-| `boundary-consolidator-vs-architecture` | consolidator | consolidator | consolidator | NONE |
-| `boundary-database-vs-data` | database | NONE | database | database |
-| `ambiguous-perf-regression-source-unknown` | optimizer | NONE | optimizer | NONE |
-| `boundary-devops-vs-code-auditor` | devops | devops | agent-builder | devops |
+Run-to-run variance turned out to be large enough to matter. A single sample per arm produced a one-to-two case difference on a 30-case suite, well inside the noise floor, so the runner now takes `--runs` and scores by majority vote — the same default Claude Code's own eval tooling uses. Any comparison of two catalogs on a suite this size needs repeat sampling before its numbers mean anything.
 
-The last row is not a variance result. That case failed reproducibly, we fixed the cause, and the third run was recorded after the fix — it belongs in the table because it looked identical to the noise until we chased it.
+The suite also caught a trigger collision that compression did not introduce. `agent-builder` listed "deploy this as a ClawNet bot" among its triggers, competing directly with `devops` and its "wire up a ClawNet bot deployment" trigger. Removing the trigger and adding an explicit deployment boundary fixed the case reproducibly across subsequent runs, and separating that real failure from the surrounding variance is exactly what repeat sampling is for.
 
-At one sample per arm, a one- or two-case swing across thirty cases sits inside ordinary run-to-run noise. An earlier draft of our internal log claimed compression fixed two cases the verbose catalog got wrong; the third run alone disproves that. What holds up is narrower and still useful: compression did not measurably degrade routing, and it produced fewer unstable cases across repeat runs than the verbose catalog did.
+## 29% fewer tokens on identical work
 
-The fix for the runner itself was to add `--runs` and score by majority vote, matching what Claude Code's own native eval tooling defaults to. Comparing single samples on a 30-case set is exactly the kind of measurement that manufactures a result out of noise, and we'd already done it once before catching it.
+Byte counts describe the catalog; what a session pays is measured per request. Running the same 30 prompts against both catalogs moved the median from 45,729 tokens per case down to 32,549, a 29% reduction, with total run cost across the suite falling 28%.
 
-One case in the table above is a genuine, reproducible bug. `agent-builder` listed "deploy this as a ClawNet bot" as a trigger phrase, which collides with `devops`, the agent that owns ClawNet bot deployment. Removing that trigger and adding an explicit deployment boundary fixed the case reproducibly, and `agent-builder`'s own routing case still passes. The collision predated this work and was already present in the verbose descriptions, but it took multiple runs to surface it — a single comparison would have read it as ordinary noise and moved on.
+## `claude plugin eval` is there behind a flag
 
-The number that matters most from this pass is what a real session pays for identical prompts and identical work: 29% fewer tokens (45,729 to 32,549 median per case) and 28% lower cost.
-
-## `claude plugin eval` Exists, and It's Gated
-
-Claude Code ships a native plugin eval runner that would have replaced most of `run-agent-routing.py` on its own: `case.yaml` or `prompt.md` plus grader files, `--runs` for variance sampling, `--ablation with-without` for an automatic no-plugin baseline arm, and an HTML report. It refuses to run today, gated by a single predicate in the CLI bundle:
+Claude Code ships a native plugin eval runner that covers most of what `run-agent-routing.py` does: `case.yaml` or `prompt.md` plus grader files, `--runs` for variance sampling, `--ablation with-without` for an automatic no-plugin baseline arm, and a self-contained HTML report. It declines to run with "`plugin eval` is currently in early access", gated by one predicate in the CLI bundle:
 
 ```js
 function sOu(){ return Ke("tengu_walnut_spire",!1) || Z.CLAUDE_CODE_WALNUT_SPIRE }
 ```
 
-Setting `CLAUDE_CODE_WALNUT_SPIRE=1` unlocks the subcommand and its scaffolder locally, which is how we exercised it enough to decide against depending on it for this release.
+Setting `CLAUDE_CODE_WALNUT_SPIRE=1` unlocks the subcommand and its `init --bare` scaffolder locally. We kept the custom runner for this release because exact-match on an agent name grades deterministically and for free, and because a release gate that depends on an early-access flag is worth avoiding until the flag goes away. The `--ablation` arm is a better piece of engineering than anything we built and is worth migrating to once that happens.
 
-We kept the custom runner for this release regardless, for a specific reason: exact-match on an agent name is deterministic and free to grade. The native tool's LLM-judge path is neither, and there's nothing for a judge to weigh in on when the question is which of 31 agent names got returned. `--ablation with-without` is a genuinely better feature than anything we built, and building a release gate today on a flag that requires an environment-variable override would still be a bad trade for a plugin meant to ship reliably.
+One attribution to get right: the eval-authoring interview prompt that `plugin eval init` uses has been extracted from the CLI and published at [Piebald-AI/claude-code-system-prompts](https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/skill-plugin-eval-authoring-interview.md). That repository is a third-party mirror with no affiliation to Anthropic, useful for understanding how the tool frames a good eval case.
 
-One attribution to get right: the eval-authoring interview prompt that `plugin eval init` uses has been extracted from the CLI and published by a third party, [Piebald-AI/claude-code-system-prompts](https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/skill-plugin-eval-authoring-interview.md). It's an unofficial mirror, useful for understanding how the tool frames a good eval case, and despite reading like first-party documentation, it did not come from Anthropic — Piebald-AI extracted and published it independently.
+## Where the remaining weight sits
 
-## Shipped
+The skill catalog is untouched at 13,770 tokens and is the obvious next target, with 36,635 bytes of descriptions across 85 skills and a floor of roughly 49 tokens per skill for identity and path alone. Compression can reach the description bytes there the same way it reached the agent descriptions.
 
-Released as bopen-tools 1.1.114. Installed measurement: always-on tokens fell from 29,260 to 18,313, a 37% reduction, with the agent catalog's own always-on cost down 71%. The static model-visible surface that `plugin-weight.py` reports from source fell from ~25,705 to ~15,142 tokens, matching the same direction from a second, independent measurement path.
+Codex needs the structural fix. It enforces a hard ceiling on catalog size independent of description length: a fresh `codex exec --json` run against a catalog with every description stripped still omitted 76 skills. Cardinality is the binding constraint on that host, so the only thing that moves it is reducing how many resources load by default — splitting the monolith into a small resident core plus optional domain packs that install on their own.
 
-## What's Still Open
-
-Compression makes 31 agents cheaper. It doesn't ask whether all 31 belong in a catalog every session loads in full. The structural fix Anthropic's own post argues for — a small resident core plus optional packs loaded on demand — is the work still in front of us, not yet started even in draft form.
-
-Codex makes that structural work mandatory. It enforces a hard limit on catalog size regardless of description length: a fresh `codex exec --json` run against the fully stripped catalog still omitted 76 skills.
-
-No amount of trimming a description fixes a cardinality problem. Only reducing how many resources load by default can fix that. The pack boundaries are drafted in an architecture RFC and the migration is tracked, but nothing is built yet, and the honest status is that the cheap half of this problem is done and the structural half is not.
+That split is specified in an architecture RFC and not yet built. What exists now is the tooling it needs to land safely: a weight report that covers both halves of the catalog with budget gates attached, and a routing suite that can score any candidate change against the current release before it ships.
