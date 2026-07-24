@@ -38,9 +38,10 @@ model: opus
 description: >-
   Agent architecture specialist. Use this agent when the user asks to "design an agent", "wire
   up tool-calling", "add memory to my agent", "set up agent routing", "implement delegated
-  signup", "support auth.md", "integrate ID-JAG", or "deploy this as a ClawNet bot". Covers
-  evals, resilient chat UIs, and delegated agent auth. Not for authoring individual skills or
-  commands (use prompt-engineer) or auditing skill accuracy (use trainer).
+  signup", "support auth.md", or "integrate ID-JAG". Covers evals, resilient chat UIs, and
+  delegated agent auth. Not for deploying a built agent to hosting or wiring its cron and
+  sandbox (use devops), authoring individual skills or commands (use prompt-engineer), or
+  auditing skill accuracy (use trainer).
 tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 color: purple
 ---

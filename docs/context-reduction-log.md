@@ -178,10 +178,117 @@ Also relevant to OPL-3188: the post's CLAUDE.md guidance is "keep it
 lightweight, briefly describe what the repo is for, spend most of the tokens
 on gotchas, avoid stating the obvious." Our CLAUDE.md is 26 KB.
 
-## Validation status
+## Validation
 
-Not yet validated. `benchmarks/fixtures/agent-routing-cases.json` holds 30
-cases — direct, boundary, ambiguous, and negative — where every boundary case
-targets a pair of agents whose descriptions carry an explicit "not for X"
-clause. Recording results needs fresh Claude and Codex sessions, which
-OPL-3193 owns. No version bump has shipped; the release waits on that run.
+`scripts/run-agent-routing.py` records agent selection from fresh headless
+Claude sessions. Three details make it work without publishing anything:
+
+- `claude -p` runs headless and non-interactive.
+- `--plugin-dir <path>` loads a plugin **from a source tree** for one session.
+  No marketplace, no publish step, no restart. This is what makes a
+  pre-release routing gate possible at all.
+- `CLAUDE_CONFIG_DIR` pointed at a scratch directory gives a clean profile, so
+  the installed copy of the plugin, project settings, and user memory cannot
+  leak into the measurement.
+
+The probe asks for a selection rather than letting delegation happen. A real
+delegation runs the whole subagent — minutes and dollars per case — and would
+measure the subagent's work rather than the routing decision. What is measured
+is which agent the model picks when it can see the catalog and nothing else.
+That is precisely the property description compression puts at risk. It is a
+selection measurement, not an end-to-end delegation measurement, and the
+distinction is worth keeping honest.
+
+### Result: compression did not degrade routing
+
+Two arms over the same 30 prompts — a git worktree at `ddd7466`
+(pre-compression, 81 examples) against `HEAD` (compressed, 0 examples):
+
+| Arm | Precision | Recall | Median tokens/case | Cost, 30 cases |
+|---|---:|---:|---:|---:|
+| Before | 100.0% | 92.6% | 45,729 | $8.92 |
+| After | 96.3% | 96.3% | 32,549 | $6.45 |
+
+Only three of thirty cases differed. **That difference turned out to be mostly
+noise, and reading it as signal was a mistake worth recording.**
+
+A third run of the compressed arm scored 100% precision / 92.6% recall — a
+different pair of failures than the first compressed run. Comparing across all
+three runs, four cases flip:
+
+| Case | Expected | Before | After | Third run |
+|---|---|---|---|---|
+| `boundary-consolidator-vs-architecture` | consolidator | consolidator | consolidator | NONE |
+| `boundary-database-vs-data` | database | NONE | database | database |
+| `ambiguous-perf-regression-source-unknown` | optimizer | NONE | optimizer | NONE |
+| `boundary-devops-vs-code-auditor` | devops | devops | agent-builder | devops |
+
+At N=1 per arm, a one- or two-case difference on thirty cases is within
+run-to-run variance. The earlier draft of this log claimed compression *fixed*
+two cases the verbose catalog got wrong. It does not support that. Both arms
+land in the same 92–100% band; what is defensible is that **compression did
+not measurably degrade routing**, not that it improved it.
+
+This is exactly why the native runner defaults to `runs: 3` per case. Our
+runner had no `--runs` and we compared single samples — the kind of error that
+looks like a result until you run it once more.
+
+The `devops` case was different: reproducible, diagnosed, and fixed.
+`agent-builder` listed "deploy this as a ClawNet bot" as a trigger, colliding
+with `devops`, which owns "wire up a ClawNet bot deployment". Removing the
+trigger and adding an explicit deployment boundary fixed it, and
+`agent-builder`'s own case still routes correctly. The eval caught a genuine
+catalog-design collision that predated this work and was latent in the verbose
+descriptions too — just masked.
+
+**End-to-end: identical prompts, identical work, 29% fewer tokens** (45,729 →
+32,549 median per case) and 28% lower cost. That is the number that matters —
+not the static byte count, but what a real session actually pays.
+
+## `claude plugin eval`, and how to turn it on
+
+Claude Code ships a plugin eval runner that would have replaced most of
+`run-agent-routing.py`: `evals/**/case.yaml` or `prompt.md` + `graders/*.md`,
+`--runs` for variance, `--ablation with-without` for an automatic no-plugin
+baseline arm, `--judge-model` for LLM grading, and `--report` for a
+self-contained HTML report. `claude plugin eval init --bare <name>` scaffolds a
+case.
+
+It refuses to run with "`plugin eval` is currently in early access". The gate
+is a single predicate in the CLI bundle:
+
+```js
+function sOu(){ return Ke("tengu_walnut_spire", !1) || Z.CLAUDE_CODE_WALNUT_SPIRE }
+```
+
+So it is either a server-side feature flag or the environment variable
+`CLAUDE_CODE_WALNUT_SPIRE`. Setting `CLAUDE_CODE_WALNUT_SPIRE=1` unlocks the
+subcommand and the scaffolder locally. The scaffolded case format is small:
+
+```yaml
+# evals/<name>/prompt.md
+---
+max_turns: 10
+allowed_tools: [Read, Glob, Grep, Skill]
+---
+# evals/<name>/graders/criteria.md
+---
+type: llm
+weight: 1
+---
+```
+
+We kept the custom runner for this pass. Exact-match on an agent name is
+deterministic and free to grade; an LLM judge is neither, and for "which of 31
+agents did it pick" there is nothing to judge. The native runner's
+`--ablation with-without` is genuinely better than what we built, though, and
+its HTML report is a better artifact. Worth migrating once the gate is not an
+env-var workaround — building a release gate on an early-access flag would be
+a bad trade.
+
+The eval-authoring interview prompt that `plugin eval init` uses has been
+extracted from the CLI and published by a third party,
+[Piebald-AI/claude-code-system-prompts](https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/skill-plugin-eval-authoring-interview.md).
+That is an unofficial mirror, not an Anthropic release — useful for
+understanding how the authoring interview frames a good eval case, but not
+something to treat as a stable contract.
