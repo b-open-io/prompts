@@ -12,7 +12,7 @@ bopen-tools ships 31 agents, 85 skills, 14 commands, and 11 hooks. Every one of 
 
 `scripts/capture-claude-context.py` reads Claude Code's projected component costs and splits them by kind. At 1.1.113 the agent catalog accounted for 15,660 of 29,260 always-on tokens, and the fifteen most expensive individual components in the entire plugin were all agents. The median skill cost 150 tokens; `cartographer` alone cost 1,100.
 
-That ratio decided the order of the work. Thirty-one agents carry more weight than ninety-three skill entries, so the agent catalog was where one pass could move the number furthest while leaving packaging and installation alone, and while removing no capability any user could reach.
+That ratio decided the order of the work. Thirty-one agents carry more weight than ninety-three skill entries, so rewriting agent frontmatter was the single change that could move the total furthest, and it touches no packaging, no installation path, and nothing a user can invoke.
 
 `scripts/plugin-weight.py` now measures that surface directly. It reports agent description bytes and `tools:` list bytes alongside the skill figures, counts the `<example>` blocks in each description, and sums everything into a single `model_visible_startup_tokens`. Gates cap per-agent description size, per-agent example count, the aggregate startup total, and duplicate resource names across the catalog. Any CI budget check built on that report now covers both halves of the plugin, including the half that grows every time someone adds a specialist.
 
@@ -74,7 +74,7 @@ The suite also caught a trigger collision that compression did not introduce. `a
 
 Byte counts describe the catalog; what a session pays is measured per request. Running the same 30 prompts against both catalogs moved the median from 45,729 tokens per case down to 32,549, a 29% reduction, with total run cost across the suite falling 28%.
 
-## `claude plugin eval` is there behind a flag
+## The native eval runner and its feature flag
 
 Claude Code ships a native plugin eval runner that covers most of what `run-agent-routing.py` does: `case.yaml` or `prompt.md` plus grader files, `--runs` for variance sampling, `--ablation with-without` for an automatic no-plugin baseline arm, and a self-contained HTML report. It declines to run with "`plugin eval` is currently in early access", gated by one predicate in the CLI bundle:
 
