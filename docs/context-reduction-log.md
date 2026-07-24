@@ -199,15 +199,25 @@ That is precisely the property description compression puts at risk. It is a
 selection measurement, not an end-to-end delegation measurement, and the
 distinction is worth keeping honest.
 
-### Result: compression did not degrade routing
+### Result: compression did not degrade routing, and made it steadier
 
 Two arms over the same 30 prompts — a git worktree at `ddd7466`
-(pre-compression, 81 examples) against `HEAD` (compressed, 0 examples):
+(pre-compression, 81 examples) against `HEAD` (compressed, 0 examples), with
+repeat samples once the first comparison proved unreliable:
 
-| Arm | Precision | Recall | Median tokens/case | Cost, 30 cases |
-|---|---:|---:|---:|---:|
-| Before | 100.0% | 92.6% | 45,729 | $8.92 |
-| After | 96.3% | 96.3% | 32,549 | $6.45 |
+| Arm | Runs | Precision | Recall | Cases unstable across runs | Median tokens/case |
+|---|---:|---:|---:|---:|---:|
+| Before | 2 | 100.0% | 92.6%, 85.2% | 4 / 30 | 45,729 |
+| After | 3 | 100.0% | 96.3% (majority) | 2 / 30 | 32,549 |
+
+Neither arm ever chose a forbidden agent — precision was 100% throughout. The
+difference is in omissions: the verbose catalog declined to route more often,
+and flipped its answer on twice as many cases between identical runs.
+
+The single remaining omission in the compressed arm is
+`ambiguous-perf-regression-source-unknown` ("the dashboard got slow this week
+and I don't know why yet"), where handling it directly instead of delegating is
+a defensible answer. It is marked ambiguous in the fixture for that reason.
 
 Only three of thirty cases differed. **That difference turned out to be mostly
 noise, and reading it as signal was a mistake worth recording.**

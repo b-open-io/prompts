@@ -6,6 +6,8 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.114] - 2026-07-24
+
 ### Changed
 
 - Compressed all 31 agent descriptions to routing metadata: trigger phrases and
@@ -27,6 +29,29 @@ manifests share the same release version.
   `--max-agent-description-chars`, `--max-agent-examples`, and
   `--max-startup-tokens`. The report previously showed agents as a bare count,
   so a budget gate built on it would have guarded skills only.
+- `scripts/run-agent-routing.py` records agent selection from fresh headless
+  Claude sessions via `claude -p --plugin-dir` with an isolated
+  `CLAUDE_CONFIG_DIR`, so a source tree can be validated before it is
+  published. `--runs` samples each case and reports the majority, because
+  single samples flip often enough to invent differences that are not real.
+- 30 agent-routing cases in `benchmarks/fixtures/agent-routing-cases.json`
+  covering direct, boundary, ambiguous, and negative selection, with recorded
+  results in `benchmarks/results/`.
+
+### Fixed
+
+- `agent-builder` listed "deploy this as a ClawNet bot" as a trigger, which
+  collided with `devops` and mis-routed deployment requests. It now defers
+  deployment explicitly. The collision predated this release and was masked by
+  the longer descriptions.
+
+### Validation
+
+Routing was measured before and after compression over the same 30 prompts.
+Precision was 100% in both arms — neither ever selected a forbidden agent.
+Recall went from 92.6% / 85.2% (two runs, verbose) to 96.3% (majority of three
+runs, compressed), and the number of cases that flipped between identical runs
+halved from 4/30 to 2/30. Identical prompts cost 29% fewer tokens.
 
 ## [1.1.113] - 2026-07-24
 
