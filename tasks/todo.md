@@ -3,8 +3,8 @@
 - [x] Research Claude/Codex catalog budgets and inventory weight.
 - [x] Create the approved Linear epic and child issue tree.
 - [x] OPL-3182: add a deterministic static plugin-weight reporter.
-- [ ] OPL-3183: add an exact Codex startup-context snapshot/parser
-  (1.1.113 runtime-warning correction under release verification).
+- [x] OPL-3183: add an exact Codex startup-context snapshot/parser with
+  authoritative runtime-warning ingestion.
 - [x] OPL-3184: add an exact Claude startup-cost snapshot/parser.
 - [x] OPL-3185: add source/package/install inventory parity checks.
 - [x] OPL-3189: document the domain-plugin architecture and migration plan.
@@ -22,26 +22,24 @@
 
 ## Review
 
-- Released bopen-tools `1.1.112` in commit `321c925`; a `1.1.113` correction is
-  in progress because the static Codex prompt capture cannot contain the
-  runtime omission warning.
+- Released bopen-tools `1.1.112` in commit `321c925`, then shipped the honest
+  runtime-warning correction as `1.1.113` in commit `315d791`.
 - The static inventory reports 85 source skills (69 authored and 16
   third-party), 78 Claude-implicit skills, 83 Codex-implicit skills, 36,635
   description bytes, 31 agents, and 14 commands.
 - Fifteen context-harness unit tests, the full hook suite, manifest/docs checks,
   generated Codex adapter checks, Claude validation, and a dereferenced packed
   inventory comparison pass.
-- Installed Claude and Codex roots both report `1.1.112`; the live harness and
+- Installed Claude and Codex roots both report `1.1.113`; the live harness and
   install-parity check pass with the known 16-symlink Codex packaging warning.
-- Fresh host smokes returned `CLAUDE_CONTEXT_HARNESS_OK` and
-  `CODEX_CONTEXT_HARNESS_OK`. The fresh Codex run reproduced the target startup
-  warning with every description removed and 76 additional skills omitted.
-- OPL-3183 is temporarily back In Progress until the corrected 1.1.113
-  published install passes. OPL-3182, OPL-3184, OPL-3185, OPL-3189, and the
-  completed prior pass OPL-3045 are Done. OPL-3193 and OPL-3194 remain In
-  Progress because live activation adapters, retained host evidence, and
-  benchmark integration are not yet complete; behavior-changing migration
-  issues remain Todo.
+- Fresh host smokes returned `CLAUDE_CONTEXT_HARNESS_113_OK` and
+  `CODEX_CONTEXT_HARNESS_113_OK`. The corrected Codex snapshot combines 300
+  visible skills with the runtime warning's 76 omitted skills for an
+  authoritative 376 implicit skills, with every description removed.
+- OPL-3182, OPL-3183, OPL-3184, OPL-3185, OPL-3189, and the completed prior
+  pass OPL-3045 are Done. OPL-3193 and OPL-3194 remain In Progress because live
+  activation adapters, retained host evidence, and benchmark integration are
+  not yet complete; behavior-changing migration issues remain Todo.
 
 # HammerTime per-project scoping
 
