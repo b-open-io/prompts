@@ -167,6 +167,7 @@ bunx skills add b-open-io/bopen-tools --skill runtime-context
 bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
 bunx skills add b-open-io/bopen-tools --skill setup
 bunx skills add b-open-io/bopen-tools --skill shaders
+bunx skills add b-open-io/bopen-tools --skill shadscan
 bunx skills add b-open-io/bopen-tools --skill skill-publish
 bunx skills add b-open-io/bopen-tools --skill software-factory
 bunx skills add b-open-io/bopen-tools --skill statusline-setup
@@ -296,6 +297,7 @@ intentional.
 | `paperclip-plugin-dev` | Build and review Paperclip plugins against the worker and UI contracts |
 | `perf-audit` | Run local performance audits without network calls |
 | `shaders` | Custom shaders for Three.js and WebGL |
+| `shadscan` | Drive the shadscan analyzer to audit and raise a shadcn app's UI-fundamentals score, and gate it in CI |
 | `software-factory` | Design autonomous agent workflows with a real verification gate, bounded state, and stop conditions |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |
 | `visual-review` | Turn a PR, branch, or diff into a visual HTML review page |

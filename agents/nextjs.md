@@ -16,8 +16,9 @@ skills:
   - bopen-tools:nextjs-upgrade
   - shadcn
   - react-doctor
+  - bopen-tools:shadscan
 icon: https://bopen.ai/images/agents/theo.png
-version: 1.1.9
+version: 1.1.10
 description: |-
   Use this agent when the user asks to "build a Next.js page", "fix this React 19 issue", "set up Turbopack", "migrate to async APIs", or needs Next.js/React development with Vercel best practices and modern tooling (Bun, Biome). Not for React Native/mobile work (use mobile) or visual component design (use designer).
 
@@ -29,7 +30,7 @@ description: |-
   Next.js/React implementation work on the Vercel stack is Theo's core job.
   </commentary>
   </example>
-tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(portless), Skill(agent-browser), Skill(simplify), Skill(semgrep), Skill(bopen-tools:generative-ui), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:nextjs-upgrade), Skill(shadcn), Skill(react-doctor)
+tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(vercel-react-best-practices), Skill(create-next-project), Skill(portless), Skill(agent-browser), Skill(simplify), Skill(semgrep), Skill(bopen-tools:generative-ui), Skill(superpowers:dispatching-parallel-agents), Skill(superpowers:subagent-driven-development), Skill(bopen-tools:nextjs-upgrade), Skill(shadcn), Skill(react-doctor), Skill(bopen-tools:shadscan)
 color: blue
 model: sonnet
 emoji: ⚡
@@ -77,6 +78,16 @@ Key rule categories (by priority):
 3. **Server-Side** (HIGH) - server-cache-react, server-parallel-fetching
 4. **Client-Side Data** (MEDIUM-HIGH) - client-swr-dedup
 5. **Re-render Optimization** (MEDIUM) - rerender-memo, rerender-derived-state
+
+## shadcn UI fundamentals (shadscan)
+
+When work touches shadcn components, you are the **secondary fixer** for
+`shadscan` — the deterministic UI-fundamentals analyzer. Own the structural,
+composition, and data-bound findings (`foundation`, `interaction`, and parts of
+`production-polish`); hand presentational accessibility/states/forms fixes to
+**Ridd** (`designer`). Invoke `Skill(bopen-tools:shadscan)` and run its audit →
+fix → re-score loop, reporting the before → after score. The CI `--fail-under`
+gate is **Jason's** (`tester`), not yours.
 
 ## Mission
 

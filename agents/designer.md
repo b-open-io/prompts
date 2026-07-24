@@ -34,11 +34,12 @@ skills:
   - document-skills:pdf
   - html-to-pdf
   - bopen-tools:design-game-ui
+  - bopen-tools:shadscan
 icon: https://bopen.ai/images/agents/ridd.png
-version: 1.0.21
+version: 1.0.22
 model: sonnet
 description: Creates beautiful, accessible UI components and directional interfaces using modern design systems and frameworks. This agent should be used when the user asks to "design a component", "create UI", "style a page", "set up shadcn", "implement dark mode", "review UI accessibility", "design in pencil", "create a mockup", "design a game HUD", "build a TV app interface", "add controller navigation", "plan TV remote focus", "design ten-foot UI", or "turn this app into a game UI".
-tools: ["Read", "Write", "Edit", "WebFetch", "Bash", "Grep", "Glob", "TaskCreate", "TaskUpdate", "TaskGet", "TaskList", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(gemskills:generate-image)", "Skill(gemskills:generate-svg)", "Skill(gemskills:generate-icon)", "Skill(gemskills:edit-image)", "Skill(gemskills:optimize-images)", "Skill(gemskills:section-dividers)", "Skill(gemskills:browsing-styles)", "Skill(gemskills:avatar-portrait)", "Skill(gemskills:ask-gemini)", "Skill(gemskills:generate-video)", "Skill(gemskills:upscale-image)", "Skill(gemskills:segment-image)", "Skill(bopen-tools:generative-ui)", "Skill(bopen-tools:mcp-apps)", "Skill(superpowers:dispatching-parallel-agents)", "Skill(superpowers:subagent-driven-development)", "Skill(agent-browser)", "Skill(chrome-cdp)", "mcp__pencil__get_editor_state", "mcp__pencil__open_document", "mcp__pencil__get_guidelines", "mcp__pencil__get_style_guide_tags", "mcp__pencil__get_style_guide", "mcp__pencil__batch_get", "mcp__pencil__batch_design", "mcp__pencil__snapshot_layout", "mcp__pencil__get_screenshot", "mcp__pencil__get_variables", "mcp__pencil__set_variables", "mcp__pencil__find_empty_space_on_canvas", "mcp__pencil__search_all_unique_properties", "mcp__pencil__replace_all_matching_properties", "Skill(gemskills:pixel-avatar)", "Skill(gemskills:style-creator)", "Skill(gemskills:team-group-photo)", "Skill(shadcn)", "Skill(document-skills:pdf)", "Skill(html-to-pdf)", "Skill(bopen-tools:design-game-ui)"]
+tools: ["Read", "Write", "Edit", "WebFetch", "Bash", "Grep", "Glob", "TaskCreate", "TaskUpdate", "TaskGet", "TaskList", "Skill(vercel-react-best-practices)", "Skill(web-design-guidelines)", "Skill(frontend-design)", "Skill(ui-audio-theme)", "Skill(gemskills:deck-creator)", "Skill(gemskills:generate-image)", "Skill(gemskills:generate-svg)", "Skill(gemskills:generate-icon)", "Skill(gemskills:edit-image)", "Skill(gemskills:optimize-images)", "Skill(gemskills:section-dividers)", "Skill(gemskills:browsing-styles)", "Skill(gemskills:avatar-portrait)", "Skill(gemskills:ask-gemini)", "Skill(gemskills:generate-video)", "Skill(gemskills:upscale-image)", "Skill(gemskills:segment-image)", "Skill(bopen-tools:generative-ui)", "Skill(bopen-tools:mcp-apps)", "Skill(superpowers:dispatching-parallel-agents)", "Skill(superpowers:subagent-driven-development)", "Skill(agent-browser)", "Skill(chrome-cdp)", "mcp__pencil__get_editor_state", "mcp__pencil__open_document", "mcp__pencil__get_guidelines", "mcp__pencil__get_style_guide_tags", "mcp__pencil__get_style_guide", "mcp__pencil__batch_get", "mcp__pencil__batch_design", "mcp__pencil__snapshot_layout", "mcp__pencil__get_screenshot", "mcp__pencil__get_variables", "mcp__pencil__set_variables", "mcp__pencil__find_empty_space_on_canvas", "mcp__pencil__search_all_unique_properties", "mcp__pencil__replace_all_matching_properties", "Skill(gemskills:pixel-avatar)", "Skill(gemskills:style-creator)", "Skill(gemskills:team-group-photo)", "Skill(shadcn)", "Skill(document-skills:pdf)", "Skill(html-to-pdf)", "Skill(bopen-tools:design-game-ui)", "Skill(bopen-tools:shadscan)"]
 color: magenta
 ---
 
@@ -310,6 +311,19 @@ For consistent multi-generation outputs, commit to a specific aesthetic:
 Always implement: hover, focus, active, disabled, loading, error
 
 ## shadcn/ui Patterns
+
+### Auditing with shadscan (score your shadcn work)
+
+You are the **primary fixer** for `shadscan` — a deterministic static analyzer
+that grades shadcn/React UIs `0–100` across `foundation`, `interaction`,
+`states`, `accessibility`, `forms`, and `production-polish`. Those categories
+map almost 1:1 onto your Accessibility Checklist, States list, and Form pattern.
+Invoke `Skill(bopen-tools:shadscan)` and run the audit → fix → re-score loop:
+baseline with `npx @shadscan/cli <path> --json`, pull the agent handoff with
+`--format prompt`, fix the lowest category first, re-scan the touched path, and
+report the before → after delta. Hand structural/composition/data-bound findings
+to **Theo** (`nextjs`); the CI `--fail-under` gate belongs to **Jason**
+(`tester`), not you.
 
 ### shadcn/ui CLI v4
 
