@@ -14,6 +14,15 @@ The 1.1.112 source tree measured on 2026-07-24 contains:
 - 36,635 bytes of skill descriptions, roughly 9,190 tokens at four bytes/token
 - 7,303 bytes for source skill identity/path lines before descriptions
 - 31 agents and 14 commands
+- 44,016 bytes of agent descriptions across 81 examples, roughly 11,012 tokens
+- 14,865 bytes of agent `tools:` lists, roughly 3,729 tokens
+- 102,819 bytes of model-visible startup surface, roughly 25,705 tokens
+
+Agents are the larger half of Claude's always-on cost: the installed snapshot
+attributes 15,660 tokens to 31 agents and 13,730 to 93 skill entries, and the
+fifteen most expensive always-on components are all agents. The weight report
+previously rendered agents as a bare count, so any budget gate built on it
+would have guarded skills only. See `docs/context-reduction-log.md`.
 
 The installed Claude 1.1.110 snapshot projected about 29,101 always-on tokens.
 That figure includes skills, agents, and commands; Claude reports legacy

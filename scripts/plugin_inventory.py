@@ -134,6 +134,7 @@ def _resource_record(
     text = path.read_text(encoding="utf-8")
     metadata, body = parse_frontmatter(text)
     description = str(metadata.get("description") or "").strip()
+    tools = str(metadata.get("tools") or "").strip()
     return {
         "kind": kind,
         "name": str(metadata.get("name") or fallback_name).strip(),
@@ -141,6 +142,8 @@ def _resource_record(
         "version": metadata.get("version"),
         "description": description,
         "description_metrics": _text_metrics(description),
+        "example_count": description.count("<example>"),
+        "tools_metrics": _text_metrics(tools),
         "body_metrics": _text_metrics(body),
     }
 
@@ -249,12 +252,18 @@ def collect_inventory(root: Path) -> dict[str, Any]:
             record["identity_path_bytes"] for record in skills
         ),
         "agent_count": len(agents),
+        "agent_description_chars": total(agents, "description_metrics", "chars"),
         "agent_description_bytes": total(
             agents, "description_metrics", "bytes"
         ),
         "agent_description_estimated_tokens": total(
             agents, "description_metrics", "estimated_tokens"
         ),
+        "agent_tools_bytes": total(agents, "tools_metrics", "bytes"),
+        "agent_tools_estimated_tokens": total(
+            agents, "tools_metrics", "estimated_tokens"
+        ),
+        "agent_example_count": sum(record["example_count"] for record in agents),
         "agent_body_bytes": total(agents, "body_metrics", "bytes"),
         "command_count": len(commands),
         "command_description_bytes": total(
@@ -263,6 +272,19 @@ def collect_inventory(root: Path) -> dict[str, Any]:
         "command_body_bytes": total(commands, "body_metrics", "bytes"),
         "duplicate_skill_name_count": len(duplicates),
     }
+
+    # Startup cost the host renders for every request: skill routing metadata
+    # plus the agent catalog. Agents were previously counted only as a bare
+    # count, which let the larger half of the catalog grow past any gate.
+    totals["model_visible_startup_bytes"] = (
+        totals["skill_description_bytes"]
+        + totals["skill_identity_path_bytes"]
+        + totals["agent_description_bytes"]
+        + totals["agent_tools_bytes"]
+    )
+    totals["model_visible_startup_estimated_tokens"] = math.ceil(
+        totals["model_visible_startup_bytes"] / 4
+    )
 
     return {
         "schema_version": 1,

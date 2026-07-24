@@ -60,12 +60,48 @@ def markdown(report: dict[str, Any]) -> str:
             f"- Agents: {totals['agent_count']}; "
             f"commands: {totals['command_count']}"
         ),
+        (
+            "- Agent descriptions: "
+            f"{totals['agent_description_bytes']:,} bytes / "
+            f"~{totals['agent_description_estimated_tokens']:,} tokens "
+            f"across {totals['agent_example_count']} examples"
+        ),
+        (
+            "- Agent tools lists: "
+            f"{totals['agent_tools_bytes']:,} bytes / "
+            f"~{totals['agent_tools_estimated_tokens']:,} tokens"
+        ),
+        (
+            "- **Model-visible startup total: "
+            f"{totals['model_visible_startup_bytes']:,} bytes / "
+            f"~{totals['model_visible_startup_estimated_tokens']:,} tokens**"
+        ),
         "",
-        "## Largest skill descriptions",
+        "## Largest agent descriptions",
         "",
-        "| Skill | Source | Claude implicit | Codex implicit | Bytes |",
-        "|---|---|---:|---:|---:|",
+        "| Agent | Examples | Description bytes | Tools bytes |",
+        "|---|---:|---:|---:|",
     ]
+    for record in sorted(
+        report["agents"],
+        key=lambda item: item["description_metrics"]["bytes"],
+        reverse=True,
+    )[:20]:
+        lines.append(
+            f"| `{record['name']}` | {record['example_count']} | "
+            f"{record['description_metrics']['bytes']:,} | "
+            f"{record['tools_metrics']['bytes']:,} |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Largest skill descriptions",
+            "",
+            "| Skill | Source | Claude implicit | Codex implicit | Bytes |",
+            "|---|---|---:|---:|---:|",
+        ]
+    )
     for record in sorted(
         report["skills"],
         key=lambda item: item["description_metrics"]["bytes"],
@@ -125,6 +161,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--max-implicit-skills", type=int)
     parser.add_argument("--max-description-chars", type=int)
+    parser.add_argument("--max-agent-description-chars", type=int)
+    parser.add_argument("--max-agent-examples", type=int)
+    parser.add_argument("--max-startup-tokens", type=int)
     parser.add_argument("--fail-on-duplicates", action="store_true")
     return parser.parse_args()
 
@@ -160,6 +199,31 @@ def main() -> int:
             "skill description characters "
             f"{totals['skill_description_chars']} exceed "
             f"{args.max_description_chars}"
+        )
+    if args.max_agent_description_chars is not None:
+        for record in report["agents"]:
+            size = record["description_metrics"]["chars"]
+            if size > args.max_agent_description_chars:
+                failures.append(
+                    f"agent {record['name']} description {size} chars exceeds "
+                    f"{args.max_agent_description_chars}"
+                )
+    if args.max_agent_examples is not None:
+        for record in report["agents"]:
+            if record["example_count"] > args.max_agent_examples:
+                failures.append(
+                    f"agent {record['name']} has {record['example_count']} "
+                    f"examples, exceeding {args.max_agent_examples}"
+                )
+    if (
+        args.max_startup_tokens is not None
+        and totals["model_visible_startup_estimated_tokens"]
+        > args.max_startup_tokens
+    ):
+        failures.append(
+            "model-visible startup tokens "
+            f"{totals['model_visible_startup_estimated_tokens']} exceed "
+            f"{args.max_startup_tokens}"
         )
     if args.fail_on_duplicates and report["duplicate_skill_names"]:
         failures.append("duplicate skill names are present")

@@ -1,0 +1,788 @@
+{
+  "always_on_tokens": 29260,
+  "component_costs": [
+    {
+      "always_on_tokens": 160,
+      "name": "chrome-cdp",
+      "on_invoke_tokens": 1600
+    },
+    {
+      "always_on_tokens": 160,
+      "name": "linear-planning",
+      "on_invoke_tokens": 2900
+    },
+    {
+      "always_on_tokens": 140,
+      "name": "skill-publish",
+      "on_invoke_tokens": 2500
+    },
+    {
+      "always_on_tokens": 140,
+      "name": "benchmark-skills",
+      "on_invoke_tokens": 3200
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "npm-publish",
+      "on_invoke_tokens": 1200
+    },
+    {
+      "always_on_tokens": 110,
+      "name": "x-tweet-search",
+      "on_invoke_tokens": 410
+    },
+    {
+      "always_on_tokens": 140,
+      "name": "hammertime",
+      "on_invoke_tokens": 5600
+    },
+    {
+      "always_on_tokens": 200,
+      "name": "advisor",
+      "on_invoke_tokens": 5300
+    },
+    {
+      "always_on_tokens": 110,
+      "name": "cli-demo-gif",
+      "on_invoke_tokens": 680
+    },
+    {
+      "always_on_tokens": 30,
+      "name": "remotion-best-practices",
+      "on_invoke_tokens": 1300
+    },
+    {
+      "always_on_tokens": 130,
+      "name": "threejs-r3f",
+      "on_invoke_tokens": 2400
+    },
+    {
+      "always_on_tokens": 180,
+      "name": "coordinator",
+      "on_invoke_tokens": 11000
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "add-app-to-server",
+      "on_invoke_tokens": 5100
+    },
+    {
+      "always_on_tokens": 110,
+      "name": "design-game-ui",
+      "on_invoke_tokens": 3900
+    },
+    {
+      "always_on_tokens": 140,
+      "name": "x-research",
+      "on_invoke_tokens": 3800
+    },
+    {
+      "always_on_tokens": 80,
+      "name": "wayfinder",
+      "on_invoke_tokens": 4500
+    },
+    {
+      "always_on_tokens": 130,
+      "name": "hook-manager",
+      "on_invoke_tokens": 1800
+    },
+    {
+      "always_on_tokens": 140,
+      "name": "voice-clone",
+      "on_invoke_tokens": 2100
+    },
+    {
+      "always_on_tokens": 160,
+      "name": "devops-scripts",
+      "on_invoke_tokens": 1300
+    },
+    {
+      "always_on_tokens": 90,
+      "name": "json-render-image",
+      "on_invoke_tokens": 1000
+    },
+    {
+      "always_on_tokens": 170,
+      "name": "perf-audit",
+      "on_invoke_tokens": 680
+    },
+    {
+      "always_on_tokens": 130,
+      "name": "statusline-setup",
+      "on_invoke_tokens": 1700
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "saas-launch-audit",
+      "on_invoke_tokens": 3100
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "nextjs-upgrade",
+      "on_invoke_tokens": 2700
+    },
+    {
+      "always_on_tokens": 140,
+      "name": "geo-optimizer",
+      "on_invoke_tokens": 1500
+    },
+    {
+      "always_on_tokens": 110,
+      "name": "json-render-directives",
+      "on_invoke_tokens": 2500
+    },
+    {
+      "always_on_tokens": 80,
+      "name": "x-user-timeline",
+      "on_invoke_tokens": 360
+    },
+    {
+      "always_on_tokens": 130,
+      "name": "create-mcp-app",
+      "on_invoke_tokens": 2800
+    },
+    {
+      "always_on_tokens": 130,
+      "name": "deploy-agent-team",
+      "on_invoke_tokens": 3200
+    },
+    {
+      "always_on_tokens": 300,
+      "name": "software-factory",
+      "on_invoke_tokens": 6600
+    },
+    {
+      "always_on_tokens": 90,
+      "name": "x-tweet-fetch",
+      "on_invoke_tokens": 280
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "ezkl",
+      "on_invoke_tokens": 2900
+    },
+    {
+      "always_on_tokens": 100,
+      "name": "json-render-react-native",
+      "on_invoke_tokens": 2400
+    },
+    {
+      "always_on_tokens": 240,
+      "name": "setup",
+      "on_invoke_tokens": 2800
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "agent-auditor",
+      "on_invoke_tokens": 3400
+    },
+    {
+      "always_on_tokens": 180,
+      "name": "visual-wayfinder",
+      "on_invoke_tokens": 3200
+    },
+    {
+      "always_on_tokens": 140,
+      "name": "cost-tracking",
+      "on_invoke_tokens": 1700
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "plugin-settings",
+      "on_invoke_tokens": 4100
+    },
+    {
+      "always_on_tokens": 200,
+      "name": "visual-proposal",
+      "on_invoke_tokens": 7500
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "json-render-react-email",
+      "on_invoke_tokens": 2300
+    },
+    {
+      "always_on_tokens": 110,
+      "name": "plaid-integration",
+      "on_invoke_tokens": 1200
+    },
+    {
+      "always_on_tokens": 80,
+      "name": "json-render-core",
+      "on_invoke_tokens": 3500
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "shadscan",
+      "on_invoke_tokens": 1900
+    },
+    {
+      "always_on_tokens": 200,
+      "name": "wait-for-ci",
+      "on_invoke_tokens": 1800
+    },
+    {
+      "always_on_tokens": 170,
+      "name": "github-stars",
+      "on_invoke_tokens": 950
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "publish-request",
+      "on_invoke_tokens": 270
+    },
+    {
+      "always_on_tokens": 190,
+      "name": "codex-agent-setup",
+      "on_invoke_tokens": 2500
+    },
+    {
+      "always_on_tokens": 200,
+      "name": "charting",
+      "on_invoke_tokens": 2300
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "notebooklm",
+      "on_invoke_tokens": 1800
+    },
+    {
+      "always_on_tokens": 190,
+      "name": "confess",
+      "on_invoke_tokens": 1700
+    },
+    {
+      "always_on_tokens": 180,
+      "name": "mcp-apps",
+      "on_invoke_tokens": 2900
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "create-next-project",
+      "on_invoke_tokens": 5300
+    },
+    {
+      "always_on_tokens": 80,
+      "name": "x-user-lookup",
+      "on_invoke_tokens": 260
+    },
+    {
+      "always_on_tokens": 300,
+      "name": "ui-audio-theme",
+      "on_invoke_tokens": 5500
+    },
+    {
+      "always_on_tokens": 220,
+      "name": "macos-design",
+      "on_invoke_tokens": 970
+    },
+    {
+      "always_on_tokens": 80,
+      "name": "json-render-react",
+      "on_invoke_tokens": 3400
+    },
+    {
+      "always_on_tokens": 280,
+      "name": "remind",
+      "on_invoke_tokens": 1600
+    },
+    {
+      "always_on_tokens": 290,
+      "name": "free-roam-testing",
+      "on_invoke_tokens": 2100
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "paperclip-plugin-dev",
+      "on_invoke_tokens": 3800
+    },
+    {
+      "always_on_tokens": 130,
+      "name": "shaders",
+      "on_invoke_tokens": 3000
+    },
+    {
+      "always_on_tokens": 90,
+      "name": "json-render-remotion",
+      "on_invoke_tokens": 1100
+    },
+    {
+      "always_on_tokens": 220,
+      "name": "humanize",
+      "on_invoke_tokens": 4000
+    },
+    {
+      "always_on_tokens": 190,
+      "name": "check-version",
+      "on_invoke_tokens": 550
+    },
+    {
+      "always_on_tokens": 170,
+      "name": "process-cleanup",
+      "on_invoke_tokens": 1600
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "agent-onboarding",
+      "on_invoke_tokens": 4900
+    },
+    {
+      "always_on_tokens": 80,
+      "name": "json-render-shadcn",
+      "on_invoke_tokens": 2500
+    },
+    {
+      "always_on_tokens": 170,
+      "name": "code-audit-scripts",
+      "on_invoke_tokens": 770
+    },
+    {
+      "always_on_tokens": 100,
+      "name": "persona",
+      "on_invoke_tokens": 3900
+    },
+    {
+      "always_on_tokens": 160,
+      "name": "agent-decommissioning",
+      "on_invoke_tokens": 2600
+    },
+    {
+      "always_on_tokens": 190,
+      "name": "wave-coordinator",
+      "on_invoke_tokens": 3600
+    },
+    {
+      "always_on_tokens": 130,
+      "name": "frontend-performance",
+      "on_invoke_tokens": 1900
+    },
+    {
+      "always_on_tokens": 80,
+      "name": "json-render-mcp",
+      "on_invoke_tokens": 1500
+    },
+    {
+      "always_on_tokens": 130,
+      "name": "clawnet-cli",
+      "on_invoke_tokens": 870
+    },
+    {
+      "always_on_tokens": 180,
+      "name": "json-render-devtools",
+      "on_invoke_tokens": 3300
+    },
+    {
+      "always_on_tokens": 170,
+      "name": "runtime-context",
+      "on_invoke_tokens": 1200
+    },
+    {
+      "always_on_tokens": 240,
+      "name": "claudex",
+      "on_invoke_tokens": 1700
+    },
+    {
+      "always_on_tokens": 200,
+      "name": "generative-ui",
+      "on_invoke_tokens": 2900
+    },
+    {
+      "always_on_tokens": 200,
+      "name": "auth-md",
+      "on_invoke_tokens": 5000
+    },
+    {
+      "always_on_tokens": 160,
+      "name": "hunter-skeptic-referee",
+      "on_invoke_tokens": 2200
+    },
+    {
+      "always_on_tokens": 210,
+      "name": "orchestrator",
+      "on_invoke_tokens": 2800
+    },
+    {
+      "always_on_tokens": 190,
+      "name": "convert-web-app",
+      "on_invoke_tokens": 7300
+    },
+    {
+      "always_on_tokens": 320,
+      "name": "visual-review",
+      "on_invoke_tokens": 3500
+    },
+    {
+      "always_on_tokens": 170,
+      "name": "html-to-pdf",
+      "on_invoke_tokens": 3700
+    },
+    {
+      "always_on_tokens": 230,
+      "name": "front-desk",
+      "on_invoke_tokens": 2400
+    },
+    {
+      "always_on_tokens": 260,
+      "name": "reinforce-skills",
+      "on_invoke_tokens": 3100
+    },
+    {
+      "always_on_tokens": 880,
+      "name": "optimizer",
+      "on_invoke_tokens": 5500
+    },
+    {
+      "always_on_tokens": 270,
+      "name": "prompt-engineer",
+      "on_invoke_tokens": 25300
+    },
+    {
+      "always_on_tokens": 610,
+      "name": "cfo",
+      "on_invoke_tokens": 3300
+    },
+    {
+      "always_on_tokens": 170,
+      "name": "designer",
+      "on_invoke_tokens": 13000
+    },
+    {
+      "always_on_tokens": 790,
+      "name": "ceo",
+      "on_invoke_tokens": 8100
+    },
+    {
+      "always_on_tokens": 650,
+      "name": "mcp",
+      "on_invoke_tokens": 44200
+    },
+    {
+      "always_on_tokens": 720,
+      "name": "native-desktop",
+      "on_invoke_tokens": 3800
+    },
+    {
+      "always_on_tokens": 480,
+      "name": "account-manager",
+      "on_invoke_tokens": 420
+    },
+    {
+      "always_on_tokens": 170,
+      "name": "creative-developer",
+      "on_invoke_tokens": 4900
+    },
+    {
+      "always_on_tokens": 240,
+      "name": "nextjs",
+      "on_invoke_tokens": 15300
+    },
+    {
+      "always_on_tokens": 610,
+      "name": "data",
+      "on_invoke_tokens": 7100
+    },
+    {
+      "always_on_tokens": 410,
+      "name": "agent-builder",
+      "on_invoke_tokens": 31000
+    },
+    {
+      "always_on_tokens": 440,
+      "name": "front-desk",
+      "on_invoke_tokens": 3900
+    },
+    {
+      "always_on_tokens": 720,
+      "name": "trainer",
+      "on_invoke_tokens": 4400
+    },
+    {
+      "always_on_tokens": 260,
+      "name": "researcher",
+      "on_invoke_tokens": 7500
+    },
+    {
+      "always_on_tokens": 590,
+      "name": "project-manager",
+      "on_invoke_tokens": 5000
+    },
+    {
+      "always_on_tokens": 310,
+      "name": "code-auditor",
+      "on_invoke_tokens": 7400
+    },
+    {
+      "always_on_tokens": 450,
+      "name": "security-ops",
+      "on_invoke_tokens": 6300
+    },
+    {
+      "always_on_tokens": 370,
+      "name": "architecture-reviewer",
+      "on_invoke_tokens": 3100
+    },
+    {
+      "always_on_tokens": 230,
+      "name": "payments",
+      "on_invoke_tokens": 3800
+    },
+    {
+      "always_on_tokens": 470,
+      "name": "executive-assistant",
+      "on_invoke_tokens": 2800
+    },
+    {
+      "always_on_tokens": 150,
+      "name": "audio-specialist",
+      "on_invoke_tokens": 6800
+    },
+    {
+      "always_on_tokens": 610,
+      "name": "integration-expert",
+      "on_invoke_tokens": 7000
+    },
+    {
+      "always_on_tokens": 610,
+      "name": "consolidator",
+      "on_invoke_tokens": 2600
+    },
+    {
+      "always_on_tokens": 600,
+      "name": "tester",
+      "on_invoke_tokens": 4400
+    },
+    {
+      "always_on_tokens": 630,
+      "name": "documentation-writer",
+      "on_invoke_tokens": 2100
+    },
+    {
+      "always_on_tokens": 1100,
+      "name": "cartographer",
+      "on_invoke_tokens": 9700
+    },
+    {
+      "always_on_tokens": 470,
+      "name": "community-manager",
+      "on_invoke_tokens": 3200
+    },
+    {
+      "always_on_tokens": 270,
+      "name": "devops",
+      "on_invoke_tokens": 8100
+    },
+    {
+      "always_on_tokens": 590,
+      "name": "mobile",
+      "on_invoke_tokens": 4100
+    },
+    {
+      "always_on_tokens": 560,
+      "name": "database",
+      "on_invoke_tokens": 10200
+    },
+    {
+      "always_on_tokens": 30,
+      "name": "diagnose",
+      "on_invoke_tokens": 1700
+    },
+    {
+      "always_on_tokens": 40,
+      "name": "impact",
+      "on_invoke_tokens": 1600
+    },
+    {
+      "always_on_tokens": 40,
+      "name": "review-wave",
+      "on_invoke_tokens": 2200
+    },
+    {
+      "always_on_tokens": 50,
+      "name": "bug-hunt",
+      "on_invoke_tokens": 2600
+    },
+    {
+      "always_on_tokens": 70,
+      "name": "visual-review",
+      "on_invoke_tokens": 360
+    },
+    {
+      "always_on_tokens": 50,
+      "name": "factory-init",
+      "on_invoke_tokens": 1200
+    },
+    {
+      "always_on_tokens": 40,
+      "name": "prime",
+      "on_invoke_tokens": 860
+    },
+    {
+      "always_on_tokens": 40,
+      "name": "question",
+      "on_invoke_tokens": 220
+    },
+    {
+      "always_on_tokens": 70,
+      "name": "hammertime",
+      "on_invoke_tokens": 2300
+    }
+  ],
+  "components": {
+    "agents": {
+      "count": 31,
+      "names": [
+        "optimizer",
+        "prompt-engineer",
+        "cfo",
+        "designer",
+        "ceo",
+        "mcp",
+        "native-desktop",
+        "account-manager",
+        "creative-developer",
+        "nextjs",
+        "data",
+        "agent-builder",
+        "front-desk",
+        "trainer",
+        "researcher",
+        "project-manager",
+        "code-auditor",
+        "security-ops",
+        "architecture-reviewer",
+        "payments",
+        "executive-assistant",
+        "audio-specialist",
+        "integration-expert",
+        "consolidator",
+        "tester",
+        "documentation-writer",
+        "cartographer",
+        "community-manager",
+        "devops",
+        "mobile",
+        "database"
+      ]
+    },
+    "hooks": {
+      "count": 4,
+      "names": [
+        "SessionStart",
+        "UserPromptSubmit",
+        "PreToolUse",
+        "Stop"
+      ]
+    },
+    "lsp_servers": {
+      "count": 0,
+      "names": []
+    },
+    "mcp_servers": {
+      "count": 0,
+      "names": []
+    },
+    "skills": {
+      "count": 94,
+      "names": [
+        "add-app-to-server",
+        "advisor",
+        "agent-auditor",
+        "agent-decommissioning",
+        "agent-onboarding",
+        "auth-md",
+        "benchmark-skills",
+        "bug-hunt",
+        "charting",
+        "check-version",
+        "chrome-cdp",
+        "claudex",
+        "clawnet-cli",
+        "cli-demo-gif",
+        "code-audit-scripts",
+        "codex-agent-setup",
+        "confess",
+        "convert-web-app",
+        "coordinator",
+        "cost-tracking",
+        "create-mcp-app",
+        "create-next-project",
+        "deploy-agent-team",
+        "design-game-ui",
+        "devops-scripts",
+        "diagnose",
+        "ezkl",
+        "factory-init",
+        "free-roam-testing",
+        "front-desk",
+        "frontend-performance",
+        "generative-ui",
+        "geo-optimizer",
+        "github-stars",
+        "hammertime",
+        "hammertime",
+        "hook-manager",
+        "html-to-pdf",
+        "humanize",
+        "hunter-skeptic-referee",
+        "impact",
+        "json-render-core",
+        "json-render-devtools",
+        "json-render-directives",
+        "json-render-image",
+        "json-render-mcp",
+        "json-render-react",
+        "json-render-react-email",
+        "json-render-react-native",
+        "json-render-remotion",
+        "json-render-shadcn",
+        "linear-planning",
+        "macos-design",
+        "mcp-apps",
+        "nextjs-upgrade",
+        "notebooklm",
+        "npm-publish",
+        "orchestrator",
+        "paperclip-plugin-dev",
+        "perf-audit",
+        "persona",
+        "plaid-integration",
+        "plugin-settings",
+        "prime",
+        "process-cleanup",
+        "publish-request",
+        "question",
+        "reinforce-skills",
+        "remind",
+        "remotion-best-practices",
+        "review-wave",
+        "runtime-context",
+        "saas-launch-audit",
+        "setup",
+        "shaders",
+        "shadscan",
+        "skill-publish",
+        "software-factory",
+        "statusline-setup",
+        "threejs-r3f",
+        "ui-audio-theme",
+        "visual-proposal",
+        "visual-review",
+        "visual-review",
+        "visual-wayfinder",
+        "voice-clone",
+        "wait-for-ci",
+        "wave-coordinator",
+        "wayfinder",
+        "x-research",
+        "x-tweet-fetch",
+        "x-tweet-search",
+        "x-user-lookup",
+        "x-user-timeline"
+      ]
+    }
+  },
+  "hooks_context_note": "Hooks have no model-context cost unless they return additional context.",
+  "plugin": "bopen-tools",
+  "schema_version": 1,
+  "version": "1.1.113"
+}

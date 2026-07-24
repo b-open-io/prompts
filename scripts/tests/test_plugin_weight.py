@@ -102,6 +102,60 @@ class PluginWeightTests(unittest.TestCase):
         self.assertEqual(report["totals"]["agent_count"], 1)
         self.assertEqual(report["totals"]["command_count"], 1)
 
+    def test_agent_tools_examples_and_startup_total_are_measured(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "skills").mkdir()
+            alpha = root / "skills" / "alpha"
+            alpha.mkdir()
+            (alpha / "SKILL.md").write_text(
+                "---\nname: alpha\ndescription: Routing text.\n---\nBody.\n",
+                encoding="utf-8",
+            )
+            (root / "agents").mkdir()
+            (root / "agents" / "verbose.md").write_text(
+                "---\n"
+                "name: verbose\n"
+                "description: >-\n"
+                "  Use when routing. <example>one</example>\n"
+                "  <example>two</example>\n"
+                "tools: Read, Write, Skill(alpha)\n"
+                "---\n"
+                "Agent body.\n",
+                encoding="utf-8",
+            )
+
+            report = collect_inventory(root)
+
+        totals = report["totals"]
+        agent = report["agents"][0]
+        self.assertEqual(agent["example_count"], 2)
+        self.assertEqual(agent["tools_metrics"]["chars"], len("Read, Write, Skill(alpha)"))
+        self.assertEqual(totals["agent_example_count"], 2)
+        self.assertEqual(totals["agent_tools_bytes"], agent["tools_metrics"]["bytes"])
+        self.assertEqual(
+            totals["model_visible_startup_bytes"],
+            totals["skill_description_bytes"]
+            + totals["skill_identity_path_bytes"]
+            + totals["agent_description_bytes"]
+            + totals["agent_tools_bytes"],
+        )
+
+    def test_agents_without_tools_report_zero_rather_than_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "agents").mkdir()
+            (root / "agents" / "bare.md").write_text(
+                "---\nname: bare\ndescription: No tools key.\n---\nBody.\n",
+                encoding="utf-8",
+            )
+
+            report = collect_inventory(root)
+
+        self.assertEqual(report["agents"][0]["tools_metrics"]["bytes"], 0)
+        self.assertEqual(report["agents"][0]["example_count"], 0)
+        self.assertEqual(report["totals"]["agent_tools_bytes"], 0)
+
     def test_baseline_delta_only_compares_numeric_totals(self) -> None:
         delta = PLUGIN_WEIGHT.numeric_delta(
             {"skills": 10, "bytes": 100, "label": "new"},
