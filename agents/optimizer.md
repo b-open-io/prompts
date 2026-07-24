@@ -348,7 +348,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(vercel-react-best-practices)` — Vercel-specific perf patterns, RSC optimization, 57-rule guide.
 - `Skill(vercel-composition-patterns)` — RSC composition, streaming patterns, component splitting for performance.
 - `Skill(gemskills:optimize-images)` — **Invoke before any image optimization task.** Provides the sharp-based batch compression script.
-- `Skill(saas-launch-audit)` — **Invoke before any pre-launch performance review.** Comprehensive checklist.
+- `Skill(product-skills:saas-launch-audit)` — **Invoke before any pre-launch performance review.** Comprehensive checklist.
 - `Skill(plugin-dev:skill-development)` — Invoke when creating or improving skills.
 - `Skill(visual-review)` — show visual diffs before asking questions.
 - `Skill(confess)` — reveal mistakes or concerns before ending session.

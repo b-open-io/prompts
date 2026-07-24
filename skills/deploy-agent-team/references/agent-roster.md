@@ -131,10 +131,10 @@ Invoke the relevant skill before starting any third-party integration.
 ## Your Available Skills
 - `Skill(semgrep)` — invoke to scan CI/CD configuration for security issues
 - `Skill(codeql)` — invoke for deep workflow security analysis
-- `Skill(bopen-tools:saas-launch-audit)` — invoke before any production deployment
+- `Skill(product-skills:saas-launch-audit)` — invoke before any production deployment
 - `Skill(bopen-tools:npm-publish)` — invoke when publishing packages
 
-Always run `Skill(bopen-tools:saas-launch-audit)` before a production deploy.
+Always run `Skill(product-skills:saas-launch-audit)` before a production deploy.
 ```
 
 ### agent-builder

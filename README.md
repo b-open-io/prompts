@@ -140,7 +140,6 @@ bunx skills add b-open-io/bopen-tools --skill free-roam-testing
 bunx skills add b-open-io/bopen-tools --skill front-desk
 bunx skills add b-open-io/bopen-tools --skill frontend-performance
 bunx skills add b-open-io/bopen-tools --skill generative-ui
-bunx skills add b-open-io/bopen-tools --skill geo-optimizer
 bunx skills add b-open-io/bopen-tools --skill github-stars
 bunx skills add b-open-io/bopen-tools --skill hammertime
 bunx skills add b-open-io/bopen-tools --skill hook-manager
@@ -163,7 +162,6 @@ bunx skills add b-open-io/bopen-tools --skill publish-request
 bunx skills add b-open-io/bopen-tools --skill reinforce-skills
 bunx skills add b-open-io/bopen-tools --skill remind
 bunx skills add b-open-io/bopen-tools --skill runtime-context
-bunx skills add b-open-io/bopen-tools --skill saas-launch-audit
 bunx skills add b-open-io/bopen-tools --skill setup
 bunx skills add b-open-io/bopen-tools --skill shaders
 bunx skills add b-open-io/bopen-tools --skill shadscan
@@ -331,7 +329,6 @@ intentional.
 | `process-cleanup` | Find and clean up stale/resource-hungry processes |
 | `remind` | Search and recall previous Claude Code conversation sessions |
 | `runtime-context` | Detect agent execution environment (Claude Code, Vercel Sandbox, etc.) |
-| `saas-launch-audit` | Audit SaaS applications for launch readiness |
 | `setup` | Audit the local agent harness and build a runtime-specific setup plan in Agent Master |
 | `statusline-setup` | Configure custom statusline for Claude Code |
 | `wait-for-ci` | Wait for CI/CD pipelines to complete and act on results |
@@ -340,7 +337,6 @@ intentional.
 | Skill | Description |
 |-------|-------------|
 | `auth-md` | Design and validate WorkOS auth.md agent registration, ID-JAG, claim flows, Better Auth adapters, and delegated credential security without conflating adjacent protocols |
-| `geo-optimizer` | Audit for AI visibility and optimize for ChatGPT/GEO |
 | `mcp-apps` | Build secure MCP Apps with negotiated capabilities, exact CSP, structured data, and useful text fallbacks |
 | `plaid-integration` | Banking data via Plaid API |
 

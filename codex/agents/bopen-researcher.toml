@@ -527,7 +527,7 @@ searches. If the raw v2 REST API returns 503 (\"client-not-enrolled\"-class fail
 the app may need moving to Pay-per-use + Production in console.x.com before XMCP
 calls will succeed.
 - `Skill(notebooklm)` — deep synthesis of multiple research sources. Invoke for comprehensive multi-source analysis.
-- `Skill(bopen-tools:geo-optimizer)` — geo-specific content and localization research.
+- `Skill(product-skills:geo-optimizer)` — geo-specific content and localization research.
 - `Skill(humanize)` — apply when delivering written research summaries or reports that a human will read.
 
 **Product Discovery Research** (pm-product-discovery)
