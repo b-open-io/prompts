@@ -6,7 +6,7 @@ manifests share the same release version.
 
 ## Unreleased
 
-## [1.2.0] - 2026-07-24
+## [1.1.121] - 2026-07-24
 
 ### Changed
 
