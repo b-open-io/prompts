@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 1.0.8
+version: 1.0.9
 description: >-
   Strip AI writing patterns from any prose a human will read — emails, docs, reports, posts,
   commit messages. Apply automatically before delivering a draft, and on "humanize", "make this
@@ -39,6 +39,8 @@ The move wears many costumes. Every one of these is the same pattern:
 FIX: Say Y. Drop the comparison entirely. If the positive claim is clear, the contrast adds nothing but a machine fingerprint.
 
 **Frequency is the dead giveaway.** A single antithesis can read as human — people use the move occasionally. Corpus analysis of 16,000 articles found the 2026 signature is *burstiness*: the same piece using "not X, it's Y" (or a disguised cousin) three or more times. If you must keep one, keep exactly one. Aim for zero.
+
+**The one exception: a measured correction.** When the dismissed half is a belief the reader actually holds and the pivot is evidence, the move is reporting a result. "Everybody assumes it's the skills. Measured, agents were 54% of the cost." Nothing is knocked down there but a real expectation, and the correction is the finding. The test is whether the first half would survive as a standalone claim someone would defend. If it exists only to make the second half sound bigger, it is the AI tell — cut it. Keep at most one per piece, and only where you have the number.
 
 Examples:
 - BAD: "Uptime isn't optional — it's the foundation." → GOOD: "Uptime is the foundation."
@@ -80,6 +82,41 @@ After writing, check the last sentence of every paragraph. Count its words. At m
 - BAD: Para 1 ends "That's the real advantage." (5 words), Para 2 ends "It compounds." (2 words), Para 3 ends "Start early." (2 words)
 - GOOD: Para 1 ends "That's the real advantage." (5 words), Para 2 ends "Teams that invested in CI early shipped 40% more features in their second year than teams that bolted it on later." (22 words), Para 3 ends with a 25-word sentence containing a specific data point or example.
 
+## Modeling a Named Writer
+
+Rules 1–4 remove the machine fingerprint. They do not supply a shape. A draft
+can pass every check and still read as a list of true statements in the order
+they happened, which is the most common failure of a report-style piece.
+
+The fix is to pick a writer whose work you know well and model them — but model
+the **structure**, never the sentences. Their organizing moves transfer. Their
+sentence-level habits are what Rules 1–4 exist to remove, and importing them
+undoes the pass. See [references/style-modeling.md](references/style-modeling.md)
+for the full procedure and the measured evidence.
+
+**Take these four:**
+
+1. **A named concept.** One phrase for the thing the piece is about, introduced
+   early and reused. The reader leaves with a handle.
+2. **Headings that make claims.** "First, find out who is actually eating" tells
+   the reader what they will learn; "Agents were 54% of the cost" only records a
+   fact. Every heading should be a claim or an instruction.
+3. **Argument order over chronology.** Sequence sections by what the reader needs
+   next, which is rarely the order the work happened in.
+4. **A reason to read past your numbers.** State what transfers to the reader's
+   own situation, in their terms, before the detail starts.
+
+**Leave these:** the voice tics. Most beloved technical writers lean hard on
+antithesis, tricolons, and punchy short paragraph endings — those are engines of
+their prose and violations of Rules 1, 2, and 4. Also leave invented color: a
+modeled voice will offer you atmospheric detail ("the sort of thing you find at
+2am") that you cannot substantiate. Cut it.
+
+**Always run the full revision pass on the modeled draft.** Measured on one
+3,300-word technical post, a first draft written to a named writer's voice more
+than doubled its antithesis count and pushed short paragraph endings from 22% of
+paragraphs to 36%. The structural gains survived the cleanup. The tics had to go.
+
 ## Additional Guidelines
 
 - **Cut filler openers.** Start with the actual point, not "In today's rapidly evolving..." See [references/phrases.md](references/phrases.md).
@@ -98,7 +135,8 @@ After writing any prose, you must do a concrete revision pass before delivering.
 4. **Read the last sentence of each paragraph.** Count the words. If more than one ending is under 15 words, rewrite the short ones to be 20+ words with specific details.
 5. **Check for "nice-to-have", "table stakes", "false economy"** and the other AI vocabulary. Replace with plain language.
 6. **Never denigrate the subject.** Search for "rot", "cruft", "bloat", "mess", "sloppy", "garbage", "decay", "neglect". Writing about your own product, describe what changed and what it does now; do not grade the past. This applies hardest to headings, where a defect framing lands before any result does.
-7. **Search for "worth".** It grades something without committing to a claim — "worth noting", "worth doing", "worth avoiding", "worth migrating to" — and is one of the strongest single-word AI tells. Replace every hit with the consequence itself. In a heading it is always wrong: "The Mistake Worth Publishing" should say what the section covers.
+7. **If you modeled a named writer, check their tics hardest.** A modeled voice reproduces antithesis, tricolons, and short paragraph endings without being asked. Re-run checks 1, 2, and 4 on that draft specifically, and cut any atmospheric detail the voice supplied that you cannot substantiate.
+8. **Search for "worth".** It grades something without committing to a claim — "worth noting", "worth doing", "worth avoiding", "worth migrating to" — and is one of the strongest single-word AI tells. Replace every hit with the consequence itself. In a heading it is always wrong: "The Mistake Worth Publishing" should say what the section covers.
 
 Do this revision pass silently — don't mention it in your output. Just deliver the cleaned text.
 
@@ -153,3 +191,4 @@ Good humanized prose:
 - **[references/phrases.md](references/phrases.md)** — Throat-clearing openers, filler phrases, jargon substitutions
 - **[references/structures.md](references/structures.md)** — Formulaic sentence and paragraph patterns to avoid
 - **[references/examples.md](references/examples.md)** — Before/after transformations with annotations
+- **[references/style-modeling.md](references/style-modeling.md)** — Modeling a named writer's structure on long-form work, and the tics to leave behind

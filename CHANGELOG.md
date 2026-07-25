@@ -6,6 +6,22 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.126] - 2026-07-24
+
+### Added
+
+- `humanize`: modeling a named writer on long-form work. The skill's four rules
+  are subtractive and supply no shape, so a clean draft can still read as true
+  statements in the order they happened. The new section takes the structural
+  moves that transfer — a named concept, headings that make claims, argument
+  order over chronology, a stated stake for the reader — and rejects the
+  sentence-level tics, which are largely the patterns rules 1, 2, and 4 remove.
+  `references/style-modeling.md` carries the procedure, per-writer move tables,
+  and the measurement behind it.
+- `humanize` rule 1 gains its one exception: a measured correction, where the
+  dismissed half is a belief the reader holds and the pivot is evidence. The test
+  is whether the first half survives as a standalone claim someone would defend.
+
 ## [1.1.125] - 2026-07-24
 
 ### Added
