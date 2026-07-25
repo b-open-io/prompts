@@ -196,7 +196,12 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Ridd and Theo migrate an existing codebase off scattered hardcoded colors, spacing, and type onto a single shadcn token source of truth, then use a visual-diff recap to prove no screen regressed. Kills the drift between what the design says and what the code renders.",
-				skills: ["shadcn", "web-design-guidelines", "frontend-design", "bopen-review:visual-review"],
+				skills: [
+					"shadcn",
+					"web-design-guidelines",
+					"frontend-design",
+					"bopen-review:visual-review",
+				],
 				agents: ["Ridd", "Theo"],
 				sample: false,
 			},
@@ -467,7 +472,11 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"Lisa builds a themed deck, Frames turns it into a narrated video, and Lisa cuts it down into social clips — one story reused across three formats without re-briefing anyone. The clearest demonstration of chained asset production paying for itself.",
-				skills: ["gemskills:deck-creator", "gemskills:generate-video", "bopen-creative:voice-clone"],
+				skills: [
+					"gemskills:deck-creator",
+					"gemskills:generate-video",
+					"bopen-creative:voice-clone",
+				],
 				agents: ["Lisa", "Frames"],
 				sample: true,
 			},
@@ -2695,11 +2704,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"Mina builds the payout flow, Jerry security-audits the webhook, and Root deploys with env vars set correctly, so payout code is reviewed and shipped without a corrupted key from a bad heredoc.",
-				skills: [
-					"stripe:connect-recommend",
-					"static-analysis:semgrep",
-					"bopen-ops:devops-scripts",
-				],
+				skills: ["stripe:connect-recommend", "static-analysis:semgrep", "bopen-ops:devops-scripts"],
 				agents: ["Mina", "Jerry", "Root"],
 				sample: false,
 			},

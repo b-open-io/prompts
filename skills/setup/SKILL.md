@@ -64,6 +64,14 @@ serves the origin-restricted Agent Master broker API used by bopen.ai to detect
 the local service and launch allowlisted skill interfaces. Install Portless
 globally (`npm install -g portless`); do not add it to the plugin dependencies.
 
+`--agent-master` opens the broker API; it does not make this session updatable.
+Self-update needs a handshake only the packaged shell performs:
+`AGENT_MASTER_APP_VERSION`, `AGENT_MASTER_APP_BUNDLE`, and
+`AGENT_MASTER_APP_PID`. Without all three, `/api/agent-master/update` reports an
+unsupported host and the UI shows nothing — this launcher has no application to
+replace. Point `AGENT_MASTER_UPDATE_FEED` at a local release service to exercise
+the flow without publishing.
+
 **Zero-install fallback (single file, works offline):**
 
 ```bash

@@ -2,6 +2,7 @@
 
 import { AlertCircle, WifiOff } from "lucide-react"
 import { useEffect, useState } from "react"
+import { UpdateBanner } from "@/components/setup/UpdateBanner"
 import type { HarnessState } from "@/lib/types"
 
 export function Banners({
@@ -13,6 +14,7 @@ export function Banners({
 }) {
 	return (
 		<div className="pointer-events-none fixed right-4 top-4 z-50 flex w-[min(340px,calc(100vw-2rem))] flex-col gap-2">
+			<UpdateBanner />
 			{state && (!state.marketplace.fetched || state.marketplace.error) && (
 				<div
 					role="status"

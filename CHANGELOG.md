@@ -6,6 +6,21 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.125] - 2026-07-24
+
+### Added
+
+- `setup`: the Agent Master desktop shell can now update itself. The broker
+  checks `bopen.ai/api/releases/agent-master/latest` for the installed version's
+  channel, downloads the release with the signed-in bopen.ai session, verifies
+  the disk image against the advertised version plus `codesign` and Gatekeeper,
+  and applies it by quitting the app, swapping the bundle, and reopening. The
+  outgoing bundle is kept until the replacement is in place.
+- `setup`: the update surface identifies its host from a shell handshake
+  (version, bundle path, process id) rather than from `--agent-master` alone, so
+  a standalone `playground_server.ts` session is told the host is unsupported
+  and never offers to replace an application it is not part of.
+
 ## [1.1.124] - 2026-07-24
 
 ### Added

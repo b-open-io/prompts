@@ -423,6 +423,19 @@ path, and returned launch URLs are checked against the expected tool hostname.
 The signed Agent Master desktop release uses this same broker as a Next.js
 standalone build bundled with its pinned Bun and Portless runtimes, so desktop
 users do not need a bOpen Tools checkout or global JavaScript tooling.
+
+That desktop release keeps itself current through the broker. The shell hands
+over the version, bundle path, and process id it was launched with; the broker
+asks `bopen.ai/api/releases/agent-master/latest` whether a newer build exists on
+the install's own channel, and offers to fetch it using the same signed-in
+bopen.ai session that unlocks packs. A release is verified before it is trusted:
+the disk image must carry the version the feed advertised, pass `codesign`, and
+pass Gatekeeper assessment on the production channel. Applying is a second,
+explicit step that quits the app, swaps the bundle, and reopens it, keeping the
+outgoing bundle until the replacement lands. Running `playground_server.ts`
+directly — with or without `--agent-master` — never receives that handshake, so
+a setup session with no application around it is told the host is unsupported
+and offers nothing.
 Managed interfaces allow up to 90 seconds for a cold production start before
 reporting a launch failure. For HTTP Portless routes, the readiness probe
 connects to the loopback proxy while preserving the tool's named origin in the
