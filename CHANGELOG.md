@@ -6,6 +6,17 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.131] - 2026-07-25
+
+### Fixed
+
+- The SessionStart hook resolved every declared setting twice. Uninstalling a
+  plugin leaves its cached copy on disk with `settings.json` intact, and the hook
+  walks that cache directory, so after `bopen-tools` became `core` each session
+  read every setting once from the live plugin and once from its own former self.
+  Caches for the ten pre-rename names are skipped, and the exclusion retires
+  itself once those directories are gone.
+
 ## [1.1.130] - 2026-07-25
 
 ### Fixed

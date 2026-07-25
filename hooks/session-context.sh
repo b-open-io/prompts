@@ -106,6 +106,16 @@ def read_json(path):
     except Exception:
         return None
 
+# Plugin names this family used before the rename. Uninstalling leaves the
+# cached copy on disk, settings.json included, so a session would resolve every
+# setting twice -- once from the live plugin and once from its own former self.
+# Bounded and self-retiring: it stops mattering once those caches are gone.
+LEGACY_PLUGIN_NAMES = {
+    "bopen-tools", "bopen-orchestration", "bopen-plugin-dev", "bopen-review",
+    "bopen-web", "bopen-creative", "bopen-mcp", "bopen-ops", "bopen-research",
+    "bopen-public-agents",
+}
+
 def latest_plugin_roots(root):
     roots = []
     try:
@@ -113,6 +123,8 @@ def latest_plugin_roots(root):
     except Exception:
         return roots
     for plugin in plugins:
+        if plugin.name in LEGACY_PLUGIN_NAMES:
+            continue
         try:
             versions = sorted(
                 (path for path in plugin.iterdir() if path.is_dir()),
