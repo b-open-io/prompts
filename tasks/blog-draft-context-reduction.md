@@ -272,7 +272,7 @@ The eval caught it immediately: the orchestration suite scored 0/5 against the m
 
 ### What moving things quietly breaks
 
-Relocating agents broke 28 Codex adapter directories. Each is an `agents/<name>/AGENTS.md` symlink pointing at `../<name>.md`, and moving the target left every one dangling — invisible in Claude, which never reads them, and fatal to Codex agent discovery. Third-party skills are symlinks too, so each needed its target re-pointed for the extra directory depth to keep vendor ownership intact.
+Moving agents broke Codex twice over, in ways Claude never sees. Each agent has an `agents/<name>/AGENTS.md` symlink pointing at `../<name>.md`, and moving the target left 28 of them dangling. Worse, Codex resolves custom agents from generated `.toml` adapters, and the generator only scanned `agents/` at the plugin root — so the 26 agents that moved into modules produced no adapter at all and would have disappeared from Codex entirely. The generator now scans every module, all 29 adapters regenerate clean, and a scratch install resolves the curated roster across core and modules. Third-party skills are symlinks too, so each needed its target re-pointed for the extra directory depth to keep vendor ownership intact.
 
 ## Relocating what never belonged
 
@@ -293,7 +293,3 @@ The clawnet case shows why. Our copy was a 2.6 KB stub against clawnet's 21 KB g
 The premium prompt packs carried 886 plugin-prefixed references across 79 distinct names in 216 files, and every resource that moved invalidated its references. Rewriting them exposed rot that predated the split: `visual-recap` and `critique` had become `visual-review`, `loop-engineering` had become `software-factory`, `payment-specialist` had become `payments`, and five names carried a `bopen-tools:` prefix for skills bopen-tools never provided.
 
 The site's own build guard caught the last mile — a pack citing a skill from a plugin missing from the install map fails the build before a broken instruction can ship. That check now has a companion that walks every `plugin:resource` reference in the repository and fails on any that names something its plugin does not provide. Two of its first three runs found bugs in the checker itself: a plugin whose repository directory does not match its name, and a regex that read `json-render-core` as a reference to `json-render`.
-
-## What is still ahead
-
-The remaining work is the part a split cannot do by itself. Codex's global two-percent budget is only relieved when people install fewer modules, so the measurement that matters next is what an average session actually loads, not what the catalog could cost. And a module that nobody installs is a capability nobody can reach, which makes discovery — the front-desk routing that tells you which module owns a job — more important after the split than before it.
