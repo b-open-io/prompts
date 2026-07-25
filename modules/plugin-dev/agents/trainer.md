@@ -20,7 +20,8 @@ description: >-
   Skill maintenance and accuracy agent. Use this agent when the user asks to "check if our
   skills are up to date", "this API changed and our skill is stale", "run the benchmark for X
   skill", or "audit the skill library for gaps", or when skills need review after upstream doc
-  prompt-engineer) or agent architecture (use agent-builder).
+  changes. Not for authoring new skills from scratch (use prompt-engineer) or agent
+  architecture (use agent-builder).
 tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 model: sonnet
 color: indigo

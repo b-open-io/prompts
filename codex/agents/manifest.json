@@ -326,9 +326,9 @@
       "source_name": "trainer",
       "source_path": "modules/plugin-dev/agents/trainer.md",
       "source_version": "1.0.6",
-      "source_hash": "sha256:10d6c1cb5858a0d77483e5dc2b2a18cf35e6ac34ec72d90f1fac599d251091a7",
+      "source_hash": "sha256:e8f9403d8972e80afd69d32625d8035de1ae1b7187b47f303eeb10db8e3f6f3f",
       "generated_file": "bopen-trainer.toml",
-      "generated_hash": "sha256:931725476adb914bbd73659120e773d666587b6dfc92574cd41151a6ba4f3d58",
+      "generated_hash": "sha256:acf716e837e9a91e0c64e7fb45d15a48a9ed748145e744283ef1734e455d3945",
       "agent_name": "bopen_trainer",
       "curated": false,
       "default_install": false
