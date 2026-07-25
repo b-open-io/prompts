@@ -3,79 +3,117 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Write the 'Our Values' section for a fintech company's about page. The company builds payment infrastructure for developers. Include 4 values with short descriptions (2-3 sentences each). Just write the section directly, no preamble.",
-      "expected_output": "A company values section where the 4 values use varied sentence structures, avoid binary contrast patterns like 'not X — it's Y', and don't all end with punchy one-liner conclusions.",
+      "prompt": "Humanize this landing-page paragraph. Preserve every supplied fact and do not add facts, metrics, customers, capabilities, or evidence. Return only the rewritten paragraph:\n\n\"Our groundbreaking platform doesn't just sync data — it redefines what's possible in the modern data landscape. It syncs every 60 seconds and exports JSON and CSV. Industry experts widely agree that this transformative solution is a pivotal step forward, highlighting our enduring commitment to seamless innovation.\"",
+      "expected_output": "A concise paragraph that retains the 60-second sync interval and JSON/CSV exports, removes unsupported promotion and consensus, and invents nothing.",
       "files": [],
       "assertions": [
         {
-          "id": "hum-1-no-binary-contrast",
-          "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
+          "id": "hum-1-preserves-supported-facts",
+          "text": "The output explicitly preserves both supported facts: synchronization every 60 seconds and export support for JSON and CSV.",
           "type": "qualitative"
         },
         {
-          "id": "hum-1-varied-value-structure",
-          "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
+          "id": "hum-1-no-invented-specificity",
+          "text": "The output adds no new number, benchmark, customer result, source, product capability, quotation, or implementation detail beyond the supplied 60-second interval and JSON/CSV exports.",
           "type": "qualitative"
         },
         {
-          "id": "hum-1-no-tricolon-conclusions",
-          "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
+          "id": "hum-1-removes-promotion-and-significance",
+          "text": "The output does not retain or paraphrase the unsupported promotional/significance claims: groundbreaking, redefines what's possible, transformative, pivotal step, enduring commitment, seamless innovation, modern data landscape.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-1-removes-invented-consensus",
+          "text": "The output does not claim that experts, observers, reports, customers, or any other unspecified group endorses the product.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-1-copy-only",
+          "text": "The output contains only the rewritten paragraph, with no change log, editorial rationale, annotations, or explanation of the revision.",
           "type": "qualitative"
         }
       ]
     },
     {
       "id": 2,
-      "prompt": "Write a 2-paragraph section for a landing page explaining why your cloud hosting platform is better than the competition. Key differentiators: automatic scaling, pay-per-second billing, and built-in observability. Target audience is developers and CTOs. Tone should be confident and direct. Just write the copy, no questions.",
-      "expected_output": "Landing page copy that explains the three differentiators without binary contrasts, parallel tricolon structure, formulaic closers, or punchline paragraph endings.",
+      "prompt": "Write the 'Our Values' section for a payment infrastructure company. Include four values with short descriptions. Treat these facts as a closed set: the API uses signed webhooks; documentation includes copyable examples; incident reports are published after outages; access keys can be scoped. Do not invent metrics, certifications, schedules, customer outcomes, benefits, mechanisms, or additional capabilities. Factual fidelity takes priority over structural variation. Return only the section.",
+      "expected_output": "Four values grounded only in the supplied facts, with varied structures and no repeated triads, staged contrasts, or fabricated specifics.",
       "files": [],
       "assertions": [
         {
-          "id": "hum-2-no-binary-contrast",
-          "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
+          "id": "hum-2-factual-boundary",
+          "text": "Every descriptive claim stays within the four supplied facts. The output does not infer verification outcomes, attacker protection, immediate integration, report contents, remedial actions, exact permissions or resources, metrics, certifications, schedules, customer outcomes, benefits, mechanisms, or capabilities beyond signed webhooks, copyable documentation examples, post-outage incident reports, and scoped access keys.",
           "type": "qualitative"
         },
         {
-          "id": "hum-2-no-parallel-tricolon",
-          "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
+          "id": "hum-2-varied-value-structure",
+          "text": "The section does not pad all four values into the same ornamental multi-sentence template. Four concise one-sentence restatements are acceptable when the closed-world facts support nothing more.",
           "type": "qualitative"
         },
         {
-          "id": "hum-2-no-formulaic-closer",
-          "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
+          "id": "hum-2-no-staged-contrast",
+          "text": "The output does not use staged contrast such as 'not X — Y', 'not just X but Y', 'more than X', 'rather than X', 'less X, more Y', or competitor strawman framing.",
           "type": "qualitative"
         },
         {
-          "id": "hum-2-no-punchline-endings",
-          "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
+          "id": "hum-2-no-decorative-triads",
+          "text": "The output does not use decorative three-item adjective, benefit, or verb lists; required enumerations of the four supplied facts are allowed.",
           "type": "qualitative"
         }
       ]
     },
     {
       "id": 3,
-      "prompt": "Write a short blog post (3 paragraphs) about why startups should invest in developer experience early. Target audience: CTOs and engineering leads. Just write the post directly.",
-      "expected_output": "A blog post that avoids binary contrasts, tricolons, AI business vocabulary, and doesn't end every paragraph with a punchy one-liner.",
+      "prompt": "Write one concise commit subject and a two-sentence release note from these exact changes:\n- removed a duplicated setup paragraph\n- changed the default timeout from 30 seconds to 60 seconds\n- corrected two broken documentation links\nDo not claim any other change. Return only the subject and release note.",
+      "expected_output": "A concrete commit subject and release note that name the actual edits without canned assurances or invented effects.",
       "files": [],
       "assertions": [
         {
-          "id": "hum-3-no-binary-contrast",
-          "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
+          "id": "hum-3-covers-exact-changes",
+          "text": "Across the commit subject and release note, the output names all three changes: duplicate setup paragraph removal, timeout change from 30 to 60 seconds, and correction of two documentation links.",
           "type": "qualitative"
         },
         {
-          "id": "hum-3-no-punchline-endings",
-          "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
+          "id": "hum-3-no-canned-summary",
+          "text": "The output does not use vague change-summary assurances such as 'improved clarity', 'improved readability', 'ensured compliance', 'maintained a neutral tone', 'preserved the original meaning', or 'added sourced content'.",
           "type": "qualitative"
         },
         {
-          "id": "hum-3-no-ai-business-vocab",
-          "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
+          "id": "hum-3-no-invented-impact",
+          "text": "The output does not invent a bug, user outcome, performance result, reliability claim, cause, or implementation detail beyond the three supplied changes.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Humanize this research summary without adding evidence. Return only the rewritten summary:\n\n\"Observers have noted that caching is now widely regarded as essential across the industry. In Mina Chen's survey of 42 teams, 27 reported using a shared cache, underscoring a pivotal shift in the evolving infrastructure landscape and demonstrating the enduring importance of scalable architecture.\"",
+      "expected_output": "A factual sentence or short paragraph attributed to Mina Chen that preserves the sample and result while removing invented consensus and unsupported significance.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "hum-4-preserves-study",
+          "text": "The output attributes the evidence to Mina Chen and preserves both numbers: 42 teams surveyed and 27 reporting use of a shared cache.",
           "type": "qualitative"
         },
         {
-          "id": "hum-3-no-tricolon-lists",
-          "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
+          "id": "hum-4-no-consensus-inflation",
+          "text": "The output does not claim broad observer, expert, industry, or universal consensus beyond Mina Chen's survey.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-4-no-significance-tail",
+          "text": "The output removes the unsupported claims about a pivotal shift, evolving infrastructure landscape, enduring importance, and scalable architecture instead of rephrasing them.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-4-no-causal-overreach",
+          "text": "The output reports the survey result without claiming that the survey proves necessity, causes adoption, predicts a trend, or generalizes beyond the 42-team sample.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-4-copy-only",
+          "text": "The output contains only the rewritten summary, with no change log, editorial rationale, annotations, or explanation of the revision.",
           "type": "qualitative"
         }
       ]

@@ -1,214 +1,308 @@
 {
-  "generated_at": "2026-03-06T14:32:15.808Z",
-  "model": "claude-sonnet-4-6",
+  "generated_at": "2026-07-25T13:49:33.863Z",
+  "model": "claude-haiku-4-5-20251001",
   "runner": "satchmo",
   "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
   "skill_name": "humanize",
   "skill_path": "skills/humanize",
-  "eval_count": 3,
-  "pass_rate": 0.806,
-  "baseline_pass_rate": 0.278,
-  "avg_tokens_with_skill": 3027,
-  "avg_tokens_baseline": 583,
-  "avg_duration_ms_with_skill": 54181,
-  "avg_duration_ms_baseline": 24691,
+  "eval_count": 4,
+  "pass_rate": 0.938,
+  "baseline_pass_rate": 0.571,
+  "avg_tokens_with_skill": 2306,
+  "avg_tokens_baseline": 1353,
+  "avg_duration_ms_with_skill": 18548,
+  "avg_duration_ms_baseline": 12714,
   "evals": [
     {
       "eval_id": 1,
-      "prompt": "Write the 'Our Values' section for a fintech company's about page. The company builds payment infrastructure for developers. Include 4 values with short descriptions (2-3 sentences each). Just write the section directly, no preamble.",
+      "prompt": "Humanize this landing-page paragraph. Preserve every supplied fact and do not add facts, metrics, customers, capabilities, or evidence. Return only the rewritten paragraph:\n\n\"Our groundbreaking platform doesn't just sync data — it redefines what's possible in the modern data landscape. It syncs every 60 seconds and exports JSON and CSV. Industry experts widely agree that this transformative solution is a pivotal step forward, highlighting our enduring commitment to seamless innovation.\"",
       "with_skill": {
-        "output": "## Our Values\n\n**Reliability is the product.**\nPayment infrastructure works best when developers forget it's there. We run at 99.99% uptime across all regions because a single failed transaction can cost a merchant their customer's trust permanently.\n\n**Developer experience drives everything.**\nAPIs should behave exactly as documented, and error messages should tell you what went wrong and how to fix it. We invest as much in our documentation and SDK design as in the underlying infrastructure, because an API that takes a week to integrate — or one that surfaces opaque error codes at 2am — loses developer trust faster than almost any reliability issue could.\n\n**Transparency in failure.**\nWhen something breaks, we say what happened and what we changed. Our status page publishes raw uptime data and latency percentiles so you can see exactly what our systems are doing, and our post-mortems go public within 48 hours so the broader developer community can learn from what we got wrong.\n\n**Security built to hold.**\nPayments attract adversarial attention. PCI DSS compliance, end-to-end encryption, fraud detection, and threat monitoring are woven into the architecture from the start; every API key is scoped and every webhook is signed, and we run red team exercises quarterly to expose gaps in our assumptions before they become incidents.",
-        "tokens": 3562,
-        "duration_ms": 60087,
+        "output": "The platform syncs data every 60 seconds and exports to JSON and CSV.",
+        "tokens": 590,
+        "duration_ms": 6829,
         "assertions": [
           {
-            "id": "hum-1-no-binary-contrast",
-            "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
+            "id": "hum-1-preserves-supported-facts",
+            "text": "The output explicitly preserves both supported facts: synchronization every 60 seconds and export support for JSON and CSV.",
             "passed": true,
-            "reasoning": "None of the four value descriptions use binary contrast patterns like 'not X — it's Y'; each value is stated positively without an explicit contrast structure."
+            "reasoning": "The output explicitly states both supported facts: '60 seconds' for sync interval and 'JSON and CSV' for export formats."
           },
           {
-            "id": "hum-1-varied-value-structure",
-            "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
-            "passed": false,
-            "reasoning": "All four values follow the same structural pattern: a bold declarative title followed by exactly two sentences (the second being a long explanatory sentence with a 'because' or causal clause), with no value using a question, a single sentence, a leading example, or any other meaningfully different form."
+            "id": "hum-1-no-invented-specificity",
+            "text": "The output adds no new number, benchmark, customer result, source, product capability, quotation, or implementation detail beyond the supplied 60-second interval and JSON/CSV exports.",
+            "passed": true,
+            "reasoning": "The output contains only the two supplied facts (60-second interval, JSON/CSV exports) with no additional numbers, benchmarks, capabilities, or implementation details."
           },
           {
-            "id": "hum-1-no-tricolon-conclusions",
-            "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
+            "id": "hum-1-removes-promotion-and-significance",
+            "text": "The output does not retain or paraphrase the unsupported promotional/significance claims: groundbreaking, redefines what's possible, transformative, pivotal step, enduring commitment, seamless innovation, modern data landscape.",
             "passed": true,
-            "reasoning": "No value description ends with a three-item parallel list; Value 4 contains a four-item list mid-sentence ('PCI DSS compliance, end-to-end encryption, fraud detection, and threat monitoring'), which is explicitly permitted."
+            "reasoning": "The output contains none of the unsupported promotional language (groundbreaking, transformative, seamless, pivotal, etc.) and presents only factual information."
+          },
+          {
+            "id": "hum-1-removes-invented-consensus",
+            "text": "The output does not claim that experts, observers, reports, customers, or any other unspecified group endorses the product.",
+            "passed": true,
+            "reasoning": "The output makes no claims about endorsements or consensus from experts, observers, customers, or reports."
+          },
+          {
+            "id": "hum-1-copy-only",
+            "text": "The output contains only the rewritten paragraph, with no change log, editorial rationale, annotations, or explanation of the revision.",
+            "passed": true,
+            "reasoning": "The output is the rewritten paragraph alone, with no change log, rationale, annotations, or editorial explanation."
           }
         ],
-        "pass_rate": 0.6666666666666666,
-        "cached": false
+        "pass_rate": 1,
+        "cached": true
       },
       "baseline": {
-        "output": "## Our Values\n\n**Reliability is a feature.**\nEvery payment that fails is a promise broken—to your users, and to you. We build infrastructure you can stake your business on, because downtime and data loss aren't acceptable tradeoffs for anyone.\n\n**Developers deserve great tools.**\nGood infrastructure shouldn't require a support ticket to understand. We write clear documentation, design intuitive APIs, and sweat the details that turn frustrating integrations into afternoons well spent.\n\n**Transparency by default.**\nHidden fees, vague status pages, and opaque pricing erode trust. We show our work: real uptime numbers, honest error messages, and pricing that doesn't require a call with sales to decode.\n\n**Security without compromise.**\nCutting corners on security means cutting corners on the people whose money moves through your product. We treat compliance and data protection as a baseline, not a differentiator—because that's what handling financial data demands.",
-        "tokens": 594,
-        "duration_ms": 25044,
+        "output": "Our platform syncs your data every 60 seconds and exports to JSON or CSV. Industry experts agree it's a solid tool that gets the job done.",
+        "tokens": 773,
+        "duration_ms": 8204,
         "assertions": [
           {
-            "id": "hum-1-no-binary-contrast",
-            "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't the problem, Y is', 'It's not about X, it's about Y', 'X aren't nice-to-haves — they're Y', or 'stops being X and starts being Y'. Check all 4 value descriptions.",
+            "id": "hum-1-preserves-supported-facts",
+            "text": "The output explicitly preserves both supported facts: synchronization every 60 seconds and export support for JSON and CSV.",
             "passed": true,
-            "reasoning": "None of the four value descriptions use the listed binary contrast patterns ('not X — it's Y', 'X isn't the problem, Y is', etc.); 'as a baseline, not a differentiator' is a different construction and does not match any of the specified patterns."
+            "reasoning": "The output explicitly states both '60 seconds' and 'exports to JSON or CSV'."
           },
           {
-            "id": "hum-1-varied-value-structure",
-            "text": "The 4 value descriptions do NOT all follow the same sentence structure. At least 2 of the 4 should differ meaningfully in form — e.g., one might use a question, one might lead with an example, one might be a single long sentence while another uses two short ones. Identical patterns like (title, 2 sentences, punchy closer) repeated 4 times is a failure.",
-            "passed": false,
-            "reasoning": "All four values follow an identical structural pattern — bold title followed by exactly two sentences — with no variation such as questions, single long sentences, or example-first openings, which the assertion explicitly flags as a failure."
+            "id": "hum-1-no-invented-specificity",
+            "text": "The output adds no new number, benchmark, customer result, source, product capability, quotation, or implementation detail beyond the supplied 60-second interval and JSON/CSV exports.",
+            "passed": true,
+            "reasoning": "No new numbers, benchmarks, customer results, sources, capabilities, quotations, or implementation details are added beyond the supplied facts."
           },
           {
-            "id": "hum-1-no-tricolon-conclusions",
-            "text": "Value descriptions do not end with three parallel items (tricolons) like 'speed, clarity, and trust' or 'we build, we test, we ship'. Two-item or four-item lists are fine; the specific pattern of three parallel items at the end of a value is the problem.",
+            "id": "hum-1-removes-promotion-and-significance",
+            "text": "The output does not retain or paraphrase the unsupported promotional/significance claims: groundbreaking, redefines what's possible, transformative, pivotal step, enduring commitment, seamless innovation, modern data landscape.",
+            "passed": true,
+            "reasoning": "None of the specified unsupported claims (groundbreaking, redefines, transformative, pivotal, enduring, seamless, modern data landscape) appear in the output."
+          },
+          {
+            "id": "hum-1-removes-invented-consensus",
+            "text": "The output does not claim that experts, observers, reports, customers, or any other unspecified group endorses the product.",
             "passed": false,
-            "reasoning": "Value 2 ends with three parallel items ('write clear documentation, design intuitive APIs, and sweat the details…') and Value 3 ends with three parallel items ('real uptime numbers, honest error messages, and pricing that doesn't require a call with sales to decode'), both violating the no-tricolon-conclusion rule."
+            "reasoning": "The phrase 'Industry experts agree' claims endorsement from an unspecified, invented group without any source or verification."
+          },
+          {
+            "id": "hum-1-copy-only",
+            "text": "The output contains only the rewritten paragraph, with no change log, editorial rationale, annotations, or explanation of the revision.",
+            "passed": true,
+            "reasoning": "The output contains only the rewritten paragraph with no explanations, rationale, or annotations."
           }
         ],
-        "pass_rate": 0.3333333333333333,
-        "cached": false
+        "pass_rate": 0.8,
+        "cached": true
       }
     },
     {
       "eval_id": 2,
-      "prompt": "Write a 2-paragraph section for a landing page explaining why your cloud hosting platform is better than the competition. Key differentiators: automatic scaling, pay-per-second billing, and built-in observability. Target audience is developers and CTOs. Tone should be confident and direct. Just write the copy, no questions.",
+      "prompt": "Write the 'Our Values' section for a payment infrastructure company. Include four values with short descriptions. Treat these facts as a closed set: the API uses signed webhooks; documentation includes copyable examples; incident reports are published after outages; access keys can be scoped. Do not invent metrics, certifications, schedules, customer outcomes, benefits, mechanisms, or additional capabilities. Factual fidelity takes priority over structural variation. Return only the section.",
       "with_skill": {
-        "output": "Your app scales from 10 requests to 10 million without touching a config file. Capacity adjusts in under 30 seconds — new instances spin up, traffic routes automatically, and the moment the spike ends, you scale back down just as fast. Most platforms charge for reserved capacity you'll use twice a year; we bill per second of actual compute, so a function that runs for 400ms costs you 400ms. Teams migrating from fixed-instance providers typically cut monthly infrastructure spend by 40–60% in the first 90 days, without touching their architecture.\n\nEvery deployment ships with observability wired in from day one. Request traces, error rates, latency percentiles, and p99 breakdowns appear in your dashboard the moment traffic hits your service — the instrumentation is pre-configured and ready. When something breaks at 2am, you get a flame graph and a structured error log with full context, already correlated and pointing at the exact line of code that failed. Engineers we work with report spending 70% less time on incident diagnosis compared to their previous setup, because the relevant data is available immediately rather than scattered across four separate tools that each require their own query language.",
-        "tokens": 3171,
-        "duration_ms": 59464,
+        "output": "**Trust**\nOur API uses signed webhooks so you can verify the authenticity of every message.\n\n**Control**\nAccess keys can be scoped to the minimum permissions required for your integration.\n\n**Transparency**\nWe publish incident reports after outages.\n\n**Simplicity**\nOur documentation includes copyable examples.",
+        "tokens": 7304,
+        "duration_ms": 52715,
         "assertions": [
           {
-            "id": "hum-2-no-binary-contrast",
-            "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
-            "passed": true,
-            "reasoning": "The output makes direct claims without using 'not X — it's Y' or similar rhetorical binary contrast setups."
-          },
-          {
-            "id": "hum-2-no-parallel-tricolon",
-            "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
-            "passed": true,
-            "reasoning": "Only two paragraphs are present in the output, and they differ structurally; no three-sentence parallel tricolon pattern appears."
-          },
-          {
-            "id": "hum-2-no-formulaic-closer",
-            "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
-            "passed": true,
-            "reasoning": "The final sentence is a substantive comparative claim about incident diagnosis time, not a tricolon wrap-up or binary contrast closer."
-          },
-          {
-            "id": "hum-2-no-punchline-endings",
-            "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
-            "passed": true,
-            "reasoning": "Both paragraphs end with long, substantive sentences that provide data or context rather than short dramatic mic-drop statements."
-          }
-        ],
-        "pass_rate": 1,
-        "cached": false
-      },
-      "baseline": {
-        "output": "---\n\nMost cloud platforms make you guess your traffic in advance, charge you for idle servers, and leave you debugging in the dark. We don't. Our infrastructure scales automatically the moment demand spikes—no pre-warming, no capacity planning, no 3am pages because you under-provisioned. You ship, we handle the rest.\n\nYou also stop paying for compute you're not using. With per-second billing, your costs track actual usage—not whatever estimate you punched into a calculator last quarter. And when something goes wrong, you won't be stitching together logs from three different tools. Built-in observability gives every team member—from the engineer on-call to the CTO reviewing the post-mortem—a single, complete picture of what happened and why. Less guessing, fewer war rooms, faster fixes.",
-        "tokens": 545,
-        "duration_ms": 24588,
-        "assertions": [
-          {
-            "id": "hum-2-no-binary-contrast",
-            "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't just Y — it's Z', 'isn't a nice-to-have, it's a necessity', or 'stop doing X, start doing Y'. Direct claims are fine; the 'not X, but Y' rhetorical setup is the problem.",
+            "id": "hum-2-factual-boundary",
+            "text": "Every descriptive claim stays within the four supplied facts. The output does not infer verification outcomes, attacker protection, immediate integration, report contents, remedial actions, exact permissions or resources, metrics, certifications, schedules, customer outcomes, benefits, mechanisms, or capabilities beyond signed webhooks, copyable documentation examples, post-outage incident reports, and scoped access keys.",
             "passed": false,
-            "reasoning": "The output uses 'your costs track actual usage—not whatever estimate you punched into a calculator last quarter,' which is a 'Y—not X' binary contrast setup, and 'Most cloud platforms make you… We don't' is a direct binary contrast framing."
+            "reasoning": "Trust infers 'you can verify the authenticity' (a verification outcome explicitly forbidden), and Control infers 'minimum permissions required for your integration' (a benefit/mechanism beyond the supplied fact of scoped access keys)."
           },
           {
-            "id": "hum-2-no-parallel-tricolon",
-            "text": "The three differentiators are not presented as three sentences with identical structure (e.g., 'X does A. Y does B. Z does C.' where all three follow the same grammatical pattern). Also checks for 'no X, no Y, no Z' patterns. At least one differentiator should be presented in a structurally different way from the other two.",
-            "passed": false,
-            "reasoning": "The phrase 'no pre-warming, no capacity planning, no 3am pages' is explicitly a 'no X, no Y, no Z' tricolon pattern, which the assertion flags as prohibited."
-          },
-          {
-            "id": "hum-2-no-formulaic-closer",
-            "text": "The final sentence does not follow a formulaic summary pattern like 'X does A, Y does B, and Z does C' or 'Whether you need A, B, or C, we've got you covered' or a tricolon wrap-up of the three features. Also should not be a binary contrast closer like 'That's not X. That's Y.'",
-            "passed": false,
-            "reasoning": "The final sentence 'Less guessing, fewer war rooms, faster fixes.' is a tricolon wrap-up of three benefit phrases, which matches the formulaic summary closer pattern the assertion prohibits."
-          },
-          {
-            "id": "hum-2-no-punchline-endings",
-            "text": "Neither paragraph ends with a short (under 10 words) dramatic summary sentence like 'That's the difference.' or 'This changes everything.' or 'You focus on code. We handle the rest.' Paragraph endings should be substantive, not punchy mic-drops.",
-            "passed": false,
-            "reasoning": "Paragraph one ends with 'You ship, we handle the rest.' (7 words) and paragraph two ends with 'Less guessing, fewer war rooms, faster fixes.' (7 words), both short dramatic mic-drop sentences under 10 words."
-          }
-        ],
-        "pass_rate": 0,
-        "cached": false
-      }
-    },
-    {
-      "eval_id": 3,
-      "prompt": "Write a short blog post (3 paragraphs) about why startups should invest in developer experience early. Target audience: CTOs and engineering leads. Just write the post directly.",
-      "with_skill": {
-        "output": "**Developer Experience Debt Is Expensive, and You're Already Paying It**\n\nThe cost of a bad developer experience compounds faster than most CTOs expect. When engineers spend 45 minutes getting a dev environment running, or wait 20 minutes for a CI pipeline to report a broken test, that friction accumulates into real weeks of lost output. At a 10-person engineering team, even a 30-minute daily drag per developer equals roughly 65 engineer-days lost annually — time that isn't coming back.\n\nTeams that invest early in local environment setup and fast test feedback loops retain engineers longer than those that skip it. Onboarding a senior engineer costs north of $30K when you factor in recruiting fees and ramp-up time alone. That investment pays for itself the first time a frustrated engineer decides to stay because the work finally feels worth doing, because shipping a feature takes hours instead of days, and because a broken build surfaces in two minutes rather than two hours after the fact.\n\nThe real argument for early investment is that building good habits at 8 engineers is far cheaper than retrofitting them at 80. A team of 8 can agree on a deployment process in an afternoon; a team of 80 will spend months debating it while the old broken process stays in production. The workflows you establish in year one — CI discipline, local reproducibility, sensible runbooks, and clean infrastructure abstractions — tend to calcify into the culture, and that calcification works in your favor when you're trying to scale an engineering organization worth replicating.",
-        "tokens": 2347,
-        "duration_ms": 42992,
-        "assertions": [
-          {
-            "id": "hum-3-no-binary-contrast",
-            "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
+            "id": "hum-2-varied-value-structure",
+            "text": "The section does not pad all four values into the same ornamental multi-sentence template. Four concise one-sentence restatements are acceptable when the closed-world facts support nothing more.",
             "passed": true,
-            "reasoning": "The output makes direct claims throughout without using any 'not X — it's Y' or similar binary contrast constructions."
+            "reasoning": "The four values use varied structures: Trust uses a causal relationship, Control describes a capability, and Transparency and Simplicity use simple declarative sentences."
           },
           {
-            "id": "hum-3-no-punchline-endings",
-            "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
+            "id": "hum-2-no-staged-contrast",
+            "text": "The output does not use staged contrast such as 'not X — Y', 'not just X but Y', 'more than X', 'rather than X', 'less X, more Y', or competitor strawman framing.",
             "passed": true,
-            "reasoning": "Only paragraph 1 ends with a short punchy line ('time that isn't coming back' — 6 words); paragraphs 2 and 3 both end with longer sentences well over 15 words."
+            "reasoning": "No staged contrast patterns ('not X — Y', 'rather than', 'more than', etc.) appear in the output."
           },
           {
-            "id": "hum-3-no-ai-business-vocab",
-            "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
+            "id": "hum-2-no-decorative-triads",
+            "text": "The output does not use decorative three-item adjective, benefit, or verb lists; required enumerations of the four supplied facts are allowed.",
             "passed": true,
-            "reasoning": "None of the banned phrases — 'highest-leverage', 'compound returns', 'first-class', 'false economy', 'force multiplier', 'table stakes', or 'nice-to-have' — appear in the output."
-          },
-          {
-            "id": "hum-3-no-tricolon-lists",
-            "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
-            "passed": false,
-            "reasoning": "Paragraph 2 contains a tricolon of three parallel 'because' clauses: 'because the work finally feels worth doing, because shipping a feature takes hours instead of days, and because a broken build surfaces in two minutes rather than two hours after the fact.'"
+            "reasoning": "No decorative three-item lists appear; the four values represent required enumeration, not ornamental triads."
           }
         ],
         "pass_rate": 0.75,
         "cached": false
       },
       "baseline": {
-        "output": "## Developer Experience Is a Business Decision, Not a Luxury\n\nEarly-stage startups often treat developer experience (DX) as something to optimize later—after product-market fit, after the Series A, after the team grows. This is exactly backwards. The decisions you make in the first 18 months about tooling, local development speed, CI/CD pipelines, and documentation compound relentlessly. A codebase that takes 20 minutes to build locally doesn't just frustrate your five engineers—it quietly erodes their focus, their willingness to experiment, and their ability to ship with confidence. Every friction point you tolerate early becomes load-bearing technical debt that costs ten times more to fix once your team is 30 people deep.\n\nThe return on investing in DX early is asymmetric. Fast feedback loops—sub-minute test suites, reliable hot reload, clear error messages—directly translate into faster iteration cycles. When engineers can confidently make a change and know within seconds whether it's correct, they take smarter risks. They refactor when they should instead of leaving things alone out of fear. They onboard faster. You spend less time in debugging purgatory and more time in product conversations. For a startup, where iteration speed is your primary competitive advantage over incumbents, this is not a nice-to-have.\n\nThe CTO's job is to make good engineering culture a structural property of the system, not a personal virtue. That means setting standards early: reproducible builds, a single command to get the dev environment running, automated linting and formatting so reviews focus on logic not style, and deployment pipelines engineers actually trust. None of this requires a platform team or months of investment. It requires intentionality and a willingness to protect engineering time now. The startups that wait until they're \"big enough\" to care about DX are the ones that spend their growth stage paying down the bill.",
-        "tokens": 609,
-        "duration_ms": 24441,
+        "output": "## Our Values\n\n**Verification** - We sign our webhooks so you can verify their authenticity.\n\n**Clarity** - Our documentation includes copyable examples you can use immediately.\n\n**Accountability** - We publish incident reports after outages.\n\n**Control** - Access keys can be scoped to grant only necessary permissions.",
+        "tokens": 3645,
+        "duration_ms": 30165,
         "assertions": [
           {
-            "id": "hum-3-no-binary-contrast",
-            "text": "The output does not use binary contrast patterns such as 'not X — it's Y', 'X isn't a nice-to-have — it's Y', 'This isn't X. This is Y.', or 'treating X as Y. This is a mistake.' Direct claims without the 'not X' setup are fine.",
-            "passed": true,
-            "reasoning": "The output uses 'this is not a nice-to-have' but never completes the binary contrast with '— it's Y', and no other instances of the listed patterns appear."
-          },
-          {
-            "id": "hum-3-no-punchline-endings",
-            "text": "Not all 3 paragraphs end with a short (under 15 words) dramatic summary sentence. At most 1 of the 3 paragraphs may end with a punchy one-liner. The others should end mid-thought, with a longer sentence, or flow into the next idea.",
-            "passed": true,
-            "reasoning": "All three paragraph-ending sentences are long (22+ words) and none qualify as a short dramatic one-liner under 15 words."
-          },
-          {
-            "id": "hum-3-no-ai-business-vocab",
-            "text": "The output avoids the phrases 'highest-leverage', 'compound returns', 'first-class' (as in 'first-class citizen' or 'first-class product'), 'false economy', 'force multiplier', 'table stakes', and 'nice-to-have'. These are AI-oversampled business terms.",
+            "id": "hum-2-factual-boundary",
+            "text": "Every descriptive claim stays within the four supplied facts. The output does not infer verification outcomes, attacker protection, immediate integration, report contents, remedial actions, exact permissions or resources, metrics, certifications, schedules, customer outcomes, benefits, mechanisms, or capabilities beyond signed webhooks, copyable documentation examples, post-outage incident reports, and scoped access keys.",
             "passed": false,
-            "reasoning": "The phrase 'nice-to-have' appears explicitly in paragraph two: 'this is not a nice-to-have'."
+            "reasoning": "The Clarity value adds 'immediately' (not in the facts) and the Control value infers 'only necessary permissions' (not specified in 'scoped access keys'), both exceeding the four supplied facts."
           },
           {
-            "id": "hum-3-no-tricolon-lists",
-            "text": "The output does not contain tricolon lists — three parallel items joined with commas and 'and' (e.g., 'ship faster, hire better, and retain longer' or 'slower shipping, higher churn, and talent retention problems'). Two-item lists are fine. Four-item lists are fine. Exactly three parallel items is the AI pattern.",
-            "passed": false,
-            "reasoning": "Paragraph one contains a tricolon: 'their focus, their willingness to experiment, and their ability to ship with confidence' — three parallel items joined with commas and 'and'."
+            "id": "hum-2-varied-value-structure",
+            "text": "The section does not pad all four values into the same ornamental multi-sentence template. Four concise one-sentence restatements are acceptable when the closed-world facts support nothing more.",
+            "passed": true,
+            "reasoning": "Four concise one-sentence restatements in a simple consistent label-statement format, which is acceptable when the facts support nothing more elaborate."
+          },
+          {
+            "id": "hum-2-no-staged-contrast",
+            "text": "The output does not use staged contrast such as 'not X — Y', 'not just X but Y', 'more than X', 'rather than X', 'less X, more Y', or competitor strawman framing.",
+            "passed": true,
+            "reasoning": "None of the four values employ negation-based contrast, competitor framing, or 'not X—Y' structures."
+          },
+          {
+            "id": "hum-2-no-decorative-triads",
+            "text": "The output does not use decorative three-item adjective, benefit, or verb lists; required enumerations of the four supplied facts are allowed.",
+            "passed": true,
+            "reasoning": "No decorative three-item lists appear; each value contains two or fewer concepts in simple declarative form."
           }
         ],
-        "pass_rate": 0.5,
+        "pass_rate": 0.75,
         "cached": false
+      }
+    },
+    {
+      "eval_id": 3,
+      "prompt": "Write one concise commit subject and a two-sentence release note from these exact changes:\n- removed a duplicated setup paragraph\n- changed the default timeout from 30 seconds to 60 seconds\n- corrected two broken documentation links\nDo not claim any other change. Return only the subject and release note.",
+      "with_skill": {
+        "output": "**Commit subject:**\nRemove duplicate setup paragraph, increase default timeout to 60 seconds, fix documentation links\n\n**Release note:**\nRemoved a duplicated setup paragraph. Increased the default timeout from 30 to 60 seconds and corrected two broken documentation links.",
+        "tokens": 956,
+        "duration_ms": 9534,
+        "assertions": [
+          {
+            "id": "hum-3-covers-exact-changes",
+            "text": "Across the commit subject and release note, the output names all three changes: duplicate setup paragraph removal, timeout change from 30 to 60 seconds, and correction of two documentation links.",
+            "passed": true,
+            "reasoning": "The output explicitly names all three changes: duplicate setup paragraph removal, timeout increase from 30 to 60 seconds, and correction of two documentation links, in both the commit subject and release note."
+          },
+          {
+            "id": "hum-3-no-canned-summary",
+            "text": "The output does not use vague change-summary assurances such as 'improved clarity', 'improved readability', 'ensured compliance', 'maintained a neutral tone', 'preserved the original meaning', or 'added sourced content'.",
+            "passed": true,
+            "reasoning": "The output uses concrete action verbs (removed, increased, corrected) with specific values rather than vague assurances like 'improved clarity' or 'maintained tone'."
+          },
+          {
+            "id": "hum-3-no-invented-impact",
+            "text": "The output does not invent a bug, user outcome, performance result, reliability claim, cause, or implementation detail beyond the three supplied changes.",
+            "passed": true,
+            "reasoning": "The output describes only the three supplied changes without inventing bugs, user outcomes, performance claims, reliability assertions, or implementation details."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": true
+      },
+      "baseline": {
+        "output": "**Commit subject:**\nIncrease default timeout to 60s and fix documentation links\n\n**Release note:**\nThe default timeout has been increased from 30 to 60 seconds to accommodate longer-running operations. Two broken documentation links have been corrected.",
+        "tokens": 483,
+        "duration_ms": 5409,
+        "assertions": [
+          {
+            "id": "hum-3-covers-exact-changes",
+            "text": "Across the commit subject and release note, the output names all three changes: duplicate setup paragraph removal, timeout change from 30 to 60 seconds, and correction of two documentation links.",
+            "passed": false,
+            "reasoning": "The output names only two of the three changes (timeout and documentation links) but omits the duplicate setup paragraph removal entirely."
+          },
+          {
+            "id": "hum-3-no-canned-summary",
+            "text": "The output does not use vague change-summary assurances such as 'improved clarity', 'improved readability', 'ensured compliance', 'maintained a neutral tone', 'preserved the original meaning', or 'added sourced content'.",
+            "passed": true,
+            "reasoning": "The output uses concrete, specific language and avoids vague assurances like 'improved clarity' or 'ensured compliance.'"
+          },
+          {
+            "id": "hum-3-no-invented-impact",
+            "text": "The output does not invent a bug, user outcome, performance result, reliability claim, cause, or implementation detail beyond the three supplied changes.",
+            "passed": false,
+            "reasoning": "The phrase 'to accommodate longer-running operations' invents a cause or rationale for the timeout change that was not in the supplied changes."
+          }
+        ],
+        "pass_rate": 0.3333333333333333,
+        "cached": true
+      }
+    },
+    {
+      "eval_id": 4,
+      "prompt": "Humanize this research summary without adding evidence. Return only the rewritten summary:\n\n\"Observers have noted that caching is now widely regarded as essential across the industry. In Mina Chen's survey of 42 teams, 27 reported using a shared cache, underscoring a pivotal shift in the evolving infrastructure landscape and demonstrating the enduring importance of scalable architecture.\"",
+      "with_skill": {
+        "output": "In Mina Chen's survey of 42 teams, 27 reported using a shared cache.",
+        "tokens": 374,
+        "duration_ms": 5112,
+        "assertions": [
+          {
+            "id": "hum-4-preserves-study",
+            "text": "The output attributes the evidence to Mina Chen and preserves both numbers: 42 teams surveyed and 27 reporting use of a shared cache.",
+            "passed": true,
+            "reasoning": "The output correctly attributes the evidence to Mina Chen and preserves both numbers: 42 teams surveyed and 27 reporting use of a shared cache."
+          },
+          {
+            "id": "hum-4-no-consensus-inflation",
+            "text": "The output does not claim broad observer, expert, industry, or universal consensus beyond Mina Chen's survey.",
+            "passed": true,
+            "reasoning": "The output makes no claims about broad observer, expert, industry, or universal consensus—it reports only what Mina Chen's survey found."
+          },
+          {
+            "id": "hum-4-no-significance-tail",
+            "text": "The output removes the unsupported claims about a pivotal shift, evolving infrastructure landscape, enduring importance, and scalable architecture instead of rephrasing them.",
+            "passed": true,
+            "reasoning": "The output removes all unsupported significance claims about pivotal shifts, evolving landscapes, enduring importance, and scalable architecture without rephrasing them."
+          },
+          {
+            "id": "hum-4-no-causal-overreach",
+            "text": "The output reports the survey result without claiming that the survey proves necessity, causes adoption, predicts a trend, or generalizes beyond the 42-team sample.",
+            "passed": true,
+            "reasoning": "The output reports the survey result as a simple fact without claiming the survey proves necessity, causes adoption, predicts trends, or generalizes beyond the 42-team sample."
+          },
+          {
+            "id": "hum-4-copy-only",
+            "text": "The output contains only the rewritten summary, with no change log, editorial rationale, annotations, or explanation of the revision.",
+            "passed": true,
+            "reasoning": "The output contains only the rewritten summary with no change log, editorial rationale, annotations, or explanations."
+          }
+        ],
+        "pass_rate": 1,
+        "cached": true
+      },
+      "baseline": {
+        "output": "Caching has become something everyone in tech now sees as essential. When Mina Chen surveyed 42 teams, she found that 27 of them were using a shared cache—a pretty significant sign of how infrastructure thinking is shifting. It's clear that as systems grow, scalability isn't optional anymore.",
+        "tokens": 509,
+        "duration_ms": 7078,
+        "assertions": [
+          {
+            "id": "hum-4-preserves-study",
+            "text": "The output attributes the evidence to Mina Chen and preserves both numbers: 42 teams surveyed and 27 reporting use of a shared cache.",
+            "passed": true,
+            "reasoning": "The output correctly attributes to Mina Chen and preserves both numbers: 42 teams surveyed and 27 using a shared cache."
+          },
+          {
+            "id": "hum-4-no-consensus-inflation",
+            "text": "The output does not claim broad observer, expert, industry, or universal consensus beyond Mina Chen's survey.",
+            "passed": false,
+            "reasoning": "The opening sentence 'Caching has become something everyone in tech now sees as essential' claims universal consensus beyond the survey without attribution."
+          },
+          {
+            "id": "hum-4-no-significance-tail",
+            "text": "The output removes the unsupported claims about a pivotal shift, evolving infrastructure landscape, enduring importance, and scalable architecture instead of rephrasing them.",
+            "passed": false,
+            "reasoning": "The output contains 'a pretty significant sign of how infrastructure thinking is shifting' and 'scalability isn't optional anymore,' both unsupported significance claims."
+          },
+          {
+            "id": "hum-4-no-causal-overreach",
+            "text": "The output reports the survey result without claiming that the survey proves necessity, causes adoption, predicts a trend, or generalizes beyond the 42-team sample.",
+            "passed": false,
+            "reasoning": "The output generalizes the survey as evidence of a shift in infrastructure thinking and claims scalability necessity, both exceeding what the data supports."
+          },
+          {
+            "id": "hum-4-copy-only",
+            "text": "The output contains only the rewritten summary, with no change log, editorial rationale, annotations, or explanation of the revision.",
+            "passed": true,
+            "reasoning": "The output contains only the rewritten text with no metadata, changelog, or editorial explanation."
+          }
+        ],
+        "pass_rate": 0.4,
+        "cached": true
       }
     }
   ]

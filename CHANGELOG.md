@@ -6,6 +6,31 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.129] - 2026-07-25
+
+### Changed
+
+- `humanize` 1.0.11 now treats factual fidelity as a hard boundary. Revisions
+  preserve supplied numbers, names, attribution, uncertainty, citations, links,
+  capabilities, and house style; specificity must come from the source, user
+  brief, or verified evidence.
+- AI-writing checks now cover unsupported significance and broader-trend claims,
+  sentence-ending participial interpretation, vague authority, promotional
+  drift, lexical synonym churn, and canned commit or release summaries. New
+  evals exercise those patterns with explicit fabrication traps. The reviewed
+  Haiku benchmark scores 93.8% with the skill and 57.1% without it.
+- Structural signals are contextual rather than absolute bans. Genuine
+  three-part facts remain intact, short paragraph endings no longer trigger
+  word-count padding, and em-dash handling follows the document's house style.
+
+### Fixed
+
+- Removed examples and replacement advice that invented metrics, product
+  behavior, meetings, deadlines, or customer outcomes while attempting to make
+  prose sound more specific.
+- Reconciled contradictory guidance for `This matters because`, triads,
+  paragraph endings, and em-dash spacing.
+
 ## [1.1.128] - 2026-07-25
 
 ### Added

@@ -1,195 +1,217 @@
 ---
 name: humanize
-version: 1.0.10
+version: 1.0.11
 description: >-
-  Strip AI writing patterns from any prose a human will read — emails, docs, reports, posts,
-  commit messages. Apply automatically before delivering a draft, and on "humanize", "make this
-  sound less AI", "de-AI this", "this sounds like ChatGPT", or "edit this".
+  This skill should be used for human-facing prose — emails, docs, reports, posts, release notes,
+  and commit messages — when the user asks to "humanize", "make this sound less AI", "de-AI
+  this", "this sounds like ChatGPT", or "edit this". Preserve facts, evidence, citations, house
+  style, and intended meaning while removing clustered AI-writing patterns.
 user-invocable: false
 ---
 
 # Humanize
 
-Strip AI writing patterns from prose. Follow these three rules exactly.
+Edit prose until it reads as specific, grounded human writing. Treat the
+patterns below as editorial signals, not proof that a person or model wrote the
+text. Pattern density and context matter more than any single word or sentence.
 
-## The Three Rules
+## Preserve truth before style
 
-### Rule 1: No setup-and-dismiss (antithesis), in any form
+Keep every supported claim inside the source material or user brief's factual
+boundary.
 
-The single most recognizable AI tell is the antithesis move: name something to dismiss or diminish, then pivot to the "real" claim. **Banning a phrase does not work** — block "not X, it's Y" and the model swaps in "rather than X, Y" or "while X, Y" and makes the exact same move. So ban the MOVE, not the words. Before writing any sentence, ask: **does it prop up the real point by first knocking down an alternative?** If so, delete the dismissed half and state the claim alone.
+- Preserve names, dates, numbers, quotations, examples, capabilities,
+  attribution, citations, links, uncertainty, and causal direction.
+- Never invent a statistic, customer result, source, quotation, anecdote, or
+  product behavior to make a sentence sound concrete.
+- Draw specificity from supplied text, verified tools, or facts the user
+  provided. Keep the claim general when the evidence is general.
+- Treat "these are the only supplied facts" and equivalent instructions as a
+  closed-world constraint. Headings may classify those facts, but body copy
+  must not infer a mechanism, benefit, outcome, audience, or implementation.
+  Restate the facts and stop.
+- Preserve necessary qualifications. Remove a hedge only when the source
+  supports the stronger claim.
+- Preserve house style when it is explicit, including spelling, typography,
+  heading conventions, and technical terminology.
 
-The move wears many costumes. Every one of these is the same pattern:
+Run this check again after the style pass. A polished factual change is still a
+failed edit.
 
-**With negation (easy to catch):**
-- "not X — it's Y" / "isn't X, it's Y" / "It's not about X, it's about Y"
-- "not just X but Y" / "not only X but also Y" / "more than just X"
-- "no X, no Y, just Z" / "stop X, start Y"
-- "Not X. Y." (dramatic fragment pair)
+## Core editorial checks
 
-**Without any "not" (the disguised forms — these slip past a keyword search and are how the pattern usually escapes):**
-- "rather than X, Y" / "X rather than Y"
-- "instead of X, Y"
-- "less X, more Y"
-- "While X is true, Y…" / "X may be Z, but Y…" (concessive setup that exists only to pivot)
-- "Where most/others do X, we do Y"
-- "forget X — Y" / "say goodbye to X" / "no more X"
-- "gone are the days of X"
-- "X? Think again." / "beyond just X"
+### 1. Cut staged contrast
 
-FIX: Say Y. Drop the comparison entirely. If the positive claim is clear, the contrast adds nothing but a machine fingerprint.
+Remove contrast that exists only to inflate the preferred claim. Check the move
+by meaning; phrase bans miss most variants.
 
-**Frequency is the dead giveaway.** A single antithesis can read as human — people use the move occasionally. Corpus analysis of 16,000 articles found the 2026 signature is *burstiness*: the same piece using "not X, it's Y" (or a disguised cousin) three or more times. If you must keep one, keep exactly one. Aim for zero.
+- "not X — it's Y" / "not just X but Y" / "no X, just Y"
+- "rather than X, Y" / "instead of X, Y" / "less X, more Y"
+- "while X is true, Y" when the concession has no job beyond the pivot
+- "where others do X, we do Y" / "forget X" / "gone are the days"
 
-**The one exception: a measured correction.** When the dismissed half is a belief the reader actually holds and the pivot is evidence, the move is reporting a result. "Everybody assumes it's the skills. Measured, agents were 54% of the cost." Nothing is knocked down there but a real expectation, and the correction is the finding. The test is whether the first half would survive as a standalone claim someone would defend. If it exists only to make the second half sound bigger, it is the AI tell — cut it. Keep at most one per piece, and only where you have the number.
+State the positive claim alone when that preserves the meaning. Keep contrast
+when it reports a real correction, defines a boundary, or distinguishes two
+facts the reader needs. Repeated staged contrasts are the tell; an occasional
+necessary contrast is ordinary prose.
+
+Do not add a staged contrast to give a fresh draft a slogan or closing beat.
+Constructions such as "X shouldn't require Y—it requires Z" still make the same
+decorative move even without the word "not."
 
 Examples:
 - BAD: "Uptime isn't optional — it's the foundation." → GOOD: "Uptime is the foundation."
 - BAD: "Rather than bolting analytics on later, we build it in from day one." → GOOD: "Analytics is built in from day one."
 - BAD: "Where most CLIs make you memorize flags, ours guesses intent." → GOOD: "The CLI infers intent from plain commands."
-- BAD: "Less configuring, more shipping." → GOOD: "Setup takes two minutes."
-- BAD: "Gone are the days of manual deploys." → GOOD: "Every push deploys automatically."
-- BAD: "We're building tools that make agents behave like thoughtful collaborators, not just code generators." → GOOD: "We're building tools that make agents behave like thoughtful collaborators."
-- BAD: "Not prompting. Enforcement." → GOOD: Describe what it does. The reader will get it.
-- BAD: "Not features. Outcomes." → GOOD: Drop it entirely. If your previous sentence was clear, this adds nothing.
 
-### Rule 2: Never list exactly three parallel items
+### 2. Break repeated symmetry
 
-When you write a list, count the items. If there are exactly 3 items in parallel structure, either remove one (making it 2) or add one (making it 4).
+Keep a three-item list when the subject genuinely has three items. Rewrite when
+triads, parallel clauses, or identically shaped sections recur as a composition
+habit, especially in slogans and conclusions.
 
 - BAD: "fast, reliable, and secure" (3 items)
-- GOOD: "fast and reliable" (2 items)
-- GOOD: "fast, reliable, secure, and well-documented" (4 items)
-- BAD: "We build X, we test Y, and we ship Z" (3 parallel clauses)
-- GOOD: "We build X and ship Z" (2 clauses)
+- GOOD when all three are facts: "The API supports CSV, JSON, and XML."
+- GOOD after removing filler: "fast and reliable"
+- BAD: four company values with the same heading-plus-two-sentences template
+- BAD: three consecutive paragraphs ending in parallel benefit summaries
 
-This applies everywhere: adjective lists, verb lists, noun lists, parallel sentences.
+Vary sentence shape because the content varies. Do not add a fourth item or
+delete a required third item merely to change the count.
 
-### Rule 3: No indirect repetition
+### 3. Remove indirect repetition
 
-Never restate the same point in different words for emphasis. Say it once clearly and move on. If the first sentence already conveys the meaning, the restating sentence is dead weight.
+Delete a sentence that only restates the preceding sentence, section, or
+conclusion. Keep repetition required for navigation, safety, or deliberate
+reference documentation.
 
 - BAD: "When the clock runs out, the rule deletes itself. No cleanup." → "No cleanup" just restates "deletes itself."
 - GOOD: "When the timer expires, the rule deletes itself."
 - BAD: "It's completely free. Zero cost to you." → "Zero cost" restates "completely free."
 - GOOD: "It's free."
-- BAD: "The data is encrypted at rest. Your information stays protected." → second sentence restates the first.
-- GOOD: "The data is encrypted at rest."
 
-### Rule 4: Only one short paragraph ending per piece
+### 4. Vary rhythm without quotas
 
-After writing, check the last sentence of every paragraph. Count its words. At most ONE paragraph may end with a sentence under 15 words. All other paragraphs must end with a sentence of 20+ words that includes a specific detail, number, or example.
+Read paragraph endings as a sequence. Rewrite only when several paragraphs end
+with interchangeable punchlines or when sentence lengths become metronomic.
+Allow short endings where they fit. Never lengthen a sentence with invented
+detail to satisfy a word count.
 
-- BAD: Para 1 ends "That's the real advantage." (5 words), Para 2 ends "It compounds." (2 words), Para 3 ends "Start early." (2 words)
-- GOOD: Para 1 ends "That's the real advantage." (5 words), Para 2 ends "Teams that invested in CI early shipped 40% more features in their second year than teams that bolted it on later." (22 words), Para 3 ends with a 25-word sentence containing a specific data point or example.
+- Cut generic closers such as "That's the difference," "It compounds," and
+  "This changes everything."
+- End on a supplied fact, a consequence already supported by the source, a
+  useful transition, or the natural end of the thought.
+- Break stacked fragments and repeated sentence lengths.
 
-## Modeling a Named Writer
+For the full pattern catalog, read
+[references/structures.md](references/structures.md) when editing long-form,
+marketing, heavily formatted prose, or operational summaries.
 
-Rules 1–4 remove the machine fingerprint. They do not supply a shape. A draft
-can pass every check and still read as a list of true statements in the order
-they happened, which is the most common failure of a report-style piece.
+## Content-level checks
 
-The fix is to pick a writer whose work you know well and model them — but model
-the **structure**, never the sentences. Their organizing moves transfer. Their
-sentence-level habits are what Rules 1–4 exist to remove, and importing them
-undoes the pass. See [references/style-modeling.md](references/style-modeling.md)
-for the full procedure and the measured evidence.
+### Remove unsupported significance
 
-**Take these four:**
+Delete claims that a routine fact "marks a shift," "reflects a broader trend,"
+"leaves an enduring legacy," or "underscores the importance" of the subject
+unless the source supplies that analysis. Report the fact and its documented
+consequence.
 
-1. **A named concept.** One phrase for the thing the piece is about, introduced
-   early and reused. The reader leaves with a handle.
-2. **Headings that make claims.** "First, find out who is actually eating" tells
-   the reader what they will learn; "Agents were 54% of the cost" only records a
-   fact. Every heading should be a claim or an instruction.
-3. **Argument order over chronology.** Sequence sections by what the reader needs
-   next, which is rarely the order the work happened in.
-4. **A reason to read past your numbers.** State what transfers to the reader's
-   own situation, in their terms, before the detail starts.
+Check sentence-ending participial tails:
 
-**Leave these:** the voice tics. Most beloved technical writers lean hard on
-antithesis, tricolons, and punchy short paragraph endings — those are engines of
-their prose and violations of Rules 1, 2, and 4. Also leave invented color: a
-modeled voice will offer you atmospheric detail ("the sort of thing you find at
-2am") that you cannot substantiate. Cut it.
+- "..., highlighting..."
+- "..., underscoring..."
+- "..., reflecting..."
+- "..., contributing to..."
 
-**Always run the full revision pass on the modeled draft.** Measured on one
-3,300-word technical post, a first draft written to a named writer's voice more
-than doubled its antithesis count and pushed short paragraph endings from 22% of
-paragraphs to 36%. The structural gains survived the cleanup. The tics had to go.
+Stop at the fact when the tail adds interpretation without evidence.
 
-## Additional Guidelines
+### Name the source of a claim
 
-- **Cut filler openers.** Start with the actual point, not "In today's rapidly evolving..." See [references/phrases.md](references/phrases.md).
-- **Replace AI vocabulary.** Avoid "nice-to-have," "table stakes," "compound returns," "first-class," "highest-leverage," "force multiplier," "false economy." See [references/words.md](references/words.md).
-- **Use plain copulas.** AI dodges "is/are/has" with inflated verbs to sound momentous: "serves as," "stands as," "represents," "boasts," "features," "marks a shift," "is a testament to." Write "is" or "has." "The API serves as the backbone of the platform" → "The API runs every request."
-- **Kill false ranges.** "from startups to enterprises," "whether you're a solo dev or a Fortune 500," "from X to Y" — these fake comprehensiveness while saying nothing. Name the actual audience or cut the range.
-- **Trust the reader.** State the point and move on.
+Remove invented consensus: "experts argue," "observers note," "industry reports
+show," "widely regarded," or "several sources" when the supplied material does
+not identify those authorities. Attribute a claim to the actual source and do
+not turn one opinion into a field-wide view.
 
-## Mandatory Revision Pass
+### Remove promotional drift
 
-After writing any prose, you must do a concrete revision pass before delivering. This is not optional — the first draft will contain AI patterns no matter how carefully you write it. Do these checks mechanically:
+Replace praise with observable facts. Catch press-release language, generic
+commitment claims, travel-guide description, and claims of excellence or
+importance. Retain evaluative language when it is quoted or attributed.
 
-1. **Hunt the antithesis move by meaning, not just by the word "not."** First scan the literal tokens: "not", "n't", "isn't", "aren't", "stop", "no ". Then scan the disguised tokens that do the same job with no "not" in sight: "rather than", "instead of", "less … more", "while ", "where ", "forget", "gone are the days", "no more", "beyond just". For every hit, ask: is an alternative being set up only to be knocked down? If so, delete the dismissed half and keep the bare positive claim. "Observability isn't an afterthought" and "Rather than treat observability as an afterthought, we build it in" both collapse to the same fix: "Observability is built in from the start."
-2. **Count every parallel list.** If you find exactly three items in parallel structure (X, Y, and Z), either drop one item or add a fourth.
-3. **Check for indirect repetition.** Read each pair of consecutive sentences. Does the second just restate the first in different words? Delete the restating sentence.
-4. **Read the last sentence of each paragraph.** Count the words. If more than one ending is under 15 words, rewrite the short ones to be 20+ words with specific details.
-5. **Check for "nice-to-have", "table stakes", "false economy"** and the other AI vocabulary. Replace with plain language.
-6. **Never denigrate the subject.** Search for "rot", "cruft", "bloat", "mess", "sloppy", "garbage", "decay", "neglect". Writing about your own product, describe what changed and what it does now; do not grade the past. This applies hardest to headings, where a defect framing lands before any result does.
-7. **Never claim nobody knows it.** Search for "nobody", "no one", "everyone misses", "most people don't", "few developers", "hidden", "undocumented", "underrated", "overlooked", "flying under the radar". You cannot survey what everyone knows, and the claim flatters the writer instead of informing the reader. State the finding; where a specific absence is checkable, name that absence instead — "the public changelog never mentions it" rather than "nobody is talking about it". Resisting the urge to impress reads as more confident than trying to convince.
-8. **If you modeled a named writer, check their tics hardest.** A modeled voice reproduces antithesis, tricolons, and short paragraph endings without being asked. Re-run checks 1, 2, and 4 on that draft specifically, and cut any atmospheric detail the voice supplied that you cannot substantiate.
-9. **Search for "worth".** It grades something without committing to a claim — "worth noting", "worth doing", "worth avoiding", "worth migrating to" — and is one of the strongest single-word AI tells. Replace every hit with the consequence itself. In a heading it is always wrong: "The Mistake Worth Publishing" should say what the section covers.
+### Keep stable names
 
-Do this revision pass silently — don't mention it in your output. Just deliver the cleaned text.
+Reuse the correct noun when repetition improves clarity. Do not cycle through
+synonyms such as "platform," "solution," "offering," and "system" merely to
+avoid repeating a product name.
 
-## Quick Checks
+## Operational summaries
 
-Before delivering revised prose:
+For commit messages, release notes, edit summaries, and status updates, name
+what changed. Remove canned assurances such as:
 
-- Search for "not" / "n't" + contrast → rewrite as direct positive claim
-- Search for the no-"not" antithesis tokens — "rather than", "instead of", "less…more", "while", "where", "forget", "gone are the days" → if an alternative is set up only to be dismissed, cut it and keep the bare claim
-- Search for inflated copulas — "serves as", "stands as", "boasts", "is a testament to" → replace with "is" / "has"
-- Count every list: exactly 3 items → change to 2 or 4
-- Consecutive sentences saying the same thing differently → keep only the better one
-- Last sentence of each paragraph: are they all short? → lengthen all but one
-- "Stop X, start Y" → just say Y
-- Three sentences in a row the same length? Break one up.
-- Does the first sentence actually say anything? If not, delete it.
+- "improved clarity and readability"
+- "ensured compliance"
+- "preserved the original meaning"
+- "added sourced content"
+- "maintained a neutral tone"
 
-## Scoring
+Describe the concrete edit: "Remove duplicate setup steps," "Correct the timeout
+default," or "Document the two supported authentication flows." Mention
+preservation only when it is itself the change being reviewed.
 
-After editing, rate the text 1–10 on each dimension:
+## Modeling a named writer
 
-| Dimension | Question to ask |
-|-----------|-----------------|
-| Directness | Does it state facts, or announce them? |
-| Rhythm | Are sentences varied in length and structure? |
-| Trust | Does it respect reader intelligence? |
-| Voice | Does it sound like a person wrote it? |
-| Density | Is anything cuttable without losing meaning? |
+Model structure, never sentences. Extract a named concept, claim-shaped
+headings, argument order, and a reason for the reader to continue. Leave the
+writer's antithesis, triads, punchlines, and invented color behind.
 
-Below 35/50: revise again.
+Read [references/style-modeling.md](references/style-modeling.md) before using a
+named writer on long-form work. Skip this step for short copy, reference docs,
+changelogs, and established house voices.
 
-## What Good Looks Like
+## Mandatory revision pass
 
-**AI version (bad):**
-> **Speed.** We don't just build fast infrastructure — we build infrastructure that's fast, reliable, and scalable. Your transactions process in milliseconds, not minutes. That's the difference.
+Run this pass silently before delivering human-facing prose. When the user asks
+for finished copy, return only that copy unless they also ask for rationale,
+annotations, or an edit summary.
 
-**Humanized version (good):**
-> **Speed.** Transactions process in under 200ms. We cache settlement data locally so round-trips to the clearinghouse don't block your checkout flow. Most integrations go live in a day or two.
+1. Compare the revision with the source. Restore any changed fact, uncertainty,
+   attribution, citation, link, or unsupported new detail.
+2. Scan staged contrasts by meaning, including disguised forms. Remove
+   comparisons that only prop up the preferred claim.
+3. Scan repeated triads, parallel clauses, identical section templates, and
+   listicle structure. Keep enumerations required by the facts.
+4. Delete indirect repetition, throat-clearing, summary restatement, and
+   dramatic fragments.
+5. Remove unsupported significance, broader-trend claims, participial tails,
+   invented consensus, and promotional praise.
+6. Replace inflated copulas and dense vocabulary clusters with plain language.
+   Retain exact technical uses and necessary hedges.
+7. Check stable naming, false ranges, denigration, "nobody knows" claims, and
+   hedged evaluation such as "worth noting."
+8. Read paragraph endings and sentence lengths as sequences. Break repetitive
+   rhythm without enforcing word counts.
+9. Remove assistant residue: sycophantic openers, collaborative closers,
+   decorative emoji, mechanical boldface, canned headings, and cutoff
+   disclaimers. Preserve explicit house style.
+10. For operational summaries, replace process assurances with the concrete
+    change.
 
-Notice what changed: the binary contrast ("don't just X — we Y") is gone, the tricolon ("fast, reliable, and scalable") became specific claims, the punchline ending ("That's the difference") became a practical detail, and the paragraph ends with a long informational sentence rather than a mic-drop.
+## Stop condition
 
-Good humanized prose:
-- States claims directly without "not X — it's Y" setup
-- Uses two items in lists, not three
-- Ends paragraphs with specific details, not dramatic summaries
-- Uses specific numbers instead of general superlatives
-- Varies sentence structure between sections
+Deliver when the revision preserves the source, removes repeated formulaic
+patterns, and reads naturally for its genre. Do not keep editing until every
+possible indicator disappears; that produces another synthetic house style.
 
 ## Additional Resources
 
-- **[references/words.md](references/words.md)** — AI-overused vocabulary by part of speech
-- **[references/phrases.md](references/phrases.md)** — Throat-clearing openers, filler phrases, jargon substitutions
-- **[references/structures.md](references/structures.md)** — Formulaic sentence and paragraph patterns to avoid
-- **[references/examples.md](references/examples.md)** — Before/after transformations with annotations
-- **[references/style-modeling.md](references/style-modeling.md)** — Modeling a named writer's structure on long-form work, and the tics to leave behind
+- **[references/words.md](references/words.md)** — Vocabulary clusters to review
+  in context, including inflated copulas and unsupported novelty claims
+- **[references/phrases.md](references/phrases.md)** — Filler openers, emphasis
+  crutches, jargon, and meta-commentary
+- **[references/structures.md](references/structures.md)** — Detailed prose,
+  formatting, attribution, promotional, and operational-summary patterns
+- **[references/examples.md](references/examples.md)** — Factual-boundary-safe
+  before/after transformations
+- **[references/style-modeling.md](references/style-modeling.md)** — Structural
+  modeling for long-form work

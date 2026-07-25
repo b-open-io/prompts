@@ -213,7 +213,7 @@ intentional.
 | `cli-demo-gif` | Generate CLI demo GIFs using vhs (Charmbracelet) |
 | `generative-ui` | Guardrailed JSON Render interfaces with flat specs, small catalogs, deterministic directives, and text fallbacks |
 | `html-to-pdf` | Design print-ready collateral and render it through a Playwright PDF pipeline |
-| `humanize` | Remove AI writing patterns and restore natural voice |
+| `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, unsupported significance, vague attribution, promotional drift, and canned change summaries |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
 | `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs a default panel of named roster-agent advocates (with avatars) → cross-examination → a judging bench → the CEO's holistic final call, humanizes every voice, and ends with selectable option cards + a copy-response button that pastes a version-stamped reply back to the agent |

@@ -1,6 +1,20 @@
-# Words to Avoid
+# Words to Review
 
-Words that appear far more often in AI-generated text than in human writing. Replace with concrete, specific alternatives or cut entirely.
+These words appear unusually often in some generations and become useful
+signals when several cluster in a passage. They are not a universal ban list.
+Keep an exact technical use, quotation, or established house term. Replace a
+word when it inflates, obscures, or generalizes the supplied meaning.
+
+Never introduce a number, example, source, or stronger claim while making a
+replacement. Specificity must come from the source material or verified
+evidence.
+
+## Contents
+
+- Verbs, adjectives, adverbs, and nouns
+- AI-favored business and marketing phrases
+- Unsupported novelty and nobody-knows claims
+- Hedged evaluation and empty significance
 
 ## Verbs
 
@@ -64,7 +78,7 @@ These modify nouns without adding information.
 - ever-evolving (almost never adds meaning)
 - game-changing (marketing speak)
 - cutting-edge (says nothing specific)
-- invaluable (vague — quantify the value)
+- invaluable (vague — state the supported benefit)
 - meticulous (show the care, don't announce it)
 - nuanced (often precedes something obvious)
 - groundbreaking (almost never is)
@@ -79,9 +93,9 @@ These modify nouns without adding information.
 These inflate sentences without adding information. Cut or replace with precise language.
 
 - ultimately (filler in most contexts)
-- significantly (how much? say the number)
-- increasingly (vague trend language — give the data)
-- arguably (hedge that signals uncertainty — either claim it or don't)
+- significantly (use a supplied measurement, or state the supported direction)
+- increasingly (retain only when the source establishes the trend)
+- arguably (retain when the evidence requires an interpretive hedge)
 - undoubtedly (overclaiming)
 - inherently (often just "is")
 - crucially (announcing importance instead of demonstrating it)
@@ -90,7 +104,7 @@ These inflate sentences without adding information. Cut or replace with precise 
 - starkly (overdramatic)
 - seamlessly (see adjective list)
 - profoundly (overwrought — be specific)
-- rapidly (how fast? give a timeframe)
+- rapidly (use a supplied timeframe when available)
 - simply (condescending when used to explain something complex)
 - fundamentally (often just "is")
 - genuinely (often signals the opposite)
@@ -102,13 +116,13 @@ These inflate sentences without adding information. Cut or replace with precise 
 Metaphor-nouns that say nothing about the actual subject.
 
 - landscape ("the competitive landscape" → "the competition")
-- realm (never use)
+- realm (often vague — name the domain)
 - tapestry ("rich tapestry of" → be specific)
 - paradigm (almost always replaceable with "approach" or "model")
-- synergy (never use)
+- synergy (state the actual collaboration or dependency)
 - testament ("a testament to" → just say it proves or shows)
 - cornerstone (cliche)
-- plethora (say "many" or give a number)
+- plethora (say "many" or use a supplied count)
 - myriad (same as plethora)
 - ecosystem (overused tech/business word — be specific)
 - roadmap (usually fine in product contexts, overused elsewhere)
@@ -134,10 +148,11 @@ notices the self-congratulation before they notice the finding.
 - "most people don't realize" / "few developers know"
 - "criminally overlooked", "flying under the radar"
 
-FIX: state what you found and let its value be self-evident. "The public
+FIX: state what the evidence shows and let its value be self-evident. "The public
 changelog runs 5,248 lines and never mentions `plugin eval`" is checkable and
 carries the same weight as "nobody is talking about it" — with none of the
-posturing. Where a specific, verifiable absence exists, name the absence.
+posturing. Use that example only when those figures were actually checked.
+Where a specific, verifiable absence exists, name the absence.
 
 Humility is a human trait, and it reads as more confident than trying to
 convince. A writer sure of their material states it plainly; the urge to tell
@@ -179,7 +194,7 @@ for it constantly. Every use below is cuttable.
 - it's worth noting that (note it, or delete it)
 - worth mentioning (mention it)
 - worth considering (say what you'd do)
-- worth doing / worth having / worth keeping (say why, with a number or reason)
+- worth doing / worth having / worth keeping (state the documented consequence)
 - worth avoiding (say what breaks if you don't)
 - worth migrating to (say what it gives you)
 - a change worth making (make it, or state the effect)

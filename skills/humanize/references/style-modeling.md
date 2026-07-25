@@ -1,6 +1,6 @@
 # Modeling a Named Writer
 
-A draft can satisfy every rule in this skill and still be dull. Rules 1–4 are
+A draft can satisfy every check in this skill and still be dull. The checks are
 subtractive: they remove what marks prose as machine-written. Nothing in them
 supplies a shape, so a piece that passes cleanly often reads as accurate
 statements arranged in the order the work happened.
@@ -32,8 +32,9 @@ named concept. Most of the gain is here, before a sentence is touched.
 
 **4. Draft in the voice.** Let it be too much. The next step fixes it.
 
-**5. Run the full mandatory revision pass on the result.** Non-negotiable. See
-below for why.
+**5. Run the full mandatory revision pass on the result.** Restore any fact,
+qualification, or attribution the voice changed, then remove the repeated
+sentence-level tics described below.
 
 ## What transfers
 
@@ -56,10 +57,10 @@ below for why.
 
 **The sentence-level tics.** This is the trap, and it is not incidental — the
 moves that make a beloved technical writer recognizable at the sentence level are
-largely the moves Rules 1, 2, and 4 exist to remove. Antithesis is the engine of
-Spolsky's contrarian energy. Tricolons are everywhere in essayistic prose. Punchy
-sub-15-word paragraph endings are the rhythm of a confident columnist. Writing in
-their voice will reproduce all three without being asked.
+largely the moves the core checks target. Antithesis is the engine of Spolsky's
+contrarian energy. Tricolons are everywhere in essayistic prose. Punchy
+paragraph endings are the rhythm of a confident columnist. Writing in their
+voice will reproduce all three without being asked.
 
 **Invented color.** A modeled voice offers atmospheric detail for free: the 2am
 debugging session, the meeting where somebody said the thing, the colleague who
@@ -82,10 +83,10 @@ compared against the same content in its own voice:
 | Antithesis constructions | 4 | 9 |
 | Paragraphs ending under 15 words | 16 / 72 (22%) | 22 / 61 (36%) |
 
-After the mandatory revision pass brought the modeled draft back under both
-limits, every structural gain remained: the named concept, the claim-shaped
-headings, the argument ordering, and the shorter length. Nothing of value was
-carried by the tics.
+After the mandatory revision pass removed the repeated patterns, every
+structural gain remained: the named concept, the claim-shaped headings, the
+argument ordering, and the shorter length. Nothing of value was carried by the
+tics.
 
 That is the whole finding. Model the structure. Strip the voice. Keep both.
 

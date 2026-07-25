@@ -1,6 +1,16 @@
-# Structural Patterns to Avoid
+# Structural Patterns to Review
 
-These are recognizable sentence and paragraph patterns that AI models generate repeatedly. They're not wrong, exactly — but they're predictable in a way that signals machine authorship.
+These sentence and paragraph patterns become conspicuous when they cluster.
+Treat them as revision signals, not proof of authorship. Preserve a pattern when
+the facts, genre, quotation, or house style requires it.
+
+## Contents
+
+- Contrast, symmetry, repetition, and conclusions
+- Sentence rhythm, formatting, and paragraph endings
+- Unsupported significance, attribution, and promotion
+- Lexical churn, operational summaries, and invented labels
+- Denigration, false ranges, and vague copula substitutions
 
 ## Binary Contrasts
 
@@ -18,6 +28,7 @@ Creating a false "not X, but Y" drama when you could just say Y. This is the mos
 | "Not X. But Y." | "Not perfection. But consistency." | Mechanical contrast |
 | "Not only X but also Y" | "Not only fast but also secure." | Padded parallelism |
 | "stops being X and starts being Y" | "stops being work and starts being art" | False transformation arc |
+| "X shouldn't require Y—it requires Z." | "Security shouldn't require trust—it requires proof." | Negated slogan followed by its preferred twin |
 
 ### Disguised — no "not" anywhere (these are how the pattern escapes review)
 
@@ -32,7 +43,9 @@ Creating a false "not X, but Y" drama when you could just say Y. This is the mos
 | "gone are the days of X" | "Gone are the days of brittle cron jobs." | Nostalgia-contrast cliche |
 | "beyond just X" / "more than just X" | "Analytics beyond just pageviews." | Inflation by negation |
 
-**Fix:** Say Y. "The problem is clarity." "We coach." "Accuracy is what we optimize for." State the claim directly and drop the discarded half — it carries no information, only fingerprint.
+**Fix:** When the contrast is decorative, say Y. "The problem is clarity." "We
+coach." "Accuracy is what we optimize for." Drop the discarded half when it adds
+no fact or necessary boundary.
 
 ## Dramatic Fragmentation
 
@@ -65,7 +78,9 @@ Announcing insight before delivering it.
 
 ## Tricolon Overuse
 
-Three-item lists feel structured and complete — so AI defaults to them constantly.
+Three-item lists feel structured and complete, so models reach for them often.
+A real three-part subject still needs three items; the tell is repeated or
+decorative triads.
 
 **AI default:** "Speed, quality, and cost."
 **Alternative:** "Speed and cost." (Two items are often enough.)
@@ -79,7 +94,8 @@ Watch for:
 - Three-item problem/cause/solution structures
 - Three rhetorical questions in sequence
 
-**Fix:** Vary list length. Use two items. Use four. Use one with specifics.
+**Fix:** Remove filler items and vary structure across the piece. Never add a
+fourth item or delete a required third item solely to change the count.
 
 ## Concluding Summary Paragraphs
 
@@ -106,15 +122,17 @@ Signs:
 
 ## Paragraph-Ending Punchlines
 
-AI text has a distinctive habit: every paragraph ends with a short, dramatic summary sentence. Read three paragraphs of AI prose and you'll see it — each one closes with a punchy one-liner that "lands the point." Real writing doesn't do this. Real paragraphs end at different lengths and in different ways.
+AI text often gives several paragraphs the same short, dramatic closing beat.
+The problem is the repeated mic-drop pattern, not a short sentence by itself.
 
 Signs:
-- Every paragraph's last sentence is under 15 words
 - Last sentences are declarative statements that summarize the paragraph
 - The pattern repeats across 3+ consecutive paragraphs
 - Endings feel like mic-drops: "That's the real advantage." / "And it compounds." / "This is what matters."
 
-**Fix:** Make paragraph endings vary. One might end with a long sentence (20+ words). One might end mid-thought, flowing into the next paragraph. One might end with a specific example or data point rather than an abstract claim. At most one paragraph in a piece should end with a short punchy line.
+**Fix:** End where each thought naturally ends. Use a supplied fact or documented
+consequence when one exists. Never add data or pad a sentence to satisfy a word
+count.
 
 ## Parallel Structure in Conclusions
 
@@ -135,7 +153,7 @@ Signs:
 | Three sentences same length in a row | Metronomic, robotic feel | Break one up or combine two |
 | Every paragraph ends with short punchy sentence | Predictable beat | Vary paragraph endings |
 | Em-dash before a reveal — [word] | Telegraphed payoff | Use period or comma, or rephrase |
-| Unspaced em-dash: "word—word" | AI default; humans usually write "word — word" with spaces, and use 2–3 per piece, not 20+ | Space them, and cut most |
+| Repeated spaced em dashes: "word — word" | Common in model output when used as a dramatic pause; spacing conventions vary by house style | Preserve the required typography and cut dashes that only manufacture emphasis |
 | "word — adj, adj, adj — word" cluster | Em-dash bracketing a tricolon = double tell | Rewrite as a plain sentence |
 | Paragraphs starting with "So," | Conversational filler | Start with content |
 | Sentences starting with "Look," | Confrontational filler | Remove and state the point |
@@ -152,7 +170,9 @@ Words that claim universal truth where none exists.
 - everything, nothing (not true)
 - all, none (not true)
 
-**Fix:** Be specific. "Most teams" not "every team." "Rarely" not "never."
+**Fix:** State the checked scope. Use "three of the four teams" when that is the
+evidence; do not replace one unsupported universal with an unsupported
+majority.
 
 ## Intensifier Stack
 
@@ -180,7 +200,8 @@ A strong current tell (flagged in Wikipedia's "Signs of AI writing"): models dod
 
 ## Appended Participial Tail
 
-AI ends a sentence, then bolts on an "-ing" clause to simulate analytical depth. The tail almost always restates significance instead of adding a fact.
+AI ends a sentence, then bolts on an "-ing" clause to simulate analytical depth.
+The tail often restates significance instead of adding a fact.
 
 - "The team shipped the redesign, highlighting their focus on usability."
 - "Adoption doubled, underscoring the demand for the feature."
@@ -190,6 +211,77 @@ AI ends a sentence, then bolts on an "-ing" clause to simulate analytical depth.
 **Tell words in the tail:** highlighting, underscoring, reflecting, contributing to, signaling, demonstrating, emphasizing, marking.
 
 **Fix:** Stop at the fact, or make the tail carry new information. "Adoption doubled in six weeks" beats "Adoption doubled, underscoring the demand."
+
+## Unsupported Significance and Broader Trends
+
+AI prose smooths specific facts into generic claims about importance, legacy,
+and historical change.
+
+- "marks a pivotal shift in the evolving landscape"
+- "underscores its enduring significance"
+- "reflects a broader industry trend"
+- "contributes to the rich history of"
+- "sets the stage for future innovation"
+
+**Fix:** Report the fact and any consequence stated by the source. Delete the
+interpretation when the source does not make it. Do not replace a specific,
+unusual fact with a more flattering general description.
+
+## Vague Authority and Consensus Inflation
+
+Models often manufacture an audience for an opinion or make one source sound
+like a field-wide consensus.
+
+- "experts argue" / "observers note" / "critics say"
+- "industry reports show" / "research suggests"
+- "widely regarded" / "widely interpreted"
+- "several sources" when the text identifies one
+- "such as" before a complete list, implying more examples exist
+
+**Fix:** Name the actual source. Match the size of the attribution to the
+evidence: one reviewer is one reviewer, not "critics." Preserve unattributed
+claims only when they are ordinary facts already supported by the source text.
+
+## Promotional Neutrality Drift
+
+Models can turn neutral material into a press release or travel guide even when
+asked to remove promotion.
+
+- "renowned," "vibrant," "groundbreaking," "exceptional"
+- "demonstrates a commitment to excellence"
+- "maintains a strong digital presence"
+- "nestled in the heart of"
+- generic praise of natural beauty, cultural importance, or customer impact
+
+**Fix:** Replace praise with observable details already present in the source.
+Keep evaluation inside a quotation or attach it to the named reviewer who made
+it.
+
+## Lexical Churn
+
+Repetition penalties can make a model cycle through near-synonyms for the same
+thing: "the platform," "the solution," "the offering," "the system." The
+variation makes reference tracking harder and can imply distinctions that do
+not exist.
+
+**Fix:** Reuse the correct noun. Vary a term only when the meaning changes or
+the house style requires it.
+
+## Canned Change Summaries
+
+Commit messages, release notes, edit summaries, and status updates often expose
+assistant language through vague process assurances.
+
+- "improved clarity, flow, and readability"
+- "ensured compliance with guidelines"
+- "preserved the original meaning"
+- "maintained a neutral tone"
+- "added sourced content and reliable citations"
+- long inventories of everything intentionally left unchanged
+
+**Fix:** Name the concrete edit and its object: "Remove duplicate setup steps,"
+"Correct the timeout default," or "Document both authentication flows."
+Mention preservation only when preserving something is the reviewed behavior.
 
 ## Invented Concept Labels
 

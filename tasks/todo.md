@@ -344,3 +344,47 @@
 - `ui-audio-theme` remains the only UI-sound generator and now explicitly
   covers game menus, HUD feedback, and TV navigation. Its localhost visual
   picker is the default approval interface; `voice-clone` remains separate.
+
+## OPL-3227 — Audit humanize against Wikipedia signs of AI writing
+
+- [x] Read the complete humanize skill, references, evals, benchmark, and provenance metadata.
+- [x] Read the current Wikipedia advice page, including its caveats and non-prose indicators.
+- [x] Map full overlaps, partial overlaps, missing general-prose rules, and intentionally out-of-scope forensic signs.
+- [x] Assess rule conflicts, false-positive risks, structural drift, and missing eval coverage.
+- [x] Deliver the audit without changing the skill.
+- [x] Rewrite the skill and references around factual fidelity and contextual pattern density.
+- [x] Replace unsafe examples and add fabrication-trap evals for the missing categories.
+- [x] Run the focused benchmark and repository release gates.
+- [ ] Patch-bump both plugin manifests, commit reviewed paths, and push master.
+- [ ] Refresh Claude and Codex installs and smoke-test the published release.
+
+### Review
+
+- Core coverage is strong for negative parallelism, rule-of-three lists,
+  copula avoidance, vocabulary clusters, summary repetition, and several
+  assistant-formatting artifacts.
+- High-value gaps are significance inflation, vague attribution, promotional
+  framing, unsupported analytical tails, lexical synonym churn, and canned
+  change-summary language.
+- The current absolute quotas overstate probabilistic indicators and can force
+  awkward prose or invented specificity. Benchmark outputs contain unsupported
+  numbers, making factual fidelity the first required guardrail.
+- The em-dash spacing guidance conflicted with the source article, the skill
+  said "three rules" but defined four, and one good example used a banned phrase.
+- Humanize 1.0.11 makes factual preservation the first and last pass, adds the
+  missing content-level checks, relaxes false-positive-prone absolute bans, and
+  replaces unsafe examples and evals.
+- The ClawNet payload is a valid historical signature for humanize 1.0.2, not a
+  mutable current-version manifest. Other repository skills retain historical
+  signed payloads the same way, so this release leaves the signature intact.
+- The four-case Haiku benchmark scores 93.8% with the skill versus 57.1%
+  baseline. Three cases pass every assertion; the closed-world values case
+  catches one residual definitional inference instead of hiding it.
+- Manifest, documentation, Codex adapter, skill schema, Claude plugin, and 17
+  routing/unit checks pass. The untouched hook suite reports 334 passes and four
+  pre-existing session-context fixture failures that still expect coordinator
+  settings from this plugin after those declarations moved elsewhere.
+- Wikipedia-specific markup, citation-format, category/template, AfC,
+  permissions-gaming, and editor-forensics indicators should stay outside a
+  general prose humanizer, apart from a compact rule that preserves sources,
+  links, and factual claims.

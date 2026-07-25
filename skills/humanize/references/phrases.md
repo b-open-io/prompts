@@ -1,8 +1,18 @@
-# Phrases to Remove
+# Phrases to Review
+
+## Contents
+
+- Throat-clearing openers and filler transitions
+- Emphasis crutches and hollow qualifiers
+- Jargon substitutions and meta-commentary
+- Sycophantic openers and collaborative closers
+- Decorative formatting and cutoff disclaimers
 
 ## Throat-Clearing Openers
 
-These announce content instead of delivering it. Cut them and start with the actual point.
+These announce content instead of delivering it. Cut them when the next
+sentence carries the whole meaning. Preserve a phrase when it performs a real
+function in the genre or house voice.
 
 - "Here's the thing:"
 - "The thing is,"
@@ -34,7 +44,6 @@ These attempt to manufacture weight. They don't add it.
 
 - "Full stop." / "Period."
 - "Let that sink in."
-- "This matters because"
 - "Make no mistake"
 - "Here's why that matters"
 - "And that's important."
@@ -44,6 +53,10 @@ These attempt to manufacture weight. They don't add it.
 - "This is a big deal."
 
 **Fix:** If the content is important, the reader will understand that. Emphasis crutches signal the writer isn't trusting the content.
+
+`This matters because` is useful when the clause after `because` supplies the
+actual consequence. Cut it only when the preceding sentence already states that
+consequence or the phrase merely announces importance.
 
 ## Hollow Qualifiers
 
@@ -62,7 +75,7 @@ Adjective-adverb pairs that inflate without informing.
 
 Replace with plain language.
 
-| Avoid | Use instead |
+| Review | Plain alternative |
 |-------|-------------|
 | Navigate (challenges) | Handle, address, work through |
 | Unpack (analysis) | Explain, examine, break down |
