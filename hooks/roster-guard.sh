@@ -4,7 +4,7 @@
 #
 # When a Task dispatch targets subagent_type "general-purpose" or "Explore",
 # scores the dispatch prompt/description against the AGENT entries in
-# ~/.claude/bopen-tools/router-index.json. Above threshold, emits ONLY
+# ~/.claude/core/router-index.json. Above threshold, emits ONLY
 # additionalContext suggesting the matching roster specialist — no
 # permissionDecision field at all. additionalContext is a standalone
 # PreToolUse output field and does not require a decision; an advisory
@@ -34,7 +34,7 @@ case "$subagent_type" in
   *) exit 0 ;;
 esac
 
-INDEX_PATH="${BOPEN_ROUTER_INDEX:-${HOME}/.claude/bopen-tools/router-index.json}"
+INDEX_PATH="${BOPEN_ROUTER_INDEX:-${HOME}/.claude/core/router-index.json}"
 [[ -f "$INDEX_PATH" ]] || exit 0
 
 task_desc=$(printf '%s' "$input" | jq -r '.tool_input.description // empty' 2>/dev/null || true)

@@ -1315,12 +1315,12 @@
   },
   "manifests": {
     "claude": {
-      "name": "bopen-tools",
+      "name": "core",
       "path": ".claude-plugin/plugin.json",
       "version": "1.1.114"
     },
     "codex": {
-      "name": "bopen-tools",
+      "name": "core",
       "path": ".codex-plugin/plugin.json",
       "version": "1.1.114"
     }
@@ -1682,7 +1682,7 @@
       },
       "claude_implicit": true,
       "codex_implicit": true,
-      "description": "Compare the installed bopen-tools version against GitHub to confirm skill and agent definitions are current. Use at session start, for \"is everything up to date?\", \"check for updates\", \"am I on the latest version?\", or when a skill behaves differently than documented or references features you do not recognize. Completes in under 100ms.",
+      "description": "Compare the installed core version against GitHub to confirm skill and agent definitions are current. Use at session start, for \"is everything up to date?\", \"check for updates\", \"am I on the latest version?\", or when a skill behaves differently than documented or references features you do not recognize. Completes in under 100ms.",
       "description_metrics": {
         "bytes": 338,
         "chars": 338,
@@ -2241,7 +2241,7 @@
       },
       "claude_implicit": false,
       "codex_implicit": true,
-      "description": "This skill should be used when the user says \"deploy a team\", \"spin up agents to work on this\", \"use all our agents\", \"coordinate specialists\", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full bopen-tools specialist roster.",
+      "description": "This skill should be used when the user says \"deploy a team\", \"spin up agents to work on this\", \"use all our agents\", \"coordinate specialists\", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full core specialist roster.",
       "description_metrics": {
         "bytes": 353,
         "chars": 353,
@@ -2714,7 +2714,7 @@
       },
       "claude_implicit": true,
       "codex_implicit": true,
-      "description": "List, enable, or disable individual bopen-tools hooks and check their prerequisites. Use for \"list hooks\", \"enable a hook\", \"disable a hook\", \"hook setup\", \"hooks config\", or a [BOPEN-HOOKS-SETUP] directive. For the full harness view, use setup.",
+      "description": "List, enable, or disable individual core hooks and check their prerequisites. Use for \"list hooks\", \"enable a hook\", \"disable a hook\", \"hook setup\", \"hooks config\", or a [BOPEN-HOOKS-SETUP] directive. For the full harness view, use setup.",
       "description_metrics": {
         "bytes": 245,
         "chars": 245,

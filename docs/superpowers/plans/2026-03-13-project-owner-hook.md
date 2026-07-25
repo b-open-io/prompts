@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** A prompt-based Stop hook in the bopen-tools plugin that catches when the model dismisses errors as "pre-existing" and forces it to take ownership — either fixing them or explicitly asking the user.
+**Goal:** A prompt-based Stop hook in the core plugin that catches when the model dismisses errors as "pre-existing" and forces it to take ownership — either fixing them or explicitly asking the user.
 
 **Architecture:** Single prompt-based Stop hook added to the existing `hooks/hooks.json`. The Claude Code prompt evaluator reviews the assistant's response when it tries to stop. If it detects error dismissal patterns ("pre-existing", "unrelated to our changes", "existed before", etc.), it blocks the stop and injects a system message forcing the model to address the errors. No external scripts, no API calls, no config files — just a well-crafted prompt.
 

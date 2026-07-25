@@ -14,11 +14,11 @@ silently preserve stale skills and hooks even when the source changed.
 After ANY commit that bumps either `.claude-plugin/plugin.json` or
 `.codex-plugin/plugin.json`, push in the same breath —
 `git log origin/master..master` must be empty before the session ends. Then
-install via `CLAUDECODE= claude plugin update bopen-tools@b-open-io` (never
+install via `CLAUDECODE= claude plugin update core@b-open-io` (never
 copy files into ~/.claude manually). Refresh the published Codex marketplace
 with `codex plugin marketplace upgrade` — `marketplace add` does NOT refresh
 an existing snapshot and will silently reinstall the stale version — then
-install with `codex plugin add bopen-tools@b-open-io` and verify the printed
+install with `codex plugin add core@b-open-io` and verify the printed
 "Installed plugin root" version matches the bump. Smoke-test both plugin
 installs in fresh sessions.
 
@@ -28,8 +28,8 @@ flow, runtime behavior, or advertised features must also update `README.md`.
 Run `python3 scripts/check-docs.py` before shipping. Stage explicit reviewed
 paths only so unrelated worktree changes never enter a release.
 
-<!-- SKILL-MAP-START -->STOP. You WILL forget skill names mid-session. Check this map before ANY task.|create/improve/test/benchmark any skill→Skill(skill-creator:skill-creator)|writing SKILL.md→Skill(plugin-dev:skill-development)|writing agent .md→Skill(plugin-dev:agent-development)|writing slash commands→Skill(plugin-dev:command-development)|inject skill/agent map into CLAUDE.md→Skill(bopen-tools:reinforce-skills)|run skill benchmarks, write evals→Skill(bopen-plugin-dev:benchmark-skills)|fan out agents, wave dispatch, batch agents, generate variations, N>5 parallel subagents→Skill(bopen-orchestration:wave-coordinator)|design/build/harden a software factory, AI developer workflow, agentic SDLC, autonomous loop, agentic loop, /loop, /goal, ralph loop, maker-checker, self-iterating agent on a schedule, pick a verification gate, blast radius→Skill(bopen-orchestration:software-factory)|free roam, explore the app, monkey/exploratory testing, surface new bugs, discovery loop, use app like a human→Skill(bopen-review:free-roam-testing)|visual recap, recap this PR/branch/diff, critique this change, code review page, show what changed visually, make PR reviewable, diff-to-HTML review page→Skill(bopen-review:visual-review)|premium session routing implementation to cheaper workers, dispatch to codex/grok, race worker lanes, plan big execute small, model arbitrage, spec-and-dispatch→Skill(bopen-orchestration:coordinator)|cheap executor consulting a premium model, consult the advisor, second opinion from a bigger model, ask codex for advice, set up /advisor→Skill(bopen-orchestration:advisor)|list/enable/disable hooks, hook setup, hooks config, [BOPEN-HOOKS-SETUP] directive→Skill(bopen-tools:hook-manager)<!-- SKILL-MAP-END -->
-<!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|create/edit skills, commands, prompts→Agent(bopen-plugin-dev:prompt-engineer)|agent systems, multi-agent orchestration, design/own an autonomous loop (loop architect point person)→Agent(bopen-orchestration:agent-builder)|docs and READMEs→Agent(bopen-research:documentation-writer)|researching tools and best practices→Agent(bopen-research:researcher)|skill testing, evals, benchmarking→Agent(bopen-review:tester)|who handles X, team roster, routing→Agent(bopen-tools:front-desk)<!-- AGENT-MAP-END -->
+<!-- SKILL-MAP-START -->STOP. You WILL forget skill names mid-session. Check this map before ANY task.|create/improve/test/benchmark any skill→Skill(skill-creator:skill-creator)|writing SKILL.md→Skill(plugin-dev:skill-development)|writing agent .md→Skill(plugin-dev:agent-development)|writing slash commands→Skill(plugin-dev:command-development)|inject skill/agent map into CLAUDE.md→Skill(core:reinforce-skills)|run skill benchmarks, write evals→Skill(plugin-kit:benchmark-skills)|fan out agents, wave dispatch, batch agents, generate variations, N>5 parallel subagents→Skill(orchestra:wave-coordinator)|design/build/harden a software factory, AI developer workflow, agentic SDLC, autonomous loop, agentic loop, /loop, /goal, ralph loop, maker-checker, self-iterating agent on a schedule, pick a verification gate, blast radius→Skill(orchestra:software-factory)|free roam, explore the app, monkey/exploratory testing, surface new bugs, discovery loop, use app like a human→Skill(review:free-roam-testing)|visual recap, recap this PR/branch/diff, critique this change, code review page, show what changed visually, make PR reviewable, diff-to-HTML review page→Skill(review:visual-review)|premium session routing implementation to cheaper workers, dispatch to codex/grok, race worker lanes, plan big execute small, model arbitrage, spec-and-dispatch→Skill(orchestra:coordinator)|cheap executor consulting a premium model, consult the advisor, second opinion from a bigger model, ask codex for advice, set up /advisor→Skill(orchestra:advisor)|list/enable/disable hooks, hook setup, hooks config, [BOPEN-HOOKS-SETUP] directive→Skill(core:hook-manager)<!-- SKILL-MAP-END -->
+<!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|create/edit skills, commands, prompts→Agent(plugin-kit:prompt-engineer)|agent systems, multi-agent orchestration, design/own an autonomous loop (loop architect point person)→Agent(orchestra:agent-builder)|docs and READMEs→Agent(research:documentation-writer)|researching tools and best practices→Agent(research:researcher)|skill testing, evals, benchmarking→Agent(review:tester)|who handles X, team roster, routing→Agent(core:front-desk)<!-- AGENT-MAP-END -->
 
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
@@ -145,7 +145,7 @@ prompts/
 ### Installation
 This plugin is distributed via the Claude Code marketplace:
 ```bash
-/plugin install bopen-tools@b-open-io
+/plugin install core@b-open-io
 ```
 
 ### Root-Level Directories
@@ -248,7 +248,7 @@ Source-of-truth boundaries:
 
 App-specific persistent agents and user-created deployments belong in their
 owning project repositories. Do not add them to `agents/`; every file there is
-auto-discovered as a distributable bopen-tools agent and public catalog member.
+auto-discovered as a distributable core agent and public catalog member.
 
 Important: changing `display_name` changes the expected avatar slug in `bopen-ai` and may require a matching image update in `public/images/agents/`.
 
@@ -295,7 +295,7 @@ bun run scripts/generate.ts "PROMPT" --style pixl --aspect 1:1 \
 
 ### Showing Users Code Changes
 
-When users ask to see what changed, use `Skill(bopen-review:visual-review)` — it turns a PR, branch, commit, or working-tree diff into a self-contained HTML recap page (wireframes, contract summaries, file map, annotated key diffs). For a quick terminal-driven look at a raw diff, `bunx critique --web --open` still works (the CLI remains; only the skill wrapper was retired).
+When users ask to see what changed, use `Skill(review:visual-review)` — it turns a PR, branch, commit, or working-tree diff into a self-contained HTML recap page (wireframes, contract summaries, file map, annotated key diffs). For a quick terminal-driven look at a raw diff, `bunx critique --web --open` still works (the CLI remains; only the skill wrapper was retired).
 
 ### Our Projects (Referenced in Prompts)
 - **BigBlocks**: Bitcoin component library
@@ -308,7 +308,7 @@ When users ask to see what changed, use `Skill(bopen-review:visual-review)` — 
 
 Commands in this repository are automatically distributed via the plugin system. Users install commands by installing the plugin:
 ```bash
-/plugin install bopen-tools@b-open-io
+/plugin install core@b-open-io
 ```
 
 ## InitPRISM Integration

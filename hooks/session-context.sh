@@ -12,6 +12,31 @@ if declare -f hook_enabled >/dev/null; then
   hook_enabled "session-context" || exit 0
 fi
 
+# The plugin's state directory is named after the plugin, which was renamed from
+# bopen-tools to core. Carry existing state across once — hooks config, router
+# state, and the skill-activity log all live there, and leaving them behind
+# silently resets the router and loses activity history. Moves only entries the
+# new directory does not already have, then drops the old directory when empty.
+_bopen_legacy_state="${HOME}/.claude/bopen-tools"
+_bopen_state="${HOME}/.claude/core"
+if [[ -d "$_bopen_legacy_state" ]]; then
+  mkdir -p "$_bopen_state" 2>/dev/null
+  for _entry in "$_bopen_legacy_state"/* "$_bopen_legacy_state"/.[!.]*; do
+    [[ -e "$_entry" ]] || continue
+    _name="$(basename "$_entry")"
+    if [[ -e "${_bopen_state}/${_name}" ]]; then
+      # router-index.json is rebuilt from the installed plugins, so a stale
+      # legacy copy is disposable. Anything else is real state: keep it, and
+      # leave the directory in place rather than guessing which copy wins.
+      [[ "$_name" == "router-index.json" ]] && rm -f "$_entry" 2>/dev/null
+      continue
+    fi
+    mv "$_entry" "${_bopen_state}/" 2>/dev/null
+  done
+  rmdir "$_bopen_legacy_state" 2>/dev/null
+fi
+unset _bopen_legacy_state _bopen_state _entry _name
+
 input=$(cat 2>/dev/null || echo "{}")
 
 # Prefer hook-provided cwd; never default to the plugin cache directory.
@@ -137,7 +162,7 @@ def dotted_value(value, key):
     return current, True
 
 def json_source(source):
-    if source == "~/.claude/bopen-tools/settings.json" and settings_override:
+    if source == "~/.claude/core/settings.json" and settings_override:
         raw = settings_override
     else:
         raw = source
@@ -209,7 +234,7 @@ hooks = hook_manifest.get("hooks") if isinstance(hook_manifest.get("hooks"), lis
 config_paths = [
     os.environ.get("BOPEN_HOOKS_CONFIG", ""),
     str(cwd / ".claude" / "bopen-hooks.json"),
-    str(home / ".claude" / "bopen-tools" / "hooks-config.json"),
+    str(home / ".claude" / "core" / "hooks-config.json"),
 ]
 configs = [read_json(path) for path in config_paths if path]
 for tier in ("guard", "workflow"):
@@ -231,7 +256,7 @@ for tier in ("guard", "workflow"):
         state = f"on={','.join(on) or '-'}; off={','.join(off) or '-'}"
         lines.append(f"- hooks.{tier}: {state}")
 
-router_path = Path(os.path.expanduser(os.environ.get("BOPEN_ROUTER_INDEX", str(home / ".claude" / "bopen-tools" / "router-index.json"))))
+router_path = Path(os.path.expanduser(os.environ.get("BOPEN_ROUTER_INDEX", str(home / ".claude" / "core" / "router-index.json"))))
 router = read_json(router_path)
 if router:
     count = router.get("entry_count")
@@ -347,7 +372,7 @@ context="${context}
 # when missing or stale relative to the newest plugin cache directory.
 # Runs in the background so a slow/cold rebuild never blocks session start;
 # both consumer hooks step aside silently when the index isn't there yet.
-ROUTER_INDEX="${BOPEN_ROUTER_INDEX:-${HOME}/.claude/bopen-tools/router-index.json}"
+ROUTER_INDEX="${BOPEN_ROUTER_INDEX:-${HOME}/.claude/core/router-index.json}"
 BUILDER_SCRIPT="${SCRIPT_DIR}/../scripts/build-router-index.py"
 CACHE_ROOT="${BOPEN_PLUGIN_CACHE_ROOT:-${HOME}/.claude/plugins/cache/b-open-io}"
 if command -v python3 >/dev/null 2>&1 && [[ -f "$BUILDER_SCRIPT" ]]; then
@@ -372,10 +397,10 @@ fi
 # One-time hooks setup offer, linear-sync style: when no user hooks config
 # exists, point the session at the hook-manager skill. The wizard writes the
 # config (even for "keep all defaults"), which silences this permanently.
-if [[ ! -f "${HOME}/.claude/bopen-tools/hooks-config.json" ]]; then
+if [[ ! -f "${HOME}/.claude/core/hooks-config.json" ]]; then
   context="${context}
 
-[BOPEN-HOOKS-SETUP] No hooks config found at ~/.claude/bopen-tools/hooks-config.json. All bopen-tools hooks are running with defaults (everything enabled). When convenient — do not interrupt the user's task for this — offer to run hook setup via the bopen-tools:hook-manager skill (conversational) or the bopen-tools:setup skill (visual installer UI covering hooks plus all other harness dependencies) to review which hooks are enabled and check their prerequisites. Writing the config (even all-defaults) dismisses this notice."
+[BOPEN-HOOKS-SETUP] No hooks config found at ~/.claude/core/hooks-config.json. All core hooks are running with defaults (everything enabled). When convenient — do not interrupt the user's task for this — offer to run hook setup via the core:hook-manager skill (conversational) or the core:setup skill (visual installer UI covering hooks plus all other harness dependencies) to review which hooks are enabled and check their prerequisites. Writing the config (even all-defaults) dismisses this notice."
 fi
 
 # Emit JSON with real newlines inside additionalContext via json.dumps

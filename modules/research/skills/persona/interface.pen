@@ -439,7 +439,7 @@
                       "fill": "#FFFFFF",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "custom rules from plain English. describe a behavior, get a scored detection rule.\n\nbopen-tools plugin for Claude Code.",
+                      "content": "custom rules from plain English. describe a behavior, get a scored detection rule.\n\ncore plugin for Claude Code.",
                       "lineHeight": 1.5,
                       "fontFamily": "Open Sans",
                       "fontSize": 14
@@ -1002,7 +1002,7 @@
                       "fill": "#E7E9EA",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "custom rules from plain English. describe a behavior, get a scored detection rule.\n\nbopen-tools plugin for Claude Code.",
+                      "content": "custom rules from plain English. describe a behavior, get a scored detection rule.\n\ncore plugin for Claude Code.",
                       "lineHeight": 1.5,
                       "fontFamily": "Open Sans",
                       "fontSize": 15

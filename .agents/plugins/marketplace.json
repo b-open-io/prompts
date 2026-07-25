@@ -5,7 +5,7 @@
   },
   "plugins": [
     {
-      "name": "bopen-tools",
+      "name": "core",
       "source": {
         "source": "local",
         "path": "./"
@@ -17,10 +17,10 @@
       "category": "Developer Tools"
     },
     {
-      "name": "bopen-orchestration",
+      "name": "orchestra",
       "source": {
         "source": "local",
-        "path": "./modules/orchestration"
+        "path": "./modules/orchestra"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -29,10 +29,10 @@
       "category": "Developer Tools"
     },
     {
-      "name": "bopen-plugin-dev",
+      "name": "plugin-kit",
       "source": {
         "source": "local",
-        "path": "./modules/plugin-dev"
+        "path": "./modules/plugin-kit"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -41,7 +41,7 @@
       "category": "Developer Tools"
     },
     {
-      "name": "bopen-review",
+      "name": "review",
       "source": {
         "source": "local",
         "path": "./modules/review"
@@ -53,10 +53,10 @@
       "category": "Developer Tools"
     },
     {
-      "name": "bopen-web",
+      "name": "web-dev",
       "source": {
         "source": "local",
-        "path": "./modules/web"
+        "path": "./modules/web-dev"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -65,7 +65,7 @@
       "category": "Developer Tools"
     },
     {
-      "name": "bopen-creative",
+      "name": "creative",
       "source": {
         "source": "local",
         "path": "./modules/creative"
@@ -77,10 +77,10 @@
       "category": "Developer Tools"
     },
     {
-      "name": "bopen-mcp",
+      "name": "mcp-dev",
       "source": {
         "source": "local",
-        "path": "./modules/mcp"
+        "path": "./modules/mcp-dev"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -89,10 +89,10 @@
       "category": "Developer Tools"
     },
     {
-      "name": "bopen-ops",
+      "name": "dev-ops",
       "source": {
         "source": "local",
-        "path": "./modules/ops"
+        "path": "./modules/dev-ops"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -101,7 +101,7 @@
       "category": "Developer Tools"
     },
     {
-      "name": "bopen-research",
+      "name": "research",
       "source": {
         "source": "local",
         "path": "./modules/research"
@@ -113,10 +113,10 @@
       "category": "Developer Tools"
     },
     {
-      "name": "bopen-public-agents",
+      "name": "brand-rep",
       "source": {
         "source": "local",
-        "path": "./modules/public-agents"
+        "path": "./modules/brand-rep"
       },
       "policy": {
         "installation": "AVAILABLE",

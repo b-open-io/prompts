@@ -1,6 +1,6 @@
 # hook-manager
 
-Discover and install automation hooks from the bopen-tools collection for Claude Code and Opencode.
+Discover and install automation hooks from the core collection for Claude Code and Opencode.
 
 ## Available Hooks
 
@@ -24,7 +24,7 @@ Hooks are JSON config files copied to your agent's hooks directory.
 ```bash
 mkdir -p ~/.claude/hooks
 
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.claude/hooks/
+cp ~/.claude/plugins/cache/core/user/.claude/hooks/<hook-name>.json ~/.claude/hooks/
 ```
 
 Then restart Claude Code.
@@ -34,7 +34,7 @@ Then restart Claude Code.
 ```bash
 mkdir -p ~/.opencode/hooks
 
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/<hook-name>.json ~/.opencode/hooks/
+cp ~/.opencode/plugins/cache/core/user/.claude/hooks/<hook-name>.json ~/.opencode/hooks/
 ```
 
 Then restart Opencode.
@@ -43,36 +43,36 @@ Then restart Opencode.
 
 ```bash
 # Security (recommended for all projects)
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/protect-env-files.json ~/.claude/hooks/
+cp ~/.claude/plugins/cache/core/user/.claude/hooks/protect-env-files.json ~/.claude/hooks/
 
 # Workflow helpers
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/uncommitted-reminder.json ~/.claude/hooks/
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/auto-git-add.json ~/.claude/hooks/
+cp ~/.claude/plugins/cache/core/user/.claude/hooks/uncommitted-reminder.json ~/.claude/hooks/
+cp ~/.claude/plugins/cache/core/user/.claude/hooks/auto-git-add.json ~/.claude/hooks/
 
 # Context enrichment
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/time-dir-context.json ~/.claude/hooks/
+cp ~/.claude/plugins/cache/core/user/.claude/hooks/time-dir-context.json ~/.claude/hooks/
 
 # Development automation
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-save.json ~/.claude/hooks/
-cp ~/.claude/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-start.json ~/.claude/hooks/
+cp ~/.claude/plugins/cache/core/user/.claude/hooks/lint-on-save.json ~/.claude/hooks/
+cp ~/.claude/plugins/cache/core/user/.claude/hooks/lint-on-start.json ~/.claude/hooks/
 ```
 
 ## Quick Install — Opencode
 
 ```bash
 # Security (recommended for all projects)
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/protect-env-files.json ~/.opencode/hooks/
+cp ~/.opencode/plugins/cache/core/user/.claude/hooks/protect-env-files.json ~/.opencode/hooks/
 
 # Workflow helpers
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/uncommitted-reminder.json ~/.opencode/hooks/
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/auto-git-add.json ~/.opencode/hooks/
+cp ~/.opencode/plugins/cache/core/user/.claude/hooks/uncommitted-reminder.json ~/.opencode/hooks/
+cp ~/.opencode/plugins/cache/core/user/.claude/hooks/auto-git-add.json ~/.opencode/hooks/
 
 # Context enrichment
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/time-dir-context.json ~/.opencode/hooks/
+cp ~/.opencode/plugins/cache/core/user/.claude/hooks/time-dir-context.json ~/.opencode/hooks/
 
 # Development automation
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-save.json ~/.opencode/hooks/
-cp ~/.opencode/plugins/cache/bopen-tools/user/.claude/hooks/lint-on-start.json ~/.opencode/hooks/
+cp ~/.opencode/plugins/cache/core/user/.claude/hooks/lint-on-save.json ~/.opencode/hooks/
+cp ~/.opencode/plugins/cache/core/user/.claude/hooks/lint-on-start.json ~/.opencode/hooks/
 ```
 
 ## Uninstalling a Hook

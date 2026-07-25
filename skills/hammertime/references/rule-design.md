@@ -26,7 +26,7 @@ Beyond "Be better at linting" and "Don't do that" (too vague, no context), a thi
 
 ## Resolving Skill Names — Two Techniques
 
-SKILL.md's Step 7 covers searching with `Skill(find-skills)`. A second technique, when the plugin name is already known, is to construct the fully-qualified ID directly by prefixing the skill name with its plugin: `Skill(simplify)` → `bopen-tools:simplify`. Use whichever is faster; `find-skills` is the safer default when the plugin isn't obvious.
+SKILL.md's Step 7 covers searching with `Skill(find-skills)`. A second technique, when the plugin name is already known, is to construct the fully-qualified ID directly by prefixing the skill name with its plugin: `Skill(simplify)` → `core:simplify`. Use whichever is faster; `find-skills` is the safer default when the plugin isn't obvious.
 
 ## Full-Turn vs Last-Message Evaluation
 
@@ -222,9 +222,9 @@ The `skill` field triggers automatic skill invocation when a rule fires. The blo
 | Rule detects | Skill invoked | Effect |
 |-------------|---------------|--------|
 | Model skips tests | `superpowers:test-driven-development` | Redirects to TDD workflow |
-| Model ignores lint | `bopen-tools:simplify` | Runs code simplification |
+| Model ignores lint | `core:simplify` | Runs code simplification |
 | Model skips architecture planning | `gemskills:visual-planner` | Forces visual planning step |
-| Model writes insecure code | `bopen-review:code-audit-scripts` | Runs security audit |
+| Model writes insecure code | `review:code-audit-scripts` | Runs security audit |
 
 Resolve informal skill names with `Skill(find-skills)` before setting the `skill` field — don't guess at fully-qualified IDs.
 

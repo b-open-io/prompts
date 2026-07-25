@@ -6,7 +6,7 @@ diff — before/after UI wireframes, schema/API contract summaries with change
 flags, a file footprint map, and 3-8 tabs of annotated key-change diffs.
 
 Heavily inspired by [BuilderIO's visual recap](https://github.com/BuilderIO/skills#visual-recap),
-adapted for bopen-tools: no hosted plan service or MCP connector — the
+adapted for core: no hosted plan service or MCP connector — the
 deliverable is one offline HTML file built from `assets/template.html`, opened
 locally or published as a default-private Artifact.
 

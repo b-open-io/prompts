@@ -41,7 +41,7 @@ case "$mode" in
     if printf '%s' "$body" | grep -q 'IssueComments'; then
       echo '{"data":{"issue":{"comments":{"nodes":[{"body":"irreversible acknowledged"}]}}}}'
     else
-      echo '{"data":{"issues":{"nodes":[{"id":"iss_1","identifier":"PUB-1","title":"publish bopen-tools"}]}}}'
+      echo '{"data":{"issues":{"nodes":[{"id":"iss_1","identifier":"PUB-1","title":"publish core"}]}}}'
     fi
     ;;
   rejected)
@@ -57,14 +57,14 @@ case "$mode" in
     if printf '%s' "$body" | grep -q 'IssueComments'; then
       echo '{"data":{"issue":{"comments":{"nodes":[{"body":"looks good"}]}}}}'
     else
-      echo '{"data":{"issues":{"nodes":[{"id":"iss_1","identifier":"PUB-1","title":"publish bopen-tools"}]}}}'
+      echo '{"data":{"issues":{"nodes":[{"id":"iss_1","identifier":"PUB-1","title":"publish core"}]}}}'
     fi
     ;;
   on_chain_ack)
     if printf '%s' "$body" | grep -q 'IssueComments'; then
       echo '{"data":{"issue":{"comments":{"nodes":[{"body":"IRREVERSIBLE ACKNOWLEDGED by me"}]}}}}'
     else
-      echo '{"data":{"issues":{"nodes":[{"id":"iss_1","identifier":"PUB-1","title":"publish bopen-tools"}]}}}'
+      echo '{"data":{"issues":{"nodes":[{"id":"iss_1","identifier":"PUB-1","title":"publish core"}]}}}'
     fi
     ;;
   *)
@@ -106,7 +106,7 @@ run_publish "claude" "cd /tmp && npm publish" "rejected"
 assert_exit "publish-gate chain npm publish gated" "0" "$HOOK_EXIT"
 assert_contains "publish-gate chain deny" "PUBLISH GATE" "$HOOK_STDOUT"
 assert_contains "publish-gate chain deny field" '"permissionDecision":"deny"' "$HOOK_STDOUT"
-assert_contains "publish-gate chain safe path" "bopen-plugin-dev:publish-request" "$HOOK_STDOUT"
+assert_contains "publish-gate chain safe path" "plugin-kit:publish-request" "$HOOK_STDOUT"
 
 # Approved
 run_publish "claude" "npm publish" "approved"
@@ -120,7 +120,7 @@ assert_contains "publish-gate query field" "query" "$(cat "$CAPTURE_REQ")"
 run_publish "codex" "bun publish" "rejected"
 assert_exit "publish-gate rejected deny" "2" "$HOOK_EXIT"
 assert_contains "publish-gate rejected reason" "No Linear ticket" "$HOOK_STDERR"
-assert_contains "publish-gate rejected safe path" "bopen-plugin-dev:publish-request" "$HOOK_STDERR"
+assert_contains "publish-gate rejected safe path" "plugin-kit:publish-request" "$HOOK_STDERR"
 assert_not_contains "publish-gate rejected no continue field" '"continue"' "$HOOK_STDERR$HOOK_STDOUT"
 
 # API error
@@ -133,7 +133,7 @@ assert_contains "publish-gate api error safe path" "Safe publish path:" "$HOOK_S
 run_publish "claude" "npm publish" "timeout"
 assert_exit "publish-gate timeout deny" "0" "$HOOK_EXIT"
 assert_contains "publish-gate timeout msg" "timed out" "$HOOK_STDOUT"
-assert_contains "publish-gate timeout safe path" "bopen-plugin-dev:publish-request" "$HOOK_STDOUT"
+assert_contains "publish-gate timeout safe path" "plugin-kit:publish-request" "$HOOK_STDOUT"
 
 # On-chain without ack
 run_publish "claude" "clawnet publish --on-chain" "on_chain_no_ack"
@@ -153,7 +153,7 @@ input=$(jq -n --arg cwd "$ROOT" \
 run_hook "publish-gate.sh" "claude" "$input"
 assert_exit "publish-gate on-chain no key deny" "0" "$HOOK_EXIT"
 assert_contains "publish-gate on-chain no key deny field" '"permissionDecision":"deny"' "$HOOK_STDOUT"
-assert_contains "publish-gate on-chain no key safe path" "bopen-plugin-dev:publish-request" "$HOOK_STDOUT"
+assert_contains "publish-gate on-chain no key safe path" "plugin-kit:publish-request" "$HOOK_STDOUT"
 export LINEAR_API_KEY="test-key-not-real"
 
 rm -rf "$MOCK_BIN" "$CAPTURE_REQ" "$CAPTURE_COMMENTS"

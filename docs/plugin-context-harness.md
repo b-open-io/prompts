@@ -1,6 +1,6 @@
 # Plugin context and release harness
 
-The bopen-tools catalog is large enough that host startup budgets, not only
+The core catalog is large enough that host startup budgets, not only
 individual skill quality, are part of the plugin's public behavior. These tools
 measure that behavior without changing routing, invocation policy, or installed
 plugin contents.
@@ -38,7 +38,7 @@ omitted. A fresh `codex exec --json` run in the same environment reported that
 every description was removed and 76 additional skills were omitted. Catalog
 cardinality must therefore be measured in every fresh host profile.
 
-Codex's installed bopen-tools package currently contains the 69 authored skills
+Codex's installed core package currently contains the 69 authored skills
 but not the 16 source symlinks. Those third-party skills are visible in this
 repository through `.agents/skills`. The parity checker reports the omission as
 an error by default. Release diagnostics may temporarily classify the exact
@@ -134,8 +134,8 @@ Compare explicit roots:
 python3 scripts/check-plugin-install-parity.py \
   --source-root . \
   --packed-root /tmp/unpacked-plugin \
-  --claude-root ~/.claude/plugins/cache/b-open-io/bopen-tools/VERSION \
-  --codex-root ~/.codex/plugins/cache/b-open-io/bopen-tools/VERSION \
+  --claude-root ~/.claude/plugins/cache/b-open-io/core/VERSION \
+  --codex-root ~/.codex/plugins/cache/b-open-io/core/VERSION \
   --require-all
 ```
 
@@ -159,9 +159,9 @@ from the existing skill-output benchmark:
     {
       "id": "visual-review-direct",
       "prompt": "Show me what changed on this branch as a review page.",
-      "expected_skills": ["bopen-review:visual-review"],
+      "expected_skills": ["review:visual-review"],
       "acceptable_alternatives": [],
-      "forbidden_skills": ["bopen-review:free-roam-testing"]
+      "forbidden_skills": ["review:free-roam-testing"]
     }
   ]
 }

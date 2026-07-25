@@ -15,13 +15,13 @@ separate spoken-voice workflow and is not an alternative UI-sound generator.
 
 | Need | Trigger | Companion | Deliverable back to Ridd |
 |---|---|---|---|
-| UI sound assets | The user wants actual navigation, action, state, modal, or notification sounds | `Skill(bopen-tools:ui-audio-theme)` with **Frames** (`audio-specialist`) | Auditioned, normalized assets plus event-to-file manifest and integration notes |
+| UI sound assets | The user wants actual navigation, action, state, modal, or notification sounds | `Skill(core:ui-audio-theme)` with **Frames** (`audio-specialist`) | Auditioned, normalized assets plus event-to-file manifest and integration notes |
 | Illustrations, icons, textures, or visual mockups | The interface needs new visual assets rather than layout direction alone | **Lisa** with `gemskills:generate-image`, `gemskills:generate-svg`, or `gemskills:generate-icon` | Approved assets, prompts/provenance, sizes, states, and usage constraints |
 | World-space or diegetic interface | UI is attached to the game world, camera, 3D object, or shader pipeline | **Kris** (`creative-developer`) with `threejs-r3f` or `shaders` | 3D implementation plan or components that honor the action, focus, legibility, and fallback contract |
 | React/Next.js application integration | Routing, server/client boundaries, data ownership, or framework structure dominates the work | **Theo** (`nextjs`) | Integrated vertical slice preserving state owners, routes, and semantic input boundaries |
-| Constrained-device performance | The target includes low-end television, console browser, embedded GPU, or strict input-latency budgets | **Torque** (`optimizer`) with `frontend-performance` or `bopen-tools:perf-audit` | Measurements, bottleneck findings, fixes, and before/after budget results |
+| Constrained-device performance | The target includes low-end television, console browser, embedded GPU, or strict input-latency budgets | **Torque** (`optimizer`) with `frontend-performance` or `core:perf-audit` | Measurements, bottleneck findings, fixes, and before/after budget results |
 | Traversal and device validation | Controller/remote behavior, Back, focus recovery, accessibility, or platform combinations need proof | **Jason** (`tester`) with `agent-browser` or `chrome-cdp` where applicable | Reproducible action traces, matrix results, regressions, and release-gate evidence |
-| Current platform research | Existing references do not answer a volatile or platform-specific navigation, certification, or accessibility question | **Parker** (`researcher`) with `bopen-tools:x-research` and primary platform sources | Cited findings, dated assumptions, contradictions, and recommended contract changes |
+| Current platform research | Existing references do not answer a volatile or platform-specific navigation, certification, or accessibility question | **Parker** (`researcher`) with `core:x-research` and primary platform sources | Cited findings, dated assumptions, contradictions, and recommended contract changes |
 
 Add a lane only when its trigger is present. Record omitted lanes and the reason
 when omission could otherwise look accidental. One person remains accountable
@@ -59,7 +59,7 @@ When actual assets are requested:
 
 1. Pass the accepted semantic event table, product mood, target devices,
    speaker constraints, and asset format to
-   `Skill(bopen-tools:ui-audio-theme)`.
+   `Skill(core:ui-audio-theme)`.
 2. Have Frames launch that skill's local visual sound picker by default. Give
    the user its URL so they can play candidates, edit prompts, generate another
    option for one slot, and press **Accept** for the winner. A generated
@@ -129,7 +129,7 @@ semantic action traces, stable focus IDs, expected Back results, device and
 locale combinations, and accessibility modes. Neither lane should have to infer
 the product's intended navigation from pixels.
 
-Use Parker and `bopen-tools:x-research` only when guidance is missing or likely
+Use Parker and `core:x-research` only when guidance is missing or likely
 to have changed. Prefer current primary platform documentation for final
 requirements; use X discussions as practitioner evidence, not certification
 authority.

@@ -44,7 +44,7 @@ if [[ -z "$session_id" ]]; then
 fi
 [[ -n "$session_id" ]] || session_id="unknown"
 
-activity_file="${BOPEN_SKILL_ACTIVITY_FILE:-${HOME}/.claude/bopen-tools/skill-activity.jsonl}"
+activity_file="${BOPEN_SKILL_ACTIVITY_FILE:-${HOME}/.claude/core/skill-activity.jsonl}"
 activity_dir=$(dirname -- "$activity_file") || exit 0
 mkdir -p -- "$activity_dir" || exit 0
 

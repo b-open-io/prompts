@@ -21,35 +21,35 @@ Match the user's need to the right specialist:
 |------|-------|--------|
 | BSV transactions, wallets | **David** (bitcoin) | bsv-skills |
 | Ordinals, NFTs, tokens | **Uno Satoj** (ordinals) | 1sat-skills |
-| Agent architecture | **Satchmo** (agent-builder) | bopen-tools |
-| UI/UX, game HUD, TV app, controller/remote navigation | **Ridd** (designer) | bopen-tools |
-| Performance | **Torque** (optimizer) | bopen-tools |
-| Security audit | **Jerry** (code-auditor) | bopen-tools |
-| Architecture review | **Kayle** (architecture-reviewer) | bopen-tools |
-| Next.js / React | **Theo** (nextjs) | bopen-tools |
-| Desktop apps / Native SDK | **Ada** (native-desktop) | bopen-tools |
-| Tests / QA | **Jason** (tester) | bopen-tools |
-| Documentation | **Flow** (documentation-writer) | bopen-tools |
+| Agent architecture | **Satchmo** (agent-builder) | core |
+| UI/UX, game HUD, TV app, controller/remote navigation | **Ridd** (designer) | core |
+| Performance | **Torque** (optimizer) | core |
+| Security audit | **Jerry** (code-auditor) | core |
+| Architecture review | **Kayle** (architecture-reviewer) | core |
+| Next.js / React | **Theo** (nextjs) | core |
+| Desktop apps / Native SDK | **Ada** (native-desktop) | core |
+| Tests / QA | **Jason** (tester) | core |
+| Documentation | **Flow** (documentation-writer) | core |
 | Marketing / copy | **Caal** (marketer) | product-skills |
 | Legal compliance, SOC 2, policy drafting | **Anthony** (legal) | product-skills |
 | SEO | **Rook** (seo) | product-skills |
 | Auth / identity | **Siggy** (sigma-auth-guide) | sigma-auth |
-| Payments | **Mina** (payments) | bopen-tools |
-| DevOps / deploy | **Root** (devops) | bopen-tools |
-| Database | **Idris** (database) | bopen-tools |
-| MCP servers | **Orbit** (mcp) | bopen-tools |
-| Research | **Parker** (researcher) | bopen-tools |
-| 3D / diegetic / world-space UI | **Kris** (creative-developer) | bopen-tools |
-| Mobile / Expo / React Native | **Kira** (mobile) | bopen-tools |
-| Audio / media | **Frames** (audio-specialist) | bopen-tools |
-| Data pipelines | **Data Accumulator** (data) | bopen-tools |
-| Project mgmt | **Wags** (project-manager) | bopen-tools |
-| Skills / prompts | **Zack** (prompt-engineer) | bopen-tools |
-| Cleanup / consolidation | **Steve** (consolidator) | bopen-tools |
-| Google Workspace | **Tina** (executive-assistant) | bopen-tools |
-| API integrations | **Maxim** (integration-expert) | bopen-tools |
-| Send/draft emails | **Martha** (front-desk) | bopen-tools |
-| Draft communications | **Martha** (front-desk) | bopen-tools |
+| Payments | **Mina** (payments) | core |
+| DevOps / deploy | **Root** (devops) | core |
+| Database | **Idris** (database) | core |
+| MCP servers | **Orbit** (mcp) | core |
+| Research | **Parker** (researcher) | core |
+| 3D / diegetic / world-space UI | **Kris** (creative-developer) | core |
+| Mobile / Expo / React Native | **Kira** (mobile) | core |
+| Audio / media | **Frames** (audio-specialist) | core |
+| Data pipelines | **Data Accumulator** (data) | core |
+| Project mgmt | **Wags** (project-manager) | core |
+| Skills / prompts | **Zack** (prompt-engineer) | core |
+| Cleanup / consolidation | **Steve** (consolidator) | core |
+| Google Workspace | **Tina** (executive-assistant) | core |
+| API integrations | **Maxim** (integration-expert) | core |
+| Send/draft emails | **Martha** (front-desk) | core |
+| Draft communications | **Martha** (front-desk) | core |
 
 ## Dispatching Agents
 
@@ -61,7 +61,7 @@ agent registries even when the persona and source prompt are shared.
 Use the plugin-qualified Claude agent ID:
 
 ```
-Agent(subagent_type="bopen-web:designer", prompt="Design a dashboard component")
+Agent(subagent_type="web-dev:designer", prompt="Design a dashboard component")
 Agent(subagent_type="bsv-skills:bitcoin", prompt="Build a BSV transaction")
 Agent(subagent_type="1sat-skills:ordinals", prompt="Mint an ordinal inscription")
 ```
@@ -72,14 +72,14 @@ Use an installed Codex custom agent named `bopen_<agent_name>`, for example:
 
 | Persona | Claude agent ID | Codex custom agent |
 |---------|-----------------|--------------------|
-| Satchmo | `bopen-orchestration:agent-builder` | `bopen_agent_builder` |
-| Ridd | `bopen-web:designer` | `bopen_designer` |
-| Jerry | `bopen-review:code-auditor` | `bopen_code_auditor` |
-| Kayle | `bopen-review:architecture-reviewer` | `bopen_architecture_reviewer` |
-| Jason | `bopen-review:tester` | `bopen_tester` |
-| Flow | `bopen-research:documentation-writer` | `bopen_documentation_writer` |
-| Parker | `bopen-research:researcher` | `bopen_researcher` |
-| Zack | `bopen-plugin-dev:prompt-engineer` | `bopen_prompt_engineer` |
+| Satchmo | `orchestra:agent-builder` | `bopen_agent_builder` |
+| Ridd | `web-dev:designer` | `bopen_designer` |
+| Jerry | `review:code-auditor` | `bopen_code_auditor` |
+| Kayle | `review:architecture-reviewer` | `bopen_architecture_reviewer` |
+| Jason | `review:tester` | `bopen_tester` |
+| Flow | `research:documentation-writer` | `bopen_documentation_writer` |
+| Parker | `research:researcher` | `bopen_researcher` |
+| Zack | `plugin-kit:prompt-engineer` | `bopen_prompt_engineer` |
 
 Ask Codex to delegate to the installed custom agent by that exact name. Do not
 invent Claude `Agent(...)` call syntax in Codex; Codex chooses and spawns the
@@ -93,7 +93,7 @@ must also be installed into a project or user agent directory. If a requested
 
 1. Say plainly that the named adapter is not installed; do not claim that the
    persona was dispatched.
-2. Offer the explicit `bopen-tools:codex-agent-setup` skill. It can install the
+2. Offer the explicit `core:codex-agent-setup` skill. It can install the
    curated roster or all generated adapters and requires a new Codex session
    before they appear.
 3. Do not run setup unless the user authorizes it; it writes regular files into
@@ -115,7 +115,7 @@ command as though Codex can execute it.
 
 | Plugin | Repo | Install |
 |--------|------|---------|
-| bopen-tools | b-open-io/prompts | `/plugin install bopen-tools@b-open-io` |
+| core | b-open-io/prompts | `/plugin install core@b-open-io` |
 | bsv-skills | b-open-io/bsv-skills | `/plugin install bsv-skills@b-open-io` |
 | 1sat-skills | b-open-io/1sat-skills | `/plugin install 1sat-skills@b-open-io` |
 | gemskills | b-open-io/gemskills | `/plugin install gemskills@b-open-io` |

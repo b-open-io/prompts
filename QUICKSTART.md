@@ -130,13 +130,13 @@ This repo includes slash commands (see `commands/`). After installing the plugin
 Install individual skills for specific capabilities:
 
 ```bash
-bunx skills add b-open-io/bopen-tools --skill <skill-name>
+bunx skills add b-open-io/prompts --skill <skill-name>
 ```
 
 For example:
 ```bash
-bunx skills add b-open-io/bopen-tools --skill npm-publish
-bunx skills add b-open-io/bopen-tools --skill frontend-design
+bunx skills add b-open-io/prompts --skill npm-publish
+bunx skills add b-open-io/prompts --skill frontend-design
 ```
 
 ## Troubleshooting

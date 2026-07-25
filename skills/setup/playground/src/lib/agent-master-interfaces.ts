@@ -10,7 +10,7 @@ export const INTERFACE_STARTUP_TIMEOUT_MS = 90_000
 export type LocalInterfaceId =
 	| "gemskills:deck-creator"
 	| "gemskills:visual-planner"
-	| "bopen-tools:visual-wayfinder"
+	| "core:visual-wayfinder"
 
 export interface LocalInterfaceDescriptor {
 	id: LocalInterfaceId
@@ -64,7 +64,7 @@ const INTERFACES: readonly InterfaceDefinition[] = [
 		portlessName: "planner.agent-master",
 	},
 	{
-		id: "bopen-tools:visual-wayfinder",
+		id: "core:visual-wayfinder",
 		label: "Visual Wayfinder",
 		description: "Open the build-free visual decision workbench.",
 		kind: "static",
@@ -128,8 +128,8 @@ export function resolveBopenToolsRoot(): string | undefined {
 	return existingDirectory([
 		process.env.AGENT_MASTER_BOPEN_TOOLS_ROOT,
 		pluginRootFromPlayground(),
-		newestVersionDirectory(join(home, ".codex/plugins/cache/b-open-io/bopen-tools")),
-		newestVersionDirectory(join(home, ".claude/plugins/cache/b-open-io/bopen-tools")),
+		newestVersionDirectory(join(home, ".codex/plugins/cache/b-open-io/core")),
+		newestVersionDirectory(join(home, ".claude/plugins/cache/b-open-io/core")),
 	])
 }
 
@@ -178,7 +178,7 @@ export function interfaceUrl(requestOrigin: string, id: LocalInterfaceId): strin
 }
 
 function interfaceAvailability(id: LocalInterfaceId): { available: boolean; reason?: string } {
-	if (id === "bopen-tools:visual-wayfinder") {
+	if (id === "core:visual-wayfinder") {
 		const root = resolveBopenToolsRoot()
 		const asset = root && join(root, "skills/visual-wayfinder/assets/visual-wayfinder-demo.html")
 		const launcher = root && join(root, "skills/setup/scripts/visual_wayfinder_server.ts")
@@ -231,7 +231,7 @@ function ensurePlannerFile(gemskillsRoot: string): string {
 }
 
 function launcherCommand(id: LocalInterfaceId): { cwd: string; args: string[] } {
-	if (id === "bopen-tools:visual-wayfinder") {
+	if (id === "core:visual-wayfinder") {
 		const root = resolveBopenToolsRoot()
 		if (!root) throw new Error("bOpen Tools is not installed.")
 		return {
@@ -275,7 +275,7 @@ function registeredPortlessUrl(portless: string, portlessName: string, fallback:
 }
 
 function readinessProbe(id: LocalInterfaceId): ReadinessProbe {
-	if (id === "bopen-tools:visual-wayfinder") {
+	if (id === "core:visual-wayfinder") {
 		return { path: "/health", marker: '"product":"visual-wayfinder"' }
 	}
 	if (id === "gemskills:deck-creator") {

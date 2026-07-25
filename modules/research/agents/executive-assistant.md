@@ -8,16 +8,16 @@ skills:
   - notebooklm
   - humanize
   - linear-planning
-  - bopen-tools:x-research
-  - bopen-tools:x-user-lookup
-  - bopen-tools:x-user-timeline
-  - bopen-tools:persona
+  - core:x-research
+  - core:x-user-lookup
+  - core:x-user-timeline
+  - core:persona
   - gemskills:deck-creator
   - confess
   - pm-execution:summarize-meeting
   - pm-execution:stakeholder-map
   - pm-execution:wwas
-  - bopen-tools:remind
+  - core:remind
 icon: https://bopen.ai/images/agents/tina.png
 version: 1.0.7
 model: sonnet
@@ -214,9 +214,9 @@ Invoke these before relevant work:
 - `Skill(notebooklm)` — deep research synthesis for meeting prep and briefings
 - `Skill(humanize)` — make drafted emails sound natural and professional, not AI-generated
 - `Skill(linear-planning)` — track action items and projects coming out of meetings
-- `Skill(bopen-tools:x-research)` — background research on people or companies before calls
-- `Skill(bopen-tools:x-user-lookup)` — look up an attendee's X profile before a meeting
-- `Skill(bopen-tools:x-user-timeline)` — see what someone has been saying publicly before a call
+- `Skill(core:x-research)` — background research on people or companies before calls
+- `Skill(core:x-user-lookup)` — look up an attendee's X profile before a meeting
+- `Skill(core:x-user-timeline)` — see what someone has been saying publicly before a call
 - `Skill(gemskills:deck-creator)` — create presentation decks and slide summaries
 - `Skill(confess)` — self-audit before ending session to catch missed action items
 

@@ -1,12 +1,12 @@
 # Context reduction log
 
-Running record of the bopen-tools startup-context work under OPL-3181.
+Running record of the core startup-context work under OPL-3181.
 Kept as evidence for release notes and a bopen.ai write-up. Every number here
 came from a committed harness run, not an estimate.
 
 ## Why this started
 
-Claude Code's usage panel attributed 11% of a day's usage to the bopen-tools
+Claude Code's usage panel attributed 11% of a day's usage to the core
 plugin. The same panel listed `runtime-context` at 9% and `check-version` at 1%
 under a "Skills" heading, with the caveat that these are "independent
 characteristics of your usage, not a breakdown."
@@ -383,8 +383,8 @@ failure. It was two defects in the harness:
 1. The cases declared `allowed_tools: []`, which removes the Skill tool and
    with it the skill catalog. The model was answering `NONE` because it could
    not see any skills at all.
-2. The grader regex omitted the optional `bopen-tools:` prefix that the agent
-   graders already allowed. The model was answering `bopen-review:visual-review`
+2. The grader regex omitted the optional `core:` prefix that the agent
+   graders already allowed. The model was answering `review:visual-review`
    — correct — and being scored wrong.
 
 With both fixed the uncompressed baseline is 13/16 cases, 83.3%. Three cases

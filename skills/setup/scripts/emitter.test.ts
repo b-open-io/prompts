@@ -15,7 +15,7 @@ function makeState(overrides: Record<string, unknown> = {}, plugins: any[] = [])
 
 function makePlugin(overrides: Record<string, unknown> = {}): any {
   return {
-    name: "bopen-tools",
+    name: "core",
     installedClaude: null,
     installedCodex: null,
     marketplaceVersion: null,
@@ -80,7 +80,7 @@ describe("emitPlan", () => {
     const state = makeState({}, [plugin]);
     const selections = {
       runtime: "claude",
-      plugins: [{ name: "bopen-tools", installPlugin: true, checks: [], hooks: {} }],
+      plugins: [{ name: "core", installPlugin: true, checks: [], hooks: {} }],
     };
 
     const plan = emitPlan(state, selections);
@@ -90,23 +90,23 @@ describe("emitPlan", () => {
     expect(plan).toContain("## Execution rules");
     expect(plan).toContain("## Final verification and report");
     expect(plan).not.toContain("## Plugins");
-    expect(plan).not.toContain("bopen-orchestration:coordinator");
+    expect(plan).not.toContain("orchestra:coordinator");
     expect(plan).not.toContain("Refresh");
   });
 
   test("claude and codex use different install dialects for the same selection", () => {
     const plugin = makePlugin({ installedClaude: null, installedCodex: null });
     const state = makeState({}, [plugin]);
-    const basePlugins = [{ name: "bopen-tools", installPlugin: true, checks: [], hooks: {} }];
+    const basePlugins = [{ name: "core", installPlugin: true, checks: [], hooks: {} }];
 
     const claudePlan = emitPlan(state, { runtime: "claude", plugins: basePlugins });
     const codexPlan = emitPlan(state, { runtime: "codex", plugins: basePlugins });
 
-    expect(claudePlan).toContain("claude plugin install bopen-tools@b-open-io");
+    expect(claudePlan).toContain("claude plugin install core@b-open-io");
     expect(claudePlan).not.toContain("codex plugin");
 
     expect(codexPlan).toContain("codex plugin marketplace upgrade");
-    expect(codexPlan).toContain("codex plugin add bopen-tools@b-open-io");
+    expect(codexPlan).toContain("codex plugin add core@b-open-io");
     expect(codexPlan).not.toContain("claude plugin install");
   });
 
@@ -114,7 +114,7 @@ describe("emitPlan", () => {
     const plugin = makePlugin({
       checks: [
         {
-          id: "codex-agents:bopen-tools",
+          id: "codex-agents:core",
           kind: "codex-agents",
           name: "agents",
           installed: false,
@@ -127,9 +127,9 @@ describe("emitPlan", () => {
       runtime: "hermes",
       plugins: [
         {
-          name: "bopen-tools",
+          name: "core",
           installPlugin: false,
-          checks: ["codex-agents:bopen-tools"],
+          checks: ["codex-agents:core"],
           hooks: {},
         },
       ],
@@ -155,7 +155,7 @@ describe("emitPlan", () => {
     });
     const selections = {
       runtime: "claude",
-      plugins: [{ name: "bopen-tools", installPlugin: false, checks: ["cli:ffmpeg"], hooks: {} }],
+      plugins: [{ name: "core", installPlugin: false, checks: ["cli:ffmpeg"], hooks: {} }],
     };
 
     const planDarwin = emitPlan(makeState({ platform: "darwin" }, [pluginBothPlatforms]), selections);
@@ -192,7 +192,7 @@ describe("emitPlan", () => {
     const selections = {
       runtime: "claude",
       plugins: [
-        { name: "bopen-tools", installPlugin: false, checks: [], hooks: { "guard-a": false } },
+        { name: "core", installPlugin: false, checks: [], hooks: { "guard-a": false } },
       ],
     };
 
@@ -223,7 +223,7 @@ describe("emitPlan", () => {
       runtime: "claude",
       plugins: [
         {
-          name: "bopen-tools",
+          name: "core",
           installPlugin: false,
           checks: ["env:ELEVENLABS_API_KEY"],
           hooks: {},
@@ -257,7 +257,7 @@ describe("emitPlan", () => {
       runtime: "claude",
       plugins: [
         {
-          name: "bopen-tools",
+          name: "core",
           installPlugin: true,
           checks: ["cli:ffmpeg"],
           hooks: { "guard-a": false },
@@ -284,7 +284,7 @@ describe("emitPlan", () => {
           detail: "/Users/alice/private/repo/skill",
         },
         {
-          id: "setup-script:bopen-research:persona",
+          id: "setup-script:research:persona",
           kind: "setup-script",
           name: "persona",
           installed: false,
@@ -297,9 +297,9 @@ describe("emitPlan", () => {
       runtime: "claude",
       plugins: [
         {
-          name: "bopen-tools",
+          name: "core",
           installPlugin: false,
-          checks: ["third-party-skill:example", "setup-script:bopen-research:persona"],
+          checks: ["third-party-skill:example", "setup-script:research:persona"],
           hooks: {},
         },
       ],
@@ -332,7 +332,7 @@ describe("emitPlan", () => {
       runtime: "codex",
       plugins: [
         {
-          name: "bopen-tools",
+          name: "core",
           installPlugin: false,
           checks: ["codex-agents"],
           hooks: {},
@@ -340,7 +340,7 @@ describe("emitPlan", () => {
       ],
     });
 
-    expect(plan).toContain('$HOME/.codex/plugins/cache/b-open-io/bopen-tools');
+    expect(plan).toContain('$HOME/.codex/plugins/cache/b-open-io/core');
     expect(plan).toContain("bash scripts/install-codex-agents.sh");
     expect(plan).toContain('$HOME/.codex/agents/bopen_*.toml');
   });
@@ -355,7 +355,7 @@ describe("grok dialect", () => {
       generatedAt: "2026-07-13T00:00:00.000Z",
       plugins: [
         {
-          name: "bopen-tools",
+          name: "core",
           installedClaude,
           installedCodex: null,
           marketplaceVersion: "9.9.9",
@@ -370,13 +370,13 @@ describe("grok dialect", () => {
   const grokSel = {
     runtime: "grok",
     plugins: [
-      { name: "bopen-tools", installPlugin: true, checks: [], hooks: {} },
+      { name: "core", installPlugin: true, checks: [], hooks: {} },
     ],
   } as any;
 
   test("stale Claude-compatible plugin emits an update with grok inspect verification", () => {
     const plan = emitPlan(grokState("1.1.47"), grokSel);
-    expect(plan).toContain("claude plugin update bopen-tools@b-open-io");
+    expect(plan).toContain("claude plugin update core@b-open-io");
     expect(plan).toContain("grok inspect");
     expect(plan).not.toContain("grok plugin install");
   });
@@ -384,6 +384,6 @@ describe("grok dialect", () => {
   test("no claude install emits native grok plugin install", () => {
     const plan = emitPlan(grokState(null), grokSel);
     expect(plan).toContain("grok plugin install b-open-io/prompts --trust");
-    expect(plan).toContain("grok plugin details bopen-tools");
+    expect(plan).toContain("grok plugin details core");
   });
 });

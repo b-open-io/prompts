@@ -1,7 +1,7 @@
 {
-  "name": "bopen-tools",
-  "version": "1.1.126",
-  "description": "Cross-agent development skills, hooks, orchestration, and optional custom-agent adapters for Claude Code and Codex",
+  "name": "core",
+  "version": "1.1.127",
+  "description": "Cross-agent development skills, hooks, orchestration, and optional custom-agent adapters for Claude Code, Codex, and Grok Build",
   "author": {
     "name": "b-open-io",
     "url": "https://github.com/b-open-io"
@@ -18,7 +18,7 @@
   "skills": "./skills/",
   "hooks": "./hooks/codex-hooks.json",
   "interface": {
-    "displayName": "bopen-tools",
+    "displayName": "core",
     "shortDescription": "Development agents, skills, hooks, and orchestration.",
     "longDescription": "A cross-agent toolkit for software development, specialist routing, multi-agent orchestration, safety hooks, and optional bOpen custom-agent adapters.",
     "developerName": "b-open-io",
@@ -29,7 +29,7 @@
     ],
     "websiteURL": "https://github.com/b-open-io/prompts",
     "defaultPrompt": [
-      "Help me choose and orchestrate the right bopen-tools workflow."
+      "Help me choose and orchestrate the right core workflow."
     ]
   }
 }

@@ -7,7 +7,7 @@
 name = "bopen_architecture_reviewer"
 description = "System architecture and large-scale refactoring agent. Use this agent when the user asks to \"refactor our microservices architecture\", \"map the dependencies across our codebase\", \"review this system design\", or needs cross-file analysis spanning many services. Not for code-level security audits (use code-auditor) or single-module cleanup (use consolidator)."
 developer_instructions = """
-# Codex compatibility prelude (bopen-tools)
+# Codex compatibility prelude (core)
 
 You are running as a Codex custom agent adapted from a Claude Code agent
 definition in this plugin. Preserve the role, constraints, and output style of

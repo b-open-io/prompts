@@ -1315,12 +1315,12 @@
   },
   "manifests": {
     "claude": {
-      "name": "bopen-tools",
+      "name": "core",
       "path": ".claude-plugin/plugin.json",
       "version": "1.1.113"
     },
     "codex": {
-      "name": "bopen-tools",
+      "name": "core",
       "path": ".codex-plugin/plugin.json",
       "version": "1.1.113"
     }
@@ -1682,7 +1682,7 @@
       },
       "claude_implicit": true,
       "codex_implicit": true,
-      "description": "Check if the bopen-tools plugin is up to date by comparing local vs GitHub versions. Use this skill at the start of any session where the agent needs current skill/agent definitions, when the user asks 'is everything up to date?', 'check for updates', 'am I on the latest version?', or when you suspect skills may have changed since last install. Also use proactively when a skill seems to behave differently than documented or when instructions reference features you don't recognize. Completes in under 100ms.",
+      "description": "Check if the core plugin is up to date by comparing local vs GitHub versions. Use this skill at the start of any session where the agent needs current skill/agent definitions, when the user asks 'is everything up to date?', 'check for updates', 'am I on the latest version?', or when you suspect skills may have changed since last install. Also use proactively when a skill seems to behave differently than documented or when instructions reference features you don't recognize. Completes in under 100ms.",
       "description_metrics": {
         "bytes": 511,
         "chars": 511,
@@ -1940,7 +1940,7 @@
       },
       "claude_implicit": false,
       "codex_implicit": false,
-      "description": "Explicit-only installer for bopen-tools Codex custom agents. Use ONLY when the user explicitly asks to install, update, check, uninstall, or set up Codex agents / custom agents from this plugin \u2014 phrases include \"install codex agents\", \"setup codex agents\", \"update codex agents\", \"check codex agents\", \"install all codex agents\", \"uninstall codex agents\", \"project codex agents\", \"user codex agents\", or \"install bopen agents into .codex\". Never auto-invoke. Never silently modify global Codex configuration.",
+      "description": "Explicit-only installer for core Codex custom agents. Use ONLY when the user explicitly asks to install, update, check, uninstall, or set up Codex agents / custom agents from this plugin \u2014 phrases include \"install codex agents\", \"setup codex agents\", \"update codex agents\", \"check codex agents\", \"install all codex agents\", \"uninstall codex agents\", \"project codex agents\", \"user codex agents\", or \"install bopen agents into .codex\". Never auto-invoke. Never silently modify global Codex configuration.",
       "description_metrics": {
         "bytes": 511,
         "chars": 509,
@@ -2241,7 +2241,7 @@
       },
       "claude_implicit": false,
       "codex_implicit": true,
-      "description": "This skill should be used when the user says \"deploy a team\", \"spin up agents to work on this\", \"use all our agents\", \"coordinate specialists\", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full bopen-tools specialist roster.",
+      "description": "This skill should be used when the user says \"deploy a team\", \"spin up agents to work on this\", \"use all our agents\", \"coordinate specialists\", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full core specialist roster.",
       "description_metrics": {
         "bytes": 353,
         "chars": 353,
@@ -2456,7 +2456,7 @@
       },
       "claude_implicit": true,
       "codex_implicit": true,
-      "description": "This skill should be used in Claude Code or Codex when the user asks \"who handles X?\", \"what agents are available?\", \"how do I contact Y?\", \"team roster\", \"what services do we use?\", \"who should I talk to about Z?\", \"what skills are available?\", \"where do I find skill X?\", or needs help routing to the right agent or service provider. Also use when checking agent-adapter availability, finding/installing skills, sending emails on behalf of the org, or drafting communications. Route SOC 2, audit readiness, policy drafting, and evidence-gathering questions to Anthony in product-skills, with Paul in bopen-tools for technical control validation.",
+      "description": "This skill should be used in Claude Code or Codex when the user asks \"who handles X?\", \"what agents are available?\", \"how do I contact Y?\", \"team roster\", \"what services do we use?\", \"who should I talk to about Z?\", \"what skills are available?\", \"where do I find skill X?\", or needs help routing to the right agent or service provider. Also use when checking agent-adapter availability, finding/installing skills, sending emails on behalf of the org, or drafting communications. Route SOC 2, audit readiness, policy drafting, and evidence-gathering questions to Anthony in product-skills, with Paul in core for technical control validation.",
       "description_metrics": {
         "bytes": 647,
         "chars": 647,
@@ -2714,7 +2714,7 @@
       },
       "claude_implicit": true,
       "codex_implicit": true,
-      "description": "Manage bopen-tools plugin hooks \u2014 list, enable, disable, diagnose, and run first-time setup. This skill should be used when the user asks to \"list hooks\", \"disable a hook\", \"enable a hook\", \"hook setup\", \"which hooks are running\", \"turn off the publish gate\", \"hooks config\", or when session context contains a [BOPEN-HOOKS-SETUP] directive.",
+      "description": "Manage core plugin hooks \u2014 list, enable, disable, diagnose, and run first-time setup. This skill should be used when the user asks to \"list hooks\", \"disable a hook\", \"enable a hook\", \"hook setup\", \"which hooks are running\", \"turn off the publish gate\", \"hooks config\", or when session context contains a [BOPEN-HOOKS-SETUP] directive.",
       "description_metrics": {
         "bytes": 343,
         "chars": 341,

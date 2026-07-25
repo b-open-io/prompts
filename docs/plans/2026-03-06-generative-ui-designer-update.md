@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Create a `generative-ui` glue skill in bopen-tools, install json-render third-party skills, update Mira with full gemskills access, add generative UI awareness to the agent-auditor, and equip relevant agents.
+**Goal:** Create a `generative-ui` glue skill in core, install json-render third-party skills, update Mira with full gemskills access, add generative UI awareness to the agent-auditor, and equip relevant agents.
 
 **Architecture:** A new `generative-ui` skill acts as the decision layer ("when and why"), pointing to json-render third-party skills for implementation ("how"). Mira gets the full gemskills lineup. Agent-auditor gets a 7th audit dimension.
 
@@ -147,7 +147,7 @@ Skill(gemskills:ask-gemini)
 Skill(gemskills:generate-video)
 Skill(gemskills:upscale-image)
 Skill(gemskills:segment-image)
-Skill(bopen-web:generative-ui)
+Skill(web-dev:generative-ui)
 ```
 
 **Step 2: Add Gemini Visual Generation section** (before Visual Inspection section)
@@ -165,7 +165,7 @@ Cover:
 
 Cover:
 - When to reach for generative UI vs static components
-- Point to `Skill(bopen-web:generative-ui)` for the full decision framework
+- Point to `Skill(web-dev:generative-ui)` for the full decision framework
 - json-render + shadcn pattern for dynamic dashboards
 - Integration with gemskills for visual assets within generated UI
 
@@ -182,10 +182,10 @@ git commit -m "Update Mira with full gemskills and generative-ui awareness"
 ### Task 4: Update other agents with generative-ui skill
 
 **Files:**
-- Modify: `agents/agent-builder.md` — Add `Skill(bopen-web:generative-ui)` to tools, bump 1.4.3 -> 1.4.4
-- Modify: `agents/nextjs.md` — Add `Skill(bopen-web:generative-ui)` to tools, bump 1.0.4 -> 1.0.5
-- Modify: `agents/mobile.md` — Add `Skill(bopen-web:generative-ui)` to tools, bump 1.1.6 -> 1.1.7
-- Modify: `agents/integration-expert.md` — Add `Skill(bopen-web:generative-ui)` to tools, bump 1.2.11 -> 1.2.12
+- Modify: `agents/agent-builder.md` — Add `Skill(web-dev:generative-ui)` to tools, bump 1.4.3 -> 1.4.4
+- Modify: `agents/nextjs.md` — Add `Skill(web-dev:generative-ui)` to tools, bump 1.0.4 -> 1.0.5
+- Modify: `agents/mobile.md` — Add `Skill(web-dev:generative-ui)` to tools, bump 1.1.6 -> 1.1.7
+- Modify: `agents/integration-expert.md` — Add `Skill(web-dev:generative-ui)` to tools, bump 1.2.11 -> 1.2.12
 
 Each agent just needs the skill in tools — the skill itself contains all the guidance. No body changes needed.
 
@@ -209,7 +209,7 @@ git commit -m "Add generative-ui skill to agent-builder, nextjs, mobile, and int
 If the agent's domain involves UI generation or rendering:
 
 **Checks:**
-- Does the agent have `Skill(bopen-web:generative-ui)` in tools?
+- Does the agent have `Skill(web-dev:generative-ui)` in tools?
 - If the agent works with React/Next.js, does it know about json-render?
 - If the agent works with React Native, does it know about `@json-render/react-native`?
 - If the agent produces visual assets, does it have relevant gemskills?

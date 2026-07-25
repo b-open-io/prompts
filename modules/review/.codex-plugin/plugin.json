@@ -1,6 +1,6 @@
 {
-  "name": "bopen-review",
-  "version": "0.1.0",
+  "name": "review",
+  "version": "0.1.1",
   "description": "Code review, security auditing, and exploratory testing with visual review artifacts",
   "author": {
     "name": "b-open-io",
@@ -8,7 +8,6 @@
   },
   "repository": "https://github.com/b-open-io/prompts",
   "keywords": [
-    "bopen",
     "review"
   ],
   "skills": "./skills/",

@@ -134,7 +134,7 @@ this explicitly rather than assuming silent consent.
 ## Integration pointers — don't duplicate these paths
 
 - **Hooks only, no full harness view needed** → use
-  `Skill(bopen-tools:hook-manager)` directly. It reads the same
+  `Skill(core:hook-manager)` directly. It reads the same
   `hooks/manifest.json` and writes the same `hooks-config.json`; this skill's
   Hooks tab is a visual front end for the same state, not a replacement.
 - **Codex agent delivery only** → `codex-agent-setup`'s own `setup.sh` is the

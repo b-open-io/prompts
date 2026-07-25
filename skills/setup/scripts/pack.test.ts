@@ -25,10 +25,10 @@ describe("pack dependency pass", () => {
         playbooks: [{ id: "fixture", file: "playbooks/fixture.md" }],
         plugins: [
           {
-            name: "bopen-tools",
+            name: "core",
             marketplace: "b-open-io",
             source: "b-open-io/claude-plugins",
-            install: "claude plugin install bopen-tools@b-open-io"
+            install: "claude plugin install core@b-open-io"
           },
           {
             name: "shadcn",
@@ -40,7 +40,7 @@ describe("pack dependency pass", () => {
       })
     );
     await Promise.all([
-      mkdir(join(home, ".claude", "plugins", "cache", "b-open-io", "bopen-tools", "1.2.3"), {
+      mkdir(join(home, ".claude", "plugins", "cache", "b-open-io", "core", "1.2.3"), {
         recursive: true
       }),
       mkdir(join(home, ".agents", "skills", "shadcn"), { recursive: true })
@@ -48,7 +48,7 @@ describe("pack dependency pass", () => {
 
     const state = await loadPackState(manifest, { home });
 
-    expect(state.dependencies.map((dependency) => dependency.name)).toEqual(["bopen-tools", "shadcn"]);
+    expect(state.dependencies.map((dependency) => dependency.name)).toEqual(["core", "shadcn"]);
     expect(state.dependencies[0].runtimes.claude.installedVersion).toBe("1.2.3");
     expect(state.dependencies[0].runtimes.codex.installed).toBe(false);
     expect(state.dependencies[0].runtimes.grok.installed).toBe(true);

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build ~/.claude/bopen-tools/router-index.json from installed b-open-io plugins.
+"""Build ~/.claude/core/router-index.json from installed b-open-io plugins.
 
 Scans every plugin under the marketplace cache (default
 ~/.claude/plugins/cache/b-open-io/*/), picks the latest installed version of
@@ -271,8 +271,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--output",
-        default=os.path.expanduser("~/.claude/bopen-tools/router-index.json"),
-        help="Output path (default: ~/.claude/bopen-tools/router-index.json)",
+        default=os.path.expanduser("~/.claude/core/router-index.json"),
+        help="Output path (default: ~/.claude/core/router-index.json)",
     )
     args = parser.parse_args()
 

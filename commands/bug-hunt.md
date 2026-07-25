@@ -54,7 +54,7 @@ Arguments: `$ARGUMENTS`
 Launch the code-auditor agent to find all potential bugs.
 
 ```
-Agent(subagent_type: "bopen-review:code-auditor", prompt: "
+Agent(subagent_type: "review:code-auditor", prompt: "
 HUNTER MODE — You are Nyx, the Hunter in a three-phase adversarial review.
 
 Analyze the target codebase thoroughly. Use Glob to discover files, Read to examine them. Trace logic, follow data flow, check error handling, look at edge cases.
@@ -98,7 +98,7 @@ If the Hunter reported **TOTAL FINDINGS: 0**, skip Steps 3-4. Go to Step 5 with 
 Launch the architecture-reviewer agent with ONLY the Hunter's bug list. Do NOT pass the full codebase — the Skeptic must read code independently.
 
 ```
-Agent(subagent_type: "bopen-review:architecture-reviewer", prompt: "
+Agent(subagent_type: "review:architecture-reviewer", prompt: "
 SKEPTIC MODE — You are Kayle, the Skeptic in a three-phase adversarial review.
 
 A previous reviewer identified potential bugs. Your job is to rigorously challenge each one.
@@ -143,7 +143,7 @@ Bug report to challenge:
 Launch the tester agent with BOTH the Hunter's findings AND the Skeptic's verdicts. The Referee must read code independently.
 
 ```
-Agent(subagent_type: "bopen-review:tester", prompt: "
+Agent(subagent_type: "review:tester", prompt: "
 REFEREE MODE — You are Iris, the Referee in a three-phase adversarial review.
 
 You have the Hunter's bug report and the Skeptic's challenges. The correct classification for each bug is already known. You will be scored:

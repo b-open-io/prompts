@@ -782,7 +782,7 @@
     }
   },
   "hooks_context_note": "Hooks have no model-context cost unless they return additional context.",
-  "plugin": "bopen-tools",
+  "plugin": "core",
   "schema_version": 1,
   "version": "1.1.113"
 }

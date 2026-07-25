@@ -148,7 +148,7 @@ def markdown(snapshot: dict[str, Any]) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--plugin", default="bopen-tools@b-open-io")
+    parser.add_argument("--plugin", default="core@b-open-io")
     parser.add_argument("--details-file", type=Path)
     parser.add_argument("--source-root", type=Path)
     parser.add_argument("--format", choices=("json", "markdown"), default="json")

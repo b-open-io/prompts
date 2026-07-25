@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch the bopen-tools Codex agent installer from a checkout or plugin cache.
+# Launch the core Codex agent installer from a checkout or plugin cache.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

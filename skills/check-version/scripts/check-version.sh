@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Check if installed bopen-tools plugin is current vs GitHub.
+# Check if installed core plugin is current vs GitHub.
 # Outputs JSON. Completes in ~100ms (single HTTP request).
 # Usage: check-version.sh [--plugin name@org] [--cache-dir path]
 set -euo pipefail
 
-PLUGIN_NAME="bopen-tools"
+PLUGIN_NAME="core"
 PLUGIN_ORG="b-open-io"
 REPO="b-open-io/prompts"
 CACHE_DIR="$HOME/.claude/plugins/cache"

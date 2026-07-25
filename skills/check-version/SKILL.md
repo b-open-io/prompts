@@ -1,7 +1,7 @@
 ---
 name: check-version
 description: >-
-  Compare the installed bopen-tools version against GitHub to confirm skill and agent
+  Compare the installed core version against GitHub to confirm skill and agent
   definitions are current. Use at session start, for "is everything up to date?", "check for
   updates", "am I on the latest version?", or when a skill behaves differently than documented
   or references features you do not recognize. Completes in under 100ms.
@@ -24,12 +24,12 @@ Returns JSON:
 
 ```json
 {
-  "plugin": "bopen-tools",
+  "plugin": "core",
   "org": "b-open-io",
   "local_version": "1.0.82",
   "remote_version": "1.0.83",
   "status": "outdated",
-  "message": "Update available: 1.0.82 -> 1.0.83. Run: claude plugin update bopen-tools@b-open-io"
+  "message": "Update available: 1.0.82 -> 1.0.83. Run: claude plugin update core@b-open-io"
 }
 ```
 

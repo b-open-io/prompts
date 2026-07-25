@@ -1,4 +1,4 @@
-# Paperclip Research: Current State vs. bopen-tools Integration
+# Paperclip Research: Current State vs. core Integration
 
 Researched 2026-07-14. Goal: determine what Paperclip is today, what official
 skills it ships, and how far `agents/ceo.md` ("Chief") and related files have
@@ -85,14 +85,14 @@ Read in full (`/Users/satchmo/code/prompts/agents/ceo.md`). Chief assumes:
 
 - Runs "inside Paperclip -- bOpen's agent control plane at paperclip.bopen.io"
 - Two modes: Paperclip heartbeat mode vs. Claude Code interactive mode,
-  switched via `Skill(bopen-tools:runtime-context)`
+  switched via `Skill(core:runtime-context)`
 - A 9-step heartbeat summary (Identity → Approvals → Inbox → Pick work →
   Checkout → Context → Work → Update → Delegate), explicitly deferring full
   detail to `Skill(paperclip)`
 - Dashboard Review via `GET /api/companies/{companyId}/dashboard`
 - Project Setup via `POST /api/companies/{companyId}/projects` +
   `POST /api/projects/{projectId}/workspaces`
-- Agent Hiring: define role → `Skill(bopen-plugin-dev:agent-onboarding)` →
+- Agent Hiring: define role → `Skill(plugin-kit:agent-onboarding)` →
   "Register the agent in Paperclip with proper role, reportsTo, budget"
 - OpenClaw Invites (CEO-only): `POST /api/companies/{companyId}/openclaw/invite-prompt`
 - Approvals: `GET /api/approvals/{approvalId}` + issues, approve/reject via
@@ -114,7 +114,7 @@ zero-human companies") that upstream has since replaced.
 I diffed the local (stale) `skills/paperclip/SKILL.md` against the live
 upstream version. Drift table:
 
-| Assumed by Chief / bopen-tools | Current Paperclip reality | Fix |
+| Assumed by Chief / core | Current Paperclip reality | Fix |
 |---|---|---|
 | 9-step heartbeat, flat priority `in_progress` → `todo` | Step 4 now has 3 tiers: `in_progress` → `in_review` (if woken by a comment on it) → `todo`. New `PAPERCLIP_WAKE_REASON=issue_commented` case for in-review feedback. | Update the summarized flow or just point harder at `Skill(paperclip)` as living doc |
 | No mention of a fast path | **Scoped-wake fast path**: if the wake message includes a "Paperclip Resume Delta"/"Paperclip Wake Payload" naming a specific issue, skip Steps 1–4 entirely and go straight to checkout | Add a line — this changes latency/cost characteristics of every heartbeat |
@@ -122,7 +122,7 @@ upstream version. Drift table:
 | Checkout `expectedStatuses: ["todo","backlog","blocked"]` | Now includes `"in_review"` | Cosmetic, but matters if anyone hand-writes checkout calls |
 | No execution-policy / typed review participants | New: `in_review` issues can carry `executionState` with `currentStageType`, `currentParticipant`, `returnAssignee` — multi-stage typed approval chains | Not currently referenced anywhere in `ceo.md`; Approvals section should mention it |
 | Step 7 "execute the task: delegate, review, decide, plan" (generic) | New **execution contract**: start concrete work same heartbeat (don't stop at a plan unless asked), leave durable progress as comments/documents/work products, use child issues instead of busy-polling, leave an explicit waiting posture before exiting | Chief's delegation-heavy CEO role should explicitly inherit these rules |
-| No artifact/work-product concept | New: **Generated Artifacts and Work Products** — `pull_request`, `preview_url`, `runtime_service`, `commit`, `branch` work products; uploads required for user-inspectable deliverables | Not mentioned anywhere in bopen-tools' Paperclip docs |
+| No artifact/work-product concept | New: **Generated Artifacts and Work Products** — `pull_request`, `preview_url`, `runtime_service`, `commit`, `branch` work products; uploads required for user-inspectable deliverables | Not mentioned anywhere in core' Paperclip docs |
 | Step 8 "PATCH with status and comment" | New **final-disposition checklist** for every heartbeat exit (`done` / `in_review` / `blocked` / delegated follow-up / explicit continuation) — assignment + "please review" comment is explicitly called out as *not* a valid review path | Chief's "Update" step should reflect this — it's a common failure mode the spec now guards against |
 | No mention of multiline comment handling | New: `scripts/paperclip-issue-update.sh` (or `jq --arg`) required — hand-inlining markdown into one-line JSON "smooshes" comments | Minor but real footgun |
 | No first-class dependency concept | New: **Issue Dependencies** — `blockedByIssueIds`, auto-wake via `issue_blockers_resolved` / `issue_children_completed`. Free-text "blocked by X" is now explicitly discouraged. | Chief's Delegation Rules section should require `blockedByIssueIds` over prose |
@@ -148,7 +148,7 @@ upstream version. Drift table:
   working-directory convention (`/paperclip/.agents/{slug}` on Railway
   volume — unverified whether this convention still holds upstream).
 - **`skills/paperclip-plugin-dev/SKILL.md`** — a **different concern**: this
-  is bopen-tools' own skill for building Paperclip *plugins* (the UI-slot /
+  is core' own skill for building Paperclip *plugins* (the UI-slot /
   agent-tool / job / webhook extension system via `@paperclipai/plugin-sdk`),
   not the agent/heartbeat skill. Legitimately owned content, not something to
   replace with an official skill — but its source-code references
@@ -164,7 +164,7 @@ upstream version. Drift table:
 
 ## 3. Recommended integration path
 
-**Adopt the official skills directly; do not vendor a bopen-tools shim.**
+**Adopt the official skills directly; do not vendor a core shim.**
 This matches the repo's own stated principle (`CLAUDE.md`: "Never copy
 external docs into skills folders — install the plugin that owns them so
 updates flow") and the `skills-lock.json` provenance approach already used
@@ -177,7 +177,7 @@ registration time, not vendored as a static file.
 Concretely, for `agents/ceo.md`:
 
 1. **Keep `Skill(paperclip)` in the frontmatter `tools:` list**, but add a
-   body note explaining it is not a bopen-tools/marketplace skill — it
+   body note explaining it is not a core/marketplace skill — it
    resolves only once Chief is registered in a live Paperclip company and
    `paperclipai agent local-cli ceo --company-id <id>` has been run against
    that identity. Outside that runtime it's a dead reference, and that's
@@ -209,8 +209,8 @@ Concretely, for `agents/ceo.md`:
    `github.com/paperclipai/paperclip` / `docs.paperclip.ing` directly, since
    four files in this repo currently point at a 3.5-month-stale local copy.
 
-No new bopen-tools skill/plugin is warranted for the heartbeat/board/planning/
+No new core skill/plugin is warranted for the heartbeat/board/planning/
 hiring workflows — they're now officially owned upstream. The one thing
-bopen-tools legitimately continues to own is `paperclip-plugin-dev` (building
+core legitimately continues to own is `paperclip-plugin-dev` (building
 Paperclip *extensions*, a different axis entirely), which should get its
 source references refreshed against the current SDK rather than replaced.

@@ -37,7 +37,7 @@ class CodexContextTests(unittest.TestCase):
             "prefix\n<skills_instructions>\n"
             "## Skills\n"
             "- imagegen: Generate images. (file: /tmp/imagegen/SKILL.md)\n"
-            "- bopen-tools:confess: (file: /tmp/confess/SKILL.md)\n"
+            "- core:confess: (file: /tmp/confess/SKILL.md)\n"
             "⚠ Exceeded skills context budget of 2%. "
             "All skill descriptions were removed and 71 additional skills "
             "were not included in the model-visible skills list.\n"
@@ -65,7 +65,7 @@ class CodexContextTests(unittest.TestCase):
                             "type": "input_text",
                             "text": (
                                 "<skills_instructions>\n"
-                                "- bopen-tools:humanize: (file: r4/humanize/SKILL.md)\n"
+                                "- core:humanize: (file: r4/humanize/SKILL.md)\n"
                                 "</skills_instructions>"
                             ),
                         }
@@ -74,7 +74,7 @@ class CodexContextTests(unittest.TestCase):
             ]
         )
         snapshot = CAPTURE.parse_prompt(wrapped)
-        self.assertEqual(snapshot["visible_skills"], ["bopen-tools:humanize"])
+        self.assertEqual(snapshot["visible_skills"], ["core:humanize"])
         self.assertIsNone(snapshot["omitted_skill_count"])
         self.assertFalse(snapshot["catalog_warning_observed"])
 

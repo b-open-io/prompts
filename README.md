@@ -2,7 +2,7 @@
   <img src="assets/banner.jpg" alt="bOpen Tools" width="100%" />
 </p>
 
-# bopen-tools: Prompts, Skills & AI Agents
+# bOpen Tools: Prompts, Skills & AI Agents
 
 **A shared toolkit for Claude Code and Codex** with specialist agents, skills,
 orchestration patterns, safety hooks, and reusable development workflows.
@@ -28,34 +28,35 @@ historical baseline.
 
 ## Installation
 
-`bopen-tools` is the **core**: session context, setup and hook management,
-completion auditing, session recall, routing, identity work, and every hook.
-Everything else ships as an optional **module** you install alongside it.
+`core` holds the shared foundation: session context, setup and hook
+management, completion auditing, session recall, routing, identity work, and
+every hook. Everything else ships as an optional **module** you install
+alongside it.
 
 `pack` in this project always means a premium prompt pack. Plugin
 distributions are modules.
 
 ```bash
-/plugin install bopen-tools@b-open-io
+/plugin install core@b-open-io
 ```
 
 ### Modules
 
 | Module | Contents |
 |---|---|
-| `bopen-orchestration` | coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
-| `bopen-plugin-dev` | agent lifecycle, benchmarks, plugin settings, publishing; prompt-engineer, trainer |
-| `bopen-review` | visual review and proposals, code audit scripts, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
-| `bopen-web` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection; designer, nextjs, optimizer, mobile |
-| `bopen-creative` | Three.js, shaders, game UI, macOS design, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
-| `bopen-mcp` | MCP Apps and the json-render framework; mcp |
-| `bopen-ops` | deployment scripts, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
-| `bopen-research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
-| `bopen-public-agents` | personas for public surfaces; account-manager |
+| `orchestra` | coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
+| `plugin-kit` | agent lifecycle, benchmarks, plugin settings, publishing; prompt-engineer, trainer |
+| `review` | visual review and proposals, code audit scripts, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
+| `web-dev` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection; designer, nextjs, optimizer, mobile |
+| `creative` | Three.js, shaders, game UI, macOS design, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
+| `mcp-dev` | MCP Apps and the json-render framework; mcp |
+| `dev-ops` | deployment scripts, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
+| `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
+| `brand-rep` | personas for public surfaces; account-manager |
 
 ```bash
-/plugin install bopen-orchestration@b-open-io
-codex plugin add bopen-orchestration@b-open-io
+/plugin install orchestra@b-open-io
+codex plugin add orchestra@b-open-io
 ```
 
 Install only what you need. Codex allocates roughly two percent of the model's
@@ -68,7 +69,7 @@ Add this repository as a Codex marketplace, then install the plugin:
 
 ```bash
 codex plugin marketplace add b-open-io/prompts --ref master
-codex plugin add bopen-tools@b-open-io
+codex plugin add core@b-open-io
 ```
 
 The Codex plugin installs the shared skills and Codex-specific hooks. Codex
@@ -80,14 +81,14 @@ project or user agent directories rather than from a plugin manifest.
 Ask Codex to invoke the explicit setup skill:
 
 ```text
-Use $bopen-tools:codex-agent-setup to install the curated agents for this project.
+Use $core:codex-agent-setup to install the curated agents for this project.
 ```
 
 The default installs a curated adapter set into the current project's
 `.codex/agents/` directory. To make the full roster available across projects:
 
 ```text
-Use $bopen-tools:codex-agent-setup to install all agents in user scope.
+Use $core:codex-agent-setup to install all agents in user scope.
 ```
 
 From a repository checkout, the equivalent commands are:
@@ -114,11 +115,11 @@ or rely on `git pull` to refresh an installed plugin.
 
 ```bash
 # Claude Code
-claude plugin update bopen-tools@b-open-io
+claude plugin update core@b-open-io
 
 # Codex: refresh the marketplace snapshot before reinstalling/updating
 codex plugin marketplace upgrade
-codex plugin add bopen-tools@b-open-io
+codex plugin add core@b-open-io
 ```
 
 Start a fresh Claude Code or Codex session after updating so cached plugin
@@ -129,10 +130,10 @@ metadata, skills, agents, and hooks are reloaded.
 For other agentic frameworks, install individual skills:
 
 ```bash
-bunx skills add b-open-io/bopen-tools --skill <skill-name>
+bunx skills add b-open-io/prompts --skill <skill-name>
 ```
 
-The list below is the authored bopen-tools inventory. Third-party skills are
+The list below is the authored core inventory. Third-party skills are
 tracked separately in [`skills-lock.json`](skills-lock.json) and keep their
 upstream provenance.
 
@@ -140,20 +141,20 @@ upstream provenance.
 <summary><strong>Authored skills — click to expand</strong></summary>
 
 ```bash
-bunx skills add b-open-io/bopen-tools --skill auth-md
-bunx skills add b-open-io/bopen-tools --skill check-version
-bunx skills add b-open-io/bopen-tools --skill codex-agent-setup
-bunx skills add b-open-io/bopen-tools --skill confess
-bunx skills add b-open-io/bopen-tools --skill front-desk
-bunx skills add b-open-io/bopen-tools --skill hammertime
-bunx skills add b-open-io/bopen-tools --skill hook-manager
-bunx skills add b-open-io/bopen-tools --skill humanize
-bunx skills add b-open-io/bopen-tools --skill linear-planning
-bunx skills add b-open-io/bopen-tools --skill reinforce-skills
-bunx skills add b-open-io/bopen-tools --skill remind
-bunx skills add b-open-io/bopen-tools --skill runtime-context
-bunx skills add b-open-io/bopen-tools --skill setup
-bunx skills add b-open-io/bopen-tools --skill visual-wayfinder
+bunx skills add b-open-io/prompts --skill auth-md
+bunx skills add b-open-io/prompts --skill check-version
+bunx skills add b-open-io/prompts --skill codex-agent-setup
+bunx skills add b-open-io/prompts --skill confess
+bunx skills add b-open-io/prompts --skill front-desk
+bunx skills add b-open-io/prompts --skill hammertime
+bunx skills add b-open-io/prompts --skill hook-manager
+bunx skills add b-open-io/prompts --skill humanize
+bunx skills add b-open-io/prompts --skill linear-planning
+bunx skills add b-open-io/prompts --skill reinforce-skills
+bunx skills add b-open-io/prompts --skill remind
+bunx skills add b-open-io/prompts --skill runtime-context
+bunx skills add b-open-io/prompts --skill setup
+bunx skills add b-open-io/prompts --skill visual-wayfinder
 ```
 
 </details>
@@ -165,7 +166,7 @@ directly from the plugin. Codex uses generated TOML adapters derived from those
 same files, installed with the explicit setup described above. Every file in
 `agents/` is an installable plugin persona. App-specific persistent deployments
 and user-created agents stay in their owning projects and are not cataloged as
-bopen-tools members.
+core members.
 
 ### Development & Architecture
 
@@ -182,13 +183,13 @@ bopen-tools members.
 - 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup
 
 **Usage:** In Claude Code, request the plugin agent by name (for example,
-`bopen-review:code-auditor`). In Codex, use its installed adapter name (for
+`review:code-auditor`). In Codex, use its installed adapter name (for
 example, `bopen_code_auditor`). If a Codex adapter is missing, run the setup
 skill rather than pretending the specialist was spawned.
 
 ## Skills
 
-Skills are context-triggered capabilities. They activate automatically or can be invoked directly. Install individually with `bunx skills add b-open-io/bopen-tools --skill <name>`.
+Skills are context-triggered capabilities. They activate automatically or can be invoked directly. Install individually with `bunx skills add b-open-io/prompts --skill <name>`.
 
 ### X/Twitter
 | Skill | Description |
@@ -257,7 +258,7 @@ intentional.
 ### Operations & DevOps
 | Skill | Description |
 |-------|-------------|
-| `check-version` | Check if bopen-tools plugin is up to date |
+| `check-version` | Check if core plugin is up to date |
 | `cost-tracking` | Track and report model and agent operating costs |
 | `devops-scripts` | Shell scripts for infrastructure health checks |
 | `linear-planning` | Plan projects and features using Linear |
@@ -348,7 +349,7 @@ terms do not masquerade as the assistant's own behavior.
 tracks blocks per session and auto-allows exit when the limit is hit. Counters
 reset on new sessions. Set `0` for unlimited. Existing Claude installations
 continue to use `~/.claude/hammertime`; otherwise the cross-host default is
-`~/.bopen-tools/hammertime`. Set `BOPEN_HAMMERTIME_HOME` to override it.
+`~/.core/hammertime`. Set `BOPEN_HAMMERTIME_HOME` to override it.
 
 **Per-project rules:** Set `cwd_prefix` to a path string or an array of path
 strings to evaluate a rule only in matching projects; omit it for a global
@@ -372,7 +373,7 @@ Ships with a built-in `project-owner` rule that prevents dismissing errors as "p
 #### Debugging
 
 ```bash
-export HAMMERTIME_DEBUG="$HOME/.bopen-tools/hammertime/debug.log"
+export HAMMERTIME_DEBUG="$HOME/.core/hammertime/debug.log"
 ```
 
 Debug log shows elapsed time, score breakdowns, transcript reads, and phase decisions:
@@ -456,7 +457,7 @@ only declarations that opt into session context; sensitive values are always
 excluded. See [settings declarations](docs/settings-declarations.md) for the
 contract.
 
-Ask an agent to use `bopen-tools:setup`, or launch the fallback directly from
+Ask an agent to use `core:setup`, or launch the fallback directly from
 an installed plugin root:
 
 ```bash
@@ -549,7 +550,7 @@ and agent setup flows so upgrades remain reproducible.
 
 ## Plugin Context Harness
 
-Large plugin catalogs consume model context before a task begins. bopen-tools
+Large plugin catalogs consume model context before a task begins. core
 ships additive diagnostics that measure this cost without changing skill
 routing:
 
@@ -679,7 +680,7 @@ Agents can be explicitly requested for specific tasks. Use Claude plugin IDs or
 Codex adapter IDs according to the current host:
 
 ```
-"Use bopen-plugin-dev:prompt-engineer to create a deployment command"   # Claude
+"Use plugin-kit:prompt-engineer to create a deployment command"   # Claude
 "Have bopen_code_auditor review the authentication boundary"      # Codex
 "Ask bopen_designer to review this component system"              # Codex
 ```
@@ -691,7 +692,7 @@ retain the plan, judgment, verification, and git ownership while other lanes do
 bounded work:
 
 ```text
-Use $bopen-orchestration:orchestrator. Keep this Codex session in the main seat, use
+Use $orchestra:orchestrator. Keep this Codex session in the main seat, use
 native bopen specialists for research and review, grok-4.5 for bounded worker
 tasks, and Fable only for read-only second opinions at commitment boundaries.
 ```

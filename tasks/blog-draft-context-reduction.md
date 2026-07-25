@@ -1,13 +1,13 @@
 ## 29,260 tokens down to 2,797
 
-bopen-tools began the day as one plugin holding 31 agents, 85 skills, 14 commands, and 11 hooks. Every agent and skill puts routing metadata into the model's context at session start, on every request, whether the session uses it or not.
+core began the day as one plugin holding 31 agents, 85 skills, 14 commands, and 11 hooks. Every agent and skill puts routing metadata into the model's context at session start, on every request, whether the session uses it or not.
 
 By the end it was a 2,797-token core plus nine optional modules, and a session that installs only what it needs pays 90% less than it did that morning.
 
 | Measured on the installed plugins | Tokens |
 |---|---:|
-| bopen-tools, before | 29,260 |
-| bopen-tools core, after | **2,797** |
+| core, before | 29,260 |
+| core core, after | **2,797** |
 | All nine modules as well | 13,466 |
 
 Three things got it there: compressing routing metadata, relocating resources that belonged to other plugins, and splitting the catalog into modules. Every step was verified against a routing eval, using a runner Claude Code shipped in July and never announced.
@@ -130,7 +130,7 @@ Reply with only the subagent_type you would delegate to, and nothing else.
 ---
 type: regex
 weight: 1
-pattern: '^\s*(bopen-tools:)?(code-auditor)\s*$'
+pattern: '^\s*(core:)?(code-auditor)\s*$'
 ---
 ```
 
@@ -185,7 +185,7 @@ claude plugin eval . --runs 3 --ablation with-without --report report.html
 
 The HTML that command produces is fully self-contained. [Here is the one from this run](/reports/bopen-tools-plugin-eval.html), covering all ten agent-routing cases across both arms.
 
-Ten agent-routing cases against bopen-tools:
+Ten agent-routing cases against core:
 
 | Case | With plugin | Without |
 |---|---:|---:|
@@ -208,7 +208,7 @@ Three properties of the runner produce failures that are indistinguishable from 
 
 `allowed_tools: []` removes the Skill tool, and with it the entire skill catalog. The model then answers that nothing applies, which is correct given what it can see and looks exactly like a catalog that cannot route. Any case measuring skill selection needs `allowed_tools: [Skill]` so the catalog is visible to the model being tested.
 
-A grader pattern has to allow the plugin prefix the model actually returns. Asking for `visual-review` and receiving `bopen-review:visual-review` scores as a miss unless the pattern makes the prefix optional.
+A grader pattern has to allow the plugin prefix the model actually returns. Asking for `visual-review` and receiving `review:visual-review` scores as a miss unless the pattern makes the prefix optional.
 
 A case can also name a resource its target plugin does not contain, which is easy to do when resources move between distributions. Auditing every expected name against the plugin's real inventory before a run turns that class of failure into a load error you can read.
 
@@ -253,7 +253,7 @@ Core holds session context, setup, hook management, completion auditing, session
 
 | Module | Always-on |
 |---|---:|
-| bopen-tools (core) | 2,797 |
+| core (core) | 2,797 |
 | web | 1,864 |
 | creative | 1,649 |
 | plugin-dev | 1,562 |

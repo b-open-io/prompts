@@ -6,6 +6,51 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.127] - 2026-07-25
+
+### Changed
+
+- **Every distribution is renamed.** The marketplace already names the
+  organization, so repeating it in each plugin name added nothing. Install
+  commands and every `plugin:resource` reference change with them.
+
+  | Was | Now |
+  |---|---|
+  | `bopen-tools` | `core` |
+  | `bopen-orchestration` | `orchestra` |
+  | `bopen-plugin-dev` | `plugin-kit` |
+  | `bopen-review` | `review` |
+  | `bopen-web` | `web-dev` |
+  | `bopen-creative` | `creative` |
+  | `bopen-mcp` | `mcp-dev` |
+  | `bopen-ops` | `dev-ops` |
+  | `bopen-research` | `research` |
+  | `bopen-public-agents` | `brand-rep` |
+
+  The plugin-authoring module is `plugin-kit` rather than `plugin-dev` because
+  Anthropic's official plugin already owns that name; two plugins sharing it
+  would make every `plugin-dev:<skill>` reference ambiguous.
+
+  Reinstall under the new names — `claude plugin uninstall bopen-tools@b-open-io`
+  then `claude plugin install core@b-open-io` — and run the same pair on Codex
+  after `codex plugin marketplace upgrade`.
+- User state moved from `~/.claude/bopen-tools/` to `~/.claude/core/`. The
+  SessionStart hook carries hooks config, router state, and the skill-activity
+  log across on first run, so nothing is lost and no manual step is needed.
+- Generated Codex adapters keep their `bopen-` filename prefix and
+  `.bopen-tools-agents.json` ownership registry. Those identify which files in
+  the shared `~/.codex/agents/` directory belong to this plugin; renaming them
+  would strand every already-installed adapter.
+- The core description now names Grok Build alongside Claude Code and Codex,
+  matching the runtime tier `setup` already detects and plans for. `orchestra`
+  names Grok as a dispatch lane.
+
+### Fixed
+
+- `bunx skills add` pointed at `b-open-io/bopen-tools`, which is not a
+  repository and returned 404. It now points at `b-open-io/prompts`, and
+  `check-docs.py` validates against the real path.
+
 ## [1.1.126] - 2026-07-24
 
 ### Added

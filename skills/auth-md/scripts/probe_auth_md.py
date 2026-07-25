@@ -264,7 +264,7 @@ def probe(args: argparse.Namespace) -> dict[str, Any]:
         policy,
     )
     report: dict[str, Any] = {
-        "probe": "bopen-tools:auth-md/read-only/v1",
+        "probe": "core:auth-md/read-only/v1",
         "method": args.method,
         "resource": resource,
         "resource_metadata_url": prm_url,
@@ -370,7 +370,7 @@ def main(argv: list[str] | None = None) -> int:
         report = probe(args)
     except ProbeError as exc:
         report = {
-            "probe": "bopen-tools:auth-md/read-only/v1",
+            "probe": "core:auth-md/read-only/v1",
             "method": args.method,
             "resource": args.resource,
             "errors": [str(exc)],

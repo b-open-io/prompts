@@ -8,7 +8,7 @@ argument-hint: "[--help]"
 
 If the arguments contain "--help", show this help and exit:
 
-**prime** - Context warm-up for the bopen-tools plugin
+**prime** - Context warm-up for the core plugin
 
 **Usage:** `/prime`
 
@@ -28,7 +28,7 @@ Otherwise, delegate ALL context gathering to a subagent. Do not read files or ru
 Use the Agent tool with this prompt:
 
 ```
-Agent(prompt: "Gather project context for the bopen-tools plugin and return a formatted priming report.
+Agent(prompt: "Gather project context for the core plugin and return a formatted priming report.
 
 Step 1 — Git state:
 Run: git branch --show-current, git status --short, git log --oneline -5, git diff --stat HEAD~1 (ignore errors if no previous commit)
@@ -41,7 +41,7 @@ Read CLAUDE.md in the project root. Extract the 5-8 most relevant bullet points 
 
 Step 4 — Return ONLY this formatted report:
 
-## Plugin Context: bopen-tools
+## Plugin Context: core
 
 ### Git State
 - Branch: <current branch>

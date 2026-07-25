@@ -1,5 +1,5 @@
 ---
 type: regex
 weight: 1
-pattern: '^\s*(bopen-tools:)?(humanize)\s*$'
+pattern: '^\s*(core:)?(humanize)\s*$'
 ---

@@ -104,14 +104,14 @@ describe("pack dependency discovery", () => {
 
   test("scans plugins across every marketplace cache", async () => {
     await Promise.all([
-      mkdir(join(dir, "b-open-io", "bopen-tools", "1.1.70"), { recursive: true }),
+      mkdir(join(dir, "b-open-io", "core", "1.1.70"), { recursive: true }),
       mkdir(join(dir, "trailofbits", "static-analysis", "2.0.0"), { recursive: true }),
       mkdir(join(dir, "claude-plugins-official", "stripe", "1.0.0"), { recursive: true }),
       mkdir(join(dir, "temp_subdir_123.clone", ".git", "objects"), { recursive: true }),
     ]);
 
     const installed = await listInstalledPlugins(dir);
-    expect(installed.get("bopen-tools")?.marketplace).toBe("b-open-io");
+    expect(installed.get("core")?.marketplace).toBe("b-open-io");
     expect(installed.get("static-analysis")?.marketplace).toBe("trailofbits");
     expect(installed.get("stripe")?.version).toBe("1.0.0");
     expect(installed.has(".git")).toBe(false);
@@ -142,7 +142,7 @@ describe("skill interface discovery", () => {
   test("passes manifest-declared skill interfaces through the plugin state contract", async () => {
     const claudeCache = join(dir, "claude-cache");
     const codexCache = join(dir, "codex-cache");
-    const pluginRoot = join(claudeCache, "b-open-io", "bopen-tools", "1.2.3");
+    const pluginRoot = join(claudeCache, "b-open-io", "core", "1.2.3");
     await Promise.all([
       mkdir(join(pluginRoot, "setup"), { recursive: true }),
       mkdir(codexCache, { recursive: true }),
@@ -150,7 +150,7 @@ describe("skill interface discovery", () => {
     await writeFile(
       join(pluginRoot, "setup", "manifest.json"),
       JSON.stringify({
-        plugin: "bopen-tools",
+        plugin: "core",
         skillInterfaces: [
           {
             skill: "visual-wayfinder",
@@ -169,7 +169,7 @@ describe("skill interface discovery", () => {
         fetched: true,
         error: null,
         fetchedAt: "2026-07-14T00:00:00.000Z",
-        versions: new Map([["bopen-tools", "1.2.3"]]),
+        versions: new Map([["core", "1.2.3"]]),
       },
       env: {
         BOPEN_SKILL_ACTIVITY_FILE: join(dir, "missing-activity.jsonl"),
@@ -177,7 +177,7 @@ describe("skill interface discovery", () => {
       },
     });
 
-    expect(state.plugins.find((plugin) => plugin.name === "bopen-tools")?.skillInterfaces).toEqual([
+    expect(state.plugins.find((plugin) => plugin.name === "core")?.skillInterfaces).toEqual([
       {
         skill: "visual-wayfinder",
         label: "Open Visual Wayfinder",
@@ -285,12 +285,12 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 90_000, session_id: "old-session", skill: "bopen-orchestration:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 90_000, session_id: "old-session", skill: "orchestra:advisor" }),
         "not json",
-        JSON.stringify({ ts: nowSeconds - 120, session_id: "first-recent", skill: "bopen-orchestration:advisor" }),
-        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-session", skill: "bopen-orchestration:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 120, session_id: "first-recent", skill: "orchestra:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-session", skill: "orchestra:advisor" }),
         JSON.stringify({ ts: nowSeconds - 30, session_id: "missing-skill" }),
-        JSON.stringify({ ts: "not-a-number", session_id: "bad-ts", skill: "bopen-tools:ignored" }),
+        JSON.stringify({ ts: "not-a-number", session_id: "bad-ts", skill: "core:ignored" }),
         JSON.stringify({ ts: nowSeconds - 10, session_id: "other-session", skill: "other-plugin:helper" }),
       ].join("\n")
     );
@@ -303,7 +303,7 @@ describe("skill activity", () => {
       nowSeconds,
     });
 
-    expect(activity["bopen-orchestration:advisor"]).toEqual({
+    expect(activity["orchestra:advisor"]).toEqual({
       lastInvokedAt: nowSeconds - 60,
       sessionId: "latest-session",
       count24h: 2,
@@ -315,7 +315,7 @@ describe("skill activity", () => {
       count24h: 1,
       isLive: false,
     });
-    expect(activity["bopen-tools:ignored"]).toBeUndefined();
+    expect(activity["core:ignored"]).toBeUndefined();
   });
 
   test("missing or unreadable activity data is an empty object", () => {
@@ -335,10 +335,10 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 300, session_id: "older-live", skill: "bopen-orchestration:advisor" }),
-        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-live", skill: "bopen-orchestration:advisor" }),
-        JSON.stringify({ ts: nowSeconds - 30, session_id: "stale-session", skill: "bopen-tools:hook-manager" }),
-        JSON.stringify({ ts: nowSeconds - 20, session_id: "missing-session", skill: "bopen-research:persona" }),
+        JSON.stringify({ ts: nowSeconds - 300, session_id: "older-live", skill: "orchestra:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "latest-live", skill: "orchestra:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 30, session_id: "stale-session", skill: "core:hook-manager" }),
+        JSON.stringify({ ts: nowSeconds - 20, session_id: "missing-session", skill: "research:persona" }),
       ].join("\n"),
     );
 
@@ -362,10 +362,10 @@ describe("skill activity", () => {
       nowSeconds,
     });
 
-    expect(activity["bopen-orchestration:advisor"].sessionId).toBe("latest-live");
-    expect(activity["bopen-orchestration:advisor"].isLive).toBe(true);
-    expect(activity["bopen-tools:hook-manager"].isLive).toBe(false);
-    expect(activity["bopen-research:persona"].isLive).toBe(false);
+    expect(activity["orchestra:advisor"].sessionId).toBe("latest-live");
+    expect(activity["orchestra:advisor"].isLive).toBe(true);
+    expect(activity["core:hook-manager"].isLive).toBe(false);
+    expect(activity["research:persona"].isLive).toBe(false);
   });
 
   test("rejects future transcript mtimes and unsafe session ids", async () => {
@@ -376,8 +376,8 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 10, session_id: "future-session", skill: "bopen-orchestration:advisor" }),
-        JSON.stringify({ ts: nowSeconds - 5, session_id: "../escape", skill: "bopen-research:persona" }),
+        JSON.stringify({ ts: nowSeconds - 10, session_id: "future-session", skill: "orchestra:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 5, session_id: "../escape", skill: "research:persona" }),
       ].join("\n"),
     );
     const transcript = join(slug, "future-session.jsonl");
@@ -392,8 +392,8 @@ describe("skill activity", () => {
       nowSeconds,
     });
 
-    expect(activity["bopen-orchestration:advisor"].isLive).toBe(false);
-    expect(activity["bopen-research:persona"].isLive).toBe(false);
+    expect(activity["orchestra:advisor"].isLive).toBe(false);
+    expect(activity["research:persona"].isLive).toBe(false);
   });
 
   test("detectHarness attaches full skill ids only to their exact plugin namespace", async () => {
@@ -401,7 +401,7 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 60, session_id: "bopen-session", skill: "bopen-orchestration:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "bopen-session", skill: "orchestra:advisor" }),
         JSON.stringify({ ts: nowSeconds - 30, session_id: "similar-session", skill: "bopen-tools-extra:helper" }),
       ].join("\n")
     );
@@ -413,7 +413,7 @@ describe("skill activity", () => {
         error: null,
         fetchedAt: "2027-01-15T00:00:00.000Z",
         versions: new Map([
-          ["bopen-tools", "1.0.0"],
+          ["core", "1.0.0"],
           ["bopen-tools-extra", "1.0.0"],
           ["no-activity", "1.0.0"],
         ]),
@@ -425,8 +425,8 @@ describe("skill activity", () => {
       nowSeconds,
     });
 
-    expect(state.plugins.find((plugin) => plugin.name === "bopen-tools")?.skillActivity).toEqual({
-      "bopen-orchestration:advisor": {
+    expect(state.plugins.find((plugin) => plugin.name === "core")?.skillActivity).toEqual({
+      "orchestra:advisor": {
         lastInvokedAt: nowSeconds - 60,
         sessionId: "bopen-session",
         count24h: 1,
@@ -500,7 +500,7 @@ describe("fetchMarketplaceCatalog", () => {
     const fixture = Bun.serve({
       port: 0,
       fetch() {
-        return Response.json({ plugins: [{ name: "bopen-tools", version: "1.2.3" }, { name: "no-version-field" }] });
+        return Response.json({ plugins: [{ name: "core", version: "1.2.3" }, { name: "no-version-field" }] });
       },
     });
 
@@ -509,7 +509,7 @@ describe("fetchMarketplaceCatalog", () => {
       expect(result.fetched).toBe(true);
       expect(result.error).toBeNull();
       expect(result.fetchedAt).not.toBeNull();
-      expect(result.versions.get("bopen-tools")).toBe("1.2.3");
+      expect(result.versions.get("core")).toBe("1.2.3");
       expect(result.versions.has("no-version-field")).toBe(false);
     } finally {
       fixture.stop(true);
@@ -520,14 +520,14 @@ describe("fetchMarketplaceCatalog", () => {
     const fixture = Bun.serve({
       port: 0,
       fetch() {
-        return Response.json([{ name: "bopen-tools", version: "9.9.9" }]);
+        return Response.json([{ name: "core", version: "9.9.9" }]);
       },
     });
 
     try {
       const result = await fetchMarketplaceCatalog(`http://127.0.0.1:${fixture.port}`);
       expect(result.fetched).toBe(true);
-      expect(result.versions.get("bopen-tools")).toBe("9.9.9");
+      expect(result.versions.get("core")).toBe("9.9.9");
     } finally {
       fixture.stop(true);
     }

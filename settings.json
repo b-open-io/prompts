@@ -1,7 +1,7 @@
 {
   "$schema": "./settings.schema.json",
   "version": 1,
-  "owner": "bopen-tools",
+  "owner": "core",
   "settings": [
     {
       "source": "env",

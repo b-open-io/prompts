@@ -4,7 +4,7 @@
 
 > *"Stop. HammerTime."* — A Stop hook system to hammer out bugs and mistakes automatically.
 
-**Goal:** A generic follow-up hook framework for the bopen-tools plugin. Users describe what behaviors to catch at stop time, and HammerTime evaluates the assistant's response against those rules. Ships with "project-owner" as the first built-in rule. New rules can be added via slash command.
+**Goal:** A generic follow-up hook framework for the core plugin. Users describe what behaviors to catch at stop time, and HammerTime evaluates the assistant's response against those rules. Ships with "project-owner" as the first built-in rule. New rules can be added via slash command.
 
 **Architecture:** Two-phase detection inspired by linear-sync. A command-based Stop hook script reads a rules file, scans the transcript for keyword triggers (fast phase), and only invokes LLM evaluation (via the Anthropic API with Haiku) when a keyword match is found (expensive phase). Rules are stored in `~/.claude/hammertime/rules.json` — a single file the slash command manages. Each rule has: a name, trigger keywords, an LLM evaluation prompt, an action mode (ask-user / auto-fix), and an enabled toggle.
 

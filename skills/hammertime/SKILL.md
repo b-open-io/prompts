@@ -13,7 +13,7 @@ description: >-
 
 Rules live under the shared HammerTime home. Resolution order is
 `BOPEN_HAMMERTIME_HOME`, an existing legacy `~/.claude/hammertime`, then
-`~/.bopen-tools/hammertime`. The hook and bundled scripts use the same resolver.
+`~/.core/hammertime`. The hook and bundled scripts use the same resolver.
 The hook registers as a Stop hook and fires on every assistant turn.
 
 Two rule types:

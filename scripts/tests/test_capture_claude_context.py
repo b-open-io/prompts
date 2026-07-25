@@ -25,7 +25,7 @@ def load_script():
 CAPTURE = load_script()
 
 
-DETAILS = """bopen-tools 1.2.3
+DETAILS = """core 1.2.3
   Fixture plugin
 
 Component inventory
@@ -56,7 +56,7 @@ class ClaudeContextTests(unittest.TestCase):
                 path = root / manifest
                 path.mkdir()
                 (path / "plugin.json").write_text(
-                    json.dumps({"name": "bopen-tools", "version": "1.2.3"}),
+                    json.dumps({"name": "core", "version": "1.2.3"}),
                     encoding="utf-8",
                 )
             for name in ("alpha", "beta"):

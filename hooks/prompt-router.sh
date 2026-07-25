@@ -2,7 +2,7 @@
 # prompt-router.sh — UserPromptSubmit hook (Claude runtime only; Codex has no
 # equivalent tool/subagent_type namespace for this to route into).
 #
-# Scores the submitted prompt against ~/.claude/bopen-tools/router-index.json
+# Scores the submitted prompt against ~/.claude/core/router-index.json
 # (built by scripts/build-router-index.py) and — above threshold — injects a
 # short pointer at the best-matching Skill or roster subagent_type. Advisory
 # only: this hook only ever allows, it never blocks the prompt.
@@ -18,7 +18,7 @@
 #      model's own context view is the only accurate judge of loaded-ness;
 #      transcripts lie after compaction, and a faded-attention re-nudge is
 #      desirable, not a bug.
-#   2. Router-side session memory — ~/.claude/bopen-tools/router-state/
+#   2. Router-side session memory — ~/.claude/core/router-state/
 #      <session_id>.json tracks, per matched id, how many times it has
 #      fired and at which prompt count. Each id fires at most twice per
 #      session, with a minimum 10-prompt gap between the two firings. This
@@ -65,10 +65,10 @@ if printf '%s' "$prompt" | grep -qE '^[[:space:]]*/'; then
   exit 0
 fi
 
-INDEX_PATH="${BOPEN_ROUTER_INDEX:-${HOME}/.claude/bopen-tools/router-index.json}"
+INDEX_PATH="${BOPEN_ROUTER_INDEX:-${HOME}/.claude/core/router-index.json}"
 [[ -f "$INDEX_PATH" ]] || exit 0
 
-STATE_DIR="${BOPEN_ROUTER_STATE_DIR:-${HOME}/.claude/bopen-tools/router-state}"
+STATE_DIR="${BOPEN_ROUTER_STATE_DIR:-${HOME}/.claude/core/router-state}"
 
 PROMPT="$prompt" INDEX_PATH="$INDEX_PATH" SESSION_ID="$session_id" \
   TRANSCRIPT_PATH="$transcript_path" STATE_DIR="$STATE_DIR" python3 - <<'PY'

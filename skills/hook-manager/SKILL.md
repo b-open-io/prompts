@@ -2,19 +2,19 @@
 name: hook-manager
 version: 2.0.0
 description: >-
-  List, enable, or disable individual bopen-tools hooks and check their prerequisites. Use for
+  List, enable, or disable individual core hooks and check their prerequisites. Use for
   "list hooks", "enable a hook", "disable a hook", "hook setup", "hooks config", or a
   [BOPEN-HOOKS-SETUP] directive. For the full harness view, use setup.
 ---
 
 # Hook Manager
 
-Manage the hooks that ship with the bopen-tools plugin. The catalog source of
+Manage the hooks that ship with the core plugin. The catalog source of
 truth is `hooks/manifest.json` in the installed plugin — read it live rather
 than trusting a memorized list:
 
 ```bash
-cat "$(ls -d ~/.claude/plugins/cache/b-open-io/bopen-tools/*/ | sort -V | tail -1)hooks/manifest.json"
+cat "$(ls -d ~/.claude/plugins/cache/b-open-io/core/*/ | sort -V | tail -1)hooks/manifest.json"
 ```
 
 Each entry carries `name`, `event`, `matcher`, `tier`, `runtimes`, `summary`, and
@@ -28,7 +28,7 @@ with an explicit `true`/`false` verdict for a hook wins):
 
 1. `$BOPEN_HOOKS_CONFIG` — explicit override (tests, scripts)
 2. `<project>/.claude/bopen-hooks.json` — per-project
-3. `~/.claude/bopen-tools/hooks-config.json` — per-user
+3. `~/.claude/core/hooks-config.json` — per-user
 
 ```json
 {
@@ -63,7 +63,7 @@ yet. Do not interrupt their task; offer setup at a natural pause. The flow:
 2. Run the prerequisite checks below and fold findings into the
    recommendation (e.g. agent-browser-solo without agent-browser installed
    silently falls back to native WebFetch — still safe to leave on).
-3. Write `~/.claude/bopen-tools/hooks-config.json` with the full hooks map —
+3. Write `~/.claude/core/hooks-config.json` with the full hooks map —
    include every hook with an explicit boolean, even the all-defaults case.
    Writing the file is what dismisses the setup notice permanently.
 
@@ -90,7 +90,7 @@ When a hook misbehaves or the user asks "why did X get blocked/skipped":
 
 ```bash
 # Which config verdict applies to a hook?
-for f in "$BOPEN_HOOKS_CONFIG" ./.claude/bopen-hooks.json ~/.claude/bopen-tools/hooks-config.json; do
+for f in "$BOPEN_HOOKS_CONFIG" ./.claude/bopen-hooks.json ~/.claude/core/hooks-config.json; do
   [ -f "$f" ] && echo "$f: $(jq -r '.hooks["<name>"] // "no verdict"' "$f")"
 done
 
@@ -103,7 +103,7 @@ command -v python3 || echo "python3 missing — hammertime and JSON escaping deg
 
 - Hard denies surface to the model as structured permission denials; on the
   Codex runtime they arrive as stderr JSON with exit 2. Both are by design.
-- hammertime also has its own controls — `Skill(bopen-tools:hammertime)` and
+- hammertime also has its own controls — `Skill(core:hammertime)` and
   the `hammertime:manage` skill — for rule-level tuning beyond on/off.
 - The definitive behavior reference for every hook is its script header in
   the plugin's `hooks/` directory; read it before guessing.
@@ -111,7 +111,7 @@ command -v python3 || echo "python3 missing — hammertime and JSON escaping deg
 ## What this skill never does
 
 - Never copies hook files into `~/.claude` — hooks ship with the plugin and
-  update through `claude plugin update bopen-tools@b-open-io`.
+  update through `claude plugin update core@b-open-io`.
 - Never edits `hooks/*.sh`, `claude-hooks.json`, or anything in the plugin
   cache.
 - Never disables a guard hook without telling the user what it protected.

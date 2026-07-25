@@ -870,7 +870,7 @@ def extract_last_assistant_message(hook_input):
 def hook_enabled(name: str) -> bool:
     """Mirror of hooks/lib/common.sh hook_enabled(): disabled ONLY by an
     explicit false in BOPEN_HOOKS_CONFIG, project .claude/bopen-hooks.json,
-    or ~/.claude/bopen-tools/hooks-config.json (first explicit verdict wins);
+    or ~/.claude/core/hooks-config.json (first explicit verdict wins);
     anything else — absent files, keys, or broken JSON — means enabled."""
     candidates = [
         os.environ.get("BOPEN_HOOKS_CONFIG", ""),
@@ -880,7 +880,7 @@ def hook_enabled(name: str) -> bool:
             "bopen-hooks.json",
         ),
         os.path.join(
-            os.path.expanduser("~"), ".claude", "bopen-tools", "hooks-config.json"
+            os.path.expanduser("~"), ".claude", "core", "hooks-config.json"
         ),
     ]
     for path in candidates:

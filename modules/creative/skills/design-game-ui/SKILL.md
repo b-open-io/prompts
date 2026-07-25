@@ -75,7 +75,7 @@ Keep this skill responsible for the interaction contract, then bring in only
 the capabilities required to produce or prove the requested result. Read
 `references/collaboration-and-companion-skills.md` before assigning work.
 
-The most common companion is `Skill(bopen-tools:ui-audio-theme)`. Invoke it
+The most common companion is `Skill(core:ui-audio-theme)`. Invoke it
 when the user wants actual focus, activation, success, error, modal, or
 notification sounds rather than only an audio-event specification. Have
 **Frames** (`audio-specialist`) generate, audition, normalize, and integrate the

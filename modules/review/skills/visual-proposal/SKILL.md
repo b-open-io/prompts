@@ -114,7 +114,7 @@ invents facts is worse than no advocate.
 The advocates and judges are **real named agents from the bОpen roster**, not
 invented personas — that credibility is the whole point. Two steps:
 
-1. **Pick the agents.** `Agent(bopen-tools:front-desk)` returns the team and who
+1. **Pick the agents.** `Agent(core:front-desk)` returns the team and who
    fits what, or read the `agents/*.md` files (each has a `display_name` and a
    `role`). Match each option to an agent whose real expertise leans that way (a
    code-auditor for correctness, an optimizer for efficiency, a standards/interop
@@ -235,9 +235,9 @@ consensus and who-verified at a glance.
 The whole point is a page that's easy to follow. Text written by a panel of
 agents drifts into AI tics (setup-and-dismiss, tricolons, hedged filler) that
 make it a slog. So: **ask every dispatched agent — each advocate, each judge,
-and the CEO — to run `Skill(bopen-tools:humanize)` on its returned prose before
+and the CEO — to run `Skill(core:humanize)` on its returned prose before
 it hands it back.** Then, when you assemble the page, **you (the host) run
-`Skill(bopen-tools:humanize)` over the final copy** — the theses, verdicts,
+`Skill(core:humanize)` over the final copy** — the theses, verdicts,
 captions, and the CEO's decision — so the whole thing reads in one clear human
 voice. Crisp, skimmable, no throat-clearing.
 

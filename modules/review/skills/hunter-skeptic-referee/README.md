@@ -129,10 +129,10 @@ For quick informal reviews, you can use just the Hunter phase (Jerry) directly.
 
 ## Installation
 
-Included with the bopen-tools plugin:
+Included with the core plugin:
 
 ```bash
-/plugin install bopen-tools@b-open-io
+/plugin install core@b-open-io
 ```
 
 No separate installation needed. The `/bug-hunt` command and the `hunter-skeptic-referee` skill are both included.

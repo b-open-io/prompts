@@ -51,7 +51,7 @@ assert_exit "damage-control allow .env.example" "0" "$HOOK_EXIT"
 
 # Hook-config writes are confirmation-tier: the agent must never silently
 # disarm its own guards. Claude asks; Codex denies with reason.
-for cfg_path in "/Users/x/.claude/bopen-tools/hooks-config.json" "/tmp/project/.claude/bopen-hooks.json"; do
+for cfg_path in "/Users/x/.claude/core/hooks-config.json" "/tmp/project/.claude/bopen-hooks.json"; do
   input=$(jq -n --arg p "$cfg_path" '{tool_name:"Write", tool_input:{file_path:$p, content:"{}"}}')
   run_hook "damage-control.sh" "claude" "$input"
   assert_exit "damage-control hooks-config ask exit ($cfg_path)" "0" "$HOOK_EXIT"
@@ -63,7 +63,7 @@ for cfg_path in "/Users/x/.claude/bopen-tools/hooks-config.json" "/tmp/project/.
 done
 
 # Reading the config stays free (diagnosis flows read it constantly)
-input=$(jq -n '{tool_name:"Read", tool_input:{file_path:"/Users/x/.claude/bopen-tools/hooks-config.json"}}')
+input=$(jq -n '{tool_name:"Read", tool_input:{file_path:"/Users/x/.claude/core/hooks-config.json"}}')
 run_hook "damage-control.sh" "claude" "$input"
 assert_exit "damage-control hooks-config read allowed" "0" "$HOOK_EXIT"
 assert_not_contains "damage-control hooks-config read no prompt" "permissionDecision" "$HOOK_STDOUT$HOOK_STDERR"

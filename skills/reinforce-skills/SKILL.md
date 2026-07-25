@@ -51,7 +51,7 @@ Two separate single-line blocks — one for skills, one for agents. Both use the
 <!-- AGENT-MAP-START -->STOP. You WILL forget agent IDs mid-session. Check this map before delegating any complex task.|task-trigger→Agent(plugin:agent-id)|another-trigger→Agent(plugin:agent-id)<!-- AGENT-MAP-END -->
 ```
 
-Agent IDs use `plugin:agent-name` format matching the `subagent_type` parameter of the Agent tool (e.g., `bopen-review:code-auditor`, `bopen-web:designer`, `gemskills:content`).
+Agent IDs use `plugin:agent-name` format matching the `subagent_type` parameter of the Agent tool (e.g., `review:code-auditor`, `web-dev:designer`, `gemskills:content`).
 
 ### Format Rules (both blocks)
 

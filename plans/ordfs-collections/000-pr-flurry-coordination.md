@@ -4,7 +4,7 @@
 > solution as a coordinated set of PRs across repos. It is not itself an executor
 > plan — it sequences plans 001–005 into real PRs and defines how they are
 > dispatched. Run it from a main (Claude Code or Codex) seat using
-> `Skill(bopen-orchestration:coordinator)`.
+> `Skill(orchestra:coordinator)`.
 >
 > **Economics**: the main seat owns specs, review, and git. Implementation volume
 > goes to **codex workers** (disjoint file ownership or worktree isolation), NOT
@@ -65,7 +65,7 @@ For each PR, the main seat:
    (`bun test` / `go test ./...` / markdown render), and "what NOT to touch". The
    relevant plan (001–004) IS most of the spec — reference it.
 2. Dispatches a **codex worker** with `--sandbox workspace-write`, the environment
-   clause, and the structured-final-report demand (see `Skill(bopen-orchestration:coordinator)`).
+   clause, and the structured-final-report demand (see `Skill(orchestra:coordinator)`).
    Disjoint repos → no collision; within a repo, partition by file or use a worktree.
 3. Reviews the diff adversarially (build/tool config, no shims, scope), re-runs
    acceptance OUTSIDE the sandbox, then commits/pushes/opens the PR from the main

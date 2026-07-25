@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run deterministic and optional live bopen-tools plugin release checks."""
+"""Run deterministic and optional live core plugin release checks."""
 
 from __future__ import annotations
 

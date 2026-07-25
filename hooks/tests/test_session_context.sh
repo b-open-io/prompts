@@ -57,8 +57,8 @@ assert_contains "session-context plugin repo inventory" "Plugin inventory" "$ctx
 
 # --- declared settings resolve from env/json without leaking undeclared data ---
 SETTINGS_HOME=$(mktemp -d)
-mkdir -p "$SETTINGS_HOME/.claude/bopen-tools"
-cat > "$SETTINGS_HOME/.claude/bopen-tools/settings.json" <<'JSON'
+mkdir -p "$SETTINGS_HOME/.claude/core"
+cat > "$SETTINGS_HOME/.claude/core/settings.json" <<'JSON'
 {
   "skills": {
     "coordinator": {
@@ -70,7 +70,7 @@ cat > "$SETTINGS_HOME/.claude/bopen-tools/settings.json" <<'JSON'
   "undeclared_secret": "should-not-leak"
 }
 JSON
-cat > "$SETTINGS_HOME/.claude/bopen-tools/hooks-config.json" <<'JSON'
+cat > "$SETTINGS_HOME/.claude/core/hooks-config.json" <<'JSON'
 {
   "version": 1,
   "hooks": {
@@ -80,7 +80,7 @@ cat > "$SETTINGS_HOME/.claude/bopen-tools/hooks-config.json" <<'JSON'
   }
 }
 JSON
-cat > "$SETTINGS_HOME/.claude/bopen-tools/router-index.json" <<'JSON'
+cat > "$SETTINGS_HOME/.claude/core/router-index.json" <<'JSON'
 {"version": 1, "entry_count": 17, "entries": []}
 JSON
 
@@ -90,7 +90,7 @@ err_file=$(mktemp)
 set +e
 printf '%s' "$input" | HOME="$SETTINGS_HOME" \
   BOPEN_WORKER_MODEL="worker-test-model" \
-  BOPEN_ROUTER_INDEX="$SETTINGS_HOME/.claude/bopen-tools/router-index.json" \
+  BOPEN_ROUTER_INDEX="$SETTINGS_HOME/.claude/core/router-index.json" \
   bash "$ROOT/session-context.sh" >"$out_file" 2>"$err_file"
 settings_exit=$?
 set -e
@@ -151,11 +151,11 @@ jq -n '{
 # intentionally launch the asynchronous index builder into the isolated HOME,
 # racing the fixture cleanup below and intermittently leaving Python cache
 # directories behind on macOS.
-touch "$SETTINGS_HOME/.claude/bopen-tools/router-index.json"
+touch "$SETTINGS_HOME/.claude/core/router-index.json"
 
 printf '%s' "$input" | HOME="$SETTINGS_HOME" \
   BOPEN_PLUGIN_CACHE_ROOT="$PLUGIN_CACHE" \
-  BOPEN_ROUTER_INDEX="$SETTINGS_HOME/.claude/bopen-tools/router-index.json" \
+  BOPEN_ROUTER_INDEX="$SETTINGS_HOME/.claude/core/router-index.json" \
   bash "$ROOT/session-context.sh" >"$out_file" 2>"$err_file"
 capped_out=$(cat "$out_file")
 rm -f "$out_file" "$err_file"

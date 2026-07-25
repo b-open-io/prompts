@@ -127,7 +127,7 @@ def parse_prompt(text: str) -> dict[str, Any]:
             else None
         ),
         "bopen_tools_visible_count": sum(
-            name.startswith("bopen-tools:") for name in names
+            name.startswith("core:") for name in names
         ),
         "visible_skills": names,
     }
@@ -218,7 +218,7 @@ def markdown(snapshot: dict[str, Any]) -> str:
         ),
         f"- Descriptions retained: {prompt['descriptions_retained']}",
         f"- Skills block: {prompt['skills_block_bytes']:,} bytes",
-        f"- bopen-tools visible: {prompt['bopen_tools_visible_count']}",
+        f"- core visible: {prompt['bopen_tools_visible_count']}",
         "",
     ]
     return "\n".join(lines)

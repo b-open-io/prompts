@@ -10,9 +10,9 @@ const pack: PackCatalogEntry = {
 	tagline: "A test pack",
 	plugins: [
 		{
-			name: "bopen-tools",
+			name: "core",
 			marketplace: "b-open-io",
-			install: "claude plugin install bopen-tools@b-open-io",
+			install: "claude plugin install core@b-open-io",
 		},
 		{
 			name: "stripe",
@@ -31,7 +31,7 @@ const state: HarnessState = {
 	generatedAt: "2026-07-14T00:00:00.000Z",
 	plugins: [
 		{
-			name: "bopen-tools",
+			name: "core",
 			installedClaude: "1.1.70",
 			installedCodex: null,
 			marketplaceVersion: "1.1.70",
@@ -50,7 +50,7 @@ describe("pack dependency diff", () => {
 	test("separates installed marketplace plugins, portable skills, and missing dependencies", () => {
 		const dependencies = diffPackDependencies(pack, state, "claude")
 		expect(dependencies.map(({ name, installed }) => ({ name, installed }))).toEqual([
-			{ name: "bopen-tools", installed: true },
+			{ name: "core", installed: true },
 			{ name: "stripe", installed: false },
 			{ name: "react-doctor", installed: true },
 		])
@@ -59,7 +59,7 @@ describe("pack dependency diff", () => {
 
 	test("uses the selected harness instead of another installed harness", () => {
 		const dependencies = diffPackDependencies(pack, state, "codex")
-		expect(dependencies.find((dependency) => dependency.name === "bopen-tools")?.installed).toBe(
+		expect(dependencies.find((dependency) => dependency.name === "core")?.installed).toBe(
 			false,
 		)
 	})

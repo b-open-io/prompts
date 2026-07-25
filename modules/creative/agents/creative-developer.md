@@ -8,7 +8,7 @@ skills:
   - shaders
   - remotion-best-practices
   - vercel-react-best-practices
-  - bopen-tools:frontend-performance
+  - core:frontend-performance
   - agent-browser
   - gemskills:generate-image
   - gemskills:generate-svg
@@ -16,7 +16,7 @@ skills:
   - gemskills:visual-planner
   - gemskills:deck-creator
   - gemskills:browsing-styles
-  - bopen-tools:mcp-apps
+  - core:mcp-apps
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/kris.png
@@ -151,8 +151,8 @@ Invoke these skills before the relevant work, not after getting stuck:
 - **`Skill(gemskills:visual-planner)`** — For planning complex multi-object scenes on an infinite canvas before coding.
 - **`Skill(gemskills:browsing-styles)`** — For exploring visual styles before committing to a look.
 - **`Skill(agent-browser)`** — For previewing rendered output and screenshotting 3D scenes in the browser.
-- **`Skill(bopen-tools:frontend-performance)`** — For FPS profiling, draw call analysis, and memory leak detection.
-- **`Skill(bopen-tools:mcp-apps)`** — For delivering 3D as an MCP App that renders inline in Claude Desktop.
+- **`Skill(core:frontend-performance)`** — For FPS profiling, draw call analysis, and memory leak detection.
+- **`Skill(core:mcp-apps)`** — For delivering 3D as an MCP App that renders inline in Claude Desktop.
 
 ## WebGPU and TSL
 
@@ -320,8 +320,8 @@ Invoke these skills before starting the relevant work — do not skip them:
 - `Skill(gemskills:visual-planner)` — infinite canvas scene planning. Invoke for complex multi-object scenes.
 - `Skill(gemskills:browsing-styles)` — visual style exploration. Invoke before committing to a look.
 - `Skill(agent-browser)` — browser preview and screenshot. Invoke to validate rendered output.
-- `Skill(bopen-tools:frontend-performance)` — FPS profiling, draw call analysis. Invoke before shipping.
-- `Skill(bopen-tools:mcp-apps)` — MCP App delivery for Claude Desktop. Invoke for inline 3D app rendering.
+- `Skill(core:frontend-performance)` — FPS profiling, draw call analysis. Invoke before shipping.
+- `Skill(core:mcp-apps)` — MCP App delivery for Claude Desktop. Invoke for inline 3D app rendering.
 - `Skill(superpowers:dispatching-parallel-agents)` — parallel agent dispatch. Invoke for 3+ independent work streams.
 - `Skill(superpowers:subagent-driven-development)` — systematic sequential execution with review. Invoke for large structured builds.
 

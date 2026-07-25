@@ -28,7 +28,7 @@ declare (manifests, git-versioned)  →  detect (live, every load/refresh)  → 
 
 ```jsonc
 {
-  "plugin": "bopen-tools",
+  "plugin": "core",
   "clis": [
     {
       "name": "agent-browser",
@@ -58,7 +58,7 @@ declare (manifests, git-versioned)  →  detect (live, every load/refresh)  → 
                "check": "path:~/.codex/agents" }
   },
   "hooks": { "manifest": "hooks/manifest.json",
-             "config": "~/.claude/bopen-tools/hooks-config.json" },
+             "config": "~/.claude/core/hooks-config.json" },
   "skillSetupScripts": [
     { "skill": "x-tweet-search", "script": "skills/x-tweet-search/scripts/setup.sh",
       "purpose": "X API bearer token" }
@@ -158,10 +158,10 @@ targeting it. Pi and anything undetected get the generic tier: portable
 
 ## 8. v1 scope
 
-- Manifest schema + `setup/manifest.json` for bopen-tools (other plugins:
+- Manifest schema + `setup/manifest.json` for core (other plugins:
   follow-up one-file PRs; installer shows manifest-less plugins with install
   state only).
-- Installer skill `bopen-tools:setup` (command `/bopen-setup`): Bun server,
+- Installer skill `core:setup` (command `/bopen-setup`): Bun server,
   detector, UI, plan emitter.
 - Runtimes: claude + codex full support; others per research outcome, minimum
   "generic" tier.

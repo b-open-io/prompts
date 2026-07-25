@@ -4,7 +4,7 @@
 
 **Goal:** Build the Kris creative developer agent with two custom skills (threejs-r3f, shaders) and MCP server integrations, fully validated by research and review.
 
-**Architecture:** Agent lives in bopen-tools plugin (`agents/creative-developer.md`). Two custom skills in `skills/threejs-r3f/` and `skills/shaders/`. Agent prompt handles creative direction, output conventions, and handoff protocols. Skills handle workflows, resource links, step-by-step recipes, and performance rules. MCP servers documented for optional installation.
+**Architecture:** Agent lives in core plugin (`agents/creative-developer.md`). Two custom skills in `skills/threejs-r3f/` and `skills/shaders/`. Agent prompt handles creative direction, output conventions, and handoff protocols. Skills handle workflows, resource links, step-by-step recipes, and performance rules. MCP servers documented for optional installation.
 
 **Tech Stack:** Three.js, React Three Fiber (R3F), Drei, @react-three/rapier, GLSL, TSL (Three Shader Language), pmndrs/postprocessing, Vite, TypeScript
 
@@ -427,7 +427,7 @@ tools: >-
   Skill(shaders),
   Skill(remotion-best-practices),
   Skill(vercel-react-best-practices),
-  Skill(bopen-web:frontend-performance),
+  Skill(web-dev:frontend-performance),
   Skill(agent-browser),
   Skill(gemskills:generate-image),
   Skill(gemskills:generate-svg),
@@ -435,7 +435,7 @@ tools: >-
   Skill(gemskills:visual-planner),
   Skill(gemskills:deck-creator),
   Skill(gemskills:browsing-styles),
-  Skill(bopen-mcp:mcp-apps),
+  Skill(mcp-dev:mcp-apps),
   Skill(superpowers:dispatching-parallel-agents),
   Skill(superpowers:subagent-driven-development)
 color: cyan

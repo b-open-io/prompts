@@ -17,7 +17,7 @@ describe("Agent Master local interface routing", () => {
 	})
 
 	test("isolates static tools on their own Portless origin", () => {
-		expect(interfaceUrl("http://127.0.0.1:7788", "bopen-tools:visual-wayfinder")).toBe(
+		expect(interfaceUrl("http://127.0.0.1:7788", "core:visual-wayfinder")).toBe(
 			"https://wayfinder.agent-master.localhost",
 		)
 	})
@@ -26,7 +26,7 @@ describe("Agent Master local interface routing", () => {
 		expect(listLocalInterfaces("https://agent-master.localhost").map((entry) => entry.id)).toEqual([
 			"gemskills:deck-creator",
 			"gemskills:visual-planner",
-			"bopen-tools:visual-wayfinder",
+			"core:visual-wayfinder",
 		])
 	})
 })

@@ -1,0 +1,194 @@
+# Agent Roster
+
+Full core agent roster with `subagent_type` identifiers and the skills to mention in each agent's spawn prompt.
+
+> **Why mention skills in spawn prompts?** Each agent has specialized skills available, but agents only invoke skills they're told about. If you don't mention `Skill(semgrep)` in the code-auditor's prompt, it may skip static analysis entirely. Always tell agents which skills apply to their task.
+
+## Roster
+
+| Agent | subagent_type | Model | Best for |
+|-------|--------------|-------|----------|
+| **researcher** | `core:researcher` | sonnet | Libraries, APIs, docs, competitive analysis, web sources |
+| **nextjs** | `core:nextjs` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
+| **native-desktop** | `core:native-desktop` | sonnet | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs |
+| **designer** | `core:designer` | sonnet | UI components, game HUDs, TV shells, controller/remote focus, design systems, accessibility |
+| **agent-builder** | `orchestra:agent-builder` | opus | AI SDK v7 agents, tool-calling, durable runtime selection, conditional eve evaluation |
+| **database** | `core:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
+| **integration-expert** | `core:integration-expert` | sonnet | REST APIs, webhooks, third-party services |
+| **code-auditor** | `core:code-auditor` | opus | Security review, vulnerability scanning, code quality |
+| **tester** | `core:tester` | sonnet | Unit, integration, e2e tests, mocking, coverage, CI |
+| **documentation-writer** | `core:documentation-writer` | sonnet | READMEs, API docs, PRDs, guides |
+| **devops** | `core:devops` | sonnet | Vercel+Railway+Bun deployments, CI/CD, monitoring |
+| **optimizer** | `core:optimizer` | opus | Bundle analysis, Lighthouse, runtime perf, Core Web Vitals |
+| **architecture-reviewer** | `core:architecture-reviewer` | opus | System design review, refactoring strategy, tech debt |
+| **mobile** | `core:mobile` | sonnet | Expo-first React Native, Swift, Kotlin, Flutter |
+| **data** | `core:data` | sonnet | ETL pipelines, analytics, data visualization |
+| **payments** | `core:payments` | sonnet | Stripe, billing, financial transactions |
+| **mcp** | `core:mcp` | sonnet | MCP server setup, config, diagnostics |
+| **marketer** | `product-skills:marketer` | sonnet | CRO, SEO, copy, launch strategy |
+| **legal** | `product-skills:legal` | opus | Privacy, compliance, ToS, data protection |
+| **audio-specialist** | `core:audio-specialist` | sonnet | Audio, xAI/Grok generation, ElevenLabs |
+| **prompt-engineer** | `core:prompt-engineer` | sonnet | Slash commands, skills, hooks, YAML frontmatter |
+| **consolidator** | `core:consolidator` | sonnet | File structure cleanup, deduplication, organization |
+
+## Per-Agent Skills to Mention in Spawn Prompts
+
+### code-auditor
+
+```markdown
+## Your Available Skills
+- `Skill(semgrep)` — invoke for static analysis and vulnerability pattern scanning
+- `Skill(codeql)` — invoke for deep semantic code analysis
+- `Skill(differential-review)` — invoke to audit diffs between branches
+- `Skill(secure-workflow-guide)` — invoke for secure CI/CD and workflow patterns
+
+Invoke these BEFORE writing any security findings.
+```
+
+### designer
+
+```markdown
+## Your Available Skills
+- `Skill(frontend-design)` — invoke for UI component and layout guidance
+- `Skill(web-design-guidelines)` — invoke for design system rules and patterns
+- `Skill(ui-audio-theme)` — invoke for audio/motion design patterns
+- `Skill(core:design-game-ui)` — invoke for game HUDs, TV interfaces, controller/remote input maps, and spatial focus navigation
+- `Skill(vercel-react-best-practices)` — invoke for React + Vercel performance rules
+
+Invoke `Skill(frontend-design)` first before designing any component.
+```
+
+### optimizer
+
+```markdown
+## Your Available Skills
+- `Skill(core:frontend-performance)` — invoke for Core Web Vitals and bundle optimization
+- `Skill(vercel-react-best-practices)` — invoke for Vercel-specific perf patterns
+- `Skill(vercel-composition-patterns)` — invoke for RSC composition and streaming
+
+Invoke performance skill before auditing any file.
+```
+
+### architecture-reviewer
+
+```markdown
+## Your Available Skills
+- `Skill(semgrep)` — invoke for structural code pattern analysis
+- `Skill(secure-workflow-guide)` — invoke when reviewing CI/CD or access patterns
+- `Skill(vercel-react-best-practices)` — invoke for frontend architecture patterns
+
+Use these to ground your review in concrete analysis, not just intuition.
+```
+
+### nextjs
+
+```markdown
+## Your Available Skills
+- `Skill(vercel-react-best-practices)` — invoke before any RSC, streaming, or routing work
+- `Skill(vercel-composition-patterns)` — invoke for layout and composition patterns
+- `Skill(core:create-next-project)` — invoke when scaffolding a new Next.js project
+
+Always invoke `Skill(vercel-react-best-practices)` before writing any server component or route handler.
+```
+
+### native-desktop
+
+```markdown
+## Your Available Skills
+- `Skill(macos-design)` — invoke before consequential macOS window, menu, or interaction decisions
+- `Skill(core:check-version)` — invoke before Native SDK scaffolding or migration decisions
+- `Skill(agent-browser)` — invoke for current Native SDK, Zig, and Apple platform documentation
+- `Skill(visual-review)` — invoke for reviewable desktop UI and release-flow recaps
+- `Skill(confess)` — invoke before completion to catch unsupported assumptions and missed release gates
+
+Use the Native SDK for new desktop applications. Treat Wails, Electron, and ElectroBun as migration sources only.
+```
+
+### researcher
+
+```markdown
+## Your Available Skills
+- `Skill(agent-browser)` — invoke for scraping pages, extracting structured data from web content
+- `Skill(core:x-research)` — invoke for real-time X/Twitter data and trends
+- `Skill(notebooklm)` — invoke for deep synthesis of multiple research sources
+
+Use `Skill(agent-browser)` for any page that requires interaction or dynamic loading.
+```
+
+### integration-expert
+
+```markdown
+## Your Available Skills
+- `Skill(core:resend)` — invoke for email sending integration with Resend
+- `Skill(mcp-integration)` — invoke when integrating with MCP servers
+
+Invoke the relevant skill before starting any third-party integration.
+```
+
+### devops
+
+```markdown
+## Your Available Skills
+- `Skill(semgrep)` — invoke to scan CI/CD configuration for security issues
+- `Skill(codeql)` — invoke for deep workflow security analysis
+- `Skill(product-skills:saas-launch-audit)` — invoke before any production deployment
+- `Skill(core:npm-publish)` — invoke when publishing packages
+
+Always run `Skill(product-skills:saas-launch-audit)` before a production deploy.
+```
+
+### agent-builder
+
+```markdown
+## Your Available Skills
+- `Skill(ai-sdk)` — invoke before any Vercel AI SDK work for current API patterns
+- `Skill(superpowers:dispatching-parallel-agents)` — invoke when designing multi-agent orchestration
+- `Skill(orchestra:deploy-agent-team)` — invoke when implementing team coordination patterns
+
+Invoke `Skill(ai-sdk)` first for any Vercel AI SDK or agent framework work.
+For bOpen runtime decisions, preserve the approved conditional posture: eve
+must stay behind the bOpen-owned ACL/persistence proxy and pass the hard Phase-2
+go/no-go; failed seam proofs select the v7-native runtime.
+```
+
+### documentation-writer
+
+```markdown
+## Your Available Skills
+- `Skill(core:humanize)` — invoke to review docs for filler and vague language
+- `Skill(core:cli-demo-gif)` — invoke to create terminal demo GIFs for docs
+
+Invoke `Skill(core:humanize)` after drafting to eliminate padding.
+```
+
+### marketer
+
+```markdown
+## Your Available Skills
+- `Skill(marketing-skills:cro)` — invoke for landing page conversion optimization
+- `Skill(marketing-skills:seo-audit)` — invoke for SEO analysis
+- `Skill(marketing-skills:copywriting)` — invoke for persuasive copy guidance
+- `Skill(marketing-skills:launch)` — invoke when planning a product launch
+- `Skill(marketing-skills:programmatic-seo)` — invoke for programmatic SEO strategies
+
+Invoke the most relevant skill before starting any campaign or page work.
+```
+
+### tester
+
+```markdown
+## Your Available Skills
+- `Skill(webapp-testing)` — invoke for web application testing patterns and setup
+- `Skill(property-based-testing)` — invoke for generating property-based test cases
+
+Invoke `Skill(webapp-testing)` before setting up any test infrastructure.
+```
+
+### payments
+
+```markdown
+## Your Available Skills
+- `Skill(core:plaid-integration)` — invoke for any Plaid/banking integration work
+
+Review Stripe docs directly via WebFetch for current API patterns.
+```

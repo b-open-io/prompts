@@ -8,7 +8,7 @@ Stop hook that catches bad model behaviors before they reach you. Runs on every 
 
 **Catch specific bad behaviors automatically.** Write a rule in plain English — "never dismiss errors as pre-existing" — and HammerTime scores every response against it. High-confidence violations are blocked immediately. Ambiguous ones go to a fast Haiku verification call before blocking.
 
-**Trigger skills when a rule fires.** A rule can specify a skill to invoke when it catches a violation. The block message tells the agent exactly what to do next: "Invoke Skill(bopen-tools:confess) to address this."
+**Trigger skills when a rule fires.** A rule can specify a skill to invoke when it catches a violation. The block message tells the agent exactly what to do next: "Invoke Skill(core:confess) to address this."
 
 **Ground rules in real session logs.** The built-in `project-owner` rule went from F1=0.14 to F1=0.89 after mining 10 production session logs — synthetic keywords guessed from a description almost never match how the model actually talks.
 
@@ -58,8 +58,8 @@ The most effective pattern: a rule detects bad behavior, and a skill provides th
 |---|---|---|
 | Skips tests | `superpowers:test-driven-development` | Redirects to TDD workflow |
 | Skips architecture planning | `gemskills:visual-planner` | Forces visual planning step |
-| Writes insecure code | `bopen-review:code-audit-scripts` | Runs security audit |
-| Finishes without self-review | `bopen-tools:confess` | Forces self-audit |
+| Writes insecure code | `review:code-audit-scripts` | Runs security audit |
+| Finishes without self-review | `core:confess` | Forces self-audit |
 
 ### Anti-laziness rules
 
@@ -168,10 +168,10 @@ Each line shows elapsed time, rule name, total score by layer, and phase decisio
 
 ## Installation
 
-HammerTime is included with the bopen-tools plugin.
+HammerTime is included with the core plugin.
 
 ```bash
-claude plugin install bopen-tools@b-open-io
+claude plugin install core@b-open-io
 ```
 
 Restart Claude Code after install to register the Stop hook.

@@ -2,7 +2,7 @@
 
 **Date**: 2026-03-10
 **Status**: Approved
-**Plugin**: bopen-tools (prompts repo)
+**Plugin**: core (prompts repo)
 
 ## Identity
 
@@ -50,7 +50,7 @@ Kris is a **studio artist, not a site builder**. He produces assets and prototyp
 |-------|---------|
 | `Skill(remotion-best-practices)` | 3D video output; has `rules/3d.md` with R3F patterns |
 | `Skill(vercel-react-best-practices)` | React fundamentals (R3F is React) |
-| `Skill(bopen-web:frontend-performance)` | FPS profiling, draw call analysis |
+| `Skill(web-dev:frontend-performance)` | FPS profiling, draw call analysis |
 | `Skill(agent-browser)` | Preview and screenshot 3D scenes |
 | `Skill(gemskills:generate-image)` | Textures, HDR environments, reference images |
 | `Skill(gemskills:generate-svg)` | SVG assets for HUD/overlay elements |
@@ -60,7 +60,7 @@ Kris is a **studio artist, not a site builder**. He produces assets and prototyp
 | `Skill(gemskills:browsing-styles)` | Visual style exploration before creating |
 | `Skill(superpowers:dispatching-parallel-agents)` | Fan out work |
 | `Skill(superpowers:subagent-driven-development)` | Systematic execution |
-| `Skill(bopen-mcp:mcp-apps)` | Deliver 3D as MCP App in Claude Desktop |
+| `Skill(mcp-dev:mcp-apps)` | Deliver 3D as MCP App in Claude Desktop |
 
 ## Skills — Custom to Build (2)
 
@@ -173,7 +173,7 @@ The agent `.md` prompt itself covers:
 
 ## Decisions Made
 
-- **Home repo**: bopen-tools (prompts) — Kris writes code, not media
+- **Home repo**: core (prompts) — Kris writes code, not media
 - **No overlap with Ridd**: Ridd does 2D UI, Kris does 3D. Clean boundary.
 - **No custom physics skill**: @react-three/rapier patterns fit in the threejs-r3f skill and agent prompt
 - **No custom post-processing skill**: Covered within the shaders skill
@@ -183,7 +183,7 @@ The agent `.md` prompt itself covers:
 ## Consolidation Note (Same Session)
 
 Ridd consolidation was completed alongside this design:
-- Mira renamed to Ridd in bopen-tools (v1.0.9), kept all 34 tools
+- Mira renamed to Ridd in core (v1.0.9), kept all 34 tools
 - Folded unique Ridd content (web3icons, Anthropic plugins)
 - Deleted gemskills duplicate
 - Updated all references (front-desk, docs-writer, README, WORKFLOW)

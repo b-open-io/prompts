@@ -6,8 +6,9 @@ Prior investigation: OPL-3045
 
 ## Problem
 
-bopen-tools is a monolithic distribution containing skills, agents, commands,
-hooks, and third-party symlinks for many unrelated domains. Both Claude and
+`bopen-tools`, since renamed to `core`, was a monolithic distribution
+containing skills, agents, commands, hooks, and third-party symlinks for many
+unrelated domains. Both Claude and
 Codex pay startup context for model-visible routing metadata. Codex has already
 reached states where descriptions are completely removed and skills are still
 omitted, proving that catalog cardinality—not only long `SKILL.md` bodies—is the
@@ -73,7 +74,7 @@ therefore have a supported expression, and a skill moving to another repository
 stays reachable.
 
 **A declared dependency stops the plugin loading when it is absent.** With
-`dependencies: ["bopen-tools"]` in its manifest, `bopen-orchestration` installs
+`dependencies: ["core"]` in its manifest, `orchestra` installs
 correctly but its skills are invisible in any context where the core is not also
 present — the loader skips the plugin silently instead of reporting the missing
 dependency. Running its eval suite against the module alone scored 0/5 with every
@@ -182,7 +183,7 @@ install two distributions to get one coherent toolset.
 
 Splitting is not contained to this repository.
 
-**Premium prompt packs** carry 886 `bopen-tools:` references across 79 distinct
+**Premium prompt packs** carry 886 `core:` references across 79 distinct
 names in 216 files. Roughly 127 point at core and need no edit; about 760 need
 rewriting, of which 98 point at resources leaving for other repositories. This
 needs a rename script and a CI check that fails on any unresolvable reference.
@@ -233,7 +234,7 @@ Installed packages must never depend on symlinks into another versioned cache.
 
 ## Compatibility
 
-The existing `bopen-tools` name becomes the minimal core only after:
+The existing `core` name becomes the minimal core only after:
 
 1. optional modules are published and installable
 2. migration documentation maps every former capability

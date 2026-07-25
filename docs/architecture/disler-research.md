@@ -1,4 +1,4 @@
-# disler (IndyDevDan) Research — Integration Candidates for bopen-tools
+# disler (IndyDevDan) Research — Integration Candidates for core
 
 > Research date: 2026-03-09
 > Profile: https://github.com/disler | YouTube: @indydevdan
@@ -259,7 +259,7 @@ Zero virtualenv management. Instant execution. Each file is independently runnab
 
 | # | Action | Source Pattern | Impact |
 |---|--------|---------------|--------|
-| 6 | Create `/prime` command for bopen-tools context warm-up | Context priming | Faster agent orientation |
+| 6 | Create `/prime` command for core context warm-up | Context priming | Faster agent orientation |
 | 7 | Add plan/build split to prompt-engineer workflow | Plan/Build split | Reduces thrashing |
 | 8 | Implement wave management in dispatching-parallel-agents | Wave fan-out | Context budget awareness |
 | 9 | Add `patterns.yaml` config to damage control hooks | Tiered path protection | Config-driven security |

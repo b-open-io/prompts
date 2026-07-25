@@ -1,5 +1,5 @@
 {
-  "name": "bopen-tools Agent Ecosystem",
+  "name": "core Agent Ecosystem",
   "description": "Agent routing, dispatch, functional teams, and skill dependencies",
   "version": "0.1.2",
   "nodes": [

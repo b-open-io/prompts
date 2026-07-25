@@ -16,13 +16,13 @@ cat > "$FIXTURE_INDEX" <<'EOF'
   "entries": [
     {
       "kind": "skill",
-      "id": "bopen-orchestration:software-factory",
+      "id": "orchestra:software-factory",
       "triggers": ["factory", "loop", "worker"],
       "hint": "Design and harden an autonomous loop."
     },
     {
       "kind": "agent",
-      "id": "bopen-research:researcher",
+      "id": "research:researcher",
       "triggers": ["research the docs and gather sources", "research", "docs", "gather", "sources"],
       "hint": "Multi-source technical research with citations."
     }
@@ -38,17 +38,17 @@ run_hook "roster-guard.sh" "claude" "$gp_input"
 assert_exit "roster-guard general-purpose exit" "0" "$HOOK_EXIT"
 assert_json "roster-guard general-purpose json" "$HOOK_STDOUT"
 assert_contains "roster-guard marker" "[BOPEN-ROSTER]" "$HOOK_STDOUT"
-assert_contains "roster-guard suggests researcher" "bopen-research:researcher" "$HOOK_STDOUT"
+assert_contains "roster-guard suggests researcher" "research:researcher" "$HOOK_STDOUT"
 decision=$(printf '%s' "$HOOK_STDOUT" | jq -r '.hookSpecificOutput | has("permissionDecision")')
 assert_eq "roster-guard carries no permission semantics" "false" "$decision"
 
 # --- Explore dispatch also considered ---
 explore_input=$(jq -n '{tool_name:"Task", tool_input:{subagent_type:"Explore", description:"", prompt:"research the docs and gather sources"}}')
 run_hook "roster-guard.sh" "claude" "$explore_input"
-assert_contains "roster-guard Explore also matches" "bopen-research:researcher" "$HOOK_STDOUT"
+assert_contains "roster-guard Explore also matches" "research:researcher" "$HOOK_STDOUT"
 
 # --- roster subagent_type already specific → silent ---
-roster_input=$(jq -n '{tool_name:"Task", tool_input:{subagent_type:"bopen-research:researcher", description:"research task", prompt:"research the docs and gather sources"}}')
+roster_input=$(jq -n '{tool_name:"Task", tool_input:{subagent_type:"research:researcher", description:"research task", prompt:"research the docs and gather sources"}}')
 run_hook "roster-guard.sh" "claude" "$roster_input"
 assert_exit "roster-guard roster-subagent exit" "0" "$HOOK_EXIT"
 assert_eq "roster-guard roster-subagent silent" "" "$HOOK_STDOUT"

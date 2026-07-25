@@ -87,7 +87,7 @@ def validate_static(problems: list[str]) -> None:
 
     skill_section = section(readme, r"^### Skills only\s*$", r"^## Specialized AI Agents\s*$")
     documented_skills = set(
-        re.findall(r"bunx skills add b-open-io/bopen-tools --skill ([a-z0-9-]+)", skill_section)
+        re.findall(r"bunx skills add b-open-io/prompts --skill ([a-z0-9-]+)", skill_section)
     )
     compare_inventory("authored skills", authored_skills(), documented_skills, problems)
 

@@ -30,7 +30,7 @@ CURATED_SOURCE_NAMES: tuple[str, ...] = (
 )
 
 CODEX_COMPAT_PRELUDE = """\
-# Codex compatibility prelude (bopen-tools)
+# Codex compatibility prelude (core)
 
 You are running as a Codex custom agent adapted from a Claude Code agent
 definition in this plugin. Preserve the role, constraints, and output style of
@@ -691,7 +691,7 @@ def build_manifest(generated: list[GeneratedAgent]) -> dict[str, Any]:
     return {
         "schema_version": "1",
         "generator_schema_version": GENERATOR_SCHEMA_VERSION,
-        "manager": "bopen-tools",
+        "manager": "core",
         "excluded": sorted(EXCLUDED_SOURCE_NAMES),
         "curated": list(CURATED_SOURCE_NAMES),
         "agents": agents,
@@ -767,7 +767,7 @@ def load_ownership(target_dir: Path) -> dict[str, Any]:
     if not path.is_file():
         return {
             "schema_version": "1",
-            "manager": "bopen-tools",
+            "manager": "core",
             "agents": {},
         }
     data = json.loads(path.read_text(encoding="utf-8"))

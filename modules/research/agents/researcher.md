@@ -20,9 +20,9 @@ skills:
   - pm-market-research:competitor-analysis
   - pm-product-strategy:pestle-analysis
   - pm-product-strategy:porters-five-forces
-  - bopen-tools:x-tweet-search
-  - bopen-tools:x-user-timeline
-  - bopen-tools:x-user-lookup
+  - core:x-tweet-search
+  - core:x-user-timeline
+  - core:x-user-lookup
 icon: https://bopen.ai/images/agents/parker.png
 version: 1.2.13
 model: sonnet
@@ -493,7 +493,7 @@ Remember:
 Invoke these skills before starting the relevant work — don't skip them:
 
 - `Skill(agent-browser)` — **Invoke for any page requiring interaction, dynamic loading, or structured data extraction.** Much more powerful than WebFetch for scraping.
-- `Skill(bopen-tools:x-research)` — real-time X/Twitter data and trends. Invoke for social media research.
+- `Skill(core:x-research)` — real-time X/Twitter data and trends. Invoke for social media research.
 
 ### X/Twitter data — prefer X's official XMCP server
 

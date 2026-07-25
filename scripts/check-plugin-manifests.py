@@ -192,7 +192,7 @@ def collect_errors(
             expected_source = {"source": "local", "path": "./"}
             if entry.get("source") != expected_source:
                 errors.append(
-                    "marketplace bopen-tools source must be "
+                    "marketplace core source must be "
                     f"{display(expected_source)}; found {display(entry.get('source'))}"
                 )
             expected_policy = {
@@ -201,11 +201,11 @@ def collect_errors(
             }
             if entry.get("policy") != expected_policy:
                 errors.append(
-                    "marketplace bopen-tools policy must be "
+                    "marketplace core policy must be "
                     f"{display(expected_policy)}; found {display(entry.get('policy'))}"
                 )
             if entry.get("category") != "Developer Tools":
-                errors.append("marketplace bopen-tools category must be 'Developer Tools'")
+                errors.append("marketplace core category must be 'Developer Tools'")
 
     return errors
 

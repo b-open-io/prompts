@@ -16,7 +16,7 @@ def resolve_hammertime_home() -> Path:
     if legacy.is_dir():
         return legacy
 
-    return Path("~/.bopen-tools/hammertime").expanduser()
+    return Path("~/.core/hammertime").expanduser()
 
 
 def hammertime_paths() -> dict[str, Path]:

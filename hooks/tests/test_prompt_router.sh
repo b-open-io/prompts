@@ -13,13 +13,13 @@ cat > "$FIXTURE_INDEX" <<'EOF'
   "entries": [
     {
       "kind": "skill",
-      "id": "bopen-orchestration:software-factory",
+      "id": "orchestra:software-factory",
       "triggers": ["set up a factory worker loop", "factory", "loop", "worker"],
       "hint": "Design and harden an autonomous loop."
     },
     {
       "kind": "agent",
-      "id": "bopen-research:researcher",
+      "id": "research:researcher",
       "triggers": ["research the docs and gather sources", "research", "docs", "gather", "sources"],
       "hint": "Multi-source technical research with citations."
     }
@@ -29,7 +29,7 @@ EOF
 
 export BOPEN_ROUTER_INDEX="$FIXTURE_INDEX"
 # Isolated per-test state dir: session-memory dedup
-# must never touch the real ~/.claude/bopen-tools/router-state. Each
+# must never touch the real ~/.claude/core/router-state. Each
 # scenario below uses its own session_id so they can't interfere with
 # each other's fire counts within this one isolated dir.
 export BOPEN_ROUTER_STATE_DIR=$(mktemp -d)
@@ -40,7 +40,7 @@ run_hook "prompt-router.sh" "claude" "$factory_input"
 assert_exit "prompt-router factory exit" "0" "$HOOK_EXIT"
 assert_json "prompt-router factory json" "$HOOK_STDOUT"
 assert_contains "prompt-router factory marker" "[BOPEN-ROUTER]" "$HOOK_STDOUT"
-assert_contains "prompt-router factory skill id" "bopen-orchestration:software-factory" "$HOOK_STDOUT"
+assert_contains "prompt-router factory skill id" "orchestra:software-factory" "$HOOK_STDOUT"
 
 # --- silent on a short prompt ---
 short_input=$(jq -n '{prompt:"hi", session_id:"sess-short"}')
@@ -61,7 +61,7 @@ assert_eq "prompt-router slash-command silent" "" "$HOOK_STDOUT"
 # --- fires at most once, caps at top 2, and reports an agent match correctly ---
 research_input=$(jq -n '{prompt:"please research the docs and gather sources on this", session_id:"sess-research"}')
 run_hook "prompt-router.sh" "claude" "$research_input"
-assert_contains "prompt-router agent match subagent_type wording" "subagent_type bopen-research:researcher" "$HOOK_STDOUT"
+assert_contains "prompt-router agent match subagent_type wording" "subagent_type research:researcher" "$HOOK_STDOUT"
 match_count=$(printf '%s' "$HOOK_STDOUT" | grep -o "\[BOPEN-ROUTER\]" | wc -l | tr -d ' ')
 assert_eq "prompt-router fires exactly once" "1" "$match_count"
 

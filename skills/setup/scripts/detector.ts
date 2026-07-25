@@ -93,7 +93,7 @@ const PORTABLE_SKILL_ROOTS = [
   join(homedir(), ".claude", "skills"),
   join(homedir(), ".codex", "skills"),
 ];
-const DEFAULT_SKILL_ACTIVITY_FILE = join(homedir(), ".claude", "bopen-tools", "skill-activity.jsonl");
+const DEFAULT_SKILL_ACTIVITY_FILE = join(homedir(), ".claude", "core", "skill-activity.jsonl");
 const DEFAULT_CLAUDE_PROJECTS_DIR = join(homedir(), ".claude", "projects");
 const DAY_SECONDS = 24 * 60 * 60;
 const LIVE_SESSION_SECONDS = 120;
@@ -332,7 +332,7 @@ export function detectRuntime(
 // --- Hook enable/disable resolution (hook-manager semantics) ---
 
 export function resolveHookConfigPaths(env: Record<string, string | undefined> = process.env): string[] {
-  return [env.BOPEN_HOOKS_CONFIG, join(process.cwd(), ".claude", "bopen-hooks.json"), join(homedir(), ".claude", "bopen-tools", "hooks-config.json")].filter(
+  return [env.BOPEN_HOOKS_CONFIG, join(process.cwd(), ".claude", "bopen-hooks.json"), join(homedir(), ".claude", "core", "hooks-config.json")].filter(
     (p): p is string => Boolean(p)
   );
 }

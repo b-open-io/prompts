@@ -17,7 +17,7 @@ unset BOPEN_HOOKS_CONFIG
 mkdir -p "$HOME"
 
 # 1. An invocation appends one compact, well-formed activity line.
-first_input=$(jq -n '{tool_name:"Skill", tool_input:{skill:"bopen-tools:hook-manager"}, session_id:"session-one"}')
+first_input=$(jq -n '{tool_name:"Skill", tool_input:{skill:"core:hook-manager"}, session_id:"session-one"}')
 run_hook "skill-activity.sh" "claude" "$first_input"
 assert_exit "skill-activity invocation exit" "0" "$HOOK_EXIT"
 assert_eq "skill-activity invocation silent stdout" "" "$HOOK_STDOUT"
@@ -25,17 +25,17 @@ assert_eq "skill-activity invocation silent stderr" "" "$HOOK_STDERR"
 assert_eq "skill-activity invocation one line" "1" "$(wc -l < "$BOPEN_SKILL_ACTIVITY_FILE" | tr -d ' ')"
 first_line=$(sed -n '1p' "$BOPEN_SKILL_ACTIVITY_FILE")
 assert_json "skill-activity invocation valid json" "$first_line"
-assert_eq "skill-activity invocation skill" "bopen-tools:hook-manager" "$(printf '%s' "$first_line" | jq -r '.skill')"
+assert_eq "skill-activity invocation skill" "core:hook-manager" "$(printf '%s' "$first_line" | jq -r '.skill')"
 assert_eq "skill-activity invocation session" "session-one" "$(printf '%s' "$first_line" | jq -r '.session_id')"
 assert_eq "skill-activity invocation numeric timestamp" "number" "$(printf '%s' "$first_line" | jq -r '.ts | type')"
 
 # 2. A second invocation appends instead of overwriting the first.
-second_input=$(jq -n '{tool_name:"Skill", tool_input:{skill:"bopen-orchestration:software-factory"}, session_id:"session-one"}')
+second_input=$(jq -n '{tool_name:"Skill", tool_input:{skill:"orchestra:software-factory"}, session_id:"session-one"}')
 run_hook "skill-activity.sh" "claude" "$second_input"
 assert_exit "skill-activity second invocation exit" "0" "$HOOK_EXIT"
 assert_eq "skill-activity second invocation line count" "2" "$(wc -l < "$BOPEN_SKILL_ACTIVITY_FILE" | tr -d ' ')"
-assert_eq "skill-activity second invocation keeps first" "bopen-tools:hook-manager" "$(sed -n '1p' "$BOPEN_SKILL_ACTIVITY_FILE" | jq -r '.skill')"
-assert_eq "skill-activity second invocation appends second" "bopen-orchestration:software-factory" "$(sed -n '2p' "$BOPEN_SKILL_ACTIVITY_FILE" | jq -r '.skill')"
+assert_eq "skill-activity second invocation keeps first" "core:hook-manager" "$(sed -n '1p' "$BOPEN_SKILL_ACTIVITY_FILE" | jq -r '.skill')"
+assert_eq "skill-activity second invocation appends second" "orchestra:software-factory" "$(sed -n '2p' "$BOPEN_SKILL_ACTIVITY_FILE" | jq -r '.skill')"
 
 # 3. Every write prunes an eight-day-old line while retaining fresh lines.
 now=$(date +%s)
@@ -73,7 +73,7 @@ assert_eq "skill-activity malformed no write" "0" "$([[ -e "$malformed_file" ]] 
 
 # 6. The env override wins, and the default path under isolated HOME is untouched.
 override_file="$ACTIVITY_ROOT/custom/activity.jsonl"
-default_file="$HOME/.claude/bopen-tools/skill-activity.jsonl"
+default_file="$HOME/.claude/core/skill-activity.jsonl"
 export BOPEN_SKILL_ACTIVITY_FILE="$override_file"
 fallback_input=$(jq -n '{tool_name:"Skill", tool_input:{skill:"fallback-skill"}, transcript_path:"/tmp/transcript-session.jsonl"}')
 run_hook "skill-activity.sh" "claude" "$fallback_input"

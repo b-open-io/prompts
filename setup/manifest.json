@@ -1,5 +1,5 @@
 {
-  "plugin": "bopen-tools",
+  "plugin": "core",
   "clis": [
     {
       "name": "agent-browser",
@@ -143,7 +143,7 @@
   },
   "hooks": {
     "manifest": "hooks/manifest.json",
-    "config": "~/.claude/bopen-tools/hooks-config.json"
+    "config": "~/.claude/core/hooks-config.json"
   },
   "skillInterfaces": [
     {

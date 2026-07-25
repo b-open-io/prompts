@@ -133,4 +133,4 @@ Track these alongside corpus metadata in the rule's test file header:
 
 The `hook-development` skill from the `plugin-dev` plugin covers hook schema, event types, and JSON structure. It does not cover detection engine evaluation — there is no corpus-based testing methodology in that skill.
 
-This file is the bopen-tools extension of that methodology. It documents the empirical process that produces hooks with measured performance rather than untested keyword lists. When creating a new behavioral hook, treat this process as mandatory for any rule that needs reliable production recall.
+This file is the core extension of that methodology. It documents the empirical process that produces hooks with measured performance rather than untested keyword lists. When creating a new behavioral hook, treat this process as mandatory for any rule that needs reliable production recall.

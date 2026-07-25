@@ -54,7 +54,7 @@ if [ -n "$existing_token" ]; then
 fi
 
 # Find chrome-cdp script
-CDP_SCRIPT=$(ls "${HOME}"/.claude/plugins/cache/b-open-io/bopen-tools/*/skills/chrome-cdp/scripts/cdp.ts 2>/dev/null | sort -t/ -k9 -V | tail -1)
+CDP_SCRIPT=$(ls "${HOME}"/.claude/plugins/cache/b-open-io/core/*/skills/chrome-cdp/scripts/cdp.ts 2>/dev/null | sort -t/ -k9 -V | tail -1)
 if [ -z "$CDP_SCRIPT" ] || [ ! -f "$CDP_SCRIPT" ]; then
     echo "NO_BROWSER"
     echo "Chrome CDP skill not found."

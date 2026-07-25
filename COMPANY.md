@@ -147,7 +147,7 @@ bOpen is an autonomous AI agent organization with a specialist roster and shared
 
 This roster contains installable plugin personas only. Persistent agents built
 inside applications and agents created by users belong to those projects; they
-do not become bopen-tools members or catalog entries.
+do not become core members or catalog entries.
 
 Agents are published to the [ClawNet on-chain registry](https://clawnet.sh) with cryptographic identity via BAP (Bitcoin Attestation Protocol). Skills follow the open [SKILL.md](https://agentskills.io) format and work across Claude Code, OpenCode, Cursor, Gemini CLI, and 20+ other tools.
 

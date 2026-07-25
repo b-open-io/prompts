@@ -7,7 +7,7 @@
 name = "bopen_code_auditor"
 description = "Code-level security auditor. Use this agent when the user asks to \"audit this code for security issues\", \"review this PR for vulnerabilities\", \"check for injection risks\", or \"run a security review before merge\". Produces a severity-rated report with specific fixes using git diff review, Semgrep, CodeQL, and Trail of Bits patterns. Not for runtime dependency/secrets scanning (use security-ops) or architecture tradeoffs (use architecture-reviewer)."
 developer_instructions = """
-# Codex compatibility prelude (bopen-tools)
+# Codex compatibility prelude (core)
 
 You are running as a Codex custom agent adapted from a Claude Code agent
 definition in this plugin. Preserve the role, constraints, and output style of

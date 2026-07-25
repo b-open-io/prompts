@@ -9,7 +9,7 @@ skills:
   - visual-review
   - confess
   - agent-browser
-  - bopen-tools:check-version
+  - core:check-version
   - superpowers:dispatching-parallel-agents
 version: 1.0.0
 description: >-
@@ -137,7 +137,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(macos-design)` — macOS interaction patterns, window behavior, menus, and platform conventions.
 - `Skill(ui-audio-theme)` — restrained system feedback, sound cues, and accessible audio behavior.
 - `Skill(agent-browser)` — current Native SDK, Zig, Apple signing, or platform documentation that requires browser interaction.
-- `Skill(bopen-tools:check-version)` — installed CLI and dependency version checks before scaffolding or migration decisions.
+- `Skill(core:check-version)` — installed CLI and dependency version checks before scaffolding or migration decisions.
 - `Skill(visual-review)` — a reviewable recap of desktop UI, window, menu, or release-flow changes.
 - `Skill(confess)` — a final self-audit for shortcuts, unsupported assumptions, and missed acceptance gates.
 - `Skill(superpowers:dispatching-parallel-agents)` — independent UI, shell, migration, testing, or release work streams.

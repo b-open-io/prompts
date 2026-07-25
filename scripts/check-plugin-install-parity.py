@@ -125,10 +125,10 @@ def main() -> int:
         roots.append(("codex", args.codex_root))
     if args.auto_detect:
         claude = latest_version_root(
-            Path.home() / ".claude/plugins/cache/b-open-io/bopen-tools"
+            Path.home() / ".claude/plugins/cache/b-open-io/core"
         )
         codex = latest_version_root(
-            Path.home() / ".codex/plugins/cache/b-open-io/bopen-tools"
+            Path.home() / ".codex/plugins/cache/b-open-io/core"
         )
         if claude and not args.claude_root:
             roots.append(("claude", claude))
