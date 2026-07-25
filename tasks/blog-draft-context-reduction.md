@@ -31,11 +31,11 @@ The distinction that makes this safe is where each piece of a plugin lives:
 | Skill `description` | Every request, always |
 | `SKILL.md` body, `references/`, `scripts/` | Only when that skill is invoked |
 
-Progressive disclosure already covers the bodies. Both passes touched only the always-on layer. Comparing every `agents/*.md` body between the pre-compression commit and the release reports zero changed files, so each agent's domain knowledge, workflow, and documentation tables are byte-identical to what shipped before.
+Progressive disclosure already covers the bodies. Both passes touched only the always-on layer. Comparing every `agents/*.md` body between the pre-compression commit and the release reports zero changed files, so each agent's domain knowledge and its documentation tables are byte-identical to what shipped before.
 
 ## 73% off the agent descriptions
 
-Anthropic's `plugin-dev:agent-development` guidance recommends 200–1,000 characters per agent description with 2–4 worked `<example>` blocks. The catalog averaged roughly 1,420 characters, with `cartographer` at 3,020 characters and 11 examples.
+Anthropic's `plugin-dev:agent-development` guidance recommends 200–1,000 characters per agent description with 2–4 worked `<example>` blocks. The catalog averaged roughly 1,420 characters, with `cartographer` carrying 3,020 characters and eleven worked examples against a guidance ceiling of four.
 
 | Metric | Before | After |
 |---|---:|---:|
@@ -65,7 +65,7 @@ Claude Code ships an eval runner for plugins. It answers the question you cannot
 
 ### When it arrived
 
-Both boundaries land on consecutive published versions, so the dating is exact.
+Both boundaries land on consecutive published versions, which pins each change to a single release with no gap to interpolate across.
 
 | Version | Published | `plugin eval` | Unlockable by |
 |---|---|:-:|---|
@@ -101,7 +101,7 @@ export CLAUDE_CODE_WALNUT_SPIRE=1
 claude plugin eval .
 ```
 
-On a repo with no eval suite this reports `No eval cases found`, because the runner expects a specific directory layout and creates nothing on its own. A case is a directory under `evals/`, and each case needs a prompt and at least one grader. There are two ways to express that.
+On a repo with no eval suite this reports `No eval cases found`, because the runner expects a specific directory layout and creates nothing on its own. A case is a directory under `evals/`, and each case needs a prompt and at least one grader. A case is a directory under `evals/` holding a prompt and at least one grader, and there are two ways to express that.
 
 **The lightweight form** is a Markdown prompt plus one grader file per check:
 
@@ -134,7 +134,7 @@ pattern: '^\s*(bopen-tools:)?(code-auditor)\s*$'
 ---
 ```
 
-`claude plugin eval init --bare <name>` scaffolds exactly this pair.
+Running `claude plugin eval init --bare <name>` scaffolds exactly this pair of files, which is the fastest way to see the shape before writing your own.
 
 **The full form** is a single `case.yaml`, which takes the same settings under an `execution` block:
 
@@ -173,7 +173,7 @@ Six exist, and the required fields differ:
 | `llm` | `criteria` | a judge model's verdict |
 | `baseline` | `baseline_file`, `criteria` | comparison against a recorded answer |
 
-The first four are deterministic and cost nothing to score. For "which of 31 agents did it pick," `regex` is exact and free, and there is nothing for a judge to weigh in on. `llm` earns its cost when the answer is prose whose quality cannot be pattern-matched.
+The first four are deterministic and cost nothing to score. For "which of 31 agents did it pick," `regex` is exact and free, and there is nothing for a judge to weigh in on. The `llm` grader earns its cost when the answer is prose whose quality no pattern can capture, such as whether a generated README actually explains the install step.
 
 ### What ablation means
 
@@ -230,7 +230,7 @@ The full 26-case suite scores 25/26 at 98.7%, with all ten agent cases at 100%. 
 
 ## Splitting the monolith
 
-Compression made each entry cheaper. It did nothing about how many entries there are, and on Codex that is the binding constraint: the skill budget is two percent of the selected model's context window, about 5,440 tokens on a 272,000-token model, and it is shared across **every installed plugin**. A fresh `codex exec --json` run against a catalog with every description stripped still omitted 76 skills. Only loading fewer resources moves that host.
+Compression made each entry cheaper. It did nothing about how many entries there are, and on Codex that is the binding constraint: the skill budget is two percent of the selected model's context window, about 5,440 tokens on a 272,000-token model, and it is shared across **every installed plugin**. A fresh `codex exec --json` run against a catalog with every description stripped still omitted 76 skills. Only loading fewer resources moves that host, which is what pushed this from a compression exercise into a packaging one.
 
 ### One repository, many plugins
 
@@ -241,7 +241,7 @@ The obvious fear about splitting is duplication: two repositories, two copies of
 { "name": "linear", "source": { "source": "local", "path": "./plugins/linear" } }
 ```
 
-So the modules became subdirectories of the same repository, each with its own Claude and Codex manifests. Nothing is copied, so nothing can drift.
+So the modules became subdirectories of the same repository, each with its own Claude and Codex manifests. Nothing is copied between core and modules, so the two cannot drift apart the way separate repositories would.
 
 ### What the core kept
 
@@ -262,7 +262,7 @@ Core holds session context, setup, hook management, completion auditing, session
 
 Boundaries came from the reference graph, not from taxonomy. `setup` is cited by six other skills and `front-desk` by three, which anchored the core. The coordinator family cites itself, which made orchestration the natural first extraction. The test for every boundary was whether someone would plausibly install one side without the other.
 
-`public-agents` is the one split by audience instead of domain. Its personas answer strangers on a public surface, which justifies a tighter tool policy than a developer distribution can express: the account-manager persona carried `Write` and `Bash`, appropriate in a terminal and wrong in a website widget.
+`public-agents` splits on audience. Its personas answer strangers on a public surface, which justifies a tighter tool policy than a developer distribution can express: the account-manager persona carried `Write` and `Bash`, appropriate in a terminal and wrong in a website widget.
 
 ### A dependency that fails quietly
 
@@ -284,7 +284,7 @@ Splitting a catalog is a good moment to notice what should not be in it at all.
 | `geo-optimizer`, `saas-launch-audit` | product-skills | Go-to-market, not developer tooling |
 | `ceo`, `cfo`, `paperclip-plugin-dev` | new paperclip plugin | Organization simulation |
 
-The clawnet case shows why. Our copy was a 2.6 KB stub against clawnet's 21 KB guide and looked like pure redundancy, but it carried three sections the larger skill lacked: the vault composition, ORDFS server-side directory traversal, and the agent `icon:` frontmatter field. Deleting it as an obvious duplicate would have quietly destroyed all three. Consolidation means reading both copies first.
+The clawnet case shows why. Our copy was a 2.6 KB stub against clawnet's 21 KB guide and looked like pure redundancy, but it carried three sections the larger skill lacked: the vault composition, ORDFS server-side directory traversal, and the agent `icon:` frontmatter field. Deleting it as an obvious duplicate would have quietly destroyed all three. Consolidating two copies of anything means reading both of them first, which is slower than trusting the byte count and the only way to avoid losing what the smaller one knew.
 
 `geo-optimizer` had a similar wrinkle in the other direction: it overlapped product-skills' existing `ai-seo-optimization` on AI-search optimisation, so both descriptions now name each other as boundaries and stop competing for the same request.
 
