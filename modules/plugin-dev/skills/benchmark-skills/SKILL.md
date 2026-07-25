@@ -190,6 +190,108 @@ The LLM-as-judge has known failure modes. When results seem wrong:
 | Skill and baseline score the same | Testing knowledge model already has | Redesign as behavioral suppression test |
 | Skill scores lower than baseline | Skill constraining model too much | Check if skill instructions conflict with prompt |
 
+## Routing evals with `claude plugin eval`
+
+The benchmark above measures output quality. It cannot tell you whether the
+model reaches for your skill in the first place. Claude Code ships a separate
+runner for that, added in 2.1.198 and absent from the public changelog.
+
+### Unlocking it
+
+```bash
+export CLAUDE_CODE_WALNUT_SPIRE=1
+claude plugin eval .
+```
+
+Before 2.1.207 the gate was a server-side flag with no local override, so on an
+older CLI the command refuses regardless of environment.
+
+### Case layout
+
+A case is a directory under `evals/` holding a prompt and at least one grader.
+`claude plugin eval init --bare <name>` scaffolds the pair.
+
+```
+evals/routes-to-code-auditor/
+  prompt.md
+  graders/expected-agent.md
+```
+
+```markdown
+<!-- prompt.md -->
+---
+max_turns: 1
+allowed_tools: [Skill]
+runs: 3
+---
+Audit this diff for injection risks. Reply with only the skill you would invoke.
+```
+
+```markdown
+<!-- graders/expected-agent.md -->
+---
+type: regex
+weight: 1
+pattern: '^\s*(bopen-review:)?(code-auditor)\s*$'
+---
+```
+
+A single `case.yaml` is the alternative form. It requires `schema_version`,
+`name`, and an `execution` block, and every grader needs `name` and `type`.
+
+### Grader types
+
+| `type` | Required fields | Scores by |
+|---|---|---|
+| `regex` | `pattern` | matching the final message |
+| `tool_used` | `tool` | whether a tool was called |
+| `tool_order` | `before`, `after` | relative order of two calls |
+| `file_exists` | `path` | a file present after the run |
+| `llm` | `criteria` | a judge model's verdict |
+| `baseline` | `baseline_file`, `criteria` | comparison with a recorded answer |
+
+The first four cost nothing to score. For "which skill did it pick", `regex` is
+exact and free, and a judge has nothing to weigh.
+
+### Ablation
+
+`--ablation with-without` runs every case twice, with the plugin loaded and
+without it, and reports the delta. It answers whether the plugin causes the
+behaviour or the model would have got there anyway.
+
+```bash
+claude plugin eval . --runs 3 --ablation with-without --report report.html
+```
+
+Include negative cases that expect no skill. They are the only thing that
+catches a catalog claiming requests it should decline, and they should pass in
+both arms.
+
+### Failures that are not routing failures
+
+Three setups produce red results indistinguishable from a genuine miss.
+
+`allowed_tools: []` removes the Skill tool and the entire catalog with it, so
+the model correctly answers that nothing applies. Skill-selection cases need
+`allowed_tools: [Skill]`.
+
+A grader pattern must allow the prefix the model returns; asking for
+`visual-review` and receiving `bopen-review:visual-review` scores as a miss
+unless the prefix is optional.
+
+A case can name a resource its target plugin does not contain, which happens
+whenever resources move between distributions. Audit expected names against the
+plugin's real inventory before trusting any failure.
+
+On the CLI itself, repeated `--case` flags do not accumulate. The last glob
+wins, so a run that looks like ten cases may have been two.
+
+### Sampling
+
+Use `--runs 3` or higher. On a thirty-case suite a single sample per arm swings
+by one to two cases on its own, which is enough to invent a difference between
+two versions that does not exist.
+
 ## Lessons Learned
 
 These patterns have been confirmed through multiple benchmark runs:

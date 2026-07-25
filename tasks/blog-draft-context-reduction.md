@@ -1,4 +1,4 @@
-## What shipped
+## 29,260 tokens down to 2,797
 
 bopen-tools began the day as one plugin holding 31 agents, 85 skills, 14 commands, and 11 hooks. Every agent and skill puts routing metadata into the model's context at session start, on every request, whether the session uses it or not.
 
@@ -232,7 +232,7 @@ Skill routing across 16 cases at three runs each, before and after the skill pas
 
 The full 26-case suite scores 25/26 at 98.7%, with all ten agent cases at 100%. An earlier agent-only comparison built on a custom runner had already shown precision holding at 100% across both the verbose and compressed catalogs, with identical prompts costing 29% fewer tokens.
 
-## Splitting the monolith
+## One plugin into ten, for another 40% off
 
 Compression made each entry cheaper. It did nothing about how many entries there are, and on Codex that is the binding constraint: the skill budget is two percent of the selected model's context window, about 5,440 tokens on a 272,000-token model, and it is shared across **every installed plugin**. A fresh `codex exec --json` run against a catalog with every description stripped still omitted 76 skills. Only loading fewer resources moves that host, which is what pushed this from a compression exercise into a packaging one.
 
@@ -282,7 +282,7 @@ Each agent carries an `agents/<name>/AGENTS.md` symlink pointing at `../<name>.m
 
 Anyone splitting a plugin should treat those three as part of the move itself. Here the generator now scans every module, all 29 adapters regenerate clean, and a scratch install resolves the curated roster across core and modules.
 
-## Relocating what never belonged
+## Three resources that belonged to other plugins
 
 Splitting a catalog is a good moment to notice what should not be in it at all.
 
@@ -296,8 +296,18 @@ The clawnet case shows how to do that safely. Two skills shared a name across tw
 
 `geo-optimizer` had a similar wrinkle in the other direction: it overlapped product-skills' existing `ai-seo-optimization` on AI-search optimisation, so both descriptions now name each other as boundaries and stop competing for the same request.
 
-## What the downstream looked like
+## 886 references, two guards
 
 The premium prompt packs carry 886 plugin-prefixed references across 79 distinct names in 216 files, so every resource that moves invalidates a long tail of instructions written against its old address. That coupling is the real cost of a split, and it is invisible until something tries to invoke a name that no longer resolves.
 
 Two guards now cover it. The site build already refused to ship a pack citing a plugin missing from its install map. Alongside it, a checker walks every `plugin:resource` reference in the repository and fails on any that names something its plugin does not provide, so a rename can no longer outrun its references.
+
+## What we changed in our own tooling
+
+Doing this once produced numbers. Making it repeatable meant teaching the toolkit what the run had exposed, because an agent asked to do the same job next month would otherwise start from nothing.
+
+`agent-auditor` gained a startup-weight dimension that runs before every other check, reports the agent-versus-skill split, and gates a catalog on per-agent description size, example count, and an aggregate token ceiling. `benchmark-skills` learned the eval runner: the environment override, the six grader types, the ablation arm, and the three setups that produce failures indistinguishable from a routing miss. A new `plugin-module-split` skill covers the parts that break quietly — marketplace subdirectory sourcing, the dependency field's silent-load behaviour, host adapter regeneration, and symlink depth.
+
+The whole sequence is packaged as **`sd-plugin-context-diet`**, a four-link chain in the [software-development pack](https://bopen.ai/premium/software-development): Satoshi measures and compresses, Jason proves routing survived, Satoshi splits the catalog, and Zack publishes and sweeps the downstream references. Each link hands an artifact forward and blocks the next, so a failed verification stops the chain where it stands.
+
+If your plugin charges users for capabilities they never invoke, that chain is the run we just made, with the traps already marked.

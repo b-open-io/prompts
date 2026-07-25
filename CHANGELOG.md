@@ -6,6 +6,28 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.124] - 2026-07-24
+
+### Added
+
+- `bopen-plugin-dev:plugin-module-split`: splitting a plugin into a core plus
+  optional modules. Covers marketplace subdirectory sourcing on both hosts, the
+  `dependencies` field's silent-load behaviour, host adapter regeneration,
+  symlink depth for vendored skills, and drawing module boundaries from the
+  reference graph.
+
+### Changed
+
+- `bopen-plugin-dev:agent-auditor` gains a startup-weight dimension that runs
+  before every other check. It reports the agent-versus-skill split of always-on
+  cost and gates on per-agent description size, example count, and an aggregate
+  token ceiling.
+- `bopen-plugin-dev:benchmark-skills` covers `claude plugin eval`: the
+  environment override, all six grader types, `--ablation with-without`, `--runs`
+  for variance, and the three setups whose failures are indistinguishable from a
+  routing miss.
+
+
 ## [1.1.123] - 2026-07-24
 
 ### Fixed

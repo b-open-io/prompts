@@ -18,6 +18,43 @@ Systematic audit methodology for evaluating the health, quality, and consistency
 
 Every audit evaluates skills across seven dimensions. For each skill, score pass/warn/fail per dimension.
 
+### 0. Startup Weight
+
+Run this first. It is the only dimension measured in tokens the user pays on
+every request, and the results reorder the rest of the audit.
+
+```bash
+python3 scripts/plugin-weight.py --format markdown
+```
+
+Report four numbers and act on them:
+
+| Signal | Budget | Why |
+|---|---|---|
+| Agent description chars | ≤ 600 each | Anthropic's guidance is 200–1,000; catalogs drift well past it |
+| `<example>` blocks per agent | 0 | Examples constrain the model's matching and cost bytes on every request |
+| Aggregate startup tokens | project ceiling | The number a session pays before doing any work |
+| Agent share of always-on cost | report it | Agents are frequently the larger half and are easy to overlook |
+
+Gate a catalog in CI with:
+
+```bash
+python3 scripts/plugin-weight.py \
+  --max-agent-description-chars 600 \
+  --max-agent-examples 2 \
+  --max-startup-tokens 16000
+```
+
+Two failure modes to name explicitly in the report. A weight report that shows
+agents as a bare count lets the agent half of a catalog grow past any gate built
+on it, so confirm the report measures agent description and `tools:` bytes.
+And an agent that enumerates `Skill(a), Skill(b), …` can reach only those
+entries; collapsing the list to a bare `Skill` grant widens access while cutting
+bytes.
+
+Any compression here changes routing behaviour, so pair it with a routing eval
+from `benchmark-skills` before shipping.
+
 ### 1. Scope & Invocation
 
 Verify the invocation control fields are set correctly.
