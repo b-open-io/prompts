@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/session-context.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${PLUGIN_ROOT}/hooks/session-context.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.codex/plugins/cache/b-open-io/core/\"*/hooks/session-context.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=codex bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/browser-intent.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${PLUGIN_ROOT}/hooks/browser-intent.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.codex/plugins/cache/b-open-io/core/\"*/hooks/browser-intent.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=codex bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
           }
         ]
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/pretooluse-bash.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${PLUGIN_ROOT}/hooks/pretooluse-bash.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.codex/plugins/cache/b-open-io/core/\"*/hooks/pretooluse-bash.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=codex bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 20
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=codex bash \"${PLUGIN_ROOT}/hooks/damage-control.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${PLUGIN_ROOT}/hooks/damage-control.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.codex/plugins/cache/b-open-io/core/\"*/hooks/damage-control.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=codex bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
           }
         ]
@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=codex python3 \"${PLUGIN_ROOT}/hooks/hammertime.py\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${PLUGIN_ROOT}/hooks/hammertime.py\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.codex/plugins/cache/b-open-io/core/\"*/hooks/hammertime.py 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=codex python3 \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 30
           }
         ]

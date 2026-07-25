@@ -58,6 +58,8 @@ assert_contains "session-context plugin repo inventory" "Plugin inventory" "$ctx
 # --- declared settings resolve from env/json without leaking undeclared data ---
 SETTINGS_HOME=$(mktemp -d)
 mkdir -p "$SETTINGS_HOME/.claude/core"
+PLUGIN_CACHE="$SETTINGS_HOME/plugin-cache"
+mkdir -p "$PLUGIN_CACHE/coordinator/1.0.0"
 cat > "$SETTINGS_HOME/.claude/core/settings.json" <<'JSON'
 {
   "skills": {
@@ -68,6 +70,44 @@ cat > "$SETTINGS_HOME/.claude/core/settings.json" <<'JSON'
     }
   },
   "undeclared_secret": "should-not-leak"
+}
+JSON
+cat > "$PLUGIN_CACHE/coordinator/1.0.0/settings.json" <<'JSON'
+{
+  "version": 1,
+  "owner": "coordinator",
+  "settings": [
+    {
+      "source": "~/.claude/core/settings.json",
+      "key": "skills.coordinator.workflow",
+      "type": "enum",
+      "default": "native-when-authorized",
+      "options": ["native-when-authorized", "manual"],
+      "tier": "workflow",
+      "sessionContext": true,
+      "contextKey": "coordinator.workflow"
+    },
+    {
+      "source": "~/.claude/core/settings.json",
+      "key": "skills.coordinator.orchestration",
+      "type": "enum",
+      "default": "adaptive",
+      "options": ["adaptive", "single-agent"],
+      "tier": "workflow",
+      "sessionContext": true,
+      "contextKey": "coordinator.orchestration"
+    },
+    {
+      "source": "~/.claude/core/settings.json",
+      "key": "skills.coordinator.subagents",
+      "type": "enum",
+      "default": "specialists",
+      "options": ["specialists", "off"],
+      "tier": "workflow",
+      "sessionContext": true,
+      "contextKey": "coordinator.subagents"
+    }
+  ]
 }
 JSON
 cat > "$SETTINGS_HOME/.claude/core/hooks-config.json" <<'JSON'
@@ -90,6 +130,7 @@ err_file=$(mktemp)
 set +e
 printf '%s' "$input" | HOME="$SETTINGS_HOME" \
   BOPEN_WORKER_MODEL="worker-test-model" \
+  BOPEN_PLUGIN_CACHE_ROOT="$PLUGIN_CACHE" \
   BOPEN_ROUTER_INDEX="$SETTINGS_HOME/.claude/core/router-index.json" \
   bash "$ROOT/session-context.sh" >"$out_file" 2>"$err_file"
 settings_exit=$?
@@ -123,7 +164,6 @@ fi
 
 # Installed declarations use the newest numeric version and the settings cap
 # always leaves room for hook tiers and router state.
-PLUGIN_CACHE="$SETTINGS_HOME/plugin-cache"
 mkdir -p "$PLUGIN_CACHE/extra/1.9.0" "$PLUGIN_CACHE/extra/1.10.0"
 jq -n '{
   version: 1,

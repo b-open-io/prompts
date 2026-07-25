@@ -395,3 +395,14 @@
   and reduced the smoke-test copy to its supplied facts: a 60-second sync
   interval plus JSON and CSV exports. Neither session added a benefit,
   endorsement, audience, or outcome.
+
+### Release remediation
+
+- [x] Trace all four session-context failures to the moved coordinator declarations.
+- [x] Make the settings fixture self-contained and restore declaration-cap coverage.
+- [x] Reproduce the missing 1.1.128 hook path as an in-session cache replacement hazard.
+- [x] Add stale-root fallback resolution to every Claude and Codex hook command.
+- [x] Add regression tests for both hosts and rerun the complete hook suite.
+- [x] Record the correction in `tasks/lessons.md`, `CHANGELOG.md`, and `README.md`.
+- [ ] Patch-bump both plugin manifests, run every release gate, and push master.
+- [ ] Refresh both plugin installs and verify the published hooks in fresh sessions.

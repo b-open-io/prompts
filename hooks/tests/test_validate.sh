@@ -45,6 +45,34 @@ assert_eq "codex-hooks uses PLUGIN_ROOT" "1" "$([[ "$codex_roots" -ge 1 ]] && ec
 assert_eq "claude-hooks avoids PLUGIN_ROOT" "0" "$claude_bad"
 assert_eq "codex-hooks avoids CLAUDE_PLUGIN_ROOT" "0" "$codex_bad"
 
+# A plugin update can replace the versioned cache directory while an active
+# session still holds the old command. Every hook command must fall back to the
+# newest installed core cache instead of failing on the stale absolute path.
+claude_command_count=$(jq '[.. | objects | .command? | select(type == "string")] | length' "$ROOT/claude-hooks.json")
+codex_command_count=$(jq '[.. | objects | .command? | select(type == "string")] | length' "$ROOT/codex-hooks.json")
+claude_fallback_count=$(jq '[.. | objects | .command? | select(type == "string" and contains("/.claude/plugins/cache/b-open-io/core/"))] | length' "$ROOT/claude-hooks.json")
+codex_fallback_count=$(jq '[.. | objects | .command? | select(type == "string" and contains("/.codex/plugins/cache/b-open-io/core/"))] | length' "$ROOT/codex-hooks.json")
+assert_eq "claude-hooks all commands have cache fallback" "$claude_command_count" "$claude_fallback_count"
+assert_eq "codex-hooks all commands have cache fallback" "$codex_command_count" "$codex_fallback_count"
+
+FALLBACK_HOME=$(mktemp -d)
+mkdir -p \
+  "$FALLBACK_HOME/.claude/plugins/cache/b-open-io/core/9.9.9/hooks" \
+  "$FALLBACK_HOME/.codex/plugins/cache/b-open-io/core/9.9.9/hooks"
+cat > "$FALLBACK_HOME/.claude/plugins/cache/b-open-io/core/9.9.9/hooks/hammertime.py" <<'PY'
+print("claude-fallback-ok")
+PY
+cat > "$FALLBACK_HOME/.codex/plugins/cache/b-open-io/core/9.9.9/hooks/hammertime.py" <<'PY'
+print("codex-fallback-ok")
+PY
+claude_stop_command=$(jq -r '.hooks.Stop[0].hooks[0].command' "$ROOT/claude-hooks.json")
+codex_stop_command=$(jq -r '.hooks.Stop[0].hooks[0].command' "$ROOT/codex-hooks.json")
+claude_fallback_output=$(HOME="$FALLBACK_HOME" CLAUDE_PLUGIN_ROOT="$FALLBACK_HOME/missing" bash -c "$claude_stop_command")
+codex_fallback_output=$(HOME="$FALLBACK_HOME" PLUGIN_ROOT="$FALLBACK_HOME/missing" bash -c "$codex_stop_command")
+assert_eq "claude stale hook path resolves current cache" "claude-fallback-ok" "$claude_fallback_output"
+assert_eq "codex stale hook path resolves current cache" "codex-fallback-ok" "$codex_fallback_output"
+rm -rf "$FALLBACK_HOME"
+
 # Codex has UserPromptSubmit + apply_patch matcher; Claude has WebFetch
 if jq -e '.hooks.UserPromptSubmit' "$ROOT/codex-hooks.json" >/dev/null 2>&1; then
   PASS=$((PASS + 1)); printf '  PASS  codex UserPromptSubmit present\n'

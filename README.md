@@ -309,7 +309,9 @@ root-level files keep their filename as the command.
 Hooks are distributed with each plugin manifest; do not copy them into a home
 directory. Shared scripts implement the common behavior, while
 `hooks/claude-hooks.json` and `hooks/codex-hooks.json` adapt event names and
-capabilities for each host.
+capabilities for each host. Hook commands use the host-provided plugin root
+first and fall back to the newest installed core cache if an in-session update
+has replaced that versioned directory.
 
 | Hook | Claude Code | Codex | Description |
 |------|-------------|-------|-------------|

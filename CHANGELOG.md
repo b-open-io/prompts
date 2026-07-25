@@ -6,6 +6,19 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.130] - 2026-07-25
+
+### Fixed
+
+- Claude and Codex hook commands now recover when an in-session plugin update
+  replaces the versioned cache directory they originally loaded. Each command
+  tries its registered plugin root first, then resolves the newest installed
+  core cache instead of invoking a deleted script.
+- The session-context test fixture now supplies its own coordinator settings
+  declarations after those declarations moved to the orchestra plugin. This
+  restores coverage for configured workflow values and the 20-setting cap;
+  the complete dual-runtime hook suite passes 342 checks.
+
 ## [1.1.129] - 2026-07-25
 
 ### Changed

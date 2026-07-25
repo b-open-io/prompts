@@ -1,5 +1,20 @@
 # Lessons
 
+## A green release report requires every observed failure to be resolved (2026-07-25)
+
+Do not call a failing repository check unrelated, stale, or pre-existing and
+stop. Session history is not evidence of ownership, and an earlier green run is
+not a waiver for the current red run. Trace every failure to a root cause, fix
+product or fixture defects, and rerun the exact failing command to zero
+failures. If resolution is outside the authorized scope, obtain an explicit
+waiver before shipping.
+
+When updating a versioned plugin cache from an active session, treat the
+session's already-loaded hook commands as part of the release surface. Hook
+commands must survive replacement of their original cache directory, and the
+release must include a fresh-process test plus a simulated stale-root
+regression test.
+
 ## A failing diagnostic is unfinished work until resolved or explicitly waived (2026-07-21)
 
 Do not issue a completion report while any command run during the task still

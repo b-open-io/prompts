@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-context.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/session-context.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/session-context.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/prompt-router.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/prompt-router.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/prompt-router.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
           }
         ]
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse-bash.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse-bash.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/pretooluse-bash.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 20
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/damage-control.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/damage-control.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/damage-control.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
           }
         ]
@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/agent-browser-solo.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/agent-browser-solo.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/agent-browser-solo.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 60
           }
         ]
@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/roster-guard.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/roster-guard.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/roster-guard.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
           }
         ]
@@ -69,7 +69,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude bash \"${CLAUDE_PLUGIN_ROOT}/hooks/skill-activity.sh\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/skill-activity.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/skill-activity.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
           }
         ]
@@ -81,7 +81,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "BOPEN_HOOK_RUNTIME=claude python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/hammertime.py\"",
+            "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/hammertime.py\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/hammertime.py 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude python3 \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 15
           }
         ]
