@@ -2,17 +2,15 @@
 
 bopen-tools began the day as one plugin holding 31 agents, 85 skills, 14 commands, and 11 hooks. Every agent and skill puts routing metadata into the model's context at session start, on every request, whether the session uses it or not.
 
-Three changes later — compressing that metadata, relocating resources that belonged to other plugins, and splitting the first optional module out of the monolith — the core costs less than half what it did. The numbers below are from release 1.1.120.
+By the end it was a 2,797-token core plus nine optional modules, and a session that installs only what it needs pays 90% less than it did that morning.
 
-| Measured on the installed plugin | Before | After |
-|---|---:|---:|
-| bopen-tools always-on | 29,260 tok | **14,094 tok** |
-| Agent catalog | 15,660 tok | 4,590 tok |
-| Skills / agents in core | 94 / 31 | 83 / 28 |
+| Measured on the installed plugins | Tokens |
+|---|---:|
+| bopen-tools, before | 29,260 |
+| bopen-tools core, after | **2,797** |
+| All nine modules as well | 13,466 |
 
-A 52% reduction in what a session pays before it does anything. The orchestration module costs a further 1,112 tokens, and only for sessions that actually install it.
-
-Every step was verified against a routing eval run before and after the change, using a runner Claude Code shipped three weeks ago and never announced.
+Three things got it there: compressing routing metadata, relocating resources that belonged to other plugins, and splitting the catalog into modules. Every step was verified against a routing eval, using a runner Claude Code shipped in July and never announced.
 
 ## Agents were 54% of the cost
 
@@ -232,39 +230,49 @@ The full 26-case suite scores 25/26 at 98.7%, with all ten agent cases at 100%. 
 
 ## Splitting the monolith
 
-Compression made each entry cheaper. It did nothing about how many entries there are, and on Codex that is the binding constraint: the skill budget is two percent of the selected model's context window — `context_window * 2 // 100`, about 5,440 tokens on a 272,000-token model — and it is shared across **every installed plugin**, not allocated per plugin. A fresh `codex exec --json` run against a catalog with every description stripped still omitted 76 skills. Only loading fewer resources moves that host.
+Compression made each entry cheaper. It did nothing about how many entries there are, and on Codex that is the binding constraint: the skill budget is two percent of the selected model's context window, about 5,440 tokens on a 272,000-token model, and it is shared across **every installed plugin**. A fresh `codex exec --json` run against a catalog with every description stripped still omitted 76 skills. Only loading fewer resources moves that host.
 
 ### One repository, many plugins
 
-The obvious fear about splitting is duplication: two repositories, two copies of shared files, and drift between them within a month. That fear turns out to be unfounded, because both marketplaces already resolve a plugin from a subdirectory of the marketplace repository.
-
-Anthropic's own official marketplace uses a bare relative path for its first-party entries:
+The obvious fear about splitting is duplication: two repositories, two copies of shared files, drift within a month. It turns out to be unfounded, because both marketplaces already resolve a plugin from a subdirectory of the marketplace repository. Anthropic's own official marketplace uses a bare relative path for its first-party entries, and OpenAI's Codex marketplace uses an object form that does the same job:
 
 ```json
 { "name": "agent-sdk-dev", "source": "./plugins/agent-sdk-dev" }
-```
-
-and OpenAI's Codex marketplace uses the object form:
-
-```json
 { "name": "linear", "source": { "source": "local", "path": "./plugins/linear" } }
 ```
 
-So modules became subdirectories of the same repository, each with its own Claude and Codex manifests, exactly as the root already had. Nothing is copied, so nothing can drift.
+So the modules became subdirectories of the same repository, each with its own Claude and Codex manifests. Nothing is copied, so nothing can drift.
+
+### What the core kept
+
+Core holds session context, setup, hook management, completion auditing, session recall, routing, identity work, and every hook: 15 skills and 3 agents. Two of those stay for a reason outside the catalog entirely. Agent Master bundles `setup` and `visual-wayfinder` into the signed desktop app and resolves them at `skills/<name>`, so moving either would have broken a shipped binary.
+
+| Module | Always-on |
+|---|---:|
+| bopen-tools (core) | 2,797 |
+| web | 1,864 |
+| creative | 1,649 |
+| plugin-dev | 1,562 |
+| review | 1,412 |
+| ops | 1,375 |
+| research | 1,191 |
+| orchestration | 1,112 |
+| mcp | 378 |
+| public-agents | 126 |
+
+Boundaries came from the reference graph, not from taxonomy. `setup` is cited by six other skills and `front-desk` by three, which anchored the core. The coordinator family cites itself, which made orchestration the natural first extraction. The test for every boundary was whether someone would plausibly install one side without the other.
+
+`public-agents` is the one split by audience instead of domain. Its personas answer strangers on a public surface, which justifies a tighter tool policy than a developer distribution can express: the account-manager persona carried `Write` and `Bash`, appropriate in a terminal and wrong in a website widget.
 
 ### A dependency that fails quietly
 
 `plugin.json` accepts a `dependencies` array, documented as the plugins that must be enabled for this one to function, so declaring the core looked like the obvious way to express the relationship. The module installed correctly with it. Its skills were then invisible to any session that did not also have the core, because the loader skips a plugin whose declared dependency is missing without saying so.
 
-The eval caught it immediately: the orchestration suite scored 0/5 against the module alone, every case reporting that no skill applied, and 5/5 with the field removed and nothing else changed. The module now ships without it. Its references to core skills are recommendations in roster documents, so it works alone and those references resolve for anyone who has both installed. Reach for `dependencies` only when a module genuinely cannot function without another plugin, and expect silence instead of an error when that plugin is absent.
+The eval caught it immediately: the orchestration suite scored 0/5 against the module alone, every case reporting that no skill applied, and 5/5 with the field removed and nothing else changed. Reach for `dependencies` only when a module genuinely cannot function without another plugin, and expect silence instead of an error when that plugin is absent.
 
-The first module is `bopen-orchestration`: coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex, and the agent-builder persona. Those coordinator-family skills cite each other by name, which made them the tightest cluster in the dependency graph and the cleanest thing to lift out first.
+### What moving things quietly breaks
 
-### Boundaries drawn from references, not taxonomy
-
-The test for every boundary was whether someone would plausibly install one side without the other, and the evidence came from which skills and agents cite each other. `setup` is referenced by chrome-cdp, claudex, cost-tracking, create-next-project, and deploy-agent-team. `front-desk` is referenced by agent-onboarding, agent-decommissioning, and codex-agent-setup. Those two anchor the core; the coordinator family anchors orchestration.
-
-One naming decision was load-bearing. bopen.ai already sells premium prompt packs, and the desktop app manages them, so calling plugin distributions packs would have overloaded the word across the product, the docs, and the UI. They are **modules**; `pack` stays reserved.
+Relocating agents broke 28 Codex adapter directories. Each is an `agents/<name>/AGENTS.md` symlink pointing at `../<name>.md`, and moving the target left every one dangling — invisible in Claude, which never reads them, and fatal to Codex agent discovery. Third-party skills are symlinks too, so each needed its target re-pointed for the extra directory depth to keep vendor ownership intact.
 
 ## Relocating what never belonged
 
@@ -288,6 +296,4 @@ The site's own build guard caught the last mile — a pack citing a skill from a
 
 ## What is still ahead
 
-Eight more modules are specified and not yet built: plugin-dev, review, web, creative, mcp, ops, research, and a public-agents distribution for personas whose audience is strangers on a public surface. That last one is separated by audience, not domain, because an agent embedded in a website widget should not carry `Write` and `Bash` the way a terminal persona can.
-
-Two relocations are blocked on uncommitted work sitting in other repositories, which is a scheduling problem and its own argument for doing this incrementally and publishing each step.
+The remaining work is the part a split cannot do by itself. Codex's global two-percent budget is only relieved when people install fewer modules, so the measurement that matters next is what an average session actually loads, not what the catalog could cost. And a module that nobody installs is a capability nobody can reach, which makes discovery — the front-desk routing that tells you which module owns a job — more important after the split than before it.
