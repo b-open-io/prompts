@@ -1,0 +1,43 @@
+# Routing eval after the plugin rename (2026-07-25)
+#
+# claude plugin eval . --runs 2   (CLAUDE_CODE_WALNUT_SPIRE=1)
+# Verifies that renaming 971 references across the repo, including every eval
+# grader pattern, did not change which resource a request routes to.
+#
+# Caveat on strength: grader patterns make the plugin prefix optional, e.g.
+# '^\s*(core:)?(check-version)\s*$', so a bare resource name also passes.
+# What this run proves is that every case still resolves and nothing regressed,
+# including the module-owned cases (skill-coordinator, skill-advisor,
+# skill-visual-review, skill-x-research), which only load if the renamed
+# module distributions are discoverable.
+
+
+CASE                                 SCORE PASS% RUNS COST    NOTES
+negative-out-of-catalog              1.00  100%  2    $0.12   
+negative-plain-question              1.00  100%  2    $0.12   
+skill-check-version                  1.00  100%  2    $0.12   
+skill-confess                        1.00  100%  2    $0.12   
+skill-hammertime                     1.00  100%  2    $0.12   
+skill-humanize                       1.00  100%  2    $0.12   
+skill-neg-arith                      1.00  100%  2    $0.12   
+skill-neg-rename                     1.00  100%  2    $0.12   
+skill-remind                         1.00  100%  2    $0.12   
+direct-map-clustering                1.00  100%  2    $0.11   
+boundary-data-vs-database            1.00  100%  2    $0.11   
+boundary-database-vs-data            1.00  100%  2    $0.11   
+boundary-devops-vs-code-auditor      1.00  100%  2    $0.11   
+skill-advisor                        1.00  100%  2    $0.09   
+skill-claudex                        1.00  100%  2    $0.09   
+skill-coordinator                    1.00  100%  2    $0.09   
+skill-software-factory               1.00  100%  2    $0.09   
+skill-wave-coordinator               1.00  100%  2    $0.09   
+skill-x-research                     1.00  100%  2    $0.10   
+boundary-code-audit-vs-security-ops  1.00  100%  2    $0.11   
+boundary-security-ops-vs-code-audit  1.00  100%  2    $0.11   
+direct-write-tests                   1.00  100%  2    $0.11   
+skill-free-roam                      1.00  100%  2    $0.11   
+skill-visual-review                  1.00  100%  2    $0.11   
+boundary-optimizer-vs-designer       1.00  100%  2    $0.11   
+skill-chrome-cdp                     1.00  100%  2    $0.11   
+
+26 case(s) · 173s · $2.85

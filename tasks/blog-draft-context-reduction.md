@@ -1,3 +1,10 @@
+> **Superseded.** The published version lives in `bopen-ai` at
+> `src/data/posts.ts` (slug `plugin-context-reduction`). Figures below
+> predate the plugin rename: re-measured on the installed 1.1.128, core is
+> 2,498 always-on tokens and all ten distributions together are 13,174.
+> Names in this file were machine-rewritten by the rename sweep and read
+> awkwardly in places. Do not quote it.
+
 ## 29,260 tokens down to 2,797
 
 core began the day as one plugin holding 31 agents, 85 skills, 14 commands, and 11 hooks. Every agent and skill puts routing metadata into the model's context at session start, on every request, whether the session uses it or not.

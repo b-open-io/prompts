@@ -1,3 +1,10 @@
+> **Superseded.** The published version lives in `bopen-ai` at
+> `src/data/posts.ts` (slug `plugin-context-reduction`). Figures below
+> predate the plugin rename: re-measured on the installed 1.1.128, core is
+> 2,498 always-on tokens and all ten distributions together are 13,174.
+> Names in this file were machine-rewritten by the rename sweep and read
+> awkwardly in places. Do not quote it.
+
 # The Catalog Tax
 
 **Style model: Joel Spolsky (Joel on Software).** Draft for comparison against
