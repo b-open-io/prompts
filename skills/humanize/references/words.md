@@ -120,6 +120,30 @@ Metaphor-nouns that say nothing about the actual subject.
 - framework (overused — say what the structure actually is)
 - solution (tech cliche — say what it does)
 
+## Never Denigrate the Subject
+
+When writing about your own product, team, or codebase, describe what changed
+and what it does now. Words that call the subject defective are a distinct AI
+tell: the model reaches for self-criticism to sound credible, and the result
+reads as an apology for the thing you are shipping.
+
+- rot / rotten / bit rot (say what the references pointed at, and where they point now)
+- cruft, bloat, mess, sloppy, garbage, junk, dead weight
+- decay, neglect, rusted, crumbling
+- "our terrible X", "the old broken Y", "we had let this get bad"
+
+FIX: state the change without grading the past. "The sweep picked up earlier
+renames" carries the same information as "rewriting them exposed rot" and does
+not tell the reader your product was rotten.
+
+This also applies to headings and titles. "A plugin that had outgrown its own
+catalog" and "The tool was blind in one eye" both sell the reader on a defect
+before they reach a single result. Name what the section contains.
+
+Describing a specific bug you found and fixed is fine and often useful. The line
+is between "the eval caught a grader that scored correct answers as wrong" and
+"our test suite was rotten."
+
 ## "Worth" as Hedged Evaluation
 
 `worth` is one of the strongest single-word AI tells in technical writing. It

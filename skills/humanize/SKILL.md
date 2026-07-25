@@ -97,7 +97,8 @@ After writing any prose, you must do a concrete revision pass before delivering.
 3. **Check for indirect repetition.** Read each pair of consecutive sentences. Does the second just restate the first in different words? Delete the restating sentence.
 4. **Read the last sentence of each paragraph.** Count the words. If more than one ending is under 15 words, rewrite the short ones to be 20+ words with specific details.
 5. **Check for "nice-to-have", "table stakes", "false economy"** and the other AI vocabulary. Replace with plain language.
-6. **Search for "worth".** It grades something without committing to a claim — "worth noting", "worth doing", "worth avoiding", "worth migrating to" — and is one of the strongest single-word AI tells. Replace every hit with the consequence itself. In a heading it is always wrong: "The Mistake Worth Publishing" should say what the section covers.
+6. **Never denigrate the subject.** Search for "rot", "cruft", "bloat", "mess", "sloppy", "garbage", "decay", "neglect". Writing about your own product, describe what changed and what it does now; do not grade the past. This applies hardest to headings, where a defect framing lands before any result does.
+7. **Search for "worth".** It grades something without committing to a claim — "worth noting", "worth doing", "worth avoiding", "worth migrating to" — and is one of the strongest single-word AI tells. Replace every hit with the consequence itself. In a heading it is always wrong: "The Mistake Worth Publishing" should say what the section covers.
 
 Do this revision pass silently — don't mention it in your output. Just deliver the cleaned text.
 
