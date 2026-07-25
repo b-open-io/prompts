@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 1.0.9
+version: 1.0.10
 description: >-
   Strip AI writing patterns from any prose a human will read — emails, docs, reports, posts,
   commit messages. Apply automatically before delivering a draft, and on "humanize", "make this
@@ -135,8 +135,9 @@ After writing any prose, you must do a concrete revision pass before delivering.
 4. **Read the last sentence of each paragraph.** Count the words. If more than one ending is under 15 words, rewrite the short ones to be 20+ words with specific details.
 5. **Check for "nice-to-have", "table stakes", "false economy"** and the other AI vocabulary. Replace with plain language.
 6. **Never denigrate the subject.** Search for "rot", "cruft", "bloat", "mess", "sloppy", "garbage", "decay", "neglect". Writing about your own product, describe what changed and what it does now; do not grade the past. This applies hardest to headings, where a defect framing lands before any result does.
-7. **If you modeled a named writer, check their tics hardest.** A modeled voice reproduces antithesis, tricolons, and short paragraph endings without being asked. Re-run checks 1, 2, and 4 on that draft specifically, and cut any atmospheric detail the voice supplied that you cannot substantiate.
-8. **Search for "worth".** It grades something without committing to a claim — "worth noting", "worth doing", "worth avoiding", "worth migrating to" — and is one of the strongest single-word AI tells. Replace every hit with the consequence itself. In a heading it is always wrong: "The Mistake Worth Publishing" should say what the section covers.
+7. **Never claim nobody knows it.** Search for "nobody", "no one", "everyone misses", "most people don't", "few developers", "hidden", "undocumented", "underrated", "overlooked", "flying under the radar". You cannot survey what everyone knows, and the claim flatters the writer instead of informing the reader. State the finding; where a specific absence is checkable, name that absence instead — "the public changelog never mentions it" rather than "nobody is talking about it". Resisting the urge to impress reads as more confident than trying to convince.
+8. **If you modeled a named writer, check their tics hardest.** A modeled voice reproduces antithesis, tricolons, and short paragraph endings without being asked. Re-run checks 1, 2, and 4 on that draft specifically, and cut any atmospheric detail the voice supplied that you cannot substantiate.
+9. **Search for "worth".** It grades something without committing to a claim — "worth noting", "worth doing", "worth avoiding", "worth migrating to" — and is one of the strongest single-word AI tells. Replace every hit with the consequence itself. In a heading it is always wrong: "The Mistake Worth Publishing" should say what the section covers.
 
 Do this revision pass silently — don't mention it in your output. Just deliver the cleaned text.
 

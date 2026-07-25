@@ -118,7 +118,7 @@ def discover_plugin_root(start: Path | None = None) -> Path:
                 return parent
 
     raise SystemExit(
-        "Could not discover plugin root. Set BOPEN_PLUGIN_ROOT to the bopen-tools "
+        "Could not discover plugin root. Set BOPEN_PLUGIN_ROOT to the core "
         "checkout or installed plugin cache directory."
     )
 

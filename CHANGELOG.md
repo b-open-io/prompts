@@ -1,10 +1,24 @@
 # Changelog
 
-Notable user-visible changes to bopen-tools are documented here. This project
+Notable user-visible changes to core (formerly bopen-tools) are documented here. This project
 uses patch releases for normal development work; Claude Code and Codex plugin
 manifests share the same release version.
 
 ## Unreleased
+
+## [1.1.128] - 2026-07-25
+
+### Added
+
+- `humanize`: a rule against claiming nobody knows a thing. Models reach
+  constantly for "the part nobody budgets for", "what nobody is talking about",
+  "as far as we can tell nobody has written about this", plus hidden /
+  undocumented / underrated / overlooked. It is unverifiable, and it flatters the
+  writer rather than informing the reader, who notices the self-congratulation
+  before the finding. Where a specific absence is checkable, name that absence
+  instead — "the public changelog never mentions it" carries the same weight and
+  can be checked. Resisting the urge to impress reads as more confident than
+  trying to convince.
 
 ## [1.1.127] - 2026-07-25
 

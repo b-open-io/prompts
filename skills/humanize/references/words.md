@@ -120,6 +120,32 @@ Metaphor-nouns that say nothing about the actual subject.
 - framework (overused — say what the structure actually is)
 - solution (tech cliche — say what it does)
 
+## Never Claim Nobody Knows This
+
+Models reach constantly for the idea that a thing is undiscovered, unspoken, or
+overlooked. It is unverifiable — you cannot survey what everyone knows — and it
+flatters the writer by making the finding sound rarer than it is. The reader
+notices the self-congratulation before they notice the finding.
+
+- "the part nobody budgets for" / "the part everyone misses"
+- "what nobody is talking about" / "the conversation nobody is having"
+- "as far as we can tell, nobody has written about this"
+- "hidden", "undocumented", "underrated", "the secret nobody tells you"
+- "most people don't realize" / "few developers know"
+- "criminally overlooked", "flying under the radar"
+
+FIX: state what you found and let its value be self-evident. "The public
+changelog runs 5,248 lines and never mentions `plugin eval`" is checkable and
+carries the same weight as "nobody is talking about it" — with none of the
+posturing. Where a specific, verifiable absence exists, name the absence.
+
+Humility is a human trait, and it reads as more confident than trying to
+convince. A writer sure of their material states it plainly; the urge to tell
+the reader how novel it is comes from doubt that the material will land.
+
+Also flag it in headings, where it is a promise you cannot keep: "The Part
+Nobody Budgets For" should say what the section contains.
+
 ## Never Denigrate the Subject
 
 When writing about your own product, team, or codebase, describe what changed
