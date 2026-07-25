@@ -6,6 +6,15 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.122] - 2026-07-24
+
+### Changed
+
+- Each module owns the routing cases that exercise it. Twelve cases covering
+  relocated agents and skills moved out of the core suite into
+  `modules/<name>/evals/`, leaving nine in core.
+
+
 ## [1.1.121] - 2026-07-24
 
 ### Changed
