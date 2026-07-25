@@ -6,6 +6,26 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.123] - 2026-07-24
+
+### Fixed
+
+- **Codex custom agents survive the module split.** The adapter generator only
+  scanned `agents/` at the plugin root, so the 26 agents that moved into modules
+  produced no adapter and would have vanished from Codex. It now scans every
+  `modules/*/agents/` directory as well, and each adapter records its real
+  source path. All 29 adapters regenerate clean, and a scratch install resolves
+  the curated roster across core and modules.
+- Adapters also carried pre-compression descriptions, since they had not been
+  regenerated since the agent rewrite. They now match their sources.
+
+### Removed
+
+- `ezkl`. It covers EVM and Solidity zero-knowledge ML with no relationship to
+  anything else here, no home in the sibling plugins, and no premium pack
+  reference.
+
+
 ## [1.1.122] - 2026-07-24
 
 ### Changed

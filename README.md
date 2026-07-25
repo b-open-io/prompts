@@ -144,7 +144,6 @@ bunx skills add b-open-io/bopen-tools --skill auth-md
 bunx skills add b-open-io/bopen-tools --skill check-version
 bunx skills add b-open-io/bopen-tools --skill codex-agent-setup
 bunx skills add b-open-io/bopen-tools --skill confess
-bunx skills add b-open-io/bopen-tools --skill ezkl
 bunx skills add b-open-io/bopen-tools --skill front-desk
 bunx skills add b-open-io/bopen-tools --skill hammertime
 bunx skills add b-open-io/bopen-tools --skill hook-manager
@@ -229,7 +228,6 @@ intentional.
 | `confess` | Analyze and document code issues and technical debt |
 | `create-next-project` | Scaffold a new Next.js app with Bun and Biome |
 | `design-game-ui` | Convert app content into controller/remote-first game HUD and television interfaces, composing audio, visual, 3D, performance, and QA specialists as needed |
-| `ezkl` | Build and verify zero-knowledge machine-learning proofs with EZKL |
 | `free-roam-testing` | Explore a running app like a curious human to discover new bugs and UX failures |
 | `frontend-performance` | Optimize Next.js performance using Lighthouse and bundle analysis |
 | `github-stars` | Add GitHub star counts and social proof widgets |

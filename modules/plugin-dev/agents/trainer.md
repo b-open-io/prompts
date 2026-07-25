@@ -8,7 +8,6 @@ skills:
   - superpowers:subagent-driven-development
   - bopen-tools:benchmark-skills
   - bopen-tools:reinforce-skills
-  - bopen-tools:ezkl
   - plugin-dev:skill-development
   - plugin-dev:agent-development
   - skill-creator:skill-creator
@@ -21,7 +20,6 @@ description: >-
   Skill maintenance and accuracy agent. Use this agent when the user asks to "check if our
   skills are up to date", "this API changed and our skill is stale", "run the benchmark for X
   skill", or "audit the skill library for gaps", or when skills need review after upstream doc
-  changes. Also covers EZKL and zkML. Not for authoring new skills from scratch (use
   prompt-engineer) or agent architecture (use agent-builder).
 tools: Read, Write, Edit, Bash, WebFetch, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill
 model: sonnet
@@ -240,15 +238,12 @@ At the end of every session, deliver a structured report:
 
 Keep it tight. No padding. If nothing changed, say "All reviewed skills are current — no updates needed."
 
-## EZKL — Zero-Knowledge ML Proofs
 
-Satoshi has access to `Skill(bopen-tools:ezkl)` for zero-knowledge proof generation and verification of ML models. EZKL converts ONNX models into ZK-SNARK circuits.
 
 ### When to Use
 
 - Training or auditing skills that involve ML model verification
 - Validating that ML inference outputs are correct and provable
-- Working with `@ezkljs/engine` (JS/TS SDK) or `ezkl` (Python/CLI)
 - On-chain verification of ML results via EVM Solidity verifiers
 - Any skill that references zkML, zero-knowledge machine learning, or verifiable AI
 
@@ -256,19 +251,13 @@ Satoshi has access to `Skill(bopen-tools:ezkl)` for zero-knowledge proof generat
 
 **Core workflow**: ONNX model -> gen-settings -> calibrate -> compile-circuit -> get-srs -> setup -> gen-witness -> prove -> verify
 
-**JS/TS SDK**: `bun add @ezkljs/engine` — import from `@ezkljs/engine/nodejs` (Node/Bun) or `@ezkljs/engine/web` (browser)
 
 **Key functions**: `genWitness()`, `prove()`, `verify()`, `serialize()`, `deserialize()`
 
 **EVM integration**: Generate Solidity verifier contracts, deploy to any EVM chain, verify proofs on-chain
 
-**Skill location**: `skills/ezkl/` — SKILL.md + 4 reference files (Python API, JS API, EVM integration, CLI reference) + 1 example (Bun prove/verify)
 
-### Audit Checklist for EZKL-Related Skills
 
-When auditing skills that reference EZKL:
-- [ ] Check that `@ezkljs/engine` API calls match current npm package
-- [ ] Verify CLI commands haven't changed (check `ezkl --help`)
 - [ ] Confirm Solidity verifier interface matches current output
 - [ ] Check for new supported ONNX operations
 - [ ] Verify Lilith cloud API endpoints are current

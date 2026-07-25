@@ -216,9 +216,25 @@ class GeneratedAgent:
 
 
 def list_source_files(plugin_root: Path) -> list[Path]:
-    agents_dir = agent_sources_dir(plugin_root)
-    files = sorted(agents_dir.glob("*.md"), key=lambda p: p.name)
-    return [p for p in files if p.is_file()]
+    """Agent sources from the plugin root and from every module.
+
+    The catalog splits across modules/<name>/agents/, and Codex resolves custom
+    agents from generated adapters rather than by walking the plugin, so an
+    agent that moved into a module must still produce an adapter or it silently
+    disappears from Codex.
+    """
+    roots = [agent_sources_dir(plugin_root)]
+    modules = plugin_root / "modules"
+    if modules.is_dir():
+        roots += sorted(
+            (m / "agents") for m in modules.iterdir() if (m / "agents").is_dir()
+        )
+    files: list[Path] = []
+    for agents_dir in roots:
+        if not agents_dir.is_dir():
+            continue
+        files += [p for p in agents_dir.glob("*.md") if p.is_file()]
+    return sorted(files, key=lambda p: p.name)
 
 
 def load_agent_sources(plugin_root: Path) -> list[AgentSource]:
@@ -242,7 +258,7 @@ def load_agent_sources(plugin_root: Path) -> list[AgentSource]:
             AgentSource(
                 source_name=source_name,
                 source_path=path.resolve(),
-                relative_source_path=f"agents/{path.name}",
+                relative_source_path=path.relative_to(plugin_root).as_posix(),
                 version=version,
                 description=description,
                 body=body,
