@@ -355,8 +355,8 @@
 - [x] Rewrite the skill and references around factual fidelity and contextual pattern density.
 - [x] Replace unsafe examples and add fabrication-trap evals for the missing categories.
 - [x] Run the focused benchmark and repository release gates.
-- [ ] Patch-bump both plugin manifests, commit reviewed paths, and push master.
-- [ ] Refresh Claude and Codex installs and smoke-test the published release.
+- [x] Patch-bump both plugin manifests, commit reviewed paths, and push master.
+- [x] Refresh Claude and Codex installs and smoke-test the published release.
 
 ### Review
 
@@ -388,3 +388,10 @@
   permissions-gaming, and editor-forensics indicators should stay outside a
   general prose humanizer, apart from a compact rule that preserves sources,
   links, and factual claims.
+- Release commit `21ebf80` is published on `origin/master` as core 1.1.129.
+  Claude and Codex both installed that version, and install-parity checks
+  confirm the source and both caches expose the same plugin inventory.
+- Fresh Claude and Codex sessions loaded the installed humanize 1.0.11 skill
+  and reduced the smoke-test copy to its supplied facts: a 60-second sync
+  interval plus JSON and CSV exports. Neither session added a benefit,
+  endorsement, audience, or outcome.
