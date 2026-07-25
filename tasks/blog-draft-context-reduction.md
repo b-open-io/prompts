@@ -202,17 +202,21 @@ Ten agent-routing cases against bopen-tools:
 
 Mean delta 0.8. Every positive case depends entirely on the plugin being present, and both negative cases pass in either arm, which is the correct result — with no catalog loaded there is nothing to over-route to. Include negative cases for that reason: they are the only thing that catches a catalog which claims requests it should decline.
 
+### Traps that look like routing misses
+
+Three properties of the runner produce failures that are indistinguishable from a genuine routing miss, and all three are cheap to rule out before you trust a red result.
+
+`allowed_tools: []` removes the Skill tool, and with it the entire skill catalog. The model then answers that nothing applies, which is correct given what it can see and looks exactly like a catalog that cannot route. Any case measuring skill selection needs `allowed_tools: [Skill]` so the catalog is visible to the model being tested.
+
+A grader pattern has to allow the plugin prefix the model actually returns. Asking for `visual-review` and receiving `bopen-review:visual-review` scores as a miss unless the pattern makes the prefix optional.
+
+A case can also name a resource its target plugin does not contain, which is easy to do when resources move between distributions. Auditing every expected name against the plugin's real inventory before a run turns that class of failure into a load error you can read.
+
+One more, on the CLI itself: repeated `--case` flags do not accumulate. The last glob wins, so a run that looks like it covered ten cases may have covered two.
+
 ### Flags that matter
 
 `--runs <n>` samples each case and is the most important of them, since a single sample per arm swings by one to two cases on a 30-case suite and will invent differences that do not exist. `--case <glob>` filters, though repeated `--case` flags do not accumulate — the last one wins. `--report <path>` writes a self-contained HTML report, `--json <path>` writes the full result, `--max-cost-usd` caps spend, and `--keep-temp` preserves each run's sandbox with a `trace.jsonl` for debugging.
-
-## What the suite caught first
-
-Before it measured anything about compression, the eval found four defects in our own test harness. The first skill-routing run scored 41.7% and read as a catalog-wide routing failure. It was two bugs: cases declared `allowed_tools: []`, hiding the skill catalog, and the grader regex omitted the optional `bopen-tools:` prefix that the agent graders already allowed, so a correct answer of `bopen-review:visual-review` scored as wrong. With both defects fixed, the real uncompressed baseline came out at 83.3%, which is the number every later comparison is measured against.
-
-A third defect: repeated `--case` flags silently run only the last glob, which made an agent regression check pass on two cases while reporting success for ten. A fourth: a case can expect a skill belonging to a *different* plugin, unreachable from the plugin under test, and that failure is indistinguishable from a routing miss. Auditing every expected skill name against the plugin's actual inventory is what surfaced it, and it should run before anyone trusts a suite's failures.
-
-Two cases were then repaired, once their before-and-after delta had already been recorded. `skill-check-version` asked whether a publish had succeeded when the skill compares the installed version against GitHub. `skill-agent-browser` expected a skill from another plugin and became `skill-chrome-cdp`, the browser skill this plugin actually ships. Both now pass three runs out of three, and neither had anything to do with the descriptions under test.
 
 ## Results
 
@@ -270,9 +274,13 @@ Boundaries came from the reference graph, not from taxonomy. `setup` is cited by
 
 The eval caught it immediately: the orchestration suite scored 0/5 against the module alone, every case reporting that no skill applied, and 5/5 with the field removed and nothing else changed. Reach for `dependencies` only when a module genuinely cannot function without another plugin, and expect silence instead of an error when that plugin is absent.
 
-### What moving things quietly breaks
+### What a split touches that Claude never shows you
 
-Moving agents broke Codex twice over, in ways Claude never sees. Each agent has an `agents/<name>/AGENTS.md` symlink pointing at `../<name>.md`, and moving the target left 28 of them dangling. Worse, Codex resolves custom agents from generated `.toml` adapters, and the generator only scanned `agents/` at the plugin root — so the 26 agents that moved into modules produced no adapter at all and would have disappeared from Codex entirely. The generator now scans every module, all 29 adapters regenerate clean, and a scratch install resolves the curated roster across core and modules. Third-party skills are symlinks too, so each needed its target re-pointed for the extra directory depth to keep vendor ownership intact.
+Relocating an agent moves more than one file, and the parts Claude ignores are the parts Codex depends on.
+
+Each agent carries an `agents/<name>/AGENTS.md` symlink pointing at `../<name>.md`, so every relocation needs its link re-pointed. Codex then resolves custom agents from generated `.toml` adapters, and a generator written for a single flat `agents/` directory has to learn the new layout before it will emit adapters for the 26 agents that now live in modules. Third-party skills are symlinks as well, each needing a target adjusted for the extra directory depth so vendor ownership stays intact.
+
+Anyone splitting a plugin should treat those three as part of the move itself. Here the generator now scans every module, all 29 adapters regenerate clean, and a scratch install resolves the curated roster across core and modules.
 
 ## Relocating what never belonged
 
@@ -284,12 +292,12 @@ Splitting a catalog is a good moment to notice what should not be in it at all.
 | `geo-optimizer`, `saas-launch-audit` | product-skills | Go-to-market, not developer tooling |
 | `ceo`, `cfo`, `paperclip-plugin-dev` | new paperclip plugin | Organization simulation |
 
-The clawnet case shows why. Our copy was a 2.6 KB stub against clawnet's 21 KB guide and looked like pure redundancy, but it carried three sections the larger skill lacked: the vault composition, ORDFS server-side directory traversal, and the agent `icon:` frontmatter field. Deleting it as an obvious duplicate would have quietly destroyed all three. Consolidating two copies of anything means reading both of them first, which is slower than trusting the byte count and the only way to avoid losing what the smaller one knew.
+The clawnet case shows how to do that safely. Two skills shared a name across two plugins, one a 21 KB workflow guide and the other a 2.6 KB reference, and the smaller one documented the vault composition, ORDFS server-side directory traversal, and the agent `icon:` frontmatter field that the larger one did not cover. Those sections moved upstream before the duplicate came out. Consolidating two copies of anything means reading both of them first, which is slower than comparing byte counts and the only way to keep what the smaller one knew.
 
 `geo-optimizer` had a similar wrinkle in the other direction: it overlapped product-skills' existing `ai-seo-optimization` on AI-search optimisation, so both descriptions now name each other as boundaries and stop competing for the same request.
 
 ## What the downstream looked like
 
-The premium prompt packs carried 886 plugin-prefixed references across 79 distinct names in 216 files, and every resource that moved needed its references updated. The sweep picked up earlier renames along the way: `visual-recap` and `critique` had become `visual-review`, `loop-engineering` had become `software-factory`, and `payment-specialist` had become `payments`. Five more named skills that live in other distributions, so they lost the `bopen-tools:` prefix and now resolve where they actually are.
+The premium prompt packs carry 886 plugin-prefixed references across 79 distinct names in 216 files, so every resource that moves invalidates a long tail of instructions written against its old address. That coupling is the real cost of a split, and it is invisible until something tries to invoke a name that no longer resolves.
 
-The site's own build guard caught the last mile — a pack citing a skill from a plugin missing from the install map fails the build before a broken instruction can ship. That check now has a companion that walks every `plugin:resource` reference in the repository and fails on any that names something its plugin does not provide. Two of its first three runs found bugs in the checker itself: a plugin whose repository directory does not match its name, and a regex that read `json-render-core` as a reference to `json-render`.
+Two guards now cover it. The site build already refused to ship a pack citing a plugin missing from its install map. Alongside it, a checker walks every `plugin:resource` reference in the repository and fails on any that names something its plugin does not provide, so a rename can no longer outrun its references.
