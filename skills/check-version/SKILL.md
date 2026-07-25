@@ -1,10 +1,12 @@
 ---
 name: check-version
 description: >-
-  Compare the installed core version against GitHub to confirm skill and agent
-  definitions are current. Use at session start, for "is everything up to date?", "check for
-  updates", "am I on the latest version?", or when a skill behaves differently than documented
-  or references features you do not recognize. Completes in under 100ms.
+  Compare installed plugin versions against GitHub to confirm skills and agents are current.
+  Use at session start, for "is everything up to date", "are my plugins up to date",
+  "are our plugins current", "check for plugin updates", "is anything stale",
+  "am I on the latest version", "did that plugin update land", or when a skill behaves
+  differently than documented or references features you do not recognize. Checks any plugin
+  in the marketplace, not just core. Completes in under 100ms per plugin.
 user-invocable: true
 allowed-tools:
   - Bash

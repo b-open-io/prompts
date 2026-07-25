@@ -56,6 +56,33 @@ WORD_RE = re.compile(r"[A-Za-z][A-Za-z'-]{2,}")
 BLOCK_SCALAR_MARKS = {"|", "|-", "|+", ">", ">-", ">+"}
 MAX_TRIGGERS_PER_ENTRY = 40
 
+# A quoted example in a description is usually written as a whole question --
+# "is everything up to date?" -- and the scorer matches phrases as literal
+# substrings. Keeping the terminal "?" means the phrase only matches when the
+# user's sentence ends at exactly that word, so "is everything up to date with
+# our plugins?" scores zero against its own trigger. Strip edge punctuation so
+# the phrase matches wherever it appears.
+PHRASE_EDGE_PUNCTUATION = " \t\"'?!.,;:"
+
+# `claude plugin update` leaves the pre-rename cache directories in place, so
+# these still hold complete skill and agent sets. Indexing them produced a
+# second copy of every entry under an id that no longer resolves, which is
+# worse than no suggestion at all. Mirrors hooks/session-context.sh.
+LEGACY_PLUGIN_NAMES = frozenset(
+    {
+        "bopen-tools",
+        "bopen-orchestration",
+        "bopen-plugin-dev",
+        "bopen-review",
+        "bopen-web",
+        "bopen-creative",
+        "bopen-mcp",
+        "bopen-ops",
+        "bopen-research",
+        "bopen-public-agents",
+    }
+)
+
 
 def version_key(version: str) -> tuple[int, ...]:
     parts = []
@@ -144,7 +171,7 @@ def extract_triggers(description: str) -> list[str]:
     head = description_head(description)
     phrases: set[str] = set()
     for m in QUOTE_RE.finditer(head):
-        phrase = m.group(1).strip().lower()
+        phrase = m.group(1).strip().lower().strip(PHRASE_EDGE_PUNCTUATION)
         if phrase and not phrase.isdigit():
             phrases.add(phrase)
 
@@ -211,6 +238,8 @@ def find_latest_version_dirs(cache_root: str) -> dict[str, str]:
     if not os.path.isdir(cache_root):
         return plugins
     for plugin_name in sorted(os.listdir(cache_root)):
+        if plugin_name in LEGACY_PLUGIN_NAMES:
+            continue
         plugin_dir = os.path.join(cache_root, plugin_name)
         if not os.path.isdir(plugin_dir):
             continue

@@ -6,6 +6,35 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.132] - 2026-07-25
+
+### Fixed
+
+- The prompt router only matched a quoted example question when the user's
+  sentence ended at exactly that word. Descriptions write examples as whole
+  questions, and the terminal `?` was kept in the trigger, so `is everything up
+  to date with our plugins?` scored zero against its own skill's
+  `"is everything up to date?"` trigger. Twenty-eight phrase triggers carried
+  terminal punctuation, and they were the question-shaped ones -- the phrasings
+  people actually type. Edge punctuation is now stripped when the index is
+  built.
+- The router indexed the pre-rename plugin caches alongside the live ones, so
+  93 of 296 entries were duplicates carrying ids like `bopen-tools:check-version`
+  that no longer resolve. Suggesting an unresolvable skill is worse than
+  suggesting nothing. Those caches are skipped, as the SessionStart hook already
+  does.
+- `check-version` compared every plugin against the `prompts` repository
+  manifest, so each of the eighteen non-core plugins reported the core version
+  as its remote and every one read as outdated. The manifest path now comes from
+  the marketplace entry, which covers the ten `git-subdir` plugins in one
+  repository and the plugins owned by other publishers.
+
+### Changed
+
+- `check-version` describes itself in the words people use to ask for it --
+  plugins, stale, current, up to date -- rather than only "skill and agent
+  definitions". It also states that it checks any plugin, not only core.
+
 ## [1.1.131] - 2026-07-25
 
 ### Fixed

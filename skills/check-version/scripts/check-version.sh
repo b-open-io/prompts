@@ -6,8 +6,8 @@ set -euo pipefail
 
 PLUGIN_NAME="core"
 PLUGIN_ORG="b-open-io"
-REPO="b-open-io/prompts"
 CACHE_DIR="$HOME/.claude/plugins/cache"
+MARKETPLACE_REPO="b-open-io/claude-plugins"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -41,13 +41,53 @@ EOF
   exit 0
 fi
 
-# Get remote version from GitHub (raw file, ~100ms)
-remote_version=""
-remote_json=$(curl -sf --max-time 3 "https://raw.githubusercontent.com/$REPO/master/.claude-plugin/plugin.json" 2>/dev/null || echo "")
+# Resolve where this plugin actually lives. Ten of our plugins are git-subdir
+# entries in one repo and the rest are scattered across separate repos and
+# owners, so the manifest path has to come from the marketplace rather than a
+# constant.
+marketplace_json=$(curl -sf --max-time 3 \
+  "https://raw.githubusercontent.com/$MARKETPLACE_REPO/master/.claude-plugin/marketplace.json" \
+  2>/dev/null || echo "")
 
-if [ -n "$remote_json" ]; then
-  remote_version=$(echo "$remote_json" | grep -o '"version": *"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
-fi
+manifest_paths=$(
+  PLUGIN="$PLUGIN_NAME" python3 -c '
+import json, os, sys
+
+try:
+    market = json.load(sys.stdin)
+except ValueError:
+    sys.exit(0)
+
+name = os.environ["PLUGIN"]
+entry = next((p for p in market.get("plugins", []) if p.get("name") == name), None)
+if not entry:
+    sys.exit(0)
+
+source = entry.get("source") or {}
+url = source.get("url") or ""
+if not url.startswith("https://github.com/"):
+    sys.exit(0)
+repo = url[len("https://github.com/"):].removesuffix(".git")
+
+subdir = (source.get("path") or "").strip("/")
+manifest = f"{subdir}/.claude-plugin/plugin.json" if subdir else ".claude-plugin/plugin.json"
+
+# The entry names a ref only when it is not the default branch, and the two
+# defaults in play across these repos are master and main.
+refs = [source["ref"]] if source.get("ref") else ["master", "main"]
+for ref in refs:
+    print(f"https://raw.githubusercontent.com/{repo}/{ref}/{manifest}")
+' <<<"$marketplace_json" 2>/dev/null || echo ""
+)
+
+remote_version=""
+for manifest_url in $manifest_paths; do
+  remote_json=$(curl -sf --max-time 3 "$manifest_url" 2>/dev/null || echo "")
+  if [ -n "$remote_json" ]; then
+    remote_version=$(echo "$remote_json" | grep -o '"version": *"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
+    [ -n "$remote_version" ] && break
+  fi
+done
 
 if [ -z "$remote_version" ]; then
   cat <<EOF
