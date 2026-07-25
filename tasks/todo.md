@@ -404,5 +404,26 @@
 - [x] Add stale-root fallback resolution to every Claude and Codex hook command.
 - [x] Add regression tests for both hosts and rerun the complete hook suite.
 - [x] Record the correction in `tasks/lessons.md`, `CHANGELOG.md`, and `README.md`.
-- [ ] Patch-bump both plugin manifests, run every release gate, and push master.
-- [ ] Refresh both plugin installs and verify the published hooks in fresh sessions.
+- [x] Patch-bump both plugin manifests, run every release gate, and push master.
+- [x] Refresh both plugin installs and verify the published hooks in fresh sessions.
+
+#### Remediation review
+
+- Release commit `0635580` is published on `origin/master` as core 1.1.130.
+  Source, Claude, and Codex inventories and hook manifests match.
+- The complete dual-runtime hook suite passes 342 checks with zero failures.
+  Fresh Claude and Codex processes execute the installed SessionStart,
+  UserPromptSubmit, and Stop hooks without stale-path errors.
+- Ten retired pre-rename Codex plugin registrations were removed after their
+  installed replacements were verified. This removed duplicate core hooks and
+  reduced duplicate skill injection.
+- Codex's deprecated `~/.codex/skills` root contained 99 links back to the
+  canonical `~/.agents/skills` root and exceeded the 20,000-entry traversal
+  limit. The links were moved, without deleting their targets, to
+  `~/.codex/legacy-skill-links-20260725`; fresh scans no longer truncate.
+- The stale `paper` MCP entry pointing at an unavailable loopback service on
+  port 29979 was removed through `codex mcp remove`. Fresh Codex startup has no
+  MCP transport errors.
+- Codex still reports its non-fatal 2% skill-context budget notice for the
+  remaining enabled catalog. Removing that notice requires a user choice about
+  which otherwise-working skills or plugins to disable.
