@@ -304,9 +304,9 @@
       "source_name": "security-ops",
       "source_path": "modules/review/agents/security-ops.md",
       "source_version": "1.0.8",
-      "source_hash": "sha256:a7c40c68d45cddd53b13678bc3d15fa9f843b320d9a8080a45eb0fbd220f3555",
+      "source_hash": "sha256:c2de98b93faf191829fc25c7e0887f0595cd45936188b998ffd2dc34d1b7d1ef",
       "generated_file": "bopen-security-ops.toml",
-      "generated_hash": "sha256:75d18ac1eb32760b6dd0af88c16cf61f8978bdad58bde92666eac7b075758de9",
+      "generated_hash": "sha256:6da4b609033f9706738c94e8c0367147c42d63543975a25a967eb2463d578d4c",
       "agent_name": "bopen_security_ops",
       "curated": false,
       "default_install": false

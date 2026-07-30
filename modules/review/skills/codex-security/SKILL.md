@@ -1,6 +1,6 @@
 ---
 name: codex-security
-description: "Run OpenAI's agentic security scanner, `@openai/codex-security`, over a repository, PR, commit, branch diff, or working tree — then read, triage, export, and gate on its findings. Use this skill whenever the user asks to 'run a codex security scan', 'deep scan this repo for vulnerabilities', 'security review this PR with the OpenAI scanner', 'export findings as SARIF', 'compare this scan to the last one', 'mark that finding a false positive', 'gate CI on high-severity findings', or mentions codex-security, `npx @openai/codex-security`, or an AI security scan that validates findings and traces attack paths. Also use it when a grep- or pattern-level sweep (code-audit-scripts, semgrep) has come back thin and the user wants a real vulnerability hunt with reachability analysis. Do not use it for dependency CVE audits, secret scanning, or license checks — those are `bun audit` and `code-audit-scripts` work."
+description: "Run OpenAI's agentic security scanner (`@openai/codex-security`) over a repo, PR, or diff, then triage, patch, and gate on its findings. Use for 'run a codex security scan', 'find vulnerabilities in this PR', 'export findings as SARIF', 'fix that security finding', 'compare this scan to the last one', or when a pattern sweep came back thin. Not for dependency CVEs, secrets, or licenses (code-audit-scripts, bun audit)."
 user-invocable: true
 allowed-tools:
   - Bash
@@ -23,39 +23,31 @@ permissions. Treat starting one as an action with consequences, not a lookup.
 
 ## Where it sits among the sweeps
 
-Reach for the cheapest tool that can answer the question. Escalate when it
-can't.
+Each tool answers a different question. Run them in this order because the cheap
+ones finish first, not because the expensive one needs earning.
 
-| Tool | Cost | Finds |
+| Tool | Cost | Answers |
 |---|---|---|
-| `Skill(code-audit-scripts)`, `bun audit` | free, seconds | Secrets, debug artifacts, known CVEs, TODOs |
-| `Skill(semgrep)`, `Skill(codeql)` | free, minutes | Known patterns, taint flows expressible as rules |
-| **`codex-security`** | paid, minutes to hours | Reachable logic flaws, auth/authz gaps, validated findings with attack paths and severity |
+| `Skill(code-audit-scripts)`, `bun audit` | free, seconds | Are there secrets, debug artifacts, known CVEs, TODOs? |
+| `Skill(semgrep)`, `Skill(codeql)` | free, minutes | Does any known-bad pattern or rule-expressible taint flow appear? |
+| **`codex-security`** | paid, minutes to hours | Is there a *reachable* vulnerability — authz gap, IDOR, logic bypass — and how would it be exploited? |
 
-A thin pattern sweep is the normal reason to escalate here. Running this first
-on a repo nobody has grepped yet wastes money on findings a free scan would
-have caught.
+Only the third question needs reasoning about the code's intent, which is why
+nothing cheaper substitutes for it. A clean pattern sweep on code you don't yet
+trust is a reason to run this, not a reason to stop.
 
 ## Before the first scan
 
-Confirm three things with the user, once per engagement, and say what you are
-about to do:
+Once per engagement, confirm the repo is one the user owns or is authorized to
+assess, and say plainly that source contents go to OpenAI. The scanner has no
+separate identity — it inherits the operator's filesystem access and runs with
+`approvalPolicy: "never"`, so it never stops to ask on its own behalf.
 
-1. **Authorization.** The repository must be one they own or are authorized to
-   assess. The scanner has no separate identity — it inherits the operator's
-   filesystem access and runs with `approvalPolicy: "never"`, so it never stops
-   to ask.
-2. **Data flow.** Source contents go to OpenAI. Say so plainly for anything not
-   already public.
-3. **Budget.** Always pass `--max-cost USD`. A scan without a ceiling can run up
-   real money on a large repository, and partial results are preserved when the
-   ceiling stops it.
-
-Two hygiene rules that are easy to get wrong and expensive to discover late:
-results must be written **outside** the scanned repository and any enclosing Git
-worktree (the CLI rejects an inside path), and subprocesses inherit the whole
-environment — start scans from a shell that holds only the credentials this work
-needs, not a session loaded with production tokens.
+Then three mechanics that are cheap to get right and expensive to discover late:
+pass `--max-cost` on every invocation (partial results survive the ceiling),
+write results **outside** the repository and any enclosing worktree (the CLI
+rejects an inside path), and start from a shell holding only the credentials
+this work needs — subprocesses inherit the whole environment.
 
 ## Preflight
 
@@ -147,6 +139,39 @@ report format from the security-ops agent and keep the scanner's own severity
 calibration — it was derived from the attack path, and downgrading it in the
 retelling loses the reasoning.
 
+## Closing a finding
+
+Finding is half the job. The scanner also validates, patches, and proves
+closure, so run the loop rather than handing the user a list:
+
+```bash
+# 1. Is it real? Re-check one finding on its own before spending effort on it.
+npx @openai/codex-security validate FINDINGS_JSON "Missing authz in src/routes.ts:18"
+
+# 2. Minimal repository-native fix that closes the boundary.
+npx @openai/codex-security patch FINDINGS_JSON "Missing authz in src/routes.ts:18"
+
+# 3. Prove it closed — re-scan the same scope, then compare by root cause.
+npx @openai/codex-security scan . --path src/routes.ts --max-cost 2
+npx @openai/codex-security scans compare "$BEFORE_ID" "$AFTER_ID"
+
+# Not a bug? Record it, so the dismissal survives the next scan.
+npx @openai/codex-security findings false-positive OCCURRENCE_ID --reason "..."
+```
+
+Step 3 is the one people skip, and it is the only step that produces evidence.
+`scans compare` matches by root cause, so it distinguishes a finding that
+actually closed from one that merely moved — and it reports **unknown** when the
+new scan didn't review the original location. Unknown is a coverage gap, not a
+fix; report it next to the resolved count or the trend line lies.
+
+Review every patch before it lands. `patch` optimizes for the smallest change
+that fully closes the boundary while preserving legitimate behavior, which is
+the right objective but not a substitute for a human reading the diff. When the
+fix needs design judgment rather than a boundary repair — the auth model is
+wrong, not the check — that is code-auditor's work, and the finding's attack
+path is what to hand over.
+
 ## Which harness you're in
 
 The standalone CLI and SDK build their **own isolated Codex runtime and
@@ -187,10 +212,10 @@ not host signals, and reading them as such misreports any nested invocation.
 
 ## Boundaries
 
-- Running scans, triaging output, and reporting posture — this skill, security-ops.
-- Fixing a confirmed code-level finding — hand it to code-auditor with the
-  finding's attack path attached, or use the CLI's own `patch` subcommand for a
-  minimal verified change.
+- Scanning, triage, the patch-and-verify loop, and posture reporting —
+  security-ops owns all of it.
+- A finding whose fix is a design change rather than a boundary repair —
+  code-auditor, with the attack path attached.
 - Wiring scans into pipelines — devops owns the pipeline; see
   `references/sdk-and-automation.md` for the CI contract and pre-commit hook.
 

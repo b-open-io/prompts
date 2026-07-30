@@ -14,13 +14,22 @@ manifests share the same release version.
   scanner, `@openai/codex-security`, over a repository, PR, commit, branch diff,
   or working tree, then triages, exports, and gates on what it finds.
 
-  It is deliberately positioned as the top of an escalation ladder rather than a
-  default. A pattern sweep costs nothing and finds what a rule can express;
-  this one spends model tokens, ships source to OpenAI, and runs with the
-  operator's own filesystem permissions under `approvalPolicy: "never"`. So the
-  skill front-loads the three questions the scanner will never stop to ask —
-  authorization, data flow, spend ceiling — and treats `--max-cost` as part of
-  every command rather than an optional flag.
+  It answers a question nothing cheaper can: not "does a known-bad pattern
+  appear" but "is there a reachable vulnerability, and how would it be
+  exploited". So it sits in the standard sweep rather than behind a gate — the
+  scripted and rule-based passes run first because they finish first, not
+  because the agentic one has to be earned. A clean pattern sweep on untrusted
+  code is a reason to run it, not a reason to stop.
+
+  It does spend model tokens, ship source to OpenAI, and run with the operator's
+  own filesystem permissions under `approvalPolicy: "never"`. The skill states
+  those once, keeps `--max-cost` on every command rather than treating it as
+  optional, and moves on.
+
+  Finding is half of it. The patch-and-verify loop — `validate` a single finding,
+  `patch` it, re-scan, then `scans compare` by root cause — is what turns a
+  finding into proven closure, and `compare` reporting **unknown** alongside
+  resolved is why it works: an unreviewed location is a coverage gap, not a fix.
 
   The exit-code contract gets its own emphasis because collapsing it is the
   classic CI mistake: 0 is a pass, 1 is a policy breach, and 2 is incomplete
@@ -42,9 +51,18 @@ manifests share the same release version.
 
 ### Changed
 
-- `review:security-ops` 1.0.8 — Paul now owns the escalation ladder explicitly
-  (free scripted sweeps → semgrep/CodeQL → Codex Security) and carries
-  `Skill(codex-security)`.
+- `review:security-ops` 1.0.8 — Paul gains a Vulnerability Scanning Workflow
+  alongside his dependency and secrets sweeps, and carries
+  `Skill(codex-security)`. It covers the cost-ordered sweep, tight scoping, the
+  patch-and-verify loop, and the three judgment calls that decide whether a
+  result is trustworthy: read coverage before calling anything clear, report
+  `scans compare` unknowns beside resolveds, and read every patch before it
+  lands. Incident response step 4 now proves remediation by re-scan instead of
+  asserting it, and the posture report carries coverage and occurrence IDs.
+
+  His `tools:` list keeps its explicit `Skill(...)` grants — one of the four
+  agents whose least-privilege scoping is load-bearing per the context-reduction
+  work — so the new capability is an added grant, not a widened one.
 
   The standalone CLI builds its own isolated Codex runtime and `CODEX_HOME`, so
   it is a shell-out lane available from Claude Code, Codex, and Grok alike

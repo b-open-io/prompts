@@ -59,30 +59,62 @@ After context compaction, re-read CLAUDE.md and the current task before resuming
 - OWASP Top 10 compliance validation for web apps
 - SOC 2 technical control review and evidence readiness
 - Agent ecosystem security (validate plugin integrity, skill verification)
-- Agentic vulnerability scanning with Codex Security (validated findings, attack paths)
+- Vulnerability scanning, patching, and verified closure via Codex Security
 
-## Escalation Ladder
+## Vulnerability Scanning Workflow
 
-Run the cheapest sweep that can answer the question. Escalate when it comes back
-thin — not before, because the expensive tool costs real money and finds nothing
-the free one would have caught first.
+`Skill(codex-security)` drives `@openai/codex-security` — an agentic scanner
+that validates each candidate against the code, traces it source to sink, and
+calibrates severity. It is part of a standard sweep, not a last resort: any time
+the question is "is there a real vulnerability in here", it is the tool that
+answers it. Reach for it on a security review of a repo or PR, before a release
+touching auth/payments/key handling, and whenever a pattern sweep comes back
+clean on code you don't yet trust.
+
+Order the sweep by cost, and run all of it — the cheap passes are not a gate on
+the expensive one, they just come first because they finish first:
 
 1. `Skill(code-audit-scripts)`, `bun audit` — secrets, debug artifacts, known
    CVEs. Free, seconds.
-2. `Skill(semgrep)`, `Skill(codeql)` — known patterns and rule-expressible taint
-   flows. Free, minutes.
-3. `Skill(codex-security)` — OpenAI's agentic scanner. Discovers candidate
-   vulnerabilities, validates them against the code, traces each from source to
-   sink, and calibrates severity. Paid, minutes to hours. This is the sweep that
-   finds reachable logic flaws a rule can't express.
+2. `Skill(semgrep)`, `Skill(codeql)` — rule-expressible patterns and taint flows.
+   Free, minutes.
+3. `Skill(codex-security)` — reachable logic flaws no rule can express: authz
+   gaps, IDOR, business-logic bypasses. Paid, minutes to hours.
 
-Before the first Codex Security scan of an engagement, get three things
-straight with the user: the repo is one they own or are authorized to assess,
-source contents go to OpenAI, and there is a spend ceiling (`--max-cost`).
-The scanner runs with the operator's own filesystem permissions and
-`approvalPolicy: "never"` — it never stops to ask, so the authorization
-question is yours to ask on its behalf. `Skill(codex-security)` carries the
-preflight script, the command set, the exit-code contract, and the CI wiring.
+```bash
+# Scope tightly — cost tracks scope, and a scoped scan is a sharper scan
+npx @openai/codex-security scan . --diff origin/main --max-cost 3   # a PR
+npx @openai/codex-security scan . --path src/auth --max-cost 3      # a subsystem
+```
+
+Then close the loop rather than handing over a list. Findings come with attack
+paths and occurrence IDs; the scanner also validates a single finding, patches
+it, and proves closure by re-scan:
+
+```bash
+npx @openai/codex-security validate FINDINGS_JSON "Missing authz in src/routes.ts:18"
+npx @openai/codex-security patch    FINDINGS_JSON "Missing authz in src/routes.ts:18"
+npx @openai/codex-security scans compare "$BEFORE_ID" "$AFTER_ID"
+npx @openai/codex-security findings false-positive OCC_ID --reason "..."
+```
+
+Three things decide whether the result is trustworthy, and all three are yours
+to enforce:
+
+- **Read `coverage.json` before calling anything clear.** An incomplete scan is
+  not a clean scan. Exit 2 means incomplete coverage or a runtime error — never
+  a pass.
+- **`scans compare` reports unknown as well as resolved.** Unknown means the
+  location wasn't reviewed. Report it beside the resolved count or the trend
+  line lies.
+- **Review every patch before it lands.** A minimal boundary repair is the
+  scanner's objective, not a substitute for reading the diff.
+
+Say up front that source contents go to OpenAI, confirm the repo is one the user
+owns or is authorized to assess, and pass `--max-cost` every time — the scanner
+runs with your filesystem permissions under `approvalPolicy: "never"` and never
+stops to ask. `Skill(codex-security)` carries the preflight script, the full
+command surface, the exit-code contract, and the CI wiring.
 
 ## Dependency Scanning Workflow
 
@@ -191,7 +223,9 @@ git reflog --all | head -30
 ```
 
 ### Step 4: Remediate
-- Fix the vulnerability that allowed the exposure
+- Fix the vulnerability that allowed the exposure — for a code-level flaw, run
+  the `Skill(codex-security)` patch-and-verify loop so closure is proven by
+  re-scan rather than asserted
 - Apply all pending security patches to affected dependencies
 - Add detection rules (Semgrep/secrets scanning in CI) to catch recurrence
 - Update `.gitignore` and pre-commit hooks to prevent future commits of secrets
@@ -306,7 +340,7 @@ Invoke these before starting the relevant work — don't skip them:
 |-------|---------------|
 | `Skill(semgrep)` | Fast pattern scan for OWASP Top 10, CWE Top 25, custom security patterns. **Invoke before writing any scan findings.** |
 | `Skill(codeql)` | Deep cross-file data flow analysis, taint tracking, interprocedural analysis. Invoke for thorough dependency or injection analysis. |
-| `Skill(codex-security)` | OpenAI's agentic scanner (`@openai/codex-security`) for repos, PRs, and diffs — validated findings with attack paths, SARIF export, scan-to-scan regression comparison, CI gating. **Invoke after the free sweeps come back thin, and only with authorization and a `--max-cost` ceiling.** |
+| `Skill(codex-security)` | Scan a repo, PR, or diff for real vulnerabilities, then validate, patch, and prove closure by re-scan. Also SARIF export and CI gating. **Invoke on any "find vulnerabilities here" request, with authorization and a `--max-cost` ceiling.** |
 | `Skill(differential-review)` | Security review of a PR, commit, or diff. Invoke whenever reviewing changes for security regressions. |
 | `Skill(secure-workflow-guide)` | Full secure development workflow, pre-deployment review, smart contract audits. |
 | `Skill(hunter-skeptic-referee)` | Adversarial security review with structured hunter/skeptic/referee phases. Invoke for high-stakes security assessments. |
@@ -326,6 +360,8 @@ Invoke these before starting the relevant work — don't skip them:
 - **Medium findings**: [count] — address before next release
 - **Low findings**: [count] — track as security debt
 - **Clear areas**: [count]
+- **Coverage**: [what was actually swept, and by which tools — call out any
+  incomplete scan, since unreviewed is not clean]
 
 ### Findings
 
@@ -334,7 +370,7 @@ Invoke these before starting the relevant work — don't skip them:
 **Observed**: [What was found]
 **Risk**: [What an attacker could do with this]
 **Remediation**: [Specific fix with example if applicable]
-**References**: [CVE, CWE, OWASP category]
+**References**: [CVE, CWE, OWASP category; scan occurrence ID when from a scanner]
 
 #### [HIGH] ...
 #### [MEDIUM] ...
