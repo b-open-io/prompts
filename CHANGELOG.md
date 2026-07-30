@@ -6,6 +6,21 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.135] - 2026-07-30
+
+### Fixed
+
+- `orchestra` module manifests were out of sync — Claude at 0.1.4, Codex at
+  0.1.3. The gap opened in 1.1.133, when `visual-coordinator` bumped only the
+  Claude side, and 1.1.134 carried it forward one more notch. Codex caches
+  installed plugin contents by version, so a Codex install could keep serving
+  stale skills and hooks while the Claude side looked current.
+
+- `check-plugin-manifests.py` now validates every module's manifest pair, not
+  just the root's. That blind spot is why the divergence survived two releases
+  with a green check each time: the rule was written down but only enforced in
+  one place, so the answer was "in sync" about a file the check never opened.
+
 ## [1.1.134] - 2026-07-30
 
 ### Added

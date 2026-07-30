@@ -93,12 +93,43 @@ def check_local_path(
         )
 
 
+def collect_module_errors() -> list[str]:
+    """Check each module's paired manifests agree on shared metadata.
+
+    Only the root pair was validated before, so a bump that touched one host's
+    module manifest and not the other shipped silently and stayed wrong until
+    someone diffed the two files by hand.
+    """
+    errors: list[str] = []
+    modules_dir = ROOT / "modules"
+    if not modules_dir.is_dir():
+        return errors
+    for module in sorted(p for p in modules_dir.iterdir() if p.is_dir()):
+        claude_path = module / ".claude-plugin" / "plugin.json"
+        codex_path = module / ".codex-plugin" / "plugin.json"
+        if not claude_path.is_file() or not codex_path.is_file():
+            continue
+        try:
+            claude = load_object(claude_path)
+            codex = load_object(codex_path)
+        except ManifestError as exc:
+            errors.append(str(exc))
+            continue
+        for field in SHARED_FIELDS:
+            if claude.get(field) != codex.get(field):
+                errors.append(
+                    f"module {module.name}: shared field {field!r} differs: "
+                    f"Claude={display(claude.get(field))}, Codex={display(codex.get(field))}"
+                )
+    return errors
+
+
 def collect_errors(
     claude: dict[str, Any],
     codex: dict[str, Any],
     marketplace: dict[str, Any],
 ) -> list[str]:
-    errors: list[str] = []
+    errors: list[str] = collect_module_errors()
 
     for field in SHARED_FIELDS:
         if field not in claude:
