@@ -1,0 +1,127 @@
+---
+name: visual-coordinator
+description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable flow-chart artifact and emits a paste-back spec that launches the exact configuration chosen. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
+version: 0.1.0
+---
+
+# Visual Coordinator
+
+Turn a large multi-agent job into an editable diagram **before** it runs, then
+emit a spec that launches exactly what the user approved.
+
+The artifact is a design surface, not a monitor. It is opened while planning,
+adjusted by the user, and produces text they paste back. Progress monitoring
+belongs to `/workflows` and the host's own UI.
+
+## When to reach for this over plain coordinator
+
+Use `coordinator` when the dispatch plan is obvious and the user wants it run.
+Use this skill when the job is large enough that the wrong model on the wrong
+step costs real money or time, when several plausible decompositions exist, or
+when the user has asked to see or change the plan first.
+
+## The rule that governs every control
+
+**No harness runs another vendor's model as a native step.** Claude workflows
+run Claude agents; Codex subagents run OpenAI models; Grok runs Grok. Crossing
+providers is always a shell-out to another CLI, wrapped in a step of the host.
+
+Never render a dropdown implying otherwise. A control offering an impossible
+combination is worse than no control, because the user configures around it and
+the emitted spec fails at run time. Read
+[references/harness-capabilities.md](references/harness-capabilities.md) before
+adding any control, and treat it as authoritative over memory.
+
+## Procedure
+
+### 1. Establish the runtime facts
+
+Run the detector rather than assuming anything:
+
+```bash
+bash scripts/detect-harness.sh
+```
+
+It reports the host harness, which other CLIs are reachable as shell-out lanes,
+the models each lane actually offers, and the installed agent roster with
+display names. Grok's model list is account-scoped and Codex has no enumeration
+command, so both are read from the live environment.
+
+The host harness is a **fact, not a choice** — it is decided by how the session
+was invoked. Render it as a fixed banner. Everything else is configurable.
+
+### 2. Understand the job before drawing it
+
+Establish what the work actually is: the unit being fanned out over, the phases,
+what must complete before what, and how the result gets verified. A canvas drawn
+from a vague brief produces a confident-looking diagram of the wrong job.
+
+Where a decomposition is genuinely uncertain, draw the most defensible one and
+let the user edit it. That is what the canvas is for.
+
+### 3. Build the artifact
+
+Load `Skill(artifact-design)` for craft, then compose the page. Required
+elements:
+
+- **Fixed harness banner** naming the host and stating it cannot be changed here.
+- **Flow chart** of phases and nodes, drawn as SVG. Show barriers explicitly:
+  a `pipeline` phase lets items advance independently; a `parallel` phase does
+  not. That distinction changes wall-clock and must be visible, not implied.
+- **Per-node controls** — provider, model, effort, and assigned agent. Populate
+  every list from the detector output. Disable and explain any option the host
+  cannot honour rather than hiding it silently.
+- **Shell-out nodes styled distinctly** from native ones. They are subprocesses,
+  and the visual language should say so.
+- **Roster palette** with agent avatars, names, and one-line roles, assignable to
+  nodes. Embed avatars as data URIs; the artifact CSP blocks external images.
+- **Concurrency and isolation dials**, bounded by the host's real caps.
+- **Verification gate field** — the command that proves the work.
+- **Copy button** emitting the paste-back spec.
+
+### 4. Emit the spec
+
+Follow [references/emitted-spec-format.md](references/emitted-spec-format.md).
+Emit a human-readable plan and a machine-readable JSON block generated from the
+same canvas state, so they cannot disagree.
+
+When the user configured something the host cannot do, omit it and say so under
+the plan. Never leave an impossible setting looking configured.
+
+### 5. Execute what came back
+
+On receiving a pasted spec, translate it for the host — Claude Code maps onto a
+workflow script almost directly; Codex becomes an ordered series of `codex exec`
+dispatches the caller sequences; Grok becomes subagent dispatches or a brief for
+its own `/workflow`. Then run it under the ordinary `coordinator` rules: specs
+before dispatch, review diffs adversarially, re-run acceptance outside the
+worker's sandbox, and keep every git operation in the main session.
+
+## Avatars
+
+Agent avatars come from `bopen-ai/public/images/agents/<slug>.png`, where the
+slug is `display_name` lowercased with non-alphanumerics replaced by `-`.
+Downscale to about 96px and inline as data URIs. Where an avatar is missing, use
+the agent's initials in a coloured circle rather than shipping a faceless card.
+
+## Additional Resources
+
+### Reference Files
+
+- **`references/harness-capabilities.md`** — what Claude Code, Codex, and Grok
+  each genuinely support: primitives, caps, isolation, resume semantics, model
+  identifiers, and the five claims the canvas must never make.
+- **`references/emitted-spec-format.md`** — the exact shape of the paste-back
+  spec, field rules, per-harness translation, and how to refuse an impossible
+  configuration.
+
+### Scripts
+
+- **`scripts/detect-harness.sh`** — reports host harness, available lanes, real
+  model lists per lane, and the deduplicated installed agent roster as JSON.
+
+### Related Skills
+
+- `Skill(orchestra:coordinator)` — the dispatch discipline this builds on
+- `Skill(orchestra:wave-coordinator)` — sizing large fan-outs into waves
+- `Skill(artifact-design)` — craft for the artifact itself

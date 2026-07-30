@@ -6,6 +6,35 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.133] - 2026-07-30
+
+### Added
+
+- `orchestra:visual-coordinator` (orchestra 0.1.3) — renders a large multi-agent
+  job as an editable flow chart before it runs, then emits a spec the user
+  pastes back to launch exactly what they approved. Per-node model, effort and
+  agent assignment; concurrency and isolation dials bounded by the host's real
+  caps; the agent roster as an avatar palette.
+
+  The constraint that shapes it: no harness runs another vendor's model as a
+  native step. Claude workflows run Claude agents, Codex subagents run OpenAI
+  models, Grok runs Grok. Crossing providers is always a shell-out to another
+  CLI, so those nodes are rendered and emitted as subprocesses rather than
+  orchestrated peers. A control offering an impossible combination is worse than
+  no control, because the user configures around it and the run fails later.
+
+  `scripts/detect-harness.sh` reads the host harness, the reachable CLI lanes,
+  the models each lane actually offers, and the installed roster, rather than
+  assuming any of it -- Grok enumerates per account and Codex has no enumeration
+  command at all. The runtime refuses over-cap concurrency, unavailable lanes,
+  and foreign models on native nodes, reporting each rather than dropping it
+  silently.
+
+  References record what Claude Code, Codex and Grok genuinely support, including
+  the five claims the canvas must never make and the non-obvious Claude replay
+  rule: on resume, every agent that started after the first unfinished one reruns
+  even if it had completed.
+
 ## [1.1.132] - 2026-07-25
 
 ### Fixed
