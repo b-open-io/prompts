@@ -6,6 +6,34 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.134] - 2026-07-30
+
+### Fixed
+
+- `visual-coordinator` disabled the reasoning-effort control on shell-out nodes.
+  Codex takes `model_reasoning_effort` and Grok takes `--reasoning-effort`, so a
+  subprocess carries effort as a command line flag and the control belongs live.
+  Found by running the skill on a real job. Only `schema` and `agentType` are
+  genuinely native-only: the roster palette holds this harness's agents, not the
+  other tool's, and structured return is the host runtime's mechanism.
+- A shell-out node with no author-written command emitted as
+  `(compose at dispatch)`, which handed the decision back to the agent and threw
+  away the model and effort chosen on the canvas. The runtime now composes the
+  invocation, so the settings reach the tool:
+  `codex exec ... -m "gpt-5.6-sol" -c model_reasoning_effort="xhigh" "..."`.
+- Redrawing the whole canvas on every dropdown change dropped keyboard focus
+  mid-edit and did not scale past a handful of nodes. `syncNode()` re-scopes only
+  the dependent controls for the node that changed.
+
+### Added
+
+- `references/decomposition.md` — the judgement the canvas exists to expose and
+  the one thing the skill gave no help with: finding the repeating unit, telling
+  a phase from a node, the three cases that genuinely justify a barrier, sizing
+  against dispatch floor cost, when worktree isolation is actually needed, and
+  what makes a verification gate worth having. A confident diagram of the wrong
+  shape is worse than no diagram, because it gets approved.
+
 ## [1.1.133] - 2026-07-30
 
 ### Added

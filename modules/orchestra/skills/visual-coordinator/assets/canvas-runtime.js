@@ -47,6 +47,57 @@
       return laneToHarness[node.lane || "claude"] === this.env.harness;
     },
 
+    /**
+     * Fields a shell-out node cannot carry.
+     *
+     * Effort is NOT one of them. Codex takes `model_reasoning_effort` and Grok
+     * takes `--reasoning-effort`, so a subprocess carries effort as a command
+     * line flag and the control must stay live. What a shell-out cannot carry
+     * is a roster `agentType` — the palette holds this harness's agents, not
+     * the other tool's — or a `schema`, which is the host runtime's mechanism
+     * for forcing a structured return.
+     */
+    nativeOnlyFields: ["schema", "agentType"],
+
+    fieldEnabled(node, field) {
+      if (this.isNative(node)) return true;
+      return !this.nativeOnlyFields.includes(field);
+    },
+
+    fieldDisabledReason(field) {
+      return `${field} applies to a native step; this node is a subprocess of another CLI.`;
+    },
+
+    /**
+     * How each lane spells reasoning effort on the command line, so the setting
+     * reaches the tool instead of sitting unread in the spec.
+     */
+    effortFlag(lane, effort) {
+      if (!effort) return "";
+      if (lane === "codex") return ` -c model_reasoning_effort="${effort}"`;
+      if (lane === "grok") return ` --reasoning-effort ${effort}`;
+      return "";
+    },
+
+    /**
+     * Compose a shell-out invocation when the author has not written one. An
+     * empty command emits as "compose at dispatch", which hands the decision
+     * back to the agent and discards the model and effort chosen here.
+     */
+    composeCommand(node, cwd) {
+      if (node.command) return node.command;
+      const dir = cwd || (this.workflow && this.workflow.cwd) || ".";
+      const task = (node.task || "").replace(/"/g, '\\"');
+      const effort = this.effortFlag(node.lane, node.effort);
+      if (node.lane === "codex") {
+        return `codex exec --sandbox workspace-write --cd ${dir} -m "${node.model}"${effort} "${task}"`;
+      }
+      if (node.lane === "grok") {
+        return `grok --single "${task}" -m "${node.model}"${effort} --permission-mode acceptEdits --sandbox workspace --cwd ${dir}`;
+      }
+      return `claude -p "${task}"`;
+    },
+
     modelsFor(lane) {
       return this.env.models[lane] || [];
     },
@@ -82,7 +133,9 @@
           if (field === "lane" && !this.modelsFor(el.value).includes(node.model)) {
             node.model = this.modelsFor(el.value)[0] || "";
           }
+          this.syncNode(nodeId);
           this.refresh();
+          if (typeof this.onNodeChange === "function") this.onNodeChange(node, field);
           return;
         }
         const setting = el.getAttribute && el.getAttribute("data-setting");
@@ -142,6 +195,40 @@
       return out;
     },
 
+    /**
+     * Re-scope only the dependent controls for one node. Switching lane changes
+     * which models and efforts are legal, and rebuilding the whole canvas to
+     * express that loses the user's place mid-edit.
+     */
+    syncNode(nodeId) {
+      const node = this.nodeById(nodeId);
+      if (!node) return;
+      const lane = node.lane || "claude";
+      const fill = (field, values) => {
+        const el = document.querySelector(
+          `[data-node="${nodeId}"][data-field="${field}"]`,
+        );
+        if (!el) return;
+        const enabled = this.fieldEnabled(node, field);
+        el.disabled = !enabled;
+        el.title = enabled ? "" : this.fieldDisabledReason(field);
+        if (el.tagName !== "SELECT") return;
+        const current = node[field];
+        el.innerHTML = values
+          .map(
+            (v) =>
+              `<option${v === current ? " selected" : ""}>${String(v).replace(/</g, "&lt;")}</option>`,
+          )
+          .join("");
+        if (!values.includes(current) && values.length) {
+          node[field] = values[0];
+          el.value = values[0];
+        }
+      };
+      fill("model", this.modelsFor(lane));
+      fill("effort", this.effortsFor(lane));
+    },
+
     refresh() {
       const box = document.querySelector('[data-vc="warnings"]');
       if (!box) return;
@@ -179,8 +266,10 @@
             lines.push(`  model: ${node.model} · effort: ${node.effort}`);
           } else {
             lines.push(`- **${node.label}** — SHELL-OUT to ${node.lane}`);
-            lines.push(`  model: ${node.model}`);
-            lines.push(`  command: ${node.command || "(compose at dispatch)"}`);
+            lines.push(
+              `  model: ${node.model} · effort: ${node.effort || "tool default"}`,
+            );
+            lines.push(`  command: ${this.composeCommand(node)}`);
           }
           if (node.task) lines.push(`  ${node.task}`);
         }
@@ -223,7 +312,8 @@
                   kind: "shell-out",
                   lane: node.lane,
                   model: node.model,
-                  command: node.command || "",
+                  effort: node.effort || null,
+                  command: this.composeCommand(node),
                   task: node.task || "",
                 },
           ),

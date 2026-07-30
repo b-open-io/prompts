@@ -50,11 +50,14 @@ command, so both are read from the live environment.
 The host harness is a **fact, not a choice** — it is decided by how the session
 was invoked. Render it as a fixed banner. Everything else is configurable.
 
-### 2. Understand the job before drawing it
+### 2. Choose the decomposition
 
-Establish what the work actually is: the unit being fanned out over, the phases,
-what must complete before what, and how the result gets verified. A canvas drawn
-from a vague brief produces a confident-looking diagram of the wrong job.
+This is the judgement the artifact exists to expose, and it is where a canvas
+goes wrong first. Read
+[references/decomposition.md](references/decomposition.md) before drawing:
+finding the repeating unit, telling a phase from a node, when a barrier is
+genuinely required, sizing, where isolation is actually needed, and what makes a
+verification gate worth having.
 
 Where a decomposition is genuinely uncertain, draw the most defensible one and
 let the user edit it. That is what the canvas is for.
@@ -69,8 +72,10 @@ elements:
   a `pipeline` phase lets items advance independently; a `parallel` phase does
   not. That distinction changes wall-clock and must be visible, not implied.
 - **Per-node controls** — provider, model, effort, and assigned agent. Populate
-  every list from the detector output. Disable and explain any option the host
-  cannot honour rather than hiding it silently.
+  every list from the detector output. The runtime's `fieldEnabled()` reports
+  which controls a node can carry, and `syncNode()` re-scopes the dependent
+  lists when a lane changes; call it rather than redrawing the canvas, which
+  drops keyboard focus mid-edit and does not scale past a handful of nodes.
 - **Shell-out nodes styled distinctly** from native ones. They are subprocesses,
   and the visual language should say so.
 - **Roster palette** with agent avatars, names, and one-line roles, assignable to
@@ -114,6 +119,14 @@ the agent's initials in a coloured circle rather than shipping a faceless card.
 - **`references/emitted-spec-format.md`** — the exact shape of the paste-back
   spec, field rules, per-harness translation, and how to refuse an impossible
   configuration.
+- **`references/decomposition.md`** — how to choose phases, nodes, barriers,
+  sizing, isolation and the gate. Read before drawing, not after.
+
+### Assets
+
+- **`assets/canvas-runtime.js`** — state, per-node control scoping, refusal
+  reporting, and spec emission. Design-neutral: inline it and author the visual
+  layer freely.
 
 ### Scripts
 
