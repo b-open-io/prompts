@@ -6,6 +6,57 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.134] - 2026-07-30
+
+### Added
+
+- `review:codex-security` (review 0.1.2) — drives OpenAI's agentic security
+  scanner, `@openai/codex-security`, over a repository, PR, commit, branch diff,
+  or working tree, then triages, exports, and gates on what it finds.
+
+  It is deliberately positioned as the top of an escalation ladder rather than a
+  default. A pattern sweep costs nothing and finds what a rule can express;
+  this one spends model tokens, ships source to OpenAI, and runs with the
+  operator's own filesystem permissions under `approvalPolicy: "never"`. So the
+  skill front-loads the three questions the scanner will never stop to ask —
+  authorization, data flow, spend ceiling — and treats `--max-cost` as part of
+  every command rather than an optional flag.
+
+  The exit-code contract gets its own emphasis because collapsing it is the
+  classic CI mistake: 0 is a pass, 1 is a policy breach, and 2 is incomplete
+  coverage or a runtime error. A pipeline that only checks for 1 turns every
+  infrastructure hiccup into a green build, which is worse than not scanning.
+  Coverage is read before anything is called clear, and `scans compare` reports
+  unknown alongside resolved, since an unreviewed location is a gap rather than
+  a fix.
+
+  `scripts/preflight.sh` reports harness, resolved CLI, interpreter versions,
+  credential presence, and a repository-external output directory — offline and
+  read-only. It never probes with `npx`, because that would download the package
+  it claims to be checking for, and it reads credential presence without
+  reading values.
+
+  References split by intent: `cli-reference.md` for the command, flag, and
+  environment surface, `sdk-and-automation.md` for the TypeScript SDK, CI
+  gating, pre-commit hook, SARIF upload, and fleet `bulk-scan`.
+
+### Changed
+
+- `review:security-ops` 1.0.8 — Paul now owns the escalation ladder explicitly
+  (free scripted sweeps → semgrep/CodeQL → Codex Security) and carries
+  `Skill(codex-security)`.
+
+  The standalone CLI builds its own isolated Codex runtime and `CODEX_HOME`, so
+  it is a shell-out lane available from Claude Code, Codex, and Grok alike
+  rather than a Codex-only feature. The two host-dependent differences are
+  recorded where they matter: `[deep_scan]` config is read only inside an
+  ordinary Codex host, and a Codex session with the bundled plugin loaded can
+  invoke a scan phase directly where Claude Code cannot. Host detection reuses
+  the markers from
+  `orchestra:visual-coordinator/scripts/detect-harness.sh`; the `CODEX_SECURITY_*`
+  variables are explicitly not host signals, because a running scan sets them
+  itself.
+
 ## [1.1.133] - 2026-07-30
 
 ### Added
