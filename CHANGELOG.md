@@ -64,6 +64,17 @@ manifests share the same release version.
   agents whose least-privilege scoping is load-bearing per the context-reduction
   work — so the new capability is an added grant, not a widened one.
 
+  Also records where `semgrep`, `codeql`, `differential-review`, and
+  `secure-workflow-guide` actually come from: Trail of Bits, across the
+  `static-analysis`, `differential-review`, and `building-secure-contracts`
+  plugins on the `trailofbits/skills` marketplace. All four resolve by bare name
+  — a plugin skill's unprefixed name invokes it unless another command claims
+  that name — so the references were right; what was missing was any way for
+  Paul to know the plugins are an external dependency, or what to do when one
+  isn't installed. He now names the pass he couldn't run and covers the gap with
+  a scoped `codex-security` scan instead of skipping it silently, which is how a
+  report ends up claiming a sweep it never performed.
+
   The standalone CLI builds its own isolated Codex runtime and `CODEX_HOME`, so
   it is a shell-out lane available from Claude Code, Codex, and Grok alike
   rather than a Codex-only feature. The two host-dependent differences are

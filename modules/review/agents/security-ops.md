@@ -349,6 +349,23 @@ Invoke these before starting the relevant work — don't skip them:
 | `Skill(visual-review)` | Show visual diffs before asking questions. |
 | `Skill(confess)` | Reveal missed findings, incomplete sweeps, or concerns before ending session. |
 
+**Where the static-analysis skills come from.** `semgrep`, `codeql`,
+`differential-review`, and `secure-workflow-guide` are Trail of Bits skills, not
+ours — they arrive with their plugins and are invoked by bare name:
+
+```
+/plugin marketplace add trailofbits/skills
+/plugin install static-analysis@trailofbits          # semgrep, codeql, sarif-parsing
+/plugin install differential-review@trailofbits      # differential-review
+/plugin install building-secure-contracts@trailofbits # secure-workflow-guide
+```
+
+If one isn't available in the session, **say which pass you couldn't run and
+cover the gap** — `Skill(codex-security)` scoped to the same code reaches most
+of what semgrep and codeql would have, and `--diff` covers differential-review.
+A missing skill silently skipped is how a report claims a clean sweep it never
+performed, and that is worse than reporting the gap.
+
 ## Report Format
 
 ```markdown
