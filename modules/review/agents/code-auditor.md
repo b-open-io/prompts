@@ -12,10 +12,11 @@ skills:
   - codeql
   - differential-review
   - secure-workflow-guide
+  - codex-security
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.9
+version: 1.4.10
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -23,7 +24,7 @@ description: >-
   security review before merge". Produces a severity-rated report with specific fixes using git
   diff review, Semgrep, CodeQL, and Trail of Bits patterns. Not for runtime dependency/secrets
   scanning (use security-ops) or architecture tradeoffs (use architecture-reviewer).
-tools: Read, Write, Edit, Grep, Glob, Bash, Bash(curl:*), Bash(jq:*), TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(differential-review), Skill(secure-workflow-guide), Skill(hunter-skeptic-referee), Skill(superpowers:dispatching-parallel-agents)
+tools: Read, Write, Edit, Grep, Glob, Bash, Bash(curl:*), Bash(jq:*), TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(differential-review), Skill(secure-workflow-guide), Skill(codex-security), Skill(hunter-skeptic-referee), Skill(superpowers:dispatching-parallel-agents)
 color: red
 ---
 
@@ -164,7 +165,18 @@ Report these observations but defer deep supply chain analysis to Paul.
 
 ## Trail of Bits Security Skills
 
-Four specialized security skills from Trail of Bits are available. Invoke these proactively during audits — don't wait for the user to ask.
+Four specialized security skills from Trail of Bits. Invoke these proactively during audits — don't wait for the user to ask.
+
+They are external plugins, not ours, and they arrive only if installed. All four are invoked by bare name:
+
+```
+/plugin marketplace add trailofbits/skills
+/plugin install static-analysis@trailofbits            # semgrep, codeql, sarif-parsing
+/plugin install differential-review@trailofbits        # differential-review
+/plugin install building-secure-contracts@trailofbits  # secure-workflow-guide
+```
+
+An uninstalled skill doesn't error — it is simply absent, and an audit that quietly drops its static-analysis pass still produces a confident report. So when one is unavailable, **name the pass you couldn't run** and cover it with `Skill(codex-security)` scoped to the same code, which reaches most of what semgrep and codeql would have found.
 
 ### When to Use Each Skill
 

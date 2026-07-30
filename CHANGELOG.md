@@ -6,7 +6,7 @@ manifests share the same release version.
 
 ## Unreleased
 
-## [1.1.134] - 2026-07-30
+## [1.1.136] - 2026-07-30
 
 ### Fixed
 
@@ -33,6 +33,120 @@ manifests share the same release version.
   against dispatch floor cost, when worktree isolation is actually needed, and
   what makes a verification gate worth having. A confident diagram of the wrong
   shape is worse than no diagram, because it gets approved.
+
+## [1.1.135] - 2026-07-30
+
+### Fixed
+
+- `orchestra` module manifests were out of sync — Claude at 0.1.4, Codex at
+  0.1.3. The gap opened in 1.1.133, when `visual-coordinator` bumped only the
+  Claude side, and 1.1.134 carried it forward one more notch. Codex caches
+  installed plugin contents by version, so a Codex install could keep serving
+  stale skills and hooks while the Claude side looked current.
+
+- `check-plugin-manifests.py` now validates every module's manifest pair, not
+  just the root's. That blind spot is why the divergence survived two releases
+  with a green check each time: the rule was written down but only enforced in
+  one place, so the answer was "in sync" about a file the check never opened.
+
+## [1.1.134] - 2026-07-30
+
+### Added
+
+- `review:codex-security` (review 0.1.2) — drives OpenAI's agentic security
+  scanner, `@openai/codex-security`, over a repository, PR, commit, branch diff,
+  or working tree, then triages, exports, and gates on what it finds.
+
+  It answers a question nothing cheaper can: not "does a known-bad pattern
+  appear" but "is there a reachable vulnerability, and how would it be
+  exploited". So it sits in the standard sweep rather than behind a gate — the
+  scripted and rule-based passes run first because they finish first, not
+  because the agentic one has to be earned. A clean pattern sweep on untrusted
+  code is a reason to run it, not a reason to stop.
+
+  It does spend model tokens, ship source to OpenAI, and run with the operator's
+  own filesystem permissions under `approvalPolicy: "never"`. The skill states
+  those once, keeps `--max-cost` on every command rather than treating it as
+  optional, and moves on.
+
+  Finding is half of it. The patch-and-verify loop — `validate` a single finding,
+  `patch` it, re-scan, then `scans compare` by root cause — is what turns a
+  finding into proven closure, and `compare` reporting **unknown** alongside
+  resolved is why it works: an unreviewed location is a coverage gap, not a fix.
+
+  The exit-code contract gets its own emphasis because collapsing it is the
+  classic CI mistake: 0 is a pass, 1 is a policy breach, and 2 is incomplete
+  coverage or a runtime error. A pipeline that only checks for 1 turns every
+  infrastructure hiccup into a green build, which is worse than not scanning.
+  Coverage is read before anything is called clear, and `scans compare` reports
+  unknown alongside resolved, since an unreviewed location is a gap rather than
+  a fix.
+
+  `scripts/preflight.sh` reports harness, resolved CLI, interpreter versions,
+  credential presence, and a repository-external output directory — offline and
+  read-only. It never probes with `npx`, because that would download the package
+  it claims to be checking for, and it reads credential presence without
+  reading values.
+
+  References split by intent: `cli-reference.md` for the command, flag, and
+  environment surface, `sdk-and-automation.md` for the TypeScript SDK, CI
+  gating, pre-commit hook, SARIF upload, and fleet `bulk-scan`.
+
+### Changed
+
+- `review:security-ops` 1.0.8 — Paul gains a Vulnerability Scanning Workflow
+  alongside his dependency and secrets sweeps, and carries
+  `Skill(codex-security)`. It covers the cost-ordered sweep, tight scoping, the
+  patch-and-verify loop, and the three judgment calls that decide whether a
+  result is trustworthy: read coverage before calling anything clear, report
+  `scans compare` unknowns beside resolveds, and read every patch before it
+  lands. Incident response step 4 now proves remediation by re-scan instead of
+  asserting it, and the posture report carries coverage and occurrence IDs.
+
+  His `tools:` list keeps its explicit `Skill(...)` grants — one of the four
+  agents whose least-privilege scoping is load-bearing per the context-reduction
+  work — so the new capability is an added grant, not a widened one.
+
+  Also records where `semgrep`, `codeql`, `differential-review`, and
+  `secure-workflow-guide` actually come from: Trail of Bits, across the
+  `static-analysis`, `differential-review`, and `building-secure-contracts`
+  plugins on the `trailofbits/skills` marketplace. All four resolve by bare name
+  — a plugin skill's unprefixed name invokes it unless another command claims
+  that name — so the references were right; what was missing was any way for
+  Paul to know the plugins are an external dependency, or what to do when one
+  isn't installed. He now names the pass he couldn't run and covers the gap with
+  a scoped `codex-security` scan instead of skipping it silently, which is how a
+  report ends up claiming a sweep it never performed.
+
+- Same treatment for every other consumer of those four skills, because the
+  silent-skip failure was never specific to Paul: `review:code-auditor` 1.4.10
+  (full install block, plus a `Skill(codex-security)` grant so its stated
+  fallback is one it can actually execute), `review:architecture-reviewer`
+  1.1.18, `dev-ops:devops` 1.3.9, `orchestra:agent-builder` 1.7.13, and
+  `web-dev:nextjs` 1.1.11.
+
+  Each fallback is checked against what that agent can really do rather than
+  copied. `architecture-reviewer` scopes `Bash` to `git`/`gh`/`open`, so it
+  cannot run a scanner at all — telling it to substitute one would have been an
+  instruction it silently fails; it hands the gap to code-auditor or security-ops
+  instead, naming the trust boundary it wanted analyzed.
+
+  `orchestra:deploy-agent-team` references get the inverse warning. They already
+  taught that agents only invoke skills they are told about; they now also cover
+  naming a skill the session lacks, which is quieter and worse, and ask every
+  spawn prompt that names one to close with "if a skill isn't available, say
+  which one and what you did instead."
+
+  The standalone CLI builds its own isolated Codex runtime and `CODEX_HOME`, so
+  it is a shell-out lane available from Claude Code, Codex, and Grok alike
+  rather than a Codex-only feature. The two host-dependent differences are
+  recorded where they matter: `[deep_scan]` config is read only inside an
+  ordinary Codex host, and a Codex session with the bundled plugin loaded can
+  invoke a scan phase directly where Claude Code cannot. Host detection reuses
+  the markers from
+  `orchestra:visual-coordinator/scripts/detect-harness.sh`; the `CODEX_SECURITY_*`
+  variables are explicitly not host signals, because a running scan sets them
+  itself.
 
 ## [1.1.133] - 2026-07-30
 

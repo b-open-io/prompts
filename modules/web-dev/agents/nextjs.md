@@ -18,7 +18,7 @@ skills:
   - react-doctor
   - core:shadscan
 icon: https://bopen.ai/images/agents/theo.png
-version: 1.1.10
+version: 1.1.11
 description: >-
   Next.js and React specialist following Vercel best practices with Bun and Biome. Use this
   agent when the user asks to "build a Next.js page", "fix this React 19 issue", "set up
@@ -1116,7 +1116,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(core:create-next-project)` — invoke when scaffolding a new Next.js project.
 - `Skill(shadcn)` — **the authority** for any component/theme work; invoke it rather than relying on memory (shadcn moves fast). Covers adding components, applying a style preset (`vega`, `nova`, `maia`, `lyra`, `mira`, `luma`, `sera`, or a custom `ui.shadcn.com/create` code), scaffolding a project template (`init --template <next|vite|…>`), design-system/typography registries (`registry:base` / `registry:font`), the Radix-vs-Base-UI base choice (`--base radix|base-ui`; AI Elements needs `radix`), and inspecting `components.json` via `shadcn info`. Non-interactive init uses `-d`/`-f`, not `--yes` (which still prompts for the base library). Never hand-edit files under `components/ui` — regenerate through the CLI (`shadcn add --overwrite` or a preset re-init).
 - `Skill(react-doctor)` — the React/Next.js quality gate; it wraps the `npx -y react-doctor@latest . --verbose --diff` CLI. Run it before calling ANY nontrivial React/Next.js work done, not just new projects. Fix everything your change introduces and re-run until the diff is clean — your work must add zero react-doctor findings, and a react-doctor regression is a failing gate, treated like a failing test, not a nice-to-have. On a freshly scaffolded project the whole score must reach 100 (see the New-Project Completion Gate below).
-- `Skill(semgrep)` — invoke to scan for XSS, injection, and other security patterns in Next.js code.
+- `Skill(semgrep)` — invoke to scan for XSS, injection, and other security patterns in Next.js code. Ships in the `static-analysis` plugin on the `trailofbits/skills` marketplace, so it is present only when installed; if it isn't, say the scan didn't run rather than implying the code was checked.
 
 ## New-Project Completion Gate
 

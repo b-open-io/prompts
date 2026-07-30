@@ -46,7 +46,7 @@ distributions are modules.
 |---|---|
 | `orchestra` | coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
 | `plugin-kit` | agent lifecycle, benchmarks, plugin settings, publishing; prompt-engineer, trainer |
-| `review` | visual review and proposals, code audit scripts, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
+| `review` | visual review and proposals, code audit scripts, Codex Security scanning, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
 | `web-dev` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection; designer, nextjs, optimizer, mobile |
 | `creative` | Three.js, shaders, game UI, macOS design, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
@@ -226,6 +226,7 @@ intentional.
 | `benchmark-skills` | Write evals for skills and measure impact vs baseline |
 | `chrome-cdp` | Drive Chrome through a Bun-native Chrome DevTools Protocol CLI |
 | `code-audit-scripts` | Deterministic security and quality scans (secrets, debug artifacts) |
+| `codex-security` | Run OpenAI's agentic security scanner (`@openai/codex-security`) over a repo, PR, or diff, then triage, export, and gate on its findings |
 | `confess` | Analyze and document code issues and technical debt |
 | `create-next-project` | Scaffold a new Next.js app with Bun and Biome |
 | `design-game-ui` | Convert app content into controller/remote-first game HUD and television interfaces, composing audio, visual, 3D, performance, and QA specialists as needed |

@@ -4,6 +4,8 @@ Full core agent roster with `subagent_type` identifiers and the skills to mentio
 
 > **Why mention skills in spawn prompts?** Each agent has specialized skills available, but agents only invoke skills they're told about. If you don't mention `Skill(semgrep)` in the code-auditor's prompt, it may skip static analysis entirely. Always tell agents which skills apply to their task.
 
+> **Some of these skills are external.** `semgrep`, `codeql`, `differential-review`, and `secure-workflow-guide` come from the `trailofbits/skills` marketplace (plugins `static-analysis`, `differential-review`, `building-secure-contracts`). They resolve by bare name when installed and are simply absent when not — no error. Naming an uninstalled skill in a spawn prompt is worse than omitting it, because the agent reports against a pass it never ran. Add one line to any prompt naming them: *"If a skill isn't available, say which one and what you did instead."*
+
 ## Roster
 
 | Agent | subagent_type | Model | Best for |

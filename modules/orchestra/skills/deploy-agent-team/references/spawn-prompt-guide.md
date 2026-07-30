@@ -48,6 +48,8 @@ Invoke these skills BEFORE starting work on their relevant domain. Do not skip t
 
 Each core agent has specialized skills available, but **agents only invoke skills they know about**. Without being told about `Skill(semgrep)`, a code-auditor may write its own pattern matching by hand instead of using the purpose-built static analysis tool. Always include the skills section with the 2-4 most relevant skills for the agent's task.
 
+The inverse failure is quieter and worse: naming a skill the session doesn't have. `semgrep`, `codeql`, `differential-review`, and `secure-workflow-guide` are external (`trailofbits/skills` marketplace) and are absent rather than erroring when uninstalled, so the agent reports against a pass it never ran. Whenever a prompt names one, close the skills section with: *"If a skill isn't available, say which one and what you did instead."*
+
 See `references/agent-roster.md` for the pre-written skills block for each agent type — copy and paste the relevant block.
 
 ## Complete Example — designer Spawn
