@@ -28,10 +28,10 @@
     {
       "source_name": "agent-builder",
       "source_path": "modules/orchestra/agents/agent-builder.md",
-      "source_version": "1.7.12",
-      "source_hash": "sha256:3090e875bbeba6a07c173346f1bd776ddc71a09edca25dd74bbf2fff2c5a680f",
+      "source_version": "1.7.13",
+      "source_hash": "sha256:a7e6e12dc8881714336825a9fdb744ab51222b0da0cfe8d5f1d5e7e07d87e49f",
       "generated_file": "bopen-agent-builder.toml",
-      "generated_hash": "sha256:9947d70cc817387b95bd717819bda42c25f8841ad3fb69610fc40e65cfdd33a7",
+      "generated_hash": "sha256:1bb0a906279a7663ad958d3e223bb7a97718e037c436531689dd84ee04259d13",
       "agent_name": "bopen_agent_builder",
       "curated": true,
       "default_install": true
@@ -39,10 +39,10 @@
     {
       "source_name": "architecture-reviewer",
       "source_path": "modules/review/agents/architecture-reviewer.md",
-      "source_version": "1.1.17",
-      "source_hash": "sha256:155d64ccb8d5b16de8d0bf08856d9bc6426eed53a0380a3a0daa48a5b75e624e",
+      "source_version": "1.1.18",
+      "source_hash": "sha256:cb4a1cfee95b5744e77d8fed397b508e0d9e22c621267e5aa3e6cffcb3bd77a4",
       "generated_file": "bopen-architecture-reviewer.toml",
-      "generated_hash": "sha256:44b5e30eca4f704e04959a12bd84c19c6b964a1a57e017c285fe52ebd01f5f13",
+      "generated_hash": "sha256:56cb6e83c82610768211cb2b8d88e4459078c54d2e21c489d24b8aff72770d9d",
       "agent_name": "bopen_architecture_reviewer",
       "curated": true,
       "default_install": true
@@ -72,10 +72,10 @@
     {
       "source_name": "code-auditor",
       "source_path": "modules/review/agents/code-auditor.md",
-      "source_version": "1.4.9",
-      "source_hash": "sha256:c8564d6176b62c8a42adca7b1f1eddc46c5980663d677bc4874a33113c2d66d1",
+      "source_version": "1.4.10",
+      "source_hash": "sha256:aac66464135fa518ea1b510298dd3ea89f0c48fff34dc68f98d6eec4185b4235",
       "generated_file": "bopen-code-auditor.toml",
-      "generated_hash": "sha256:d650428aafafda8b9ea75f25c8948b495b149341da2276a9c9c58881a07fbdb5",
+      "generated_hash": "sha256:51103257300f704a92fefe92185c32bf6287e668818b99a8063232f3d330a66d",
       "agent_name": "bopen_code_auditor",
       "curated": true,
       "default_install": true
@@ -149,10 +149,10 @@
     {
       "source_name": "devops",
       "source_path": "modules/dev-ops/agents/devops.md",
-      "source_version": "1.3.8",
-      "source_hash": "sha256:f6e1f3a76a2cdc04fa670f34bf3d44f5e0679b118cbb72b8f58f45e57380ffba",
+      "source_version": "1.3.9",
+      "source_hash": "sha256:35ae89f2faee74422c6e0a5699cfcbb3294fe544ebc665b42bd907efbaefdd84",
       "generated_file": "bopen-devops.toml",
-      "generated_hash": "sha256:b65eef3bf5bd98d223d5aab514e18fc6213e05d342be43a6d29ce4114ae3133f",
+      "generated_hash": "sha256:ef3abe4b7cbc5a654fdf2d78ce932eae77c19737397ac0d62d8beccd6ce83499",
       "agent_name": "bopen_devops",
       "curated": false,
       "default_install": false
@@ -237,10 +237,10 @@
     {
       "source_name": "nextjs",
       "source_path": "modules/web-dev/agents/nextjs.md",
-      "source_version": "1.1.10",
-      "source_hash": "sha256:840208a5509a6558f75df35d284cf808574a89243988b3ab91d9ddf4e7173719",
+      "source_version": "1.1.11",
+      "source_hash": "sha256:70471d70527492507497d59091f287b00ef98dc67f86167889ac11ff0aefd16b",
       "generated_file": "bopen-nextjs.toml",
-      "generated_hash": "sha256:636ce1a48bc516867c687dbaa7ebfc5b66a652db4902c493a82be90a9f430fb4",
+      "generated_hash": "sha256:9e43f6870e45fc82d43a58a07bc3c44e3b9020ad7c1c8fc59faa17e873806243",
       "agent_name": "bopen_nextjs",
       "curated": false,
       "default_install": false

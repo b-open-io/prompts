@@ -75,6 +75,25 @@ manifests share the same release version.
   a scoped `codex-security` scan instead of skipping it silently, which is how a
   report ends up claiming a sweep it never performed.
 
+- Same treatment for every other consumer of those four skills, because the
+  silent-skip failure was never specific to Paul: `review:code-auditor` 1.4.10
+  (full install block, plus a `Skill(codex-security)` grant so its stated
+  fallback is one it can actually execute), `review:architecture-reviewer`
+  1.1.18, `dev-ops:devops` 1.3.9, `orchestra:agent-builder` 1.7.13, and
+  `web-dev:nextjs` 1.1.11.
+
+  Each fallback is checked against what that agent can really do rather than
+  copied. `architecture-reviewer` scopes `Bash` to `git`/`gh`/`open`, so it
+  cannot run a scanner at all — telling it to substitute one would have been an
+  instruction it silently fails; it hands the gap to code-auditor or security-ops
+  instead, naming the trust boundary it wanted analyzed.
+
+  `orchestra:deploy-agent-team` references get the inverse warning. They already
+  taught that agents only invoke skills they are told about; they now also cover
+  naming a skill the session lacks, which is quieter and worse, and ask every
+  spawn prompt that names one to close with "if a skill isn't available, say
+  which one and what you did instead."
+
   The standalone CLI builds its own isolated Codex runtime and `CODEX_HOME`, so
   it is a shell-out lane available from Claude Code, Codex, and Grok alike
   rather than a Codex-only feature. The two host-dependent differences are

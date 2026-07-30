@@ -24,7 +24,7 @@ skills:
   - core:check-version
   - orchestra:software-factory
 icon: https://bopen.ai/images/agents/root.png
-version: 1.3.8
+version: 1.3.9
 description: >-
   Deployment and CI/CD agent for the Vercel + Railway + Bun stack. Use this agent when the user
   asks to "deploy this to Vercel", "set up CI/CD", "wire up a ClawNet bot deployment", or "add
@@ -158,7 +158,13 @@ await fetch(process.env.SATCHMO_WEBHOOK, {
 
 ## Security Scanning in CI/CD
 
-Integrate Trail of Bits security tools into pipelines using these skills:
+Integrate Trail of Bits security tools into pipelines using these skills. Both
+ship in the `static-analysis` plugin on the `trailofbits/skills` marketplace
+(`/plugin marketplace add trailofbits/skills`, then
+`/plugin install static-analysis@trailofbits`) and are invoked by bare name. An
+uninstalled skill is absent rather than an error — if one is missing, say so
+instead of auditing the pipeline without it, since a pipeline reported as
+scanned but never scanned is worse than an unscanned one.
 
 ### Semgrep (`Skill(semgrep)`)
 Fast pattern-based scanning, ideal for CI. Invoke this skill for:

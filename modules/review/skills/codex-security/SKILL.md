@@ -36,6 +36,11 @@ Only the third question needs reasoning about the code's intent, which is why
 nothing cheaper substitutes for it. A clean pattern sweep on code you don't yet
 trust is a reason to run this, not a reason to stop.
 
+`semgrep` and `codeql` are Trail of Bits skills (`trailofbits/skills`
+marketplace, `static-analysis` plugin) and resolve by bare name only when that
+plugin is installed. If row two is unavailable, a scan scoped with `--path` to
+the same code reaches most of it — but say which pass you substituted for.
+
 ## Before the first scan
 
 Once per engagement, confirm the repo is one the user owns or is authorized to
