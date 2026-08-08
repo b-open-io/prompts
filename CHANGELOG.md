@@ -6,6 +6,35 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- `review:visual-proposal` produced pages a reviewer had to read twice. Two
+  causes, both now fixed in the skill. First, the skill said nothing about the
+  register, so every voice on the page wrote in its own drifting style. A third
+  make-or-break rule now sets it: one idea per sentence at 25 words, active voice
+  with a named actor, one word for one meaning, a gloss on first use, outcome
+  first, numbers instead of adjectives, no idioms or filler. Second, openings
+  narrated the process ("four advocates argued each option") instead of stating
+  the problem. The opening now leads with the root problem, who it hurts, the
+  cost today, and the decision at hand; provenance moves to a method note. The
+  test is mechanical: delete every opening sentence that would still be true for
+  a different proposal.
+- The advocates, judges, and CEO write most of the page's words, so the register
+  is now set at dispatch instead of repaired afterwards.
+  `references/plain-language.md` carries a drop-in brief to paste into every
+  agent prompt, plus per-role return shapes and word budgets — a 25-word advocate
+  thesis, a judge's testable deciding factor and observable flip-condition, a
+  one-sentence CEO decision. Fixed shapes make the viewpoints comparable and keep
+  the cards readable side by side.
+- The same reference adds a rewrite gallery (hedged filler, metaphor, actorless
+  passive, adjective-as-argument, synonym drift, process narration) and an
+  eight-question read-through check that now runs before publishing.
+
+### Fixed
+
+- `visual-proposal` wrote "bOpen" with a Cyrillic `О` (U+041E) in two places,
+  which breaks any search for the roster's name.
+
 ## [1.1.136] - 2026-07-30
 
 ### Fixed

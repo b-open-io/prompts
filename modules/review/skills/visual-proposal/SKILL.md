@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.10
+version: 0.0.11
 description: >-
   Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has
   not been built. Use for "make a visual proposal", "present these options visually", "diagram
@@ -24,7 +24,7 @@ the page for additional craft guidance. Do not block when it is unavailable;
 apply the self-contained, theme, layout, and accessibility requirements in this
 skill directly. This skill governs the *content and stance* of a proposal.
 
-## The two rules that make or break a proposal
+## The three rules that make or break a proposal
 
 ### Rule 1 — Present options neutrally. Do not decide for the reviewer.
 
@@ -75,13 +75,70 @@ Prose then does what prose is good at: intent, nuance, the "why." The test:
 if a section is three paragraphs comparing structures, it probably wants to be a
 diagram plus one caption.
 
+### Rule 3 — Write so a stranger understands it on one read.
+
+The reviewer reads this page once, fast, without your context. A sentence that
+needs a second pass costs you the decision. Write every word on the page —
+headings, theses, captions, advocate cases, judge verdicts, the CEO's call — in
+plain technical English:
+
+- **One idea per sentence**, 25 words maximum. Split; do not join with a
+  semicolon.
+- **Name the actor, use the active voice.** "The indexer rejects the output",
+  not "the output is rejected."
+- **One word for one meaning.** Pick one term per thing and repeat it. Never
+  swap in a synonym for variety — "output", "UTXO", and "coin" on one page read
+  as three different things.
+- **Gloss every term and acronym on first use**, in the same sentence.
+- **Outcome first**, reason second.
+- **Numbers, not adjectives.** "Adds one 34-byte output", not "adds minimal
+  overhead". An adjective is an opinion; a number is a fact the reviewer can
+  check. Never argue by adjective — "elegant", "clean", and "robust" carry no
+  information.
+- **No idioms, no metaphors, no filler.** Cut "just", "simply", "it's worth
+  noting", "at the end of the day", "leverage", "seamless". A metaphor makes the
+  reader guess at a mechanism; give the mechanism.
+
+> Before: "While this approach is arguably more elegant, it's worth noting that
+> adoption remains something of an open question."
+> After: "No indexer parses this format today. Two indexers need a change before
+> the format works in production."
+
+`Skill(core:humanize)` strips AI writing tics; this rule sets the target the
+prose must hit. Do both. The full specification, the rewrite gallery, the
+per-role word budgets, and the drop-in agent brief live in
+[references/plain-language.md](references/plain-language.md) — read it before
+you dispatch any agent or write any page copy.
+
+### The opening states the problem, not the process
+
+The hero and the first section make the reviewer understand what is broken and
+what their decision changes. They do not describe the document or how it was
+made. Cut these from the opening:
+
+- how the page was produced ("four advocates argued each option, and a bench
+  then ruled") — the panel sections show that themselves;
+- what the page contains ("this proposal presents three options and compares
+  them") — the reviewer can see the sections;
+- scope caveats, method notes, and reading instructions.
+
+Open in this order: the root problem in one sentence, naming who it hurts; what
+it costs today, with a number or a concrete failure; the decision the reviewer
+must make; what goes wrong if they choose wrong. Then the hero diagram.
+Provenance — who argued, who judged, when — goes in a small line under the title
+or a method note at the foot of the page.
+
+The test: delete every opening sentence that would still be true if the subject
+were a completely different proposal. What survives is the real problem
+statement.
+
 ## Multi-agent advocacy — opposing representatives (the DEFAULT for real decisions)
 
 When a proposal's core is a **key decision between competing options** (or a
 series of them), a panel of advocates is the **default treatment, not an
 add-on** — do it automatically, without being asked. The strongest neutrality
 comes not from one author trying to be even-handed, but from **giving each
-option a genuine advocate from the real bОpen roster**, each shown with their
+option a genuine advocate from the real bOpen roster**, each shown with their
 avatar, name, and role. Skip the panel only for a page with **no real decision**
 (a pure explainer, status update, or single-approach pitch), or when the user
 explicitly asks for a plain writeup. Otherwise: dispatch one real roster agent
@@ -111,7 +168,7 @@ invents facts is worse than no advocate.
 
 ### Casting the panel — real agents and their avatars
 
-The advocates and judges are **real named agents from the bОpen roster**, not
+The advocates and judges are **real named agents from the bOpen roster**, not
 invented personas — that credibility is the whole point. Two steps:
 
 1. **Pick the agents.** `Agent(core:front-desk)` returns the team and who
@@ -230,16 +287,23 @@ agents' avatars on that fact's card (straddling its top edge reads as a group
 sign-off) instead of writing "everyone agreed." An avatar cluster conveys
 consensus and who-verified at a glance.
 
-### Readability — run humanize on every voice
+### Brief every voice on the register
 
-The whole point is a page that's easy to follow. Text written by a panel of
-agents drifts into AI tics (setup-and-dismiss, tricolons, hedged filler) that
-make it a slog. So: **ask every dispatched agent — each advocate, each judge,
-and the CEO — to run `Skill(core:humanize)` on its returned prose before
-it hands it back.** Then, when you assemble the page, **you (the host) run
-`Skill(core:humanize)` over the final copy** — the theses, verdicts,
-captions, and the CEO's decision — so the whole thing reads in one clear human
-voice. Crisp, skimmable, no throat-clearing.
+Advocates, judges, and the CEO write the words that land on the page, so set the
+register at dispatch instead of repairing it afterwards. **Paste the dispatch
+brief from [references/plain-language.md](references/plain-language.md) into
+every advocate, judge, and CEO prompt**, and hold each one to the return shape
+and word budget in that file: an advocate returns a 25-word thesis, three
+mechanism-bearing claims, honest challenges, and a one-sentence rebuttal per
+rival; a judge returns a lens, a winner, a testable deciding factor, and a
+flip-condition naming a fact somebody can go check; the CEO returns a
+one-sentence decision, three sentences of business reasoning, and the one thing
+that reverses the call. Budgets keep the cards readable side by side, and a
+fixed shape makes the viewpoints comparable.
+
+Ask each agent to run `Skill(core:humanize)` on its prose before returning it.
+Then run `Skill(core:humanize)` over the assembled page yourself, so the theses,
+verdicts, captions, and the CEO's decision read in one voice.
 
 ## The grounding rule
 
@@ -254,8 +318,11 @@ specs quoted); if the substance isn't there yet, gather it before authoring.
 
 Adapt to the subject — not every section always applies — but the usual spine:
 
-1. **Hero / thesis** — the one-sentence claim + the most characteristic diagram.
-2. **Problem / context** — what's wrong or missing today, concretely.
+1. **Hero / thesis** — the root problem in one sentence, naming who it hurts,
+   then the most characteristic diagram. No process narration, no description of
+   the page itself (see "The opening states the problem, not the process").
+2. **Problem / context** — what breaks today, concretely: the failure, its cost
+   with a number, and the decision that follows from it.
 3. **Landscape / what already exists** — an inventory of the relevant specs,
    code, and tools that exist today, where each lives (repo/file/URL), and a
    status chip on each (shipped, draft, branch, live, legacy, frontend-only).
@@ -304,6 +371,13 @@ Adapt to the subject — not every section always applies — but the usual spin
   body scroll (wide diagrams/tables get their own `overflow-x: auto`).
 
 ## Publish
+
+Before you publish, read the assembled page top to bottom against the
+read-through check in
+[references/plain-language.md](references/plain-language.md). It catches the two
+failures that make a proposal hard to review: an opening that talks about the
+document instead of the problem, and sentences that carry two ideas, hide their
+actor, or argue with an adjective. Fix what fails, then publish.
 
 Write the page to the scratchpad dir, then call the Artifact tool with its path,
 a one-line `description`, a stable subject `favicon`, and a version `label`.
