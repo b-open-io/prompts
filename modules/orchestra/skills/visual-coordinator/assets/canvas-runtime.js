@@ -25,11 +25,22 @@
         lanes: config.lanes || {},
         models: config.models || {},
         roster: config.roster || [],
+        caps: config.caps || {},
+        nativeWorkflow: !!config.native_workflow,
       };
       this.workflow = config.workflow;
       this.bind();
       this.refresh();
       return this;
+    },
+
+    concurrencyCap() {
+      if (this.env.caps && this.env.caps.live_children) {
+        return this.env.caps.live_children;
+      }
+      if (this.env.harness === "claude-code") return 16;
+      if (this.env.harness === "grok") return 32;
+      return 6;
     },
 
     /**
@@ -45,6 +56,57 @@
         grok: "grok",
       };
       return laneToHarness[node.lane || "claude"] === this.env.harness;
+    },
+
+    /**
+     * A Grok native node whose model is not a Grok id cannot stay native.
+     * Sol belongs on the Codex list the detector already read. If the model
+     * is on no detected lane, omit it rather than emit a dead configuration.
+     */
+    resolved(node) {
+      const base = {
+        id: node.id,
+        label: node.label,
+        model: node.model,
+        effort: node.effort,
+        task: node.task || "",
+      };
+      if (!this.isNative(node)) {
+        return {
+          ...base,
+          kind: "shell-out",
+          lane: node.lane,
+          command: this.composeCommand(node),
+        };
+      }
+      const grokModels = this.modelsFor("grok");
+      if (
+        this.env.harness === "grok" &&
+        node.model &&
+        grokModels.length &&
+        !grokModels.includes(node.model)
+      ) {
+        let lane = null;
+        if (this.modelsFor("codex").includes(node.model)) lane = "codex";
+        else if (this.modelsFor("claude").includes(node.model)) lane = "claude";
+        if (!lane) {
+          return { ...base, kind: "omit", reason: `${node.model} is not on any detected lane` };
+        }
+        const remapped = { ...node, lane, command: "" };
+        return {
+          ...base,
+          kind: "shell-out",
+          lane,
+          command: this.composeCommand(remapped),
+          converted: true,
+        };
+      }
+      return {
+        ...base,
+        kind: "agent",
+        agentType: node.agentType || null,
+        schema: node.schema || null,
+      };
     },
 
     /**
@@ -168,11 +230,20 @@
      */
     warnings() {
       const out = [];
-      const cap = this.env.harness === "claude-code" ? 16 : 6;
+      const cap = this.concurrencyCap();
       if (this.workflow.concurrency > cap) {
         out.push(
           `Concurrency ${this.workflow.concurrency} exceeds the ${this.env.harness} cap of ${cap}; ${cap} will be emitted.`,
         );
+      }
+      if (this.env.harness === "grok") {
+        for (const phase of this.workflow.phases) {
+          if (phase.mode === "pipeline") {
+            out.push(
+              `${phase.title}: Grok has no pipeline(); this phase will emit as a barrier (parallel).`,
+            );
+          }
+        }
       }
       this.eachNode((node) => {
         const lane = node.lane || "claude";
@@ -184,6 +255,16 @@
         if (node.model && !this.modelsFor(lane).includes(node.model)) {
           out.push(
             `${node.label}: ${node.model} is not offered by the ${lane} lane.`,
+          );
+        }
+        if (
+          this.isNative(node) &&
+          this.env.harness === "grok" &&
+          node.model &&
+          !/^grok-/.test(node.model)
+        ) {
+          out.push(
+            `${node.label}: ${node.model} cannot run as a native Grok step; emit it as a Codex or Claude shell-out.`,
           );
         }
         if (node.schema && !this.isNative(node)) {
@@ -242,7 +323,7 @@
     /** Human-readable plan and machine block, generated from one state. */
     emit() {
       const w = this.workflow;
-      const cap = this.env.harness === "claude-code" ? 16 : 6;
+      const cap = this.concurrencyCap();
       const concurrency = Math.min(w.concurrency || cap, cap);
       const lines = [];
 
@@ -257,21 +338,31 @@
 
       w.phases.forEach((phase, i) => {
         lines.push("");
-        lines.push(`### ${i + 1}. ${phase.title}  (${phase.mode})`);
+        const mode =
+          this.env.harness === "grok" && phase.mode === "pipeline"
+            ? "parallel"
+            : phase.mode;
+        lines.push(`### ${i + 1}. ${phase.title}  (${mode})`);
         for (const node of phase.nodes) {
-          if (this.isNative(node)) {
+          const resolved = this.resolved(node);
+          if (resolved.kind === "omit") {
+            lines.push(`- **${node.label}** — not emitted (${resolved.reason})`);
+            continue;
+          }
+          if (resolved.kind === "agent") {
             const agent = this.env.roster.find((a) => a.id === node.agentType);
             const who = agent ? `${agent.display_name} (\`${agent.id}\`)` : "unassigned";
             lines.push(`- **${node.label}** — ${who}`);
-            lines.push(`  model: ${node.model} · effort: ${node.effort}`);
+            lines.push(`  model: ${resolved.model} · effort: ${resolved.effort}`);
           } else {
-            lines.push(`- **${node.label}** — SHELL-OUT to ${node.lane}`);
+            const converted = resolved.converted ? " (converted from native)" : "";
+            lines.push(`- **${node.label}** — SHELL-OUT to ${resolved.lane}${converted}`);
             lines.push(
-              `  model: ${node.model} · effort: ${node.effort || "tool default"}`,
+              `  model: ${resolved.model} · effort: ${resolved.effort || "tool default"}`,
             );
-            lines.push(`  command: ${this.composeCommand(node)}`);
+            lines.push(`  command: ${resolved.command}`);
           }
-          if (node.task) lines.push(`  ${node.task}`);
+          if (resolved.task) lines.push(`  ${resolved.task}`);
         }
       });
 
@@ -293,30 +384,36 @@
         concurrency,
         phases: w.phases.map((phase) => ({
           title: phase.title,
-          mode: phase.mode,
-          nodes: phase.nodes.map((node) =>
-            this.isNative(node)
-              ? {
-                  id: node.id,
-                  label: node.label,
-                  kind: "agent",
-                  agentType: node.agentType || null,
-                  model: node.model,
-                  effort: node.effort,
-                  task: node.task || "",
-                  schema: node.schema || null,
-                }
-              : {
-                  id: node.id,
-                  label: node.label,
-                  kind: "shell-out",
-                  lane: node.lane,
-                  model: node.model,
-                  effort: node.effort || null,
-                  command: this.composeCommand(node),
-                  task: node.task || "",
-                },
-          ),
+          mode:
+            this.env.harness === "grok" && phase.mode === "pipeline"
+              ? "parallel"
+              : phase.mode,
+          nodes: phase.nodes
+            .map((node) => this.resolved(node))
+            .filter((node) => node.kind !== "omit")
+            .map((node) =>
+              node.kind === "agent"
+                ? {
+                    id: node.id,
+                    label: node.label,
+                    kind: "agent",
+                    agentType: node.agentType || null,
+                    model: node.model,
+                    effort: node.effort,
+                    task: node.task || "",
+                    schema: node.schema || null,
+                  }
+                : {
+                    id: node.id,
+                    label: node.label,
+                    kind: "shell-out",
+                    lane: node.lane,
+                    model: node.model,
+                    effort: node.effort || null,
+                    command: node.command,
+                    task: node.task || "",
+                  },
+            ),
         })),
         gate: w.gate || null,
       };

@@ -6,6 +6,26 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Fixed
+
+- `orchestra:coordinator` treated Grok Build as an external CLI only and
+  called native workflows Claude-only. Grok Build 1.0.3 hosts the session
+  (`GROK_AGENT=1`), exposes a Rhai `workflow` tool, and runs installed plugin
+  roster agents via `spawn_subagent`. GPT-5.6 Sol is a `codex exec -m gpt-5.6-sol`
+  shell-out from this host, not a native Grok model. Verified in-session:
+  `research:researcher` and `bopen-tools:researcher` spawn; `workflow`
+  `validate_only` accepts `agent_type` + `model: grok-4.5`; Sol CLI returns
+  the worker line.
+- `orchestra:visual-coordinator` detector reported `harness: unknown` on Grok
+  (it looked for `GROK_HOME` / `GROK_SANDBOX`, not `GROK_AGENT`) and dropped
+  every non-default `grok models` row. It also claimed the Grok workflow
+  format was unpublished, hid per-node models, and capped concurrency at 6.
+  Detector now keys off `GROK_AGENT`, parses `*` and `-` model lines, reports
+  `native_workflow` plus live-child / budget caps, and merges
+  `~/.grok/installed-plugins` into the roster. The canvas emits Rhai, refuses
+  `pipeline()` and foreign models on native Grok nodes, and uses the host cap
+  of 32.
+
 ### Changed
 
 - `review:visual-proposal` produced pages a reviewer had to read twice. Two

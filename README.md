@@ -57,6 +57,7 @@ distributions are modules.
 ```bash
 /plugin install orchestra@b-open-io
 codex plugin add orchestra@b-open-io
+grok plugin install orchestra@b-open-io --trust
 ```
 
 Install only what you need. Codex allocates roughly two percent of the model's
@@ -688,30 +689,38 @@ Codex adapter IDs according to the current host:
 "Ask bopen_designer to review this component system"              # Codex
 ```
 
-### Orchestration: Codex main, Grok workers, Fable advisor
+### Orchestration: main seat, workers, advisor
 
-Use the `orchestrator` skill when the current Claude Code or Codex main should
-retain the plan, judgment, verification, and git ownership while other lanes do
-bounded work:
+Use the `orchestrator` skill when the current Claude Code, Codex, or Grok
+Build main should retain the plan, judgment, verification, and git ownership
+while other lanes do bounded work. Grok Build also ships a native `workflow`
+tool (Rhai scripts, `/workflows` dashboard). Codex does not.
 
 ```text
-Use $orchestra:orchestrator. Keep this Codex session in the main seat, use
-native bopen specialists for research and review, grok-4.5 for bounded worker
-tasks, and Fable only for read-only second opinions at commitment boundaries.
+Use $orchestra:orchestrator. Keep this session in the main seat, use native
+roster specialists for research and review, cheaper workers for bounded
+implementation, and an advisor only for read-only second opinions at
+commitment boundaries.
 ```
 
 The main model is always the model selected for the current session; the skill
 does not pin or rename it. The supporting skills divide responsibilities:
 
 - `coordinator` writes precise worker specs, assigns non-overlapping files,
-  dispatches implementation, and requires acceptance reports. Its default Grok
-  worker is `grok-4.5`, after confirming it appears in the complete
-  `grok models` output. Override it with `BOPEN_WORKER_MODEL`.
+  dispatches implementation, and requires acceptance reports. On a Grok main,
+  native roster agents (`research:researcher`, `review:code-auditor`, …) and
+  `grok-4.5` subagents stay in-process. GPT-5.6 Sol is a Codex CLI shell-out
+  (`codex exec -m gpt-5.6-sol`), never a native Grok `spawn_subagent` model.
+  When Grok is the external lane from Claude or Codex, the default worker is
+  `grok-4.5` after it appears in the complete `grok models` output. Override
+  that with `BOPEN_WORKER_MODEL`.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`.
 - `orchestrator` composes native specialists, Coordinator, Advisor, and staged
   waves while leaving final decisions with the main session.
+- `visual-coordinator` draws the fan-out before it runs and emits a paste-back
+  spec. On Grok it translates to a Rhai workflow, not a vague `/workflow` brief.
 
 External lanes cross provider boundaries. A Grok dispatch can send its prompt,
 specification, and selected repository content to xAI. A Fable consult can send

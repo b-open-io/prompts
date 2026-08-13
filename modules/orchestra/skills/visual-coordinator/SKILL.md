@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable flow-chart artifact and emits a paste-back spec that launches the exact configuration chosen. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.0
+version: 0.1.1
 ---
 
 # Visual Coordinator
@@ -70,7 +70,8 @@ elements:
 - **Fixed harness banner** naming the host and stating it cannot be changed here.
 - **Flow chart** of phases and nodes, drawn as SVG. Show barriers explicitly:
   a `pipeline` phase lets items advance independently; a `parallel` phase does
-  not. That distinction changes wall-clock and must be visible, not implied.
+  not. Grok has no `pipeline()` — do not offer that mode on a Grok host.
+  The distinction changes wall-clock and must be visible, not implied.
 - **Per-node controls** — provider, model, effort, and assigned agent. Populate
   every list from the detector output. The runtime's `fieldEnabled()` reports
   which controls a node can carry, and `syncNode()` re-scopes the dependent
@@ -96,11 +97,13 @@ the plan. Never leave an impossible setting looking configured.
 ### 5. Execute what came back
 
 On receiving a pasted spec, translate it for the host — Claude Code maps onto a
-workflow script almost directly; Codex becomes an ordered series of `codex exec`
-dispatches the caller sequences; Grok becomes subagent dispatches or a brief for
-its own `/workflow`. Then run it under the ordinary `coordinator` rules: specs
-before dispatch, review diffs adversarially, re-run acceptance outside the
-worker's sandbox, and keep every git operation in the main session.
+JavaScript workflow script; Grok maps onto a Rhai workflow (`Skill(create-workflow)`,
+native `agent_type` + `model`, Sol/Claude nodes as Codex/Claude shell-outs);
+Codex becomes an ordered series of `codex exec` dispatches the caller sequences.
+Then run it under the ordinary `coordinator` rules: specs before dispatch,
+review diffs adversarially, re-run acceptance outside the worker's sandbox, and
+keep every git operation in the main session. Smoke-check a Grok script with
+`validate_only: true` before a real run.
 
 ## Avatars
 
@@ -115,7 +118,7 @@ the agent's initials in a coloured circle rather than shipping a faceless card.
 
 - **`references/harness-capabilities.md`** — what Claude Code, Codex, and Grok
   each genuinely support: primitives, caps, isolation, resume semantics, model
-  identifiers, and the five claims the canvas must never make.
+  identifiers, and the claims the canvas must never make.
 - **`references/emitted-spec-format.md`** — the exact shape of the paste-back
   spec, field rules, per-harness translation, and how to refuse an impossible
   configuration.
@@ -130,11 +133,14 @@ the agent's initials in a coloured circle rather than shipping a faceless card.
 
 ### Scripts
 
-- **`scripts/detect-harness.sh`** — reports host harness, available lanes, real
-  model lists per lane, and the deduplicated installed agent roster as JSON.
+- **`scripts/detect-harness.sh`** — reports host harness (`GROK_AGENT` for
+  Grok Build), `native_workflow`, live-child / budget caps, available lanes,
+  real model lists per lane, and the deduplicated installed agent roster
+  (Claude plugin cache plus `~/.grok/installed-plugins`).
 
 ### Related Skills
 
 - `Skill(orchestra:coordinator)` — the dispatch discipline this builds on
 - `Skill(orchestra:wave-coordinator)` — sizing large fan-outs into waves
+- `Skill(create-workflow)` — Grok Rhai authoring and the host API
 - `Skill(artifact-design)` — craft for the artifact itself

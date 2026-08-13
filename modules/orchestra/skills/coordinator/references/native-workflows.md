@@ -1,107 +1,87 @@
-# Native Workflows (Claude Code's Workflow tool)
+# Native Workflows
 
-Claude Code ships a built-in `Workflow` tool: deterministic multi-agent
-orchestration as a JavaScript script — `agent()` spawns subagents,
-`pipeline()` runs items through stages with no barriers, `parallel()` fans
-out with a barrier, `phase()` groups progress, `budget` scales depth to a
-token target. Runs in the background with live progress in the `/workflows`
-interface, structured outputs via JSON schema, per-agent worktree isolation,
-and resume (`resumeFromRunId`) with cached prefixes.
+Two hosts ship a first-class workflow engine. Codex does not.
 
-## Availability — this is framework-dependent
+| Host | Tool | Script | Native models | Fan-out primitive |
+|---|---|---|---|---|
+| Claude Code | `Workflow` | JavaScript | Claude aliases / ids | `pipeline()` (no barrier) and `parallel()` (barrier) |
+| Grok Build | `workflow` | Rhai | `grok-4.5`, `grok-4.6` | `parallel()` only — it is a barrier. There is no `pipeline()` |
+| Codex | none | — | — | Subagent spawn and `codex exec` sequenced by the caller |
 
-The Workflow tool exists only in Claude Code sessions (local or cloud). Codex,
-OpenCode, Grok Build, and other runtimes have no equivalent as of mid-2026.
-The check is simple: the `Workflow` tool is either in the session's tool set
-or it isn't. When it isn't, everything below is moot — use this skill's manual
-wave/dispatch protocols instead.
+The check is the session tool set, not memory: the host either exposes `Workflow` / `workflow` or it does not. When it does not, use the coordinator's manual dispatch protocol.
 
-## Opt-in gating — non-negotiable
+Read the live tool description in-session for parameter names. This file is the routing contract; the tool text is the API.
 
-Workflows can spawn dozens of agents; the runtime requires explicit user
-opt-in before `Workflow` may be called: the "ultracode" keyword or session
-mode, the user asking for a workflow/fan-out in their own words, a named saved
-workflow, or the user invoking a skill whose instructions call for Workflow.
-That last clause matters here: when the user invoked coordinator or
-wave-coordinator explicitly asking for multi-agent orchestration, calling
-Workflow is sanctioned. When they didn't — when the task would merely benefit
-from it — describe what a workflow would do and roughly cost, and ask.
+## Opt-in
 
-## When to prefer a workflow over hand-rolled Agent waves
+Workflows can spawn dozens of agents.
 
-On Claude Code with opt-in satisfied, reach for a native workflow when the
-orchestration has SHAPE — deterministic control flow the model shouldn't be
-trusted to hand-execute across many turns:
+- **Claude Code**: the runtime requires explicit opt-in (ultracode, the user asking for a workflow/fan-out, a named saved workflow, or a skill whose instructions call for Workflow). Coordinator / wave-coordinator invoked for multi-agent work counts. When the task would merely benefit, describe the shape and cost and ask.
+- **Grok Build**: background workflows are on by default (`GROK_WORKFLOWS`, `[workflows] enabled`). Still ask before a large fan-out the user did not request. Authoring and the Rhai dialect live in `Skill(create-workflow)` and `~/.grok/docs/user-guide/`.
 
-- **Staged fan-outs**: find → adversarially verify → synthesize. `pipeline()`
-  lets item A verify while item B is still being found; hand-rolled waves
-  serialize at every stage boundary.
-- **Unknown-size discovery**: loop-until-dry (keep spawning finders until K
-  consecutive rounds return nothing new) — a while-loop in the script, not
-  model discipline.
-- **Adversarial verification panels**: N independent skeptics per finding,
-  majority verdicts. The judge-panel and perspective-diverse-verify patterns
-  in the tool's own documentation are exactly the maker-checker structures
-  these skills prescribe.
-- **Budget-scaled work**: the `budget` global consumes the user's "+500k"
-  style directives with a hard ceiling.
-- **Anything above ~5 agents** where wave sizing, concurrency clamping, and
-  result collection would otherwise be manual bookkeeping — workflow
-  concurrency caps at min(16, cores-2) and queues the rest natively.
+## When a workflow beats hand-rolled waves
 
-Read the Workflow tool's own description in-session for the current API — it
-is the living contract; do not trust a memorized snapshot of parameter names.
+Reach for the native engine when the orchestration has SHAPE — deterministic control flow the model should not hand-execute across many turns:
 
-## What the main seat keeps — unchanged
+- Staged fan-outs: find → adversarially verify → synthesize
+- Loop-until-dry discovery
+- Adversarial verification panels
+- Budget-scaled sweeps
+- Anything above about five agents where wave bookkeeping would otherwise be manual
 
-A workflow is a dispatch lane, not an ownership transfer. Coordinator rules
-apply verbatim: specs and pinned contracts go INTO the `agent()` prompts
-(with `schema` for structured returns), the main seat reviews results, re-runs
-acceptance outside the workflow, and owns git. Pass the matched roster ID as
-`agent()`'s `agentType` so each workflow stage runs under its specialist
-persona instead of the generic workflow agent; fall back to the default only
-when no roster agent fits. Practical notes that recur:
-`.filter(Boolean)` worker results (skipped/dead agents return null),
-`Date.now()`/`Math.random()` are unavailable inside scripts, use `phase()`
-titles matching `meta.phases`, worktree isolation only when agents mutate
-files in parallel, and read `<transcriptDir>/journal.jsonl` before diagnosing
-an empty result.
+On Claude, `pipeline()` lets item A verify while item B is still being found. On Grok, `parallel()` waits for the whole panel; later stages are later `phase()` calls. Do not emit a Claude `pipeline()` into a Grok script.
 
-## CLI worker lanes inside a native workflow (codex/grok)
+## Native agents, roster, and models
 
-The Workflow harness runs Claude agents only — but a workflow agent has Bash,
-so external CLI lanes slot in as wrapped stages. The economics: the wrapper
-should be the cheapest tier that can supervise (`model: 'haiku'` or
-`effort: 'low'`); the code volume bills to the external lane, and Claude spend
-concentrates in the verify/synthesis stages where judgment lives.
+A workflow is a dispatch lane, not an ownership transfer. Coordinator rules apply: specs go into `agent()` prompts, the main seat reviews, re-runs acceptance, and owns git.
 
-Wrapper recipe (the agent prompt, not the script):
-1. Write the unit's SPEC to the target repo (untracked), exactly per the
-   coordinator dispatch protocol — environment clause, FINAL REPORT demand,
-   file ownership.
-2. Launch with `run_in_background: true`:
-   `codex exec --sandbox workspace-write --cd <repo> "<one-liner; details in SPEC>"`
-   (grok: first verify `BOPEN_WORKER_MODEL` against complete `grok models`
-   output, then run `grok --prompt-file <f> -m "$BOPEN_WORKER_MODEL"
-   --permission-mode acceptEdits --sandbox workspace --cwd <repo>`).
-3. Poll the output file every 30-60s: on error signatures (sandbox
-   PermissionDenied, auth failures, "environment blocker") kill and report
-   immediately instead of waiting out the timeout; otherwise relay the final
-   report as your agent text.
-4. Never let the CLI worker run git mutations; the main seat owns version
-   control at the barrier.
+Pass the installed roster id so the stage runs as that specialist:
 
-Real-time caveat: the workflow progress UI shows script `log()` lines, not a
-subagent's inner tool output — CLI stdout cannot stream to /workflows. Emit
-`log()` at stage boundaries from the script, and have wrappers report
-checkpoint summaries, not raw logs.
+- Claude: `agentType` (e.g. `review:code-auditor`)
+- Grok: `agent_type` (e.g. `research:researcher`). `bopen-tools:<name>` aliases also resolve when that plugin is installed. Verified 2026-08-13 on Grok Build 1.0.3: both `research:researcher` and `bopen-tools:researcher` spawn.
 
-Script-side shape:
-```js
-const impl = await agent(WRAP_PROMPT(unit), {
-  label: `codex:${unit.key}`, phase: 'Implement', model: 'haiku',
-})
-const verdict = await agent(VERIFY_PROMPT(unit, impl), {
-  label: `verify:${unit.key}`, phase: 'Verify', schema: VERDICT,  // full-tier judgment
-})
+Use `general-purpose` / the default workflow agent only when no roster agent fits, and say so.
+
+**No host runs another vendor's model as a native step.**
+
+- Claude workflow `model` accepts Claude aliases/ids only.
+- Grok `spawn_subagent` / workflow `model` accepts `grok-4.6` (inherit/default) and `grok-4.5` (cheaper native worker). `gpt-5.6-sol` is rejected as a native model.
+- Codex subagents stay on OpenAI-family models.
+
+## GPT-5.6 Sol as a worker
+
+Sol is a Codex-lane model. From any host, including Grok Build, dispatch it as a shell-out:
+
+```bash
+codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-sol \
+  -c model_reasoning_effort="high" \
+  "<one-line imperative; details in SPEC-*.md>" \
+  > /tmp/dispatch-<id>.log 2>&1 &
 ```
+
+Preflight: `command -v codex` and confirm `model = "gpt-5.6-sol"` in `~/.codex/config.toml` (or pass `-m` after the id is known). Verified 2026-08-13: `codex exec -m gpt-5.6-sol` from a Grok session returned the worker line.
+
+`claudex` is a Claude Code session that bills Sol through a proxy. It replaces the main seat. It is not a Grok worker spawn.
+
+Inside a native workflow, wrap the `codex exec` in a cheap supervisor agent (Claude `haiku` / Grok `grok-4.5`) that writes the SPEC, launches the command, polls the log, and relays the FINAL REPORT. The wrapper never commits.
+
+## Grok script shape
+
+Grok workflows are Rhai, saved at `.grok/workflows/<name>.rhai` or `~/.grok/workflows/<name>.rhai`. Host API that matters for coordinator:
+
+- `agent(prompt, #{ label, phase, capability_mode, output_schema, agent_type, model, isolation_worktree })`
+- `parallel([#{ prompt, label, ... }, ...])` — barrier; failed slots are `()`
+- `phase(title)`, `log(msg)`, `complete(value)`
+- Default `agent_budget` 128 (1–1,024); live children cap 32 by default
+
+`output_schema` is supported on Grok. Per-node `model` is supported and should be offered (`grok-4.5` / `grok-4.6`). Worktree isolation does not merge back — the main seat applies the diff.
+
+Author with `Skill(create-workflow)`. Smoke-check with `{ validate_only: true }` before a real run. Progress lives in `/workflows`.
+
+## Claude script shape
+
+JavaScript, top-level `await`. `agent(prompt, { label, phase, agentType, model, effort, schema, isolation })`, `pipeline(items, ...stages)`, `parallel(thunks)`, `phase(title)`, `log(msg)`, globals `args` and `budget`. Concurrency caps at 16. Resume is same-session and follows start-order replay: every agent that started after the first unfinished one reruns. Read `<transcriptDir>/journal.jsonl` before diagnosing an empty result.
+
+## What the main seat keeps
+
+Unchanged on every host: specs and pinned contracts in the prompts, adversarial diff review, acceptance re-run outside the worker, git from here. Filter dead slots (`null` on Claude, `()` on Grok) before synthesis. Missing evidence is not a confirming vote.

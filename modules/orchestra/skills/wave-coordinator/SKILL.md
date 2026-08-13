@@ -1,6 +1,6 @@
 ---
 name: wave-coordinator
-version: 1.0.4
+version: 1.0.5
 description: >-
   Dispatch many subagents in coordinated waves with per-wave review. Use for "fan out agents",
   "wave dispatch", "batch agents", "generate N variations", or any fan-out beyond about five
@@ -16,19 +16,17 @@ On Claude, this can compose with
 subagent runtime. Wave Coordinator owns batching and diversity while the host
 runtime owns thread creation.
 
-## Prefer Native Workflows on Claude Code
+## Prefer Native Workflows on Claude Code and Grok Build
 
-Claude Code ships a native `Workflow` tool that solves this skill's core
-problems structurally: `pipeline()` runs items through stages with no wave
-barriers, concurrency clamps to min(16, cores-2) with automatic queueing,
-results collect as structured returns, and `/workflows` shows live progress
-with resume support. When the session has the Workflow tool AND the user
-explicitly asked for the fan-out (which is normally why this skill fired),
-write the dispatch as a workflow script instead of hand-managed waves —
-diversity directives go into the per-item `agent()` prompts and dedup runs as
-plain code between stages. This is framework-dependent: no other runtime has
-an equivalent, so on Codex or any non-Claude host the wave protocols below
-remain the way. Gating and API details:
+Claude Code ships `Workflow` (JavaScript, `pipeline()` + `parallel()`). Grok
+Build ships `workflow` (Rhai, barrier `parallel()` only). Both solve this
+skill's core problems structurally: concurrency clamps and queues, results
+collect as structured returns, `/workflows` shows live progress. When the
+session has that tool AND the user asked for the fan-out, write a workflow
+script instead of hand-managed waves — diversity directives go into the
+per-item `agent()` prompts and dedup runs as plain code between stages. Codex
+has no equivalent; the wave protocols below remain the way there. Gating,
+Sol-as-worker, and per-host APIs:
 `../coordinator/references/native-workflows.md`.
 
 ## The Core Problem
@@ -139,6 +137,16 @@ in `../deploy-agent-team/references/agent-roster.md` and pass the specific
 roster agent before defaulting to a generic explorer/worker — use the generic
 adapter only when no roster agent fits, and say so explicitly in the wave
 ledger.
+
+### Grok Build
+
+Use `spawn_subagent` with the installed roster `subagent_type` (e.g.
+`research:researcher`, `review:code-auditor`). `bopen-tools:<name>` aliases
+also resolve when that plugin is installed. Native `model` is `grok-4.5` or
+`grok-4.6` only. GPT-5.6 Sol is a `codex exec` shell-out, not a native
+subagent. Prefer the native `workflow` tool over hand waves when the
+fan-out has shape. Live children default to 32; `agent_budget` defaults to
+128.
 
 ### Claude Code
 

@@ -14,7 +14,7 @@ must not disagree, so generate both from the same canvas state.
 # Workflow: <name>
 Host harness: <claude-code|codex|grok>   (fixed — set by how this session started)
 Isolation: <shared-tree|worktree-per-agent>
-Concurrency: <n>            (Claude caps at 16; Codex default 6)
+Concurrency: <n>            (Claude caps at 16; Grok live children 32 / budget 128; Codex default 6)
 
 ## Phases
 
@@ -90,7 +90,8 @@ emit `parallel` when a later phase genuinely needs all prior results at once.
 a Claude model on a Grok node or the reverse.
 
 `schema` carries a JSON Schema when the node must return structured data, or
-`null`. Only Claude workflow nodes support it.
+`null`. Claude workflow nodes (`schema`) and Grok workflow nodes
+(`output_schema`) support it. Codex nodes do not.
 
 `gate` is the literal command that proves the work. Emit one even when the user
 did not set it — a workflow with no verification is a workflow whose result
@@ -111,9 +112,16 @@ list of `codex exec` dispatches the host performs turn by turn, respecting
 `agents.max_concurrent_threads_per_session`. Say in the emitted plan that
 sequencing is enforced by the caller, not by a runtime.
 
-**Grok**: dispatch subagents with `--agents` or run the session's own
-`/workflow` command with the plan as its brief. Do not emit a script; the format
-is not public. Per-node model selection is not offered.
+**Grok**: emit a Rhai workflow the `workflow` tool can run. Follow
+`Skill(create-workflow)`: `let meta` header, `phase()` titles matching
+`meta.phases`, native nodes as `agent(prompt, #{ label, phase, agent_type,
+model, output_schema, isolation_worktree, capability_mode })`, shell-out nodes
+as a cheap `grok-4.5` supervisor whose prompt runs the composed CLI command
+and relays the FINAL REPORT. `mode: parallel` becomes `parallel(jobs)`.
+`mode: pipeline` is not available — emit sequential `agent()` calls or a
+barrier `parallel()`, and say so under the plan. Offer per-node `grok-4.5` /
+`grok-4.6`. Refuse `gpt-5.6-sol` on a native node; convert it to a Codex
+shell-out. Smoke-check with `{ validate_only: true }` before a real run.
 
 ## Refusals
 

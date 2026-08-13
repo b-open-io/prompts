@@ -1,19 +1,21 @@
 ---
 name: coordinator
-version: 0.0.6
+version: 0.0.7
 description: >-
-  Route bounded code-writing volume from a capable main session to cheaper or specialized
-  executors — native subagents, Grok workers, Codex workers — while planning, design intent,
-  review, verification, and git stay in the main seat. Use for "dispatch to workers", "plan big
-  execute small", "race worker lanes", "model arbitrage", or "spec and dispatch".
+  Route bounded code-writing volume from a capable Claude Code, Codex, or Grok
+  Build main session to cheaper or specialized executors — native plugin-roster
+  agents, Grok subagents, Codex / GPT-5.6 Sol workers — while planning, design
+  intent, review, verification, and git stay in the main seat. Use for "dispatch
+  to workers", "plan big execute small", "race worker lanes", "model arbitrage",
+  "spec and dispatch", "use Sol as a worker", or "use GPT 5.6 Sol".
 ---
 
 # Coordinator
 
 Capable main-model tokens are best spent on judgment while cheaper or more
 specialized executors handle bounded code volume. This pattern works from a
-Claude Code or Codex main session. Never infer or pin the main model: "Here"
-means the current main session selected by the user.
+Claude Code, Codex, or Grok Build main session. Never infer or pin the main
+model: "Here" means the current main session selected by the user.
 
 **You ARE the main seat.** The main owns the plan, interfaces, review,
 verification, and final decision. An advisor may pressure-test a decision, but
@@ -40,29 +42,35 @@ in parallel.
 
 | Worker | Best for |
 |--------|----------|
-| **Native Codex agent** (`bopen_*` custom agent or a built-in worker/explorer) | Specialist exploration, review, tests, and bounded work that should stay inside the current Codex runtime |
+| **Native Grok agent** (plugin roster id or built-in `explore` / `plan` / `general-purpose`) | Specialist work that should stay inside the current Grok session. Pass `subagent_type`. Native models are only `grok-4.6` (inherit) and `grok-4.5` (cheaper worker) |
 | **Native Claude agent** (plugin agent or lower-tier subagent) | Work needing the current Claude session's tools, browser, MCP servers, or plugin context |
-| **grok** (Grok Build CLI, headless) | Well-specced implementation volume through an independent vendor lane |
-| **codex** (CLI or Claude plugin) | Sandboxed implementation from a Claude main, or a deliberately isolated second Codex run |
-| **Native Workflow** (Claude Code `Workflow` tool) | Deterministic staged fan-outs on a Claude main — find→verify→synthesize pipelines, adversarial verification panels, loop-until-dry discovery, budget-scaled sweeps. Opt-in-gated and Claude-only; see `references/native-workflows.md` |
+| **Native Codex agent** (`bopen_*` custom agent or a built-in worker/explorer) | Specialist exploration, review, tests, and bounded work that should stay inside the current Codex runtime |
+| **codex / GPT-5.6 Sol** (`codex exec -m gpt-5.6-sol`) | Sandboxed implementation volume from a Claude or Grok main. Sol is never a native Grok `spawn_subagent` model — it is this CLI lane |
+| **grok** (Grok Build CLI, headless) | Well-specced implementation volume when the host is Claude or Codex |
+| **Native Workflow** | Deterministic staged fan-outs. Claude Code: `Workflow` (JS, `pipeline` + `parallel`). Grok Build: `workflow` (Rhai, `parallel` barrier only). Codex: none. See `references/native-workflows.md` |
 
 Before dispatching to `general-purpose`, match the unit against the roster in
 `skills/deploy-agent-team/references/agent-roster.md` and pass the specific
-`subagent_type` (e.g. `core:code-auditor`). Use `general-purpose` only
-when no roster agent fits, and say so explicitly in the dispatch note.
+`subagent_type` (e.g. `review:code-auditor` or `research:researcher`). On Grok,
+`bopen-tools:<name>` aliases also resolve when that plugin is installed. Use
+`general-purpose` only when no roster agent fits, and say so explicitly in the
+dispatch note.
 
 When the orchestration itself has deterministic shape (stages, loops, majority
-votes) and the user opted into multi-agent work, a native Workflow beats
+votes) and the user opted into multi-agent work, a native workflow beats
 hand-executing waves turn by turn — the script owns control flow while every
 coordinator rule (specs in agent prompts, main-seat review, git here) still
-applies. Details, gating, and availability: `references/native-workflows.md`.
+applies. Details, gating, Sol-as-worker, and per-host APIs:
+`references/native-workflows.md`.
 
-On a Codex main, prefer native Codex agents for specialist and read-heavy work,
-and Grok for external implementation volume. Do not recursively launch another
-Codex CLI merely to reproduce work a native agent can do. On a Claude main,
-native Claude agents, Grok, and an external Codex lane are all valid. Any
-headless coding CLI backed by a suitable quota fits the CLI slot; ask once when
-the user's preference is ambiguous, then keep it stable for the session.
+Pick the lane that stays inside the current host when it can do the work. On a
+Grok main, prefer native roster agents and `grok-4.5` subagents; send Sol
+through `codex exec`. On a Codex main, prefer native Codex agents and use Grok
+only for external implementation volume — do not launch another Codex CLI to
+reproduce work a native agent can do. On a Claude main, native Claude agents,
+Grok, and an external Codex/Sol lane are all valid. Any headless coding CLI
+backed by a suitable quota fits the CLI slot; ask once when the user's
+preference is ambiguous, then keep it stable for the session.
 
 External lanes cross a data boundary. A Grok dispatch can send its prompt,
 specification, source excerpts, and other repository content to xAI. Before the
@@ -114,7 +122,18 @@ isolation or an explicit user request justifies a separate Codex process.
   plugin primarily changes thread/job management, but local configuration can
   still make the two lanes behave differently.
 
-**grok (Grok Build CLI) dispatch shape:**
+**codex / GPT-5.6 Sol dispatch shape (from a Claude or Grok host):**
+```bash
+codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-sol \
+  -c model_reasoning_effort="high" \
+  "<one-line imperative; details in SPEC-*.md>" \
+  > /tmp/dispatch-<id>.log 2>&1 &
+```
+Preflight `command -v codex` and confirm the id (config `model =` or `-m`).
+Sol is this lane. It is not a Grok native subagent model. `claudex` replaces
+the main seat with a Claude Code session on Sol — do not use it as a worker.
+
+**grok (Grok Build CLI) dispatch shape (from a Claude or Codex host):**
 ```bash
 PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)   # unique per dispatch — parallel lanes on a shared path corrupt each other
 grok models                                  # inspect the COMPLETE output; confirm the exact ID below exists
@@ -154,9 +173,11 @@ grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" --permission-mode acceptEdi
 Native subagent workers get a fully self-contained prompt unless the host
 explicitly guarantees inherited context. Include the spec content (or its
 path), acceptance command, and the final-report demand below, exactly as for
-the CLI lanes. In Codex, prefer installed `bopen_*` specialist agents when a
-matching adapter exists; otherwise name the built-in agent or generic role
-being used rather than pretending a missing adapter was dispatched.
+the CLI lanes. Pass the roster `subagent_type` on Grok and Claude
+(`research:researcher`, `review:code-auditor`, …). In Codex, prefer installed
+`bopen_*` specialist agents when a matching adapter exists. Never claim a
+roster agent ran unless that id was the one spawned. Never pass `gpt-5.6-sol`
+as a Grok `model` — convert that request to the Codex CLI lane.
 
 ## Parallel Dispatch Without Collisions
 

@@ -1,10 +1,11 @@
 # What each harness can actually do
 
-Researched July 2026 against installed CLIs (claude 2.1.220, codex-cli 0.145.0,
-grok 0.2.111), official docs, and a real persisted workflow run on disk. Every
-row is marked with how it was established. Do not let the canvas offer a control
-this file does not support — an unbuildable option in a dropdown is worse than
-an absent one, because the user configures around it and the emitted spec fails.
+Researched July 2026 against installed CLIs, then re-verified 2026-08-13 on
+Grok Build 1.0.3 (GROK_AGENT=1), grok 1.0.3, claude 2.1.228, and
+codex-cli 0.145.0. Every row is marked with how it was established. Do not let
+the canvas offer a control this file does not support — an unbuildable option
+in a dropdown is worse than an absent one, because the user configures around
+it and the emitted spec fails.
 
 ## The single most important constraint
 
@@ -15,17 +16,20 @@ Claude Code's workflow harness runs Claude agents only. The `Agent` tool's
 Claude ids, or `inherit` — nothing else. Codex's non-OpenAI escape hatch
 (`--oss`, `--local-provider`) targets local runtimes, not hosted Claude or Grok.
 
-The one exception, and it is partial: Grok Build's `~/.grok/config.toml`
-supports `[model.<alias>]` blocks with `model`, `base_url`, and `env_key`,
-letting a **session** target any OpenAI-compatible endpoint. Whether a single
-subagent or workflow step can pick a different alias than the session default is
-**unverified**. Treat it as session-level only.
+Grok Build's `~/.grok/config.toml` supports `[model.<alias>]` blocks with
+`model`, `base_url`, and `env_key`, letting a **session** target an
+OpenAI-compatible endpoint. A single `spawn_subagent` / workflow `model` on
+Grok 1.0.3 still accepts only `grok-4.5` and `grok-4.6`. Treat custom aliases
+as session-level. GPT-5.6 Sol is a Codex CLI shell-out, not a Grok native
+model — verified 2026-08-13: `codex exec -m gpt-5.6-sol` from a Grok session
+returned the worker line; native `model: gpt-5.6-sol` is not in the spawn
+schema.
 
 Therefore a cross-provider step is always one thing: **a shell-out to another
 vendor's CLI, wrapped in a step of the host harness.** Render those nodes
 visually distinct. They are subprocesses, not orchestrated peers.
 
-## Claude Code — the only harness with a faithful editable workflow
+## Claude Code — JavaScript workflows
 
 Verified against official docs and a real persisted run.
 
@@ -53,28 +57,34 @@ long-running nodes.
 **Budget pools are separate.** Agents spawned by `agent()` inside a workflow do
 not count against session subagent limits; workflows have their own per-run cap.
 
-## Grok Build — real fan-out, undocumented workflow format
+## Grok Build — Rhai workflows, native roster agents
 
-`grok --help` exposes no top-level `workflow` verb; `/workflow` appears to be an
-in-session slash command. xAI's announcement describes orchestration scripts
-fanning out across "hundreds of parallel agents" — that is marketing copy, not a
-specification, and the authoring format is not public.
+Verified 2026-08-13 in a live Grok Build 1.0.3 session (`GROK_AGENT=1`). The
+authoring format is public: Rhai scripts via the in-session `workflow` tool,
+documented by `Skill(create-workflow)` and `~/.grok/docs/user-guide/`.
 
-Confirmed from the local CLI:
+| Capability | Detail |
+|---|---|
+| Authoring | Rhai. `let meta = #{ name, description, phases }` must be a pure literal |
+| Primitives | `agent(prompt, opts)`, `parallel(jobs)` (barrier), `phase(title)`, `log(msg)`, `complete(value)`, `budget()` |
+| No `pipeline()` | A later item cannot advance while an earlier one is still running. `parallel()` waits for the whole panel |
+| Fan-out | Default `agent_budget` 128 (1–1,024). Live children cap 32 by default; larger panels queue |
+| Per-step model | Yes: `opts.model` is `grok-4.5` or `grok-4.6`. Offer that picker. Do not offer Sol or Claude |
+| Structured output | `opts.output_schema` (JSON Schema map) — supported, same job as Claude `schema` |
+| Named agents | `opts.agent_type` is a roster `subagent_type`. Verified: `research:researcher` and `bopen-tools:researcher` both spawn |
+| Isolation | `opts.isolation_worktree` — private worktree, no automatic merge |
+| Saved workflows | `.grok/workflows/<name>.rhai` (project) or `~/.grok/workflows/<name>.rhai` (user) |
+| UI | `/workflow` launches; `/workflows` is the run dashboard |
 
-- `-w/--worktree [<NAME>]`, `--worktree-ref`, plus a `grok worktree` subcommand.
-  Worktree-per-subagent is a headline feature.
-- `--permission-mode` accepts `default|acceptEdits|auto|dontAsk|bypassPermissions|plan`
-- `--sandbox <PROFILE>` / `GROK_SANDBOX`
-- `--agent`, `--agents <JSON>`, `--no-subagents`
-- `--reasoning-effort` / `--effort`: `none|minimal|low|medium|high|xhigh`
-- `grok models` enumerates per authenticated account. Always ask; do not hardcode.
+Host marker for the detector: `GROK_AGENT=1` (this session). `GROK_HOME` /
+`GROK_SANDBOX` may also be set. Do not require them.
 
-**Do not offer a per-node model picker for Grok workflow steps.** The format
-that would carry the setting is not published.
+CLI still confirmed: `-p/--single`, `--prompt-file`, `-w/--worktree`,
+`--permission-mode`, `--sandbox`, `--reasoning-effort`, `grok models`.
+`--best-of-n` is not in 1.0.3 help. Do not expose it.
 
-`--best-of-n` appears in some older notes but is **not** in this version's help
-and could not be verified. Do not expose it.
+xAI's "hundreds of parallel agents" is marketing. The real default budget is
+128 logical calls. Do not put "hundreds" on the canvas.
 
 ## Codex — subagents, no workflows
 
@@ -132,7 +142,8 @@ in the wrapped process, not the wrapper.
 ## What the canvas must never claim
 
 1. That a Claude workflow step can run a Grok or GPT model natively. It cannot.
-2. That a Grok workflow node maps to an editable primitive. The format is not public.
+2. That a Grok native node can run `gpt-5.6-sol` or a Claude model. Sol is a Codex shell-out.
 3. That Codex has a workflow. It has subagents.
-4. That "hundreds of parallel agents" is a Grok specification. It is a claim.
+4. That "hundreds of parallel agents" is a Grok specification. Default budget is 128.
 5. That a resumed Claude workflow preserves all completed agents. See the replay rule.
+6. That Grok has `pipeline()`. It has barrier `parallel()` only.
