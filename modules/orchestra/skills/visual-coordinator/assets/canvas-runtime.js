@@ -79,15 +79,15 @@
           command: this.composeCommand(node),
         };
       }
-      const grokModels = this.modelsFor("grok");
+      const grokNativeSlugs = ["grok-4.6"];
       if (
         this.env.harness === "grok" &&
         node.model &&
-        grokModels.length &&
-        !grokModels.includes(node.model)
+        !grokNativeSlugs.includes(node.model)
       ) {
         let lane = null;
-        if (this.modelsFor("codex").includes(node.model)) lane = "codex";
+        if (this.modelsFor("grok").includes(node.model)) lane = "grok";
+        else if (this.modelsFor("codex").includes(node.model)) lane = "codex";
         else if (this.modelsFor("claude").includes(node.model)) lane = "claude";
         if (!lane) {
           return { ...base, kind: "omit", reason: `${node.model} is not on any detected lane` };
@@ -261,10 +261,10 @@
           this.isNative(node) &&
           this.env.harness === "grok" &&
           node.model &&
-          !/^grok-/.test(node.model)
+          node.model !== "grok-4.6"
         ) {
           out.push(
-            `${node.label}: ${node.model} cannot run as a native Grok step; emit it as a Codex or Claude shell-out.`,
+            `${node.label}: Grok agent().model accepts grok-4.6 only; ${node.model} will emit as a Grok or Codex CLI shell-out.`,
           );
         }
         if (node.schema && !this.isNative(node)) {

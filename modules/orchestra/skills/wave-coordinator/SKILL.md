@@ -1,6 +1,6 @@
 ---
 name: wave-coordinator
-version: 1.0.5
+version: 1.0.6
 description: >-
   Dispatch many subagents in coordinated waves with per-wave review. Use for "fan out agents",
   "wave dispatch", "batch agents", "generate N variations", or any fan-out beyond about five
@@ -142,11 +142,11 @@ ledger.
 
 Use `spawn_subagent` with the installed roster `subagent_type` (e.g.
 `research:researcher`, `review:code-auditor`). `bopen-tools:<name>` aliases
-also resolve when that plugin is installed. Native `model` is `grok-4.5` or
-`grok-4.6` only. GPT-5.6 Sol is a `codex exec` shell-out, not a native
-subagent. Prefer the native `workflow` tool over hand waves when the
-fan-out has shape. Live children default to 32; `agent_budget` defaults to
-128.
+also resolve when that plugin is installed. Native `agent().model` is
+`grok-4.6` only. Do not dispatch `grok-4.5`. Run Sol as
+`grok --single -m gpt-5.6-sol` inside a supervisor, or `codex exec`.
+Prefer the native `workflow` tool over hand waves when the fan-out has
+shape. Live children default to 32; `agent_budget` defaults to 128.
 
 ### Claude Code
 

@@ -35,15 +35,22 @@ codex_bin=$(lane_status codex)
 grok_bin=$(lane_status grok)
 
 # --- Models actually offered, not models we assume ---------------------------
-# grok enumerates per authenticated account. Lines look like
-# "  * grok-4.6 (default)" and "  - grok-4.5".
+# grok enumerates per authenticated account plus quoted [model."id"] blocks.
+# Lines look like "  * grok-4.6 (default)" and "  - gpt-5.6-sol".
 grok_models=""
 if [[ "$grok_bin" == "available" ]]; then
   grok_models=$(grok models 2>/dev/null \
     | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._-]*\).*/\1/p' \
     | awk 'NF && !seen[$0]++' \
-    | head -20 \
+    | head -40 \
     | paste -sd, -)
+fi
+# Merge quoted custom ids from config in case this process's grok models is stale.
+if [[ -f "$HOME/.grok/config.toml" ]]; then
+  extra=$(sed -n 's/^\[model\."\([^"]*\)"\].*/\1/p' "$HOME/.grok/config.toml" | tr '\n' ',')
+  if [[ -n "$extra" ]]; then
+    grok_models=$(printf '%s,%s' "$grok_models" "$extra" | tr ',' '\n' | awk 'NF && !seen[$0]++' | paste -sd, -)
+  fi
 fi
 
 # codex has no enumeration command; the configured model is the truth on disk.

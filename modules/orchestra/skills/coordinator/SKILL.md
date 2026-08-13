@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.7
+version: 0.0.8
 description: >-
   Route bounded code-writing volume from a capable Claude Code, Codex, or Grok
   Build main session to cheaper or specialized executors — native plugin-roster
@@ -42,10 +42,10 @@ in parallel.
 
 | Worker | Best for |
 |--------|----------|
-| **Native Grok agent** (plugin roster id or built-in `explore` / `plan` / `general-purpose`) | Specialist work that should stay inside the current Grok session. Pass `subagent_type`. Native models are only `grok-4.6` (inherit) and `grok-4.5` (cheaper worker) |
+| **Native Grok agent** (plugin roster id or built-in `explore` / `plan` / `general-purpose`) | Specialist work that should stay inside the current Grok session. Pass `subagent_type`. Inherit `grok-4.6`. Do not dispatch `grok-4.5`. `agent().model` / `spawn_subagent` accept only those two slugs |
 | **Native Claude agent** (plugin agent or lower-tier subagent) | Work needing the current Claude session's tools, browser, MCP servers, or plugin context |
 | **Native Codex agent** (`bopen_*` custom agent or a built-in worker/explorer) | Specialist exploration, review, tests, and bounded work that should stay inside the current Codex runtime |
-| **codex / GPT-5.6 Sol** (`codex exec -m gpt-5.6-sol`) | Sandboxed implementation volume from a Claude or Grok main. Sol is never a native Grok `spawn_subagent` model — it is this CLI lane |
+| **GPT-5.6 Sol** | On Grok: wrap `grok --single -m gpt-5.6-sol` in a `grok-4.6` workflow agent after a quoted `[model."gpt-5.6-sol"]` is listed by `grok models`. Do not pass Sol as `agent().model` — Grok 1.0.3 rejects it. From Claude, or if the custom id is missing, `codex exec -m gpt-5.6-sol` |
 | **grok** (Grok Build CLI, headless) | Well-specced implementation volume when the host is Claude or Codex |
 | **Native Workflow** | Deterministic staged fan-outs. Claude Code: `Workflow` (JS, `pipeline` + `parallel`). Grok Build: `workflow` (Rhai, `parallel` barrier only). Codex: none. See `references/native-workflows.md` |
 
@@ -64,13 +64,17 @@ applies. Details, gating, Sol-as-worker, and per-host APIs:
 `references/native-workflows.md`.
 
 Pick the lane that stays inside the current host when it can do the work. On a
-Grok main, prefer native roster agents and `grok-4.5` subagents; send Sol
-through `codex exec`. On a Codex main, prefer native Codex agents and use Grok
-only for external implementation volume — do not launch another Codex CLI to
-reproduce work a native agent can do. On a Claude main, native Claude agents,
-Grok, and an external Codex/Sol lane are all valid. Any headless coding CLI
-backed by a suitable quota fits the CLI slot; ask once when the user's
-preference is ambiguous, then keep it stable for the session.
+Grok main, prefer native roster agents on `grok-4.6`. Never dispatch
+`grok-4.5`. When `grok models` lists `gpt-5.6-sol`, run Sol as
+`grok --single -m gpt-5.6-sol` inside a `grok-4.6` workflow supervisor.
+Do not pass `model: "gpt-5.6-sol"` to `agent()` or `spawn_subagent` —
+the host returns `Unknown Task.model slug`. If the custom id is missing,
+use `codex exec -m gpt-5.6-sol`. On a Codex main, prefer native Codex agents and
+use Grok only for external implementation volume — do not launch another
+Codex CLI to reproduce work a native agent can do. On a Claude main, native
+Claude agents, Grok, and an external Codex/Sol lane are all valid. Any
+headless coding CLI backed by a suitable quota fits the CLI slot; ask once
+when the user's preference is ambiguous, then keep it stable for the session.
 
 External lanes cross a data boundary. A Grok dispatch can send its prompt,
 specification, source excerpts, and other repository content to xAI. Before the
@@ -176,8 +180,9 @@ path), acceptance command, and the final-report demand below, exactly as for
 the CLI lanes. Pass the roster `subagent_type` on Grok and Claude
 (`research:researcher`, `review:code-auditor`, …). In Codex, prefer installed
 `bopen_*` specialist agents when a matching adapter exists. Never claim a
-roster agent ran unless that id was the one spawned. Never pass `gpt-5.6-sol`
-as a Grok `model` — convert that request to the Codex CLI lane.
+roster agent ran unless that id was the one spawned. Never pass
+`gpt-5.6-sol` as a Grok `agent().model` slug. Wrap
+`grok --single -m gpt-5.6-sol` or `codex exec` instead.
 
 ## Parallel Dispatch Without Collisions
 

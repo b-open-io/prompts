@@ -7,7 +7,7 @@
       "source": "env",
       "key": "BOPEN_WORKER_MODEL",
       "type": "string",
-      "default": "grok-4.5",
+      "default": "grok-4.6",
       "tier": "model",
       "label": "Worker model",
       "description": "Default external implementation worker selected by coordinator.",

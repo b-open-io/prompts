@@ -9,21 +9,30 @@ it and the emitted spec fails.
 
 ## The single most important constraint
 
-**No harness runs another vendor's model as a native workflow or subagent step.**
+**No host `agent().model` slug is a foreign vendor.** Claude stays Claude.
+Codex stays OpenAI-family. Grok 1.0.3 Task slugs are `grok-4.6` and
+`grok-4.5` only. Custom ids run through `grok --single -m`, which is a
+shell-out node on the canvas.
 
 Claude Code's workflow harness runs Claude agents only. The `Agent` tool's
 `model` parameter and subagent `model:` frontmatter accept Claude aliases, full
 Claude ids, or `inherit` — nothing else. Codex's non-OpenAI escape hatch
 (`--oss`, `--local-provider`) targets local runtimes, not hosted Claude or Grok.
 
-Grok Build's `~/.grok/config.toml` supports `[model.<alias>]` blocks with
-`model`, `base_url`, and `env_key`, letting a **session** target an
-OpenAI-compatible endpoint. A single `spawn_subagent` / workflow `model` on
-Grok 1.0.3 still accepts only `grok-4.5` and `grok-4.6`. Treat custom aliases
-as session-level. GPT-5.6 Sol is a Codex CLI shell-out, not a Grok native
-model — verified 2026-08-13: `codex exec -m gpt-5.6-sol` from a Grok session
-returned the worker line; native `model: gpt-5.6-sol` is not in the spawn
-schema.
+Grok Build's `~/.grok/config.toml` supports `[model."<id>"]` blocks with
+`model`, `base_url`, and `env_key`. Quote the table key when the id contains
+dots. After `grok models` lists that id, `grok --single -m <id>` runs it.
+`workflow` `agent().model` and `spawn_subagent` still reject it. Verified
+2026-08-13: quoted `[model."gpt-5.6-sol"]` with `OPENAI_API_KEY` /
+`api_backend = "responses"` made `grok --single -m gpt-5.6-sol` return
+`native-sol-ok`. A live `workflow` `agent({ model: "gpt-5.6-sol" })` failed
+with `Unknown Task.model slug 'gpt-5.6-sol'. Valid model slugs: grok-4.5, grok-4.6.`
+An unquoted `[model.gpt-5.6-sol]` becomes nested TOML and Grok offers a
+bogus `gpt-5`.
+
+Do not dispatch `grok-4.5`. Inherit `grok-4.6` for Grok-family work. Render
+Sol as a Grok-CLI shell-out node (`grok --single -m gpt-5.6-sol`), not as a
+native slug.
 
 Therefore a cross-provider step is always one thing: **a shell-out to another
 vendor's CLI, wrapped in a step of the host harness.** Render those nodes
@@ -69,7 +78,7 @@ documented by `Skill(create-workflow)` and `~/.grok/docs/user-guide/`.
 | Primitives | `agent(prompt, opts)`, `parallel(jobs)` (barrier), `phase(title)`, `log(msg)`, `complete(value)`, `budget()` |
 | No `pipeline()` | A later item cannot advance while an earlier one is still running. `parallel()` waits for the whole panel |
 | Fan-out | Default `agent_budget` 128 (1–1,024). Live children cap 32 by default; larger panels queue |
-| Per-step model | Yes: `opts.model` is `grok-4.5` or `grok-4.6`. Offer that picker. Do not offer Sol or Claude |
+| Per-step `agent().model` | `grok-4.6` only. Do not offer `grok-4.5`. Custom ids from `grok models` are Grok-CLI shell-outs |
 | Structured output | `opts.output_schema` (JSON Schema map) — supported, same job as Claude `schema` |
 | Named agents | `opts.agent_type` is a roster `subagent_type`. Verified: `research:researcher` and `bopen-tools:researcher` both spawn |
 | Isolation | `opts.isolation_worktree` — private worktree, no automatic merge |
@@ -142,7 +151,7 @@ in the wrapped process, not the wrapper.
 ## What the canvas must never claim
 
 1. That a Claude workflow step can run a Grok or GPT model natively. It cannot.
-2. That a Grok native node can run `gpt-5.6-sol` or a Claude model. Sol is a Codex shell-out.
+2. That a Grok native node can run an id `grok models` does not list. Register it first, or emit a shell-out.
 3. That Codex has a workflow. It has subagents.
 4. That "hundreds of parallel agents" is a Grok specification. Default budget is 128.
 5. That a resumed Claude workflow preserves all completed agents. See the replay rule.

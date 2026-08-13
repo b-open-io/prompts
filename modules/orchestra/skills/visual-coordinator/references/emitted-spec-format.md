@@ -116,12 +116,14 @@ sequencing is enforced by the caller, not by a runtime.
 `Skill(create-workflow)`: `let meta` header, `phase()` titles matching
 `meta.phases`, native nodes as `agent(prompt, #{ label, phase, agent_type,
 model, output_schema, isolation_worktree, capability_mode })`, shell-out nodes
-as a cheap `grok-4.5` supervisor whose prompt runs the composed CLI command
+as a `grok-4.6` supervisor whose prompt runs the composed CLI command
 and relays the FINAL REPORT. `mode: parallel` becomes `parallel(jobs)`.
 `mode: pipeline` is not available — emit sequential `agent()` calls or a
-barrier `parallel()`, and say so under the plan. Offer per-node `grok-4.5` /
-`grok-4.6`. Refuse `gpt-5.6-sol` on a native node; convert it to a Codex
-shell-out. Smoke-check with `{ validate_only: true }` before a real run.
+barrier `parallel()`, and say so under the plan. Native `agent().model`
+is `grok-4.6` only. Do not offer `grok-4.5`. A registered `gpt-5.6-sol`
+emits as `grok --single -m gpt-5.6-sol` (Grok CLI shell-out), not as
+`agent().model`. Smoke-check with `{ validate_only: true }` before a
+real run.
 
 ## Refusals
 

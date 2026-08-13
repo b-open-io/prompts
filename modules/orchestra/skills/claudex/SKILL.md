@@ -5,11 +5,15 @@ description: >-
   usage runs out, and diagnose that setup when it drifts. Use for "my Anthropic usage ran out",
   "keep working on another model", "run Claude Code on GPT-5.6 Sol", "set up claudex", "claudex
   isn't working", or "bill against my Codex subscription". macOS + Homebrew.
-version: 0.0.1
+version: 0.0.2
 user-invocable: true
 ---
 
 # claudex
+
+This skill is the **CLIProxyAPI alias** that runs official Claude Code on
+Sol. It is not [l3tchupkt/Claudex](https://github.com/l3tchupkt/Claudex)
+(a leaked Claude Code fork). Do not install that repo.
 
 `claudex` runs the **Claude Code harness — same tools, skills, UI, and session —
 driven by OpenAI's GPT-5.6 Sol**, billed against an existing ChatGPT/Codex

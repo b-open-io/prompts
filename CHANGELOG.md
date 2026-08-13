@@ -6,16 +6,28 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- Stop dispatching `grok-4.5`. Grok-family work inherits `grok-4.6`. The
+  coordinator default `BOPEN_WORKER_MODEL` is now `grok-4.6`.
+- A Grok *session* can run another vendor via a quoted
+  `[model."<id>"]` block (`grok --single -m gpt-5.6-sol` returned
+  `native-sol-ok`). A Grok *workflow* `agent().model` cannot: Grok 1.0.3
+  returns `Unknown Task.model slug` unless the slug is `grok-4.5` or
+  `grok-4.6`. The accurate workflow shape is a `grok-4.6` supervisor that
+  runs `grok --single -m gpt-5.6-sol`. Claude Code mixes vendors the same
+  way (CLI shell-out or a whole-session LLM gateway), not
+  `agent({ model: "gpt-5.6-sol" })`.
+
 ### Fixed
 
+- Harness detection now merges quoted `[model."id"]` entries from
+  `~/.grok/config.toml` into the Grok model list so a registered Sol id
+  is offered as a native node.
 - `orchestra:coordinator` treated Grok Build as an external CLI only and
   called native workflows Claude-only. Grok Build 1.0.3 hosts the session
   (`GROK_AGENT=1`), exposes a Rhai `workflow` tool, and runs installed plugin
-  roster agents via `spawn_subagent`. GPT-5.6 Sol is a `codex exec -m gpt-5.6-sol`
-  shell-out from this host, not a native Grok model. Verified in-session:
-  `research:researcher` and `bopen-tools:researcher` spawn; `workflow`
-  `validate_only` accepts `agent_type` + `model: grok-4.5`; Sol CLI returns
-  the worker line.
+  roster agents via `spawn_subagent`.
 - `orchestra:visual-coordinator` detector reported `harness: unknown` on Grok
   (it looked for `GROK_HOME` / `GROK_SANDBOX`, not `GROK_AGENT`) and dropped
   every non-default `grok models` row. It also claimed the Grok workflow
@@ -23,7 +35,7 @@ manifests share the same release version.
   Detector now keys off `GROK_AGENT`, parses `*` and `-` model lines, reports
   `native_workflow` plus live-child / budget caps, and merges
   `~/.grok/installed-plugins` into the roster. The canvas emits Rhai, refuses
-  `pipeline()` and foreign models on native Grok nodes, and uses the host cap
+  `pipeline()` and unlisted models on native Grok nodes, and uses the host cap
   of 32.
 
 ### Changed

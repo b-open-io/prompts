@@ -708,12 +708,13 @@ does not pin or rename it. The supporting skills divide responsibilities:
 
 - `coordinator` writes precise worker specs, assigns non-overlapping files,
   dispatches implementation, and requires acceptance reports. On a Grok main,
-  native roster agents (`research:researcher`, `review:code-auditor`, …) and
-  `grok-4.5` subagents stay in-process. GPT-5.6 Sol is a Codex CLI shell-out
-  (`codex exec -m gpt-5.6-sol`), never a native Grok `spawn_subagent` model.
-  When Grok is the external lane from Claude or Codex, the default worker is
-  `grok-4.5` after it appears in the complete `grok models` output. Override
-  that with `BOPEN_WORKER_MODEL`.
+  native roster agents stay on `grok-4.6`. Do not dispatch `grok-4.5`.
+  Grok 1.0.3 rejects `agent({ model: "gpt-5.6-sol" })` (`Unknown Task.model
+  slug`). Register a quoted `[model."gpt-5.6-sol"]` and wrap
+  `grok --single -m gpt-5.6-sol` in a `grok-4.6` workflow supervisor.
+  If that id is missing, use `codex exec -m gpt-5.6-sol`. When Grok is the
+  external lane from Claude or Codex, pin `grok-4.6`. Override that with
+  `BOPEN_WORKER_MODEL`.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`.
