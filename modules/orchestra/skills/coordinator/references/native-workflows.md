@@ -19,7 +19,7 @@ Do not dispatch `grok-4.5`. Inherit `grok-4.6` for Grok-family work.
 Workflows can spawn dozens of agents.
 
 - **Claude Code**: the runtime requires explicit opt-in (ultracode, the user asking for a workflow/fan-out, a named saved workflow, or a skill whose instructions call for Workflow). Coordinator / wave-coordinator invoked for multi-agent work counts. When the task would merely benefit, describe the shape and cost and ask.
-- **Grok Build**: background workflows are on by default (`GROK_WORKFLOWS`, `[workflows] enabled`). Still ask before a large fan-out the user did not request. Authoring and the Rhai dialect live in `Skill(create-workflow)` and `~/.grok/docs/user-guide/`.
+- **Grok Build**: background workflows are on by default (`GROK_WORKFLOWS`, `[workflows] enabled`). Still ask before a large fan-out the user did not request. Authoring lives in the Grok-bundled skill, not this plugin — see `/create-workflow` below.
 
 ## When a workflow beats hand-rolled waves
 
@@ -52,15 +52,54 @@ Use `general-purpose` / the default workflow agent only when no roster agent fit
 
 An unquoted `[model.gpt-5.6-sol]` is nested TOML (`model.gpt-5`). Grok then shows a bogus `gpt-5` id and xAI 404s it. Quote the key.
 
-## GPT-5.6 Sol as a worker
+## `/create-workflow` is Grok-bundled
+
+`/create-workflow` is not an orchestra command. Grok Build ships it at
+`~/.grok/bundled/skills/create-workflow/SKILL.md` and maps that skill name
+to the slash command. Claude Code and Codex do not have it. Do not copy the
+file into this plugin — the host owns the Rhai dialect, and it updates with
+Grok.
+
+On a Grok session, load that bundled skill to author and smoke-check. Then
+apply this file's routing rules (native `grok-4.6` only, Sol/Fable as
+shell-outs, coordinator ownership). On Claude, author a JavaScript workflow
+directly. On Codex, do not author a workflow.
+
+Verified 2026-08-13 while authoring `fable-sol-review`:
+
+- `validate_only` canned agents return `success: true` and a small empty
+  object. Required `output_schema` fields leave later phases with no units.
+  Keep schemas optional. Seed `args.units`. Skip `await_user` with
+  `args.auto == true` so the smoke-check path reaches Implement and Review.
+- Save a cross-repo demo at `~/.grok/workflows/<name>.rhai`. The bundled
+  skill defaults to the project `.grok/workflows/` inside a git repo.
+- `-p` and `--single` are the same flag and require a prompt value. Long
+  briefs use `--prompt-file`. Do not pass `-p` and `--single` together.
+- grok 1.0.3 `--permission-mode` values:
+  `default|acceptEdits|auto|dontAsk|bypassPermissions|plan`.
+
+## GPT-5.6 Sol as a worker or reviewer
 
 On a Grok host, register Sol so the Grok CLI can run it, then wrap that CLI in a workflow agent. Do not pass `model: "gpt-5.6-sol"` to `agent()` — the host rejects it.
 
+Implement (writes files):
+
 ```rhai
-// supervisor inherits grok-4.6; Sol runs as a Grok CLI child
-agent("Run: grok --single \"<one-liner; details in SPEC>\" -m gpt-5.6-sol --permission-mode acceptEdits --sandbox workspace --cwd <repo>. Relay the FINAL REPORT. Do not commit.",
-    #{ label: "sol", capability_mode: "execute" });
+agent("Write the brief to a temp file. Run: grok --prompt-file TEMPFILE -m gpt-5.6-sol --permission-mode acceptEdits --sandbox workspace --output-format plain --cwd <repo>. Relay the FINAL REPORT. Do not commit.",
+    #{ label: "sol-implement", capability_mode: "execute" });
 ```
+
+Review (read-only). A missing verdict is unverified, not accept:
+
+```rhai
+agent("Write the brief to a temp file. Run: grok --prompt-file TEMPFILE -m gpt-5.6-sol --permission-mode plan --sandbox workspace --output-format plain --verbatim --cwd <repo>. Do not add acceptEdits. Relay verdict accept or reject with evidence. Do not edit.",
+    #{ label: "sol-review", capability_mode: "execute" });
+```
+
+Fable as a planner from a Grok workflow is also a shell-out, not a native
+slug. Wrap `claude --print --safe-mode --model "${BOPEN_ADVISOR_MODEL:-fable}"
+--effort high --permission-mode plan --tools "Read,Grep,Glob"
+--no-session-persistence` in a `grok-4.6` execute supervisor.
 
 Register the quoted `[model."gpt-5.6-sol"]` block first and confirm `grok models` lists it. If the id is absent, shell out through Codex instead:
 
@@ -88,7 +127,7 @@ Grok workflows are Rhai, saved at `.grok/workflows/<name>.rhai` or `~/.grok/work
 
 `output_schema` is supported on Grok. Per-node `agent().model` is `grok-4.6` only. Offer Sol as a Grok-CLI wrapper node, not as a `model` slug. Do not offer `grok-4.5`. Worktree isolation does not merge back — the main seat applies the diff.
 
-Author with `Skill(create-workflow)`. Smoke-check with `{ validate_only: true }` before a real run. Progress lives in `/workflows`.
+Author on Grok with bundled `/create-workflow`. Smoke-check with `{ validate_only: true }` and representative `args` (`units` + `auto: true` if the script has `await_user`) before a real run. Progress lives in `/workflows`.
 
 ## Claude script shape
 

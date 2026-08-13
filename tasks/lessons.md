@@ -1,5 +1,19 @@
 # Lessons
 
+## `/create-workflow` is Grok-bundled, not orchestra (2026-08-13)
+
+`/create-workflow` ships inside Grok Build at
+`~/.grok/bundled/skills/create-workflow/SKILL.md`. Grok maps the skill name
+to the slash command. Orchestra must not copy that file. Claude and Codex
+do not have the command.
+
+Live 1.0.3 facts to keep in coordinator/visual-coordinator, not in memory:
+`validate_only` canned output is a small empty object, so required schemas
+and unseeded `args.units` hide later phases; skip `await_user` with
+`args.auto` for the smoke-check path; `-p` and `--single` are one flag;
+long briefs use `--prompt-file`; Sol review uses `--permission-mode plan`,
+not `acceptEdits`.
+
 ## Never attribute commits to Claude (2026-07-30)
 
 Do not put `Co-Authored-By: Claude ...` or `Claude-Session: ...` trailers in

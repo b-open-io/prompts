@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable flow-chart artifact and emits a paste-back spec that launches the exact configuration chosen. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.2
+version: 0.1.3
 ---
 
 # Visual Coordinator
@@ -100,8 +100,9 @@ the plan. Never leave an impossible setting looking configured.
 ### 5. Execute what came back
 
 On receiving a pasted spec, translate it for the host — Claude Code maps onto a
-JavaScript workflow script; Grok maps onto a Rhai workflow (`Skill(create-workflow)`,
-native `agent_type` + `model`, Sol/Claude nodes as Codex/Claude shell-outs);
+JavaScript workflow script; Grok maps onto a Rhai workflow (bundled
+`/create-workflow`, native `agent_type` + `model`, Sol/Claude nodes as
+Grok-CLI or Claude-CLI shell-outs);
 Codex becomes an ordered series of `codex exec` dispatches the caller sequences.
 Then run it under the ordinary `coordinator` rules: specs before dispatch,
 review diffs adversarially, re-run acceptance outside the worker's sandbox, and
@@ -145,5 +146,5 @@ the agent's initials in a coloured circle rather than shipping a faceless card.
 
 - `Skill(orchestra:coordinator)` — the dispatch discipline this builds on
 - `Skill(orchestra:wave-coordinator)` — sizing large fan-outs into waves
-- `Skill(create-workflow)` — Grok Rhai authoring and the host API
+- Grok-bundled `create-workflow` (`~/.grok/bundled/skills/create-workflow/SKILL.md`) — not in this plugin. Authors Rhai. Claude and Codex do not have `/create-workflow`
 - `Skill(artifact-design)` — craft for the artifact itself

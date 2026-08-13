@@ -6,6 +6,18 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- orchestra 0.1.7: `/create-workflow` is a Grok Build bundled skill at
+  `~/.grok/bundled/skills/create-workflow/SKILL.md`, not an orchestra
+  command. Claude and Codex do not have it. Do not copy that file into
+  this plugin. Coordinator and visual-coordinator now record the live
+  1.0.3 CLI split: Sol implement uses `--permission-mode acceptEdits`;
+  Sol review uses `--permission-mode plan` and `--prompt-file`.
+  `validate_only` canned output is an empty object — seed `args.units`
+  and skip `await_user` with `args.auto` so the smoke-check reaches later
+  phases. Fable as a Grok-workflow planner is a Claude CLI shell-out.
+
 ## [1.1.137] - 2026-08-13
 
 ### Added

@@ -726,6 +726,9 @@ does not pin or rename it. The supporting skills divide responsibilities:
   waves while leaving final decisions with the main session.
 - `visual-coordinator` draws the fan-out before it runs and emits a paste-back
   spec. On Grok it translates to a Rhai workflow, not a vague `/workflow` brief.
+  `/create-workflow` is a Grok-bundled authoring skill
+  (`~/.grok/bundled/skills/create-workflow/SKILL.md`). It is not part of
+  orchestra. Claude Code and Codex do not have that slash command.
 
 External lanes cross provider boundaries. A Grok dispatch can send its prompt,
 specification, and selected repository content to xAI. A Fable consult can send

@@ -113,17 +113,20 @@ list of `codex exec` dispatches the host performs turn by turn, respecting
 sequencing is enforced by the caller, not by a runtime.
 
 **Grok**: emit a Rhai workflow the `workflow` tool can run. Follow
-`Skill(create-workflow)`: `let meta` header, `phase()` titles matching
-`meta.phases`, native nodes as `agent(prompt, #{ label, phase, agent_type,
-model, output_schema, isolation_worktree, capability_mode })`, shell-out nodes
-as a `grok-4.6` supervisor whose prompt runs the composed CLI command
-and relays the FINAL REPORT. `mode: parallel` becomes `parallel(jobs)`.
-`mode: pipeline` is not available — emit sequential `agent()` calls or a
-barrier `parallel()`, and say so under the plan. Native `agent().model`
-is `grok-4.6` only. Do not offer `grok-4.5`. A registered `gpt-5.6-sol`
-emits as `grok --single -m gpt-5.6-sol` (Grok CLI shell-out), not as
-`agent().model`. Smoke-check with `{ validate_only: true }` before a
-real run.
+the Grok-bundled `/create-workflow` skill (`~/.grok/bundled/skills/create-workflow/SKILL.md`):
+`let meta` header, `phase()` titles matching `meta.phases`, native nodes as
+`agent(prompt, #{ label, phase, agent_type, model, output_schema,
+isolation_worktree, capability_mode })`, shell-out nodes as a `grok-4.6`
+supervisor whose prompt runs the composed CLI command and relays the FINAL
+REPORT. `mode: parallel` becomes `parallel(jobs)`. `mode: pipeline` is not
+available — emit sequential `agent()` calls or a barrier `parallel()`, and
+say so under the plan. Native `agent().model` is `grok-4.6` only. Do not
+offer `grok-4.5`. A registered `gpt-5.6-sol` implement node emits
+`grok --prompt-file … -m gpt-5.6-sol --permission-mode acceptEdits`. A
+Sol review node emits `--permission-mode plan` and no `acceptEdits`.
+Neither is `agent().model`. Smoke-check with `{ validate_only: true }` and
+seed `args` before a real run. Do not invoke `/create-workflow` on Claude
+or Codex — it does not exist there.
 
 ## Refusals
 

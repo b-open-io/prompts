@@ -70,7 +70,9 @@ not count against session subagent limits; workflows have their own per-run cap.
 
 Verified 2026-08-13 in a live Grok Build 1.0.3 session (`GROK_AGENT=1`). The
 authoring format is public: Rhai scripts via the in-session `workflow` tool,
-documented by `Skill(create-workflow)` and `~/.grok/docs/user-guide/`.
+documented by the Grok-bundled skill at
+`~/.grok/bundled/skills/create-workflow/SKILL.md` (`/create-workflow`)
+and `~/.grok/docs/user-guide/`. That skill is not in this plugin.
 
 | Capability | Detail |
 |---|---|
@@ -88,9 +90,12 @@ documented by `Skill(create-workflow)` and `~/.grok/docs/user-guide/`.
 Host marker for the detector: `GROK_AGENT=1` (this session). `GROK_HOME` /
 `GROK_SANDBOX` may also be set. Do not require them.
 
-CLI still confirmed: `-p/--single`, `--prompt-file`, `-w/--worktree`,
-`--permission-mode`, `--sandbox`, `--reasoning-effort`, `grok models`.
-`--best-of-n` is not in 1.0.3 help. Do not expose it.
+CLI still confirmed: `-p/--single` (same flag; requires a prompt value),
+`--prompt-file` (long briefs), `--verbatim`, `-w/--worktree`,
+`--permission-mode` (`default|acceptEdits|auto|dontAsk|bypassPermissions|plan`),
+`--sandbox`, `--reasoning-effort`, `grok models`. Implementers use
+`acceptEdits`. Reviewers use `plan`. `--best-of-n` is not in 1.0.3 help.
+Do not expose it.
 
 xAI's "hundreds of parallel agents" is marketing. The real default budget is
 128 logical calls. Do not put "hundreds" on the canvas.
@@ -137,7 +142,12 @@ codex exec --sandbox workspace-write --cd <repo> "<one-line task>" \
 grok --prompt-file <file> -m "<verified model id>" \
   --permission-mode acceptEdits --sandbox workspace --cwd <repo>
 
-claude -p "<task>"          # from Codex or Grok as host
+# read-only review — do not add acceptEdits
+grok --prompt-file <file> -m gpt-5.6-sol \
+  --permission-mode plan --sandbox workspace --output-format plain --verbatim
+
+claude --print --safe-mode --model "${BOPEN_ADVISOR_MODEL:-fable}" \
+  --permission-mode plan --tools "Read,Grep,Glob" --no-session-persistence
 ```
 
 Two caveats worth putting in front of the user:
@@ -156,3 +166,4 @@ in the wrapped process, not the wrapper.
 4. That "hundreds of parallel agents" is a Grok specification. Default budget is 128.
 5. That a resumed Claude workflow preserves all completed agents. See the replay rule.
 6. That Grok has `pipeline()`. It has barrier `parallel()` only.
+7. That `/create-workflow` exists on Claude or Codex. It is a Grok-bundled skill only.

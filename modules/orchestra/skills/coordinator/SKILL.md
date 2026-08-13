@@ -1,13 +1,14 @@
 ---
 name: coordinator
-version: 0.0.8
+version: 0.0.9
 description: >-
   Route bounded code-writing volume from a capable Claude Code, Codex, or Grok
   Build main session to cheaper or specialized executors — native plugin-roster
-  agents, Grok subagents, Codex / GPT-5.6 Sol workers — while planning, design
+  agents, Grok subagents, Codex / GPT-5.6 Sol workers or reviewers — while planning, design
   intent, review, verification, and git stay in the main seat. Use for "dispatch
   to workers", "plan big execute small", "race worker lanes", "model arbitrage",
-  "spec and dispatch", "use Sol as a worker", or "use GPT 5.6 Sol".
+  "spec and dispatch", "use Sol as a worker", "use Sol as a reviewer",
+  "use GPT 5.6 Sol", or "create-workflow".
 ---
 
 # Coordinator
@@ -47,7 +48,7 @@ in parallel.
 | **Native Codex agent** (`bopen_*` custom agent or a built-in worker/explorer) | Specialist exploration, review, tests, and bounded work that should stay inside the current Codex runtime |
 | **GPT-5.6 Sol** | On Grok: wrap `grok --single -m gpt-5.6-sol` in a `grok-4.6` workflow agent after a quoted `[model."gpt-5.6-sol"]` is listed by `grok models`. Do not pass Sol as `agent().model` — Grok 1.0.3 rejects it. From Claude, or if the custom id is missing, `codex exec -m gpt-5.6-sol` |
 | **grok** (Grok Build CLI, headless) | Well-specced implementation volume when the host is Claude or Codex |
-| **Native Workflow** | Deterministic staged fan-outs. Claude Code: `Workflow` (JS, `pipeline` + `parallel`). Grok Build: `workflow` (Rhai, `parallel` barrier only). Codex: none. See `references/native-workflows.md` |
+| **Native Workflow** | Deterministic staged fan-outs. Claude Code: `Workflow` (JS, `pipeline` + `parallel`). Grok Build: `workflow` (Rhai, `parallel` barrier only). Author on Grok with bundled `/create-workflow` — that skill is not in this plugin. Codex: none. See `references/native-workflows.md` |
 
 Before dispatching to `general-purpose`, match the unit against the roster in
 `skills/deploy-agent-team/references/agent-roster.md` and pass the specific
@@ -60,8 +61,8 @@ When the orchestration itself has deterministic shape (stages, loops, majority
 votes) and the user opted into multi-agent work, a native workflow beats
 hand-executing waves turn by turn — the script owns control flow while every
 coordinator rule (specs in agent prompts, main-seat review, git here) still
-applies. Details, gating, Sol-as-worker, and per-host APIs:
-`references/native-workflows.md`.
+applies. Details, gating, Sol-as-worker, Sol-as-reviewer, `/create-workflow`
+origin, and per-host APIs: `references/native-workflows.md`.
 
 Pick the lane that stays inside the current host when it can do the work. On a
 Grok main, prefer native roster agents on `grok-4.6`. Never dispatch
