@@ -5,7 +5,7 @@ echo
 echo "--- validation ---"
 
 # JSON files
-for f in claude-hooks.json codex-hooks.json manifest.json patterns.yaml; do
+for f in claude-hooks.json codex-hooks.json hooks.json manifest.json patterns.yaml; do
   if [[ "$f" == *.json ]]; then
     if jq -e . "$ROOT/$f" >/dev/null 2>&1; then
       PASS=$((PASS + 1))
@@ -19,7 +19,7 @@ for f in claude-hooks.json codex-hooks.json manifest.json patterns.yaml; do
 done
 
 # Required structure
-for f in claude-hooks.json codex-hooks.json; do
+for f in claude-hooks.json codex-hooks.json hooks.json; do
   if jq -e '.hooks.SessionStart and .hooks.PreToolUse and .hooks.Stop' "$ROOT/$f" >/dev/null 2>&1; then
     PASS=$((PASS + 1))
     printf '  PASS  structure: %s has SessionStart/PreToolUse/Stop\n' "$f"
@@ -136,12 +136,24 @@ for name in prompt-router roster-guard; do
   fi
 done
 
-# hooks.json removed
-if [[ ! -f "$ROOT/hooks.json" ]]; then
-  PASS=$((PASS + 1)); printf '  PASS  default hooks.json removed\n'
+# hooks.json is the Grok wiring file
+if jq -r '.. | strings? // empty' "$ROOT/hooks.json" | grep -q 'BOPEN_HOOK_RUNTIME=grok'; then
+  PASS=$((PASS + 1)); printf '  PASS  hooks.json sets BOPEN_HOOK_RUNTIME=grok\n'
 else
-  FAIL=$((FAIL + 1)); failures+=("hooks.json still present"); printf '  FAIL  hooks.json still present\n'
+  FAIL=$((FAIL + 1)); failures+=("hooks.json missing grok runtime"); printf '  FAIL  hooks.json sets BOPEN_HOOK_RUNTIME=grok\n'
 fi
+if jq -r '.. | strings? // empty' "$ROOT/hooks.json" | grep -qE 'prompt-router.sh|skill-activity.sh'; then
+  FAIL=$((FAIL + 1)); failures+=("hooks.json unexpectedly wires Claude-only routers"); printf '  FAIL  grok does not wire prompt-router/skill-activity\n'
+else
+  PASS=$((PASS + 1)); printf '  PASS  grok does not wire prompt-router/skill-activity\n'
+fi
+if jq -r '.. | strings? // empty' "$ROOT/hooks.json" | grep -q 'pretooluse-bash.sh'; then
+  PASS=$((PASS + 1)); printf '  PASS  hooks.json: uses pretooluse-bash.sh\n'
+else
+  FAIL=$((FAIL + 1)); failures+=("hooks.json: does not reference pretooluse-bash.sh"); printf '  FAIL  hooks.json: uses pretooluse-bash.sh\n'
+fi
+grok_roots=$(jq -r '.. | strings? // empty' "$ROOT/hooks.json" | grep -c 'GROK_PLUGIN_ROOT' || true)
+assert_eq "hooks.json uses GROK_PLUGIN_ROOT" "1" "$([[ "$grok_roots" -ge 1 ]] && echo 1 || echo 0)"
 
 # Shell syntax
 for sh in bouncer.sh damage-control.sh publish-gate.sh pretooluse-bash.sh \

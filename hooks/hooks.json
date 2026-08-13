@@ -1,0 +1,70 @@
+{
+  "description": "Grok Build hooks for session context, browser-intent, destructive/publish protection, file path policy, roster advice, and HammerTime",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_SCRIPT=\"${GROK_PLUGIN_ROOT}/hooks/session-context.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/session-context.sh\"; fi; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.grok/installed-plugins/\"*/hooks/session-context.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=grok bash \"$BOPEN_HOOK_SCRIPT\"; fi",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_SCRIPT=\"${GROK_PLUGIN_ROOT}/hooks/browser-intent.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/browser-intent.sh\"; fi; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.grok/installed-plugins/\"*/hooks/browser-intent.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=grok bash \"$BOPEN_HOOK_SCRIPT\"; fi",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|run_terminal_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_SCRIPT=\"${GROK_PLUGIN_ROOT}/hooks/pretooluse-bash.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/pretooluse-bash.sh\"; fi; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.grok/installed-plugins/\"*/hooks/pretooluse-bash.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=grok bash \"$BOPEN_HOOK_SCRIPT\"; fi",
+            "timeout": 20
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|Read|search_replace|read_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_SCRIPT=\"${GROK_PLUGIN_ROOT}/hooks/damage-control.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/damage-control.sh\"; fi; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.grok/installed-plugins/\"*/hooks/damage-control.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=grok bash \"$BOPEN_HOOK_SCRIPT\"; fi",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Task|spawn_subagent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_SCRIPT=\"${GROK_PLUGIN_ROOT}/hooks/roster-guard.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/roster-guard.sh\"; fi; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.grok/installed-plugins/\"*/hooks/roster-guard.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=grok bash \"$BOPEN_HOOK_SCRIPT\"; fi",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_SCRIPT=\"${GROK_PLUGIN_ROOT}/hooks/hammertime.py\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/hammertime.py\"; fi; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.grok/installed-plugins/\"*/hooks/hammertime.py 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=grok python3 \"$BOPEN_HOOK_SCRIPT\"; fi",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

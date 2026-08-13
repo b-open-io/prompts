@@ -49,6 +49,18 @@ input=$(jq -n '{tool_name:"Write", tool_input:{file_path:"/tmp/project/.env.exam
 run_hook "damage-control.sh" "claude" "$input"
 assert_exit "damage-control allow .env.example" "0" "$HOOK_EXIT"
 
+# Grok: camelCase search_replace + decision/reason
+input=$(jq -n '{toolName:"search_replace", toolInput:{target_file:"/tmp/project/.env", old_string:"a", new_string:"b"}}')
+run_hook "damage-control.sh" "grok" "$input"
+assert_exit "damage-control grok block search_replace .env" "0" "$HOOK_EXIT"
+assert_contains "damage-control grok .env deny decision" '"decision":"deny"' "$HOOK_STDOUT"
+assert_not_contains "damage-control grok no permissionDecision" '"permissionDecision"' "$HOOK_STDOUT$HOOK_STDERR"
+
+input=$(jq -n '{toolName:"run_terminal_command", toolInput:{command:"git stash drop"}}')
+run_hook "damage-control.sh" "grok" "$input"
+assert_exit "damage-control grok stash drop exit" "0" "$HOOK_EXIT"
+assert_contains "damage-control grok stash drop deny" '"decision":"deny"' "$HOOK_STDOUT"
+
 # Hook-config writes are confirmation-tier: the agent must never silently
 # disarm its own guards. Claude asks; Codex denies with reason.
 for cfg_path in "/Users/x/.claude/core/hooks-config.json" "/tmp/project/.claude/bopen-hooks.json"; do

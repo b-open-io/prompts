@@ -15,5 +15,5 @@
     "development",
     "workflows"
   ],
-  "hooks": "./hooks/claude-hooks.json"
+  "hooks": "./hooks/hooks.json"
 }

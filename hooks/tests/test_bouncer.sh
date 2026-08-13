@@ -48,3 +48,16 @@ assert_contains "bouncer codex: safe alternative on stderr" "git restore --stage
 input=$(jq -n '{tool_name:"Bash", tool_input:{command:"git restore --staged foo"}}')
 run_hook "bouncer.sh" "codex" "$input"
 assert_exit "bouncer codex: restore --staged allowed" "0" "$HOOK_EXIT"
+
+# Grok: camelCase payload, decision/reason deny on stdout, exit 0
+input=$(jq -n '{toolName:"run_terminal_command", toolInput:{command:"git reset --hard"}}')
+run_hook "bouncer.sh" "grok" "$input"
+assert_exit "bouncer grok: hard reset blocked (exit)" "0" "$HOOK_EXIT"
+assert_contains "bouncer grok: deny decision" '"decision":"deny"' "$HOOK_STDOUT"
+assert_contains "bouncer grok: safe alternative" "Safe alternative:" "$HOOK_STDOUT"
+assert_not_contains "bouncer grok: no claude permissionDecision" '"permissionDecision"' "$HOOK_STDOUT$HOOK_STDERR"
+
+input=$(jq -n '{toolName:"run_terminal_command", toolInput:{command:"git restore --staged foo"}}')
+run_hook "bouncer.sh" "grok" "$input"
+assert_exit "bouncer grok: restore --staged allowed" "0" "$HOOK_EXIT"
+assert_not_contains "bouncer grok: staged restore not denied" '"decision":"deny"' "$HOOK_STDOUT"

@@ -1,6 +1,6 @@
 #!/bin/bash
-# roster-guard.sh — PreToolUse hook, matcher "Task" (Claude runtime only;
-# Codex has no Task tool / subagent_type namespace to guard).
+# roster-guard.sh — PreToolUse hook, matcher "Task" (Claude) or
+# "Task|spawn_subagent" (Grok). Codex has no Task / subagent_type namespace.
 #
 # When a Task dispatch targets subagent_type "general-purpose" or "Explore",
 # scores the dispatch prompt/description against the AGENT entries in
@@ -28,7 +28,7 @@ command -v python3 >/dev/null 2>&1 || exit 0
 
 input=$(cat 2>/dev/null || echo "{}")
 
-subagent_type=$(printf '%s' "$input" | jq -r '.tool_input.subagent_type // empty' 2>/dev/null || true)
+subagent_type=$(printf '%s' "$input" | jq -r '.tool_input.subagent_type // .toolInput.subagent_type // empty' 2>/dev/null || true)
 case "$subagent_type" in
   general-purpose|Explore) ;;
   *) exit 0 ;;
@@ -37,8 +37,8 @@ esac
 INDEX_PATH="${BOPEN_ROUTER_INDEX:-${HOME}/.claude/core/router-index.json}"
 [[ -f "$INDEX_PATH" ]] || exit 0
 
-task_desc=$(printf '%s' "$input" | jq -r '.tool_input.description // empty' 2>/dev/null || true)
-task_prompt=$(printf '%s' "$input" | jq -r '.tool_input.prompt // empty' 2>/dev/null || true)
+task_desc=$(printf '%s' "$input" | jq -r '.tool_input.description // .toolInput.description // empty' 2>/dev/null || true)
+task_prompt=$(printf '%s' "$input" | jq -r '.tool_input.prompt // .toolInput.prompt // empty' 2>/dev/null || true)
 dispatch_text="${task_desc}
 ${task_prompt}"
 

@@ -3,7 +3,7 @@
 # PreToolUse hook: tiered path/command protection from patterns.yaml.
 # Supports Claude Code (Bash/Write/Edit/Read) and Codex (Bash/shell + apply_patch).
 #
-# Runtime (BOPEN_HOOK_RUNTIME=claude|codex):
+# Runtime (BOPEN_HOOK_RUNTIME=claude|codex|grok):
 #   Claude confirmation → permissionDecision: "ask"
 #   Codex confirmation  → permissionDecision: "deny" with actionable reason
 #
@@ -250,7 +250,7 @@ damage_control_main() {
       fi
     done < <(extract_section "destructiveCommands")
 
-    # Confirmation tier: ask (Claude) or deny with reason (Codex)
+    # Confirmation tier: ask (Claude) or deny with reason (Codex, Grok)
     # Fixed: do NOT use `local` outside a function (that failed open).
     while IFS= read -r pattern; do
       [[ -z "$pattern" ]] && continue
@@ -316,25 +316,23 @@ damage_control_main() {
   fi
 
   # ---------------------------------------------------------------------------
-  # Write / Edit tool — path checks (Claude)
+  # Write / Edit / search_replace — path checks (Claude + Grok)
   # ---------------------------------------------------------------------------
 
-  local tool_lower
-  tool_lower=$(printf '%s' "$tool_name" | tr '[:upper:]' '[:lower:]')
-  if [[ "$tool_lower" == "write" || "$tool_lower" == "edit" || "$tool_lower" == "multiedit" ]]; then
+  if is_file_write_tool "$tool_name"; then
     local file_path
-    file_path=$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // empty' 2>/dev/null || true)
+    file_path=$(extract_file_path "$input")
     enforce_path_policy "$file_path" "write"
     return 0
   fi
 
   # ---------------------------------------------------------------------------
-  # Read tool — zero access paths block reads too (Claude)
+  # Read / read_file — zero access paths block reads too
   # ---------------------------------------------------------------------------
 
-  if [[ "$tool_lower" == "read" ]]; then
+  if is_file_read_tool "$tool_name"; then
     local file_path
-    file_path=$(printf '%s' "$input" | jq -r '.tool_input.file_path // .tool_input.path // empty' 2>/dev/null || true)
+    file_path=$(extract_file_path "$input")
     if [[ -n "$file_path" ]]; then
       if path_matches_list "$file_path" "zeroAccessPaths"; then
         if ! is_exception "$file_path"; then

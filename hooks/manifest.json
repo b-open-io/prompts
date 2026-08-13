@@ -18,7 +18,7 @@
       "event": "PreToolUse",
       "matcher": "Bash",
       "tier": "guard",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["claude", "codex", "grok"],
       "summary": "Blocks destructive git commands before they run.",
       "description": "Hard-blocks working-tree-destroying git operations (reset --hard, clean -f, checkout --, restore of worktree files, stash clear) while allowing their safe counterparts like unstaging and restore --staged. Runs on every Bash call in both Claude Code and Codex runtimes."
     },
@@ -28,7 +28,7 @@
       "event": "PreToolUse",
       "matcher": "Bash|Write|Edit|Read",
       "tier": "guard",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["claude", "codex", "grok"],
       "summary": "Confirmation tier for risky operations; zero-access guard for secrets.",
       "description": "Asks for user confirmation on risky-but-legitimate operations (stash drop, force pushes other than --force-with-lease) and hard-blocks writes to secret files like .env while allowing templates such as .env.example. On Codex, confirmation-tier operations deny with an actionable reason since Codex has no ask flow."
     },
@@ -38,7 +38,7 @@
       "event": "PreToolUse",
       "matcher": "Bash",
       "tier": "guard",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["claude", "codex", "grok"],
       "summary": "Gates package publishing behind Linear ticket verification.",
       "description": "Detects publish commands (npm/bun publish, clawnet publish, including inside shell chains) and verifies an approved Linear ticket exists before allowing them. On-chain publishes additionally require an explicit irreversibility acknowledgment. Fails closed on API errors, timeouts, and missing credentials."
     },
@@ -48,7 +48,7 @@
       "event": "SessionStart",
       "matcher": "*",
       "tier": "workflow",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["claude", "codex", "grok"],
       "summary": "Injects repo and plugin context at session start.",
       "description": "Summarizes the working repository (branch, recent commits, files changed in the last commit) and the installed plugin inventory into the session's opening context so the agent starts oriented."
     },
@@ -58,7 +58,7 @@
       "event": "Stop",
       "matcher": "*",
       "tier": "workflow",
-      "runtimes": ["claude", "codex"],
+      "runtimes": ["claude", "codex", "grok"],
       "summary": "Corpus-tuned end-of-turn rule enforcement.",
       "description": "Evaluates the assistant's turn against rules mined from real production transcripts (F1 0.89 on the tuning corpus) and blocks the stop when a rule fires — for example, dismissing errors as pre-existing instead of fixing them. Rules are managed via the hammertime skill."
     },
@@ -68,9 +68,9 @@
       "event": "UserPromptSubmit",
       "matcher": "*",
       "tier": "workflow",
-      "runtimes": ["codex"],
+      "runtimes": ["codex", "grok"],
       "summary": "Steers browser-shaped prompts toward agent-browser.",
-      "description": "Detects prompts that involve browser work (URLs, navigation, form filling, login, screenshots, SPAs) and injects static guidance preferring agent-browser when installed. Never fetches or injects page content itself. Codex counterpart of agent-browser-solo: Codex has no WebFetch tool to intercept, so this hook steers at the prompt level instead."
+      "description": "Detects prompts that involve browser work (URLs, navigation, form filling, login, screenshots, SPAs) and injects static guidance preferring agent-browser when installed. Never fetches or injects page content itself. Codex and Grok counterpart of agent-browser-solo: those hosts have no WebFetch intercept, so this hook steers at the prompt level instead."
     },
     {
       "name": "prompt-router",
@@ -88,9 +88,9 @@
       "event": "PreToolUse",
       "matcher": "Task",
       "tier": "workflow",
-      "runtimes": ["claude"],
+      "runtimes": ["claude", "grok"],
       "summary": "Suggests a roster specialist when a Task dispatch targets a generic agent.",
-      "description": "When a Task call's subagent_type is \"general-purpose\" or \"Explore\", scores the dispatch prompt/description against the AGENT entries in the router index and, above threshold, emits additionalContext naming the closest-matching roster subagent_type. Carries no permissionDecision at all — additionalContext is a standalone PreToolUse field, so the permission flow is left completely untouched rather than implicitly allowed. Steps aside silently if the router index is missing or nothing matches. Claude-only: Codex has no Task tool or subagent_type namespace to guard."
+      "description": "When a Task or spawn_subagent call's subagent_type is \"general-purpose\" or \"Explore\", scores the dispatch prompt/description against the AGENT entries in the router index and, above threshold, emits additionalContext naming the closest-matching roster subagent_type. Carries no permissionDecision at all — additionalContext is a standalone PreToolUse field, so the permission flow is left completely untouched rather than implicitly allowed. Steps aside silently if the router index is missing or nothing matches. Claude and Grok: Codex has no Task / spawn_subagent matcher to guard."
     },
     {
       "name": "skill-activity",

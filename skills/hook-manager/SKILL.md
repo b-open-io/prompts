@@ -1,6 +1,6 @@
 ---
 name: hook-manager
-version: 2.0.0
+version: 2.0.1
 description: >-
   List, enable, or disable individual core hooks and check their prerequisites. Use for
   "list hooks", "enable a hook", "disable a hook", "hook setup", "hooks config", or a
@@ -9,9 +9,9 @@ description: >-
 
 # Hook Manager
 
-Manage the hooks that ship with the core plugin. The catalog source of
-truth is `hooks/manifest.json` in the installed plugin — read it live rather
-than trusting a memorized list:
+Manage the hooks that ship with the core plugin across Claude Code, Codex,
+and Grok Build. The catalog source of truth is `hooks/manifest.json` in the
+installed plugin — read it live rather than trusting a memorized list:
 
 ```bash
 cat "$(ls -d ~/.claude/plugins/cache/b-open-io/core/*/ | sort -V | tail -1)hooks/manifest.json"
@@ -27,8 +27,10 @@ Per-hook enable/disable lives in a JSON config. Resolution order (first file
 with an explicit `true`/`false` verdict for a hook wins):
 
 1. `$BOPEN_HOOKS_CONFIG` — explicit override (tests, scripts)
-2. `<project>/.claude/bopen-hooks.json` — per-project
-3. `~/.claude/core/hooks-config.json` — per-user
+2. `<project>/.claude/bopen-hooks.json` — per-project (Claude)
+3. `<project>/.grok/bopen-hooks.json` — per-project (Grok)
+4. `~/.claude/core/hooks-config.json` — per-user (Claude)
+5. `~/.grok/core/hooks-config.json` — per-user (Grok)
 
 ```json
 {
@@ -63,7 +65,8 @@ yet. Do not interrupt their task; offer setup at a natural pause. The flow:
 2. Run the prerequisite checks below and fold findings into the
    recommendation (e.g. agent-browser-solo without agent-browser installed
    silently falls back to native WebFetch — still safe to leave on).
-3. Write `~/.claude/core/hooks-config.json` with the full hooks map —
+3. Write `~/.claude/core/hooks-config.json` (Claude/Codex) or
+   `~/.grok/core/hooks-config.json` (Grok) with the full hooks map —
    include every hook with an explicit boolean, even the all-defaults case.
    Writing the file is what dismisses the setup notice permanently.
 
@@ -90,7 +93,7 @@ When a hook misbehaves or the user asks "why did X get blocked/skipped":
 
 ```bash
 # Which config verdict applies to a hook?
-for f in "$BOPEN_HOOKS_CONFIG" ./.claude/bopen-hooks.json ~/.claude/core/hooks-config.json; do
+for f in "$BOPEN_HOOKS_CONFIG" ./.claude/bopen-hooks.json ./.grok/bopen-hooks.json ~/.claude/core/hooks-config.json ~/.grok/core/hooks-config.json; do
   [ -f "$f" ] && echo "$f: $(jq -r '.hooks["<name>"] // "no verdict"' "$f")"
 done
 

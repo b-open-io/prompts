@@ -49,6 +49,24 @@ assert_exit "hammertime stop_hook_active allows exit" "0" "$HOOK_EXIT"
 assert_not_contains "hammertime stop_hook_active no block decision" '"decision": "block"' "$HOOK_STDOUT"
 assert_not_contains "hammertime stop_hook_active no block decision compact" '"decision":"block"' "$HOOK_STDOUT"
 
+input=$(jq -n --arg m "$TRIGGER_MSG" --arg cwd "$HT_CWD" \
+  '{sessionId:"sess-stop-grok", stopHookActive:true, lastAssistantMessage:$m, transcript_path:null, cwd:$cwd}')
+run_ht "$input"
+assert_exit "hammertime grok stopHookActive allows exit" "0" "$HOOK_EXIT"
+assert_not_contains "hammertime grok stopHookActive no block" '"decision":"block"' "$HOOK_STDOUT"
+
+input=$(jq -n --arg m "$TRIGGER_MSG" --arg cwd "$HT_CWD" \
+  '{sessionId:"sess-end", reason:"channel_closed", lastAssistantMessage:$m, cwd:$cwd}')
+run_ht "$input"
+assert_exit "hammertime grok session-end stop skipped" "0" "$HOOK_EXIT"
+assert_not_contains "hammertime grok session-end no block" '"decision":"block"' "$HOOK_STDOUT"
+
+input=$(jq -n --arg m "$TRIGGER_MSG" --arg cwd "$HT_CWD" \
+  '{sessionId:"sess-trigger-grok", lastAssistantMessage:$m, transcriptPath:null, cwd:$cwd}')
+run_ht "$input"
+assert_exit "hammertime grok trigger exit" "0" "$HOOK_EXIT"
+assert_contains "hammertime grok trigger decision block" '"decision": "block"' "$HOOK_STDOUT"
+
 # 2) null transcript_path still works with last_assistant_message
 input=$(jq -n --arg m "$CLEAN_MSG" \
   '{session_id:"sess-null-tx", last_assistant_message:$m, transcript_path:null, cwd:"/tmp"}')

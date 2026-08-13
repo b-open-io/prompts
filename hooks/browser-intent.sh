@@ -1,5 +1,5 @@
 #!/bin/bash
-# browser-intent.sh — Codex UserPromptSubmit hook.
+# browser-intent.sh — Codex and Grok UserPromptSubmit hook.
 # When the user prompt involves browser-like work (URLs, navigation, click/fill/
 # login/screenshots/SPAs/dynamic or authenticated pages), inject static guidance
 # preferring agent-browser when installed.
@@ -23,6 +23,7 @@ if command -v jq >/dev/null 2>&1; then
   prompt=$(printf '%s' "$input" | jq -r '
     .prompt
     // .user_prompt
+    // .userPrompt
     // .message
     // .content
     // empty

@@ -6,6 +6,17 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.137] - 2026-08-13
+
+### Added
+
+- Grok Build is a first-class hook runtime. `hooks/hooks.json` and
+  `.grok-plugin/plugin.json` wire session-context, browser-intent, the
+  bash/file guards, roster-guard, and HammerTime. Scripts emit Grok
+  `{"decision":"deny"}` / camelCase payloads (`toolInput`,
+  `lastAssistantMessage`, `stopHookActive`). Enable/disable configs are
+  also read from `.grok/bopen-hooks.json` and `~/.grok/core/hooks-config.json`.
+
 ### Changed
 
 - Stop dispatching `grok-4.5`. Grok-family work inherits `grok-4.6`. The

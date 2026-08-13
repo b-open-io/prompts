@@ -4,8 +4,9 @@
 
 # bOpen Tools: Prompts, Skills & AI Agents
 
-**A shared toolkit for Claude Code and Codex** with specialist agents, skills,
-orchestration patterns, safety hooks, and reusable development workflows.
+**A shared toolkit for Claude Code, Codex, and Grok Build** with specialist
+agents, skills, orchestration patterns, safety hooks, and reusable
+development workflows.
 
 ## What This Repository Does
 
@@ -13,9 +14,10 @@ This repository provides:
 
 - **Specialized AI agents** for design, security, documentation, architecture,
   testing, payments, infrastructure, and more
-- **Cross-agent skills** shared by Claude Code and Codex
+- **Cross-agent skills** shared by Claude Code, Codex, and Grok Build
 - **Runtime-specific hooks** that preserve the same safety and workflow intent
-  on both hosts
+  on Claude Code (`claude-hooks.json`), Codex (`codex-hooks.json`), and Grok
+  Build (`hooks/hooks.json`)
 - **Agent Master setup UI** for auditing the local harness, viewing purchased
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
@@ -38,6 +40,8 @@ distributions are modules.
 
 ```bash
 /plugin install core@b-open-io
+codex plugin add core@b-open-io
+grok plugin install core@b-open-io --trust
 ```
 
 ### Modules

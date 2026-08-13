@@ -1,5 +1,5 @@
 #!/bin/bash
-# Shared helpers for dual-runtime (Claude Code + Codex) hooks.
+# Shared helpers for Claude Code, Codex, and Grok Build hooks.
 # Source from hook scripts:  source "$(dirname "$0")/lib/common.sh"
 # Or:                       source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
 
@@ -11,19 +11,22 @@ if [[ -n "${_BOPEN_COMMON_SH_LOADED:-}" ]]; then
 fi
 _BOPEN_COMMON_SH_LOADED=1
 
-# Runtime: set BOPEN_HOOK_RUNTIME=claude|codex in the hook command string.
-# Defaults to claude for backward compatibility.
+# Runtime: set BOPEN_HOOK_RUNTIME=claude|codex|grok in the hook command string.
+# When unset, detect from the host environment. Never treat Grok as Claude
+# just because Grok also exports CLAUDE_PLUGIN_ROOT.
 get_runtime() {
   local rt="${BOPEN_HOOK_RUNTIME:-}"
   if [[ -z "$rt" ]]; then
-    if [[ -n "${PLUGIN_ROOT:-}" && -z "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
+    if [[ -n "${GROK_AGENT:-}" || -n "${GROK_HOOK_EVENT:-}" ]]; then
+      rt="grok"
+    elif [[ -n "${PLUGIN_ROOT:-}" && -z "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
       rt="codex"
     else
       rt="claude"
     fi
   fi
-  # Normalize
   case "$rt" in
+    grok|Grok|GROK) echo "grok" ;;
     codex|Codex|CODEX) echo "codex" ;;
     *) echo "claude" ;;
   esac
@@ -35,10 +38,10 @@ resolve_cwd() {
   local input="${1:-}"
   local cwd=""
   if [[ -n "$input" ]]; then
-    cwd=$(printf '%s' "$input" | jq -r '.cwd // .tool_input.cwd // empty' 2>/dev/null || true)
+    cwd=$(printf '%s' "$input" | jq -r '.cwd // .workspaceRoot // .tool_input.cwd // .toolInput.cwd // empty' 2>/dev/null || true)
   fi
   if [[ -z "$cwd" || "$cwd" == "null" ]]; then
-    cwd="${CLAUDE_WORKING_DIR:-${CODEX_CWD:-$PWD}}"
+    cwd="${GROK_WORKSPACE_ROOT:-${CLAUDE_WORKING_DIR:-${CODEX_CWD:-$PWD}}}"
   fi
   printf '%s' "$cwd"
 }
@@ -46,7 +49,8 @@ resolve_cwd() {
 # Per-hook enable/disable gate. Call as the first act of every hook:
 #   hook_enabled "bouncer" || exit 0
 # Config precedence: $BOPEN_HOOKS_CONFIG (explicit file, tests/power users)
-# → project .claude/bopen-hooks.json → user ~/.claude/core/hooks-config.json.
+# → project .claude/bopen-hooks.json → project .grok/bopen-hooks.json
+# → user ~/.claude/core/hooks-config.json → user ~/.grok/core/hooks-config.json.
 # Schema: {"hooks": {"<name>": true|false}}. A hook is disabled ONLY by an
 # explicit false; absent files, absent keys, or unreadable JSON mean enabled —
 # a broken or missing config must never silently switch the guards off.
@@ -57,7 +61,9 @@ hook_enabled() {
   for cfg in \
     "${BOPEN_HOOKS_CONFIG:-}" \
     "${CLAUDE_PROJECT_DIR:-$PWD}/.claude/bopen-hooks.json" \
-    "${HOME}/.claude/core/hooks-config.json"
+    "${GROK_WORKSPACE_ROOT:-${CLAUDE_PROJECT_DIR:-$PWD}}/.grok/bopen-hooks.json" \
+    "${HOME}/.claude/core/hooks-config.json" \
+    "${HOME}/.grok/core/hooks-config.json"
   do
     [[ -n "$cfg" && -f "$cfg" ]] || continue
     # NB: jq's `//` treats false as absent — use tostring, never `// empty`.
@@ -81,6 +87,8 @@ json_escape() {
 # a "PreToolUse hook error" banner instead of a clean deny (regression first
 # fixed in 0abffbe; do not unify back onto the codex path).
 # Codex: JSON on stderr, exit 2 (its supported block signal).
+# Grok: {"decision":"deny","reason":"..."} on stdout. permissionDecision is
+# ignored; only decision/reason blocks a tool.
 deny_permission() {
   local reason
   reason=$(json_escape "${1:-Blocked by hook.}")
@@ -91,6 +99,11 @@ deny_permission() {
     printf '{"hookSpecificOutput":{"permissionDecision":"deny"},"systemMessage":"%s"}' \
       "$reason" >&2
     exit 2
+  fi
+
+  if [[ "$runtime" == "grok" ]]; then
+    printf '{"decision":"deny","reason":"%s"}' "$reason"
+    exit 0
   fi
 
   printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}' \
@@ -119,6 +132,14 @@ ${context_raw}")
     exit 2
   fi
 
+  if [[ "$runtime" == "grok" ]]; then
+    local combined
+    combined=$(json_escape "${reason_raw}
+${context_raw}")
+    printf '{"decision":"deny","reason":"%s"}' "$combined"
+    exit 0
+  fi
+
   local reason context
   reason=$(json_escape "$reason_raw")
   context=$(json_escape "$context_raw")
@@ -127,8 +148,8 @@ ${context_raw}")
   exit 0
 }
 
-# Confirmation-tier: Claude asks the user; Codex denies with an actionable reason
-# (Codex does not support permissionDecision=ask or continue/stopReason fields).
+# Confirmation-tier: Claude asks the user. Codex and Grok have no ask
+# flow, so they deny with an actionable reason.
 ask_or_deny() {
   local reason="${1:-This action requires explicit user confirmation.}"
   local runtime
@@ -142,6 +163,11 @@ ask_or_deny() {
     exit 2
   fi
 
+  if [[ "$runtime" == "grok" ]]; then
+    printf '{"decision":"deny","reason":"%s"}' "$escaped"
+    exit 0
+  fi
+
   # Claude Code: supported ask path
   printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"},"systemMessage":"%s"}' \
     "$escaped" "$escaped"
@@ -153,7 +179,9 @@ extract_command() {
   local input="${1:-}"
   printf '%s' "$input" | jq -r '
     .tool_input.command
+    // .toolInput.command
     // .tool_input.cmd
+    // .toolInput.cmd
     // .command
     // empty
   ' 2>/dev/null || true
@@ -165,7 +193,21 @@ extract_tool_name() {
   printf '%s' "$input" | jq -r '.tool_name // .toolName // empty' 2>/dev/null || true
 }
 
-# True if tool is a shell/bash tool (Claude Bash or Codex shell variants).
+# Extract a file path from Write/Edit/Read/search_replace payloads.
+extract_file_path() {
+  local input="${1:-}"
+  printf '%s' "$input" | jq -r '
+    .tool_input.file_path
+    // .toolInput.file_path
+    // .tool_input.target_file
+    // .toolInput.target_file
+    // .tool_input.path
+    // .toolInput.path
+    // empty
+  ' 2>/dev/null || true
+}
+
+# True if tool is a shell/bash tool (Claude Bash, Codex shell, Grok run_terminal_command).
 is_shell_tool() {
   local name
   name=$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')
@@ -181,6 +223,24 @@ is_apply_patch_tool() {
   name=$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')
   case "$name" in
     apply_patch|applypatch|apply-patch) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_file_write_tool() {
+  local name
+  name=$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')
+  case "$name" in
+    write|edit|multiedit|search_replace) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_file_read_tool() {
+  local name
+  name=$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')
+  case "$name" in
+    read|read_file) return 0 ;;
     *) return 1 ;;
   esac
 }

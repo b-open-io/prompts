@@ -853,7 +853,13 @@ def extract_last_assistant_message(hook_input):
     """Best-effort last assistant message from hook input variants."""
     if not isinstance(hook_input, dict):
         return ""
-    for key in ("last_assistant_message", "last_message", "assistant_message", "message"):
+    for key in (
+        "last_assistant_message",
+        "lastAssistantMessage",
+        "last_message",
+        "assistant_message",
+        "message",
+    ):
         val = hook_input.get(key)
         if isinstance(val, str) and val.strip():
             return val
@@ -872,16 +878,15 @@ def hook_enabled(name: str) -> bool:
     explicit false in BOPEN_HOOKS_CONFIG, project .claude/bopen-hooks.json,
     or ~/.claude/core/hooks-config.json (first explicit verdict wins);
     anything else — absent files, keys, or broken JSON — means enabled."""
+    workspace = os.environ.get("GROK_WORKSPACE_ROOT") or os.environ.get(
+        "CLAUDE_PROJECT_DIR", os.getcwd()
+    )
     candidates = [
         os.environ.get("BOPEN_HOOKS_CONFIG", ""),
-        os.path.join(
-            os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd()),
-            ".claude",
-            "bopen-hooks.json",
-        ),
-        os.path.join(
-            os.path.expanduser("~"), ".claude", "core", "hooks-config.json"
-        ),
+        os.path.join(os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd()), ".claude", "bopen-hooks.json"),
+        os.path.join(workspace, ".grok", "bopen-hooks.json"),
+        os.path.join(os.path.expanduser("~"), ".claude", "core", "hooks-config.json"),
+        os.path.join(os.path.expanduser("~"), ".grok", "core", "hooks-config.json"),
     ]
     for path in candidates:
         if not path or not os.path.isfile(path):
@@ -927,6 +932,12 @@ def main():
 
     debug_log(f"INPUT keys: {list(hook_input.keys())}")
 
+    # Grok fires an extra observe-only Stop at session end. Do not score it.
+    reason = hook_input.get("reason")
+    if reason in ("channel_closed", "shutdown"):
+        debug_log(f"EXIT: session-end Stop reason={reason!r}")
+        sys.exit(0)
+
     last_msg = extract_last_assistant_message(hook_input)
 
     # Prefer hook-provided transcript_path and cwd
@@ -937,7 +948,13 @@ def main():
         debug_log(f"TRANSCRIPT: provided path missing: {transcript_path}")
         transcript_path = None
 
-    cwd = hook_input.get("cwd") or os.environ.get("CLAUDE_WORKING_DIR") or os.getcwd()
+    cwd = (
+        hook_input.get("cwd")
+        or hook_input.get("workspaceRoot")
+        or os.environ.get("GROK_WORKSPACE_ROOT")
+        or os.environ.get("CLAUDE_WORKING_DIR")
+        or os.getcwd()
+    )
 
     # Session id: prefer explicit hook field (Codex + Claude), else derive
     session_id = hook_input.get("session_id") or hook_input.get("sessionId")
@@ -1018,7 +1035,7 @@ def main():
             debug_log(f"TIMER: rule '{rule_name}' expired (deadline was {deadline_str}), skipping")
 
     # --- Content rules: stop_hook_active guard applies ---
-    if hook_input.get("stop_hook_active"):
+    if hook_input.get("stop_hook_active") or hook_input.get("stopHookActive"):
         debug_log("EXIT: stop_hook_active=true, skipping content rules")
         sys.exit(0)
 

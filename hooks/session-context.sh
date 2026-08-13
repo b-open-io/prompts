@@ -42,10 +42,10 @@ input=$(cat 2>/dev/null || echo "{}")
 # Prefer hook-provided cwd; never default to the plugin cache directory.
 cwd=""
 if command -v jq >/dev/null 2>&1; then
-  cwd=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)
+  cwd=$(printf '%s' "$input" | jq -r '.cwd // .workspaceRoot // empty' 2>/dev/null || true)
 fi
 if [[ -z "$cwd" || "$cwd" == "null" ]]; then
-  cwd="${CLAUDE_WORKING_DIR:-${CODEX_CWD:-$PWD}}"
+  cwd="${GROK_WORKSPACE_ROOT:-${CLAUDE_WORKING_DIR:-${CODEX_CWD:-$PWD}}}"
 fi
 
 # Resolve git root from the active workspace (not the plugin root).
