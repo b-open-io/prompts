@@ -392,10 +392,15 @@ if command -v python3 >/dev/null 2>&1 && [[ -f "$BUILDER_SCRIPT" ]]; then
   if [[ ! -f "$ROUTER_INDEX" ]]; then
     needs_rebuild=true
   elif [[ -d "$CACHE_ROOT" ]]; then
-    newest_cache_mtime=$(find "$CACHE_ROOT" -maxdepth 2 -type d -print0 2>/dev/null \
-      | xargs -0 stat -f '%m' 2>/dev/null \
-      || find "$CACHE_ROOT" -maxdepth 2 -type d -printf '%T@\n' 2>/dev/null)
-    newest_cache_mtime=$(printf '%s\n' "$newest_cache_mtime" | sort -rn | head -n1)
+    # Per-entry mtime with a BSD-then-GNU stat fallback (same portable pattern
+    # as index_mtime below). The previous `xargs stat -f '%m'` was BSD-only and
+    # did not cleanly fail on Linux, so the `-printf` fallback never ran and
+    # printf '%.0f' later choked on GNU stat's default multi-line output.
+    newest_cache_mtime=$(
+      find "$CACHE_ROOT" -maxdepth 2 -type d 2>/dev/null | while IFS= read -r _d; do
+        stat -f '%m' "$_d" 2>/dev/null || stat -c '%Y' "$_d" 2>/dev/null
+      done | sort -rn | head -n1
+    )
     index_mtime=$(stat -f '%m' "$ROUTER_INDEX" 2>/dev/null || stat -c '%Y' "$ROUTER_INDEX" 2>/dev/null || echo 0)
     if [[ -n "$newest_cache_mtime" ]] && (( $(printf '%.0f' "${newest_cache_mtime:-0}") > $(printf '%.0f' "${index_mtime:-0}") )); then
       needs_rebuild=true
