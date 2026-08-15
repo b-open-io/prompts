@@ -322,6 +322,7 @@ has replaced that versioned directory.
 | Hook | Claude Code | Codex | Description |
 |------|-------------|-------|-------------|
 | `session-context` | SessionStart | SessionStart | Injects bounded branch, history, and plugin context |
+| `repo-freshness` | SessionStart | SessionStart | Non-destructively fast-forwards the active repo's branch/default ref to its remote when strictly behind; warns on divergence, never touches a dirty tree, never prompts |
 | `prompt-router` | UserPromptSubmit | — | Injects concise skill and agent routing hints with session deduplication |
 | `bouncer` | Bash PreToolUse | Shell PreToolUse | Validates commands against safety rules |
 | `damage-control` | Bash/write/edit PreToolUse | Shell/`apply_patch` PreToolUse | Protects sensitive paths and destructive operations |
