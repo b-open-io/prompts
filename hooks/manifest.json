@@ -53,6 +53,16 @@
       "description": "Summarizes the working repository (branch, recent commits, files changed in the last commit) and the installed plugin inventory into the session's opening context so the agent starts oriented."
     },
     {
+      "name": "repo-freshness",
+      "path": "hooks/repo-freshness.sh",
+      "event": "SessionStart",
+      "matcher": "*",
+      "tier": "workflow",
+      "runtimes": ["claude", "codex", "grok"],
+      "summary": "Keeps the active repo's default branch in sync with origin.",
+      "description": "At session start, fetches origin (throttled per-repo) and non-destructively keeps the default branch fresh so local checkouts don't silently drift behind the remote — e.g. behind an autonomous loop that advances origin every cycle. Fast-forwards the default branch when it is checked out with a clean tree and strictly behind, advances the branch ref only when the default is not checked out, warns (never resets/rebases) when the branch has diverged, and reports without touching a dirty tree. Never blocks or prompts. Disable via {\"hooks\": {\"repo-freshness\": false}}."
+    },
+    {
       "name": "hammertime",
       "path": "hooks/hammertime.py",
       "event": "Stop",

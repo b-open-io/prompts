@@ -98,6 +98,8 @@ source "$TESTS_DIR/test_pretooluse_bash.sh"
 # shellcheck disable=SC1091
 source "$TESTS_DIR/test_session_context.sh"
 # shellcheck disable=SC1091
+source "$TESTS_DIR/test_repo_freshness.sh"
+# shellcheck disable=SC1091
 source "$TESTS_DIR/test_hammertime.sh"
 # shellcheck disable=SC1091
 source "$TESTS_DIR/test_hook_enabled.sh"

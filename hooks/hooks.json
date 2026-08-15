@@ -8,6 +8,11 @@
             "type": "command",
             "command": "BOPEN_HOOK_SCRIPT=\"${GROK_PLUGIN_ROOT}/hooks/session-context.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/session-context.sh\"; fi; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.grok/installed-plugins/\"*/hooks/session-context.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=grok bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_SCRIPT=\"${GROK_PLUGIN_ROOT}/hooks/repo-freshness.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/repo-freshness.sh\"; fi; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.grok/installed-plugins/\"*/hooks/repo-freshness.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=grok bash \"$BOPEN_HOOK_SCRIPT\"; fi",
+            "timeout": 12
           }
         ]
       }
