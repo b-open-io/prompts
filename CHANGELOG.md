@@ -6,6 +6,25 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Added
+
+- `repo-freshness` SessionStart hook (claude/codex/grok): non-destructively
+  keeps the active repo in sync with its remote so local checkouts don't
+  silently drift behind — e.g. behind an autonomous loop that advances origin
+  every cycle. Fast-forwards the checked-out branch when it is clean and
+  strictly behind its upstream, advances the default branch's ref when you're
+  working elsewhere, warns (never resets/rebases) on divergence, and reports
+  without touching a dirty tree. Fetches are throttled per repo; it never
+  blocks or prompts. Disable with `{"hooks": {"repo-freshness": false}}`.
+
+### Fixed
+
+- `session-context`: the plugin-cache mtime scan used BSD-only
+  `stat -f '%m'`, which did not cleanly fail on Linux, so the GNU `-printf`
+  fallback never ran and `printf '%.0f'` later choked on GNU stat's default
+  output. Replaced with the per-entry BSD-then-GNU fallback already used for
+  the index mtime. This was failing the `validate` CI job on every push.
+
 ### Changed
 
 - orchestra 0.1.7: `/create-workflow` is a Grok Build bundled skill at

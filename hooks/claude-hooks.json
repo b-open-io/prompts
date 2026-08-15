@@ -8,6 +8,11 @@
             "type": "command",
             "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/session-context.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/session-context.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude bash \"$BOPEN_HOOK_SCRIPT\"; fi",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "BOPEN_HOOK_SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/hooks/repo-freshness.sh\"; if [ ! -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_SCRIPT=$(ls -t \"$HOME/.claude/plugins/cache/b-open-io/core/\"*/hooks/repo-freshness.sh 2>/dev/null | head -n 1); fi; if [ -f \"$BOPEN_HOOK_SCRIPT\" ]; then BOPEN_HOOK_RUNTIME=claude bash \"$BOPEN_HOOK_SCRIPT\"; fi",
+            "timeout": 12
           }
         ]
       }

@@ -392,11 +392,19 @@ if command -v python3 >/dev/null 2>&1 && [[ -f "$BUILDER_SCRIPT" ]]; then
   if [[ ! -f "$ROUTER_INDEX" ]]; then
     needs_rebuild=true
   elif [[ -d "$CACHE_ROOT" ]]; then
-    newest_cache_mtime=$(find "$CACHE_ROOT" -maxdepth 2 -type d -print0 2>/dev/null \
-      | xargs -0 stat -f '%m' 2>/dev/null \
-      || find "$CACHE_ROOT" -maxdepth 2 -type d -printf '%T@\n' 2>/dev/null)
-    newest_cache_mtime=$(printf '%s\n' "$newest_cache_mtime" | sort -rn | head -n1)
-    index_mtime=$(stat -f '%m' "$ROUTER_INDEX" 2>/dev/null || stat -c '%Y' "$ROUTER_INDEX" 2>/dev/null || echo 0)
+    # Portable epoch-mtime: GNU `stat -c %Y` first (Linux), BSD `stat -f %m`
+    # fallback (macOS). GNU-first matters — BSD-form `stat -f '%m'` on GNU parses
+    # `-f` as --file-system and `%m` as a bogus operand, printing the default
+    # `File: …` block to stdout instead of an mtime. A numeric-only filter guards
+    # against any such garbage before printf '%.0f' consumes it.
+    _sc_mtime() { stat -c '%Y' "$1" 2>/dev/null || stat -f '%m' "$1" 2>/dev/null; }
+    newest_cache_mtime=$(
+      find "$CACHE_ROOT" -maxdepth 2 -type d 2>/dev/null | while IFS= read -r _d; do
+        _sc_mtime "$_d"
+      done | grep -E '^[0-9]+$' | sort -rn | head -n1
+    )
+    index_mtime=$(_sc_mtime "$ROUTER_INDEX" | grep -E '^[0-9]+$' | head -n1)
+    [[ -n "$index_mtime" ]] || index_mtime=0
     if [[ -n "$newest_cache_mtime" ]] && (( $(printf '%.0f' "${newest_cache_mtime:-0}") > $(printf '%.0f' "${index_mtime:-0}") )); then
       needs_rebuild=true
     fi
