@@ -8,6 +8,23 @@ manifests share the same release version.
 
 ### Added
 
+- orchestra 0.1.8 / software-factory 0.0.7: "The staged multi-model pipeline —
+  the verified recipe" — the concrete wiring the maker/checker doctrine was
+  missing. Plan on the strongest model (premise verification before
+  decomposition, per-item lane + roster-agent routing), implement on cheap
+  workers (external CLI via the supervisor-agent pattern, or named roster
+  agents), adversarial review by an independent cross-vendor checker that
+  reviews the CLAIMS as well as the diff, gate + ship on a pinned main seat.
+  Every invocation shape was live-verified headless (native Workflow inside
+  `claude -p`, fable/grok-4.6/gpt-5.6-sol lanes) before being written down.
+  Includes the field case that forced it: a single-context loop wrote an
+  unverified "rotate the credential" diagnosis into a ticket and a second
+  single-context agent flipped it to "stale" — no adversarial reviewer existed
+  to demand evidence from either. Non-negotiables: pin every model (a loop
+  inheriting a mutable CLI default silently ran weeks on a stale model),
+  checker-or-propose-only, lane preflight with explicit degradation, and the
+  vendor data boundary.
+
 - `repo-freshness` SessionStart hook (claude/codex/grok): non-destructively
   keeps the active repo in sync with its remote so local checkouts don't
   silently drift behind — e.g. behind an autonomous loop that advances origin

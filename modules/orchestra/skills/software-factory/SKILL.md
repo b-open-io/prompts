@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.6
+version: 0.0.7
 description: >-
   Design or harden a software factory: an agentic loop that iterates toward a goal with a
   verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic
@@ -64,6 +64,48 @@ The dedup-vs-open-tickets step is what stops discovery from re-filing the same i
 At factory scale, a **router** sits above all worker types: work arrives typed (chore, bug, feature, hotfix), and the router picks the workflow and the model tier for it — a workhorse maker for volume, a state-of-the-art model only where planning or checking earns it. Speed-critical work (hotfixes) can **race**: several isolated agents attack the same fix in parallel and the first one through the gate wins. Isolation progresses with maturity — git worktrees are a great place to start and a poor place to end; sandboxes give full isolation plus a place a human can step into mid-run.
 
 **On Claude Code specifically**, staged fan-outs inside a loop pass — find → adversarially verify → synthesize, judge panels, loop-until-dry discovery — can run as a native `Workflow` (deterministic script, live `/workflows` progress, resumable). This is framework-dependent and opt-in-gated; see `skills/coordinator/references/native-workflows.md` for when it applies. On other runtimes, the manual wave protocols in `wave-coordinator` do the same job.
+
+## The staged multi-model pipeline — the verified recipe
+
+The maker/checker split above is doctrine; this is the concrete, field-verified wiring for an
+execution worker. **A headless loop that runs one monolithic session — one model playing planner,
+maker, checker, and shipper in a single context — will eventually write a wrong diagnosis into a
+ticket as fact, because its mechanical gate verifies code and nothing verifies claims.** (Field case:
+a loop asserted "rotate the credential" on a CI outage without evidence; a second single-context agent
+then flipped it to "stale, skip it" — also without evidence. Both survived because no adversarial
+reviewer ever existed. The outage was real; both written diagnoses were unverified guesses.)
+
+The verified shape — every lane below was live-tested headless before this section was written:
+
+| Stage | Model / lane | Invocation (verified) | What it guards |
+|---|---|---|---|
+| **Plan** | strongest planner (e.g. fable) | native `Workflow` `agent(..., { model: 'fable', schema })` | Premise verification BEFORE decomposition; routes each item to a lane + named roster agent |
+| **Implement** | cheap workers: external CLI (e.g. `grok -m grok-4.6 --permission-mode acceptEdits`) or named roster agents (`agentType`) | supervisor-agent pattern: a thin workflow agent writes the spec file, drives the CLI via Bash, relays the report + `git diff --stat` | Volume off the main seat; disjoint file partitions per item |
+| **Review** | independent CROSS-VENDOR checker (e.g. `codex exec -m gpt-5.6-sol --sandbox read-only`) | supervisor agent builds a review brief (diff + every claim), demands a schema verdict | The missing gate: adversarial review of the diff AND the claims; one corrective round max |
+| **Gate + ship** | main seat, model PINNED in loop config | mechanical gate unpiped, then git | Merge requires gate green **AND** `verdict.approved` |
+
+Non-negotiables learned the hard way:
+
+- **The native `Workflow` tool works inside headless `claude -p`** — verified. Commit the workflow
+  script to the repo (`scriptPath`), version it like code, and give it a `selftest` arg so CI and
+  humans can probe parse/load without spawning agents. (Runtime gotcha: the exported `meta` const is
+  not in scope in the script body; `Date.now()`/`Math.random()` are unavailable — pass timestamps in
+  via args.)
+- **Pin every model explicitly — the loop config, the workflow stages, the CLI dispatches.** A loop
+  that inherits a mutable CLI default silently runs on whatever model the maintainer's interactive
+  sessions last saved; a real loop ran weeks on a stale model this way and nobody knew.
+- **The checker reviews CLAIMS, not just diffs.** Any diagnosis, decline rationale, or "X is broken
+  because Y" that will be written to a ticket must carry evidence and pass the checker first.
+  Unverifiable ⇒ label it "unverified hypothesis" or write nothing. Claims-only tickets route through
+  the same review stage with no diff.
+- **No checker ⇒ propose-only.** Lane preflight (binary + auth + pinned-model-exists, e.g.
+  `grok models | grep`) runs every cycle; a down worker lane re-routes explicitly to roster agents,
+  and a down checker lane downgrades the cycle to open-PR-and-stop. The loop never self-approves, and
+  a lane never silently collapses into the main seat.
+- **Data boundary:** external lanes cross vendors (specs to xAI, review briefs to OpenAI). Specs and
+  briefs carry code excerpts, never secrets or env values. launchd does not source shell profiles —
+  file-based auth (codex `auth.json`, `grok login`) or an explicitly-sourced env file, checked at
+  preflight.
 
 ### Agent runtime selection
 
