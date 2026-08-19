@@ -6,6 +6,19 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.139] - 2026-08-19
+
+### Added
+
+- `visual-proposal` 0.0.12: each page includes an archive side menu of
+  other files in `docs/proposals/`. `examples/archive-nav.html` is the
+  drop-in. `scripts/list-proposals.sh` builds the JSON from the current
+  project and extra workspace roots. The browser does not scan the disk.
+
+### Changed
+
+- review 0.1.5.
+
 ## [1.1.138] - 2026-08-19
 
 ### Added

@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.11
+version: 0.0.12
 description: >-
   Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has
   not been built. Use for "make a visual proposal", "present these options visually", "diagram
@@ -349,6 +349,10 @@ Adapt to the subject — not every section always applies — but the usual spin
     control on the CEO's final call. See
     [references/interactive-choices.md](references/interactive-choices.md) for the
     drop-in component (CSS + markup + copy script).
+11. **Archive menu** — a left list of other proposals already on disk. Copy
+    [examples/archive-nav.html](examples/archive-nav.html). Fill `window.VP_ARCHIVE`
+    from `scripts/list-proposals.sh`. See
+    [references/archive-nav.md](references/archive-nav.md).
 
 ## Craft (via artifact-design)
 
@@ -379,10 +383,26 @@ failures that make a proposal hard to review: an opening that talks about the
 document instead of the problem, and sentences that carry two ideas, hide their
 actor, or argue with an adjective. Fix what fails, then publish.
 
-Write the page to the scratchpad dir, then call the Artifact tool with its path,
-a one-line `description`, a stable subject `favicon`, and a version `label`.
-Redeploy the SAME file path to keep the URL stable across revisions; only mint a
-new URL for a genuinely different proposal. Remind the user it's private until
+Save the page at `docs/proposals/<slug>.html` in the project. Keep that slug
+stable across revisions of the same proposal. Then list every proposal this
+session can see and inline the archive menu:
+
+```bash
+bash scripts/list-proposals.sh --current <slug> [extra-workspace-root ...]
+```
+
+Pass Claude `--add-dir` folders, extra Grok/Codex workspace roots, or
+`BOPEN_PROPOSAL_ROOTS`. Paste the JSON into `window.VP_ARCHIVE`. Copy
+[examples/archive-nav.html](examples/archive-nav.html) into a `.vp-shell`
+wrapper. The browser cannot scan the disk; the Artifact CSP cannot fetch
+sibling files either. Local `file://` and a directory server follow the
+`href`s. See [references/archive-nav.md](references/archive-nav.md).
+
+Then call the Artifact tool with the same file path, a one-line
+`description`, a stable subject `favicon`, and a version `label` — or
+`Skill(postplan)` / `open` when there is no Artifact pane. Redeploy the
+SAME file path to keep the URL stable across revisions; only mint a new
+URL for a genuinely different proposal. Remind the user it's private until
 they share it from the page's share menu.
 
 ## Iterating

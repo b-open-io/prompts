@@ -1,0 +1,63 @@
+<!--
+  Visual-proposal archive side menu.
+  Paste into every proposal page. Fill window.VP_ARCHIVE from:
+
+    bash scripts/list-proposals.sh --current <slug> [workspace-root ...]
+
+  The browser cannot list docs/proposals/. The agent inlines that JSON here.
+  Same-folder hrefs are "foo.html". Other projects use file:// URLs.
+-->
+<style>
+  .vp-shell{display:grid;grid-template-columns:min(16.5rem,32vw) 1fr;min-height:100vh}
+  .vp-archive{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;
+    padding:1.1rem .9rem 2rem;border-right:1px solid var(--vp-line,var(--line,#d9d4c6));
+    background:color-mix(in srgb,var(--vp-raise,var(--raise,#fbf8f1)) 88%,transparent)}
+  .vp-archive h2{margin:0 0 .7rem;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--vp-mut,var(--muted,#8a8172));font-weight:650}
+  .vp-archive ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.2rem}
+  .vp-archive a{display:block;padding:.45rem .55rem;border-radius:8px;text-decoration:none;
+    color:var(--vp-ink,var(--ink,#211c15));border:1px solid transparent}
+  .vp-archive a:hover{border-color:color-mix(in srgb,var(--vp-accent,var(--accent,#b8731a)) 40%,transparent)}
+  .vp-archive a[aria-current="page"]{border-color:var(--vp-accent,var(--accent,#b8731a));
+    box-shadow:0 0 0 1px var(--vp-accent,var(--accent,#b8731a)) inset}
+  .vp-archive .t{display:block;font-weight:620;line-height:1.3}
+  .vp-archive .m{display:block;margin-top:.15rem;font-size:.75rem;color:var(--vp-mut,var(--muted,#8a8172))}
+  .vp-archive .empty{font-size:.85rem;color:var(--vp-mut,var(--muted,#8a8172))}
+  .vp-main{min-width:0}
+  @media (max-width:820px){
+    .vp-shell{grid-template-columns:1fr}
+    .vp-archive{position:relative;max-height:none;border-right:0;border-bottom:1px solid var(--vp-line,var(--line,#d9d4c6))}
+  }
+</style>
+<aside class="vp-archive" aria-label="Previous proposals">
+  <h2>Proposals</h2>
+  <ol id="vp-archive-list"></ol>
+</aside>
+<script>
+window.VP_ARCHIVE = window.VP_ARCHIVE || [];
+/* Agent: replace the array above with list-proposals.sh JSON, e.g.
+window.VP_ARCHIVE = [
+  {"slug":"ord-fs-json","title":"Referenced-content collections","project":"prompts","href":"ord-fs-json.html","mtime":"2026-08-19","current":true}
+];
+*/
+(function(){
+  var list=document.getElementById('vp-archive-list');
+  if(!list) return;
+  var rows=Array.isArray(window.VP_ARCHIVE)?window.VP_ARCHIVE:[];
+  if(!rows.length){
+    list.outerHTML='<p class="empty">No other files in docs/proposals/.</p>';
+    return;
+  }
+  rows.forEach(function(row){
+    var li=document.createElement('li');
+    var a=document.createElement('a');
+    a.href=row.href||('#');
+    if(row.current) a.setAttribute('aria-current','page');
+    var t=document.createElement('span'); t.className='t'; t.textContent=row.title||row.slug||'proposal';
+    var m=document.createElement('span'); m.className='m';
+    m.textContent=[row.project,row.mtime].filter(Boolean).join(' · ');
+    a.appendChild(t); if(m.textContent) a.appendChild(m);
+    li.appendChild(a); list.appendChild(li);
+  });
+})();
+</script>
