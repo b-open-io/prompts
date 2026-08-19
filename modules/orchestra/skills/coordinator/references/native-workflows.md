@@ -97,9 +97,12 @@ agent("Write the brief to a temp file. Run: grok --prompt-file TEMPFILE -m gpt-5
 ```
 
 Fable as a planner from a Grok workflow is also a shell-out, not a native
-slug. Wrap `claude --print --safe-mode --model "${BOPEN_ADVISOR_MODEL:-fable}"
+slug. Wrap `claude --print --safe-mode --append-system-prompt-file
+$HOME/.claude/communication.md --model "${BOPEN_ADVISOR_MODEL:-fable}"
 --effort high --permission-mode plan --tools "Read,Grep,Glob"
---no-session-persistence` in a `grok-4.6` execute supervisor.
+--no-session-persistence` in a `grok-4.6` execute supervisor. `--safe-mode`
+drops the STE output style. The append flag puts the communication contract
+in the system prompt. If that file is missing, fail. Do not run Fable unsteered.
 
 Register the quoted `[model."gpt-5.6-sol"]` block first and confirm `grok models` lists it. If the id is absent, shell out through Codex instead:
 

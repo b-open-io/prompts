@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.9
+version: 0.0.10
 description: >-
   Route bounded code-writing volume from a capable Claude Code, Codex, or Grok
   Build main session to cheaper or specialized executors — native plugin-roster

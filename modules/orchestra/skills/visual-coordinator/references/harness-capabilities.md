@@ -146,7 +146,8 @@ grok --prompt-file <file> -m "<verified model id>" \
 grok --prompt-file <file> -m gpt-5.6-sol \
   --permission-mode plan --sandbox workspace --output-format plain --verbatim
 
-claude --print --safe-mode --model "${BOPEN_ADVISOR_MODEL:-fable}" \
+claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communication.md" \
+  --model "${BOPEN_ADVISOR_MODEL:-fable}" \
   --permission-mode plan --tools "Read,Grep,Glob" --no-session-persistence
 ```
 

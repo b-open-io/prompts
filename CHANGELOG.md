@@ -44,6 +44,13 @@ manifests share the same release version.
 
 ### Changed
 
+- orchestra 0.1.8: Fable `--safe-mode` launches append
+  `~/.claude/communication.md` into the system prompt. Safe-mode drops
+  the STE output style. Missing file is a hard fail. Do not run Fable
+  unsteered.
+
+### Changed
+
 - orchestra 0.1.7: `/create-workflow` is a Grok Build bundled skill at
   `~/.grok/bundled/skills/create-workflow/SKILL.md`, not an orchestra
   command. Claude and Codex do not have it. Do not copy that file into

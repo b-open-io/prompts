@@ -1,6 +1,6 @@
 ---
 name: advisor
-version: 0.0.3
+version: 0.0.4
 description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
@@ -116,9 +116,16 @@ prompt length, and repository text cannot become command interpolation:
 ADVISOR_MODEL="${BOPEN_ADVISOR_MODEL:-fable}"
 PROMPT_FILE="/absolute/path/to/prepared-advisor-consult.md"
 
+COMM_FILE="${HOME}/.claude/communication.md"
+if [ ! -f "$COMM_FILE" ]; then
+  echo "missing $COMM_FILE — Fable has no communication contract" >&2
+  exit 1
+fi
+
 env -u ANTHROPIC_API_KEY claude \
   --print \
   --safe-mode \
+  --append-system-prompt-file "$COMM_FILE" \
   --model "$ADVISOR_MODEL" \
   --effort high \
   --permission-mode plan \
@@ -132,6 +139,9 @@ env -u ANTHROPIC_API_KEY claude \
   user chooses another available Claude model.
 - `--safe-mode` keeps personal plugins, hooks, memory, and project prompt
   customizations out of the second opinion. This preserves context independence.
+  It also drops the STE output style, so this lane must append
+  `~/.claude/communication.md` into the system prompt. Do not skip that flag.
+  If the file is missing, fail. Do not run Fable unsteered.
 - `--permission-mode plan` plus `Read,Grep,Glob` makes the lane repository-aware
   but unable to edit or run shell commands. For a context-only consult, pass an
   empty tool list instead.

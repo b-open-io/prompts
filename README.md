@@ -722,7 +722,8 @@ does not pin or rename it. The supporting skills divide responsibilities:
   `BOPEN_WORKER_MODEL`.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
-  `BOPEN_ADVISOR_MODEL`.
+  `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
+  `~/.claude/communication.md` into the system prompt. Missing file is a fail.
 - `orchestrator` composes native specialists, Coordinator, Advisor, and staged
   waves while leaving final decisions with the main session.
 - `visual-coordinator` draws the fan-out before it runs and emits a paste-back
