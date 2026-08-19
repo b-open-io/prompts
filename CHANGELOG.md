@@ -6,8 +6,13 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.138] - 2026-08-19
+
 ### Added
 
+- `postplan` skill: publish a self-contained HTML draft to
+  https://postplan.dev so a human can open it when the host has no Claude
+  Artifact pane (Grok Build, Codex).
 - orchestra 0.1.8 / software-factory 0.0.7: "The staged multi-model pipeline —
   the verified recipe" — the concrete wiring the maker/checker doctrine was
   missing. Plan on the strongest model (premise verification before
@@ -24,7 +29,6 @@ manifests share the same release version.
   inheriting a mutable CLI default silently ran weeks on a stale model),
   checker-or-propose-only, lane preflight with explicit degradation, and the
   vendor data boundary.
-
 - `repo-freshness` SessionStart hook (claude/codex/grok): non-destructively
   keeps the active repo in sync with its remote so local checkouts don't
   silently drift behind — e.g. behind an autonomous loop that advances origin
@@ -34,23 +38,16 @@ manifests share the same release version.
   without touching a dirty tree. Fetches are throttled per repo; it never
   blocks or prompts. Disable with `{"hooks": {"repo-freshness": false}}`.
 
-### Fixed
-
-- `session-context`: the plugin-cache mtime scan used BSD-only
-  `stat -f '%m'`, which did not cleanly fail on Linux, so the GNU `-printf`
-  fallback never ran and `printf '%.0f'` later choked on GNU stat's default
-  output. Replaced with the per-entry BSD-then-GNU fallback already used for
-  the index mtime. This was failing the `validate` CI job on every push.
-
 ### Changed
 
+- orchestra 0.1.9: visual-coordinator delivers the canvas through
+  `Skill(postplan)` on hosts without Artifacts.
+- review 0.1.4: visual-review uses the same delivery path.
+- `runtime-context` points HTML-for-humans at postplan.
 - orchestra 0.1.8: Fable `--safe-mode` launches append
   `~/.claude/communication.md` into the system prompt. Safe-mode drops
   the STE output style. Missing file is a hard fail. Do not run Fable
   unsteered.
-
-### Changed
-
 - orchestra 0.1.7: `/create-workflow` is a Grok Build bundled skill at
   `~/.grok/bundled/skills/create-workflow/SKILL.md`, not an orchestra
   command. Claude and Codex do not have it. Do not copy that file into
@@ -61,20 +58,13 @@ manifests share the same release version.
   and skip `await_user` with `args.auto` so the smoke-check reaches later
   phases. Fable as a Grok-workflow planner is a Claude CLI shell-out.
 
-## [1.1.138] - 2026-08-19
+### Fixed
 
-### Added
-
-- `postplan` skill: publish a self-contained HTML draft to
-  https://postplan.dev so a human can open it when the host has no Claude
-  Artifact pane (Grok Build, Codex).
-
-### Changed
-
-- orchestra 0.1.9: visual-coordinator delivers the canvas through
-  `Skill(postplan)` on hosts without Artifacts.
-- review 0.1.4: visual-review uses the same delivery path.
-- `runtime-context` points HTML-for-humans at postplan.
+- `session-context`: the plugin-cache mtime scan used BSD-only
+  `stat -f '%m'`, which did not cleanly fail on Linux, so the GNU `-printf`
+  fallback never ran and `printf '%.0f'` later choked on GNU stat's default
+  output. Replaced with the per-entry BSD-then-GNU fallback already used for
+  the index mtime. This was failing the `validate` CI job on every push.
 
 ## [1.1.137] - 2026-08-13
 

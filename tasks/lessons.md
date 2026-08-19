@@ -1,5 +1,20 @@
 # Lessons
 
+## The user is the author of this repository (2026-08-19)
+
+Do not treat other sessions as other authors. The owner is the author of
+every change in this tree. This agent is an assistant. Session isolation
+is an implementation detail, not a claim of ownership.
+
+Do not park the owner's work as "someone else's WIP", "another author's
+notes", or "Unreleased-old". If the work is already on master, it is
+shipped: move the changelog bullet under the current version heading.
+Unreleased holds only work that has not been pushed. An empty Unreleased
+section is correct.
+
+When the working tree has unfinished files, report them as the owner's
+unfinished work. Ship them or ask. Do not leave a third state.
+
 ## `/create-workflow` is Grok-bundled, not orchestra (2026-08-13)
 
 `/create-workflow` ships inside Grok Build at
