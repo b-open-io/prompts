@@ -155,6 +155,7 @@ bunx skills add b-open-io/prompts --skill hammertime
 bunx skills add b-open-io/prompts --skill hook-manager
 bunx skills add b-open-io/prompts --skill humanize
 bunx skills add b-open-io/prompts --skill linear-planning
+bunx skills add b-open-io/prompts --skill postplan
 bunx skills add b-open-io/prompts --skill reinforce-skills
 bunx skills add b-open-io/prompts --skill remind
 bunx skills add b-open-io/prompts --skill runtime-context
@@ -242,6 +243,7 @@ intentional.
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm with changelog and version management |
 | `perf-audit` | Run local performance audits without network calls |
+| `postplan` | Host an HTML draft on postplan.dev when Claude Artifacts are not available |
 | `shaders` | Custom shaders for Three.js and WebGL |
 | `shadscan` | Drive the shadscan analyzer to audit and raise a shadcn app's UI-fundamentals score, and gate it in CI |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |

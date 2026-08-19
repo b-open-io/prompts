@@ -61,6 +61,21 @@ manifests share the same release version.
   and skip `await_user` with `args.auto` so the smoke-check reaches later
   phases. Fable as a Grok-workflow planner is a Claude CLI shell-out.
 
+## [1.1.138] - 2026-08-19
+
+### Added
+
+- `postplan` skill: publish a self-contained HTML draft to
+  https://postplan.dev so a human can open it when the host has no Claude
+  Artifact pane (Grok Build, Codex).
+
+### Changed
+
+- orchestra 0.1.9: visual-coordinator delivers the canvas through
+  `Skill(postplan)` on hosts without Artifacts.
+- review 0.1.4: visual-review uses the same delivery path.
+- `runtime-context` points HTML-for-humans at postplan.
+
 ## [1.1.137] - 2026-08-13
 
 ### Added

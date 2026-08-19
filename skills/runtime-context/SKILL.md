@@ -69,6 +69,12 @@ Do not guess which tools exist. If a tool call fails, state what tool
 was missing and what capability it would have provided.
 ```
 
+## HTML a human must see
+
+Claude Code can show HTML as an Artifact. Grok Build and Codex cannot.
+When you write a visual plan, recap, or coordinator canvas outside Claude
+Code, follow `Skill(postplan)`. A repo path in chat is not a page.
+
 ## Adapting Behavior
 
 The goal is NOT fallbacks. The goal is clarity.

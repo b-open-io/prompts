@@ -1,6 +1,6 @@
 ---
 name: visual-review
-version: 0.0.2
+version: 0.0.4
 description: >-
   Turn a PR, branch, commit, or working-tree diff into one self-contained HTML recap page with
   before/after wireframes, contract summaries, a file map, and annotated diffs. Use for "recap
@@ -20,10 +20,9 @@ it.
 
 Heavily inspired by BuilderIO's visual recap skill, adapted for this stack: the
 deliverable is a **single self-contained HTML file** built from
-`assets/template.html` — no hosted service, no external requests, works offline,
-theme-aware in light and dark. When the Artifact tool is available in the
-session, publish it as an Artifact (default-private); otherwise write it locally
-and `open` it in the browser.
+`assets/template.html`, theme-aware in light and dark. Claude Code can
+publish it as an Artifact (default-private). Grok Build and Codex cannot:
+follow `Skill(postplan)` so the human gets a URL, or `open` the file.
 
 ## When to use — and when to skip
 
@@ -147,12 +146,13 @@ The recap's center of gravity is comparison:
 2. Fill the sections per the skeleton above. All colors through the `--wf-*`
    tokens — never hard-code hex in content, or the dark theme breaks.
 3. Deliver:
-   - **Artifact tool available** → publish as an Artifact (it is
+   - **Claude Code Artifact tool** → publish as an Artifact (it is
      default-private; strip the outer `<!doctype>`/`<html>`/`<head>`/`<body>`
      skeleton and keep the `<style>`, content, and `<script>` — the Artifact
      harness provides the document shell).
-   - **Otherwise** → `open recaps/<slug>.html` (macOS) and report the absolute
-     path.
+   - **Grok, Codex, or any host without Artifacts** → `Skill(postplan)`.
+   - **PostPlan not signed in** → `open recaps/<slug>.html` (macOS) and report
+     the absolute path. A path in the TUI is not a page.
 4. Sanity-check the render before reporting it done: open it, look at it, in
    both themes if you changed any color usage. Overlapping labels or a crushed
    diff column means fixing the HTML, not shipping it.
@@ -164,9 +164,10 @@ sentence handoff plus the link/path is the right chat footprint.
 ## Security
 
 - **A recap is as sensitive as the source it summarizes.** It can expose
-  unreleased schema, internal endpoints, and architecture. Keep it local or
-  default-private (Artifacts are private by default); never publish a recap of
-  a private repo anywhere public.
+  unreleased schema, internal endpoints, and architecture. Keep it local,
+  default-private (Artifacts), or ask before a PostPlan upload of a private
+  repo. Never publish a recap of a private repo to a public URL without
+  the user asking.
 - **Never transcribe secrets.** Diffs can contain API keys, tokens, webhook
   URLs, `.env` values. Redact them in every block, caption, and annotation
   (`sk-•••`, `<redacted>`) — the recap must be safe to share with anyone who

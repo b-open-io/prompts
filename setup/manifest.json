@@ -19,6 +19,7 @@
       "usedBy": [
         "benchmark-skills",
         "visual-review",
+        "postplan",
         "many scripts"
       ],
       "check": "bun --version",

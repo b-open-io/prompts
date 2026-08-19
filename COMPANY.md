@@ -121,6 +121,7 @@ skills:
   - confess
   - humanize
   - visual-review
+  - postplan
   - runtime-context
   - remind
   - generative-ui

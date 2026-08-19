@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable flow-chart artifact and emits a paste-back spec that launches the exact configuration chosen. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.3
+version: 0.1.4
 ---
 
 # Visual Coordinator
@@ -88,6 +88,16 @@ elements:
 - **Verification gate field** — the command that proves the work.
 - **Copy button** emitting the paste-back spec.
 
+### 3b. Deliver the page
+
+A file path in chat is not a page. Claude Code can host HTML as an
+Artifact. Grok Build and Codex cannot.
+
+On Claude Code, publish the canvas as an Artifact. On every other host,
+follow `Skill(postplan)`: upload the HTML and give the user the URL.
+If PostPlan is not signed in, `open` the file and serve the directory.
+Do not stop after writing `docs/*.html`.
+
 ### 4. Emit the spec
 
 Follow [references/emitted-spec-format.md](references/emitted-spec-format.md).
@@ -148,3 +158,4 @@ the agent's initials in a coloured circle rather than shipping a faceless card.
 - `Skill(orchestra:wave-coordinator)` — sizing large fan-outs into waves
 - Grok-bundled `create-workflow` (`~/.grok/bundled/skills/create-workflow/SKILL.md`) — not in this plugin. Authors Rhai. Claude and Codex do not have `/create-workflow`
 - `Skill(artifact-design)` — craft for the artifact itself
+- `Skill(postplan)` — host the HTML on Grok, Codex, or any non-Claude harness
