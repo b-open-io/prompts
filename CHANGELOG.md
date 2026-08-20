@@ -6,6 +6,13 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Added
+
+- Grok Bot roster stand-up: [docs/grok-bot.md](docs/grok-bot.md). Grok Bot is
+  the teammate app, not Grok Build (`grok plugin install`). README Installation
+  now has a Grok Bot subsection next to Codex. There is no marketplace install
+  command; pasting the stand-up prompt is the install path.
+
 ## [1.1.140] - 2026-08-20
 
 ### Changed
