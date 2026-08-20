@@ -1,5 +1,26 @@
 # Lessons
 
+## Handoff protocol: one agent per repo (2026-08-20)
+
+Every repo has an owning agent. Cross-repo work is a handoff, and a handoff has
+three parts — all required:
+
+1. **Write the handoff file IN the target repo**, committed and pushed to the
+   branch its agents actually read (master, for plugin repos). A GitHub issue
+   alone, an unmerged branch, or a plan doc in this repo is invisible to an
+   agent session in the target repo — "leave a handoff" means a file lands
+   where they look. product-skills seeds the convention: `handoffs/` with dated
+   files (`YYYY-MM-DD-slug.md`) carrying Status/Tracker/Owners headers, and the
+   owning agent's Pending Work section pointing at it.
+2. **Name the agent** that needs it, derived from the repo association
+   (repo → agent mapping; see claude-plugins marketplace.json for repo
+   sources and front-desk for the roster).
+3. **Hand the user a ready-to-share prompt** for that agent — they relay it;
+   don't assume the target agent sees this conversation.
+
+Issues/tickets are progress trackers, not the handoff itself. Plan docs in
+this repo are records, not handoffs.
+
 ## The user is the author of this repository (2026-08-19)
 
 Do not treat other sessions as other authors. The owner is the author of
