@@ -11,7 +11,7 @@
 
 ## Status
 
-- **Status**: PHASE 1 SHIPPED — Option A+D executed 2026-08-20 (product-skills `d2c521c`, plugin 1.0.16, skill 0.2.3); Phase 2 derivatives open
+- **Status**: COMPLETE — Option A+D shipped (`d2c521c`) and Option C derivatives + checklist shipped (`bf52bdc`, plugin 1.0.17, skill 0.2.4) on 2026-08-20; issue #2 closed, OPL-3728 done. Remaining: licensed-counsel review of the derivative drafts; 6-month re-review cadence.
 - **Priority**: P2
 - **Effort**: S (Option A) → M (Options B/C)
 - **Risk**: LOW (CC0 removes licensing risk; residual risk is content staleness and unreviewed upstream drift)

@@ -10,7 +10,7 @@
 
 ## Status
 
-- **Status**: PHASE 1 SHIPPED (product-skills `d2c521c`); Phase 2 derivatives remain — see issue #2 + Linear OPL-3728
+- **Status**: COMPLETE — Phases 1+2 shipped (`d2c521c`, `bf52bdc`); issue #2 closed, OPL-3728 done, handoff file marked DONE
 - **Priority**: P2 (Phase 1 effort S/M; Phase 2 per-document)
 - **Depends on**: decision on plan 000's A/B/C/D mix (recommendation: A + D now, C incrementally)
 - **Owner**: Anthony (legal content) + Zack/prompt-engineer (skill wiring)
