@@ -840,8 +840,9 @@ async function main() {
     }
 
     const avg = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-    const wsPassRates = evalResults.filter(e => !e.with_skill.grade_error).map(e => e.with_skill.pass_rate);
-    const blPassRates = evalResults.filter(e => !e.baseline.grade_error).map(e => e.baseline.pass_rate);
+    const graded = evalResults.filter(e => !e.with_skill.grade_error && !e.baseline.grade_error);
+    const wsPassRates = graded.map(e => e.with_skill.pass_rate);
+    const blPassRates = graded.map(e => e.baseline.pass_rate);
 
     const generatedAt = new Date().toISOString();
     const runner = getRunner();
