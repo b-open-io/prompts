@@ -47,6 +47,14 @@ export class GradeParseError extends Error {
   }
 }
 
+/** CLI judge non-zero exit — same inspectable-raw shape as a bad Messages HTTP body. */
+export function judgeCliExitError(exitCode: number, stderr: string): GradeParseError {
+  return new GradeParseError(
+    `claude judge exited ${exitCode}: ${stderr.slice(0, 400)}`,
+    stderr,
+  );
+}
+
 function isRecord(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object" && !Array.isArray(v);
 }

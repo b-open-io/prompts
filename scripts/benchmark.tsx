@@ -33,6 +33,7 @@ import { join, resolve } from "path";
 import {
   GRADE_SCHEMA,
   GradeParseError,
+  judgeCliExitError,
   judgePrompt,
   parseJudgeGrades,
 } from "./benchmark-grade.ts";
@@ -615,7 +616,7 @@ async function runJudgeClaude(
   const duration_ms = Math.round(performance.now() - start);
 
   if (exitCode !== 0) {
-    throw new Error(`claude judge exited ${exitCode}: ${stderr.slice(0, 400)}`);
+    throw judgeCliExitError(exitCode, stderr);
   }
 
   let tokens = 0;

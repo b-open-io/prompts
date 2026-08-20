@@ -4,6 +4,7 @@ import { join } from "path";
 import {
   GRADE_SCHEMA,
   GradeParseError,
+  judgeCliExitError,
   parseJudgeGrades,
 } from "../benchmark-grade.ts";
 
@@ -127,5 +128,15 @@ describe("parseJudgeGrades", () => {
 
   test("throws GradeParseError on prose", () => {
     expect(() => parseJudgeGrades("I decline to grade this.", assertions)).toThrow(GradeParseError);
+  });
+});
+
+describe("judgeCliExitError", () => {
+  test("wraps a non-zero claude exit as GradeParseError with stderr as raw", () => {
+    const stderr = "Error: --json-schema is not a valid JSON Schema\n";
+    const err = judgeCliExitError(2, stderr);
+    expect(err).toBeInstanceOf(GradeParseError);
+    expect(err.raw).toBe(stderr);
+    expect(err.message).toBe(`claude judge exited 2: ${stderr.slice(0, 400)}`);
   });
 });
