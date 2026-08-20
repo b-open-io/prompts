@@ -28,10 +28,12 @@ Full checklists live in the ticket; keep the ticket as the single source of prog
 
 ## Constraints and routing notes
 
-- **pm-skills is unreachable** from remote sessions on this account (`list_repos` doesn't return
-  it). `pm-toolkit:draft-nda` and `pm-toolkit:privacy-policy` therefore can't be wired from here.
-  Recommended resolution: consolidate template custody in `product-skills:legal-compliance` and
-  have pm-toolkit skills point at it; do that wiring from a local session or grant the repo.
+- **pm-skills is third-party, not ours**: the `pm-skills` marketplace is
+  https://github.com/phuryn/pm-skills (Paweł Huryn's PM Skills Marketplace);
+  `pm-toolkit:draft-nda` / `pm-toolkit:privacy-policy` are its plugins. There is no b-open-io
+  pm-skills repo and no wiring to hand off. Template custody is consolidated in
+  `product-skills:legal-compliance`; its SKILL.md should state that vendored templates take
+  precedence over pm-toolkit's generic drafting guidance when both are loaded.
 - **Linear**: the Linear connector is installed at org level but its MCP tools do not load in
   remote (cloud) sessions, so ticketing landed on GitHub instead. If a Linear ticket is wanted,
   mirror issue product-skills#2 from a local session (Wags/project-manager handles Linear) and

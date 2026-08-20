@@ -17,7 +17,7 @@
 - **Risk**: LOW (CC0 removes licensing risk; residual risk is content staleness and unreviewed upstream drift)
 - **Category**: skills / content sourcing / legal ops
 - **Owner**: Anthony (legal) for content; prompt-engineer (Zack) for skill wiring
-- **Target repos**: `product-skills` (legal-compliance skill, Anthony's roster), `pm-skills` (pm-toolkit:draft-nda, pm-toolkit:privacy-policy). This repo (`prompts`) only hosts the plan and, if chosen, skills-lock provenance conventions.
+- **Target repo**: `b-open-io/product-skills` (legal-compliance skill, Anthony's roster). Note: the `pm-toolkit` skills referenced below come from the third-party `phuryn/pm-skills` marketplace — not ours to modify; template custody consolidates in `product-skills:legal-compliance` (see plan 001). This repo (`prompts`) only hosts the plan and, if chosen, skills-lock provenance conventions.
 
 ## What the library is
 
