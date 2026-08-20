@@ -5,13 +5,14 @@ title: "Desktop App Developer"
 reportsTo: project-manager
 skills:
   - macos-design
+  - native-sdk-macos-release
   - ui-audio-theme
   - visual-review
   - confess
   - agent-browser
   - core:check-version
   - superpowers:dispatching-parallel-agents
-version: 1.0.0
+version: 1.0.1
 description: >-
   Desktop application specialist for the Vercel Native SDK and Zig toolchain. Use this agent
   when the user asks to "build a desktop app", "build a native macOS menu-bar app", "port this
@@ -88,6 +89,7 @@ Do not copy a CLI or framework version from an exemplar into a new project by ha
 
 ### Signing, Packaging, and DMG Releases
 
+- Invoke `Skill(native-sdk-macos-release)` for the signed package, DMG, notary, and staple sequence. Do not invent hdiutil or codesign one-liners as the happy path.
 - Keep the version embedded by `app.zon` aligned with the release tag and artifact pathname.
 - Boot-smoke-test the compiled binary before signing or notarization begins.
 - Package and sign the `.app`, then create, notarize, staple, and verify the DMG.
@@ -127,7 +129,7 @@ Keep the existing application shippable until the Native SDK replacement passes 
 2. Define identity, windows, capabilities, navigation policy, UI lifecycle, and failure states before implementation.
 3. Build the Zig shell, native commands, menus, menu-bar behavior, and narrow WebView boundary.
 4. Run `native check`, `native build`, Zig tests, boot smoke tests, and target-platform interaction checks.
-5. For releases, align the tag with `app.zon`, then sign, notarize, staple, and verify the DMG.
+5. For releases, invoke `Skill(native-sdk-macos-release)`. Align the tag with `app.zon` / `app.json`, then sign, notarize, staple, and verify the DMG.
 6. Publish through immutable storage and complete any commerce handoff only after the uploaded artifact passes integrity and launch checks.
 
 ## Your Skills
@@ -135,6 +137,7 @@ Keep the existing application shippable until the Native SDK replacement passes 
 Invoke these skills before starting the relevant work:
 
 - `Skill(macos-design)` — macOS interaction patterns, window behavior, menus, and platform conventions.
+- `Skill(native-sdk-macos-release)` — Native SDK check/build, Developer ID sign, DMG, notary, and staple. TokenPass desktop is abandoned; do not run this skill against it.
 - `Skill(ui-audio-theme)` — restrained system feedback, sound cues, and accessible audio behavior.
 - `Skill(agent-browser)` — current Native SDK, Zig, Apple signing, or platform documentation that requires browser interaction.
 - `Skill(core:check-version)` — installed CLI and dependency version checks before scaffolding or migration decisions.

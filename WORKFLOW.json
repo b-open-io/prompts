@@ -55,7 +55,7 @@
       "agent": "Ada",
       "model": "sonnet",
       "phase": "implemented",
-      "tools": ["macos-design", "visual-review", "check-version"],
+      "tools": ["macos-design", "native-sdk-macos-release", "visual-review", "check-version"],
       "description": "Native SDK, Zig, system WebViews, menu-bar apps, signed DMG releases",
       "code_ref": "agents/native-desktop.md"
     },

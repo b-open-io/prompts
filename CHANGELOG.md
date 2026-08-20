@@ -6,6 +6,13 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Added
+
+- `native-sdk-macos-release` 0.0.1: Ada-owned Vercel Native SDK macOS
+  ship path — native check/build, Developer ID sign, DMG, notary,
+  staple. TokenPass desktop is abandoned; do not run this skill
+  against it.
+
 ## [1.1.140] - 2026-08-20
 
 ### Changed

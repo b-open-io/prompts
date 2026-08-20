@@ -38,6 +38,7 @@ These skills ship with plugins and are available to anyone who installs the plug
 | humanize, clean-ai-slop, remove-ai-patterns | core:humanize |
 | refresh-skill-map | core:reinforce-skills |
 | npm-publish | plugin-kit:npm-publish |
+| native-sdk-macos, notarize-dmg, developer-id-sign | creative:native-sdk-macos-release |
 | benchmark-skills, write-evals, test-skill-quality | plugin-kit:benchmark-skills |
 
 ### BSV Skills

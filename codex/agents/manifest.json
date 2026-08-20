@@ -226,10 +226,10 @@
     {
       "source_name": "native-desktop",
       "source_path": "modules/creative/agents/native-desktop.md",
-      "source_version": "1.0.0",
-      "source_hash": "sha256:0ff6ac56be42e2a06398edb67598caf0a81df6b7429caa5dfecefc518fb254b5",
+      "source_version": "1.0.1",
+      "source_hash": "sha256:c497587f833b94b86d65bb17ce8e0108fe4544749abc75dcf7fc50a452ab4d3e",
       "generated_file": "bopen-native-desktop.toml",
-      "generated_hash": "sha256:acd809e544c27cd27c8a1c491b0dcc2e34370131e4ecb32b12ef229c45cb79e7",
+      "generated_hash": "sha256:3d12a75b3400c3f088f08bcf9ca2d0245ef570a3118005b9854b4c22336c27af",
       "agent_name": "bopen_native_desktop",
       "curated": false,
       "default_install": false
