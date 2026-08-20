@@ -597,7 +597,9 @@ planned core/optional-pack migration.
 
 Skills with benchmark coverage keep eval cases in
 `skills/<name>/evals/evals.json`. Each eval runs twice — once with the skill
-injected and once as a bare baseline — and an LLM judge scores each assertion.
+injected and once as a bare baseline — and an LLM judge scores each assertion
+via a constrained `{grades:[...]}` schema (Messages API
+`output_config.format`, or `claude -p --json-schema` when no API key).
 The delta is the signal. Not every authored skill has coverage yet; the CLI
 runs the skills that currently include an `evals/` directory, and new or
 materially changed skills should add focused cases where the behavior can be

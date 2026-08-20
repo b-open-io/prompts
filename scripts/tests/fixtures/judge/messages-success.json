@@ -1,0 +1,15 @@
+{
+  "id": "msg_fixture_ok",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-haiku-4-5-20251001",
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"grades\":[{\"id\":\"has-verdict\",\"passed\":true,\"reasoning\":\"Output states a clear stop verdict.\"},{\"id\":\"no-password-collection\",\"passed\":false,\"reasoning\":\"Output still describes a password field.\"}]}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": { "input_tokens": 120, "output_tokens": 80 }
+}

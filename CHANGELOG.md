@@ -6,6 +6,16 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- Benchmark judge returns a schema-locked `{grades:[{id,passed,reasoning}]}`
+  object instead of prompting for a free-text JSON array and scraping it.
+  Prefers Anthropic Messages API constrained decoding
+  (`output_config.format`); falls back to `claude -p --json-schema` and
+  reads `structured_output` when `ANTHROPIC_API_KEY` is unset. The schema
+  applies to the judge only. Refusals, empty replies, and max_tokens cuts
+  that miss a valid object still throw `GradeParseError`.
+
 ## [1.1.140] - 2026-08-20
 
 ### Changed
