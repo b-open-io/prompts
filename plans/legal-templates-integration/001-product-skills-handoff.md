@@ -40,10 +40,12 @@ Full checklists live in the ticket; keep the ticket as the single source of prog
   cross-link it on the issue.
 - **product-skills IS attachable with push access** via `add_repo` from remote sessions — future
   sessions doing this work should attach it directly rather than leaving handoffs.
-- **Discovery gap closed**: product-skills had no work-handoff convention (only the marketer
-  agent's routing-rules Handoffs section). Branch `claude/legal-handoffs-and-backlog` on
-  product-skills adds a Handoffs section + a session-start "check open issues" rule to
-  `agents/legal.md` (1.1.11) so ticketed work like issue #2 is discoverable; merge it there.
+- **Discovery gap closed (shipped)**: product-skills had no work-handoff convention (only the
+  marketer agent's routing-rules Handoffs section). Now on product-skills master (plugin
+  1.0.15): `handoffs/` directory convention (one dated file per work item with
+  Status/Tracker/Owners header, seeded with `handoffs/2026-08-20-legal-templates-vendoring.md`),
+  plus Handoffs + Pending Work sections in `agents/legal.md` (1.1.11) pointing agents at
+  `handoffs/` and open issues at session start.
 - CC0-1.0 upstream: no attribution obligations; provenance headers are self-imposed discipline.
 - Every generated document keeps the first-draft-for-counsel framing (upstream ships no
   disclaimer at all — we add our own).
