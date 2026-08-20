@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.12
+version: 0.0.13
 description: >-
   Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has
   not been built. Use for "make a visual proposal", "present these options visually", "diagram
@@ -351,7 +351,8 @@ Adapt to the subject — not every section always applies — but the usual spin
     drop-in component (CSS + markup + copy script).
 11. **Archive menu** — a left list of other proposals already on disk. Copy
     [examples/archive-nav.html](examples/archive-nav.html). Fill `window.VP_ARCHIVE`
-    from `scripts/list-proposals.sh`. See
+    from `scripts/list-proposals.sh`. Local rows copy agent instructions.
+    PostPlan rows (`data-vp-url` https) are real links. See
     [references/archive-nav.md](references/archive-nav.md).
 
 ## Craft (via artifact-design)
@@ -394,16 +395,20 @@ bash scripts/list-proposals.sh --current <slug> [extra-workspace-root ...]
 Pass Claude `--add-dir` folders, extra Grok/Codex workspace roots, or
 `BOPEN_PROPOSAL_ROOTS`. Paste the JSON into `window.VP_ARCHIVE`. Copy
 [examples/archive-nav.html](examples/archive-nav.html) into a `.vp-shell`
-wrapper. The browser cannot scan the disk; the Artifact CSP cannot fetch
-sibling files either. Local `file://` and a directory server follow the
-`href`s. See [references/archive-nav.md](references/archive-nav.md).
+wrapper. The browser cannot scan the disk. An Artifact also cannot open a
+sibling file. Local rows are copy buttons: they copy instructions that
+ask the agent to open that path. See
+[references/archive-nav.md](references/archive-nav.md).
 
 Then call the Artifact tool with the same file path, a one-line
 `description`, a stable subject `favicon`, and a version `label` — or
-`Skill(postplan)` / `open` when there is no Artifact pane. Redeploy the
-SAME file path to keep the URL stable across revisions; only mint a new
-URL for a genuinely different proposal. Remind the user it's private until
-they share it from the page's share menu.
+`Skill(postplan)` / `open` when there is no Artifact pane. After PostPlan
+returns an `https://` URL, stamp it on the saved file as
+`data-vp-url="https://…"`, re-run `list-proposals.sh`, and replace
+`window.VP_ARCHIVE` so the menu can link that row. Redeploy the SAME file
+path to keep the URL stable across revisions; only mint a new URL for a
+genuinely different proposal. Remind the user it's private until they
+share it from the page's share menu.
 
 ## Iterating
 

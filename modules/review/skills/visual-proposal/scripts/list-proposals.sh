@@ -58,18 +58,27 @@ def git_root(start: str) -> str:
             return os.path.abspath(start)
         d = parent
 
-def title_of(path: str, slug: str) -> str:
+def meta_of(path: str, slug: str):
+    """Return (title, https_url_or_None) from the file head."""
     try:
         text = open(path, encoding="utf-8", errors="replace").read(8000)
     except OSError:
-        return slug
+        return slug, None
+    title = slug
     m = re.search(r'data-vp-title=["\']([^"\']+)["\']', text)
     if m:
-        return m.group(1).strip()
-    m = re.search(r"<title>([^<]+)</title>", text, re.I)
+        title = m.group(1).strip()
+    else:
+        m = re.search(r"<title>([^<]+)</title>", text, re.I)
+        if m:
+            title = re.sub(r"\s+", " ", m.group(1)).strip()
+    url = None
+    m = re.search(r'data-vp-url=["\']([^"\']+)["\']', text)
     if m:
-        return re.sub(r"\s+", " ", m.group(1)).strip()
-    return slug
+        candidate = m.group(1).strip()
+        if candidate.startswith("https://"):
+            url = candidate
+    return title, url
 
 seen = set()
 items = []
@@ -102,21 +111,18 @@ for raw in scan_roots:
         mtime = datetime.fromtimestamp(st.st_mtime, tz=timezone.utc).strftime(
             "%Y-%m-%d"
         )
-        if same_dir:
-            href = name
-        else:
-            href = "file://" + os.path.abspath(path)
-        items.append(
-            {
-                "slug": slug,
-                "title": title_of(path, slug),
-                "project": project_name,
-                "href": href,
-                "mtime": mtime,
-                "path": os.path.abspath(path),
-                "current": slug == current and same_dir,
-            }
-        )
+        title, url = meta_of(path, slug)
+        item = {
+            "slug": slug,
+            "title": title,
+            "project": project_name,
+            "mtime": mtime,
+            "path": os.path.abspath(path),
+            "current": slug == current and same_dir,
+        }
+        if url:
+            item["url"] = url
+        items.append(item)
 
 print(json.dumps(items, indent=2, ensure_ascii=False))
 PY

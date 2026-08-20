@@ -6,6 +6,18 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.140] - 2026-08-20
+
+### Changed
+
+- `visual-proposal` 0.0.13: the archive menu no longer uses dead
+  `file://` links. A local or Artifact row copies instructions that ask
+  the agent to open that proposal. The button then reads "Instructions
+  copied" and shows a ? tooltip: paste the text into the agent. A
+  PostPlan row is a real `https://` link after `data-vp-url` is stamped
+  on the saved file. `list-proposals.sh` emits `url` only for https.
+- review 0.1.6.
+
 ## [1.1.139] - 2026-08-19
 
 ### Added

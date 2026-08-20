@@ -6,6 +6,9 @@ component lives at `examples/archive-nav.html`. Copy it into the page.
 The browser cannot scan the computer. The Artifact CSP also blocks fetches.
 The agent lists the files, then inlines the JSON.
 
+A local Artifact or `file://` page cannot open a sibling HTML file. Those
+rows copy instructions. A PostPlan URL is a real link.
+
 ## Where files live
 
 Canonical path in each project:
@@ -16,6 +19,20 @@ docs/proposals/<slug>.html
 
 Write every proposal there, including Artifact copies. Keep the slug stable
 across revisions of the same proposal.
+
+Set `data-vp-title` on `<html>` so the list shows a human title. After
+PostPlan returns an `https://` URL, stamp it on the same tag:
+
+```html
+<html data-vp-title="Referenced-content collections"
+      data-vp-url="https://postplan.dev/d/…">
+```
+
+Then run the list script again and replace `window.VP_ARCHIVE` so other
+pages in this archive get the link.
+
+Do not stamp `file://` or `http://`. The menu treats only `https://` as a
+navigable URL.
 
 ## Where the list comes from
 
@@ -41,11 +58,37 @@ Optional env: `BOPEN_PROPOSAL_ROOTS` is a colon-separated list of extra
 project roots. The script also scans `$PWD/docs/proposals`.
 
 The script prints JSON. Paste it as `window.VP_ARCHIVE` in the page,
-before the archive-nav script runs. Same-folder entries use `foo.html`.
-Entries from another project use a `file://` URL.
+before the archive-nav script runs.
 
-Set `data-vp-title` on `<html>` or keep a real `<title>` so the list
-shows a human title instead of the slug.
+| Field | When it is set |
+|---|---|
+| `path` | Always. Absolute path on disk. |
+| `url` | Only when `data-vp-url` on that file is `https://…`. |
+| `current` | True for the page being built, in this project's folder. |
+
+## Two actions in the menu
+
+The current page is a marker, not a control.
+
+A row with `url` is an `<a href>` to that PostPlan (or other https) page.
+The Artifact CSP blocks embeds. It does not block outbound links.
+
+A row with no `url` is a copy button. A click copies this block:
+
+```text
+Show me the previous visual proposal.
+
+Title: <title>
+Path: <absolute path>
+
+Open that HTML and show me the page. Use an Artifact when that tool exists.
+Otherwise follow Skill(postplan) or open the file in the browser. Do not
+summarize the file.
+```
+
+The button then reads **Instructions copied** and shows a **?** mark. The
+tooltip on that mark says: paste the copied text into your agent. The
+agent then serves and opens the other proposal.
 
 ## Layout
 
@@ -60,9 +103,13 @@ Wrap the proposal body:
 </div>
 ```
 
-## Artifact vs local file
+## Artifact vs PostPlan vs local file
 
-Local `file://` and `python3 -m http.server` follow sibling `href`s.
-A Claude Artifact cannot open `docs/proposals/` on disk. Keep the menu
-anyway: titles still orient the reviewer. Prefer PostPlan or `open` for
-the local file when the reviewer needs the other pages.
+| Host | Row action |
+|---|---|
+| Claude Artifact | Copy instructions. Sibling `file://` links do not open. |
+| Local `file://` | Copy instructions. Same reason. |
+| PostPlan `https://` | Real link, after `data-vp-url` is stamped. |
+
+`Skill(postplan)` prints the URL. Stamp it, rebuild `VP_ARCHIVE`, then
+give the user that URL.
