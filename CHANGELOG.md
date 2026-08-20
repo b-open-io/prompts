@@ -6,6 +6,14 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Added
+
+- Grok Bot roster stand-up: long form in [docs/grok-bot.md](docs/grok-bot.md)
+  (will be served at https://bopen.ai/install/grok-bot.md once the site PR
+  lands). README Installation has a Grok Bot subsection next to Codex with
+  the tiny paste-first prompt. Not Grok Build (`grok plugin install`). No
+  marketplace install command.
+
 ## [1.1.140] - 2026-08-20
 
 ### Changed
