@@ -11,7 +11,7 @@
 
 ## Status
 
-- **Status**: REVIEW COMPLETE — integration options drafted, awaiting decision
+- **Status**: PHASE 1 SHIPPED — Option A+D executed 2026-08-20 (product-skills `d2c521c`, plugin 1.0.16, skill 0.2.3); Phase 2 derivatives open
 - **Priority**: P2
 - **Effort**: S (Option A) → M (Options B/C)
 - **Risk**: LOW (CC0 removes licensing risk; residual risk is content staleness and unreviewed upstream drift)
