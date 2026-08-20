@@ -61,25 +61,31 @@ interface AssertionResult {
   reasoning: string;
 }
 
+interface VariantRunResult {
+  output: string;
+  tokens: number;
+  duration_ms: number;
+  assertions: AssertionResult[];
+  pass_rate: number;
+  cached: boolean;
+  /** Present only when the judge reply could not be parsed. */
+  judge_raw?: string;
+  /** Present only when grading failed to parse; not a real assertion grade. */
+  grade_error?: string;
+}
+
+interface GradeOutcome {
+  assertions: AssertionResult[];
+  pass_rate: number;
+  judge_raw?: string;
+  grade_error?: string;
+}
+
 interface EvalRunResult {
   eval_id: number;
   prompt: string;
-  with_skill: {
-    output: string;
-    tokens: number;
-    duration_ms: number;
-    assertions: AssertionResult[];
-    pass_rate: number;
-    cached: boolean;
-  };
-  baseline: {
-    output: string;
-    tokens: number;
-    duration_ms: number;
-    assertions: AssertionResult[];
-    pass_rate: number;
-    cached: boolean;
-  };
+  with_skill: VariantRunResult;
+  baseline: VariantRunResult;
 }
 
 interface SkillBenchmark {
@@ -526,6 +532,54 @@ async function runClaude(
 // LLM-as-judge grading
 // ---------------------------------------------------------------------------
 
+export class GradeParseError extends Error {
+  readonly raw: string;
+  constructor(message: string, raw: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "GradeParseError";
+    this.raw = raw;
+  }
+}
+
+function looksLikeGrade(v: unknown): v is { id: string; passed?: boolean; reasoning?: string } {
+  return !!v && typeof v === "object" && typeof (v as { id?: unknown }).id === "string";
+}
+
+/** Parse a judge reply into assertion grades. Throws GradeParseError on miss. */
+export function parseJudgeGrades(raw: string, assertions: Assertion[]): AssertionResult[] {
+  const candidates: string[] = [];
+  const trimmed = raw.trim();
+  if (trimmed) candidates.push(trimmed);
+  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence?.[1]) candidates.push(fence[1].trim());
+  const greedy = raw.match(/\[[\s\S]*\]/);
+  if (greedy) candidates.push(greedy[0]);
+
+  let lastParseError: unknown;
+  for (const text of candidates) {
+    try {
+      const parsed: unknown = JSON.parse(text);
+      if (!Array.isArray(parsed) || !parsed.some(looksLikeGrade)) continue;
+      return assertions.map(a => {
+        const grade = parsed.find(g => looksLikeGrade(g) && g.id === a.id);
+        return {
+          id: a.id,
+          text: a.text,
+          passed: grade?.passed ?? false,
+          reasoning: grade?.reasoning ?? "missing",
+        };
+      });
+    } catch (err) {
+      lastParseError = err;
+    }
+  }
+
+  const detail = lastParseError instanceof Error && /\[/.test(raw)
+    ? `grader JSON parse failed: ${lastParseError.message}`
+    : "no JSON array of {id, passed, reasoning} in grader response";
+  throw new GradeParseError(detail, raw, lastParseError instanceof Error ? { cause: lastParseError } : undefined);
+}
+
 async function gradeAssertions(
   output: string,
   expectedOutput: string,
@@ -549,21 +603,36 @@ JSON array:`;
 
   const result = await runClaude(gradingPrompt, { model });
   try {
-    const jsonMatch = result.output.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error("no JSON array in grader response");
-    const parsed: { id: string; passed: boolean; reasoning: string }[] = JSON.parse(jsonMatch[0]);
-    return assertions.map(a => {
-      const grade = parsed.find(g => g.id === a.id);
-      return { id: a.id, text: a.text, passed: grade?.passed ?? false, reasoning: grade?.reasoning ?? "missing" };
-    });
-  } catch {
-    return assertions.map(a => ({ id: a.id, text: a.text, passed: false, reasoning: "grading parse error" }));
+    return parseJudgeGrades(result.output, assertions);
+  } catch (err) {
+    if (err instanceof GradeParseError) throw err;
+    throw new GradeParseError(
+      err instanceof Error ? err.message : String(err),
+      result.output,
+      err instanceof Error ? { cause: err } : undefined,
+    );
   }
 }
 
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
+
+function variantResult(
+  run: { output: string; tokens: number; duration_ms: number; cached: boolean } | undefined,
+  grade: GradeOutcome | undefined,
+): VariantRunResult {
+  return {
+    output: (run?.output ?? "").slice(0, 2000),
+    tokens: run?.tokens ?? 0,
+    duration_ms: run?.duration_ms ?? 0,
+    assertions: grade?.assertions ?? [],
+    pass_rate: grade?.pass_rate ?? 0,
+    cached: run?.cached ?? false,
+    ...(grade?.judge_raw ? { judge_raw: grade.judge_raw } : {}),
+    ...(grade?.grade_error ? { grade_error: grade.grade_error } : {}),
+  };
+}
 
 async function main() {
   const repoRoot = resolve(import.meta.dir, "..");
@@ -632,7 +701,8 @@ async function main() {
 
   // Result storage
   const runResults = new Map<string, { output: string; tokens: number; duration_ms: number; cached: boolean }>();
-  const gradeResults = new Map<string, { assertions: AssertionResult[]; pass_rate: number }>();
+  const gradeResults = new Map<string, GradeOutcome>();
+  const gradeFailures: { key: string; error: string; raw?: string }[] = [];
 
   // Shared mutable job queue (run jobs first, grade jobs pushed as runs complete)
   const jobQueue: Job[] = [...runJobs];
@@ -719,7 +789,16 @@ async function main() {
           dispatch({ type: "GRADE_DONE", skill: job.skill, evalId: job.evalId, variant: job.variant, passRate });
           triggerRerender();
         } catch (err) {
-          dispatch({ type: "ERROR", skill: job.skill, evalId: job.evalId, variant: job.variant, error: err instanceof Error ? err.message : String(err) });
+          const msg = err instanceof Error ? err.message : String(err);
+          const raw = err instanceof GradeParseError ? err.raw : undefined;
+          gradeResults.set(key, {
+            assertions: [],
+            pass_rate: 0,
+            grade_error: msg,
+            ...(raw !== undefined ? { judge_raw: raw } : {}),
+          });
+          gradeFailures.push({ key, error: msg, raw });
+          dispatch({ type: "ERROR", skill: job.skill, evalId: job.evalId, variant: job.variant, error: msg });
           triggerRerender();
         }
       }
@@ -755,28 +834,15 @@ async function main() {
       evalResults.push({
         eval_id: evalCase.id,
         prompt: evalCase.prompt,
-        with_skill: {
-          output: (wsRun?.output ?? "").slice(0, 2000),
-          tokens: wsRun?.tokens ?? 0,
-          duration_ms: wsRun?.duration_ms ?? 0,
-          assertions: wsGrade?.assertions ?? [],
-          pass_rate: wsGrade?.pass_rate ?? 0,
-          cached: wsRun?.cached ?? false,
-        },
-        baseline: {
-          output: (blRun?.output ?? "").slice(0, 2000),
-          tokens: blRun?.tokens ?? 0,
-          duration_ms: blRun?.duration_ms ?? 0,
-          assertions: blGrade?.assertions ?? [],
-          pass_rate: blGrade?.pass_rate ?? 0,
-          cached: blRun?.cached ?? false,
-        },
+        with_skill: variantResult(wsRun, wsGrade),
+        baseline: variantResult(blRun, blGrade),
       });
     }
 
     const avg = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-    const wsPassRates = evalResults.map(e => e.with_skill.pass_rate);
-    const blPassRates = evalResults.map(e => e.baseline.pass_rate);
+    const graded = evalResults.filter(e => !e.with_skill.grade_error && !e.baseline.grade_error);
+    const wsPassRates = graded.map(e => e.with_skill.pass_rate);
+    const blPassRates = graded.map(e => e.baseline.pass_rate);
 
     const generatedAt = new Date().toISOString();
     const runner = getRunner();
@@ -858,13 +924,29 @@ async function main() {
   await new Promise(r => setTimeout(r, 600));
   unmount();
 
+  if (gradeFailures.length > 0) {
+    console.error(`\nBenchmark failed: ${gradeFailures.length} unparseable judge ${gradeFailures.length === 1 ? "reply" : "replies"}`);
+    for (const f of gradeFailures) {
+      console.error(`  ${f.key}: ${f.error}`);
+      if (f.raw) {
+        console.error(`  --- raw judge reply ---`);
+        console.error(f.raw);
+        console.error(`  --- end raw judge reply ---`);
+      }
+    }
+    console.error(`Diagnostics written to ${outPath}`);
+    process.exit(1);
+  }
+
   console.log(`\nBenchmark Complete`);
   console.log(`  Skills: ${report.total_skills}  Evals: ${report.total_evals}`);
   console.log(`  With skill: ${(report.overall_pass_rate * 100).toFixed(1)}%  Baseline: ${(report.overall_baseline_pass_rate * 100).toFixed(1)}%`);
   console.log(`  Report: ${outPath}`);
 }
 
-main().catch(err => {
-  console.error("Benchmark failed:", err);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch(err => {
+    console.error("Benchmark failed:", err);
+    process.exit(1);
+  });
+}
