@@ -52,7 +52,7 @@ grok plugin install core@b-open-io --trust
 | `plugin-kit` | agent lifecycle, benchmarks, plugin settings, publishing; prompt-engineer, trainer |
 | `review` | visual review and proposals, code audit scripts, Codex Security scanning, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
 | `web-dev` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection; designer, nextjs, optimizer, mobile |
-| `creative` | Three.js, shaders, game UI, macOS design, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
+| `creative` | Three.js, shaders, game UI, macOS design, Native SDK macOS release, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
 | `dev-ops` | deployment scripts, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
@@ -112,6 +112,20 @@ preserves user modifications and unrelated agents, and never changes
 discovered. Installed runtime agent names use the `bopen_` prefix and
 underscores, such as `bopen_agent_builder` and `bopen_code_auditor`. Generated
 filenames retain the readable `bopen-*.toml` convention.
+
+### Grok Bot
+
+Grok Bot is the teammate app. It is not Grok Build (the `grok` CLI / `grok plugin install` path above).
+
+Paste this first into an operator Grok Bot that can create teammates:
+
+```text
+Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the bOpen.ai roster as Grok Bot teammates. This is not Grok Build — do not run grok plugin install.
+```
+
+The long form that URL will serve is [docs/grok-bot.md](docs/grok-bot.md) (https://bopen.ai/install/grok-bot.md once the site PR lands). That bot fetches `agents/front-desk.md` with `gh api` and creates one teammate per display name. It does not clone this repo.
+
+There is no marketplace install command for Grok Bot. Creating teammates from the roster file is the install path.
 
 ### Updating
 
@@ -240,6 +254,7 @@ intentional.
 | `frontend-performance` | Optimize Next.js performance using Lighthouse and bundle analysis |
 | `github-stars` | Add GitHub star counts and social proof widgets |
 | `hunter-skeptic-referee` | Adversarial bug hunting with three isolated agents |
+| `native-sdk-macos-release` | Scaffold or ship a Vercel Native SDK macOS app: native check/build, Developer ID sign, DMG, notary, staple |
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm with changelog and version management |
 | `perf-audit` | Run local performance audits without network calls |
