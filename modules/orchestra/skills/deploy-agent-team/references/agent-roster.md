@@ -98,6 +98,7 @@ Always invoke `Skill(vercel-react-best-practices)` before writing any server com
 ```markdown
 ## Your Available Skills
 - `Skill(macos-design)` — invoke before consequential macOS window, menu, or interaction decisions
+- `Skill(native-sdk-macos-release)` — invoke when scaffolding or shipping a signed, notarized Native SDK macOS DMG
 - `Skill(core:check-version)` — invoke before Native SDK scaffolding or migration decisions
 - `Skill(agent-browser)` — invoke for current Native SDK, Zig, and Apple platform documentation
 - `Skill(visual-review)` — invoke for reviewable desktop UI and release-flow recaps

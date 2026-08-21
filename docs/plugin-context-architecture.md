@@ -151,7 +151,7 @@ front-desk agent.
 | plugin-dev | agent-auditor, agent-onboarding, agent-decommissioning, benchmark-skills, plugin-settings, skill-publish, publish-request, npm-publish, statusline-setup; prompt-engineer, trainer |
 | review | visual-review, visual-proposal, visual-wayfinder, hunter-skeptic-referee, code-audit-scripts, free-roam-testing, wayfinder; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
 | web | frontend-performance, perf-audit, shadscan, create-next-project, nextjs-upgrade, charting, github-stars, generative-ui, chrome-cdp; designer, nextjs, optimizer, mobile |
-| creative | threejs-r3f, shaders, design-game-ui, ui-audio-theme, voice-clone, html-to-pdf, cli-demo-gif, macos-design, remotion-best-practices; creative-developer, audio-specialist, native-desktop, cartographer |
+| creative | threejs-r3f, shaders, design-game-ui, ui-audio-theme, voice-clone, html-to-pdf, cli-demo-gif, macos-design, remotion-best-practices, native-sdk-macos-release; creative-developer, audio-specialist, native-desktop, cartographer |
 | mcp | mcp-apps, create-mcp-app, add-app-to-server, convert-web-app, the nine json-render skills; mcp |
 | ops | devops-scripts, wait-for-ci, process-cleanup, cost-tracking, plaid-integration; devops, database, data, integration-expert, payments |
 | research | x-research, x-tweet-fetch, x-tweet-search, x-user-lookup, x-user-timeline, persona, notebooklm; researcher, documentation-writer, executive-assistant |

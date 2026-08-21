@@ -52,7 +52,7 @@ grok plugin install core@b-open-io --trust
 | `plugin-kit` | agent lifecycle, benchmarks, plugin settings, publishing; prompt-engineer, trainer |
 | `review` | visual review and proposals, code audit scripts, Codex Security scanning, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
 | `web-dev` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection; designer, nextjs, optimizer, mobile |
-| `creative` | Three.js, shaders, game UI, macOS design, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
+| `creative` | Three.js, shaders, game UI, macOS design, Native SDK macOS release, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
 | `dev-ops` | deployment scripts, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
@@ -254,6 +254,7 @@ intentional.
 | `frontend-performance` | Optimize Next.js performance using Lighthouse and bundle analysis |
 | `github-stars` | Add GitHub star counts and social proof widgets |
 | `hunter-skeptic-referee` | Adversarial bug hunting with three isolated agents |
+| `native-sdk-macos-release` | Scaffold or ship a Vercel Native SDK macOS app: native check/build, Developer ID sign, DMG, notary, staple |
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm with changelog and version management |
 | `perf-audit` | Run local performance audits without network calls |

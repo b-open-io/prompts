@@ -8,6 +8,10 @@ manifests share the same release version.
 
 ### Added
 
+- `native-sdk-macos-release` 0.0.1: Ada-owned Vercel Native SDK macOS
+  ship path — native check/build, Developer ID sign, DMG, notary,
+  staple. TokenPass desktop is abandoned; do not run this skill
+  against it.
 - Grok Bot roster stand-up: long form in [docs/grok-bot.md](docs/grok-bot.md)
   (will be served at https://bopen.ai/install/grok-bot.md once the site PR
   lands). README Installation has a Grok Bot subsection next to Codex with
