@@ -113,6 +113,20 @@ discovered. Installed runtime agent names use the `bopen_` prefix and
 underscores, such as `bopen_agent_builder` and `bopen_code_auditor`. Generated
 filenames retain the readable `bopen-*.toml` convention.
 
+### Grok Bot
+
+Grok Bot is the teammate app. It is not Grok Build (the `grok` CLI / `grok plugin install` path above).
+
+Paste this first into an operator Grok Bot that can create teammates:
+
+```text
+Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the bOpen.ai roster as Grok Bot teammates. This is not Grok Build — do not run grok plugin install.
+```
+
+The long form that URL will serve is [docs/grok-bot.md](docs/grok-bot.md) (https://bopen.ai/install/grok-bot.md once the site PR lands). That bot fetches `agents/front-desk.md` with `gh api` and creates one teammate per display name. It does not clone this repo.
+
+There is no marketplace install command for Grok Bot. Creating teammates from the roster file is the install path.
+
 ### Updating
 
 Use each host's marketplace update path; do not copy files into a plugin cache
