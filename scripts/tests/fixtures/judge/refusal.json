@@ -1,0 +1,15 @@
+{
+  "id": "msg_fixture_refusal",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-haiku-4-5-20251001",
+  "content": [
+    {
+      "type": "text",
+      "text": "I can't help with that request."
+    }
+  ],
+  "stop_reason": "refusal",
+  "stop_sequence": null,
+  "usage": { "input_tokens": 80, "output_tokens": 12 }
+}

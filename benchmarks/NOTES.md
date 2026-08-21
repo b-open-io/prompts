@@ -3,7 +3,9 @@
 ## How It Works
 
 - `scripts/benchmark.tsx` runs each skill's evals with and without the skill injected via `claude -p --append-system-prompt`
-- An LLM-as-judge grades assertions per eval
+- An LLM-as-judge grades assertions per eval via a `{grades:[...]}` JSON schema
+  (Messages API constrained decoding when `ANTHROPIC_API_KEY` is set; otherwise
+  `claude -p --json-schema`). The skill-under-test run is not schema-locked.
 - Results written to `benchmarks/latest.json` (published to bopen.ai/benchmarks) and per-skill `evals/benchmark.json`
 - Cache in `benchmarks/cache/` keyed by model+skill+eval+variant — clear cache when changing eval content
 
@@ -17,6 +19,9 @@ bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"       # Override mod
 bun run scripts/benchmark.tsx --concurrency 4                    # Parallel workers
 BENCHMARK_MODEL="$BENCHMARK_MODEL_ID" bun run scripts/benchmark.tsx # Env var override
 ```
+
+The judge prefers `ANTHROPIC_API_KEY` (Messages API constrained decoding).
+Without a key it uses `claude -p --json-schema` and reads `structured_output`.
 
 From within Claude Code, prefix with `CLAUDECODE=` to avoid nested session errors.
 
@@ -82,13 +87,16 @@ If the baseline passes an assertion, that assertion isn't measuring skill delta 
 
 ### Judge Best Practices
 
-Our current judge sends assertions as plain text and asks for JSON. Research shows this is suboptimal. Better approach:
+The judge is schema-locked (`GRADE_SCHEMA` in `scripts/benchmark-grade.ts`): a
+root `{grades:[{id,passed,reasoning}]}` object, not a scraped free-text array.
+Refusals / empty / max_tokens misses throw `GradeParseError` (fail-loud).
 
-1. **Temperature = 0** for the judge model (deterministic grading)
+Still useful:
+
+1. **Temperature = 0** for the judge model (Messages API path sets this)
 2. **Chain-of-thought before verdict** — require the judge to reason before scoring
 3. **Concrete examples** — give the judge 2-3 examples of pass and fail for each assertion
 4. **Different model family as judge** — if outputs are from Claude, judge with GPT-4o or vice versa (avoids self-enhancement bias where a model rates its own outputs higher)
-5. **JSON output** — structured output prevents parsing failures
 
 Judge prompt structure:
 ```
@@ -99,7 +107,7 @@ You are evaluating whether the following text exhibits [specific behavior].
 [EXAMPLES OF ABSENCE]: "..."
 
 Think step by step about whether [specific markers] appear in the text.
-Then output JSON: {"id":"...","passed":true/false,"reasoning":"one sentence"}
+Then output JSON: {"grades":[{"id":"...","passed":true/false,"reasoning":"one sentence"}]}
 ```
 
 ### Pass@3 for Stochastic Assertions

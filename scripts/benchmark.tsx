@@ -4,7 +4,7 @@
  *
  * Discovers skills with evals/evals.json, runs each eval prompt
  * with and without the skill using `claude -p`, grades assertions
- * via LLM-as-judge, and writes results to benchmarks/latest.json.
+ * via a schema-locked LLM judge, and writes results to benchmarks/latest.json.
  *
  * Features:
  *   - Live Ink terminal UI with progress bar and per-eval status
@@ -30,6 +30,15 @@ import {
 } from "fs";
 import { createHash } from "crypto";
 import { join, resolve } from "path";
+import {
+  GRADE_SCHEMA,
+  GradeParseError,
+  judgeCliExitError,
+  judgePrompt,
+  parseJudgeGrades,
+} from "./benchmark-grade.ts";
+
+export { GRADE_SCHEMA, GradeParseError, parseJudgeGrades };
 
 // ---------------------------------------------------------------------------
 // Types
@@ -529,55 +538,104 @@ async function runClaude(
 }
 
 // ---------------------------------------------------------------------------
-// LLM-as-judge grading
+// LLM-as-judge grading — schema-locked, judge only (never the skill-under-test)
 // ---------------------------------------------------------------------------
 
-export class GradeParseError extends Error {
-  readonly raw: string;
-  constructor(message: string, raw: string, options?: ErrorOptions) {
-    super(message, options);
-    this.name = "GradeParseError";
-    this.raw = raw;
-  }
+function usageTokens(usage: unknown): number {
+  if (!usage || typeof usage !== "object") return 0;
+  const u = usage as { total_tokens?: number; input_tokens?: number; output_tokens?: number };
+  return u.total_tokens ?? ((u.input_tokens ?? 0) + (u.output_tokens ?? 0));
 }
 
-function looksLikeGrade(v: unknown): v is { id: string; passed?: boolean; reasoning?: string } {
-  return !!v && typeof v === "object" && typeof (v as { id?: unknown }).id === "string";
+/** Preferred: Messages API constrained decoding. No tools, no skill. */
+async function runJudgeMessages(
+  prompt: string,
+  model: string,
+  apiKey: string,
+): Promise<{ output: string; tokens: number; duration_ms: number }> {
+  const start = performance.now();
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 2048,
+      temperature: 0,
+      messages: [{ role: "user", content: prompt }],
+      output_config: {
+        format: { type: "json_schema", schema: GRADE_SCHEMA },
+      },
+    }),
+  });
+  const duration_ms = Math.round(performance.now() - start);
+  const body = await res.text();
+  if (!res.ok) {
+    throw new GradeParseError(
+      `Anthropic Messages API ${res.status}: ${body.slice(0, 400)}`,
+      body,
+    );
+  }
+  let parsed: { usage?: unknown };
+  try {
+    parsed = JSON.parse(body) as { usage?: unknown };
+  } catch (err) {
+    throw new GradeParseError(
+      `Anthropic Messages API returned non-JSON: ${err instanceof Error ? err.message : String(err)}`,
+      body,
+      err instanceof Error ? { cause: err } : undefined,
+    );
+  }
+  return { output: body, tokens: usageTokens(parsed.usage), duration_ms };
 }
 
-/** Parse a judge reply into assertion grades. Throws GradeParseError on miss. */
-export function parseJudgeGrades(raw: string, assertions: Assertion[]): AssertionResult[] {
-  const candidates: string[] = [];
-  const trimmed = raw.trim();
-  if (trimmed) candidates.push(trimmed);
-  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fence?.[1]) candidates.push(fence[1].trim());
-  const greedy = raw.match(/\[[\s\S]*\]/);
-  if (greedy) candidates.push(greedy[0]);
+/** Fallback when ANTHROPIC_API_KEY is unset: claude -p --json-schema → structured_output. */
+async function runJudgeClaude(
+  prompt: string,
+  model: string,
+): Promise<{ output: string; tokens: number; duration_ms: number }> {
+  const args = [
+    "claude", "-p", prompt,
+    "--model", model,
+    "--output-format", "json",
+    "--json-schema", JSON.stringify(GRADE_SCHEMA),
+    "--dangerously-skip-permissions",
+  ];
 
-  let lastParseError: unknown;
-  for (const text of candidates) {
-    try {
-      const parsed: unknown = JSON.parse(text);
-      if (!Array.isArray(parsed) || !parsed.some(looksLikeGrade)) continue;
-      return assertions.map(a => {
-        const grade = parsed.find(g => looksLikeGrade(g) && g.id === a.id);
-        return {
-          id: a.id,
-          text: a.text,
-          passed: grade?.passed ?? false,
-          reasoning: grade?.reasoning ?? "missing",
-        };
-      });
-    } catch (err) {
-      lastParseError = err;
-    }
+  const start = performance.now();
+  const env = { ...process.env };
+  delete env.CLAUDECODE;
+
+  const proc = Bun.spawn(args, { stdout: "pipe", stderr: "pipe", env });
+  const stdout = await new Response(proc.stdout).text();
+  const stderr = await new Response(proc.stderr).text();
+  const exitCode = await proc.exited;
+  const duration_ms = Math.round(performance.now() - start);
+
+  if (exitCode !== 0) {
+    throw judgeCliExitError(exitCode, stderr);
   }
 
-  const detail = lastParseError instanceof Error && /\[/.test(raw)
-    ? `grader JSON parse failed: ${lastParseError.message}`
-    : "no JSON array of {id, passed, reasoning} in grader response";
-  throw new GradeParseError(detail, raw, lastParseError instanceof Error ? { cause: lastParseError } : undefined);
+  let tokens = 0;
+  try {
+    const parsed = JSON.parse(stdout) as { usage?: unknown };
+    tokens = usageTokens(parsed.usage);
+  } catch {
+    // parseJudgeGrades fail-louds if the envelope is not structured grades
+  }
+  return { output: stdout, tokens, duration_ms };
+}
+
+async function runJudge(
+  prompt: string,
+  model: string,
+): Promise<{ output: string; tokens: number; duration_ms: number }> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (apiKey) return runJudgeMessages(prompt, model, apiKey);
+  return runJudgeClaude(prompt, model);
 }
 
 async function gradeAssertions(
@@ -586,22 +644,7 @@ async function gradeAssertions(
   assertions: Assertion[],
   model: string,
 ): Promise<AssertionResult[]> {
-  const gradingPrompt = `You are a strict evaluator. Grade whether the OUTPUT satisfies each assertion.
-
-EXPECTED OUTPUT DESCRIPTION:
-${expectedOutput}
-
-ACTUAL OUTPUT:
-${output.slice(0, 8000)}
-
-ASSERTIONS:
-${assertions.map((a, i) => `${i + 1}. [${a.id}] ${a.text}`).join("\n")}
-
-Respond with ONLY a JSON array. Each element: {"id":"...","passed":true/false,"reasoning":"one sentence"}
-
-JSON array:`;
-
-  const result = await runClaude(gradingPrompt, { model });
+  const result = await runJudge(judgePrompt(output, expectedOutput, assertions), model);
   try {
     return parseJudgeGrades(result.output, assertions);
   } catch (err) {
