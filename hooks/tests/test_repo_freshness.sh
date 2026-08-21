@@ -80,5 +80,18 @@ assert_eq "repo-freshness feature stays on branch" "feature-x" "$(git -C "$C/wor
 assert_eq "repo-freshness feature main advanced" \
   "$(git -C "$C/work" rev-parse origin/main)" "$(git -C "$C/work" rev-parse main)"
 
+
+# --- parked on a FULLY MERGED (dead) branch -> report, never switch ---
+D=$(_rf_setup)
+git -C "$D/work" checkout -q -b finished-feature
+_rf_git "$D/work" commit -q --allow-empty -m "feature work"
+git -C "$D/work" push -q origin finished-feature:main   # its work lands in the default branch
+git -C "$D/work" fetch -q origin
+before_branch=$(git -C "$D/work" rev-parse --abbrev-ref HEAD)
+run_hook "repo-freshness.sh" "claude" "$(jq -n --arg cwd "$D/work" '{cwd:$cwd}')"
+assert_contains "repo-freshness dead-branch reported" "FULLY MERGED" "$(_rf_ctx "$HOOK_STDOUT")"
+assert_eq "repo-freshness dead-branch does NOT switch" "$before_branch" "$(git -C "$D/work" rev-parse --abbrev-ref HEAD)"
+rm -rf "$D"
+
 rm -rf "$B" "$C" "$_RF_STATE"
 unset BOPEN_REPO_FRESHNESS_TTL BOPEN_REPO_FRESHNESS_STATE_DIR

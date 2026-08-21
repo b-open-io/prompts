@@ -113,6 +113,26 @@ if [[ -n "$def" && "$cur" != "$def" ]] && g rev-parse --verify --quiet "refs/hea
   fi
 fi
 
+# ---- parked on a DEAD branch --------------------------------------------
+# The gap this closes: the checks above keep whatever you have checked out in
+# sync, and keep the default branch's ref fresh — but neither notices that the
+# branch you are sitting on is FINISHED. A feature branch whose commits are all
+# already in the default branch is dead: new work started from it silently
+# branches off stale history, and every "is the repo ready" glance reports
+# clean-and-current because, technically, it is. Observed cost: a checkout sat
+# on a months-merged feature branch through an entire release cycle, noticed
+# only in the release preflight (2026-08-21).
+# Report only — switching branches is the maintainer's call, never a hook's.
+if [[ -n "$def" && -n "$cur" && "$cur" != "$def" && "$cur" != "HEAD" ]]; then
+  if g merge-base --is-ancestor HEAD "origin/$def" 2>/dev/null; then
+    if [[ -z "$(g status --porcelain 2>/dev/null)" ]]; then
+      notes+=("${repo} is parked on '${cur}', which is FULLY MERGED into ${def} — that branch is finished, so work started here would build on stale history. Switch before starting anything new: git -C '${git_root}' checkout ${def} && git pull --ff-only")
+    else
+      notes+=("${repo} is parked on '${cur}', which is fully merged into ${def} (finished branch), and the working tree is dirty. Commit or stash, then switch to ${def}.")
+    fi
+  fi
+fi
+
 (( ${#notes[@]} > 0 )) || exit 0
 
 # Join notes with newlines under a single [REPO-FRESHNESS] banner.

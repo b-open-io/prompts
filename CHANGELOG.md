@@ -6,6 +6,17 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Fixed
+
+- `repo-freshness` kept the checked-out branch and the default branch's ref in
+  sync but never noticed you were parked on a **finished** branch — one whose
+  commits are all already in the default branch. Every freshness glance
+  reported clean-and-current because technically it was, while new work would
+  branch off stale history. A real checkout sat on a months-merged feature
+  branch through an entire release cycle and was caught only in the release
+  preflight. The hook now reports it (report-only; switching branches stays the
+  maintainer's call) and names the exact command to fix it.
+
 ### Changed
 
 - `front-desk` 1.1.12 / skill 1.0.6: Martha knows Grok Bot ≠ Grok Build.
