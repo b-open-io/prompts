@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.10
+version: 0.0.11
 description: >-
   Route bounded code-writing volume from a capable Claude Code, Codex, or Grok
   Build main session to cheaper or specialized executors — native plugin-roster
@@ -232,6 +232,33 @@ conflicts — the whole-project typecheck was green the moment the last
 worker landed.
 
 ## Delegation Economics
+
+**The graph tax is real — arbitrage is what offsets it.** Orchestration is not
+free control logic. Every dispatch spends tokens on *management*, not the task:
+the main seat re-establishes context, the worker re-reads a spec, results get
+reviewed and reconciled. An edge in a fan-out diagram looks like a costless
+line; economically it is a communication event — serialize state, move context,
+pay the executor to reprocess it, integrate the result. The measured overhead is
+large: agent runs use ~4× the tokens of a plain chat and multi-agent designs
+~15× (Anthropic, 2025); a supervisor that "translates" worker output can cost
+more tokens *and* lose accuracy versus a flatter design (LangChain, 2025). When
+the manager and the workers are the *same expensive model*, that tax buys
+nothing — five nodes where one loop would ship is pure loss dressed as rigor.
+
+**What makes this pattern pay is the price gap, not the graph.** Coordinator
+dispatch is justified only when the executor is materially cheaper, or genuinely
+more specialized, than the main seat: bounded code volume routed to a cheap
+worker (a Grok subagent, GPT-5.6 Sol, a lower-tier native agent) while premium
+judgment — plan, interfaces, review, git — stays on the expensive seat. With a
+real price gap, even a 5–15× token multiplier on the *cheap* side is a net win,
+because the alternative was spending *premium* tokens typing the same code.
+Remove the price gap and every critique of "agent graphs" applies to you in
+full. So the discriminator for each unit is concrete: **is this executor cheaper
+(or better at this exact unit) than doing it here — by enough to clear the
+dispatch floor?** If yes, dispatch. If the worker is the same tier as the main
+seat, or the unit is a one-liner, the tax has nothing to offset it: do it here.
+Fan out for volume and price arbitrage, never for the appearance of
+sophistication.
 
 - **Every dispatch has a fixed floor cost** — spec writing, context
   re-establishment, review. Splitting finer does not monotonically get

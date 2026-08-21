@@ -6,6 +6,16 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- `coordinator` (0.0.11): added a "graph tax" framing to Delegation Economics.
+  Names the real coordination overhead of LLM orchestration (Anthropic's ~4×
+  agent / ~15× multi-agent token multipliers; LangChain's supervisor-translation
+  cost) and makes explicit the discriminator that justifies dispatch anyway —
+  a genuine price gap between a cheap executor and the premium main seat. Guards
+  against paying the tax with no offset: same-tier orchestration and trivial
+  units stay in the main seat.
+
 ### Fixed
 
 - `repo-freshness` kept the checked-out branch and the default branch's ref in
