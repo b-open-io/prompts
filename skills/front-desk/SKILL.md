@@ -1,17 +1,38 @@
 ---
 name: front-desk
-version: 1.0.5
+version: 1.0.6
 description: >-
   Route to the right agent, skill, or service provider. Use for "who handles X?", "what agents
-  are available?", "team roster", "what skills are available?", "where do I find skill X?", or
-  "who should I talk to about Z?". Also covers agent-adapter availability, installing skills,
-  and org email drafting. Route SOC 2 and audit readiness to Anthony in product-skills.
+  are available?", "team roster", "what skills are available?", "where do I find skill X?",
+  "who should I talk to about Z?", "install in Grok Bot", "stand up the roster", or "Grok Bot
+  teammates". Also covers agent-adapter availability, installing skills, and org email drafting.
+  Route SOC 2 and audit readiness to Anthony in product-skills.
 user-invocable: false
 ---
 
 # Front Desk
 
 Organization directory and routing service. Find the right agent, service, or contact for any task.
+
+The roster is not Claude-only. Do not invent agent counts. Grok Bot ≠ Grok Build.
+
+## Install Paths
+
+| Host | What it is | How to install |
+|------|------------|----------------|
+| Claude Code | Plugin CLI | `/plugin install core@b-open-io` |
+| Codex | Plugin CLI | `codex plugin marketplace add b-open-io/prompts --ref master` then `codex plugin add core@b-open-io` |
+| Grok Build | `grok` CLI. Not Grok Bot. | `grok plugin install b-open-io/prompts --trust` |
+| Grok Bot | Teammate app. Not Grok Build. No CLI. | Tiny prompt below |
+| Skills only | Portable SKILL.md | `bunx skills add b-open-io/prompts --skill <skill-name>` |
+
+Grok Bot — paste this first. Do not run `grok plugin install`.
+
+```text
+Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the bOpen.ai roster as Grok Bot teammates. This is not Grok Build — do not run grok plugin install.
+```
+
+Long form: https://bopen.ai/install/grok-bot.md
 
 ## Quick Routing
 

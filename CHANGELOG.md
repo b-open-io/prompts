@@ -6,6 +6,13 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- `front-desk` 1.1.12 / skill 1.0.6: Martha knows Grok Bot ≠ Grok Build.
+  Asked how to install the roster in Grok Bot, she gives the tiny prompt
+  that fetches https://bopen.ai/install/grok-bot.md. She does not say the
+  agents are Claude-only and she does not invent agent counts.
+
 ### Added
 
 - `native-sdk-macos-release` 0.0.1: Ada-owned Vercel Native SDK macOS
