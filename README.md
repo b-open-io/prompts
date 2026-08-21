@@ -200,7 +200,7 @@ core members.
 - 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
 
 ### Organization & Operations
-- 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup
+- 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup, and host install paths (Claude Code, Codex, Grok Build, Grok Bot)
 
 **Usage:** In Claude Code, request the plugin agent by name (for example,
 `review:code-auditor`). In Codex, use its installed adapter name (for
