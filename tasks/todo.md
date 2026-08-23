@@ -437,10 +437,23 @@
 - [x] Decide which plugin owns the canonical collection skill and update active
   skill PRs rather than documenting the contract in multiple places.
 - [x] Add focused evals that reject AIP admission and BSV21 collection routes.
-- [ ] Run repository documentation, manifest, and skill validation checks.
-- [ ] Open plain-English PRs for each owning repository and record the final
+- [x] Run repository documentation, manifest, and skill validation checks.
+- [x] Open plain-English PRs for each owning repository and record the final
   source-of-truth map.
 
 ### Review
 
-- Pending.
+- Canonical behavior now lives in `1sat:collections` from 1sat-sdk PR #25.
+  Core agents route there instead of duplicating the implementation contract.
+- The current contract is SIGMA-only, mint-only, and collection-layer owned.
+  Item signers are stored but not matched to the root signer or current owner;
+  ORDFS content and BSV21 classification are orthogonal to membership.
+- Historical July plans remain for provenance but every entry point is marked
+  archived and non-executable.
+- Corrected bsv-skills PR #2, rewrote the active 1sat-sdk PR #19/#21 bodies in
+  plain English, and closed superseded skill-only PR #20 in favor of #25.
+- Opened prompts PR #23 and claude-plugins PR #1. The latter also fixes the
+  retired `1sat-skills` / `bopen-tools` marketplace names.
+- Focused evals scored 100% with the new skill versus 22% without it. The 1Sat
+  materializer's 13 tests pass, the collection skill and Codex plugin validate,
+  and the core plugin harness passes all five deterministic gates.
