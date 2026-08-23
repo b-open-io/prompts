@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual coordinator — graph builder</title>
+<!--
+  Copy this file into the artifact. Replace window.VC_SEED with the graph
+  for THIS job (nodes + edges). Do not leave the untitled Start/Work/Gate
+  template on a real dispatch. The graph is the workflow; the inspector
+  only staffs the selected card.
+-->
+<style>
+  :root{
+    --bg:#0b1020; --grid:rgba(140,170,220,.07); --ink:#eef2ff; --mut:#8b93ad;
+    --line:#243049; --card:#151b2e; --source:#12182a;
+    --rose:#3a1d2c; --rose-b:#c45b7a; --teal:#12363a; --teal-b:#3ec9b0;
+    --purp:#2a1f4a; --purp-b:#8b7cf7; --mint:#3ee0a8; --gold:#c9a227; --warn:#e8b86d;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font:14.5px/1.4 "Segoe UI",ui-sans-serif,system-ui,sans-serif}
+  body{display:grid;grid-template-rows:auto auto 1fr;min-height:100vh}
+  header, .tools{display:flex;align-items:center;gap:.7rem;padding:.55rem 1rem;
+    border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,#000);flex-wrap:wrap}
+  header h1{margin:0;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:650;color:var(--mut)}
+  .banner{font-size:.85rem} .banner b{color:var(--teal-b)}
+  header .sp,.tools .sp{flex:1}
+  button,select,input,textarea{font:inherit;color:var(--ink)}
+  button{cursor:pointer;background:#1a2340;border:1px solid var(--line);border-radius:8px;padding:.35rem .65rem}
+  button.primary{background:var(--teal-b);color:#06231d;border:0;font-weight:700}
+  button.danger{border-color:#8a3048;color:#f0b4c2}
+  .ghost{background:transparent}
+  input[type=text],select,textarea{background:#0c1222;border:1px solid var(--line);border-radius:8px;padding:.35rem .5rem}
+  .name{min-width:12rem;background:transparent;border:1px dashed var(--line)}
+  .legend{display:flex;gap:.9rem;font-size:.75rem;color:var(--mut)}
+  .legend i{display:inline-block;width:1.3rem;border-top:2px solid var(--mint);vertical-align:middle;margin-right:.3rem}
+  .legend i.dash{border-top-style:dashed;border-color:var(--purp-b)}
+  .hintbar{font-size:.8rem;color:var(--mut);width:100%}
+  main{display:grid;grid-template-columns:1fr min(22rem,36vw);min-height:0}
+  .board{overflow:auto;min-width:0}
+  .stage{position:relative;min-width:1240px;min-height:780px;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:32px 32px}
+  .edges{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .edges path.hit{stroke:transparent;stroke-width:14;fill:none;pointer-events:stroke;cursor:pointer}
+  .node{position:absolute;width:200px;padding:.7rem .85rem .7rem;border-radius:12px;
+    border:1px solid var(--line);background:var(--card);cursor:grab;user-select:none}
+  .node.source{background:var(--source)}
+  .node.process{background:linear-gradient(180deg,#4a2434,var(--rose));border-color:var(--rose-b)}
+  .node.gate{background:linear-gradient(180deg,#16464a,var(--teal));border-color:var(--teal-b)}
+  .node.artifact,.node.memory{background:linear-gradient(180deg,#352866,var(--purp));border-color:var(--purp-b)}
+  .node.shell{box-shadow:inset 0 0 0 1px var(--gold)}
+  .node.is-on{box-shadow:0 0 0 2px var(--mint)}
+  .node .k{font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:650;margin:0 0 .2rem}
+  .node h2{margin:0;font-size:.98rem}
+  .node .sub{margin:.15rem 0 0;font-size:.78rem;color:color-mix(in srgb,var(--ink) 70%,var(--mut))}
+  .chips{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.45rem}
+  .chip{font-size:.66rem;padding:.1rem .38rem;border-radius:999px;border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);background:rgba(0,0,0,.18)}
+  .port{position:absolute;width:12px;height:12px;border-radius:99px;background:var(--mint);border:2px solid var(--bg);
+    top:50%;margin-top:-6px;cursor:crosshair;z-index:2}
+  .port.in{left:-7px} .port.out{right:-7px}
+  .port.armed{box-shadow:0 0 0 4px color-mix(in srgb,var(--mint) 35%,transparent)}
+  .group{position:absolute;border:1.5px dashed var(--gold);border-radius:14px;pointer-events:none}
+  .group span{position:absolute;top:-.55rem;left:.8rem;background:var(--bg);color:var(--gold);
+    font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:0 .35rem}
+  .elab{position:absolute;font-size:.68rem;font-weight:650;color:var(--warn);white-space:nowrap;
+    background:var(--bg);padding:0 .28rem;pointer-events:none;transform:translate(-50%,-110%)}
+  aside{border-left:1px solid var(--line);padding:1rem .95rem;background:#101628;overflow:auto}
+  aside h2{margin:0 0 .15rem;font-size:1.05rem}
+  aside .who{font-size:.8rem;color:var(--mut);margin:0 0 .85rem}
+  label{display:block;font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin:0 0 .25rem}
+  .field{margin:0 0 .7rem}
+  textarea{width:100%;min-height:4.6rem;resize:vertical}
+  select,input[type=text]{width:100%}
+  .empty{color:var(--mut)} .hint{font-size:.78rem;color:var(--mut);margin:.5rem 0 0}
+  .row{display:flex;gap:.4rem;flex-wrap:wrap}
+  @media (max-width:820px){ main{grid-template-columns:1fr} aside{border-left:0;border-top:1px solid var(--line)} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Visual coordinator</h1>
+  <div class="banner">Host: <b id="host-name">Grok Build</b> — fixed</div>
+  <input class="name" id="wf-name" type="text" value="untitled" aria-label="Workflow name">
+  <div class="legend"><span><i></i>forward</span><span><i class="dash"></i>reject / memory</span></div>
+  <span class="sp"></span>
+  <button type="button" class="primary" id="copy">Copy spec</button>
+</header>
+<div class="tools">
+  <span class="hintbar">The chart is the workflow. Add nodes, then drag a mint port to another port. Drag a card to move it. Change a field and the graph restyles.</span>
+  <span class="sp"></span>
+  <button type="button" data-add="source">+ Source</button>
+  <button type="button" data-add="process">+ Step</button>
+  <button type="button" data-add="gate">+ Gate</button>
+  <button type="button" data-add="artifact">+ Artifact</button>
+  <button type="button" data-add="memory">+ Memory</button>
+  <button type="button" class="ghost" id="arrange">Arrange</button>
+  <button type="button" class="ghost" id="example">Load example</button>
+  <button type="button" class="danger" id="del">Delete</button>
+</div>
+<main>
+  <div class="board"><div class="stage" id="stage">
+    <svg class="edges" id="svg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr-mint" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#3ee0a8"/></marker>
+        <marker id="arr-violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#8b7cf7"/></marker>
+      </defs>
+    </svg>
+  </div></div>
+  <aside id="inspector"><p class="empty">Select a node or an edge. Staffing lives here. Structure lives on the graph.</p></aside>
+</main>
+<script>
+window.VC_ENV = window.VC_ENV || { harness: "grok" };
+window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
+(function(){
+  var ENV = window.VC_ENV || {};
+  var MODELS = ENV.models || { grok:["grok-4.6"], claude:["fable","sonnet","opus"], codex:["gpt-5.6-sol"] };
+  var EFFORT = ENV.effort || ["low","medium","high"];
+  var ROSTER = ENV.roster || ["","orchestra:coordinator","orchestra:agent-builder","review:tester"];
+  var HARNESS = ENV.harness || "grok";
+  var nid = 1, eid = 1, inspectorFor = null;
+  var S = { name:"untitled", isolation:"shared-tree", concurrency:3, nodes:[], edges:[] };
+  var sel = null; /* {k:'node'|'edge', id} */
+  var drag = null, link = null;
+
+  function uid(p){ return p + (p==="n"? nid++ : eid++); }
+  function node(o){ return Object.assign({ id:uid("n"), kind:"process", x:80, y:160, label:"Step", detail:"", lane:"grok", model:"grok-4.6", effort:"medium", agentType:"", task:"", gateCmd:"" }, o); }
+  function edge(o){ return Object.assign({ id:uid("e"), from:"", to:"", label:"", kind:"forward" }, o); }
+  function staffed(n){ return n.kind==="process" || n.kind==="gate"; }
+  function isShell(n){ return staffed(n) && n.lane !== "grok"; }
+
+  function seedMinimal(){
+    nid=1; eid=1;
+    S.name = "untitled";
+    S.nodes = [
+      node({id:"n1", kind:"source", x:36, y:188, label:"Start", detail:"brief in"}),
+      node({id:"n2", kind:"process", x:280, y:178, label:"Work", detail:"do the job", lane:"grok", model:"grok-4.6", effort:"medium"}),
+      node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:"claude", model:"fable", effort:"high", gateCmd:"bun test"}),
+      node({id:"n4", kind:"process", x:780, y:178, label:"Done", detail:"ship or complete", lane:"grok", model:"grok-4.6", effort:"low"})
+    ];
+    nid=5;
+    S.edges = [
+      edge({id:"e1", from:"n1", to:"n2", label:"brief", kind:"forward"}),
+      edge({id:"e2", from:"n2", to:"n3", label:"result", kind:"forward"}),
+      edge({id:"e3", from:"n3", to:"n4", label:"pass", kind:"forward"}),
+      edge({id:"e4", from:"n3", to:"n2", label:"fail · retry", kind:"reject"})
+    ];
+    eid=5;
+    document.getElementById("wf-name").value = S.name;
+  }
+  function seedExample(){
+    nid=1; eid=1;
+    S.name = "maker-checker-factory";
+    S.nodes = [
+      node({id:"n1", kind:"source", x:36, y:188, label:"Intake", detail:"user brief and repo"}),
+      node({id:"n2", kind:"process", x:268, y:178, label:"Decompose", detail:"owned paths", lane:"grok", model:"grok-4.6", effort:"high", agentType:"orchestra:coordinator"}),
+      node({id:"n3", kind:"process", x:508, y:36, label:"Implement A", detail:"tests", lane:"grok", model:"grok-4.6", effort:"low"}),
+      node({id:"n4", kind:"process", x:508, y:178, label:"Implement B", detail:"pages", lane:"codex", model:"gpt-5.6-sol", effort:"medium"}),
+      node({id:"n5", kind:"process", x:508, y:320, label:"Implement C", detail:"API", lane:"grok", model:"grok-4.6", effort:"low"}),
+      node({id:"n6", kind:"gate", x:748, y:178, label:"Verify", detail:"checker + bun test", lane:"claude", model:"fable", effort:"high", gateCmd:"bun test"}),
+      node({id:"n7", kind:"process", x:988, y:178, label:"Ship", detail:"git stays here", lane:"grok", model:"grok-4.6", effort:"medium", agentType:"orchestra:coordinator"}),
+      node({id:"n8", kind:"artifact", x:988, y:36, label:"Diff", detail:"what workers wrote"}),
+      node({id:"n9", kind:"artifact", x:988, y:320, label:"Gate log", detail:"pass or findings"}),
+      node({id:"n10", kind:"memory", x:60, y:580, label:"Last run journal", detail:"previous findings"})
+    ];
+    nid=11;
+    S.edges = [
+      edge({id:"e1", from:"n1", to:"n2", label:"brief", kind:"forward"}),
+      edge({id:"e2", from:"n2", to:"n3", label:"", kind:"forward"}),
+      edge({id:"e3", from:"n2", to:"n4", label:"specs", kind:"forward"}),
+      edge({id:"e4", from:"n2", to:"n5", label:"", kind:"forward"}),
+      edge({id:"e5", from:"n3", to:"n6", label:"", kind:"forward"}),
+      edge({id:"e6", from:"n4", to:"n6", label:"diffs · barrier", kind:"forward"}),
+      edge({id:"e7", from:"n5", to:"n6", label:"", kind:"forward"}),
+      edge({id:"e8", from:"n6", to:"n7", label:"pass", kind:"forward"}),
+      edge({id:"e9", from:"n7", to:"n8", label:"", kind:"forward"}),
+      edge({id:"e10", from:"n7", to:"n9", label:"", kind:"forward"}),
+      edge({id:"e11", from:"n6", to:"n4", label:"fail · max 2 retries", kind:"reject"}),
+      edge({id:"e12", from:"n7", to:"n10", label:"carried forward", kind:"memory"}),
+      edge({id:"e13", from:"n10", to:"n2", label:"last run", kind:"memory"})
+    ];
+    eid=14;
+    document.getElementById("wf-name").value = S.name;
+  }
+
+  var stage = document.getElementById("stage");
+  var svg = document.getElementById("svg");
+  var aside = document.getElementById("inspector");
+
+  function byId(id){ return S.nodes.find(function(n){ return n.id===id; }); }
+  function eById(id){ return S.edges.find(function(e){ return e.id===id; }); }
+
+  function chips(n){
+    if (!staffed(n)) return "";
+    var bits = [n.lane, n.model, n.effort, n.agentType && n.agentType.split(":")[1], isShell(n) && "CLI", n.kind==="gate" && n.gateCmd];
+    return bits.filter(Boolean).map(function(b){ return '<span class="chip">'+esc(b)+"</span>"; }).join("");
+  }
+  function kindLabel(n){
+    if (n.kind==="gate") return "gate node";
+    if (n.kind==="source") return "source";
+    if (n.kind==="artifact") return "artifact";
+    if (n.kind==="memory") return "memory";
+    return isShell(n) ? "CLI shell-out" : "native";
+  }
+  function esc(s){ return String(s||"").replace(/[&<>"']/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c]; }); }
+
+  function paintNodes(){
+    stage.querySelectorAll(".node,.group").forEach(function(el){ el.remove(); });
+    var mem = S.nodes.filter(function(n){ return n.kind==="memory"; });
+    if (mem.length){
+      var pad=18, x1=Infinity,y1=Infinity,x2=0,y2=0;
+      mem.forEach(function(n){ x1=Math.min(x1,n.x); y1=Math.min(y1,n.y); x2=Math.max(x2,n.x+200); y2=Math.max(y2,n.y+110); });
+      var g=document.createElement("div"); g.className="group";
+      g.style.left=(x1-pad)+"px"; g.style.top=(y1-28)+"px";
+      g.style.width=(x2-x1+pad*2)+"px"; g.style.height=(y2-y1+pad+28)+"px";
+      g.innerHTML="<span>Across runs</span>";
+      stage.appendChild(g);
+    }
+    S.nodes.forEach(function(n){
+      var el=document.createElement("article");
+      el.className="node "+n.kind+(isShell(n)?" shell":"")+(sel&&sel.k==="node"&&sel.id===n.id?" is-on":"");
+      el.id=n.id; el.style.left=n.x+"px"; el.style.top=n.y+"px";
+      el.innerHTML='<div class="k">'+esc(kindLabel(n))+'</div><h2>'+esc(n.label)+'</h2>'+
+        (n.detail?'<div class="sub">'+esc(n.detail)+"</div>":"")+
+        '<div class="chips">'+chips(n)+"</div>"+
+        '<span class="port in" data-port="in" data-id="'+n.id+'"></span>'+
+        '<span class="port out" data-port="out" data-id="'+n.id+'"></span>';
+      stage.appendChild(el);
+    });
+    sizeStage();
+  }
+  function sizeStage(){
+    var maxX=1240, maxY=780;
+    S.nodes.forEach(function(n){ maxX=Math.max(maxX,n.x+280); maxY=Math.max(maxY,n.y+200); });
+    stage.style.width=maxX+"px"; stage.style.height=maxY+"px";
+  }
+  function port(id, side){
+    var n=byId(id); if(!n) return {x:0,y:0};
+    var el=document.getElementById(id);
+    var s=stage.getBoundingClientRect(), r=el.getBoundingClientRect();
+    var x=r.left-s.left, y=r.top-s.top, w=r.width, h=r.height;
+    if(side==="left") return {x:x, y:y+h/2};
+    if(side==="right") return {x:x+w, y:y+h/2};
+    if(side==="top") return {x:x+w/2, y:y};
+    return {x:x+w/2, y:y+h};
+  }
+  function floorY(kind){
+    var m=0; S.nodes.forEach(function(n){ m=Math.max(m, n.y+120); });
+    return m + (kind==="memory"?48:24);
+  }
+  function pathFor(e){
+    var p=port(e.from,"right"), q=port(e.to,"left");
+    if(e.kind==="reject"){
+      p=port(e.from,"bottom"); q=port(e.to,"left");
+      var y=floorY("reject"), rail=q.x-18;
+      return "M "+p.x+" "+p.y+" L "+p.x+" "+y+" L "+rail+" "+y+" L "+rail+" "+q.y+" L "+q.x+" "+q.y;
+    }
+    if(e.kind==="memory"){
+      p=port(e.from,"bottom"); q=port(e.to,"right");
+      var y2=floorY("memory"), rail=Math.min(p.x,q.x)-10;
+      if (q.x > p.x) { p=port(e.from,"left"); rail=p.x-18; q=port(e.to,"right");
+        return "M "+p.x+" "+p.y+" L "+rail+" "+p.y+" L "+rail+" "+y2+" L "+q.x+" "+y2+" L "+q.x+" "+q.y; }
+      return "M "+p.x+" "+p.y+" L "+p.x+" "+y2+" L "+q.x+" "+y2+" L "+q.x+" "+q.y;
+    }
+    if(Math.abs(p.y-q.y)<6) return "M "+p.x+" "+p.y+" L "+q.x+" "+q.y;
+    var mx=p.x+16;
+    return "M "+p.x+" "+p.y+" L "+mx+" "+p.y+" L "+mx+" "+q.y+" L "+q.x+" "+q.y;
+  }
+  function labelPt(e){
+    var p,q;
+    if(e.kind==="reject"){ p=port(e.from,"bottom"); q=port(e.to,"left"); return {x:(p.x+q.x)/2, y:floorY("reject")-8}; }
+    if(e.kind==="memory"){ p=port(e.from,"bottom"); q=port(e.to,"right"); return {x:(p.x+q.x)/2, y:floorY("memory")-8}; }
+    p=port(e.from,"right"); q=port(e.to,"left");
+    return {x:(p.x+q.x)/2, y:Math.min(p.y,q.y)-10};
+  }
+  function drawEdges(){
+    svg.querySelectorAll("path.edge,path.hit").forEach(function(n){ n.remove(); });
+    stage.querySelectorAll(".elab").forEach(function(n){ n.remove(); });
+    S.edges.forEach(function(e){
+      if(!byId(e.from)||!byId(e.to)) return;
+      var d=pathFor(e), reject=e.kind!=="forward";
+      var p=document.createElementNS("http://www.w3.org/2000/svg","path");
+      p.setAttribute("d",d); p.setAttribute("class","edge"); p.setAttribute("fill","none");
+      p.setAttribute("stroke", reject?"#8b7cf7":"#3ee0a8"); p.setAttribute("stroke-width", sel&&sel.k==="edge"&&sel.id===e.id?"3":"2");
+      if(reject) p.setAttribute("stroke-dasharray","5 5");
+      p.setAttribute("marker-end", reject?"url(#arr-violet)":"url(#arr-mint)");
+      p.style.pointerEvents="none";
+      var hit=document.createElementNS("http://www.w3.org/2000/svg","path");
+      hit.setAttribute("d",d); hit.setAttribute("class","hit"); hit.dataset.eid=e.id;
+      svg.appendChild(p); svg.appendChild(hit);
+      if(e.label){
+        var m=labelPt(e), lab=document.createElement("div");
+        lab.className="elab"; lab.textContent=e.label;
+        lab.style.left=m.x+"px"; lab.style.top=m.y+"px";
+        stage.appendChild(lab);
+      }
+    });
+    if(link && link.cur){
+      var t=document.createElementNS("http://www.w3.org/2000/svg","path");
+      t.setAttribute("d","M "+link.x+" "+link.y+" L "+link.cur.x+" "+link.cur.y);
+      t.setAttribute("class","edge"); t.setAttribute("fill","none"); t.setAttribute("stroke","#3ee0a8");
+      t.setAttribute("stroke-dasharray","4 4"); t.style.pointerEvents="none";
+      svg.appendChild(t);
+    }
+  }
+  function draw(){ paintNodes(); drawEdges(); }
+
+  function inspect(){
+    var key=sel? sel.k+":"+sel.id : "";
+    if(key===inspectorFor) return;
+    inspectorFor=key;
+    if(!sel){ aside.innerHTML='<p class="empty">Select a node or an edge. Add nodes in the toolbar. Drag a mint port to connect.</p>'; return; }
+    if(sel.k==="edge"){
+      var e=eById(sel.id); if(!e) return;
+      var opts=S.nodes.map(function(n){ return '<option value="'+n.id+'"'+(n.id===e.from?" selected":"")+">"+esc(n.label)+" ("+n.id+")</option>"; }).join("");
+      var opts2=S.nodes.map(function(n){ return '<option value="'+n.id+'"'+(n.id===e.to?" selected":"")+">"+esc(n.label)+" ("+n.id+")</option>"; }).join("");
+      aside.innerHTML="<h2>Edge</h2><p class='who'>"+esc(e.kind)+"</p>"+
+        fsel("e-from","From",opts)+fsel("e-to","To",opts2)+
+        fsel("e-kind","Kind",["forward","reject","memory"].map(function(k){return '<option '+(e.kind===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
+        ftext("e-label","Label",e.label)+
+        '<p class="hint">reject and memory draw as dashed return arrows. forward is the main path.</p>';
+      bind(["e-from","e-to","e-kind","e-label"], function(){
+        e.from=val("e-from"); e.to=val("e-to"); e.kind=val("e-kind"); e.label=val("e-label");
+        inspectorFor=null; draw(); inspect();
+      });
+      return;
+    }
+    var n=byId(sel.id); if(!n) return;
+    var native=!isShell(n);
+    aside.innerHTML="<h2>"+esc(n.label)+"</h2><p class='who'>"+esc(kindLabel(n))+"</p>"+
+      fsel("kind","Node type",["source","process","gate","artifact","memory"].map(function(k){return '<option '+(n.kind===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
+      ftext("label","Title",n.label)+ftext("detail","Subtitle",n.detail)+
+      (staffed(n)?
+        fsel("lane","Lane",["grok","claude","codex"].map(function(k){return '<option '+(n.lane===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
+        fsel("model","Model",(MODELS[n.lane]||[]).map(function(k){return '<option '+(n.model===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
+        fsel("effort","Effort",EFFORT.map(function(k){return '<option '+(n.effort===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
+        fsel("agentType","Agent",ROSTER.map(function(k){return '<option '+(n.agentType===k?"selected":"")+' value="'+k+'">'+(k||"(none)")+"</option>";}).join(""), native?"":"Roster agents belong to the host. A non-Grok lane is a CLI subprocess.")+
+        fta("task","Task",n.task): "")+
+      (n.kind==="gate"?fta("gateCmd","Gate command",n.gateCmd):"")+
+      '<p class="hint">Change type, lane, or title — the card restyles in place. Connect cards on the graph, not in this panel.</p>';
+    bind(["kind","label","detail","lane","model","effort","agentType","task","gateCmd"], onNodeField);
+  }
+  function fsel(id,lab,inner,note){ return '<div class="field"><label for="'+id+'">'+lab+"</label><select id='"+id+"'>"+inner+"</select>"+(note?'<p class="hint">'+note+"</p>":"")+"</div>"; }
+  function ftext(id,lab,v){ return '<div class="field"><label for="'+id+'">'+lab+'</label><input id="'+id+'" type="text" value="'+esc(v)+'"></div>'; }
+  function fta(id,lab,v){ return '<div class="field"><label for="'+id+'">'+lab+"</label><textarea id='"+id+"'>"+esc(v)+"</textarea></div>"; }
+  function val(id){ var el=document.getElementById(id); return el?el.value:""; }
+  function bind(ids, fn){ ids.forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener("change", fn); el.addEventListener("input", fn); }); }
+  function onNodeField(){
+    var n=byId(sel.id); if(!n) return;
+    var prevLane=n.lane, prevKind=n.kind;
+    n.kind=val("kind")||n.kind; n.label=val("label"); n.detail=val("detail");
+    if(staffed(n)){
+      n.lane=val("lane")||n.lane;
+      if(n.lane!==prevLane){ n.model=(MODELS[n.lane]||[])[0]||""; n.agentType = n.lane==="grok"?n.agentType:""; inspectorFor=null; inspect(); }
+      else { n.model=val("model"); n.effort=val("effort"); n.agentType=val("agentType"); n.task=val("task"); }
+    }
+    if(n.kind==="gate") n.gateCmd=val("gateCmd");
+    if(n.kind!==prevKind){ inspectorFor=null; inspect(); }
+    draw();
+  }
+
+  function select(k,id){ sel={k:k,id:id}; inspectorFor=null; draw(); inspect(); }
+  function addNode(kind){
+    var x=80, y=178;
+    S.nodes.forEach(function(n){ x=Math.max(x, n.x+244); });
+    if(sel&&sel.k==="node"){ var s=byId(sel.id); if(s) y=s.y; }
+    var n=node({ kind:kind, x:x, y:y,
+      label: kind==="gate"?"Gate": kind==="source"?"Source": kind==="artifact"?"Artifact": kind==="memory"?"Memory":"Step",
+      detail: kind==="gate"?"prove the work":"",
+      lane: kind==="gate"?"claude":"grok",
+      model: kind==="gate"?"fable":"grok-4.6",
+      gateCmd: kind==="gate"?"bun test":"" });
+    S.nodes.push(n);
+    if(sel&&sel.k==="node"&&byId(sel.id)&&sel.id!==n.id){
+      S.edges.push(edge({ from:sel.id, to:n.id, label:"", kind:"forward" }));
+    }
+    select("node", n.id);
+  }
+  function delSel(){
+    if(!sel) return;
+    if(sel.k==="node"){
+      S.edges=S.edges.filter(function(e){ return e.from!==sel.id && e.to!==sel.id; });
+      S.nodes=S.nodes.filter(function(n){ return n.id!==sel.id; });
+    } else S.edges=S.edges.filter(function(e){ return e.id!==sel.id; });
+    sel=null; inspectorFor=null; draw(); inspect();
+  }
+  function connect(from,to){
+    if(from===to) return;
+    if(S.edges.some(function(e){ return e.from===from && e.to===to; })) return;
+    var e=edge({ from:from, to:to, label:"", kind:"forward" });
+    S.edges.push(e); select("edge", e.id);
+  }
+  function arrange(){
+    var fwd=S.edges.filter(function(e){ return e.kind==="forward"; });
+    var indeg={}; S.nodes.forEach(function(n){ indeg[n.id]=0; });
+    fwd.forEach(function(e){ if(indeg[e.to]!=null) indeg[e.to]++; });
+    var layer={}, q=S.nodes.filter(function(n){ return indeg[n.id]===0; }).map(function(n){ return n.id; });
+    q.forEach(function(id){ layer[id]=0; });
+    var seen=Object.assign({},layer), qi=0;
+    while(qi<q.length){
+      var id=q[qi++];
+      fwd.forEach(function(e){ if(e.from!==id) return; var L=(layer[id]||0)+1; if(layer[e.to]==null||L>layer[e.to]) layer[e.to]=L; if(!seen[e.to]){ seen[e.to]=1; q.push(e.to); } });
+    }
+    var cols={};
+    S.nodes.forEach(function(n){ var L=layer[n.id]||0; (cols[L]=cols[L]||[]).push(n); });
+    Object.keys(cols).forEach(function(L){
+      cols[L].forEach(function(n,i){ n.x=36+Number(L)*244; n.y=36+i*150; });
+    });
+    draw();
+  }
+
+  function emit(){
+    S.name=document.getElementById("wf-name").value||S.name;
+    var proto={
+      version: "graph-prototype",
+      harness:HARNESS,
+      name:S.name,
+      isolation:S.isolation,
+      concurrency:S.concurrency,
+      nodes:S.nodes.map(function(n){ return { id:n.id, kind:n.kind, label:n.label, detail:n.detail, x:n.x, y:n.y,
+        lane:n.lane, model:n.model, effort:n.effort, agentType:n.agentType||null, task:n.task,
+        shell:isShell(n), gateCmd:n.kind==="gate"?n.gateCmd:null }; }),
+      edges:S.edges.map(function(e){ return { id:e.id, from:e.from, to:e.to, label:e.label, kind:e.kind }; }),
+      gateNode: (S.nodes.find(function(n){ return n.kind==="gate"; })||{}).id || null
+    };
+    var lines=["# Workflow: "+S.name,"Host harness: "+HARNESS+" (fixed)","","## Graph"];
+    S.edges.forEach(function(e){
+      var a=byId(e.from), b=byId(e.to);
+      lines.push("- "+(a?a.label:e.from)+" —"+e.kind+(e.label?(" · "+e.label):"")+"→ "+(b?b.label:e.to));
+    });
+    var gate=S.nodes.find(function(n){ return n.kind==="gate"; });
+    lines.push("","## Verification gate", gate? (gate.gateCmd||"(gate node, no command)"):"(no gate node)",
+      "","```json", JSON.stringify(proto,null,2), "```");
+    return lines.join("\n");
+  }
+
+  stage.addEventListener("mousedown", function(ev){
+    var port=ev.target.closest(".port");
+    var card=ev.target.closest(".node");
+    if(port){
+      ev.preventDefault(); ev.stopPropagation();
+      var r=stage.getBoundingClientRect();
+      link={ from:port.dataset.id, side:port.dataset.port, x:ev.clientX-r.left, y:ev.clientY-r.top, cur:null };
+      port.classList.add("armed");
+      return;
+    }
+    if(card){
+      var n=byId(card.id);
+      drag={ id:n.id, dx:ev.clientX-(stage.getBoundingClientRect().left)-n.x, dy:ev.clientY-(stage.getBoundingClientRect().top)-n.y, moved:false };
+      select("node", n.id);
+    }
+  });
+  window.addEventListener("mousemove", function(ev){
+    var r=stage.getBoundingClientRect();
+    if(link){ link.cur={x:ev.clientX-r.left, y:ev.clientY-r.top}; drawEdges(); return; }
+    if(drag){
+      var n=byId(drag.id); if(!n) return;
+      n.x=Math.max(8, ev.clientX-r.left-drag.dx);
+      n.y=Math.max(8, ev.clientY-r.top-drag.dy);
+      drag.moved=true;
+      var el=document.getElementById(n.id);
+      if(el){ el.style.left=n.x+"px"; el.style.top=n.y+"px"; }
+      sizeStage(); drawEdges();
+    }
+  });
+  window.addEventListener("mouseup", function(ev){
+    if(link){
+      var port=ev.target.closest && ev.target.closest(".port");
+      var card=ev.target.closest && ev.target.closest(".node");
+      var to=null, from=null;
+      if(port && port.dataset.id !== link.from){
+        if(link.side==="out"){ from=link.from; to=port.dataset.id; }
+        else { from=port.dataset.id; to=link.from; }
+      } else if(card && card.id !== link.from){
+        if(link.side==="out"){ from=link.from; to=card.id; }
+        else { from=card.id; to=link.from; }
+      }
+      if(from && to) connect(from, to);
+      link=null; draw(); inspect();
+    }
+    drag=null;
+  });
+  svg.addEventListener("mousedown", function(ev){
+    var hit=ev.target.closest && ev.target.closest("path.hit");
+    if(hit){ ev.stopPropagation(); select("edge", hit.dataset.eid); }
+  });
+  document.querySelectorAll("[data-add]").forEach(function(b){ b.addEventListener("click", function(){ addNode(b.getAttribute("data-add")); }); });
+  document.getElementById("del").addEventListener("click", delSel);
+  document.getElementById("arrange").addEventListener("click", arrange);
+  document.getElementById("example").addEventListener("click", function(){ seedExample(); sel=null; inspectorFor=null; draw(); inspect(); });
+  document.getElementById("wf-name").addEventListener("input", function(){ S.name=this.value; });
+  document.addEventListener("keydown", function(ev){
+    if(ev.key==="Escape"){ sel=null; inspectorFor=null; draw(); inspect(); }
+    if((ev.key==="Backspace"||ev.key==="Delete") && sel && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName)){ ev.preventDefault(); delSel(); }
+  });
+  document.getElementById("copy").addEventListener("click", function(){
+    var t=emit(), b=this;
+    var done=function(){ b.textContent="Copied"; setTimeout(function(){ b.textContent="Copy spec"; }, 1200); };
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, done); else done();
+  });
+
+  function adoptSeed(seed){
+    S.name = seed.name || "untitled";
+    S.isolation = seed.isolation || "shared-tree";
+    S.concurrency = seed.concurrency || 3;
+    S.nodes = (seed.nodes || []).map(function(n){ return Object.assign({}, n); });
+    S.edges = (seed.edges || []).map(function(e){ return Object.assign({}, e); });
+    function maxNum(list){
+      var m=0;
+      list.forEach(function(item){ var k=parseInt(String(item.id).replace(/\D/g,""),10); if(k>m) m=k; });
+      return m;
+    }
+    nid = maxNum(S.nodes)+1;
+    eid = maxNum(S.edges)+1;
+    document.getElementById("wf-name").value = S.name;
+  }
+  var hostEl=document.getElementById("host-name");
+  if(hostEl) hostEl.textContent = HARNESS==="claude-code"?"Claude Code": HARNESS==="codex"?"Codex":"Grok Build";
+  if (window.VC_SEED && VC_SEED.nodes && VC_SEED.nodes.length) adoptSeed(VC_SEED);
+  else seedMinimal();
+  draw(); inspect();
+})();
+</script>
+</body>
+</html>

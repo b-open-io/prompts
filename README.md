@@ -745,8 +745,10 @@ does not pin or rename it. The supporting skills divide responsibilities:
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
 - `orchestrator` composes native specialists, Coordinator, Advisor, and staged
   waves while leaving final decisions with the main session.
-- `visual-coordinator` draws the fan-out before it runs and emits a paste-back
-  spec. On Grok it translates to a Rhai workflow, not a vague `/workflow` brief.
+- `visual-coordinator` draws an editable graph of the job (nodes, labeled
+  edges, reject-back gates) before it runs and emits a paste-back spec from
+  that graph. On Grok it translates to a Rhai workflow, not a vague
+  `/workflow` brief.
   `/create-workflow` is a Grok-bundled authoring skill
   (`~/.grok/bundled/skills/create-workflow/SKILL.md`). It is not part of
   orchestra. Claude Code and Codex do not have that slash command.

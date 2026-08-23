@@ -1,16 +1,20 @@
 ---
 name: visual-coordinator
-description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable flow-chart artifact and emits a paste-back spec that launches the exact configuration chosen. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.4
+description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
+version: 0.1.5
 ---
 
 # Visual Coordinator
 
-Turn a large multi-agent job into an editable diagram **before** it runs, then
+Turn a large multi-agent job into an **editable graph** before it runs, then
 emit a spec that launches exactly what the user approved.
 
-The artifact is a design surface, not a monitor. It is opened while planning,
-adjusted by the user, and produces text they paste back. Progress monitoring
+The chart **is** the workflow: nodes, labeled directed edges, gates with
+reject-back, optional memory loops. Staffing (lane, model, agent) lives on
+the selected card. The user adds, removes, and rewires cards; the chart
+redraws from that state. A poster of one example job is not this skill.
+
+The artifact is a design surface, not a monitor. Progress monitoring
 belongs to `/workflows` and the host's own UI.
 
 ## When to reach for this over plain coordinator
@@ -55,38 +59,32 @@ was invoked. Render it as a fixed banner. Everything else is configurable.
 
 ### 2. Choose the decomposition
 
-This is the judgement the artifact exists to expose, and it is where a canvas
-goes wrong first. Read
-[references/decomposition.md](references/decomposition.md) before drawing:
-finding the repeating unit, telling a phase from a node, when a barrier is
-genuinely required, sizing, where isolation is actually needed, and what makes a
-verification gate worth having.
+Read [references/decomposition.md](references/decomposition.md) before
+seeding. The output is a **graph**: nodes plus labeled directed edges.
+A gate is a node with a pass edge forward and a reject edge back to a
+named earlier node. Fan-out is several forward edges from one node.
+A barrier is many edges into one node.
 
-Where a decomposition is genuinely uncertain, draw the most defensible one and
-let the user edit it. That is what the canvas is for.
+Seed the most defensible graph. The user will rewire it on the canvas.
 
 ### 3. Build the artifact
 
-Load `Skill(artifact-design)` for craft, then compose the page. Required
-elements:
+Copy [examples/graph-builder.html](examples/graph-builder.html). That file
+is the canvas. Do not invent a phase list with dropdowns on each box.
 
-- **Fixed harness banner** naming the host and stating it cannot be changed here.
-- **Flow chart** of phases and nodes, drawn as SVG. Show barriers explicitly:
-  a `pipeline` phase lets items advance independently; a `parallel` phase does
-  not. Grok has no `pipeline()` — do not offer that mode on a Grok host.
-  The distinction changes wall-clock and must be visible, not implied.
-- **Per-node controls** — provider, model, effort, and assigned agent. Populate
-  every list from the detector output. The runtime's `fieldEnabled()` reports
-  which controls a node can carry, and `syncNode()` re-scopes the dependent
-  lists when a lane changes; call it rather than redrawing the canvas, which
-  drops keyboard focus mid-edit and does not scale past a handful of nodes.
-- **Shell-out nodes styled distinctly** from native ones. They are subprocesses,
-  and the visual language should say so.
-- **Roster palette** with agent avatars, names, and one-line roles, assignable to
-  nodes. Embed avatars as data URIs; the artifact CSP blocks external images.
-- **Concurrency and isolation dials**, bounded by the host's real caps.
-- **Verification gate field** — the command that proves the work.
-- **Copy button** emitting the paste-back spec.
+Set `window.VC_ENV` from the detector (harness, models, roster). Set
+`window.VC_SEED` to the graph from step 2 — nodes and edges for THIS job.
+Do not leave the untitled Start / Work / Gate template on a real dispatch.
+
+Required on the page:
+
+- **Fixed harness banner** — the host cannot be changed here.
+- **Live graph** — add and remove nodes, drag a mint port to connect, drag
+  cards, set an edge to `forward` / `reject` / `memory`. The chart redraws
+  from state. A non-host lane is a shell-out card and looks distinct.
+- **Inspector** — staffing for the selected card (lane, model, effort,
+  agent, task, gate command). Structure is not edited here.
+- **Copy button** — emits the live graph (`nodes[]` + `edges[]`).
 
 ### 3b. Deliver the page
 
@@ -136,14 +134,13 @@ the agent's initials in a coloured circle rather than shipping a faceless card.
 - **`references/emitted-spec-format.md`** — the exact shape of the paste-back
   spec, field rules, per-harness translation, and how to refuse an impossible
   configuration.
-- **`references/decomposition.md`** — how to choose phases, nodes, barriers,
-  sizing, isolation and the gate. Read before drawing, not after.
+- **`references/decomposition.md`** — how to choose the graph: nodes, edges,
+  reject-back, barriers, sizing, isolation. Read before seeding, not after.
 
 ### Assets
 
-- **`assets/canvas-runtime.js`** — state, per-node control scoping, refusal
-  reporting, and spec emission. Design-neutral: inline it and author the visual
-  layer freely.
+- **`examples/graph-builder.html`** — the self-contained canvas to copy.
+- **`assets/canvas-runtime.js`** — seed/env contract for that canvas.
 
 ### Scripts
 

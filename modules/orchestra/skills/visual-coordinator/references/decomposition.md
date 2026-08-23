@@ -81,13 +81,28 @@ routine volume.
 
 ## The verification gate
 
-Every canvas needs one command that proves the work. A workflow without a gate
-produces output nobody can check, and the artifact should not let that ship
-silently — emit a default and say it was defaulted.
+A gate is a **node**, not a footer command. It has at least two outbound
+edges: `pass` (forward) and `reject` (back to a named earlier node). That
+reject-back is the loop. A workflow whose checker can only stop, not send
+work back, is not a factory.
 
-Prefer a gate that fails loudly on the specific thing the job changed. "Tests
-pass" is weaker than "tests pass and the new tag appears in the rendered HTML",
-because the first would also pass if the work had not been done.
+The gate node still carries the command that proves the work (`bun test`,
+or the adversarial review prompt). A canvas with no gate node is missing
+the load-bearing part — seed one and say it was defaulted.
+
+Prefer a command that fails loudly on the specific thing the job changed.
+"Tests pass" is weaker than "tests pass and the new tag appears in the
+rendered HTML", because the first would also pass if the work had not
+been done.
+
+## Seed the graph, not a phase list
+
+The canvas consumes `nodes[]` and `edges[]`. Each edge is
+`{ from, to, label, kind }` with `kind` one of `forward`, `reject`,
+`memory`. `memory` is an across-run loop (journal, last ledgers).
+
+Do not flatten this into `phases[].nodes[]` as the thing the user edits.
+Phases can be derived later for the host script. The user edits the graph.
 
 ## Reading the shape back
 

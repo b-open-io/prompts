@@ -6,6 +6,17 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.141] - 2026-08-22
+
+### Changed
+
+- `visual-coordinator` 0.1.5: the canvas is a live graph builder, not a
+  staffing list or a poster of one job. Copy `examples/graph-builder.html`,
+  seed `window.VC_SEED` with nodes and labeled edges for this job
+  (`forward` / `reject` / `memory`). The user adds and rewires cards; the
+  chart redraws; Copy spec emits the live graph. A gate is a node with
+  reject-back, not a footer command. orchestra 0.1.10.
+
 ### Changed
 
 - `coordinator` (0.0.11): added a "graph tax" framing to Delegation Economics.
