@@ -33,7 +33,7 @@ skills:
   - orchestra:software-factory
   - core:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
-version: 1.7.13
+version: 1.7.14
 model: opus
 description: >-
   Agent architecture specialist. Use this agent when the user asks to "design an agent", "wire
@@ -76,6 +76,10 @@ When a project needs an autonomous **loop** — an agent that iterates toward a 
 - **The gate** → `tester` (Jason) implements and runs the required verification rung.
 - **State (tickets as memory)** → `project-manager` wires Linear / GitHub Issues / repo-vault.
 - **Heartbeat + connectors + promotion** → `devops` handles cron / Actions / circuit breakers.
+  If the loop opens GitHub PRs, scaffold the human-artifact gate
+  (`Skill(orchestra:software-factory)` → `references/human-artifacts.md`):
+  AGENTS.md **Pull requests** section, `scripts/lint-pr.sh`, CI. Auto-merge
+  without a human rewrite is how process jargon lands on GitHub.
 - **Maker/checker separation** → `code-auditor` / `hunter-skeptic-referee`.
 - **Cost-per-accepted-change** → `CFO` (Milton).
 - **Discovery (free roam)** → `Skill(core:free-roam-testing)` surfaces new work; the execution loop consumes it.

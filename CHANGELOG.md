@@ -6,6 +6,16 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.143] - 2026-08-23
+
+### Changed
+
+- `software-factory` 0.0.8: loops that open GitHub PRs must scaffold a
+  human-artifact contract — always-on AGENTS.md Pull requests section,
+  `lint-pr.sh`, PR template, and CI. Auto-merge without a human rewrite is
+  how process jargon lands on GitHub. `/factory-init` copies the templates.
+  orchestra 0.1.12.
+
 ## [1.1.142] - 2026-08-22
 
 ### Changed

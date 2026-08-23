@@ -55,7 +55,8 @@ Prove it once by hand on a real case, watching the gate actually reject bad work
 - `SKILL.md` — the working methodology the loop architect follows.
 - `references/config-questionnaire.md` — the ten-field interview for initializing a loop in a project.
 - `references/blast-radius.md` — the three autonomy tiers and the promotion protocol.
-- `references/failure-modes.md` — ten ways loops fail quietly, each with its guard.
+- `references/failure-modes.md` — ways loops fail quietly, each with its guard.
+- `references/human-artifacts.md` — GitHub PRs as human artifacts: always-on AGENTS.md, lint-pr.sh, CI.
 - `references/state-backends.md` — Linear, GitHub Issues, and repo-vault state, with the contract all three satisfy.
 
-The `/factory-init` command runs the questionnaire and scaffolds a loop end to end. Satchmo (`agent-builder`) is the point person who owns loop design; Jason runs the gate, Wags owns the ticket state, Root wires the heartbeat, and Milton watches the cost per accepted change.
+The `/factory-init` command runs the questionnaire and scaffolds a loop end to end, including the PR linter when the loop opens GitHub PRs. Satchmo (`agent-builder`) is the point person who owns loop design; Jason runs the gate, Wags owns the ticket state, Root wires the heartbeat, and Milton watches the cost per accepted change.
