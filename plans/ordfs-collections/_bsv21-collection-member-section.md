@@ -1,5 +1,8 @@
 ## Fungible (BSV-21) collection members
 
+> **ARCHIVED DRAFT — DO NOT PUBLISH.** It contains rejected root-signer and AIP
+> compatibility claims. Use `Skill(1sat:collections)` for the shipped contract.
+
 A `collectionItem` is not required to be an image inscription. A BSV-21
 `deploy+mint` or `deploy+auth` output (content type `application/bsv-20`, see
 [BSV-21](../fungible-tokens/bsv-21.md)) may itself carry `collectionItem`

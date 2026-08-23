@@ -1,5 +1,9 @@
 # Plan 002: 1sat-ordinals docs — document the reference-shared-content collection pattern
 
+> **ARCHIVED — DO NOT EXECUTE.** The content-reference idea remains useful, but
+> this plan's AIP and collection-authority claims do not match the shipped
+> overlay. Use `Skill(1sat:collections)` for membership rules.
+
 > **Target repo**: `~/code/1sat-ordinals` (github `BitcoinSchema/1sat-ordinals`) — the GitBook source for docs.1satordinals.com.
 > **Executor instructions**: This is a docs-only change. No build/test system; verification is a Markdown render check and link validity. Use the repo's own branch/commit convention (conventional commits like `docs: …`), NOT an internal `OPL-` scheme.
 >

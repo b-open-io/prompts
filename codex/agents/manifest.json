@@ -83,10 +83,10 @@
     {
       "source_name": "community-manager",
       "source_path": "agents/community-manager.md",
-      "source_version": "1.0.6",
-      "source_hash": "sha256:23ae73f6f02f307f474e27b5cd4a202af4688ae8e128d8053896e9016927c34b",
+      "source_version": "1.0.7",
+      "source_hash": "sha256:76113af995b24f82c51803eedc9a76480072cbdd382d4a89ccba263b0605affb",
       "generated_file": "bopen-community-manager.toml",
-      "generated_hash": "sha256:2fe53504857299bcef386a44b1d570f017f91bf859e6315079841baed2fd3ccf",
+      "generated_hash": "sha256:ec69d2961cbc0b621cc289e48d0e86459c9aa9e30ee86f61a64f934fbf1f96e3",
       "agent_name": "bopen_community_manager",
       "curated": false,
       "default_install": false
@@ -182,10 +182,10 @@
     {
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
-      "source_version": "1.1.12",
-      "source_hash": "sha256:25b296445c330f896c4adf2104cd5aa3729253b351f111f74375420f4e6a790a",
+      "source_version": "1.1.13",
+      "source_hash": "sha256:6cd638e8d27bb463458bafc5762e71a11f2a789f14c58c1aaa1a87a3ec2ad80a",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:3718a1d1e1db06bdd60cb86b1b0821d7b2f93d6f76416269e8f6f0eaef54f3a6",
+      "generated_hash": "sha256:8b1dc4055d4300dbfb2a774e7cdc8f44668fe69c440cc7a4dd9f858070e8288a",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true

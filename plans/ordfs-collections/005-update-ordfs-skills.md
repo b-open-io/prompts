@@ -1,5 +1,9 @@
 # Plan 005: Update the OrdFS / mintflow skills to reflect referenced-content collections (final step)
 
+> **ARCHIVED — DO NOT EXECUTE.** The live skills are maintained in their owning
+> plugin repositories. Use `Skill(1sat:collections)` for current collection
+> behavior.
+
 > **Target repos**: `~/code/bsv-skills` (the dedicated `ordfs` skill) and `~/code/1sat-sdk` (the `mintflow` skill). NOTE: the user referred to "ordfs skills in the prompts repo," but the actual OrdFS skill is `bsv-skills/skills/ordfs/SKILL.md`; the prompts repo (core) has no dedicated ordfs skill. Confirm with a grep before editing.
 > **Executor instructions**: This is the LAST step — run it only after plans 001–004 have landed, so the skills document what actually shipped, not the plan. Skills are Markdown (`SKILL.md`); "verification" is a currency/accuracy check, not a build.
 >

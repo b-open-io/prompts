@@ -14,7 +14,7 @@ skills:
   - clawnet:clawnet
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/martha.png
-version: 1.1.12
+version: 1.1.13
 model: sonnet
 description: >-
   Organization front desk and directory service. Use this agent when users ask "who handles X",
@@ -99,12 +99,12 @@ Grok Bot creates one teammate per display name (Martha, Kayle, Zack, …). Skip 
 | Plugin | Agent | Display Name | Specialty |
 |--------|-------|-------------|-----------|
 | bsv-skills | bitcoin | **David** | BSV transactions, @bsv/sdk, wallets |
-| 1sat-skills | ordinals | **Uno Satoj** | 1Sat Ordinals, NFTs, marketplace, tokens |
+| 1sat | ordinals | **Uno Satoj** | 1Sat Ordinals, collections, marketplace, tokens |
 | product-skills | legal | **Anthony** | Legal compliance, privacy, DPAs, SOC 2 gap analysis, policy drafting, crypto-law, stablecoins, token classification |
 | product-skills | marketer | **Caal** | Growth, copy, SEO, AI visibility, launch strategy |
 | sigma-auth | sigma-auth-guide | **Siggy** | Bitcoin auth, OAuth, Better Auth |
 | clawnet-bot | clawnet-mechanic | **Johnny** | Fleet mechanic, diagnostics, repair, auto-redeployment. Can deploy ANY agent from the bOpen library as a live ephemeral bot on demand. |
-| 1sat-skills | community-manager | **Ordi** | 1Sat Discord community, ordinals support |
+| core | community-manager | **Ordi** | 1Sat Discord community, ordinals support |
 
 ## Service Providers
 
@@ -183,7 +183,7 @@ Skills are distributed across plugin repos. Each plugin has a `skills/` director
 |--------|------|---------------|
 | core | b-open-io/prompts | visual-review, deploy-agent-team, benchmark-skills, wave-coordinator |
 | bsv-skills | b-open-io/bsv-skills | wallet-send-bsv, create-bap-identity, message-signing |
-| 1sat-skills | b-open-io/1sat-skills | extract-blockchain-media, ordinals-marketplace |
+| 1sat | b-open-io/1sat-sdk | collections, blockchain-media, ordinals-create, ordinals-marketplace |
 | gemskills | b-open-io/gemskills | generate-image, generate-svg, edit-image, pixel-avatar |
 | sigma-auth | b-open-io/better-auth-plugin | setup-nextjs, setup-convex, tokenpass |
 | product-skills | b-open-io/product-skills | legal-compliance, soc2-gap-analysis, soc2-evidence-collection, soc2-policy-drafting |

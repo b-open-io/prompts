@@ -1,5 +1,10 @@
 # 1Sat Ordinals JavaScript Library (js-1sat-ord)
 
+> **Legacy library reference.** For current application work, prefer the
+> `b-open-io/1sat-sdk` packages and load the relevant `1sat:*` skill. For
+> collections specifically, use `Skill(1sat:collections)`; the examples below
+> do not describe the shipped collection overlay's SIGMA admission contract.
+
 ## Overview
 A JavaScript library for creating and managing 1Sat Ordinal inscriptions and transactions on the Bitcoin SV blockchain. Built on top of `@bsv/sdk`, it provides high-level functions for working with Ordinals, BSV21 tokens, and marketplace operations.
 

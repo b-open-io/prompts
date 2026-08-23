@@ -1,6 +1,6 @@
 ---
 name: front-desk
-version: 1.0.6
+version: 1.0.7
 description: >-
   Route to the right agent, skill, or service provider. Use for "who handles X?", "what agents
   are available?", "team roster", "what skills are available?", "where do I find skill X?",
@@ -41,7 +41,7 @@ Match the user's need to the right specialist:
 | Need | Agent | Plugin |
 |------|-------|--------|
 | BSV transactions, wallets | **David** (bitcoin) | bsv-skills |
-| Ordinals, NFTs, tokens | **Uno Satoj** (ordinals) | 1sat-skills |
+| Ordinals, collections, NFTs, tokens | **Uno Satoj** (ordinals) | 1sat |
 | Agent architecture | **Satchmo** (agent-builder) | core |
 | UI/UX, game HUD, TV app, controller/remote navigation | **Ridd** (designer) | core |
 | Performance | **Torque** (optimizer) | core |
@@ -84,7 +84,7 @@ Use the plugin-qualified Claude agent ID:
 ```
 Agent(subagent_type="web-dev:designer", prompt="Design a dashboard component")
 Agent(subagent_type="bsv-skills:bitcoin", prompt="Build a BSV transaction")
-Agent(subagent_type="1sat-skills:ordinals", prompt="Mint an ordinal inscription")
+Agent(subagent_type="1sat:ordinals", prompt="Mint an ordinal inscription")
 ```
 
 ### Codex
@@ -138,7 +138,7 @@ command as though Codex can execute it.
 |--------|------|---------|
 | core | b-open-io/prompts | `/plugin install core@b-open-io` |
 | bsv-skills | b-open-io/bsv-skills | `/plugin install bsv-skills@b-open-io` |
-| 1sat-skills | b-open-io/1sat-skills | `/plugin install 1sat-skills@b-open-io` |
+| 1sat | b-open-io/1sat-sdk | `/plugin install 1sat@b-open-io` |
 | gemskills | b-open-io/gemskills | `/plugin install gemskills@b-open-io` |
 | sigma-auth | b-open-io/better-auth-plugin | `/plugin install sigma-auth@b-open-io` |
 | product-skills | b-open-io/product-skills | `/plugin install product-skills@b-open-io` |

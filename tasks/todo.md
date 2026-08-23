@@ -427,3 +427,20 @@
 - Codex still reports its non-fatal 2% skill-context budget notice for the
   remaining enabled catalog. Removing that notice requires a user choice about
   which otherwise-working skills or plugins to disable.
+
+## Correct 1Sat collection guidance and skill routing
+
+- [x] Compare every collection claim in this repository with the implementation
+  merged in `1sat-stack` PR #9.
+- [x] Separate historical plans from current agent guidance and remove rejected
+  AIP, owner-following, and BSV21-owned collection behavior.
+- [x] Decide which plugin owns the canonical collection skill and update active
+  skill PRs rather than documenting the contract in multiple places.
+- [x] Add focused evals that reject AIP admission and BSV21 collection routes.
+- [ ] Run repository documentation, manifest, and skill validation checks.
+- [ ] Open plain-English PRs for each owning repository and record the final
+  source-of-truth map.
+
+### Review
+
+- Pending.
