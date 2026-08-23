@@ -746,9 +746,9 @@ does not pin or rename it. The supporting skills divide responsibilities:
 - `orchestrator` composes native specialists, Coordinator, Advisor, and staged
   waves while leaving final decisions with the main session.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
-  edges, reject-back gates) before it runs and emits a paste-back spec from
-  that graph. On Grok it translates to a Rhai workflow, not a vague
-  `/workflow` brief.
+  edges, reject-back gates) before it runs. Staffing, isolation,
+  concurrency, refusals, and the paste-back spec live on that canvas.
+  On Grok it translates to a Rhai workflow, not a vague `/workflow` brief.
   `/create-workflow` is a Grok-bundled authoring skill
   (`~/.grok/bundled/skills/create-workflow/SKILL.md`). It is not part of
   orchestra. Claude Code and Codex do not have that slash command.

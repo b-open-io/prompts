@@ -58,10 +58,6 @@ codex_model=""
 if [[ -f "${CODEX_HOME:-$HOME/.codex}/config.toml" ]]; then
   codex_model=$(grep -m1 '^model *=' "${CODEX_HOME:-$HOME/.codex}/config.toml" 2>/dev/null | sed 's/.*= *//; s/"//g')
 fi
-codex_effort=""
-if [[ -f "${CODEX_HOME:-$HOME/.codex}/config.toml" ]]; then
-  codex_effort=$(grep -m1 '^model_reasoning_effort *=' "${CODEX_HOME:-$HOME/.codex}/config.toml" 2>/dev/null | sed 's/.*= *//; s/"//g')
-fi
 
 # --- Caps the canvas must honour --------------------------------------------
 native_workflow="false"
@@ -147,6 +143,10 @@ PY_INNER
 [[ -z "$roster_json" ]] && roster_json="[]"
 
 grok_models_json=$(printf '%s' "$grok_models" | awk -F, '{for(i=1;i<=NF;i++){if($i!=""){printf "%s\"%s\"", (i>1?",":""), $i}}}')
+codex_models_json=""
+if [[ -n "$codex_model" ]]; then
+  codex_models_json="\"$(json_escape "$codex_model")\""
+fi
 
 cat <<JSON
 {
@@ -166,8 +166,8 @@ cat <<JSON
     "claude_effort": ["low", "medium", "high", "xhigh", "max"],
     "grok": [${grok_models_json}],
     "grok_effort": ["none", "minimal", "low", "medium", "high", "xhigh"],
-    "codex": ["${codex_model:-unknown}"],
-    "codex_effort": ["${codex_effort:-unknown}"]
+    "codex": [${codex_models_json}],
+    "codex_effort": ["minimal", "low", "medium", "high", "xhigh"]
   },
   "roster": $roster_json
 }

@@ -31,8 +31,8 @@
   button.primary{background:var(--teal-b);color:#06231d;border:0;font-weight:700}
   button.danger{border-color:#8a3048;color:#f0b4c2}
   .ghost{background:transparent}
-  input[type=text],select,textarea{background:#0c1222;border:1px solid var(--line);border-radius:8px;padding:.35rem .5rem}
-  .name{min-width:12rem;background:transparent;border:1px dashed var(--line)}
+  input[type=text],input[type=number],select,textarea{background:#0c1222;border:1px solid var(--line);border-radius:8px;padding:.35rem .5rem}
+  .name{width:16rem;flex:0 0 auto;background:transparent;border:1px dashed var(--line)}
   .legend{display:flex;gap:.9rem;font-size:.75rem;color:var(--mut)}
   .legend i{display:inline-block;width:1.3rem;border-top:2px solid var(--mint);vertical-align:middle;margin-right:.3rem}
   .legend i.dash{border-top-style:dashed;border-color:var(--purp-b)}
@@ -55,7 +55,7 @@
   .node .k{font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:650;margin:0 0 .2rem}
   .node h2{margin:0;font-size:.98rem}
   .node .sub{margin:.15rem 0 0;font-size:.78rem;color:color-mix(in srgb,var(--ink) 70%,var(--mut))}
-  .chips{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.45rem}
+  .chips{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.45rem;align-items:center}
   .chip{font-size:.66rem;padding:.1rem .38rem;border-radius:999px;border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);background:rgba(0,0,0,.18)}
   .port{position:absolute;width:12px;height:12px;border-radius:99px;background:var(--mint);border:2px solid var(--bg);
     top:50%;margin-top:-6px;cursor:crosshair;z-index:2}
@@ -72,9 +72,19 @@
   label{display:block;font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin:0 0 .25rem}
   .field{margin:0 0 .7rem}
   textarea{width:100%;min-height:4.6rem;resize:vertical}
-  select,input[type=text]{width:100%}
+  aside select, aside input[type=text]{width:100%}
   .empty{color:var(--mut)} .hint{font-size:.78rem;color:var(--mut);margin:.5rem 0 0}
   .row{display:flex;gap:.4rem;flex-wrap:wrap}
+  .dials{display:flex;align-items:center;gap:.45rem;font-size:.8rem;color:var(--mut)}
+  .dials select,.dials input{width:auto;min-width:7rem}
+  .dials input[type=number]{width:4.2rem}
+  .dials input[type=text]{width:8rem}
+  .warns{list-style:none;margin:.2rem 0 0;padding:0;width:100%;font-size:.78rem;color:var(--warn)}
+  .warns li{margin:.12rem 0}
+  .chip.av{width:1.15rem;height:1.15rem;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:99px;font-size:.58rem;font-weight:700;overflow:hidden;border:0}
+  .chip.av img{width:100%;height:100%;object-fit:cover;display:block}
+  .fate{font-size:.8rem;color:var(--gold);margin:0 0 .75rem}
+  .spec{width:100%;min-height:16rem;font:11px/1.35 ui-monospace,Menlo,monospace;white-space:pre}
   @media (max-width:820px){ main{grid-template-columns:1fr} aside{border-left:0;border-top:1px solid var(--line)} }
   @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
@@ -84,12 +94,24 @@
   <h1>Visual coordinator</h1>
   <div class="banner">Host: <b id="host-name">Grok Build</b> — fixed</div>
   <input class="name" id="wf-name" type="text" value="untitled" aria-label="Workflow name">
+  <div class="dials">
+    <label for="isolation">Isolation</label>
+    <select id="isolation" aria-label="Isolation">
+      <option value="shared-tree">shared tree</option>
+      <option value="worktree-per-agent">worktree per agent</option>
+    </select>
+    <label for="concurrency">Live children</label>
+    <input id="concurrency" type="number" min="1" value="3" aria-label="Concurrency">
+    <label for="cwd">cwd</label>
+    <input id="cwd" type="text" value="." aria-label="Working directory">
+  </div>
   <div class="legend"><span><i></i>forward</span><span><i class="dash"></i>reject / memory</span></div>
   <span class="sp"></span>
   <button type="button" class="primary" id="copy">Copy spec</button>
 </header>
 <div class="tools">
-  <span class="hintbar">The chart is the workflow. Add nodes, then drag a mint port to another port. Drag a card to move it. Change a field and the graph restyles.</span>
+  <span class="hintbar">The chart is the workflow. Add nodes, then drag a mint port to another port. Drag a card to move it. Backspace deletes. Ctrl/Cmd+Z undoes.</span>
+  <ul class="warns" id="warns"></ul>
   <span class="sp"></span>
   <button type="button" data-add="source">+ Source</button>
   <button type="button" data-add="process">+ Step</button>
@@ -116,29 +138,88 @@ window.VC_ENV = window.VC_ENV || { harness: "grok" };
 window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
 (function(){
   var ENV = window.VC_ENV || {};
-  var MODELS = ENV.models || { grok:["grok-4.6"], claude:["fable","sonnet","opus"], codex:["gpt-5.6-sol"] };
-  var EFFORT = ENV.effort || ["low","medium","high"];
+  var MODELS = ENV.models || {
+    grok:["grok-4.6"], grok_effort:["none","minimal","low","medium","high","xhigh"],
+    claude:["fable","sonnet","opus"], claude_effort:["low","medium","high","xhigh","max"],
+    codex:["gpt-5.6-sol"], codex_effort:["minimal","low","medium","high","xhigh"]
+  };
+  var LANES = ENV.lanes || { grok:"available", claude:"available", codex:"available" };
   var ROSTER = ENV.roster || ["","orchestra:coordinator","orchestra:agent-builder","review:tester"];
   var HARNESS = ENV.harness || "grok";
+  var AVATAR_HUE = ["#3ec9b0","#8b7cf7","#c45b7a","#c9a227","#6ea8ff","#e38f1a"];
   var nid = 1, eid = 1, inspectorFor = null;
-  var S = { name:"untitled", isolation:"shared-tree", concurrency:3, nodes:[], edges:[] };
-  var sel = null; /* {k:'node'|'edge', id} */
+  var S = { name:"untitled", isolation:"shared-tree", concurrency:3, cwd: ENV.cwd || ".", nodes:[], edges:[] };
+  var sel = null;
   var drag = null, link = null;
+  var hist = [], hpos = -1;
 
   function uid(p){ return p + (p==="n"? nid++ : eid++); }
-  function node(o){ return Object.assign({ id:uid("n"), kind:"process", x:80, y:160, label:"Step", detail:"", lane:"grok", model:"grok-4.6", effort:"medium", agentType:"", task:"", gateCmd:"" }, o); }
+  function node(o){ return Object.assign({ id:uid("n"), kind:"process", x:80, y:160, label:"Step", detail:"", lane:hostLane(), model:(modelsFor(hostLane())[0]||"grok-4.6"), effort:"medium", agentType:"", task:"", gateCmd:"", schema:"", paths:"", command:"" }, o); }
   function edge(o){ return Object.assign({ id:uid("e"), from:"", to:"", label:"", kind:"forward" }, o); }
+  function hostLane(){
+    if(HARNESS==="claude-code") return "claude";
+    if(HARNESS==="codex") return "codex";
+    return "grok";
+  }
   function staffed(n){ return n.kind==="process" || n.kind==="gate"; }
-  function isShell(n){ return staffed(n) && n.lane !== "grok"; }
+  function isShell(n){ return staffed(n) && n.lane && n.lane !== hostLane(); }
+  function cap(){
+    if(ENV.caps && ENV.caps.live_children) return ENV.caps.live_children;
+    if(HARNESS==="claude-code") return 16;
+    if(HARNESS==="grok") return 32;
+    return 6;
+  }
+  function modelsFor(lane){
+    return (MODELS[lane]||[]).filter(function(m){ return m && m!=="unknown" && m!=="grok-4.5"; });
+  }
+  function effortsFor(lane){
+    return (MODELS[lane+"_effort"]||["low","medium","high"]).filter(function(m){ return m && m!=="unknown"; });
+  }
+  function laneAvailable(lane){ return LANES[lane] !== "unavailable"; }
+  function rosterList(){
+    var src=Array.isArray(ROSTER)?ROSTER:[];
+    var out=[{id:"", name:"(none)", avatar:""}];
+    src.forEach(function(r){
+      if(!r) return;
+      if(typeof r==="string"){ out.push({id:r, name:r, avatar:""}); return; }
+      if(r.id) out.push({id:r.id, name:r.display_name||r.name||r.id, avatar:r.avatar||""});
+    });
+    return out;
+  }
+  function rosterWho(id){ return rosterList().find(function(r){ return r.id && r.id===id; }); }
+  function inboundForward(id){
+    return S.edges.filter(function(e){ return e.to===id && e.kind==="forward"; }).length;
+  }
+  function hash(s){
+    var h=0, i; s=String(s||"");
+    for(i=0;i<s.length;i++) h=((h<<5)-h)+s.charCodeAt(i)|0;
+    return Math.abs(h);
+  }
+  function initials(name){
+    var parts=String(name||"").trim().split(/[\s:_-]+/).filter(Boolean);
+    if(!parts.length) return "?";
+    if(parts.length===1) return parts[0].slice(0,2).toUpperCase();
+    return (parts[0][0]+parts[parts.length-1][0]).toUpperCase();
+  }
+  function avatarChip(n){
+    var who=rosterWho(n.agentType); if(!who) return "";
+    if(who.avatar) return '<span class="chip av"><img alt="" src="'+esc(who.avatar)+'"></span>';
+    var hue=AVATAR_HUE[hash(who.id)%AVATAR_HUE.length];
+    return '<span class="chip av" style="background:'+hue+';color:#06231d">'+esc(initials(who.name))+"</span>";
+  }
 
   function seedMinimal(){
     nid=1; eid=1;
+    var native=hostLane();
+    var nativeModel=modelsFor(native)[0]||"grok-4.6";
+    var gateLane=modelsFor("claude").length && laneAvailable("claude") ? "claude" : native;
+    var gateModel=gateLane==="claude" && modelsFor("claude").indexOf("fable")>=0 ? "fable" : (modelsFor(gateLane)[0]||nativeModel);
     S.name = "untitled";
     S.nodes = [
       node({id:"n1", kind:"source", x:36, y:188, label:"Start", detail:"brief in"}),
-      node({id:"n2", kind:"process", x:280, y:178, label:"Work", detail:"do the job", lane:"grok", model:"grok-4.6", effort:"medium"}),
-      node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:"claude", model:"fable", effort:"high", gateCmd:"bun test"}),
-      node({id:"n4", kind:"process", x:780, y:178, label:"Done", detail:"ship or complete", lane:"grok", model:"grok-4.6", effort:"low"})
+      node({id:"n2", kind:"process", x:280, y:178, label:"Work", detail:"do the job", lane:native, model:nativeModel, effort:"medium"}),
+      node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:gateLane, model:gateModel, effort:"high", gateCmd:"bun test"}),
+      node({id:"n4", kind:"process", x:780, y:178, label:"Done", detail:"ship or complete", lane:native, model:nativeModel, effort:"low"})
     ];
     nid=5;
     S.edges = [
@@ -149,6 +230,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     ];
     eid=5;
     document.getElementById("wf-name").value = S.name;
+    syncDials();
   }
   function seedExample(){
     nid=1; eid=1;
@@ -183,6 +265,13 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     ];
     eid=14;
     document.getElementById("wf-name").value = S.name;
+    syncDials();
+  }
+  function syncDials(){
+    var iso=document.getElementById("isolation"); if(iso) iso.value=S.isolation||"shared-tree";
+    var cEl=document.getElementById("concurrency");
+    if(cEl){ cEl.max=String(cap()); cEl.value=String(S.concurrency||3); }
+    var cwd=document.getElementById("cwd"); if(cwd) cwd.value=S.cwd||".";
   }
 
   var stage = document.getElementById("stage");
@@ -193,9 +282,11 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   function eById(id){ return S.edges.find(function(e){ return e.id===id; }); }
 
   function chips(n){
-    if (!staffed(n)) return "";
-    var bits = [n.lane, n.model, n.effort, n.agentType && n.agentType.split(":")[1], isShell(n) && "CLI", n.kind==="gate" && n.gateCmd];
-    return bits.filter(Boolean).map(function(b){ return '<span class="chip">'+esc(b)+"</span>"; }).join("");
+    var av=staffed(n)?avatarChip(n):"";
+    if (!staffed(n)) return av+(inboundForward(n.id)>=2 ? '<span class="chip">barrier</span>' : "");
+    var who=rosterWho(n.agentType);
+    var bits = [n.lane, n.model, n.effort, who && who.name, isShell(n) && "CLI", n.kind==="gate" && n.gateCmd, inboundForward(n.id)>=2 && "barrier"];
+    return av+bits.filter(Boolean).map(function(b){ return '<span class="chip">'+esc(b)+"</span>"; }).join("");
   }
   function kindLabel(n){
     if (n.kind==="gate") return "gate node";
@@ -305,13 +396,22 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       svg.appendChild(t);
     }
   }
-  function draw(){ paintNodes(); drawEdges(); }
+  function draw(){ paintNodes(); drawEdges(); paintWarns(); inspect(); }
 
   function inspect(){
-    var key=sel? sel.k+":"+sel.id : "";
+    var key=sel? sel.k+":"+sel.id : "none";
+    if(key==="none"){
+      var ta=document.getElementById("spec-out");
+      if(inspectorFor==="none" && ta){ ta.value=emit(); return; }
+      inspectorFor="none";
+      aside.innerHTML="<h2>Plan</h2><p class='who'>"+S.nodes.length+" nodes · "+S.edges.length+" edges</p>"+
+        '<textarea class="spec" id="spec-out" readonly></textarea>'+
+        '<p class="hint">Copy spec puts this on the clipboard. Select a card to staff it.</p>';
+      document.getElementById("spec-out").value=emit();
+      return;
+    }
     if(key===inspectorFor) return;
     inspectorFor=key;
-    if(!sel){ aside.innerHTML='<p class="empty">Select a node or an edge. Add nodes in the toolbar. Drag a mint port to connect.</p>'; return; }
     if(sel.k==="edge"){
       var e=eById(sel.id); if(!e) return;
       var opts=S.nodes.map(function(n){ return '<option value="'+n.id+'"'+(n.id===e.from?" selected":"")+">"+esc(n.label)+" ("+n.id+")</option>"; }).join("");
@@ -323,45 +423,65 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
         '<p class="hint">reject and memory draw as dashed return arrows. forward is the main path.</p>';
       bind(["e-from","e-to","e-kind","e-label"], function(){
         e.from=val("e-from"); e.to=val("e-to"); e.kind=val("e-kind"); e.label=val("e-label");
-        inspectorFor=null; draw(); inspect();
+        inspectorFor=null; snap(); draw();
       });
       return;
     }
     var n=byId(sel.id); if(!n) return;
     var native=!isShell(n);
+    var r=resolved(n);
+    var fate=r.omit ? ("Not emitted: "+r.omitReason) : (r.shell ? ("Emits as CLI shell-out to "+r.lane+(r.converted?" (converted from native)":"")) : (staffed(n)?"Emits as native agent":"Emits as "+n.kind));
     aside.innerHTML="<h2>"+esc(n.label)+"</h2><p class='who'>"+esc(kindLabel(n))+"</p>"+
+      '<p class="fate">'+esc(fate)+"</p>"+
       fsel("kind","Node type",["source","process","gate","artifact","memory"].map(function(k){return '<option '+(n.kind===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
       ftext("label","Title",n.label)+ftext("detail","Subtitle",n.detail)+
       (staffed(n)?
-        fsel("lane","Lane",["grok","claude","codex"].map(function(k){return '<option '+(n.lane===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
-        fsel("model","Model",(MODELS[n.lane]||[]).map(function(k){return '<option '+(n.model===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
-        fsel("effort","Effort",EFFORT.map(function(k){return '<option '+(n.effort===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
-        fsel("agentType","Agent",ROSTER.map(function(k){return '<option '+(n.agentType===k?"selected":"")+' value="'+k+'">'+(k||"(none)")+"</option>";}).join(""), native?"":"Roster agents belong to the host. A non-Grok lane is a CLI subprocess.")+
-        fta("task","Task",n.task): "")+
+        fsel("lane","Lane",["grok","claude","codex"].map(function(k){
+          var miss=!laneAvailable(k);
+          return '<option '+(n.lane===k?"selected":"")+' value="'+k+'">'+k+(miss?" (not installed)":"")+"</option>";
+        }).join(""))+
+        fsel("model","Model",modelsFor(n.lane).map(function(k){return '<option '+(n.model===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
+        fsel("effort","Effort",effortsFor(n.lane).map(function(k){return '<option '+(n.effort===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
+        (native?fsel("agentType","Agent",rosterList().map(function(k){return '<option '+(n.agentType===k.id?"selected":"")+' value="'+esc(k.id)+'">'+esc(k.name)+"</option>";}).join("")):"")+
+        ftext("paths","Owned paths",n.paths||"")+
+        fta("task","Task",n.task)+
+        (native?fta("schema","Structured output schema (JSON, optional)",n.schema||""):fta("command","CLI command (blank = composed)",n.command||""))
+      : "")+
       (n.kind==="gate"?fta("gateCmd","Gate command",n.gateCmd):"")+
+      (r.shell && !n.command?'<p class="hint">Composed command: '+esc(r.command)+"</p>":"")+
       '<p class="hint">Change type, lane, or title — the card restyles in place. Connect cards on the graph, not in this panel.</p>';
-    bind(["kind","label","detail","lane","model","effort","agentType","task","gateCmd"], onNodeField);
+    bind(["kind","label","detail","lane","model","effort","agentType","paths","task","schema","gateCmd","command"], onNodeField);
   }
   function fsel(id,lab,inner,note){ return '<div class="field"><label for="'+id+'">'+lab+"</label><select id='"+id+"'>"+inner+"</select>"+(note?'<p class="hint">'+note+"</p>":"")+"</div>"; }
   function ftext(id,lab,v){ return '<div class="field"><label for="'+id+'">'+lab+'</label><input id="'+id+'" type="text" value="'+esc(v)+'"></div>'; }
   function fta(id,lab,v){ return '<div class="field"><label for="'+id+'">'+lab+"</label><textarea id='"+id+"'>"+esc(v)+"</textarea></div>"; }
   function val(id){ var el=document.getElementById(id); return el?el.value:""; }
   function bind(ids, fn){ ids.forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener("change", fn); el.addEventListener("input", fn); }); }
-  function onNodeField(){
+  function onNodeField(ev){
     var n=byId(sel.id); if(!n) return;
     var prevLane=n.lane, prevKind=n.kind;
     n.kind=val("kind")||n.kind; n.label=val("label"); n.detail=val("detail");
     if(staffed(n)){
       n.lane=val("lane")||n.lane;
-      if(n.lane!==prevLane){ n.model=(MODELS[n.lane]||[])[0]||""; n.agentType = n.lane==="grok"?n.agentType:""; inspectorFor=null; inspect(); }
-      else { n.model=val("model"); n.effort=val("effort"); n.agentType=val("agentType"); n.task=val("task"); }
+      if(n.lane!==prevLane){
+        n.model=modelsFor(n.lane)[0]||"";
+        var ef=effortsFor(n.lane);
+        if(ef.indexOf(n.effort)<0) n.effort=ef[0]||"";
+        if(isShell(n)){ n.agentType=""; n.schema=""; }
+        inspectorFor=null;
+      } else {
+        n.model=val("model"); n.effort=val("effort");
+        if(!isShell(n)){ n.agentType=val("agentType"); n.schema=val("schema"); }
+        n.task=val("task"); n.paths=val("paths"); n.command=val("command");
+      }
     }
     if(n.kind==="gate") n.gateCmd=val("gateCmd");
-    if(n.kind!==prevKind){ inspectorFor=null; inspect(); }
+    if(n.kind!==prevKind) inspectorFor=null;
+    if(ev && ev.type==="change") snap();
     draw();
   }
 
-  function select(k,id){ sel={k:k,id:id}; inspectorFor=null; draw(); inspect(); }
+  function select(k,id){ sel={k:k,id:id}; inspectorFor=null; draw(); }
   function addNode(kind){
     var x=80, y=178;
     S.nodes.forEach(function(n){ x=Math.max(x, n.x+244); });
@@ -369,14 +489,15 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     var n=node({ kind:kind, x:x, y:y,
       label: kind==="gate"?"Gate": kind==="source"?"Source": kind==="artifact"?"Artifact": kind==="memory"?"Memory":"Step",
       detail: kind==="gate"?"prove the work":"",
-      lane: kind==="gate"?"claude":"grok",
-      model: kind==="gate"?"fable":"grok-4.6",
+      lane: kind==="gate" && laneAvailable("claude")?"claude":hostLane(),
+      model: kind==="gate" && modelsFor("claude").length? (modelsFor("claude").indexOf("fable")>=0?"fable":modelsFor("claude")[0]) : (modelsFor(hostLane())[0]||"grok-4.6"),
       gateCmd: kind==="gate"?"bun test":"" });
     S.nodes.push(n);
     if(sel&&sel.k==="node"&&byId(sel.id)&&sel.id!==n.id){
-      S.edges.push(edge({ from:sel.id, to:n.id, label:"", kind:"forward" }));
+      connect(sel.id, n.id, true);
     }
     select("node", n.id);
+    snap();
   }
   function delSel(){
     if(!sel) return;
@@ -384,13 +505,23 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       S.edges=S.edges.filter(function(e){ return e.from!==sel.id && e.to!==sel.id; });
       S.nodes=S.nodes.filter(function(n){ return n.id!==sel.id; });
     } else S.edges=S.edges.filter(function(e){ return e.id!==sel.id; });
-    sel=null; inspectorFor=null; draw(); inspect();
+    sel=null; inspectorFor=null; draw();
+    snap();
   }
-  function connect(from,to){
+  function connect(from,to, skipSelect){
     if(from===to) return;
     if(S.edges.some(function(e){ return e.from===from && e.to===to; })) return;
-    var e=edge({ from:from, to:to, label:"", kind:"forward" });
-    S.edges.push(e); select("edge", e.id);
+    var a=byId(from), b=byId(to);
+    var kind="forward", label="";
+    if((a && a.kind==="memory") || (b && b.kind==="memory")) kind="memory";
+    else if(a && a.kind==="gate"){
+      var hasPass=S.edges.some(function(e){ return e.from===from && e.kind==="forward"; });
+      var toFeedsGate=S.edges.some(function(e){ return e.to===from && e.from===to && e.kind==="forward"; });
+      if(hasPass && toFeedsGate){ kind="reject"; label="fail · retry"; }
+    }
+    var e=edge({ from:from, to:to, label:label, kind:kind });
+    S.edges.push(e);
+    if(!skipSelect) select("edge", e.id);
   }
   function arrange(){
     var fwd=S.edges.filter(function(e){ return e.kind==="forward"; });
@@ -409,32 +540,148 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       cols[L].forEach(function(n,i){ n.x=36+Number(L)*244; n.y=36+i*150; });
     });
     draw();
+    snap();
   }
 
+  function composeCommand(n){
+    if(n.command) return n.command;
+    var dir=S.cwd || ".";
+    var task=(n.task||n.label||"task").replace(/"/g,'\\"');
+    var effort="";
+    if(n.effort && n.lane==="codex") effort=' -c model_reasoning_effort="'+n.effort+'"';
+    if(n.effort && n.lane==="grok") effort=" --reasoning-effort "+n.effort;
+    if(n.lane==="codex") return 'codex exec --sandbox workspace-write --cd "'+dir+'" -m "'+n.model+'"'+effort+' "'+task+'"';
+    if(n.lane==="grok") return 'grok --single "'+task+'" -m "'+n.model+'"'+effort+' --permission-mode acceptEdits --sandbox workspace --cwd "'+dir+'"';
+    if(n.lane==="claude") return 'claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communication.md" --model "'+n.model+'" --permission-mode plan --tools "Read,Grep,Glob" --no-session-persistence "'+task+'"';
+    return "";
+  }
+  function resolved(n){
+    var row={
+      id:n.id, kind:n.kind, label:n.label, detail:n.detail, x:n.x, y:n.y,
+      lane:n.lane||null, model:n.model||null, effort:n.effort||null,
+      task:n.task||"", paths:n.paths||null, gateCmd:n.kind==="gate"?n.gateCmd:null,
+      shell:false, agentType:null, schema:null, command:null, converted:false, omit:false, omitReason:null
+    };
+    if(!staffed(n)) return row;
+    if(!laneAvailable(n.lane) && isShell(n)){
+      row.omit=true; row.omitReason="the "+n.lane+" CLI is not installed";
+      row.shell=true; return row;
+    }
+    if(isShell(n)){
+      row.shell=true; row.command=composeCommand(n); return row;
+    }
+    if(HARNESS==="grok" && n.model && n.model!=="grok-4.6"){
+      var lane=null;
+      if(modelsFor("grok").indexOf(n.model)>=0) lane="grok";
+      else if(modelsFor("codex").indexOf(n.model)>=0) lane="codex";
+      else if(modelsFor("claude").indexOf(n.model)>=0) lane="claude";
+      if(!lane){
+        row.omit=true; row.omitReason=n.model+" is not on any detected lane";
+        return row;
+      }
+      var remapped=Object.assign({}, n, {lane:lane});
+      row.shell=true; row.converted=true; row.lane=lane;
+      row.command=composeCommand(remapped);
+      return row;
+    }
+    row.agentType=n.agentType||null;
+    row.schema=n.schema||null;
+    return row;
+  }
+  function isolationOut(){
+    if(HARNESS==="codex" && S.isolation==="worktree-per-agent") return "shared-tree";
+    return S.isolation||"shared-tree";
+  }
+  function warnings(){
+    var out=[], c=cap();
+    if(Number(S.concurrency)>c) out.push("Concurrency "+S.concurrency+" exceeds the "+HARNESS+" cap of "+c+"; "+c+" will be emitted.");
+    if(HARNESS==="codex" && S.isolation==="worktree-per-agent")
+      out.push("Codex has no worktree isolation; shared-tree will be emitted.");
+    S.nodes.forEach(function(n){
+      if(!staffed(n)) return;
+      var ms=modelsFor(n.lane);
+      if(n.model && ms.length && ms.indexOf(n.model)<0) out.push(n.label+": "+n.model+" is not on the "+n.lane+" lane.");
+      if(isShell(n) && !laneAvailable(n.lane)) out.push(n.label+": the "+n.lane+" CLI is not installed, so this shell-out cannot run here.");
+      if(HARNESS==="grok" && !isShell(n) && n.model && n.model!=="grok-4.6")
+        out.push(n.label+": Grok agent().model accepts grok-4.6 only; "+n.model+" will emit as a shell-out.");
+      if(n.schema && isShell(n)) out.push(n.label+": structured output is native-only; schema will not be emitted.");
+      if(n.agentType && isShell(n)) out.push(n.label+": roster agentType is native-only; it will not be emitted.");
+    });
+    if(!S.nodes.some(function(n){ return n.kind==="gate"; }))
+      out.push("No gate node. Add a Gate so fail can return to an earlier step.");
+    return out;
+  }
+  function paintWarns(){
+    var box=document.getElementById("warns"); if(!box) return;
+    box.innerHTML=warnings().map(function(t){ return "<li>"+esc(t)+"</li>"; }).join("");
+  }
+  function whoLine(n, r){
+    var who=rosterWho(n.agentType);
+    var person=who ? (who.name+" (`"+who.id+"`)") : "unassigned";
+    if(r.omit) return "- **"+n.label+"** — not emitted ("+r.omitReason+")";
+    if(r.shell){
+      return "- **"+n.label+"** — SHELL-OUT to "+r.lane+(r.converted?" (converted from native)":"")+"\n"+
+        "  model: "+(r.model||"")+" · effort: "+(r.effort||"tool default")+"\n"+
+        "  command: "+r.command+(n.task?"\n  "+n.task:"");
+    }
+    if(staffed(n)){
+      return "- **"+n.label+"** — "+person+"\n"+
+        "  model: "+(r.model||"")+" · effort: "+(r.effort||"")+(n.paths?"\n  paths: "+n.paths:"")+(n.task?"\n  "+n.task:"");
+    }
+    return "- **"+n.label+"** — "+n.kind+(n.detail?(" · "+n.detail):"");
+  }
   function emit(){
     S.name=document.getElementById("wf-name").value||S.name;
+    var c=Math.min(Number(S.concurrency)||cap(), cap());
+    var iso=isolationOut();
+    var resolvedNodes=S.nodes.map(resolved);
     var proto={
-      version: "graph-prototype",
+      version: 2,
       harness:HARNESS,
       name:S.name,
-      isolation:S.isolation,
-      concurrency:S.concurrency,
-      nodes:S.nodes.map(function(n){ return { id:n.id, kind:n.kind, label:n.label, detail:n.detail, x:n.x, y:n.y,
-        lane:n.lane, model:n.model, effort:n.effort, agentType:n.agentType||null, task:n.task,
-        shell:isShell(n), gateCmd:n.kind==="gate"?n.gateCmd:null }; }),
+      isolation:iso,
+      concurrency:c,
+      cwd:S.cwd||".",
+      nodes:resolvedNodes,
       edges:S.edges.map(function(e){ return { id:e.id, from:e.from, to:e.to, label:e.label, kind:e.kind }; }),
       gateNode: (S.nodes.find(function(n){ return n.kind==="gate"; })||{}).id || null
     };
-    var lines=["# Workflow: "+S.name,"Host harness: "+HARNESS+" (fixed)","","## Graph"];
+    var lines=["# Workflow: "+S.name,"Host harness: "+HARNESS+"   (fixed — set by how this session started)",
+      "Isolation: "+iso,"Concurrency: "+c,"cwd: "+(S.cwd||".")];
+    if(HARNESS==="codex") lines.push("Codex has no workflow runtime. The forward path becomes ordered `codex exec` calls the caller sequences.");
+    lines.push("","## Graph");
     S.edges.forEach(function(e){
       var a=byId(e.from), b=byId(e.to);
       lines.push("- "+(a?a.label:e.from)+" —"+e.kind+(e.label?(" · "+e.label):"")+"→ "+(b?b.label:e.to));
     });
+    lines.push("","## Nodes");
+    S.nodes.forEach(function(n,i){ lines.push(whoLine(n, resolvedNodes[i])); });
     var gate=S.nodes.find(function(n){ return n.kind==="gate"; });
-    lines.push("","## Verification gate", gate? (gate.gateCmd||"(gate node, no command)"):"(no gate node)",
-      "","```json", JSON.stringify(proto,null,2), "```");
+    lines.push("","## Verification gate", gate? (gate.id+": "+(gate.gateCmd||"(no command)")):"(no gate node)");
+    var w=warnings();
+    if(w.length){ lines.push(""); w.forEach(function(t){ lines.push("Not emitted: "+t); }); }
+    lines.push("","```json", JSON.stringify(proto,null,2), "```");
     return lines.join("\n");
   }
+
+  function snap(){
+    var json=JSON.stringify({name:S.name, isolation:S.isolation, concurrency:S.concurrency, cwd:S.cwd, nodes:S.nodes, edges:S.edges});
+    if(hist[hpos]===json) return;
+    hist=hist.slice(0, hpos+1);
+    hist.push(json);
+    if(hist.length>60) hist.shift();
+    hpos=hist.length-1;
+  }
+  function loadSnap(json){
+    var o=JSON.parse(json);
+    S.name=o.name; S.isolation=o.isolation; S.concurrency=o.concurrency; S.cwd=o.cwd||".";
+    S.nodes=o.nodes; S.edges=o.edges;
+    document.getElementById("wf-name").value=S.name;
+    syncDials();
+    sel=null; inspectorFor=null; draw();
+  }
+  function undo(){ if(hpos<=0) return; hpos--; loadSnap(hist[hpos]); }
+  function redo(){ if(hpos>=hist.length-1) return; hpos++; loadSnap(hist[hpos]); }
 
   stage.addEventListener("mousedown", function(ev){
     var port=ev.target.closest(".port");
@@ -477,9 +724,11 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
         if(link.side==="out"){ from=link.from; to=card.id; }
         else { from=card.id; to=link.from; }
       }
-      if(from && to) connect(from, to);
-      link=null; draw(); inspect();
+      link=null;
+      if(from && to){ connect(from, to); snap(); }
+      else draw();
     }
+    if(drag && drag.moved) snap();
     drag=null;
   });
   svg.addEventListener("mousedown", function(ev){
@@ -489,22 +738,49 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   document.querySelectorAll("[data-add]").forEach(function(b){ b.addEventListener("click", function(){ addNode(b.getAttribute("data-add")); }); });
   document.getElementById("del").addEventListener("click", delSel);
   document.getElementById("arrange").addEventListener("click", arrange);
-  document.getElementById("example").addEventListener("click", function(){ seedExample(); sel=null; inspectorFor=null; draw(); inspect(); });
+  document.getElementById("example").addEventListener("click", function(){
+    if(window.VC_SEED && VC_SEED.nodes && VC_SEED.nodes.length){
+      if(!confirm("Replace the seeded job graph with the factory example?")) return;
+    }
+    seedExample(); sel=null; inspectorFor=null; draw(); snap();
+  });
   document.getElementById("wf-name").addEventListener("input", function(){ S.name=this.value; });
+  document.getElementById("wf-name").addEventListener("change", snap);
   document.addEventListener("keydown", function(ev){
-    if(ev.key==="Escape"){ sel=null; inspectorFor=null; draw(); inspect(); }
-    if((ev.key==="Backspace"||ev.key==="Delete") && sel && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName)){ ev.preventDefault(); delSel(); }
+    var typing=/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName);
+    if((ev.metaKey||ev.ctrlKey) && ev.key.toLowerCase()==="z"){
+      if(typing) return;
+      ev.preventDefault();
+      if(ev.shiftKey) redo(); else undo();
+      return;
+    }
+    if(ev.key==="Escape"){ sel=null; inspectorFor=null; draw(); }
+    if((ev.key==="Backspace"||ev.key==="Delete") && sel && !typing){ ev.preventDefault(); delSel(); }
   });
   document.getElementById("copy").addEventListener("click", function(){
     var t=emit(), b=this;
+    var ta=document.getElementById("spec-out"); if(ta) ta.value=t;
     var done=function(){ b.textContent="Copied"; setTimeout(function(){ b.textContent="Copy spec"; }, 1200); };
-    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, done); else done();
+    function fallback(){
+      var box=document.createElement("textarea"); box.value=t; box.setAttribute("readonly","");
+      box.style.position="fixed"; box.style.left="-9999px"; document.body.appendChild(box); box.select();
+      try{ document.execCommand("copy"); }catch(err){}
+      box.remove(); done();
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, fallback);
+    else fallback();
   });
+  document.getElementById("isolation").addEventListener("change", function(){ S.isolation=this.value; inspectorFor=null; snap(); draw(); });
+  document.getElementById("concurrency").addEventListener("input", function(){ S.concurrency=Number(this.value)||1; inspectorFor=null; draw(); });
+  document.getElementById("concurrency").addEventListener("change", snap);
+  document.getElementById("cwd").addEventListener("input", function(){ S.cwd=this.value||"."; inspectorFor=null; draw(); });
+  document.getElementById("cwd").addEventListener("change", snap);
 
   function adoptSeed(seed){
     S.name = seed.name || "untitled";
     S.isolation = seed.isolation || "shared-tree";
     S.concurrency = seed.concurrency || 3;
+    S.cwd = seed.cwd || ENV.cwd || ".";
     S.nodes = (seed.nodes || []).map(function(n){ return Object.assign({}, n); });
     S.edges = (seed.edges || []).map(function(e){ return Object.assign({}, e); });
     function maxNum(list){
@@ -515,12 +791,15 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     nid = maxNum(S.nodes)+1;
     eid = maxNum(S.edges)+1;
     document.getElementById("wf-name").value = S.name;
+    syncDials();
   }
   var hostEl=document.getElementById("host-name");
   if(hostEl) hostEl.textContent = HARNESS==="claude-code"?"Claude Code": HARNESS==="codex"?"Codex":"Grok Build";
   if (window.VC_SEED && VC_SEED.nodes && VC_SEED.nodes.length) adoptSeed(VC_SEED);
   else seedMinimal();
-  draw(); inspect();
+  draw();
+  snap();
+  window.VC = { emit:emit, getState:function(){ return S; } };
 })();
 </script>
 </body>

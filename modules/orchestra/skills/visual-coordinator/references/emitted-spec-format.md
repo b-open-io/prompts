@@ -18,11 +18,19 @@ not from a hardcoded example and not from a phase list the user never saw.
 Host harness: <claude-code|codex|grok>   (fixed — set by how this session started)
 Isolation: <shared-tree|worktree-per-agent>
 Concurrency: <n>
+cwd: <path>
 
 ## Graph
 - <from> —forward · <label>→ <to>
 - <from> —reject · fail · retry→ <to>
 - <from> —memory · carried forward→ <to>
+
+## Nodes
+- **Work** — Display Name (`plugin:id`)
+  model: grok-4.6 · effort: medium
+- **Implement B** — SHELL-OUT to codex
+  model: gpt-5.6-sol · effort: medium
+  command: codex exec ...
 
 ## Verification gate
 <node id>: <command>
@@ -69,7 +77,11 @@ Concurrency: <n>
 
 Node `kind` is `source` | `process` | `gate` | `artifact` | `memory`.
 A process or gate with `lane` not equal to the host is a shell-out (`shell:
-true`). A shell-out is a subprocess of another vendor's CLI.
+true`). A shell-out is a subprocess of another vendor's CLI. A Grok native
+node whose model is not `grok-4.6` is converted (`converted: true`) to a
+shell-out. A model on no detected lane, or a shell-out whose CLI is not
+installed, is kept in the graph with `omit: true` and named under
+`Not emitted`.
 
 Edge `kind` is `forward` | `reject` | `memory`. `reject` is a return to an
 earlier node. `memory` is an across-run loop. The chart without these

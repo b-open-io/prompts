@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.5
+version: 0.1.6
 ---
 
 # Visual Coordinator
@@ -72,9 +72,10 @@ Seed the most defensible graph. The user will rewire it on the canvas.
 Copy [examples/graph-builder.html](examples/graph-builder.html). That file
 is the canvas. Do not invent a phase list with dropdowns on each box.
 
-Set `window.VC_ENV` from the detector (harness, models, roster). Set
-`window.VC_SEED` to the graph from step 2 — nodes and edges for THIS job.
-Do not leave the untitled Start / Work / Gate template on a real dispatch.
+Set `window.VC_ENV` from the detector (harness, models, roster, lanes,
+caps). Set `window.VC_SEED` to the graph from step 2 — nodes and edges
+for THIS job. Do not leave the untitled Start / Work / Gate template on
+a real dispatch.
 
 Required on the page:
 
@@ -83,8 +84,19 @@ Required on the page:
   cards, set an edge to `forward` / `reject` / `memory`. The chart redraws
   from state. A non-host lane is a shell-out card and looks distinct.
 - **Inspector** — staffing for the selected card (lane, model, effort,
-  agent, task, gate command). Structure is not edited here.
-- **Copy button** — emits the live graph (`nodes[]` + `edges[]`).
+  agent, owned paths, task, optional JSON schema, gate command, CLI
+  override). Empty inspector shows the live spec. Structure is not
+  edited here.
+- **Isolation, live-children, and cwd dials** — bounded by detector caps.
+  Effort lists come from `models.<lane>_effort`. Unavailable lanes stay
+  selectable and warn.
+- **Refusal list** — impossible settings (foreign native model, over-cap
+  concurrency, schema on a shell-out, missing CLI) show on the page and
+  in Copy spec.
+- **Copy button** — emits the live graph (`nodes[]` + `edges[]`), a
+  **Nodes** staffing list (display name, model, command), and exact CLI
+  for each shell-out node. A Grok native node whose model is not
+  `grok-4.6` emits as a shell-out.
 
 ### 3b. Deliver the page
 
@@ -121,8 +133,9 @@ keep every git operation in the main session. Smoke-check a Grok script with
 
 Agent avatars come from `bopen-ai/public/images/agents/<slug>.png`, where the
 slug is `display_name` lowercased with non-alphanumerics replaced by `-`.
-Downscale to about 96px and inline as data URIs. Where an avatar is missing, use
-the agent's initials in a coloured circle rather than shipping a faceless card.
+Downscale to about 96px and put a data URI on each roster entry as `avatar`.
+The template draws that image on the card. Where an avatar is missing, it
+draws initials from `display_name` in a coloured circle.
 
 ## Additional Resources
 

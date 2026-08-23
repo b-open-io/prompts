@@ -6,6 +6,17 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.142] - 2026-08-22
+
+### Changed
+
+- `visual-coordinator` 0.1.6: the graph builder keeps the live chart and
+  restores the load-bearing controls the old staffing canvas had —
+  isolation, live children, cwd, per-lane effort, lane-availability
+  warnings, roster initials, Grok native-to-shell conversion, omit of
+  dead models, a Nodes staffing list in Copy spec, live spec preview,
+  and undo. orchestra 0.1.11.
+
 ## [1.1.141] - 2026-08-22
 
 ### Changed
