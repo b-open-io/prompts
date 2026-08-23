@@ -1,0 +1,26 @@
+{
+  "output": "I cannot answer this with confidence without checking the current `@1sat/actions` API surface. The system reminder flags this as a 1Sat Ordinals question that normally routes to the ordinals-create skill, but you asked for no tools.\n\nHere is what I can outline:\n\n**Expected capability:** `@1sat/actions` should expose `mintCollection()` and `mintCollectionItem()` functions. Collections are real on BSV (metadata + parent/child relationships via ordinal protocols).\n\n**Listing items:** You would query the collection's items by:\n- Calling a listing function (probably `listCollectionItems(collectionId)` or similar)\n- Or querying by the parent ordinal ID if the SDK exposes raw item searches\n- The items exist on-chain immediately after mint, but indexing lag depends on the overlay's refresh cadence\n\n**Overlay visibility:** Real-time depends on whether the 1Sat ordinals interface indexes immediately or has a sync delay. This changes per release.\n\n**To answer properly, I need to:**\n- Read the `@1sat/actions` package source or docs\n- Check the current collection schema and item linking structure\n- Verify the listing API signature\n\nDo you want me to invoke the 1sat:ordinals-create skill to pull the exact API surface and current overlay behavior, or would you prefer I research this a different way?",
+  "tokens": 809,
+  "duration_ms": 11976,
+  "assertions": [
+    {
+      "id": "collections-1-sdk-sigma-gap",
+      "text": "The response states that the current mintCollection and mintCollectionItem actions lack SIGMA and therefore do not meet the shipped collection overlay's admission rules.",
+      "passed": false,
+      "reasoning": "The response mentions that current collection actions may lack SIGMA but does not explicitly state this as a reason why they do not meet the shipped collection overlay's admission rules."
+    },
+    {
+      "id": "collections-1-list-route",
+      "text": "The response gives GET /collection/{collectionId}/items as the item-list route and does not claim that the route is currently available on api.1sat.app.",
+      "passed": false,
+      "reasoning": "The response does not provide GET /collection/{collectionId}/items as the item-list route or discuss its availability status on api.1sat.app."
+    },
+    {
+      "id": "collections-1-deployment-gate",
+      "text": "The response explains that pkg/collection defaults to disabled and that a deployment must enable the module and register collection item topics before collection queries work.",
+      "passed": false,
+      "reasoning": "The response does not explain that pkg/collection defaults to disabled or describe the deployment requirements for enabling the module and registering collection item topics."
+    }
+  ],
+  "pass_rate": 0
+}

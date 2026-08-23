@@ -1,0 +1,26 @@
+{
+  "output": "**Shipped vs. Proposed: Three Violations**\n\n**1. CollectionId location**\nProposed: BSV21 JSON payload.\nShipped: MAP `subTypeData` (a JSON string field in the MAP envelope).\n\nYour proposal breaks the separation of concerns. The skill guidance is explicit: keep BSV21 generic, put collection-specific construction and lookup in the collection *layer*. Putting `collectionId` in the BSV21 payload couples them and breaks overlay admission rules, which read from MAP.\n\n**Change to:** Store `collectionId` in MAP `subTypeData` as a JSON string, exactly as the shipped overlay expects. BSV21 stays generic. Collection logic lives in the collection output script layer.\n\n---\n\n**2. AIP or SIGMA**\nProposed: Accept either.\nShipped: SIGMA only.\n\nThe skill states plainly: \"AIP does not satisfy collection admission.\" The overlay cannot verify signer identity without a transaction-bound SIGMA signature. AIP is attestation-only; it proves nothing about who authorized the mint at script execution time. Accepting AIP loses the security model.\n\n**Change to:** Require SIGMA. Reject AIP-only mints.\n\n---\n\n**3. Item signer matches root owner**\nProposed: New rule.\nShipped: No such rule exists.\n\nThe overlay is mint-only. It records the SIGMA signer and indexes admitted outputs. It does *not* compare item signers to root signers, does *not* track ownership changes, and does *not* enforce delegated authority. The skill warns: \"Do not invent root-owner, signer-matching, or delegated authority rules that are absent from the implementation.\"\n\n**Change to:** Remove this requirement. Accept any valid SIGMA. If you want signer matching, add it as an *application-level* validation in your dApp, not in the collection contract.\n\n---\n\n**Summary:** Your design invents three rules the shipped contract never had. Implement what ships: MAP-stored `collectionId`, SIGMA-only admission, no signer-ownership coupling.",
+  "tokens": 1265,
+  "duration_ms": 16073,
+  "assertions": [
+    {
+      "id": "collections-2-bsv21-boundary",
+      "text": "The response keeps collection-specific construction outside the generic BSV21 package and explains that collection MAP and SIGMA may be composed at the output-script layer.",
+      "passed": true,
+      "reasoning": "The output explicitly states 'keep BSV21 generic, put collection-specific construction and lookup in the collection *layer*' and explains that 'Collection logic lives in the collection output script layer,' directly addressing script-level composition outside the generic package."
+    },
+    {
+      "id": "collections-2-no-root-authority",
+      "text": "The response states that the shipped overlay records the verified item signer but does not compare it with the collection root signer or current owner.",
+      "passed": true,
+      "reasoning": "The output clearly states 'The overlay is mint-only. It records the SIGMA signer and indexes admitted outputs. It does *not* compare item signers to root signers' and warns against inventing 'signer-matching, or delegated authority rules that are absent from the implementation.'"
+    },
+    {
+      "id": "collections-2-no-aip",
+      "text": "The response states that AIP does not satisfy the shipped overlay's valid-SIGMA admission requirement.",
+      "passed": true,
+      "reasoning": "The output explicitly states 'AIP does not satisfy collection admission' and 'AIP is attestation-only; it proves nothing about who authorized the mint at script execution time' and requires 'SIGMA. Reject AIP-only mints.'"
+    }
+  ],
+  "pass_rate": 1
+}

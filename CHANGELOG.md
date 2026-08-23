@@ -6,6 +6,22 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.144] - 2026-08-23
+
+### Fixed
+
+- `community-manager` 1.0.7 and `front-desk` 1.1.13 now route 1Sat
+  collection work to `1sat:collections`, use the current `1sat` / `1sat-sdk`
+  plugin identity, and no longer treat the stack API reference as a minting
+  tool.
+- Added a current collection boundary reference and archived the rejected
+  AIP, root-signer matching, owner-authority, and BSV21-coupling design notes.
+- Published the `collections` skill benchmark at 100% versus an 11.1%
+  no-skill baseline, and taught the benchmark harness to run skills from other
+  plugin repositories with `--skill-root`. Cache keys now include SKILL.md and
+  the complete grading contract, so edited guidance cannot reuse stale scores.
+- Synchronized the Claude, Codex, and Grok core manifests at 1.1.144.
+
 ## [1.1.143] - 2026-08-23
 
 ### Changed

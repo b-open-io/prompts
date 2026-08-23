@@ -1,5 +1,9 @@
 # Plan 003: 1sat-stack — verify B-leaf/`:-1` resolution on the deployed stack, and decide the collection-member listing API
 
+> **ARCHIVED — DO NOT EXECUTE.** Collection discovery and item topics shipped
+> in `pkg/collection` with different admission rules. Use
+> `Skill(1sat:collections)` and the current stack source.
+
 > **SUPERSEDED (2026-07-17)** — Dave (shruggr) shipped this on `1sat-stack` master:
 > `pkg/collection` (OPL-2993, merged PR #9) with `map:subType` / `map:collectionId`
 > parse events, a discovery topic `tm_1sat_collection`, per-collection `tm_col_{id}`,

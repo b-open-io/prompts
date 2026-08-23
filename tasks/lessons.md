@@ -47,6 +47,16 @@ trailers already reached a branch, strip them with a `--msg-filter` rewrite over
 `origin/<base>..HEAD` and force-push with `--force-with-lease`; verify
 `git diff <old> HEAD` is empty afterward so only the messages changed.
 
+## Rejected designs must be removed from every active guidance surface
+
+Closing a rejected implementation PR is not enough when planning notes, skill
+branches, and agent references still describe that design as current. After an
+architecture decision lands, search the owning prompts and plugin repositories
+for its old invariants, mark historical material unmistakably, and update or
+close every active skill PR. Treat merged implementation and its tests as the
+source of truth; do not preserve an unsafe compatibility path merely because an
+older plan called it legacy support.
+
 ## A green release report requires every observed failure to be resolved (2026-07-25)
 
 Do not call a failing repository check unrelated, stale, or pre-existing and

@@ -1,0 +1,26 @@
+{
+  "output": "Collection items can reuse one image through an ord-fs/json directory. The overlay never reads that leaf for membership, so shared content does not affect admission.\n\nAdmission is determined by three fields in the item output only:\n\n1. **Exactly one satoshi** in the output value\n2. **Valid inscription envelope** present\n3. **Valid transaction-bound SIGMA signature** in the MAP\n\nThe MAP itself must contain `subType: \"collectionItem\"` and `subTypeData.collectionId` pointing to the collection root's outpoint. The overlay parses the `collectionId` value (either a relative reference `_N` or an absolute outpoint `<txid>_<vout>`) to link the item to its root.\n\nThe overlay does not compare the item signer to the root signer, does not check current ownership, and does not enforce delegated authority rules. AIP signatures do not satisfy admission.\n\n**Transfers do not change the collection index.** The overlay is mint-only. It records which mint output became an admitted item at inscription time. When an item transfers to a new owner, the overlay does not reinterpret membership or follow the UTXO. The item stays indexed under its original mint output forever, regardless of who owns it now.",
+  "tokens": 777,
+  "duration_ms": 11552,
+  "assertions": [
+    {
+      "id": "collections-3-ordfs-boundary",
+      "text": "The response explains that ORDFS content resolution, including an ord-fs/json dot entry, is independent of collection admission.",
+      "passed": true,
+      "reasoning": "The output explicitly states that 'The overlay never reads that leaf for membership, so shared content does not affect admission,' directly confirming that ORDFS content resolution is independent of collection admission."
+    },
+    {
+      "id": "collections-3-admission-fields",
+      "text": "The response names all shipped item-admission requirements: an exactly one-satoshi inscription output, collectionItem MAP metadata whose JSON-encoded subTypeData contains collectionId, and valid transaction-bound SIGMA.",
+      "passed": true,
+      "reasoning": "The output names all three requirements: exactly one satoshi in output value, valid inscription envelope, valid transaction-bound SIGMA signature in the MAP, plus the MAP containing subType and subTypeData.collectionId."
+    },
+    {
+      "id": "collections-3-mint-only",
+      "text": "The response states that the collection index is mint-only and does not follow transfers or change membership when ownership changes.",
+      "passed": true,
+      "reasoning": "The output explicitly states 'The overlay is mint-only. It records which mint output became an admitted item at inscription time' and 'The item stays indexed under its original mint output forever, regardless of who owns it now,' confirming mint-only indexing that does not follow transfers."
+    }
+  ],
+  "pass_rate": 1
+}

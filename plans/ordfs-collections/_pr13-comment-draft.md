@@ -1,3 +1,9 @@
+# ARCHIVED DRAFT — DO NOT POST
+
+This comment predates the shipped collection overlay and recommends AIP and
+root-signer matching that the implementation does not use. Load
+`Skill(1sat:collections)` instead.
+
 Picking this back up with two things settled since we last talked here — the backend capability and the docs.
 
 **Backend (1sat-stack `pkg/ordfs`) supports the resolution model in code.** Confirmed against the code: `ord-fs/json` directory traversal, outpoint + relative-vout (`_N`) pointers, 0-sat bitcom-`B` leaf content served by outpoint, and `{outpoint}:-1` latest via spend-chain crawl for a 1-sat ordinal. Resolution loads the tx via `beef.Storage` and parses on the fly (it does **not** gate on the output index), so a leaf resolves if its tx is fetchable. Three deployment gates remain to verify before relying on this in production:

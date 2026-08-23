@@ -1,5 +1,9 @@
 # Plan 001: 1sat-sdk — finalize OrdFS directory entry API + add a `ref` content path to `mintCollectionItem`
 
+> **ARCHIVED — DO NOT EXECUTE.** This plan mixes unmerged SDK proposals with
+> rejected collection authority rules. Use `Skill(1sat:collections)` and inspect
+> the installed SDK before recommending any helper.
+
 > **Target repo**: `~/code/1sat-sdk` (github `b-open-io/1sat-sdk`).
 > **Base branch**: `feat/ordfs-directory-writing` (this is PR #13). Do NOT start from `master` — the ordfs builder primitives only exist on this branch.
 > **Executor instructions**: Follow step by step. Run every verification command and confirm the expected result before the next step. Honor STOP conditions — do not improvise. The content-reference design is complete; the documented AIP `[-1]` mismatch is an explicit reconciliation gate before implementation.

@@ -1,5 +1,9 @@
 # Plan 000: PR flurry — cross-repo coordination (codex workers, coordinator pattern)
 
+> **ARCHIVED — DO NOT EXECUTE.** The collection design in this plan was
+> superseded by the shipped `1sat-stack/pkg/collection` implementation. Use
+> `Skill(1sat:collections)` for current behavior.
+
 > **Role**: This is the ORCHESTRATION plan for landing the full ordfs-collections
 > solution as a coordinated set of PRs across repos. It is not itself an executor
 > plan — it sequences plans 001–005 into real PRs and defines how they are

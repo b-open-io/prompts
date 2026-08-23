@@ -1,5 +1,9 @@
 ### Referencing shared content (collections & large mints)
 
+> **ARCHIVED DRAFT — DO NOT PUBLISH AS COLLECTION GUIDANCE.** The ORDFS content
+> pattern is useful, but the signature and membership text below predates the
+> shipped overlay. Use `Skill(1sat:collections)` for admission rules.
+
 A reference points at content that already exists on-chain, so many inscriptions
 can share one payload instead of each re-inscribing it. For a collection — or any
 large mint — inscribe the artwork **once** and have every item reference that

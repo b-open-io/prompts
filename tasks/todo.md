@@ -427,3 +427,38 @@
 - Codex still reports its non-fatal 2% skill-context budget notice for the
   remaining enabled catalog. Removing that notice requires a user choice about
   which otherwise-working skills or plugins to disable.
+
+## Correct 1Sat collection guidance and skill routing
+
+- [x] Compare every collection claim in this repository with the implementation
+  merged in `1sat-stack` PR #9.
+- [x] Separate historical plans from current agent guidance and remove rejected
+  AIP, owner-following, and BSV21-owned collection behavior.
+- [x] Decide which plugin owns the canonical collection skill and update active
+  skill PRs rather than documenting the contract in multiple places.
+- [x] Add focused evals that reject AIP admission and BSV21 collection routes.
+- [x] Run repository documentation, manifest, and skill validation checks.
+- [x] Open plain-English PRs for each owning repository and record the final
+  source-of-truth map.
+
+### Review
+
+- Canonical behavior now lives in `1sat:collections` from 1sat-sdk PR #25.
+  Core agents route there instead of duplicating the implementation contract.
+- The current contract is SIGMA-only, mint-only, and collection-layer owned.
+  Item signers are stored but not matched to the root signer or current owner;
+  ORDFS content and BSV21 classification are orthogonal to membership.
+- Historical July plans remain for provenance but every entry point is marked
+  archived and non-executable.
+- Corrected bsv-skills PR #2, rewrote the active 1sat-sdk PR #19/#21 bodies in
+  plain English, and closed superseded skill-only PR #20 in favor of #25.
+- Opened prompts PR #23 and claude-plugins PR #1. The latter also fixes the
+  retired `1sat-skills` / `bopen-tools` marketplace names.
+- The published harness scored the collection skill at 100% versus an 11.1%
+  no-skill baseline across three trap prompts. The runner now accepts
+  `--skill-root`, so skills from another plugin can be measured in place while
+  still updating the aggregate report consumed by bopen.ai. Cache keys now
+  cover the full eval contract and injected skill content, preventing stale
+  scores after an assertion or SKILL.md edit.
+- The 1Sat materializer's 13 tests pass, the collection skill and Codex plugin
+  validate, and the core plugin harness passes all five deterministic gates.

@@ -148,13 +148,22 @@ This prevents guessing at assertions that don't actually differentiate.
 ```bash
 bun run scripts/benchmark.tsx                                    # All skills with evals
 bun run scripts/benchmark.tsx --skill geo-optimizer              # Single skill
+bun run scripts/benchmark.tsx --skill collections --skill-root /path/to/1sat-sdk # Skill from another plugin repo
 bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"       # Override model (default: haiku)
 bun run scripts/benchmark.tsx --concurrency 4                    # Parallel workers
 ```
 
 From within Claude Code, prefix with `CLAUDECODE=` to avoid nested session errors.
 
+Use `--skill-root` when the skill is published from another plugin repository.
+That repository must expose the skill under `skills/<name>`. The aggregate
+report is still written to `benchmarks/latest.json` in the prompts repository,
+and the per-skill result is written to the source repository's
+`skills/<name>/evals/benchmark.json`.
+
 The harness runs each eval prompt twice: once with the skill injected via `--append-system-prompt`, once without. Both outputs are graded by LLM-as-judge.
+Its cache includes the complete eval contract and injected SKILL.md content, so
+changing guidance or assertions cannot silently reuse an older score.
 
 ## Reading Results
 

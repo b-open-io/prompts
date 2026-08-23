@@ -1,0 +1,26 @@
+{
+  "output": "Collection item admission is determined by:\n\n1. **Metadata format validity** — The JSON must parse and contain required fields (typically: `id`, `name`, `collection`, and the image reference).\n\n2. **Image pointer validity** — The ord-fs/json dot entry referencing the image must resolve correctly. If you use a single image across items, each item's JSON entry must point to the same inscription ID or content hash. That works — no duplication required.\n\n3. **Collection ID linkage** — The item's `collection` field must match the parent collection ID exactly. Mismatches are rejected.\n\n4. **Supply constraints** (if enforced) — Some collections cap membership. If your collection has a `maxItems` field, exceeding it rejects new items.\n\n5. **No contradictory attributes** — If an item lists two different supply numbers or conflicting rarity tiers, validation fails.\n\n**Transfer does not change the collection index.** The collection metadata lives separately from ownership. When you transfer an item:\n- The item keeps its collection association.\n- The collection's roster (which items belong to it) does not update.\n- Only the wallet/ownership pointer moves on-chain.\n\nThe collection index is usually immutable once published — it's the source-of-truth listing. Transferring ownership is a separate transaction that does not touch it.\n\n**For your image reuse**: Point each item's JSON to the same inscription via the ord-fs dot entry (e.g., `\"image\": \"ord://abc123.json\"`). The admission check validates that the pointer exists and resolves; it does not care that five items reference it. That is valid and efficient.",
+  "tokens": 933,
+  "duration_ms": 14232,
+  "assertions": [
+    {
+      "id": "collections-3-ordfs-boundary",
+      "text": "The response explains that ORDFS content resolution, including an ord-fs/json dot entry, is independent of collection admission.",
+      "passed": false,
+      "reasoning": "The response discusses ord-fs/json dot entries and image pointer validity but does not explicitly state that ORDFS content resolution is independent of collection admission logic."
+    },
+    {
+      "id": "collections-3-admission-fields",
+      "text": "The response names all shipped item-admission requirements: an exactly one-satoshi inscription output, collectionItem MAP metadata whose JSON-encoded subTypeData contains collectionId, and valid transaction-bound SIGMA.",
+      "passed": false,
+      "reasoning": "The response lists metadata format validity, image pointer validity, collection ID linkage, and supply constraints, but does not name the specific shipped requirements: exactly one-satoshi inscription output, collectionItem MAP metadata with collectionId in JSON-encoded subTypeData, and valid transaction-bound SIGMA."
+    },
+    {
+      "id": "collections-3-mint-only",
+      "text": "The response states that the collection index is mint-only and does not follow transfers or change membership when ownership changes.",
+      "passed": true,
+      "reasoning": "The response clearly states that the collection index is immutable once published, does not update on transfers, and that only the ownership pointer moves on-chain while collection association remains unchanged."
+    }
+  ],
+  "pass_rate": 0.3333333333333333
+}

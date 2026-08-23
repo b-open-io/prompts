@@ -1,5 +1,9 @@
 # Plan 004: MintFlow — reference-based item minting + a "Mint on Buy" deployment mode
 
+> **ARCHIVED — DO NOT EXECUTE.** This plan depends on SDK APIs that may remain
+> unmerged and on superseded collection rules. Check the installed SDK and load
+> `Skill(1sat:collections)` first.
+
 > **Target repo**: `~/code/mintflow` (github `b-open-io/mintflow`), Next.js + Bun + Biome.
 > **Base branch**: decide with the operator — mint work is currently on `feat/custodial-mint-foundation`; the reference-item change may belong on `master` or that branch. Ask once, then stay on the chosen branch.
 > **Executor instructions**: This plan has two independent parts (A: reference items; B: Mint-on-Buy). Part A depends on plan 001 (the SDK `ref` path) being published. Part B is a larger feature — build only after Part A lands and the operator confirms.
