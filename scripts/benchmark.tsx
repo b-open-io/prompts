@@ -15,6 +15,7 @@
  * Usage:
  *   bun run scripts/benchmark.tsx
  *   bun run scripts/benchmark.tsx --skill geo-optimizer
+ *   bun run scripts/benchmark.tsx --skill collections --skill-root /path/to/1sat-sdk
  *   bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"
  *   bun run scripts/benchmark.tsx --concurrency 4
  */
@@ -28,8 +29,11 @@ import {
   readFileSync,
   writeFileSync,
 } from "fs";
-import { createHash } from "crypto";
 import { join, resolve } from "path";
+import {
+  benchmarkCacheKey,
+  type BenchmarkEvalCase,
+} from "./benchmark-cache.ts";
 import {
   GRADE_SCHEMA,
   GradeParseError,
@@ -44,19 +48,8 @@ export { GRADE_SCHEMA, GradeParseError, parseJudgeGrades };
 // Types
 // ---------------------------------------------------------------------------
 
-interface Assertion {
-  id: string;
-  text: string;
-  type: string;
-}
-
-interface EvalCase {
-  id: number;
-  prompt: string;
-  expected_output: string;
-  files: string[];
-  assertions: Assertion[];
-}
+type EvalCase = BenchmarkEvalCase;
+type Assertion = BenchmarkEvalCase["assertions"][number];
 
 interface EvalsFile {
   skill_name: string;
@@ -153,7 +146,7 @@ interface GradeJob {
 type Job = RunJob | GradeJob;
 
 // ---------------------------------------------------------------------------
-// Cache — keyed by SHA1(model + skill + evalId + variant + prompt)
+// Cache — invalidated by model, eval contract, and injected skill content
 // ---------------------------------------------------------------------------
 
 interface CacheEntry {
@@ -162,13 +155,6 @@ interface CacheEntry {
   duration_ms: number;
   assertions: AssertionResult[];
   pass_rate: number;
-}
-
-function cacheKey(model: string, skill: string, evalId: number, variant: Variant, prompt: string): string {
-  return createHash("sha1")
-    .update(JSON.stringify({ model, skill, evalId, variant, prompt }))
-    .digest("hex")
-    .slice(0, 16);
 }
 
 function readCache(cacheDir: string, key: string): CacheEntry | null {
@@ -457,20 +443,22 @@ function getRunner(): string {
   }
 }
 
-function parseArgs(): { skill?: string; model: string; concurrency: number } {
+function parseArgs(): { skill?: string; skillRoot?: string; model: string; concurrency: number } {
   const args = process.argv.slice(2);
   let skill: string | undefined;
+  let skillRoot: string | undefined;
   // Use haiku by default — cheap and fast. Pass --model to override.
   let model = process.env.BENCHMARK_MODEL ?? "claude-haiku-4-5-20251001";
   let concurrency = 2;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--skill" && args[i + 1]) skill = args[++i];
+    else if (args[i] === "--skill-root" && args[i + 1]) skillRoot = resolve(args[++i]);
     else if (args[i] === "--model" && args[i + 1]) model = args[++i];
     else if (args[i] === "--concurrency" && args[i + 1]) concurrency = parseInt(args[++i], 10);
   }
 
-  return { skill, model, concurrency };
+  return { skill, skillRoot, model, concurrency };
 }
 
 // ---------------------------------------------------------------------------
@@ -679,7 +667,7 @@ function variantResult(
 
 async function main() {
   const repoRoot = resolve(import.meta.dir, "..");
-  const { skill: filterSkill, model, concurrency } = parseArgs();
+  const { skill: filterSkill, skillRoot = repoRoot, model, concurrency } = parseArgs();
   const cacheDir = join(repoRoot, "benchmarks", "cache");
 
   // Pre-flight
@@ -689,7 +677,7 @@ async function main() {
     process.exit(1);
   }
 
-  const skills = discoverSkills(repoRoot, filterSkill);
+  const skills = discoverSkills(skillRoot, filterSkill);
   if (skills.length === 0) {
     console.error(filterSkill
       ? `No evals found for skill "${filterSkill}".`
@@ -757,7 +745,10 @@ async function main() {
 
       if (job.kind === "run") {
         const key = `${job.skill}:${job.evalCase.id}:${job.variant}`;
-        const ck = cacheKey(model, job.skill, job.evalCase.id, job.variant, job.evalCase.prompt);
+        const skillContent = job.variant === "with-skill"
+          ? readFileSync(join(job.skillPath, "SKILL.md"), "utf-8")
+          : "";
+        const ck = benchmarkCacheKey(model, job.skill, job.evalCase, job.variant, skillContent);
         const cached = readCache(cacheDir, ck);
 
         if (cached) {
@@ -811,14 +802,14 @@ async function main() {
           // Cache the full result (run + grade together)
           const runResult = runResults.get(key);
           if (runResult && !runResult.cached) {
-            const ck = cacheKey(model, job.skill, job.evalId, job.variant,
-              // We need the prompt — retrieve from evals
-              gradeResults.has(key) ? job.expectedOutput : "");
             // Find the original prompt from skillEvalMap
-            const { evalsFile } = skillEvalMap.get(job.skill)!;
+            const { evalsFile, skillPath } = skillEvalMap.get(job.skill)!;
             const evalCase = evalsFile.evals.find(e => e.id === job.evalId);
             if (evalCase) {
-              const ckCorrect = cacheKey(model, job.skill, job.evalId, job.variant, evalCase.prompt);
+              const skillContent = job.variant === "with-skill"
+                ? readFileSync(join(skillPath, "SKILL.md"), "utf-8")
+                : "";
+              const ckCorrect = benchmarkCacheKey(model, job.skill, evalCase, job.variant, skillContent);
               writeCache(cacheDir, ckCorrect, {
                 output: runResult.output,
                 tokens: runResult.tokens,
@@ -911,7 +902,7 @@ async function main() {
     skillResults.push(skillBenchmark);
 
     // Write per-skill benchmark file
-    const skillBenchDir = join(repoRoot, "skills", skill.name, "evals");
+    const skillBenchDir = join(skillRoot, "skills", skill.name, "evals");
     if (!existsSync(skillBenchDir)) mkdirSync(skillBenchDir, { recursive: true });
     writeFileSync(
       join(skillBenchDir, "benchmark.json"),

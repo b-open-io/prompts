@@ -7,13 +7,15 @@
   (Messages API constrained decoding when `ANTHROPIC_API_KEY` is set; otherwise
   `claude -p --json-schema`). The skill-under-test run is not schema-locked.
 - Results written to `benchmarks/latest.json` (published to bopen.ai/benchmarks) and per-skill `evals/benchmark.json`
-- Cache in `benchmarks/cache/` keyed by model+skill+eval+variant — clear cache when changing eval content
+- Cache in `benchmarks/cache/` is keyed by the model, complete eval contract,
+  variant, and injected skill content, so skill and rubric edits rerun cleanly
 
 ## Running
 
 ```bash
 bun run scripts/benchmark.tsx                                    # All skills
 bun run scripts/benchmark.tsx --skill geo-optimizer              # Single skill
+bun run scripts/benchmark.tsx --skill collections --skill-root /path/to/1sat-sdk # Skill from another plugin repo
 export BENCHMARK_MODEL_ID="provider-model-id-from-your-account"
 bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"       # Override model (default: haiku)
 bun run scripts/benchmark.tsx --concurrency 4                    # Parallel workers
@@ -24,6 +26,10 @@ The judge prefers `ANTHROPIC_API_KEY` (Messages API constrained decoding).
 Without a key it uses `claude -p --json-schema` and reads `structured_output`.
 
 From within Claude Code, prefix with `CLAUDECODE=` to avoid nested session errors.
+
+`--skill-root` points at another plugin repository that has a root `skills/`
+directory. The public aggregate still updates in this repository, while the
+per-skill `evals/benchmark.json` is written beside the source skill.
 
 ## Publishing Policy
 

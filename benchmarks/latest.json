@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-25T13:49:33.867Z",
+  "generated_at": "2026-08-23T17:18:42.485Z",
   "model": "claude-haiku-4-5-20251001",
   "runner": "satchmo",
   "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
-  "total_skills": 4,
-  "total_evals": 12,
-  "overall_pass_rate": 0.755,
-  "overall_baseline_pass_rate": 0.347,
+  "total_skills": 5,
+  "total_evals": 15,
+  "overall_pass_rate": 0.804,
+  "overall_baseline_pass_rate": 0.3,
   "skills": [
     {
       "generated_at": "2026-03-06T14:30:34.222Z",
@@ -923,6 +923,197 @@
               }
             ],
             "pass_rate": 0.4,
+            "cached": true
+          }
+        }
+      ]
+    },
+    {
+      "generated_at": "2026-08-23T17:18:42.477Z",
+      "model": "claude-haiku-4-5-20251001",
+      "runner": "satchmo",
+      "script_url": "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+      "skill_name": "collections",
+      "skill_path": "skills/collections",
+      "eval_count": 3,
+      "pass_rate": 1,
+      "baseline_pass_rate": 0.111,
+      "avg_tokens_with_skill": 932,
+      "avg_tokens_baseline": 970,
+      "avg_duration_ms_with_skill": 13234,
+      "avg_duration_ms_baseline": 13675,
+      "evals": [
+        {
+          "eval_id": 1,
+          "prompt": "We want to create a new 1Sat collection with @1sat/actions. Can I call mintCollection and mintCollectionItem today and expect the collection overlay to list it? Show me how I would list its items. Do not use tools or edit files.",
+          "with_skill": {
+            "output": "No. The shipped `mintCollection` and `mintCollectionItem` actions build the one-sat inscription and MAP data, but they do not add SIGMA signatures. The collection overlay requires a valid transaction-bound SIGMA signature on both the root and each item for admission. Without SIGMA, the outputs fail overlay validation and are not indexed.\n\nTo build a collection that the overlay will admit, you must add SIGMA yourself at the output-script layer. Use the inscription flow's SIGMA support and construct the MAP envelope exactly as the stack expects. Verify the final transaction rather than assuming an action name guarantees the output contains valid SIGMA.\n\n## To list collection items (after admission)\n\nThe collection service exposes these endpoints when enabled:\n\n```\nGET /collection/{collectionId}\nGET /collection/{collectionId}/items?limit=50&rev=false\nGET /collection/{collectionId}/item/{outpoint}\n```\n\nTwo deployment gates must be satisfied first:\n\n1. The collection module must be enabled (`mode: enabled` in config, defaults to `disabled`)\n2. The collection's item topic must be registered via `collection_ids` or `Services.RegisterCollection`\n\nThese gates exist on every deployment. Do not assume these routes exist on `api.1sat.app` unless you verify that specific deployment has them enabled.\n\nThe overlay is mint-only: it indexes outputs admitted at mint-time and does not reinterpret membership when ownership transfers.",
+            "tokens": 754,
+            "duration_ms": 12077,
+            "assertions": [
+              {
+                "id": "collections-1-sdk-sigma-gap",
+                "text": "The response states that the current mintCollection and mintCollectionItem actions lack SIGMA and therefore do not meet the shipped collection overlay's admission rules.",
+                "passed": true,
+                "reasoning": "The output explicitly states that mintCollection and mintCollectionItem actions do not add SIGMA signatures and that the collection overlay requires valid transaction-bound SIGMA signatures for admission, clearly identifying the gap between current SDK support and overlay requirements."
+              },
+              {
+                "id": "collections-1-list-route",
+                "text": "The response gives GET /collection/{collectionId}/items as the item-list route and does not claim that the route is currently available on api.1sat.app.",
+                "passed": true,
+                "reasoning": "The output provides GET /collection/{collectionId}/items as the item-list route and explicitly warns not to assume these routes exist on api.1sat.app unless verified for that specific deployment."
+              },
+              {
+                "id": "collections-1-deployment-gate",
+                "text": "The response explains that pkg/collection defaults to disabled and that a deployment must enable the module and register collection item topics before collection queries work.",
+                "passed": true,
+                "reasoning": "The output explains that the collection module defaults to disabled and requires both enabling the module (mode: enabled in config) and registering collection item topics via collection_ids or Services.RegisterCollection before collection queries work."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "I cannot answer this with confidence without checking the current `@1sat/actions` API surface. The system reminder flags this as a 1Sat Ordinals question that normally routes to the ordinals-create skill, but you asked for no tools.\n\nHere is what I can outline:\n\n**Expected capability:** `@1sat/actions` should expose `mintCollection()` and `mintCollectionItem()` functions. Collections are real on BSV (metadata + parent/child relationships via ordinal protocols).\n\n**Listing items:** You would query the collection's items by:\n- Calling a listing function (probably `listCollectionItems(collectionId)` or similar)\n- Or querying by the parent ordinal ID if the SDK exposes raw item searches\n- The items exist on-chain immediately after mint, but indexing lag depends on the overlay's refresh cadence\n\n**Overlay visibility:** Real-time depends on whether the 1Sat ordinals interface indexes immediately or has a sync delay. This changes per release.\n\n**To answer properly, I need to:**\n- Read the `@1sat/actions` package source or docs\n- Check the current collection schema and item linking structure\n- Verify the listing API signature\n\nDo you want me to invoke the 1sat:ordinals-create skill to pull the exact API surface and current overlay behavior, or would you prefer I research this a different way?",
+            "tokens": 809,
+            "duration_ms": 11976,
+            "assertions": [
+              {
+                "id": "collections-1-sdk-sigma-gap",
+                "text": "The response states that the current mintCollection and mintCollectionItem actions lack SIGMA and therefore do not meet the shipped collection overlay's admission rules.",
+                "passed": false,
+                "reasoning": "The response mentions that current collection actions may lack SIGMA but does not explicitly state this as a reason why they do not meet the shipped collection overlay's admission rules."
+              },
+              {
+                "id": "collections-1-list-route",
+                "text": "The response gives GET /collection/{collectionId}/items as the item-list route and does not claim that the route is currently available on api.1sat.app.",
+                "passed": false,
+                "reasoning": "The response does not provide GET /collection/{collectionId}/items as the item-list route or discuss its availability status on api.1sat.app."
+              },
+              {
+                "id": "collections-1-deployment-gate",
+                "text": "The response explains that pkg/collection defaults to disabled and that a deployment must enable the module and register collection item topics before collection queries work.",
+                "passed": false,
+                "reasoning": "The response does not explain that pkg/collection defaults to disabled or describe the deployment requirements for enabling the module and registering collection item topics."
+              }
+            ],
+            "pass_rate": 0,
+            "cached": true
+          }
+        },
+        {
+          "eval_id": 2,
+          "prompt": "Review this proposed 1Sat collection design against the shipped 1sat-stack implementation: put collectionId inside the BSV21 JSON payload, accept either AIP or SIGMA, and require every item signer to match the collection root's current owner. Tell me what to change. Do not use tools or edit files.",
+          "with_skill": {
+            "output": "**Shipped vs. Proposed: Three Violations**\n\n**1. CollectionId location**\nProposed: BSV21 JSON payload.\nShipped: MAP `subTypeData` (a JSON string field in the MAP envelope).\n\nYour proposal breaks the separation of concerns. The skill guidance is explicit: keep BSV21 generic, put collection-specific construction and lookup in the collection *layer*. Putting `collectionId` in the BSV21 payload couples them and breaks overlay admission rules, which read from MAP.\n\n**Change to:** Store `collectionId` in MAP `subTypeData` as a JSON string, exactly as the shipped overlay expects. BSV21 stays generic. Collection logic lives in the collection output script layer.\n\n---\n\n**2. AIP or SIGMA**\nProposed: Accept either.\nShipped: SIGMA only.\n\nThe skill states plainly: \"AIP does not satisfy collection admission.\" The overlay cannot verify signer identity without a transaction-bound SIGMA signature. AIP is attestation-only; it proves nothing about who authorized the mint at script execution time. Accepting AIP loses the security model.\n\n**Change to:** Require SIGMA. Reject AIP-only mints.\n\n---\n\n**3. Item signer matches root owner**\nProposed: New rule.\nShipped: No such rule exists.\n\nThe overlay is mint-only. It records the SIGMA signer and indexes admitted outputs. It does *not* compare item signers to root signers, does *not* track ownership changes, and does *not* enforce delegated authority. The skill warns: \"Do not invent root-owner, signer-matching, or delegated authority rules that are absent from the implementation.\"\n\n**Change to:** Remove this requirement. Accept any valid SIGMA. If you want signer matching, add it as an *application-level* validation in your dApp, not in the collection contract.\n\n---\n\n**Summary:** Your design invents three rules the shipped contract never had. Implement what ships: MAP-stored `collectionId`, SIGMA-only admission, no signer-ownership coupling.",
+            "tokens": 1265,
+            "duration_ms": 16073,
+            "assertions": [
+              {
+                "id": "collections-2-bsv21-boundary",
+                "text": "The response keeps collection-specific construction outside the generic BSV21 package and explains that collection MAP and SIGMA may be composed at the output-script layer.",
+                "passed": true,
+                "reasoning": "The output explicitly states 'keep BSV21 generic, put collection-specific construction and lookup in the collection *layer*' and explains that 'Collection logic lives in the collection output script layer,' directly addressing script-level composition outside the generic package."
+              },
+              {
+                "id": "collections-2-no-root-authority",
+                "text": "The response states that the shipped overlay records the verified item signer but does not compare it with the collection root signer or current owner.",
+                "passed": true,
+                "reasoning": "The output clearly states 'The overlay is mint-only. It records the SIGMA signer and indexes admitted outputs. It does *not* compare item signers to root signers' and warns against inventing 'signer-matching, or delegated authority rules that are absent from the implementation.'"
+              },
+              {
+                "id": "collections-2-no-aip",
+                "text": "The response states that AIP does not satisfy the shipped overlay's valid-SIGMA admission requirement.",
+                "passed": true,
+                "reasoning": "The output explicitly states 'AIP does not satisfy collection admission' and 'AIP is attestation-only; it proves nothing about who authorized the mint at script execution time' and requires 'SIGMA. Reject AIP-only mints.'"
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "I cannot review this design properly without reading the 1sat-stack implementation. You asked me not to use tools, but a design review against a shipped codebase requires seeing:\n\n- The current BSV21 payload schema — what fields already exist\n- How collectionId is currently stored (if at all)\n- Signature verification logic — how AIP and SIGMA are currently handled\n- Owner validation rules in the item-signer flow\n- Any existing collection root data structures\n\n**To proceed, I need one of two things:**\n\n**Option 1:** Lift the \"no tools\" constraint. I read the 1sat-stack code, summarize the relevant schema and verification logic, then tell you what your proposed design changes and why.\n\n**Option 2:** You brief me on the current implementation — show me the BSV21 payload shape, signature scheme, and owner-validation rules, then I evaluate your three decisions against that baseline.\n\nWithout either, I can only guess at potential issues (collectionId hashing consistency, signature switching cost, owner-rotation edge cases) but those guesses might miss real constraints baked into the shipped code.\n\nWhat would you prefer?",
+            "tokens": 1167,
+            "duration_ms": 14817,
+            "assertions": [
+              {
+                "id": "collections-2-bsv21-boundary",
+                "text": "The response keeps collection-specific construction outside the generic BSV21 package and explains that collection MAP and SIGMA may be composed at the output-script layer.",
+                "passed": false,
+                "reasoning": "The response does not explain script-level composition of collection MAP and SIGMA at the output-script layer; instead it requests access to the codebase to understand the current implementation."
+              },
+              {
+                "id": "collections-2-no-root-authority",
+                "text": "The response states that the shipped overlay records the verified item signer but does not compare it with the collection root signer or current owner.",
+                "passed": false,
+                "reasoning": "The response does not state that the shipped overlay records the verified item signer without comparing it to collection root or current owner; it asks for clarification on current implementation instead."
+              },
+              {
+                "id": "collections-2-no-aip",
+                "text": "The response states that AIP does not satisfy the shipped overlay's valid-SIGMA admission requirement.",
+                "passed": false,
+                "reasoning": "The response does not state that AIP does not satisfy the shipped overlay's valid-SIGMA admission requirement; it defers the evaluation pending access to the codebase."
+              }
+            ],
+            "pass_rate": 0,
+            "cached": true
+          }
+        },
+        {
+          "eval_id": 3,
+          "prompt": "I want collection items to reuse one image through an ord-fs/json dot entry. What fields actually determine whether each item is admitted, and does transferring an item change the collection index? Do not use tools or edit files.",
+          "with_skill": {
+            "output": "Collection items can reuse one image through an ord-fs/json directory. The overlay never reads that leaf for membership, so shared content does not affect admission.\n\nAdmission is determined by three fields in the item output only:\n\n1. **Exactly one satoshi** in the output value\n2. **Valid inscription envelope** present\n3. **Valid transaction-bound SIGMA signature** in the MAP\n\nThe MAP itself must contain `subType: \"collectionItem\"` and `subTypeData.collectionId` pointing to the collection root's outpoint. The overlay parses the `collectionId` value (either a relative reference `_N` or an absolute outpoint `<txid>_<vout>`) to link the item to its root.\n\nThe overlay does not compare the item signer to the root signer, does not check current ownership, and does not enforce delegated authority rules. AIP signatures do not satisfy admission.\n\n**Transfers do not change the collection index.** The overlay is mint-only. It records which mint output became an admitted item at inscription time. When an item transfers to a new owner, the overlay does not reinterpret membership or follow the UTXO. The item stays indexed under its original mint output forever, regardless of who owns it now.",
+            "tokens": 777,
+            "duration_ms": 11552,
+            "assertions": [
+              {
+                "id": "collections-3-ordfs-boundary",
+                "text": "The response explains that ORDFS content resolution, including an ord-fs/json dot entry, is independent of collection admission.",
+                "passed": true,
+                "reasoning": "The output explicitly states that 'The overlay never reads that leaf for membership, so shared content does not affect admission,' directly confirming that ORDFS content resolution is independent of collection admission."
+              },
+              {
+                "id": "collections-3-admission-fields",
+                "text": "The response names all shipped item-admission requirements: an exactly one-satoshi inscription output, collectionItem MAP metadata whose JSON-encoded subTypeData contains collectionId, and valid transaction-bound SIGMA.",
+                "passed": true,
+                "reasoning": "The output names all three requirements: exactly one satoshi in output value, valid inscription envelope, valid transaction-bound SIGMA signature in the MAP, plus the MAP containing subType and subTypeData.collectionId."
+              },
+              {
+                "id": "collections-3-mint-only",
+                "text": "The response states that the collection index is mint-only and does not follow transfers or change membership when ownership changes.",
+                "passed": true,
+                "reasoning": "The output explicitly states 'The overlay is mint-only. It records which mint output became an admitted item at inscription time' and 'The item stays indexed under its original mint output forever, regardless of who owns it now,' confirming mint-only indexing that does not follow transfers."
+              }
+            ],
+            "pass_rate": 1,
+            "cached": false
+          },
+          "baseline": {
+            "output": "Collection item admission is determined by:\n\n1. **Metadata format validity** — The JSON must parse and contain required fields (typically: `id`, `name`, `collection`, and the image reference).\n\n2. **Image pointer validity** — The ord-fs/json dot entry referencing the image must resolve correctly. If you use a single image across items, each item's JSON entry must point to the same inscription ID or content hash. That works — no duplication required.\n\n3. **Collection ID linkage** — The item's `collection` field must match the parent collection ID exactly. Mismatches are rejected.\n\n4. **Supply constraints** (if enforced) — Some collections cap membership. If your collection has a `maxItems` field, exceeding it rejects new items.\n\n5. **No contradictory attributes** — If an item lists two different supply numbers or conflicting rarity tiers, validation fails.\n\n**Transfer does not change the collection index.** The collection metadata lives separately from ownership. When you transfer an item:\n- The item keeps its collection association.\n- The collection's roster (which items belong to it) does not update.\n- Only the wallet/ownership pointer moves on-chain.\n\nThe collection index is usually immutable once published — it's the source-of-truth listing. Transferring ownership is a separate transaction that does not touch it.\n\n**For your image reuse**: Point each item's JSON to the same inscription via the ord-fs dot entry (e.g., `\"image\": \"ord://abc123.json\"`). The admission check validates that the pointer exists and resolves; it does not care that five items reference it. That is valid and efficient.",
+            "tokens": 933,
+            "duration_ms": 14232,
+            "assertions": [
+              {
+                "id": "collections-3-ordfs-boundary",
+                "text": "The response explains that ORDFS content resolution, including an ord-fs/json dot entry, is independent of collection admission.",
+                "passed": false,
+                "reasoning": "The response discusses ord-fs/json dot entries and image pointer validity but does not explicitly state that ORDFS content resolution is independent of collection admission logic."
+              },
+              {
+                "id": "collections-3-admission-fields",
+                "text": "The response names all shipped item-admission requirements: an exactly one-satoshi inscription output, collectionItem MAP metadata whose JSON-encoded subTypeData contains collectionId, and valid transaction-bound SIGMA.",
+                "passed": false,
+                "reasoning": "The response lists metadata format validity, image pointer validity, collection ID linkage, and supply constraints, but does not name the specific shipped requirements: exactly one-satoshi inscription output, collectionItem MAP metadata with collectionId in JSON-encoded subTypeData, and valid transaction-bound SIGMA."
+              },
+              {
+                "id": "collections-3-mint-only",
+                "text": "The response states that the collection index is mint-only and does not follow transfers or change membership when ownership changes.",
+                "passed": true,
+                "reasoning": "The response clearly states that the collection index is immutable once published, does not update on transfers, and that only the ownership pointer moves on-chain while collection association remains unchanged."
+              }
+            ],
+            "pass_rate": 0.3333333333333333,
             "cached": true
           }
         }

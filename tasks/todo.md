@@ -454,6 +454,11 @@
   plain English, and closed superseded skill-only PR #20 in favor of #25.
 - Opened prompts PR #23 and claude-plugins PR #1. The latter also fixes the
   retired `1sat-skills` / `bopen-tools` marketplace names.
-- Focused evals scored 100% with the new skill versus 22% without it. The 1Sat
-  materializer's 13 tests pass, the collection skill and Codex plugin validate,
-  and the core plugin harness passes all five deterministic gates.
+- The published harness scored the collection skill at 100% versus an 11.1%
+  no-skill baseline across three trap prompts. The runner now accepts
+  `--skill-root`, so skills from another plugin can be measured in place while
+  still updating the aggregate report consumed by bopen.ai. Cache keys now
+  cover the full eval contract and injected skill content, preventing stale
+  scores after an assertion or SKILL.md edit.
+- The 1Sat materializer's 13 tests pass, the collection skill and Codex plugin
+  validate, and the core plugin harness passes all five deterministic gates.

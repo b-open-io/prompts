@@ -1,0 +1,26 @@
+{
+  "output": "No. The shipped `mintCollection` and `mintCollectionItem` actions build the one-sat inscription and MAP data, but they do not add SIGMA signatures. The collection overlay requires a valid transaction-bound SIGMA signature on both the root and each item for admission. Without SIGMA, the outputs fail overlay validation and are not indexed.\n\nTo build a collection that the overlay will admit, you must add SIGMA yourself at the output-script layer. Use the inscription flow's SIGMA support and construct the MAP envelope exactly as the stack expects. Verify the final transaction rather than assuming an action name guarantees the output contains valid SIGMA.\n\n## To list collection items (after admission)\n\nThe collection service exposes these endpoints when enabled:\n\n```\nGET /collection/{collectionId}\nGET /collection/{collectionId}/items?limit=50&rev=false\nGET /collection/{collectionId}/item/{outpoint}\n```\n\nTwo deployment gates must be satisfied first:\n\n1. The collection module must be enabled (`mode: enabled` in config, defaults to `disabled`)\n2. The collection's item topic must be registered via `collection_ids` or `Services.RegisterCollection`\n\nThese gates exist on every deployment. Do not assume these routes exist on `api.1sat.app` unless you verify that specific deployment has them enabled.\n\nThe overlay is mint-only: it indexes outputs admitted at mint-time and does not reinterpret membership when ownership transfers.",
+  "tokens": 754,
+  "duration_ms": 12077,
+  "assertions": [
+    {
+      "id": "collections-1-sdk-sigma-gap",
+      "text": "The response states that the current mintCollection and mintCollectionItem actions lack SIGMA and therefore do not meet the shipped collection overlay's admission rules.",
+      "passed": true,
+      "reasoning": "The output explicitly states that mintCollection and mintCollectionItem actions do not add SIGMA signatures and that the collection overlay requires valid transaction-bound SIGMA signatures for admission, clearly identifying the gap between current SDK support and overlay requirements."
+    },
+    {
+      "id": "collections-1-list-route",
+      "text": "The response gives GET /collection/{collectionId}/items as the item-list route and does not claim that the route is currently available on api.1sat.app.",
+      "passed": true,
+      "reasoning": "The output provides GET /collection/{collectionId}/items as the item-list route and explicitly warns not to assume these routes exist on api.1sat.app unless verified for that specific deployment."
+    },
+    {
+      "id": "collections-1-deployment-gate",
+      "text": "The response explains that pkg/collection defaults to disabled and that a deployment must enable the module and register collection item topics before collection queries work.",
+      "passed": true,
+      "reasoning": "The output explains that the collection module defaults to disabled and requires both enabling the module (mode: enabled in config) and registering collection item topics via collection_ids or Services.RegisterCollection before collection queries work."
+    }
+  ],
+  "pass_rate": 1
+}

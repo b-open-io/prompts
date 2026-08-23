@@ -16,6 +16,10 @@ manifests share the same release version.
   tool.
 - Added a current collection boundary reference and archived the rejected
   AIP, root-signer matching, owner-authority, and BSV21-coupling design notes.
+- Published the `collections` skill benchmark at 100% versus an 11.1%
+  no-skill baseline, and taught the benchmark harness to run skills from other
+  plugin repositories with `--skill-root`. Cache keys now include SKILL.md and
+  the complete grading contract, so edited guidance cannot reuse stale scores.
 - Synchronized the Claude, Codex, and Grok core manifests at 1.1.144.
 
 ## [1.1.143] - 2026-08-23
