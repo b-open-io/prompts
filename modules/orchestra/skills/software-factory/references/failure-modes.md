@@ -32,22 +32,34 @@ Single-task-per-iteration discipline slips and the agent adds unrequested featur
 "The faster the loop ships code you didn't write, the bigger the gap between what exists and what you understand" (Addy Osmani). The loop outruns human understanding of the codebase.
 **Guard:** structured human review of diffs at intervals; maker/checker with a human attestation before downstream systems consume the output.
 
-## 7. Cognitive surrender / rubber-stamping
+## 7. Unintelligible auto-merged PRs
+
+The loop writes GitHub titles that start with ticket ids and bodies that dump
+checker state, handoff comments, or controlled English. Auto-merge means no
+human rewrites them. A maintainer cannot scan what shipped. Field case: Scribe,
+2026-08. T3 Code avoids this by always-on `AGENTS.md` plus a human still
+reading the PR; a loop that merges unattended needs code.
+**Guard:** treat PRs as human artifacts (`human-artifacts.md`). Scaffold
+`scripts/lint-pr.sh` + `.github/workflows/pr-lint.yml` + an AGENTS.md **Pull
+requests** section. Run the linter before `gh pr create`. Put loop process in a
+PR comment. Observe the linter reject a bad title once during prove-phase.
+
+## 8. Cognitive surrender / rubber-stamping
 
 Operators accept output because it *looks* complete, and approval fatigue sets in when asked too often.
 **Guard:** a review surface that forces comparison of output against the original spec commitment; reserve human gates for irreversible (High-tier) actions only.
 
-## 8. Tool nondeterminism
+## 9. Tool nondeterminism
 
 Search/ripgrep returns different results across runs, causing duplicate work or wrong conclusions.
 **Guard:** explicit "search first, don't assume" instructions; isolate expensive/variable search in subagents; pin tool versions where it matters.
 
-## 9. Injection propagation
+## 10. Injection propagation
 
 Malicious content in tool output poisons the agent's context and propagates across iterations or to sibling agents. Severity scales with persistence: session-scoped → memory-persistent → cross-agent → shared state.
 **Guard:** inspect content at communication boundaries; treat tool output as untrusted; scope what the loop can act on (lethal-trifecta awareness: untrusted input + private data + exfiltration channel).
 
-## 10. State corruption (the cleanup gap)
+## 11. State corruption (the cleanup gap)
 
 Verification mutates real state (bogus rows, test users, orphaned files/webhooks); over many iterations the loop poisons its own environment.
 **Guard:** prefer ephemeral environments so there's nothing to clean; otherwise register teardown for every mutation, or explicitly accept the leftover for that project. See `config-questionnaire.md` field 4.
@@ -62,6 +74,7 @@ Before automating, confirm a guard exists for each mode above, plus:
 - [ ] State file is cold-start readable
 - [ ] Never-touch list defined and loaded each pass
 - [ ] Blast-radius tier assigned; High-tier actions human-gated
+- [ ] If the loop opens PRs: `lint-pr.sh` is wired and has been observed to reject a bad title
 
 ## The mega-skill
 

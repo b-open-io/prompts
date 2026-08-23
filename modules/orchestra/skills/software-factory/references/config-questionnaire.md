@@ -69,6 +69,12 @@ State must be readable by a **cold-start agent** — each iteration gets a fresh
 
 - What does the loop *act* on, not just describe? Open a PR, link/comment a ticket, ping a channel, deploy a preview.
 - Each connector that performs an irreversible action inherits the High blast-radius gate.
+- **If the loop opens GitHub PRs:** GitHub is for humans. Auto-merge without a
+  human rewrite requires a mechanical PR linter, not another prompt. Follow
+  `human-artifacts.md` and have `/factory-init` copy `lint-pr.sh`, the PR
+  template, the GitHub Action, and the AGENTS.md **Pull requests** section.
+  Title form: `Fix invoice PDF 404 [ENG-1234]`. Loop process goes in a PR
+  comment, never the body.
 
 ## 10. Economics
 

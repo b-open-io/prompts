@@ -1,6 +1,6 @@
 ---
 allowed-tools: Skill(orchestra:software-factory), Skill(core:linear-planning), Read, Write, Grep, Glob, Bash, TaskCreate, TaskUpdate, TaskGet, TaskList
-description: Interactively design and scaffold an autonomous agent loop in this project (goal, gate, state, stop conditions, heartbeat)
+description: Interactively design and scaffold an autonomous agent loop in this project (goal, gate, state, stop conditions, heartbeat, human-readable GitHub PRs)
 argument-hint: "[goal or feature the loop should work toward]"
 ---
 
@@ -15,9 +15,10 @@ If the arguments contain "--help", show this help and exit:
 **Description:**
 Runs the software-factory config questionnaire, decides whether a loop is even
 warranted, then scaffolds a runnable loop: the verification gate, the state
-backend, stop conditions, blast-radius boundary, and the heartbeat. Follows
-prove → harden → automate — it does NOT schedule anything unattended until the
-loop is proven by hand.
+backend, stop conditions, blast-radius boundary, the heartbeat, and — when
+the loop opens GitHub PRs — the human-artifact contract (AGENTS.md section,
+lint-pr.sh, CI). Follows prove → harden → automate — it does NOT schedule
+anything unattended until the loop is proven by hand.
 
 **Arguments:**
 - `[goal]` : What the loop should accomplish (optional — will be asked if omitted)
@@ -68,6 +69,17 @@ Produce a written loop config (store it in the chosen state backend or a
 - **State** — initialize the backend (Linear labels, GitHub `loop` labels, or `loop/state.md`).
 - **Maker/checker** — note the model split (cheap maker, strict checker).
 - **Stop conditions** — cap (15–20 to start), retries (2–3), pre-flight budget breaker.
+- **Human artifacts** — if field 9 includes `gh pr create`, follow
+  `software-factory/references/human-artifacts.md`. Resolve this skill's
+  directory and copy:
+  - `scripts/lint-pr.sh` → the project's `scripts/lint-pr.sh` (chmod +x; run `--self-test`)
+  - `templates/pr-lint.yml` → `.github/workflows/pr-lint.yml`
+  - `templates/pull_request_template.md` → `.github/pull_request_template.md`
+  - `templates/write-pr/SKILL.md` → `.claude/skills/write-pr/SKILL.md` when the project commits skills
+  Append the AGENTS.md **Pull requests** section from that reference. In the
+  exec/ship prompt: run `bash scripts/lint-pr.sh --title "$TITLE" --body-file "$BODY"`
+  before `gh pr create`; put loop process in a PR **comment**, never the body.
+  Do not scaffold this when the loop never opens a GitHub pull request.
 
 ### Step 6: Prove, don't automate
 

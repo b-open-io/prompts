@@ -1,0 +1,23 @@
+name: pr-lint
+
+# Mechanical gate for the human-artifact contract (software-factory).
+# Titles must be human-readable with a trailing ticket id; bodies must
+# carry ## Problem / ## Change and must not dump loop process state.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  lint-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint PR title and body
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          body_file="$(mktemp)"
+          printf '%s' "${PR_BODY:-}" > "$body_file"
+          bash scripts/lint-pr.sh --title "$PR_TITLE" --body-file "$body_file"

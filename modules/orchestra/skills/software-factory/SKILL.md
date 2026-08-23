@@ -1,11 +1,12 @@
 ---
 name: software-factory
-version: 0.0.7
+version: 0.0.8
 description: >-
   Design or harden a software factory: an agentic loop that iterates toward a goal with a
   verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic
   loop", "self-iterating agent", "/loop", "/goal", "Ralph loop", "maker-checker", "agentic
-  SDLC", "ADW", or when picking a verification gate or bounding a loop's blast radius.
+  SDLC", "ADW", picking a verification gate, bounding a loop's blast radius, unintelligible
+  auto-merged PR titles, or loop process dumped into a GitHub PR body.
 ---
 
 # Software Factory
@@ -29,7 +30,7 @@ Every production loop is assembled from these five. Claude Code ships all of the
 | **1. Heartbeat** | the trigger that makes it a loop, not a one-off: schedule + goal | `/loop`, `/goal`, hooks, `CronCreate`, `ScheduleWakeup`, GitHub Actions |
 | **2. Skill** | reusable instructions the loop reads each pass (rules + a *never-touch* list) | this skill + the project's loop config |
 | **3. Sub-agents** | split the **maker** (does the work) from the **checker** (verifies it) | `hunter-skeptic-referee`, `code-auditor`, `tester` |
-| **4. Connectors** | let the loop *act* — open the PR, comment the ticket, ping the channel | Linear MCP, `gh`, `resend`, `devops` |
+| **4. Connectors** | let the loop *act* — open the PR, comment the ticket, ping the channel | Linear MCP, `gh`, `resend`, `devops`. PRs are human artifacts: see `references/human-artifacts.md` |
 | **5. Verifier (the gate)** | the test/typecheck/build/exercise that automatically **rejects** bad output | `tester` (Jason) — owns running it |
 
 The maker is too generous grading its own homework, so block 3 (a separate, often stronger checker) plus block 5 (an objective gate) is *most of the quality*. Make the maker fast and cheap; make the checker slow and strict.
@@ -82,7 +83,7 @@ The verified shape — every lane below was live-tested headless before this sec
 | **Plan** | strongest planner (e.g. fable) | native `Workflow` `agent(..., { model: 'fable', schema })` | Premise verification BEFORE decomposition; routes each item to a lane + named roster agent |
 | **Implement** | cheap workers: external CLI (e.g. `grok -m grok-4.6 --permission-mode acceptEdits`) or named roster agents (`agentType`) | supervisor-agent pattern: a thin workflow agent writes the spec file, drives the CLI via Bash, relays the report + `git diff --stat` | Volume off the main seat; disjoint file partitions per item |
 | **Review** | independent CROSS-VENDOR checker (e.g. `codex exec -m gpt-5.6-sol --sandbox read-only`) | supervisor agent builds a review brief (diff + every claim), demands a schema verdict | The missing gate: adversarial review of the diff AND the claims; one corrective round max |
-| **Gate + ship** | main seat, model PINNED in loop config | mechanical gate unpiped, then git | Merge requires gate green **AND** `verdict.approved` |
+| **Gate + ship** | main seat, model PINNED in loop config | mechanical gate unpiped, then `lint-pr.sh` if opening a PR, then git | Merge requires gate green **AND** `verdict.approved`. Auto-merged PRs also require the human-artifact linter green |
 
 Non-negotiables learned the hard way:
 
@@ -106,6 +107,13 @@ Non-negotiables learned the hard way:
   briefs carry code excerpts, never secrets or env values. launchd does not source shell profiles —
   file-based auth (codex `auth.json`, `grok login`) or an explicitly-sourced env file, checked at
   preflight.
+- **GitHub is for humans.** Tickets hold work items; the loop ledger holds process. A loop that
+  auto-merges without a human rewrite must lint PR titles and bodies as **code**
+  (`scripts/lint-pr.sh` + CI), not as another prompt. Field case: auto-merged PRs with ticket-id
+  prefixes and checker dumps a human could not scan (Scribe, 2026-08). T3 Code discovers the
+  same contract via always-on `AGENTS.md`; T3 does not auto-merge, so prompt-only is enough
+  there. Follow `references/human-artifacts.md`. `/factory-init` copies the templates when the
+  connector list includes `gh pr create`.
 
 ### Agent runtime selection
 
@@ -198,12 +206,12 @@ Decisions 3, 4, and 5 below are per-project — **you must ask the project**, ne
 6. **Maker/checker** — separate checker agent? cheap maker (Haiku-tier reads/diffs) + strict checker (strong model, high effort).
 7. **Stop conditions** — cap, success condition, budget, halt-below-accept-rate.
 8. **Heartbeat** — manual now (prove) or scheduled (cron/`/loop`/Actions/hook)? cadence?
-9. **Connectors** — what does it act on? (open PR, comment ticket, ping channel)
+9. **Connectors** — what does it act on? (open PR, comment ticket, ping channel). If it opens PRs, scaffold the human-artifact gate (`references/human-artifacts.md`).
 10. **Economics** — track cost-per-accepted-change? budget ceiling?
 
 ## Failure modes — design the guards in
 
-Loops fail quietly, not loudly. Before shipping, walk `references/failure-modes.md` and confirm a guard for each: the Ralph Wiggum premature-done, silent runaway, context rot, phantom implementation, scope creep, comprehension debt, approval fatigue, injection propagation, and the **mega-skill** — one giant skill that interprets the whole build-check-route pipeline in a single agent context, which makes every step untestable and every failure invisible. The two cheapest guards that prevent the most damage: an **objective external gate** (not LLM self-assessment) and a **pre-flight budget breaker**.
+Loops fail quietly, not loudly. Before shipping, walk `references/failure-modes.md` and confirm a guard for each: the Ralph Wiggum premature-done, silent runaway, context rot, phantom implementation, scope creep, comprehension debt, unintelligible auto-merged PRs, approval fatigue, injection propagation, and the **mega-skill** — one giant skill that interprets the whole build-check-route pipeline in a single agent context, which makes every step untestable and every failure invisible. The two cheapest guards that prevent the most damage: an **objective external gate** (not LLM self-assessment) and a **pre-flight budget breaker**.
 
 ## Who does what (roster)
 
@@ -227,5 +235,6 @@ registration, never no registration.
 - `references/config-questionnaire.md` — the full per-project loop interview, field by field.
 - `references/blast-radius.md` — tiering detail + the prove→harden→automate promotion protocol.
 - `references/failure-modes.md` — the catalog of quiet failure modes and their guards.
+- `references/human-artifacts.md` — GitHub PRs as human artifacts: AGENTS.md contract, lint-pr.sh, CI.
 - `references/looptop-registration.md` — the worker registration contract, verified against looptop source.
 - `references/state-backends.md` — Linear vs GitHub Issues vs repo-vault, with the state-file contract.
