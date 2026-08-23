@@ -627,24 +627,29 @@ Live results: **[bopen.ai/benchmarks](https://bopen.ai/benchmarks)**
 Add evals alongside any skill at `skills/<name>/evals/evals.json`:
 
 ```json
-[
-  {
-    "id": "basic-usage",
-    "prompt": "Write a short README for a CLI tool called 'greet'",
-    "assertions": [
-      {
-        "id": "has-install-section",
-        "text": "The output includes an installation section",
-        "type": "qualitative"
-      },
-      {
-        "id": "has-usage-section",
-        "text": "The output includes a usage section with an example command",
-        "type": "qualitative"
-      }
-    ]
-  }
-]
+{
+  "skill_name": "greet",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a short README for a CLI tool called greet",
+      "expected_output": "A README with installation and usage examples.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "has-install-section",
+          "text": "The output includes an installation section.",
+          "type": "qualitative"
+        },
+        {
+          "id": "has-usage-section",
+          "text": "The output includes a usage section with an example command.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}
 ```
 
 ### Running the Benchmark CLI
@@ -654,6 +659,10 @@ Add evals alongside any skill at `skills/<name>/evals/evals.json`:
 bun run scripts/benchmark.tsx
 
 # Run a single skill
+bun run scripts/benchmark.tsx --skill humanize
+
+# Run a skill from another plugin checkout
+bun run scripts/benchmark.tsx --skill collections --skill-root /path/to/1sat-sdk
 
 # Custom model or concurrency (use an ID available to your account)
 bun run scripts/benchmark.tsx --model "${BENCHMARK_MODEL_ID:?set BENCHMARK_MODEL_ID}" --concurrency 5
@@ -661,7 +670,10 @@ bun run scripts/benchmark.tsx --model "${BENCHMARK_MODEL_ID:?set BENCHMARK_MODEL
 
 Results are written to `benchmarks/latest.json`. Commit reviewed results to publish them to bopen.ai.
 
-**Resume support:** Each eval result is cached by content hash (`benchmarks/cache/`). If a run is interrupted, restarting picks up where it left off — no tokens wasted.
+**Resume support:** Each eval result is cached by content hash
+(`benchmarks/cache/`). The hash includes the model, full eval contract, and
+injected skill content. Interrupted runs resume without reusing a score after
+the skill or assertions change.
 
 ### Writing Evals for Your Skill
 
