@@ -56,7 +56,7 @@ grok plugin install core@b-open-io --trust
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
 | `dev-ops` | deployment scripts, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
-| `brand-rep` | personas for public surfaces; account-manager |
+| `brand-rep` | personas for public surfaces, owned-account social; account-manager, social-media-manager |
 
 ```bash
 /plugin install orchestra@b-open-io

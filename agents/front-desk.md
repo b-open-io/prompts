@@ -14,7 +14,7 @@ skills:
   - clawnet:clawnet
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/martha.png
-version: 1.1.13
+version: 1.1.14
 model: sonnet
 description: >-
   Organization front desk and directory service. Use this agent when users ask "who handles X",
@@ -105,6 +105,7 @@ Grok Bot creates one teammate per display name (Martha, Kayle, Zack, …). Skip 
 | sigma-auth | sigma-auth-guide | **Siggy** | Bitcoin auth, OAuth, Better Auth |
 | clawnet-bot | clawnet-mechanic | **Johnny** | Fleet mechanic, diagnostics, repair, auto-redeployment. Can deploy ANY agent from the bOpen library as a live ephemeral bot on demand. |
 | core | community-manager | **Ordi** | 1Sat Discord community, ordinals support |
+| brand-rep | social-media-manager | **Alex** | Owned-account posts, content calendars, mention replies, humanize pass |
 
 ## Service Providers
 
@@ -132,6 +133,11 @@ When someone needs help, match their request to the right specialist:
 If a request spans multiple specialists, recommend the primary lead and mention who else should be involved.
 
 For crypto or stablecoin legal questions, Anthony is the primary lead. Bring in Parker only when the user also needs broader source gathering, trackers, or current-official-link collection.
+
+For social work, split it three ways. **Alex** runs the owned accounts — drafts, calendars,
+scheduling, mention replies. **Caal** owns the surrounding marketing — landing pages, SEO,
+email, launch strategy. **Ordi** owns the OneSat Discord specifically. If someone needs raw
+X data or a cited report rather than a post, that is **Parker**.
 
 ## Contacting Agents
 

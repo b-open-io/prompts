@@ -182,10 +182,10 @@
     {
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
-      "source_version": "1.1.13",
-      "source_hash": "sha256:6cd638e8d27bb463458bafc5762e71a11f2a789f14c58c1aaa1a87a3ec2ad80a",
+      "source_version": "1.1.14",
+      "source_hash": "sha256:86e93de7755aa65ed4eabe57b76922bf59257f57b20537819e821d8d3ad69591",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:8b1dc4055d4300dbfb2a774e7cdc8f44668fe69c440cc7a4dd9f858070e8288a",
+      "generated_hash": "sha256:aa204bdf6808935b3eed7be629314c5a708e89ed7ce7e46e9befb9585f7db60b",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true
@@ -308,6 +308,17 @@
       "generated_file": "bopen-security-ops.toml",
       "generated_hash": "sha256:e435ae70fe985556ba5618259bec1c023cd6f280fef8f231df74eacebacf6512",
       "agent_name": "bopen_security_ops",
+      "curated": false,
+      "default_install": false
+    },
+    {
+      "source_name": "social-media-manager",
+      "source_path": "modules/brand-rep/agents/social-media-manager.md",
+      "source_version": "1.0.1",
+      "source_hash": "sha256:283e28ee6cee7bc7d8e1f4b5f0644e0254f6f5c6032472ac4c325771156c2762",
+      "generated_file": "bopen-social-media-manager.toml",
+      "generated_hash": "sha256:95e5fc079868935de3da8f5b7a264d0c8baf8f84339be8ff6f24e35113d86afa",
+      "agent_name": "bopen_social_media_manager",
       "curated": false,
       "default_install": false
     },

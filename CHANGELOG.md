@@ -6,6 +6,29 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.145] - 2026-08-25
+
+### Fixed
+
+- `brand-rep` 0.1.2: the Codex module manifest was left at 0.1.1 while the
+  Claude manifest moved to 0.1.2, so `check-plugin-manifests.py` failed. Both
+  now read 0.1.2.
+- `social-media-manager/AGENTS.md` was committed as a real file instead of a
+  symlink to the agent, then went stale when Alex 1.0.1 landed — Grok and
+  `skills add` installs were still getting the 1.0.0 "bOpen's owned accounts"
+  persona that 1.0.1 deliberately replaced. It is now a symlink, matching every
+  other agent in the repo.
+- Generated the missing `bopen-social-media-manager.toml` Codex adapter. Alex
+  shipped to Claude Code but was unreachable from Codex, and
+  `codex-agents/generate.py --check` failed.
+
+### Changed
+
+- `front-desk` 1.1.14 lists Alex and adds a social routing rule: Alex runs the
+  owned accounts, Caal owns the surrounding marketing, Ordi owns the OneSat
+  Discord, Parker owns raw X data and cited reports.
+- Synchronized the Claude, Codex, and Grok core manifests at 1.1.145.
+
 ## [1.1.144] - 2026-08-23
 
 ### Fixed
