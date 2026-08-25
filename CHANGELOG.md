@@ -6,6 +6,29 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.146] - 2026-08-25
+
+### Changed
+
+- `social-media-manager` 1.0.2: cross-plugin skill references now resolve.
+  `persona` and `x-research` were bare and would not load from `brand-rep`; they
+  are `research:*` now, `copywriting`/`copy-editing` are `marketing-skills:*`,
+  and the duplicate `copy-editing` entry is gone.
+- Alex can find mentions again. He carried only `x-research`, which returns AI
+  summaries rather than posts, so "reply to mentions" had no way to locate one.
+  Adds `research:x-tweet-search`, `research:x-user-timeline`, and
+  `research:x-user-lookup`.
+- Alex now shows drafts and waits before anything reaches a live account,
+  escalates legal, financial, security, and incident claims instead of drafting
+  a public reply, and does not invent metrics. Routing gains Ordi for the OneSat
+  Discord and Parker for cited reports.
+- Social work is no longer claimed by two agents. `product-skills:marketer`
+  (Caal) 1.0.9 drops `marketing-skills:social` and gains a brand-rep handoff
+  table covering both Alex and Kurt.
+- `documentation-writer` 1.2.7 and `community-manager` 1.0.8 route owned-account
+  social posts to Alex.
+- Synchronized the Claude, Codex, and Grok core manifests at 1.1.146.
+
 ## [1.1.145] - 2026-08-25
 
 ### Fixed

@@ -83,10 +83,10 @@
     {
       "source_name": "community-manager",
       "source_path": "agents/community-manager.md",
-      "source_version": "1.0.7",
-      "source_hash": "sha256:76113af995b24f82c51803eedc9a76480072cbdd382d4a89ccba263b0605affb",
+      "source_version": "1.0.8",
+      "source_hash": "sha256:1130e66e216e6a0b776c4ec12866d8ca660ad10a8ecf8c72de33f58f283e4ebf",
       "generated_file": "bopen-community-manager.toml",
-      "generated_hash": "sha256:ec69d2961cbc0b621cc289e48d0e86459c9aa9e30ee86f61a64f934fbf1f96e3",
+      "generated_hash": "sha256:e1d90db531a681f0bcda52c0efcc73ec5fa2fa37b1b72cab989621f20db1e5ab",
       "agent_name": "bopen_community_manager",
       "curated": false,
       "default_install": false
@@ -160,10 +160,10 @@
     {
       "source_name": "documentation-writer",
       "source_path": "modules/research/agents/documentation-writer.md",
-      "source_version": "1.2.6",
-      "source_hash": "sha256:6539b6cd990b6cefaf9c49e06d765dfcee1ad9b5b3016aa9c84ecb1e64c0a46c",
+      "source_version": "1.2.7",
+      "source_hash": "sha256:57ff9fdce1d4211632a7dafc02219a2782d8909dc4ccf9dc8617bf453ed2b4d3",
       "generated_file": "bopen-documentation-writer.toml",
-      "generated_hash": "sha256:abde3abe7582737fb1615b765aa0fe080778c437c75aca9a85224d51bc0dffcd",
+      "generated_hash": "sha256:07b6ba194f2a5ed6dbe3f1e0a565ef3a29a4a54d195bbb5b01a430caee275b6a",
       "agent_name": "bopen_documentation_writer",
       "curated": true,
       "default_install": true
@@ -314,10 +314,10 @@
     {
       "source_name": "social-media-manager",
       "source_path": "modules/brand-rep/agents/social-media-manager.md",
-      "source_version": "1.0.1",
-      "source_hash": "sha256:283e28ee6cee7bc7d8e1f4b5f0644e0254f6f5c6032472ac4c325771156c2762",
+      "source_version": "1.0.2",
+      "source_hash": "sha256:6a8da9ecb5bb8eac86815745d98b64212cc015657d06ffe568c4d138d2971095",
       "generated_file": "bopen-social-media-manager.toml",
-      "generated_hash": "sha256:95e5fc079868935de3da8f5b7a264d0c8baf8f84339be8ff6f24e35113d86afa",
+      "generated_hash": "sha256:b566002c7b8d414ccef0002475414e8064c3bc9df706e2425386be00b0b3bece",
       "agent_name": "bopen_social_media_manager",
       "curated": false,
       "default_install": false
