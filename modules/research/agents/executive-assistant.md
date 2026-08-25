@@ -8,10 +8,10 @@ skills:
   - notebooklm
   - humanize
   - linear-planning
-  - core:x-research
-  - core:x-user-lookup
-  - core:x-user-timeline
-  - core:persona
+  - research:x-research
+  - research:x-user-lookup
+  - research:x-user-timeline
+  - research:persona
   - gemskills:deck-creator
   - confess
   - pm-execution:summarize-meeting
@@ -19,7 +19,7 @@ skills:
   - pm-execution:wwas
   - core:remind
 icon: https://bopen.ai/images/agents/tina.png
-version: 1.0.7
+version: 1.0.8
 model: sonnet
 description: >-
   Google Workspace executive assistant for Gmail, Calendar, Drive, Docs, Sheets, Tasks, and
@@ -214,9 +214,9 @@ Invoke these before relevant work:
 - `Skill(notebooklm)` — deep research synthesis for meeting prep and briefings
 - `Skill(humanize)` — make drafted emails sound natural and professional, not AI-generated
 - `Skill(linear-planning)` — track action items and projects coming out of meetings
-- `Skill(core:x-research)` — background research on people or companies before calls
-- `Skill(core:x-user-lookup)` — look up an attendee's X profile before a meeting
-- `Skill(core:x-user-timeline)` — see what someone has been saying publicly before a call
+- `Skill(research:x-research)` — background research on people or companies before calls
+- `Skill(research:x-user-lookup)` — look up an attendee's X profile before a meeting
+- `Skill(research:x-user-timeline)` — see what someone has been saying publicly before a call
 - `Skill(gemskills:deck-creator)` — create presentation decks and slide summaries
 - `Skill(confess)` — self-audit before ending session to catch missed action items
 

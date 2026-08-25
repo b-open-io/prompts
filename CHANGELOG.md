@@ -6,6 +6,81 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.147] - 2026-08-25
+
+### Added
+
+- `brand-rep:typefully` 1.0.0 — draft, schedule, and review posts through the
+  Typefully v2 API across X, LinkedIn, Threads, Bluesky, Mastodon, and Substack.
+  Alex referenced a `typefully` skill that did not exist anywhere in the
+  ecosystem, so his scheduling and "Output" contract pointed at nothing. The
+  skill creates plain drafts by default; `--at`, `--plan`, and `--publish-now`
+  are the only paths to a live account, and it refuses a timestamp with no
+  timezone offset.
+
+### Fixed
+
+- Thirty-eight `core:<skill>` references across fourteen agents pointed at
+  skills that moved out of `core` in the module split and no longer resolve —
+  `core:x-research`, `core:generative-ui`, `core:benchmark-skills`,
+  `core:mcp-apps` and the rest. Every in-repo skill reference now names the
+  plugin that actually owns it. Affects `agent-builder`, `creative-developer`,
+  `designer`, `devops`, `executive-assistant`, `integration-expert`, `mcp`,
+  `mobile`, `nextjs`, `optimizer`, `payments`, `researcher`, `tester`, and
+  `trainer`.
+- Alex's `marketing-skills` note named the wrong repository. It is Corey Haines'
+  MIT `coreyhaines31/marketingskills`, which installs from its own marketplace;
+  he now gives that install command instead of guessing at platform conventions.
+  Third-party catalog sources stay read-only and are not added to the b-open-io
+  marketplace.
+- Synchronized the Claude, Codex, and Grok core manifests at 1.1.147.
+
+## [1.1.146] - 2026-08-25
+
+### Changed
+
+- `social-media-manager` 1.0.2: cross-plugin skill references now resolve.
+  `persona` and `x-research` were bare and would not load from `brand-rep`; they
+  are `research:*` now, `copywriting`/`copy-editing` are `marketing-skills:*`,
+  and the duplicate `copy-editing` entry is gone.
+- Alex can find mentions again. He carried only `x-research`, which returns AI
+  summaries rather than posts, so "reply to mentions" had no way to locate one.
+  Adds `research:x-tweet-search`, `research:x-user-timeline`, and
+  `research:x-user-lookup`.
+- Alex now shows drafts and waits before anything reaches a live account,
+  escalates legal, financial, security, and incident claims instead of drafting
+  a public reply, and does not invent metrics. Routing gains Ordi for the OneSat
+  Discord and Parker for cited reports.
+- Social work is no longer claimed by two agents. `product-skills:marketer`
+  (Caal) 1.0.9 drops `marketing-skills:social` and gains a brand-rep handoff
+  table covering both Alex and Kurt.
+- `documentation-writer` 1.2.7 and `community-manager` 1.0.8 route owned-account
+  social posts to Alex.
+- Synchronized the Claude, Codex, and Grok core manifests at 1.1.146.
+
+## [1.1.145] - 2026-08-25
+
+### Fixed
+
+- `brand-rep` 0.1.2: the Codex module manifest was left at 0.1.1 while the
+  Claude manifest moved to 0.1.2, so `check-plugin-manifests.py` failed. Both
+  now read 0.1.2.
+- `social-media-manager/AGENTS.md` was committed as a real file instead of a
+  symlink to the agent, then went stale when Alex 1.0.1 landed — Grok and
+  `skills add` installs were still getting the 1.0.0 "bOpen's owned accounts"
+  persona that 1.0.1 deliberately replaced. It is now a symlink, matching every
+  other agent in the repo.
+- Generated the missing `bopen-social-media-manager.toml` Codex adapter. Alex
+  shipped to Claude Code but was unreachable from Codex, and
+  `codex-agents/generate.py --check` failed.
+
+### Changed
+
+- `front-desk` 1.1.14 lists Alex and adds a social routing rule: Alex runs the
+  owned accounts, Caal owns the surrounding marketing, Ordi owns the OneSat
+  Discord, Parker owns raw X data and cited reports.
+- Synchronized the Claude, Codex, and Grok core manifests at 1.1.145.
+
 ## [1.1.144] - 2026-08-23
 
 ### Fixed

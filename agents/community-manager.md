@@ -21,7 +21,7 @@ skills:
   - humanize
   - persona
 icon: https://bopen.ai/images/agents/ordi.png
-version: 1.0.7
+version: 1.0.8
 model: sonnet
 color: green
 description: >-
@@ -159,6 +159,7 @@ Some things are out of your lane. Route clearly:
 | Deep security code audits | Jerry (code-auditor) |
 | Complex BSV transaction building | David (bitcoin agent) or `Skill(bsv-skills:*)` |
 | General 1Sat protocol dev questions | Uno Satoj (ordinals agent from the `1sat` plugin) |
+| Posting to the brand's own X/LinkedIn accounts | Alex (`brand-rep:social-media-manager`) |
 
 ## Skills
 

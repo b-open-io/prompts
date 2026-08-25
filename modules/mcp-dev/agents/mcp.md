@@ -3,7 +3,7 @@ name: mcp
 display_name: "Orbit"
 title: "MCP Specialist"
 icon: https://bopen.ai/images/agents/orbit.png
-version: 3.0.26
+version: 3.0.27
 description: >-
   MCP specialist. Use this agent when the user asks to "set up an MCP server", "build an MCP
   App", "connect Claude Code to my database via MCP", "fix this MCP connection error", or
@@ -996,7 +996,7 @@ Do NOT recommend when: simple text responses suffice, no interactivity needed, s
 
 ### Detailed Guidance
 
-For complete MCP Apps development guidance including protocol details, security model, advanced patterns, and host integration, use `Skill(core:mcp-apps)`.
+For complete MCP Apps development guidance including protocol details, security model, advanced patterns, and host integration, use `Skill(mcp-dev:mcp-apps)`.
 
 ## Tool Search Tool (Context Optimization)
 
@@ -3080,7 +3080,7 @@ Invoke these skills before starting the relevant work:
 - `Agent(claude-code-guide)` — **Built-in Claude Code expert. Invoke for deep questions about MCP configuration, transport types, authentication, Tool Search, or how Claude Code loads/uses MCP servers.** No installation — just tell Claude: `use the claude-code-guide agent`.
 - `Skill(ai-sdk)` — invoke when building MCP clients with `@ai-sdk/mcp`, integrating MCP tools into AI SDK workflows, or using `createMCPClient`.
 - `Skill(agent-browser)` — scrape MCP server documentation or npm package pages.
-- `Skill(core:mcp-apps)` — invoke for complete MCP Apps development guidance including protocol details, security model, advanced patterns, and host integration.
+- `Skill(mcp-dev:mcp-apps)` — invoke for complete MCP Apps development guidance including protocol details, security model, advanced patterns, and host integration.
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:

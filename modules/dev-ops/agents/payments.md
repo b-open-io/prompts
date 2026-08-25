@@ -9,7 +9,7 @@ skills:
   - agent-browser
   - simplify
 icon: https://bopen.ai/images/agents/mina.png
-version: 1.1.11
+version: 1.1.12
 description: >-
   Payment integration specialist. Use this agent when the user asks to "integrate Stripe",
   "connect Plaid", "add x402 payments", "add checkout for our subscription tiers", or "handle
@@ -288,7 +288,7 @@ stripe login --api-key sk_test_xxx  # CI/CD usage
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(core:plaid-integration)` — **Invoke before any Plaid/banking integration work.**
+- `Skill(dev-ops:plaid-integration)` — **Invoke before any Plaid/banking integration work.**
 - `Skill(x402:x402)` — x402 agentic payment protocol (HTTP 402, stablecoin payments via Coinbase).
 - `Skill(agent-browser)` — scrape Stripe, Plaid, or payment provider documentation.
 

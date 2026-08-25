@@ -10,13 +10,13 @@ skills:
   - agent-browser
   - chrome-cdp
   - simplify
-  - core:generative-ui
-  - core:mcp-apps
+  - web-dev:generative-ui
+  - mcp-dev:mcp-apps
   - github-stars
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/maxim.png
-version: 1.2.21
+version: 1.2.22
 model: sonnet
 description: >-
   Third-party service integration specialist. Use this agent when the user asks to "wire up this

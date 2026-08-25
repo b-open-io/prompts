@@ -15,9 +15,9 @@ skills:
   - confess
   - simplify
   - superpowers:dispatching-parallel-agents
-  - core:perf-audit
+  - web-dev:perf-audit
 icon: https://bopen.ai/images/agents/torque.png
-version: 1.2.21
+version: 1.2.22
 model: opus
 description: >-
   Performance specialist for profiling, bundle analysis, Core Web Vitals, and image
@@ -344,7 +344,7 @@ agent-browser request list  # find slow/large requests
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(core:frontend-performance)` — **Invoke before auditing any file for Core Web Vitals or bundle size.**
+- `Skill(web-dev:frontend-performance)` — **Invoke before auditing any file for Core Web Vitals or bundle size.**
 - `Skill(vercel-react-best-practices)` — Vercel-specific perf patterns, RSC optimization, 57-rule guide.
 - `Skill(vercel-composition-patterns)` — RSC composition, streaming patterns, component splitting for performance.
 - `Skill(gemskills:optimize-images)` — **Invoke before any image optimization task.** Provides the sharp-based batch compression script.

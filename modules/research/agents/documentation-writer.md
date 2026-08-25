@@ -10,7 +10,7 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/flow.png
-version: 1.2.6
+version: 1.2.7
 model: sonnet
 description: >-
   Technical writer for developer docs. Use this agent when the user asks to "write a README",
@@ -92,6 +92,7 @@ Route to specialists instead of handling inline:
 | CLI demo GIFs, terminal recordings | Use `Skill(cli-demo-gif)` yourself | You have this skill |
 | Legal docs (ToS, privacy policy) | **Anthony** (legal agent, product-skills) | Legal compliance specialist |
 | Marketing copy, landing page content | **Caal** (marketer, product-skills) | Growth and conversion copy |
+| Social posts, threads, announcements for owned accounts | **Alex** (social-media-manager, brand-rep) | Per-platform post shape and the humanize pass |
 | Code comments, JSDoc on implementation | The implementing agent | They wrote the code |
 | Research for doc accuracy | **Parker** (researcher) | Web research and fact-checking |
 
