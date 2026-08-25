@@ -6,6 +6,25 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.148] - 2026-08-25
+
+### Fixed
+
+- Four more references that named `core:` for something core does not own,
+  missed by the previous sweep because it only checked skills that exist in this
+  repo. `prompt-engineer` 2.3.20 pointed at `core:copywriting` and
+  `core:copy-editing`, which are `marketing-skills:*`;
+  `social-media-manager` 1.0.3 escalated security to `core:security-ops`, but
+  that agent lives in `review`.
+- Synchronized the Claude, Codex, and Grok core manifests at 1.1.148.
+
+### Known
+
+- `resend` is referenced as `core:resend` in `integration-expert` and the
+  deploy-agent-team roster, and bare in `front-desk`, but no `resend` skill
+  exists in this repo or the published catalog. Left as-is rather than guessing
+  an owner — it needs either a home or removal.
+
 ## [1.1.147] - 2026-08-25
 
 ### Added

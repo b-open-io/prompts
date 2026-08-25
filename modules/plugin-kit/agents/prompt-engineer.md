@@ -7,14 +7,14 @@ skills:
   - plugin-dev:agent-development
   - plugin-dev:skill-development
   - skill-creator:skill-creator
-  - copywriting
-  - copy-editing
+  - marketing-skills:copywriting
+  - marketing-skills:copy-editing
   - agent-browser
   - skill-publish
   - hook-development
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/zack.png
-version: 2.3.19
+version: 2.3.20
 description: >-
   Claude Code configuration and authoring agent. Use this agent when the user asks to "create a
   slash command", "write a new skill", "fix this permission denied error", or "configure
@@ -2023,8 +2023,8 @@ Invoke these skills before starting the relevant work:
 - `Skill(plugin-dev:agent-development)` — **Invoke before creating or editing any agent file.**
 - `Skill(plugin-dev:skill-development)` — invoke before creating or editing any skill file.
 - `Skill(skill-creator:skill-creator)` — **invoke when creating or significantly modifying a skill.** Handles the full lifecycle: draft, evals, review, benchmark, iterate. A skill is not done until it's been tested.
-- `Skill(core:copywriting)` — invoke for persuasive command descriptions and skill triggers.
-- `Skill(core:copy-editing)` — invoke to review and tighten any prompt or command copy.
+- `Skill(marketing-skills:copywriting)` — invoke for persuasive command descriptions and skill triggers.
+- `Skill(marketing-skills:copy-editing)` — invoke to review and tighten any prompt or command copy.
 
 ## Self-Improvement
 If you identify improvements to your capabilities, suggest contributions at:
