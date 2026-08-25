@@ -28,10 +28,10 @@
     {
       "source_name": "agent-builder",
       "source_path": "modules/orchestra/agents/agent-builder.md",
-      "source_version": "1.7.14",
-      "source_hash": "sha256:9344892de6e12f7519f0cb97be97f114a28693094cd6497d00eea2d6716a4853",
+      "source_version": "1.7.15",
+      "source_hash": "sha256:f885e1452cda8967c14d8e1791c0f7c03c29caaa094ca9caa9a9fc0fb3bc15d8",
       "generated_file": "bopen-agent-builder.toml",
-      "generated_hash": "sha256:ef05334c8fe49488dc1867972e7ad367790e953ca24bc0411a82ce8d8c07af61",
+      "generated_hash": "sha256:b172329a6a1e0d804084a069ab9ed80cb21eb384e480ddb074cd319ca6e90388",
       "agent_name": "bopen_agent_builder",
       "curated": true,
       "default_install": true
@@ -105,10 +105,10 @@
     {
       "source_name": "creative-developer",
       "source_path": "modules/creative/agents/creative-developer.md",
-      "source_version": "1.0.6",
-      "source_hash": "sha256:1b755c3d326449a9e99782a65ae9099a5c47c77a23a793e2be33c1f882efb56f",
+      "source_version": "1.0.7",
+      "source_hash": "sha256:33d48bcacbb442e4da9b04128de60f99bd78ac5f311c511bfb3ecf4cba2f00c7",
       "generated_file": "bopen-creative-developer.toml",
-      "generated_hash": "sha256:d808c9be659e520e07c905c8d68c7aae81c135fc7e3bf85c8d575f94517f6673",
+      "generated_hash": "sha256:67eba6a531bdcfc7029559bdcda7c47333f0c7f8fbc78b8a8f2d277eea674cfa",
       "agent_name": "bopen_creative_developer",
       "curated": false,
       "default_install": false
@@ -138,10 +138,10 @@
     {
       "source_name": "designer",
       "source_path": "modules/web-dev/agents/designer.md",
-      "source_version": "1.0.22",
-      "source_hash": "sha256:de354f4120bc5749897a9af91f1d37ebded6841baa6b5b5bcf039c09d4f907cc",
+      "source_version": "1.0.23",
+      "source_hash": "sha256:f8c8ec1a9699b24242e8c69cc226057f57993bbe26cc3ded044cf903a0051470",
       "generated_file": "bopen-designer.toml",
-      "generated_hash": "sha256:24f532c51ef676906ed0dba56e8ff9c2693d1bb5998e1fc84c650410e4573990",
+      "generated_hash": "sha256:45c719ebe3b8af42294d19e55c188365b1cbfc30ebd73cfe9861bfcc034723e8",
       "agent_name": "bopen_designer",
       "curated": false,
       "default_install": false
@@ -149,10 +149,10 @@
     {
       "source_name": "devops",
       "source_path": "modules/dev-ops/agents/devops.md",
-      "source_version": "1.3.9",
-      "source_hash": "sha256:35ae89f2faee74422c6e0a5699cfcbb3294fe544ebc665b42bd907efbaefdd84",
+      "source_version": "1.3.10",
+      "source_hash": "sha256:3a3c9147e5748ab0752a4ab57cce20c81cf4b2be4da6fd4da5d3b542eb0f191d",
       "generated_file": "bopen-devops.toml",
-      "generated_hash": "sha256:ef3abe4b7cbc5a654fdf2d78ce932eae77c19737397ac0d62d8beccd6ce83499",
+      "generated_hash": "sha256:b8f83cd0fb3b1cc5fb17fbccab2776f99b3c9a8c713e45eb60da668c164b06a0",
       "agent_name": "bopen_devops",
       "curated": false,
       "default_install": false
@@ -171,10 +171,10 @@
     {
       "source_name": "executive-assistant",
       "source_path": "modules/research/agents/executive-assistant.md",
-      "source_version": "1.0.7",
-      "source_hash": "sha256:c725a11fb2ac117e4d7185ad3aec5b6aeab8ab9aa661acffa47b7b2558920f6c",
+      "source_version": "1.0.8",
+      "source_hash": "sha256:c8a237baf405b97b16b12ee72e3d7c44ac24c2e4d2b4ab1438f28850388a0b54",
       "generated_file": "bopen-executive-assistant.toml",
-      "generated_hash": "sha256:fd6538fba521ff58213e31eff35cc91cf03cf79234635614b2c0728efcc1e930",
+      "generated_hash": "sha256:b018009224b04dd4c6032721124a20d4384a73937285ec599a09d4ebf5f60b11",
       "agent_name": "bopen_executive_assistant",
       "curated": false,
       "default_install": false
@@ -193,10 +193,10 @@
     {
       "source_name": "integration-expert",
       "source_path": "modules/dev-ops/agents/integration-expert.md",
-      "source_version": "1.2.21",
-      "source_hash": "sha256:ac1c4f95f7358dedfcee02e8ae12fcb17741e1c3b24ff84448cb8d806d9d3653",
+      "source_version": "1.2.22",
+      "source_hash": "sha256:20276895c41bd5bfb2bb11b8b393aa108fbbfa49592a8c549b79693949165bab",
       "generated_file": "bopen-integration-expert.toml",
-      "generated_hash": "sha256:c7c10fbbf3dcec0e1076d2cb800c81f8a2d90dfd07063597c1bdf7e6a24f4ca9",
+      "generated_hash": "sha256:65f23c7b199c52487223dfd60901baf19052eaec8519f9fa260065078992b344",
       "agent_name": "bopen_integration_expert",
       "curated": false,
       "default_install": false
@@ -204,10 +204,10 @@
     {
       "source_name": "mcp",
       "source_path": "modules/mcp-dev/agents/mcp.md",
-      "source_version": "3.0.26",
-      "source_hash": "sha256:7da7a8f9e8014406242a4a61a6388f26eeb33fb9f13aa32970125dc0ff0b9967",
+      "source_version": "3.0.27",
+      "source_hash": "sha256:efe76ee7dedf909c53b814c0b97b577d20bac678c1e9cac8a204c51ad8170ba7",
       "generated_file": "bopen-mcp.toml",
-      "generated_hash": "sha256:164b349fe53b57a3444a8ee72a7b881228605dc5cc9c63ea07d735c92b864bf9",
+      "generated_hash": "sha256:1eb446261b2d2031c706ae3408a150ca43a391d7258f3049be12c2026e464c02",
       "agent_name": "bopen_mcp",
       "curated": false,
       "default_install": false
@@ -215,10 +215,10 @@
     {
       "source_name": "mobile",
       "source_path": "modules/web-dev/agents/mobile.md",
-      "source_version": "1.1.14",
-      "source_hash": "sha256:6f90ff1c0f7ca26e518a9a3a326b0b41e777e86967ea0e149837c27ae02bcd68",
+      "source_version": "1.1.15",
+      "source_hash": "sha256:b87a99639ea29d008a427266e21c8c7835215bd67df8b62518fa67d07cde3a18",
       "generated_file": "bopen-mobile.toml",
-      "generated_hash": "sha256:2df3129d7b6f3f8663f6bbe46fcd2418dc67c935adee61da6854c975f8a0fba9",
+      "generated_hash": "sha256:6ad23bee13d1ff26a931a432df1c7ce8e270dee35625c623bcc7f0a6d3c858a7",
       "agent_name": "bopen_mobile",
       "curated": false,
       "default_install": false
@@ -237,10 +237,10 @@
     {
       "source_name": "nextjs",
       "source_path": "modules/web-dev/agents/nextjs.md",
-      "source_version": "1.1.11",
-      "source_hash": "sha256:70471d70527492507497d59091f287b00ef98dc67f86167889ac11ff0aefd16b",
+      "source_version": "1.1.12",
+      "source_hash": "sha256:94c581d2ddd9ac3d54ebfe141a220fee9dc15c4af1f1c0f9155036fd18567a45",
       "generated_file": "bopen-nextjs.toml",
-      "generated_hash": "sha256:9e43f6870e45fc82d43a58a07bc3c44e3b9020ad7c1c8fc59faa17e873806243",
+      "generated_hash": "sha256:797e01ce6137f2fe9b0c98bf2765ff8944151a0ea12680679ecd7612d72dfcfa",
       "agent_name": "bopen_nextjs",
       "curated": false,
       "default_install": false
@@ -248,10 +248,10 @@
     {
       "source_name": "optimizer",
       "source_path": "modules/web-dev/agents/optimizer.md",
-      "source_version": "1.2.21",
-      "source_hash": "sha256:af43bfddfda1881cda4922e2894dff4021b188062e4e05c3fab1094ce4a3cc1c",
+      "source_version": "1.2.22",
+      "source_hash": "sha256:b8b43f796bdf35b0171e7b13ef5521736bfb3144f49f8b1a415199b0810795cd",
       "generated_file": "bopen-optimizer.toml",
-      "generated_hash": "sha256:65973ae7fbcb3e3d0d1d0358e6ca738630660e9ef5b2393bb6f438bfd706f73c",
+      "generated_hash": "sha256:ea49547c368531288d8e9189efe04400b976f9a3f75230e51f7a3009207ed3c1",
       "agent_name": "bopen_optimizer",
       "curated": false,
       "default_install": false
@@ -259,10 +259,10 @@
     {
       "source_name": "payments",
       "source_path": "modules/dev-ops/agents/payments.md",
-      "source_version": "1.1.11",
-      "source_hash": "sha256:0f63435f7611de6369cec640ab655b03d8ff7a0fd5f935cc1930764c12530e09",
+      "source_version": "1.1.12",
+      "source_hash": "sha256:eb2bbb4761ed9cf769330fb419dd0b0c07def5b3ebe8a85ced946f735cdd6062",
       "generated_file": "bopen-payments.toml",
-      "generated_hash": "sha256:1e2df0dc2448c452a9f28995d16f489666f64ee8c72fe3e94de2e8f3a81fab06",
+      "generated_hash": "sha256:7a40e7fc7daaff46c5762c273a93f044ce0eb1474d4c870713f214f4943ef821",
       "agent_name": "bopen_payments",
       "curated": false,
       "default_install": false
@@ -292,10 +292,10 @@
     {
       "source_name": "researcher",
       "source_path": "modules/research/agents/researcher.md",
-      "source_version": "1.2.13",
-      "source_hash": "sha256:ed097f3331c06d646ccb8975dad51266ba2316870e2340a0389722cb6af01a3c",
+      "source_version": "1.2.14",
+      "source_hash": "sha256:74f1cb6dd9e7c5bb34c7ce013584bd51905eab037ea2c849834d1fc46cb96b35",
       "generated_file": "bopen-researcher.toml",
-      "generated_hash": "sha256:925307da81544bf9f109e3cea2cafb4d4b8e425d8b085d883718cc8b8a378ecf",
+      "generated_hash": "sha256:866cf2f1d3f01b7a21a5b50ec6e471a85052622c2a43fc001ccb8319e2033715",
       "agent_name": "bopen_researcher",
       "curated": true,
       "default_install": true
@@ -315,9 +315,9 @@
       "source_name": "social-media-manager",
       "source_path": "modules/brand-rep/agents/social-media-manager.md",
       "source_version": "1.0.2",
-      "source_hash": "sha256:6a8da9ecb5bb8eac86815745d98b64212cc015657d06ffe568c4d138d2971095",
+      "source_hash": "sha256:21d7cc89b97fedc39eda6dda639fa1da1a5b34821bc556f4bafa92fcee3a12c1",
       "generated_file": "bopen-social-media-manager.toml",
-      "generated_hash": "sha256:b566002c7b8d414ccef0002475414e8064c3bc9df706e2425386be00b0b3bece",
+      "generated_hash": "sha256:18356cd5186e71f746db40fb37bc8a1af475ab654cc0dba584500a31af831668",
       "agent_name": "bopen_social_media_manager",
       "curated": false,
       "default_install": false
@@ -325,10 +325,10 @@
     {
       "source_name": "tester",
       "source_path": "modules/review/agents/tester.md",
-      "source_version": "1.3.17",
-      "source_hash": "sha256:be9b60f3bec34eafbc6f8fe25078841a3c03fb56fd6e43f72c080b0cd5efa1fa",
+      "source_version": "1.3.18",
+      "source_hash": "sha256:d61f2f87424503e8ec1299d1061e8d9bc5ef237cb716815e8cf9cb1c8da1cf34",
       "generated_file": "bopen-tester.toml",
-      "generated_hash": "sha256:226388510b308649520403c6dddcf7e1bae39801e4183660e178f6d94a2ee2b3",
+      "generated_hash": "sha256:facbd29f9dc25ac5609a3c940764c26848ef28daff19523577102a15383d77d2",
       "agent_name": "bopen_tester",
       "curated": true,
       "default_install": true
@@ -336,10 +336,10 @@
     {
       "source_name": "trainer",
       "source_path": "modules/plugin-kit/agents/trainer.md",
-      "source_version": "1.0.6",
-      "source_hash": "sha256:413831f47fec38bcf73681c6ff89b8d5bd403fdbf22946add586dfd5d4f64599",
+      "source_version": "1.0.7",
+      "source_hash": "sha256:c47a3c628490f44c9f18274fd963c8ca82191a0b78fcf8588be2ce733616c4ae",
       "generated_file": "bopen-trainer.toml",
-      "generated_hash": "sha256:d5172bfede6096525f2c8cdf19251a821dbe442b4376789deadaf76dbc7b5719",
+      "generated_hash": "sha256:b0334a68f5f4148f78824d754a4a21746384e16f7e323bbdb49da10347c681ce",
       "agent_name": "bopen_trainer",
       "curated": false,
       "default_install": false

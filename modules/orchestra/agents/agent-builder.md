@@ -19,21 +19,21 @@ skills:
   - superpowers:executing-plans
   - superpowers:writing-plans
   - orchestra:deploy-agent-team
-  - core:agent-onboarding
-  - core:agent-decommissioning
+  - plugin-kit:agent-onboarding
+  - plugin-kit:agent-decommissioning
   - gemskills:visual-planner
   - simplify
   - semgrep
   - hunter-skeptic-referee
-  - core:agent-auditor
+  - plugin-kit:agent-auditor
   - clawnet:clawnet-cli
   - clawnet:clawnet
-  - core:generative-ui
-  - core:mcp-apps
+  - web-dev:generative-ui
+  - mcp-dev:mcp-apps
   - orchestra:software-factory
-  - core:free-roam-testing
+  - review:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
-version: 1.7.14
+version: 1.7.15
 model: opus
 description: >-
   Agent architecture specialist. Use this agent when the user asks to "design an agent", "wire
@@ -82,7 +82,7 @@ When a project needs an autonomous **loop** — an agent that iterates toward a 
   without a human rewrite is how process jargon lands on GitHub.
 - **Maker/checker separation** → `code-auditor` / `hunter-skeptic-referee`.
 - **Cost-per-accepted-change** → `CFO` (Milton).
-- **Discovery (free roam)** → `Skill(core:free-roam-testing)` surfaces new work; the execution loop consumes it.
+- **Discovery (free roam)** → `Skill(review:free-roam-testing)` surfaces new work; the execution loop consumes it.
 - **Fleets at scale** → `Skill(orchestra:wave-coordinator)`.
 
 Non-negotiables I enforce: **the gate is the loop** (no objective gate ⇒ it's not a loop, don't build it); **blast radius governs autonomy** (irreversible actions stay human-gated regardless of accept rate); and **prove → harden → automate** (never schedule something I haven't proven by hand). For a new loop, run `/factory-init` or walk the config questionnaire directly.
@@ -1825,7 +1825,7 @@ To convert an agent `.md` file to a deployable bot:
 
 Paperclip is bOpen's agent orchestration platform (paperclip.bopen.io). It manages heartbeats, budgets, task assignment, org hierarchy, and approvals. Agents created in the Claude Code plugin ecosystem can also be registered in Paperclip for managed execution.
 
-**Use `Skill(core:agent-onboarding)` Phase 6 for the full Paperclip registration checklist.**
+**Use `Skill(plugin-kit:agent-onboarding)` Phase 6 for the full Paperclip registration checklist.**
 
 ### Paperclip vs Claude Code Agents
 

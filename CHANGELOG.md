@@ -6,6 +6,35 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.147] - 2026-08-25
+
+### Added
+
+- `brand-rep:typefully` 1.0.0 — draft, schedule, and review posts through the
+  Typefully v2 API across X, LinkedIn, Threads, Bluesky, Mastodon, and Substack.
+  Alex referenced a `typefully` skill that did not exist anywhere in the
+  ecosystem, so his scheduling and "Output" contract pointed at nothing. The
+  skill creates plain drafts by default; `--at`, `--plan`, and `--publish-now`
+  are the only paths to a live account, and it refuses a timestamp with no
+  timezone offset.
+
+### Fixed
+
+- Thirty-eight `core:<skill>` references across fourteen agents pointed at
+  skills that moved out of `core` in the module split and no longer resolve —
+  `core:x-research`, `core:generative-ui`, `core:benchmark-skills`,
+  `core:mcp-apps` and the rest. Every in-repo skill reference now names the
+  plugin that actually owns it. Affects `agent-builder`, `creative-developer`,
+  `designer`, `devops`, `executive-assistant`, `integration-expert`, `mcp`,
+  `mobile`, `nextjs`, `optimizer`, `payments`, `researcher`, `tester`, and
+  `trainer`.
+- Alex's `marketing-skills` note named the wrong repository. It is Corey Haines'
+  MIT `coreyhaines31/marketingskills`, which installs from its own marketplace;
+  he now gives that install command instead of guessing at platform conventions.
+  Third-party catalog sources stay read-only and are not added to the b-open-io
+  marketplace.
+- Synchronized the Claude, Codex, and Grok core manifests at 1.1.147.
+
 ## [1.1.146] - 2026-08-25
 
 ### Changed

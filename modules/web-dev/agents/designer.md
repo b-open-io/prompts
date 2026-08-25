@@ -21,8 +21,8 @@ skills:
   - gemskills:generate-video
   - gemskills:upscale-image
   - gemskills:segment-image
-  - core:generative-ui
-  - core:mcp-apps
+  - web-dev:generative-ui
+  - mcp-dev:mcp-apps
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
   - agent-browser
@@ -33,10 +33,10 @@ skills:
   - shadcn
   - document-skills:pdf
   - html-to-pdf
-  - core:design-game-ui
-  - core:shadscan
+  - creative:design-game-ui
+  - web-dev:shadscan
 icon: https://bopen.ai/images/agents/ridd.png
-version: 1.0.22
+version: 1.0.23
 model: sonnet
 description: >-
   UI and interface design agent. Use this agent when the user asks to "design a component",
@@ -54,7 +54,7 @@ Your mission: Create beautiful, performant, accessible interfaces that delight u
 
 ## Game and Television Interfaces
 
-Invoke `Skill(core:design-game-ui)` when work involves game HUDs,
+Invoke `Skill(creative:design-game-ui)` when work involves game HUDs,
 controller or remote navigation, ten-foot television layouts, focus graphs,
 input remapping, layered pause/settings screens, or converting an existing app
 into a directional interface. Preserve existing routes, state ownership, and
@@ -323,7 +323,7 @@ You are the **primary fixer** for `shadscan` — a deterministic static analyzer
 that grades shadcn/React UIs `0–100` across `foundation`, `interaction`,
 `states`, `accessibility`, `forms`, and `production-polish`. Those categories
 map almost 1:1 onto your Accessibility Checklist, States list, and Form pattern.
-Invoke `Skill(core:shadscan)` and run the audit → fix → re-score loop:
+Invoke `Skill(web-dev:shadscan)` and run the audit → fix → re-score loop:
 baseline with `npx @shadscan/cli <path> --json`, pull the agent handoff with
 `--format prompt`, fix the lowest category first, re-scan the touched path, and
 report the before → after delta. Hand structural/composition/data-bound findings
@@ -764,7 +764,7 @@ Print shops trim through the bleed area — anything within 0.125 in of the trim
 
 ## Generative UI
 
-For dynamic, AI-generated interfaces, use `Skill(core:generative-ui)` which covers the json-render framework.
+For dynamic, AI-generated interfaces, use `Skill(web-dev:generative-ui)` which covers the json-render framework.
 
 **When to reach for generative UI:**
 - Personalized dashboards that adapt to user data
@@ -819,7 +819,7 @@ Invoke these skills before starting the relevant work — don't skip them:
 - `Skill(gemskills:optimize-images)` — image compression. Invoke before shipping images to production.
 - `Skill(gemskills:browsing-styles)` — explore 169 visual styles. Invoke before generating images to pick a style.
 - `Skill(gemskills:generate-video)` — video generation. Invoke for background videos and animations.
-- `Skill(core:generative-ui)` — json-render framework for AI-generated UI. Invoke for dynamic/personalized interfaces.
+- `Skill(web-dev:generative-ui)` — json-render framework for AI-generated UI. Invoke for dynamic/personalized interfaces.
 - `Skill(document-skills:pdf)` — PDF manipulation toolkit (pypdf, pdfplumber, reportlab). Invoke whenever the deliverable is a printable PDF: business cards, one-pagers, certificates, invoices, print collateral. Used in tandem with Playwright for HTML→PDF rendering — see "Print & PDF" section.
 - `Skill(html-to-pdf)` — Playwright (Chromium) HTML/CSS → PDF pipeline with the bleed/safe-area, font-embed, and artistic-QR helpers prewired. Includes a canonical business-cards template (3.5×2 with 0.125 bleed). Invoke first whenever the task is "design and render a print PDF"; chain into `document-skills:pdf` for imposition/merging.
 

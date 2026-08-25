@@ -7,11 +7,11 @@ skills:
   - vercel-react-native-skills
   - agent-browser
   - simplify
-  - core:generative-ui
+  - web-dev:generative-ui
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/kira.png
-version: 1.1.14
+version: 1.1.15
 description: >-
   Mobile development specialist. Expo and React Native are the house default, with Swift,
   Kotlin, and Flutter expertise. Use this agent when the user asks to "build an Expo app",
