@@ -68,6 +68,19 @@ Install only what you need. Codex allocates roughly two percent of the model's
 context window to skills across *every* installed plugin, so an unused module
 spends budget another plugin could have used.
 
+Two agents reference skills published outside this marketplace. They degrade
+gracefully — each says which install command is missing rather than guessing —
+but install these to get their full behavior:
+
+| Agent | Needs | Install |
+|---|---|---|
+| `brand-rep:social-media-manager` (Alex) | `marketing-skills:social`, `:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
+| `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | same |
+
+Corey Haines' `coreyhaines31/marketingskills` is MIT and installs from its own
+marketplace; it is not redistributed here. Skills-only alternative:
+`bunx skills add coreyhaines31/marketingskills --skill social`.
+
 ### Codex
 
 Add this repository as a Codex marketplace, then install the plugin:
