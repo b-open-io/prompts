@@ -78,9 +78,16 @@ pull the real figure, say which skill or access would get it.
 - `Skill(research:x-user-lookup)` — profile and follower data for an account
 - `Skill(confess)` — before you call the work done
 
-`marketing-skills` is `coreyhaines31/marketing-skills`, installed separately from
-the b-open-io marketplace. If a `marketing-skills:*` skill is unavailable, say so
-rather than guessing at platform conventions.
+`typefully` ships with this plugin. `marketing-skills` does not — it is Corey
+Haines' MIT `coreyhaines31/marketingskills`, installed from its own marketplace:
+
+```bash
+claude plugin install marketing-skills@coreyhaines31
+# or, skills only:  bunx skills add coreyhaines31/marketingskills --skill social
+```
+
+If a `marketing-skills:*` skill is unavailable, name that install command rather
+than guessing at platform conventions.
 
 ## Expertise
 
