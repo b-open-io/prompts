@@ -281,10 +281,10 @@
     {
       "source_name": "prompt-engineer",
       "source_path": "modules/plugin-kit/agents/prompt-engineer.md",
-      "source_version": "2.3.19",
-      "source_hash": "sha256:cafafc840a883d7fd03e1b1ba575a078f375b8a973ef20a7a45e9d463d97fb5d",
+      "source_version": "2.3.20",
+      "source_hash": "sha256:83ce11484cbb9f4964d59446b9091120839878e90f8e724ea80cb44ecf70bc87",
       "generated_file": "bopen-prompt-engineer.toml",
-      "generated_hash": "sha256:97e5baadd3c60201012d6695eae8cb70d8a43ebe34b35d81be6dd55b78c133fe",
+      "generated_hash": "sha256:dbade91dca65b16203d5bb121b1cac41f42bacf1a857af10bdee85183c1030dd",
       "agent_name": "bopen_prompt_engineer",
       "curated": true,
       "default_install": true
@@ -314,10 +314,10 @@
     {
       "source_name": "social-media-manager",
       "source_path": "modules/brand-rep/agents/social-media-manager.md",
-      "source_version": "1.0.2",
-      "source_hash": "sha256:21d7cc89b97fedc39eda6dda639fa1da1a5b34821bc556f4bafa92fcee3a12c1",
+      "source_version": "1.0.3",
+      "source_hash": "sha256:4efd836b6d4e7209197413df83f41151c98392cfdde962f9e0c1df6b1f2150ec",
       "generated_file": "bopen-social-media-manager.toml",
-      "generated_hash": "sha256:18356cd5186e71f746db40fb37bc8a1af475ab654cc0dba584500a31af831668",
+      "generated_hash": "sha256:0e422b0eca0d54a73fefc7130493080c4250f9c3bc24410e4423afbb5582078a",
       "agent_name": "bopen_social_media_manager",
       "curated": false,
       "default_install": false
