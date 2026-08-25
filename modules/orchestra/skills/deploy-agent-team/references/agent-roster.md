@@ -28,6 +28,7 @@ Full core agent roster with `subagent_type` identifiers and the skills to mentio
 | **payments** | `core:payments` | sonnet | Stripe, billing, financial transactions |
 | **mcp** | `core:mcp` | sonnet | MCP server setup, config, diagnostics |
 | **marketer** | `product-skills:marketer` | sonnet | CRO, SEO, copy, launch strategy |
+| **social-media-manager** | `brand-rep:social-media-manager` | sonnet | Owned-account posts, calendars, mention replies, humanize pass |
 | **legal** | `product-skills:legal` | opus | Privacy, compliance, ToS, data protection |
 | **audio-specialist** | `core:audio-specialist` | sonnet | Audio, xAI/Grok generation, ElevenLabs |
 | **prompt-engineer** | `core:prompt-engineer` | sonnet | Slash commands, skills, hooks, YAML frontmatter |
@@ -162,6 +163,19 @@ go/no-go; failed seam proofs select the v7-native runtime.
 - `Skill(core:cli-demo-gif)` — invoke to create terminal demo GIFs for docs
 
 Invoke `Skill(core:humanize)` after drafting to eliminate padding.
+```
+
+### social-media-manager
+
+```markdown
+## Your Available Skills
+- `Skill(humanize)` — invoke on every draft before you hand it over
+- `Skill(marketing-skills:social)` — invoke for platform cadence and post shape
+- `Skill(typefully)` — invoke to draft or schedule in Typefully
+- `Skill(persona)` — invoke when matching a named voice
+- `Skill(x-research)` — invoke before posting about a live conversation on X
+
+Always run `Skill(humanize)` last. If it is missing, say so and do not ship the post.
 ```
 
 ### marketer
