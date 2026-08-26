@@ -136,7 +136,7 @@ Paste this first into an operator Grok Bot that can create teammates:
 Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the bOpen.ai roster as Grok Bot teammates. This is not Grok Build — do not run grok plugin install.
 ```
 
-The long form that URL will serve is [docs/grok-bot.md](docs/grok-bot.md) (https://bopen.ai/install/grok-bot.md once the site PR lands). That bot fetches `agents/front-desk.md` with `gh api` and creates one teammate per display name. Skip Luke Rohenaz (the human — do not create a teammate named Luke or call the human Satchmo) and Flow (name collision). Skip ceo if an operator already exists; otherwise create Tina as operator. Do create Satchmo — that is the agent-builder seat. It does not clone this repo.
+The long form that URL will serve is [docs/grok-bot.md](docs/grok-bot.md) (https://bopen.ai/install/grok-bot.md once the site PR lands). That bot fetches `agents/front-desk.md` with `gh api` and creates one teammate per display name. It does not clone this repo.
 
 There is no marketplace install command for Grok Bot. Creating teammates from the roster file is the install path.
 

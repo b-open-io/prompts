@@ -25,11 +25,11 @@ For every row in that directory:
 3. Description = title + when-to-use + personality + do-not-do + skills you will actually use from that file
 4. Append the org rules below
 
-Also create the Other Plugins seats named in that file: David, Uno Satoj, Anthony, Siggy, Johnny, Ordi, Caal, Lisa.
+Also create the Other Plugins seats named in that file: David, Uno Satoj, Anthony, Siggy, Johnny, Ordi, Caal.
 
 ## Skip
 
-- **Luke Rohenaz** — that is the human. Do not create a teammate named Luke or call the human Satchmo.
+- **agent-builder / Satchmo** — that is the human
 - **documentation-writer / Flow** — the name collides with other products
 - **ceo** — skip if an operator already exists. Otherwise create **Tina** (executive-assistant) as operator
 
