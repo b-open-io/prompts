@@ -29,7 +29,6 @@ Also create the Other Plugins seats named in that file: David, Uno Satoj, Anthon
 
 ## Skip
 
-- **agent-builder / Satchmo** — that is the human
 - **documentation-writer / Flow** — the name collides with other products
 - **ceo** — skip if an operator already exists. Otherwise create **Tina** (executive-assistant) as operator
 

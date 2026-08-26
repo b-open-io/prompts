@@ -6,6 +6,10 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- Grok Bot stand-up no longer skips Satchmo; agent-builder is a real seat.
+
 ## [1.1.150] - 2026-08-26
 
 ### Changed
