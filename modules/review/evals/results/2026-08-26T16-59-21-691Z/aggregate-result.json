@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.246",
+  "startedAt": "2026-08-26T16:59:21.691Z",
+  "durationSeconds": 8,
+  "costUsd": 0.1740255,
+  "partial": false,
+  "suite": {
+    "root": "/private/tmp/prompts-opl-3821-context.OosL5R/modules/review",
+    "ablation": "none",
+    "caseFilter": "skill-vercel-security-dashboard",
+    "threshold": 1,
+    "plugins": [
+      {
+        "name": "review",
+        "version": "0.1.9",
+        "path": "/private/tmp/prompts-opl-3821-context.OosL5R/modules/review"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "skill-vercel-security-dashboard",
+      "dir": "evals/skill-vercel-security-dashboard",
+      "source": "prose",
+      "promptMarkdown": "Run a scoped Vercel Security Dashboard audit for our payments project, triage\nthe High and Medium findings, and tell me what would need approval before we\nchange anything.\n\nReply with only the name of the single skill you would invoke for this, exactly\nas it appears in your available-skills list (without any plugin prefix), and\nnothing else. If no available skill fits, reply with exactly NONE. Do not call\nany tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-skill",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(review:)?(vercel-security-dashboard)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05800224999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T16:59:21.708Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-MJzWs3/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(vercel-security-dashboard)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.058021,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T16:59:24.387Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-zjz6GZ/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(vercel-security-dashboard)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05800224999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T16:59:27.345Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-7VPqs9/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(vercel-security-dashboard)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 1,
+    "overallScore": 1,
+    "overallPassRate": 1
+  }
+}

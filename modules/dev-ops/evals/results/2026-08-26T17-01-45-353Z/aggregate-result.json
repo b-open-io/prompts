@@ -1,0 +1,508 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.246",
+  "startedAt": "2026-08-26T17:01:45.353Z",
+  "durationSeconds": 46,
+  "costUsd": 0.8425462499999999,
+  "partial": false,
+  "suite": {
+    "root": "/private/tmp/prompts-opl-3821-context.OosL5R/modules/dev-ops",
+    "ablation": "none",
+    "threshold": 1,
+    "plugins": [
+      {
+        "name": "dev-ops",
+        "version": "0.1.5",
+        "path": "/private/tmp/prompts-opl-3821-context.OosL5R/modules/dev-ops"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "boundary-data-vs-database",
+      "dir": "evals/boundary-data-vs-database",
+      "source": "prose",
+      "promptMarkdown": "Build an ETL pipeline pulling from Stripe and Salesforce into BigQuery.\n\nReply with only the subagent_type you would delegate to, exactly as it appears in your agent list, and nothing else. If no available agent fits and you would handle this yourself, reply with exactly NONE. Do not call any tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-agent",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(dev-ops:)?(data)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05603975,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:01:45.368Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-QrZZfu/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(data)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.056020999999999994,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:01:47.949Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-NWPscC/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(data)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.0560585,
+            "judgeCostUsd": 0,
+            "durationSeconds": 4,
+            "startedAt": "2026-08-26T17:01:50.238Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-P5AjhZ/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(data)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "boundary-database-vs-data",
+      "dir": "evals/boundary-database-vs-data",
+      "source": "prose",
+      "promptMarkdown": "This query takes eight seconds on a 40M row table. Speed it up.\n\nReply with only the subagent_type you would delegate to, exactly as it appears in your agent list, and nothing else. If no available agent fits and you would handle this yourself, reply with exactly NONE. Do not call any tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-agent",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(dev-ops:)?(database)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05598975,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:01:54.354Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-WzvnW4/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(database)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.055971,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:01:56.772Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-XGMALS/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(database)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.0560085,
+            "judgeCostUsd": 0,
+            "durationSeconds": 4,
+            "startedAt": "2026-08-26T17:01:59.374Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-Uv5aVP/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(database)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "boundary-devops-vs-code-auditor",
+      "dir": "evals/boundary-devops-vs-code-auditor",
+      "source": "prose",
+      "promptMarkdown": "Deploy this bot as a Vercel Sandbox and wire up the heartbeat cron.\n\nReply with only the subagent_type you would delegate to, exactly as it appears in your agent list, and nothing else. If no available agent fits and you would handle this yourself, reply with exactly NONE. Do not call any tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-agent",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(dev-ops:)?(devops)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05606475,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:02:03.014Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-FEGMqk/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(devops)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.056083499999999994,
+            "judgeCostUsd": 0,
+            "durationSeconds": 4,
+            "startedAt": "2026-08-26T17:02:05.446Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-WRZ1mB/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(devops)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05606475,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:02:09.249Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-4gwZEk/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(devops)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "skill-vercel-security-dashboard-ci",
+      "dir": "evals/skill-vercel-security-dashboard-ci",
+      "source": "prose",
+      "promptMarkdown": "Add `vercel security check` to GitHub Actions. The job must fail on High-risk\nDashboard findings without leaking sample identities into the build log.\n\nReply with only the name of the single skill you would invoke for this, exactly\nas it appears in your available-skills list (without any plugin prefix), and\nnothing else. If no available skill fits, reply with exactly NONE. Do not call\nany tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-skill",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(dev-ops:)?(vercel-security-dashboard-ci)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.056496,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:02:12.743Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-1NPWGN/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(vercel-security-dashboard-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05647725000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 4,
+            "startedAt": "2026-08-26T17:02:15.313Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-iIqet8/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(vercel-security-dashboard-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.056496,
+            "judgeCostUsd": 0,
+            "durationSeconds": 5,
+            "startedAt": "2026-08-26T17:02:19.160Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-jDWQeo/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(vercel-security-dashboard-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "skill-vercel-security-dashboard-ci-negative",
+      "dir": "evals/skill-vercel-security-dashboard-ci-negative",
+      "source": "prose",
+      "promptMarkdown": "We just pushed a normal application change. Wait for GitHub Actions and the\nVercel deployment to finish, then report whether both passed.\n\nReply with only the name of the single skill you would invoke for this, exactly\nas it appears in your available-skills list (without any plugin prefix), and\nnothing else. If no available skill fits, reply with exactly NONE. Do not call\nany tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-skill",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(dev-ops:)?(wait-for-ci)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.056296,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:02:24.462Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-KitiRk/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(wait-for-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.0561835,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:02:26.750Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-8aqIrQ/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(wait-for-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.056296,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:02:29.203Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-euGDzc/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(wait-for-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 5,
+    "casesPassed": 5,
+    "overallScore": 1,
+    "overallPassRate": 1
+  }
+}

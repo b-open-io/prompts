@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.246",
+  "startedAt": "2026-08-26T16:59:59.977Z",
+  "durationSeconds": 19,
+  "costUsd": 0.33828225,
+  "partial": false,
+  "suite": {
+    "root": "/private/tmp/prompts-opl-3821-context.OosL5R/modules/dev-ops",
+    "ablation": "none",
+    "caseFilter": "skill-vercel-security-dashboard-ci*",
+    "threshold": 1,
+    "plugins": [
+      {
+        "name": "dev-ops",
+        "version": "0.1.5",
+        "path": "/private/tmp/prompts-opl-3821-context.OosL5R/modules/dev-ops"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "skill-vercel-security-dashboard-ci",
+      "dir": "evals/skill-vercel-security-dashboard-ci",
+      "source": "prose",
+      "promptMarkdown": "Add `vercel security check` to GitHub Actions. The job must fail on High-risk\nDashboard findings without leaking sample identities into the build log.\n\nReply with only the name of the single skill you would invoke for this, exactly\nas it appears in your available-skills list (without any plugin prefix), and\nnothing else. If no available skill fits, reply with exactly NONE. Do not call\nany tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-skill",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(dev-ops:)?(vercel-security-dashboard-ci)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.056496,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T16:59:59.988Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-xjlcOy/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(vercel-security-dashboard-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.056496,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:00:02.753Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-ou0AL9/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(vercel-security-dashboard-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05647725000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 4,
+            "startedAt": "2026-08-26T17:00:06.032Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-2HugFa/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(vercel-security-dashboard-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "skill-vercel-security-dashboard-ci-negative",
+      "dir": "evals/skill-vercel-security-dashboard-ci-negative",
+      "source": "prose",
+      "promptMarkdown": "We just pushed a normal application change. Wait for GitHub Actions and the\nVercel deployment to finish, then report whether both passed.\n\nReply with only the name of the single skill you would invoke for this, exactly\nas it appears in your available-skills list (without any plugin prefix), and\nnothing else. If no available skill fits, reply with exactly NONE. Do not call\nany tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-skill",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(dev-ops:)?(wait-for-ci)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05631475,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:00:09.615Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-ooaDqR/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(wait-for-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05616475,
+            "judgeCostUsd": 0,
+            "durationSeconds": 4,
+            "startedAt": "2026-08-26T17:00:11.916Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-KbOcqt/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(wait-for-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.056333499999999995,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:00:16.074Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-m2Z3O1/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(dev-ops:)?(wait-for-ci)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 2,
+    "casesPassed": 2,
+    "overallScore": 1,
+    "overallPassRate": 1
+  }
+}

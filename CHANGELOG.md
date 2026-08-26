@@ -6,6 +6,21 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.150] - 2026-08-26
+
+### Changed
+
+- Reworked the Vercel Security Dashboard release around progressive disclosure.
+  The scan, schema, catalog, triage, remediation, and CI policy details now
+  live in task-triggered `review:vercel-security-dashboard` and
+  `dev-ops:vercel-security-dashboard-ci` skills with mode-specific references.
+  The always-loaded Paul, Jerry, and Root agent bodies retain only routing,
+  ownership, and safety boundaries, removing about 8.3 KB of duplicated prompt
+  text from those agents while keeping each independently installable module
+  self-contained.
+- Bumped `security-ops` to 1.0.10, `code-auditor` to 1.4.12, and `devops` to
+  1.3.12. Bumped the `review` module to 0.1.9 and `dev-ops` to 0.1.5.
+
 ## [1.1.149] - 2026-08-26
 
 ### Changed

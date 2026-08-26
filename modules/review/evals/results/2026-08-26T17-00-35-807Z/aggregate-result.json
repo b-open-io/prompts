@@ -1,0 +1,700 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.246",
+  "startedAt": "2026-08-26T17:00:35.807Z",
+  "durationSeconds": 59,
+  "costUsd": 1.2132847500000001,
+  "partial": false,
+  "suite": {
+    "root": "/private/tmp/prompts-opl-3821-context.OosL5R/modules/review",
+    "ablation": "none",
+    "threshold": 1,
+    "plugins": [
+      {
+        "name": "review",
+        "version": "0.1.9",
+        "path": "/private/tmp/prompts-opl-3821-context.OosL5R/modules/review"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "boundary-code-audit-vs-security-ops",
+      "dir": "evals/boundary-code-audit-vs-security-ops",
+      "source": "prose",
+      "promptMarkdown": "Audit this pull request diff for injection risks before we merge it.\n\nReply with only the subagent_type you would delegate to, exactly as it appears in your agent list, and nothing else. If no available agent fits and you would handle this yourself, reply with exactly NONE. Do not call any tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-agent",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(review:)?(code-auditor)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05767724999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:00:35.824Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-bCoOAW/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(code-auditor)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05767724999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:00:38.068Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-pPBhq9/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(code-auditor)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05767724999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:00:40.503Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-YeRRt0/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(code-auditor)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "boundary-security-ops-vs-code-audit",
+      "dir": "evals/boundary-security-ops-vs-code-audit",
+      "source": "prose",
+      "promptMarkdown": "Scan our dependencies for known CVEs and check nothing leaked a secret.\n\nReply with only the subagent_type you would delegate to, exactly as it appears in your agent list, and nothing else. If no available agent fits and you would handle this yourself, reply with exactly NONE. Do not call any tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-agent",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(review:)?(security-ops)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.057689750000000005,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:00:42.837Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-2TMQc2/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(security-ops)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.057689750000000005,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:00:45.228Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-1bDb0b/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(security-ops)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.057689750000000005,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:00:47.561Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-EN9TzN/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(security-ops)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "direct-write-tests",
+      "dir": "evals/direct-write-tests",
+      "source": "prose",
+      "promptMarkdown": "Write unit tests for this date-parsing module, covering edge cases.\n\nReply with only the subagent_type you would delegate to, exactly as it appears in your agent list, and nothing else. If no available agent fits and you would handle this yourself, reply with exactly NONE. Do not call any tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-agent",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(review:)?(tester)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05761475,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:00:50.007Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-pUKL6q/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(tester)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.057633500000000004,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:00:52.160Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-6pSXAJ/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(tester)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.057596,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:00:54.714Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-mliUSy/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-agent",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(tester)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "skill-codex-security",
+      "dir": "evals/skill-codex-security",
+      "source": "prose",
+      "promptMarkdown": "Semgrep and our secrets sweep both came back clean on the payments service, but I don't buy it — there's an authz bug in there somewhere. Kick off an OpenAI codex-security scan against src/payments and origin/main, cap it at five bucks, and export the findings as SARIF when it's done.\n\nReply with only the name of the single skill you would invoke for this, exactly as it appears in your available-skills list (without any plugin prefix), and nothing else. If no available skill fits, reply with exactly NONE. Do not call any tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-skill",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(review:)?(codex-security)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.0581085,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:00:57.766Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-v1M0aP/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(codex-security)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.058145999999999996,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:01:00.088Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-Nbvj8Z/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(codex-security)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.058089749999999996,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:01:03.112Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-RX75ny/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(codex-security)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "skill-free-roam",
+      "dir": "evals/skill-free-roam",
+      "source": "prose",
+      "promptMarkdown": "Just use the app like a human would and find bugs nobody filed yet.\n\nReply with only the name of the single skill you would invoke for this, exactly as it appears in your available-skills list (without any plugin prefix), and nothing else. If no available skill fits, reply with exactly NONE. Do not call any tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-skill",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(review:)?(free-roam-testing)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.0577335,
+            "judgeCostUsd": 0,
+            "durationSeconds": 5,
+            "startedAt": "2026-08-26T17:01:06.384Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-ZfvqRN/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(free-roam-testing)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05771475,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:01:11.213Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-wrwxcH/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(free-roam-testing)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.057696000000000004,
+            "judgeCostUsd": 0,
+            "durationSeconds": 5,
+            "startedAt": "2026-08-26T17:01:14.255Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-1e9H50/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(free-roam-testing)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "skill-vercel-security-dashboard",
+      "dir": "evals/skill-vercel-security-dashboard",
+      "source": "prose",
+      "promptMarkdown": "Run a scoped Vercel Security Dashboard audit for our payments project, triage\nthe High and Medium findings, and tell me what would need approval before we\nchange anything.\n\nReply with only the name of the single skill you would invoke for this, exactly\nas it appears in your available-skills list (without any plugin prefix), and\nnothing else. If no available skill fits, reply with exactly NONE. Do not call\nany tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-skill",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(review:)?(vercel-security-dashboard)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05800224999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:01:18.829Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-VEmWHA/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(vercel-security-dashboard)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05800224999999999,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:01:21.388Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-sYjJn4/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(vercel-security-dashboard)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.058021,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:01:23.718Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-EKF8Rf/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(vercel-security-dashboard)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    },
+    {
+      "name": "skill-visual-review",
+      "dir": "evals/skill-visual-review",
+      "source": "prose",
+      "promptMarkdown": "Turn this branch diff into something I can actually review visually.\n\nReply with only the name of the single skill you would invoke for this, exactly as it appears in your available-skills list (without any plugin prefix), and nothing else. If no available skill fits, reply with exactly NONE. Do not call any tool.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 1,
+      "graders": [
+        {
+          "name": "expected-skill",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^\\s*(review:)?(visual-review)\\s*$",
+            "flags": "",
+            "match": "contains"
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05761475,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:01:26.809Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-sMxzjB/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(visual-review)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.05761475,
+            "judgeCostUsd": 0,
+            "durationSeconds": 3,
+            "startedAt": "2026-08-26T17:01:29.845Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-IFmLTY/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(visual-review)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          },
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 1,
+            "costUsd": 0.057596,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-08-26T17:01:32.563Z",
+            "error": null,
+            "tracePath": "/private/var/folders/cc/k30d_0ts5pz_z9vh2013shb00000gn/T/claude-eval-23hkdd/out/trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "expected-skill",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^\\s*(review:)?(visual-review)\\s*$",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 7,
+    "casesPassed": 7,
+    "overallScore": 1,
+    "overallPassRate": 1
+  }
+}

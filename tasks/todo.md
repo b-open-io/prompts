@@ -1,5 +1,17 @@
 # OPL-3821 — Vercel Security Dashboard agent guidance
 
+- [x] Re-audit the shipped guidance against Agent Development, Skill
+  Development, Skill Creator, and Plugin Structure progressive-disclosure
+  rules after the context-efficiency correction.
+- [x] Move detailed posture and CI workflows into independently installable,
+  task-triggered skills with mode-specific references.
+- [x] Reduce the three agent bodies to routing, ownership, and safety
+  boundaries and measure the context reduction.
+- [x] Validate skill structure, references, generated adapters, manifests, and
+  the full plugin harness.
+- [ ] Patch-bump, commit all clean-worktree outputs, push master, refresh both
+  runtimes, and smoke-test skill routing.
+
 - [x] Verify the GA dashboard, live CLI command surface, risk model, and CI
   behavior from Vercel's current documentation.
 - [x] Run an authenticated read-only OPL-team audit without copying finding
@@ -13,6 +25,17 @@
 
 ## Review
 
+- The correction replaces duplicated Vercel manuals in always-loaded agent
+  bodies with two self-contained task skills. Detailed check/schema parsing and
+  remediation references load only when the corresponding Vercel mode is
+  active.
+- The three agent files fell from 76,264 to 67,934 bytes, saving 8,330 bytes
+  of always-loaded agent context while preserving routing and hard safety
+  boundaries. The two skill entrypoints total 733 words; mode-specific detail
+  stays in three references and loads only when needed.
+- The full `review` routing suite passed 7/7 cases across three runs each. The
+  full `dev-ops` suite passed 5/5 across three runs each, including the adjacent
+  negative case that kept ordinary post-push monitoring on `wait-for-ci`.
 - Paul owns scoped posture scans, triage, explicit risk acceptance, and closure;
   Root owns authorized Vercel changes and JSON-based CI policy; Jerry owns code
   and repository-configuration review. Their trigger descriptions and generated
