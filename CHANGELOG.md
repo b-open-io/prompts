@@ -6,6 +6,13 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- `humanize` 1.0.12 adds an attributed-source rule and a dedicated revision
+  pass for outbound email, discovery questions, call openers, and sales
+  scripts. It grounds each draft in a supplied account fact, removes canned
+  sales tells, and does not invent commercial claims.
+
 ## [1.1.148] - 2026-08-25
 
 ### Fixed
