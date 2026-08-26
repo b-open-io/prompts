@@ -7,7 +7,7 @@
 - [x] Correct the repository lesson so a new tool does not automatically become
   a new skill.
 - [x] Regenerate adapters and run manifest, documentation, and harness checks.
-- [ ] Patch-bump, publish, refresh both runtimes, and smoke-test the installed
+- [x] Patch-bump, publish, refresh both runtimes, and smoke-test the installed
   agent guidance.
 
 - [x] Verify the GA dashboard, live CLI command surface, risk model, and CI
@@ -28,6 +28,10 @@
   skill descriptions.
 - The three agent files total 67,474 bytes, 8,790 bytes smaller than the
   original 1.1.149 implementation, with no new capability package to maintain.
+- Release commit `f104d6d` is published as core 1.1.151, review 0.1.10, and
+  dev-ops 0.1.6. Claude and Codex installed those exact versions; fresh
+  sessions returned `CLAUDE_SIMPLE_VERCEL_GUIDANCE_OK` and
+  `CODEX_SIMPLE_VERCEL_GUIDANCE_OK`.
 - Paul owns scoped posture scans, triage, explicit risk acceptance, and closure;
   Root owns authorized Vercel changes and JSON-based CI policy; Jerry owns code
   and repository-configuration review. Their trigger descriptions and generated
