@@ -50,11 +50,11 @@ grok plugin install core@b-open-io --trust
 |---|---|
 | `orchestra` | coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
 | `plugin-kit` | agent lifecycle, benchmarks, plugin settings, publishing; prompt-engineer, trainer |
-| `review` | visual review and proposals, code audit scripts, Codex Security scanning, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
+| `review` | visual review and proposals, code audit scripts, Codex Security and Vercel Security Dashboard posture scanning, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
 | `web-dev` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection; designer, nextjs, optimizer, mobile |
 | `creative` | Three.js, shaders, game UI, macOS design, Native SDK macOS release, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
-| `dev-ops` | deployment scripts, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
+| `dev-ops` | deployment scripts, Vercel Security Dashboard CI gates and remediation, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
 | `brand-rep` | personas for public surfaces, Typefully drafting and scheduling; account-manager, social-media-manager |
 

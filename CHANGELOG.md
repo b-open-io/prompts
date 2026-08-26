@@ -6,6 +6,22 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.149] - 2026-08-26
+
+### Changed
+
+- `security-ops` 1.0.9, `code-auditor` 1.4.11, and `devops` 1.3.11 now
+  understand the generally available Vercel Security Dashboard and its
+  `vercel security check` CLI. Paul owns scoped posture scans, finding triage,
+  risk acceptance, and verified closure; Root owns authorized Vercel changes
+  and JSON-based CI gates; Jerry owns code and repository-configuration review.
+  The workflow treats reports as sensitive, unavailable checks as unknown
+  coverage, muting as explicit risk acceptance, and exit code 0 as insufficient
+  evidence because findings do not make the CLI fail. Live OPL-team validation
+  also records the nine check slugs, the `.report[slug]` JSON shape, read-only
+  command boundary, and truncated-count behavior so CI does not mistake `100+`
+  for an exact count or assume absent risk/mute fields.
+
 ## [1.1.148] - 2026-08-25
 
 ### Fixed

@@ -1,3 +1,35 @@
+# OPL-3821 — Vercel Security Dashboard agent guidance
+
+- [x] Verify the GA dashboard, live CLI command surface, risk model, and CI
+  behavior from Vercel's current documentation.
+- [x] Run an authenticated read-only OPL-team audit without copying finding
+  identities into task records or public logs.
+- [x] Map ownership across code-auditor, security-ops, and devops.
+- [x] Add scan, schema interpretation, triage, remediation, re-check, and
+  safe-output guidance to the relevant agent definitions.
+- [x] Regenerate the Codex agent adapters and update public release artifacts.
+- [x] Run agent, generated-adapter, manifest, documentation, and repository
+  validation; review the exact diff.
+
+## Review
+
+- Paul owns scoped posture scans, triage, explicit risk acceptance, and closure;
+  Root owns authorized Vercel changes and JSON-based CI policy; Jerry owns code
+  and repository-configuration review. Their trigger descriptions and generated
+  Codex adapters carry the same boundaries.
+- The initial live OPL scan found nine checks: seven failing and two passing.
+  A later scan showed six failing and three passing because preview-protection
+  findings changed from six to zero while this task made no Vercel mutations.
+  The guidance now treats results as timestamped snapshots and requires evidence
+  before attributing a delta to an agent action.
+- Only check-level counts and schema fields were inspected; member, token,
+  project, and environment-variable identities were not copied into this record.
+- The scan proved the command is report-only and exposed the current
+  `.report[slug]` JSON shape. Two checks returned `truncated: true` with a
+  count of 100 while interactive output rendered `100+`; the guidance now
+  preserves that lower-bound meaning and does not assume omitted risk/mute
+  fields exist in machine output.
+
 # OPL-3181 — Plugin context safety and harness release
 
 - [x] Research Claude/Codex catalog budgets and inventory weight.
