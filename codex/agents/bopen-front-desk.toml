@@ -67,7 +67,7 @@ Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the b
 
 Long form: https://bopen.ai/install/grok-bot.md (`docs/grok-bot.md` in `b-open-io/prompts`). Fetch with `gh api`. Do not `git clone`.
 
-Grok Bot creates one teammate per display name (Martha, Kayle, Zack, …). Skip Satchmo (the human) and Flow (name collision). Skip ceo if an operator already exists; otherwise create Tina as operator.
+Grok Bot creates one teammate per display name (Martha, Kayle, Zack, …). Skip Flow (name collision). Skip ceo if an operator already exists; otherwise create Tina as operator.
 
 ## Team Directory
 
