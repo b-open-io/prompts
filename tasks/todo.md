@@ -1,16 +1,14 @@
 # OPL-3821 — Vercel Security Dashboard agent guidance
 
-- [x] Re-audit the shipped guidance against Agent Development, Skill
-  Development, Skill Creator, and Plugin Structure progressive-disclosure
-  rules after the context-efficiency correction.
-- [x] Move detailed posture and CI workflows into independently installable,
-  task-triggered skills with mode-specific references.
-- [x] Reduce the three agent bodies to routing, ownership, and safety
-  boundaries and measure the context reduction.
-- [x] Validate skill structure, references, generated adapters, manifests, and
-  the full plugin harness.
-- [x] Patch-bump, commit all clean-worktree outputs, push master, refresh both
-  runtimes, and smoke-test skill routing.
+- [x] Remove the unnecessary tool-specific skills, references, eval cases, and
+  generated reports introduced in 1.1.150.
+- [x] Keep only concise command, safety, exit-code, and ownership guidance in
+  security-ops, code-auditor, and devops.
+- [x] Correct the repository lesson so a new tool does not automatically become
+  a new skill.
+- [x] Regenerate adapters and run manifest, documentation, and harness checks.
+- [ ] Patch-bump, publish, refresh both runtimes, and smoke-test the installed
+  agent guidance.
 
 - [x] Verify the GA dashboard, live CLI command surface, risk model, and CI
   behavior from Vercel's current documentation.
@@ -25,22 +23,11 @@
 
 ## Review
 
-- The correction replaces duplicated Vercel manuals in always-loaded agent
-  bodies with two self-contained task skills. Detailed check/schema parsing and
-  remediation references load only when the corresponding Vercel mode is
-  active.
-- The three agent files fell from 76,264 to 67,934 bytes, saving 8,330 bytes
-  of always-loaded agent context while preserving routing and hard safety
-  boundaries. The two skill entrypoints total 733 words; mode-specific detail
-  stays in three references and loads only when needed.
-- The full `review` routing suite passed 7/7 cases across three runs each. The
-  full `dev-ops` suite passed 5/5 across three runs each, including the adjacent
-  negative case that kept ordinary post-push monitoring on `wait-for-ci`.
-- Release commit `f10df48` is published on `origin/master` as core 1.1.150,
-  review 0.1.9, and dev-ops 0.1.5. Claude and Codex installed those exact
-  versions; fresh sessions returned `CLAUDE_PROGRESSIVE_DISCLOSURE_OK` and
-  `CODEX_AGENT_PROGRESSIVE_DISCLOSURE_OK`. The successful Codex smoke used the
-  installed `bopen_security_ops` custom agent rather than the parent's fallback.
+- The rejected 1.1.150 skill architecture and all of its generated artifacts
+  are removed. This tool now adds no skill-catalog entries or always-visible
+  skill descriptions.
+- The three agent files total 67,474 bytes, 8,790 bytes smaller than the
+  original 1.1.149 implementation, with no new capability package to maintain.
 - Paul owns scoped posture scans, triage, explicit risk acceptance, and closure;
   Root owns authorized Vercel changes and JSON-based CI policy; Jerry owns code
   and repository-configuration review. Their trigger descriptions and generated

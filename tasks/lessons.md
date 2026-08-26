@@ -161,14 +161,13 @@ A literal entity count in a copy diff is a review defect.
 
 ## Never fabricate Linear ticket IDs (2026-07-14)
 Used OPL-2935/2936/2937 in spec filenames and a pushed commit before creating the tickets; Linear then assigned 2935 to an unrelated issue and everything misaligned. Rule: CREATE the ticket first (linear-api.sh issueCreate), then use the identifier it returns. If an ID was already burned in pushed history, realign by retitling/creating tickets in sequence immediately.
-## Keep agent bodies as routers, not operating manuals (2026-08-26)
+## A new tool does not imply a new skill (2026-08-26)
 
-When adding task-specific tool knowledge to plugin agents, keep only triggers,
-ownership, hard safety boundaries, and the instruction to load the relevant
-skill in the agent body. Put reusable workflows in a task-triggered `SKILL.md`
-and substantial schemas, catalogs, remediation tables, and CI examples in
-references loaded only for the active mode. Keep independently installable
-modules self-contained rather than relying on a reference from another module.
-Measure the before/after agent bytes before shipping; duplicating a detailed
-procedure across agents is a context-budget defect even when the content is
-correct.
+Start with the smallest representation that changes agent behavior. For a
+simple CLI, add a short note to the owning agent and link the live docs. Create
+a skill only when there is a substantial reusable workflow, genuinely novel
+knowledge, deterministic scripts, or an independently useful invocation
+surface. References and dedicated eval suites need the same justification;
+they are not free structure. Do not turn progressive disclosure into an excuse
+to manufacture a capability package for every tool. Complexity is itself a
+context, catalog, maintenance, and routing cost.

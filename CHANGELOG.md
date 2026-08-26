@@ -10,6 +10,19 @@ manifests share the same release version.
 
 - Grok Bot stand-up no longer skips Satchmo; agent-builder is a real seat.
 
+## [1.1.151] - 2026-08-26
+
+### Fixed
+
+- Removed the unnecessary Vercel Security Dashboard skills, references, and
+  tool-specific eval reports introduced in 1.1.150. This is a small CLI
+  integration, not a new reusable capability surface. Paul, Jerry, and Root now
+  carry only the few operational facts they need: scoped command usage,
+  sensitive output, findings exiting 0, read-only scans, and ownership of
+  remediation.
+- Bumped `security-ops` to 1.0.11, `code-auditor` to 1.4.13, and `devops` to
+  1.3.13. Bumped the `review` module to 0.1.10 and `dev-ops` to 0.1.6.
+
 ## [1.1.150] - 2026-08-26
 
 ### Changed

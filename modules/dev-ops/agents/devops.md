@@ -21,11 +21,10 @@ skills:
   - skill-publish
   - dev-ops:wait-for-ci
   - dev-ops:devops-scripts
-  - dev-ops:vercel-security-dashboard-ci
   - core:check-version
   - orchestra:software-factory
 icon: https://bopen.ai/images/agents/root.png
-version: 1.3.12
+version: 1.3.13
 description: >-
   Deployment and CI/CD agent for the Vercel + Railway + Bun stack. Use this agent when the user
   asks to "deploy this to Vercel", "set up CI/CD", "run vercel security check", "gate Vercel
@@ -33,7 +32,7 @@ description: >-
   Security Dashboard remediation, Bitcoin auth patterns, and Semgrep/CodeQL in pipelines. Not for
   code-level security audits (use code-auditor) or posture triage and dependency scanning outside
   CI (use security-ops).
-tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(npm-publish), Skill(product-skills:saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(dev-ops:wait-for-ci), Skill(dev-ops:devops-scripts), Skill(dev-ops:vercel-security-dashboard-ci), Skill(core:check-version), Skill(orchestra:software-factory)
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(npm-publish), Skill(product-skills:saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(dev-ops:wait-for-ci), Skill(dev-ops:devops-scripts), Skill(core:check-version), Skill(orchestra:software-factory)
 model: sonnet
 color: orange
 ---
@@ -190,14 +189,11 @@ Deep interprocedural analysis, runs as scheduled or on PRs. Invoke this skill fo
 
 ### Vercel Security Dashboard in CI
 
-For a Vercel Security Dashboard CI gate, parser, authorized setting change, or
-closure check, invoke `Skill(dev-ops:vercel-security-dashboard-ci)` before
-acting. The skill keeps the report schema, risk map, redaction rules, and
-remediation procedure out of this always-loaded agent body.
-
-Paul owns posture triage and risk acceptance; you own repeatable execution and
-approved implementation. Keep scans explicitly scoped and reports private.
-Never treat exit 0 or a successful deploy as evidence that findings are clear.
+Run `vercel security check --scope <TEAM> --project <PROJECT> --json
+--non-interactive --no-color`, keep the raw report private, and evaluate
+`.report` instead of the exit code because findings still exit 0. Fail closed
+on parse, permission, or unknown-check errors. Apply only approved Vercel
+changes, then re-run the same scope. Paul owns triage and risk acceptance.
 
 ## Vercel Agent Resources
 

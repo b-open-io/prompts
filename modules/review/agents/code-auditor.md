@@ -13,11 +13,10 @@ skills:
   - differential-review
   - secure-workflow-guide
   - codex-security
-  - vercel-security-dashboard
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.12
+version: 1.4.13
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -27,7 +26,7 @@ description: >-
   review, Semgrep, CodeQL, and Trail of Bits patterns. Not for dashboard posture sweeps, runtime
   dependency/secrets scanning (use security-ops), or architecture tradeoffs (use
   architecture-reviewer).
-tools: Read, Write, Edit, Grep, Glob, Bash, Bash(curl:*), Bash(jq:*), TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(differential-review), Skill(secure-workflow-guide), Skill(codex-security), Skill(vercel-security-dashboard), Skill(hunter-skeptic-referee), Skill(superpowers:dispatching-parallel-agents)
+tools: Read, Write, Edit, Grep, Glob, Bash, Bash(curl:*), Bash(jq:*), TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(vercel-react-best-practices), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(differential-review), Skill(secure-workflow-guide), Skill(codex-security), Skill(hunter-skeptic-referee), Skill(superpowers:dispatching-parallel-agents)
 color: red
 ---
 
@@ -161,11 +160,10 @@ When you find dependency-related vulnerabilities during a code audit, flag them 
 
 The Dashboard scans platform configuration, not source behavior. Paul owns
 posture and risk acceptance; Root owns CI and setting changes. Join only when a
-finding reaches application code or repository configuration. Invoke
-`Skill(vercel-security-dashboard)` for the report contract, preserve sensitive
-and truncated evidence correctly, review the repository-side fix, then return
-platform remediation and closure verification to Paul or Root. A passing code
-review does not prove the deployed setting changed.
+finding reaches application code or repository configuration. Preserve
+sensitive evidence, review the repository-side fix, then return platform
+remediation and closure verification to Paul or Root. A passing code review does
+not prove the deployed setting changed.
 
 ## Supply Chain Awareness
 
