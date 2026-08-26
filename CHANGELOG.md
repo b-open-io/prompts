@@ -10,8 +10,9 @@ manifests share the same release version.
 
 - Wrote the living R&R down in `docs/RACI.md`. Luke Rohenaz is the human;
   Satchmo is the agent-builder seat. Martha's Grok Bot stand-up now skips Luke
-  (not Satchmo), lists Lisa for gemskills visual work, and keeps Frames on
-  ElevenLabs audio only.
+  (not Satchmo), lists Lisa for gemskills content (image, avatar, deck, video),
+  and keeps Ridd on product UI and Frames on ElevenLabs audio. Those are three
+  seats, not one.
 
 ## [1.1.150] - 2026-08-26
 

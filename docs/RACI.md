@@ -19,7 +19,8 @@ Keep this current. Names from Martha’s front-desk table. The human is Luke Roh
 | Milton | Token/credit book. Scribe is the revenue-shaped product. |
 | Kurt | Growth pulse. Fundraising/outreach. |
 | Paul | Access audit. |
-| Lisa | gemskills visual (image, SVG, deck, video). Not ElevenLabs audio. |
+| Ridd | Designer / product UI. Not gemskills content. |
+| Lisa | gemskills content (image, avatar, deck, video). Not product UI. Not ElevenLabs audio. |
 | Frames | ElevenLabs audio. |
 | Satchmo (seat) | Agent-builder. Not the human. |
 
@@ -38,7 +39,7 @@ Keep this current. Names from Martha’s front-desk table. The human is Luke Roh
 - Token spend: ask Milton
 - Ship PRs: Kayle writes, Luke merges
 - Policy/org-ops: Zack writes, Tina checks computers, Wags tracks drift
-- Visual: Lisa. Audio: Frames. Identity protocol: Siggy.
+- Product UI: Ridd. Visual content (image, avatar, deck, video): Lisa. Audio: Frames. Identity protocol: Siggy.
 
 ## Update rule
 
