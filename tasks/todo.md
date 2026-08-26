@@ -9,7 +9,7 @@
   boundaries and measure the context reduction.
 - [x] Validate skill structure, references, generated adapters, manifests, and
   the full plugin harness.
-- [ ] Patch-bump, commit all clean-worktree outputs, push master, refresh both
+- [x] Patch-bump, commit all clean-worktree outputs, push master, refresh both
   runtimes, and smoke-test skill routing.
 
 - [x] Verify the GA dashboard, live CLI command surface, risk model, and CI
@@ -36,6 +36,11 @@
 - The full `review` routing suite passed 7/7 cases across three runs each. The
   full `dev-ops` suite passed 5/5 across three runs each, including the adjacent
   negative case that kept ordinary post-push monitoring on `wait-for-ci`.
+- Release commit `f10df48` is published on `origin/master` as core 1.1.150,
+  review 0.1.9, and dev-ops 0.1.5. Claude and Codex installed those exact
+  versions; fresh sessions returned `CLAUDE_PROGRESSIVE_DISCLOSURE_OK` and
+  `CODEX_AGENT_PROGRESSIVE_DISCLOSURE_OK`. The successful Codex smoke used the
+  installed `bopen_security_ops` custom agent rather than the parent's fallback.
 - Paul owns scoped posture scans, triage, explicit risk acceptance, and closure;
   Root owns authorized Vercel changes and JSON-based CI policy; Jerry owns code
   and repository-configuration review. Their trigger descriptions and generated
