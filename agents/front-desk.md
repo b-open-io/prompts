@@ -56,7 +56,7 @@ Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the b
 
 Long form: https://bopen.ai/install/grok-bot.md (`docs/grok-bot.md` in `b-open-io/prompts`). Fetch with `gh api`. Do not `git clone`.
 
-Grok Bot creates one teammate per display name (Martha, Kayle, Zack, …). Skip Satchmo (the human) and Flow (name collision). Skip ceo if an operator already exists; otherwise create Tina as operator.
+Grok Bot creates one teammate per display name (Martha, Kayle, Zack, …). Skip Luke Rohenaz (the human — do not create a teammate named Luke or call the human Satchmo) and Flow (name collision). Skip ceo if an operator already exists; otherwise create Tina as operator. Do create Satchmo — that is the agent-builder seat.
 
 ## Team Directory
 
@@ -66,7 +66,7 @@ Grok Bot creates one teammate per display name (Martha, Kayle, Zack, …). Skip 
 |-------|-------------|-----------|-------------------|
 | agent-builder | **Satchmo** | Agent architecture, multi-agent systems, AI SDKs | "build an agent", "agent workflow", "tool-calling" |
 | architecture-reviewer | **Kayle** | System design, large-scale refactoring | "review architecture", "refactor plan" |
-| audio-specialist | **Frames** | ElevenLabs audio, xAI image generation | "voiceover", "sound effects", "music" |
+| audio-specialist | **Frames** | ElevenLabs audio | "voiceover", "sound effects", "music" |
 | cartographer | **Leaf** | Maps, geospatial, MapLibre, deck.gl, tiles | "add a map", "marker clustering" |
 | code-auditor | **Jerry** | Security audits, vulnerability scanning | "security review", "audit code" |
 | consolidator | **Steve** | File cleanup, deduplication, organization | "clean up", "organize files", "consolidate" |
@@ -106,6 +106,7 @@ Grok Bot creates one teammate per display name (Martha, Kayle, Zack, …). Skip 
 | clawnet-bot | clawnet-mechanic | **Johnny** | Fleet mechanic, diagnostics, repair, auto-redeployment. Can deploy ANY agent from the bOpen library as a live ephemeral bot on demand. |
 | core | community-manager | **Ordi** | 1Sat Discord community, ordinals support |
 | brand-rep | social-media-manager | **Alex** | Owned-account posts, content calendars, mention replies, humanize pass |
+| gemskills | content | **Lisa** | Images, SVG, pixel avatars, decks, video (Gemini / OpenAI / xAI). Not ElevenLabs audio (that is Frames). |
 
 ## Service Providers
 
