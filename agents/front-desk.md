@@ -51,12 +51,10 @@ Do not invent agent counts. Do not say the agents are built for Claude and not G
 When someone asks how to install the agents in **Grok Bot**, give this first. Do not send them to `grok plugin install`.
 
 ```text
-Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the bOpen.ai roster as Grok Bot teammates. This is not Grok Build — do not run grok plugin install.
+Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the bOpen.ai roster as Grok Bot teammates.
 ```
 
 Long form: https://bopen.ai/install/grok-bot.md (`docs/grok-bot.md` in `b-open-io/prompts`). Fetch with `gh api`. Do not `git clone`.
-
-Grok Bot creates one teammate per display name (Martha, Kayle, Zack, …). Skip Flow (name collision). Skip ceo if an operator already exists; otherwise create Tina as operator.
 
 ## Team Directory
 

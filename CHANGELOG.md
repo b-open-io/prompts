@@ -8,7 +8,7 @@ manifests share the same release version.
 
 ### Changed
 
-- Grok Bot stand-up no longer skips Satchmo; agent-builder is a real seat.
+- Grok Bot stand-up is ask-first (operator + roster). No skip-Satchmo or skip-Flow. Standing rules go in description, not memory.
 
 ## [1.1.151] - 2026-08-26
 
