@@ -183,9 +183,9 @@
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
       "source_version": "1.1.14",
-      "source_hash": "sha256:93f707c7186fc72132e243655054e9abcd89b73d1a0e5efd221079594ceb6465",
+      "source_hash": "sha256:9bd74ab7b8254f457c152a4f31c275b066ad2c52a0694d22f4e4a157ca69e59c",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:90b1a6a6643bb145d3c4736d9fdc4ebcd72a339ea7846b4d264ee63b90469630",
+      "generated_hash": "sha256:4531b006d87e1e2b49d6a24a78d188aa7f04f7f98af0534a6664a27d6d168d5d",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true

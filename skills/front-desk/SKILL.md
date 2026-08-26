@@ -14,7 +14,7 @@ user-invocable: false
 
 Organization directory and routing service. Find the right agent, service, or contact for any task.
 
-The roster is not Claude-only. Do not invent agent counts. Grok Bot ≠ Grok Build.
+The roster is not Claude-only. Do not invent agent counts.
 
 ## Install Paths
 
@@ -29,7 +29,7 @@ The roster is not Claude-only. Do not invent agent counts. Grok Bot ≠ Grok Bui
 Grok Bot — paste this first. Do not run `grok plugin install`.
 
 ```text
-Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the bOpen.ai roster as Grok Bot teammates. This is not Grok Build — do not run grok plugin install.
+Fetch https://bopen.ai/install/grok-bot.md and follow it exactly. Stand up the bOpen.ai roster as Grok Bot teammates.
 ```
 
 Long form: https://bopen.ai/install/grok-bot.md
