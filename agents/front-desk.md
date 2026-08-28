@@ -205,6 +205,7 @@ npx skills add <...> -g            # Install globally (not per-project)
 
 Notable third-party skills:
 - `vercel-labs/portless@portless` — Named .localhost URLs for dev servers (replaces port numbers)
+- `vercel-labs/is-agentic@is-agentic` — Score a public site’s agent readiness (Vercel report, Ora scan). Install: `npx skills add vercel-labs/is-agentic`. Source: https://is-agentic.com/.well-known/agent-skills/is-agentic/SKILL.md
 
 Use `Skill(find-skills)` to search for skills when you're unsure what's available.
 

@@ -9,6 +9,7 @@ manifests share the same release version.
 ### Changed
 
 - Grok Bot stand-up is ask-first (operator + roster). No skip-Satchmo or skip-Flow. Standing rules go in description, not memory.
+- front-desk Third-Party Skills now lists `vercel-labs/is-agentic@is-agentic`.
 
 ## [1.1.151] - 2026-08-26
 
