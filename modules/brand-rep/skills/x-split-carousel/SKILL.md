@@ -21,7 +21,7 @@ does not render art and does not publish.
 - A post must read as one continuous scene across tiles, not a collage.
 - The brief is "split carousel", "X carousel", "panorama", or "swipe
   through the scene".
-- You are briefing Lisa, checking her export, or attaching the slices in the X composer or the house draft path (satchmo.dev / bopen.ai).
+- You are briefing Lisa, checking her export, or attaching the slices in the X composer.
 
 Do not use this for a single image, a thread of unrelated shots, or
 research/lookup of tweets (`research:x-*`).
@@ -65,7 +65,7 @@ export — do not post it.
 2. **Lisa** (`gemskills:content`) renders the master at the mosaic size
    and exports the equal slices. Do not ask her to invent the count or
    the cut lines.
-3. **Alex** attaches the slices in the X composer or the house draft path (satchmo.dev / bopen.ai) in file-name order, left first. Do not use Typefully as the queue. Wait for an explicit go-ahead before anything reaches a live account.
+3. **Alex** attaches the slices in the X composer in file-name order, left first. Do not use Typefully as the queue. Do not treat bopen.ai as a live queue. satchmo.dev is X-only approve-and-post for one account, not a multi-account scheduler. A house queue on satchmo.dev / bopen may be used once it exists. Wait for an explicit go-ahead before anything reaches a live account.
 
 ## Brief Lisa with
 
