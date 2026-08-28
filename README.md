@@ -212,6 +212,7 @@ core members.
 
 ### Organization & Operations
 - 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup, and host install paths (Claude Code, Codex, Grok Build, Grok Bot)
+- Third-party: `vercel-labs/is-agentic@is-agentic` — score a public site’s agent readiness. Install: `npx skills add vercel-labs/is-agentic`.
 
 **Usage:** In Claude Code, request the plugin agent by name (for example,
 `review:code-auditor`). In Codex, use its installed adapter name (for
