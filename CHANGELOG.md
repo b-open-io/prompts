@@ -6,6 +6,11 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Added
+
+- brand-rep:x-split-carousel 1.0.0 — one master scene sliced into equal portrait frames, uploaded left to right. Two tiles sit side by side; three 1024×2048 (1:2) slices are the swipe carousel. The old 3-image grid (tall left + two stacked) breaks it. Lisa paints; Alex specs count, aspect, cut lines, and order.
+- social-media-manager 1.0.4 loads x-split-carousel next to typefully.
+
 ### Changed
 
 - Grok Bot stand-up is ask-first (operator + roster). No skip-Satchmo or skip-Flow. Standing rules go in description, not memory.

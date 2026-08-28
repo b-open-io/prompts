@@ -251,6 +251,7 @@ intentional.
 | `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs a default panel of named roster-agent advocates (with avatars) → cross-examination → a judging bench → the CEO's holistic final call, humanizes every voice, and ends with selectable option cards + a copy-response button that pastes a version-stamped reply back to the agent. Pages save to `docs/proposals/` and include a side menu of other proposals: local rows copy agent instructions; PostPlan rows are real links |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
+| `x-split-carousel` | Slice one master scene into equal portrait frames and upload them left to right as an X split-carousel (brand-rep posting) |
 
 ### Development & Quality
 | Skill | Description |
