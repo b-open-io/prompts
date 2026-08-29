@@ -10,6 +10,7 @@ manifests share the same release version.
 
 - Grok Bot stand-up is ask-first (operator + roster). No skip-Satchmo or skip-Flow. Standing rules go in description, not memory.
 - front-desk Third-Party Skills now lists `vercel-labs/is-agentic@is-agentic`.
+- Root (`devops` 1.3.14) knows the Vercel CLI 59.6.2 DNS / domains / project commands (`dns inspect|update`, `domains renew|auto-renew`, `project pause|resume`, observability and member controls). Fetch live CLI `.md` docs for flags; confirm before billable or production-offline actions. Bumped `dev-ops` to 0.1.7.
 
 ## [1.1.151] - 2026-08-26
 

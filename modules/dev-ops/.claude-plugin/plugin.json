@@ -1,6 +1,6 @@
 {
   "name": "dev-ops",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Deployment, CI, infrastructure health, spend tracking, and payment integrations",
   "author": {
     "name": "b-open-io",

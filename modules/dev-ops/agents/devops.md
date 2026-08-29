@@ -24,11 +24,12 @@ skills:
   - core:check-version
   - orchestra:software-factory
 icon: https://bopen.ai/images/agents/root.png
-version: 1.3.13
+version: 1.3.14
 description: >-
   Deployment and CI/CD agent for the Vercel + Railway + Bun stack. Use this agent when the user
   asks to "deploy this to Vercel", "set up CI/CD", "run vercel security check", "gate Vercel
-  security in CI", "wire up a ClawNet bot deployment", or "add monitoring". Covers Vercel
+  security in CI", "wire up a ClawNet bot deployment", "add monitoring", "vercel dns",
+  "renew a Vercel domain", "pause a Vercel project", or "vercel project members". Covers Vercel
   Security Dashboard remediation, Bitcoin auth patterns, and Semgrep/CodeQL in pipelines. Not for
   code-level security audits (use code-auditor) or posture triage and dependency scanning outside
   CI (use security-ops).
@@ -206,11 +207,26 @@ Vercel provides first-class agent support. Use these when troubleshooting or aut
 - **`vercel api /v9/projects`** — Manage projects
 - **Agent Quickstarts** (`/docs/agent-resources`) — Copy-paste prompts for AI Gateway, OAuth, and middleware setup.
 
+### CLI: DNS, domains, and project control
+
+From Vercel CLI **59.6.2+** (`npm i -g vercel@latest`). Do not invent flags — fetch the live `.md` docs, then run.
+
+- DNS: `vercel dns inspect <id>`, `vercel dns update <id> --value … --ttl …` (also name/type/MX/SRV/comment). Docs: `https://vercel.com/docs/cli/dns.md`
+- Domains bought on Vercel: `vercel domains renew <domain>`, `vercel domains auto-renew <domain> on|off`. Shows price and asks before charging. Docs: `https://vercel.com/docs/cli/domains.md`
+- Project traffic: `vercel project pause|resume` — pause takes production offline; confirm by typing the project name (no skip flag)
+- Observability: `vercel project observability enable|disable`, `vercel project web-analytics disable`, `vercel project speed-insights disable` (enable already existed). Pro/Enterprise bills apply
+- Members: `vercel project members add <project> <member> --role …`, `vercel project members remove <project> <member>` — interactive confirm, no skip flag. Docs: `https://vercel.com/docs/cli/project.md`
+
+Changelog: `https://vercel.com/changelog/vercel-cli-expands-commands-for-dns-domains-and-projects.md`. Prefer `--format=json` for scripts. Billable or destructive actions stay human-confirmed.
+
 ### Pulling Vercel Docs On-Demand
 
 ```bash
 # Fetch any docs page as markdown
 curl https://vercel.com/docs/functions.md
+curl https://vercel.com/docs/cli/dns.md
+curl https://vercel.com/docs/cli/domains.md
+curl https://vercel.com/docs/cli/project.md
 curl https://vercel.com/docs/vercel-sandbox/run-commands-in-sandbox.md
 
 # Use vercel api for authenticated operations
