@@ -8,17 +8,17 @@ Publish npm packages from Claude Code with automatic token rotation. When your n
 preflight.sh → Agent writes CHANGELOG → release.sh → publish.sh → verify.sh
    (script)        (agent)                (script)     (script)     (background)
                                                           │
-                                                     AUTH_FAILED?
-                                                          │
-                                                   setup-token.sh fill
-                                                   (agent-browser fills form)
-                                                          │
-                                                   User clicks Generate
-                                                          │
-                                                   setup-token.sh capture
-                                                   (clipboard → ~/.npmrc)
-                                                          │
-                                                   publish.sh retry
+                                              ┌──── AUTH_FAILED? ────┐
+                                              │                      │
+                                      setup-token.sh fill   VERSION_ALREADY_PUBLISHED
+                                      (token recovery only)  rerun preflight + bump
+                                              │
+                                      User clicks Generate
+                                              │
+                                      setup-token.sh capture
+                                      (clipboard → ~/.npmrc)
+                                              │
+                                      publish.sh retry
 ```
 
 ## Scripts
@@ -54,9 +54,13 @@ bash scripts/release.sh --access public  # scoped @org/pkg
 
 Attempts `echo "" | bun publish`. Returns status codes:
 - `PUBLISH_SUCCESS` — done
-- `AUTH_FAILED` — token expired/missing, agent should run setup-token.sh
+- `VERSION_ALREADY_PUBLISHED` — immutable version collision; rerun preflight and bump, never rotate credentials
+- `AUTH_FAILED` — output contains explicit authentication evidence; agent should run setup-token.sh
+- `PUBLISH_ERROR` — another publish failure; preserve and diagnose the npm output
 
-The piped ENTER auto-opens the OTP checkbox page when the token is valid but OTP is required.
+The piped ENTER opens npm's confirmation in the system default browser when the token is valid but approval is required. That browser may be DIA. The agent must not navigate Chrome or run token setup during this normal confirmation flow.
+
+The classifier checks duplicate-version text before authentication because npm reports both conditions with 403 responses. Generic 403 and 404 responses remain `PUBLISH_ERROR`; status codes alone are not proof that credentials are invalid.
 
 ### setup-token.sh
 
@@ -95,7 +99,7 @@ The skill uses **granular access tokens** (7-day expiry) stored in `~/.npmrc`. T
 
 Token lifecycle:
 1. **Token valid** → `bun publish` succeeds, may show OTP checkbox (piped ENTER opens it)
-2. **Token expired** → `bun publish` returns 404 → `setup-token.sh` creates new token via Chrome → retry succeeds
+2. **Token expired/revoked** → publish output contains explicit authentication evidence → `setup-token.sh` creates a new token via Chrome → retry succeeds
 3. **No token** → same as expired
 
 The 7-day expiry keeps tokens short-lived. Rotation is automated, so short expiry adds security without friction.
@@ -108,7 +112,9 @@ Key status codes:
 | Script | Code | Agent Action |
 |--------|------|-------------|
 | publish.sh | `PUBLISH_SUCCESS` | Tell user "Published", run verify.sh |
+| publish.sh | `VERSION_ALREADY_PUBLISHED` | Rerun preflight, bump, and release the new version; do not rotate credentials |
 | publish.sh | `AUTH_FAILED` | Run setup-token.sh fill |
+| publish.sh | `PUBLISH_ERROR` | Diagnose the preserved npm output; do not assume auth |
 | setup-token.sh fill | `FORM_READY:<user>` | Tell user "Click Generate token in Chrome" |
 | setup-token.sh fill | `NOT_LOGGED_IN` | Tell user "Sign in to npmjs.com in Chrome" |
 | setup-token.sh capture | `TOKEN_SAVED` | Retry publish.sh |
@@ -133,7 +139,8 @@ npm-publish/
 └── scripts/
     ├── preflight.sh      # Check + bump + build + commit log
     ├── release.sh        # Commit + push (returns RELEASE_DONE)
-    ├── publish.sh        # Try publish (returns PUBLISH_SUCCESS or AUTH_FAILED)
+    ├── publish.sh        # Try publish and emit a classified status
+    ├── publish.test.sh   # Classifier regression tests
     ├── setup-token.sh    # Two-phase: fill form / capture token
     └── verify.sh         # Background: exponential backoff registry check
 ```

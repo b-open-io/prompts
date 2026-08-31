@@ -1,6 +1,6 @@
 ---
 name: npm-publish
-version: 3.1.1
+version: 3.1.2
 description: This skill should be used when the user wants to publish a package to npm, bump a version, release a new version, or mentions "npm publish", "bun publish", "version bump", or "release to npm". Handles version bumping, changelog updates, git push, npm publishing, and automatic token rotation via agent-browser when auth expires. Do not trigger for unrelated uses of "release" (e.g. GitHub releases, press releases).
 allowed-tools: Bash(agent-browser:*), Bash(npm:*), Bash(bun:*), Bash(git:*), Bash(pbpaste:*), Bash(pbcopy:*), Bash(chmod:*), Bash(bash:*), Bash(grep:*), Bash(sed:*), Bash(sleep:*)
 ---
@@ -27,13 +27,20 @@ Handles deterministically: version check against npm registry, bump if needed (r
 
 Read the commit log from preflight output. If CHANGELOG.md exists, add entry at top matching existing format. If not, create one. Use the version from preflight output. Categorize: Breaking Changes, Added, Changed, Fixed, Security, Deprecated.
 
-## Step 3: Release (commit + push + publish)
+## Step 3: Release (commit + push), then publish
 
 ```bash
 bash ${CLAUDE_SKILL_DIR}/scripts/release.sh [--access public]
+bash ${CLAUDE_SKILL_DIR}/scripts/publish.sh [--access public]
 ```
 
-Commits, pushes, then calls publish.sh. If publish.sh outputs `PUBLISH_SUCCESS` — done, go to Step 4.
+`release.sh` commits and pushes. `publish.sh` then publishes. npm may open its normal confirmation in the system default browser, including DIA. Tell the user to approve it there if prompted. Do not open or navigate another browser unless `publish.sh` specifically outputs `AUTH_FAILED`.
+
+If publish.sh outputs `PUBLISH_SUCCESS` — done, go to Step 4.
+
+### If publish.sh outputs `VERSION_ALREADY_PUBLISHED`
+
+The local version already exists on npm. This is not an authentication failure. Do not run token setup. Run preflight again so it reconciles and bumps from the registry version, update the changelog for the new version, then repeat Step 3.
 
 ### If publish.sh outputs `AUTH_FAILED`
 
@@ -73,6 +80,10 @@ bash ${CLAUDE_SKILL_DIR}/scripts/publish.sh [--access public]
 ```
 
 Tell user: "Complete the OTP checkbox in your browser if prompted."
+
+### If publish.sh outputs `PUBLISH_ERROR`
+
+Read the preserved npm output and fix the reported package, permissions, validation, or registry error. Do not rotate credentials unless the output contains actual authentication evidence and the script reports `AUTH_FAILED`.
 
 ## Step 4: Verify (background)
 

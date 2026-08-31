@@ -6,6 +6,15 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.152] - 2026-08-30
+
+### Fixed
+
+- `npm-publish` 3.1.2 now distinguishes an already-published version from an
+  authentication failure, keeps normal npm approval in the system browser
+  (including DIA), and only starts Chrome token recovery for explicit expired
+  or missing credentials. Bumped `plugin-kit` to 0.1.4.
+
 ### Changed
 
 - Grok Bot stand-up is ask-first (operator + roster). No skip-Satchmo or skip-Flow. Standing rules go in description, not memory.

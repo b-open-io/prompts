@@ -14,6 +14,7 @@ while [ $# -gt 0 ]; do
 done
 
 # Try publish — pipe ENTER for OTP browser prompt
+# shellcheck disable=SC2086 # Parsed above into fixed publish flags.
 OUTPUT=$(echo "" | bun publish $EXTRA_FLAGS 2>&1)
 EXIT_CODE=$?
 
@@ -23,12 +24,23 @@ if [ $EXIT_CODE -eq 0 ]; then
   exit 0
 fi
 
-# Check if auth-related failure
-if echo "$OUTPUT" | grep -qi "404\|401\|403\|unauthorized\|ENEEDAUTH\|authentication"; then
-  echo "AUTH_FAILED"
-  exit 1
-else
-  echo "$OUTPUT"
-  echo "PUBLISH_ERROR"
+echo "$OUTPUT"
+
+# npm reports an immutable-version collision as HTTP 403. Check this before
+# authentication so an already-published version never triggers token rotation.
+if echo "$OUTPUT" | grep -Eqi \
+  "cannot publish over (the )?previously published versions?|version[^[:cntrl:]]*already (exists|been published)|cannot publish the same version"; then
+  echo "VERSION_ALREADY_PUBLISHED"
   exit 1
 fi
+
+# Match authentication evidence, not generic HTTP status codes. npm also uses
+# 403/404 for package, permission, and version errors that token rotation cannot fix.
+if echo "$OUTPUT" | grep -Eqi \
+  "ENEEDAUTH|E401|401[^[:cntrl:]]*(unauthorized|authentication)|unable to authenticate|authentication (token|is required|required)|access token[^[:cntrl:]]*(expired|revoked|invalid)|token[^[:cntrl:]]*(expired|revoked)|not logged in"; then
+  echo "AUTH_FAILED"
+  exit 1
+fi
+
+echo "PUBLISH_ERROR"
+exit 1
