@@ -1,8 +1,6 @@
 name: Promote dev
 
 on:
-  push:
-    branches: [dev]
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
@@ -20,32 +18,7 @@ env:
   COOLING_HOURS: "24"
 
 jobs:
-  notify:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Open or refresh the promotion review
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          number="$(gh pr list --repo "$GITHUB_REPOSITORY" --base master --head dev --state open --json number --jq '.[0].number // empty')"
-          if [[ -z "$number" ]]; then
-            gh pr create --repo "$GITHUB_REPOSITORY" --base master --head dev \
-              --title "Promote tested dev changes" \
-              --body "This standing promotion PR contains changes that passed through dev. Every update resets the 24-hour cooling period and requires a fresh approval. Required checks and a current approval must both be present before auto-merge can be enabled."
-            number="$(gh pr list --repo "$GITHUB_REPOSITORY" --base master --head dev --state open --json number --jq '.[0].number')"
-          fi
-          gh pr edit "$number" --repo "$GITHUB_REPOSITORY" --add-reviewer "$REVIEWER"
-          deadline="$(python3 - <<'PY'
-          from datetime import datetime, timedelta, timezone
-          print((datetime.now(timezone.utc) + timedelta(hours=24)).strftime('%Y-%m-%d %H:%M UTC'))
-          PY
-          )"
-          gh pr comment "$number" --repo "$GITHUB_REPOSITORY" \
-            --body "@$REVIEWER dev changed at $GITHUB_SHA. Review by **$deadline**. This update will not reach master without a fresh approval; another dev commit resets the clock."
-
   promote:
-    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Enable auto-merge only after cooling and fresh approval
@@ -63,7 +36,7 @@ jobs:
           PY
           )"
           [[ "$cooled" == "yes" ]] || exit 0
-          approval="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$number/reviews" --jq \
-            "map(select(.user.login == \"$REVIEWER\" and .state == \"APPROVED\" and .submitted_at >= \"$head_time\")) | sort_by(.submitted_at) | last | .state // empty")"
-          [[ "$approval" == "APPROVED" ]] || exit 0
-          gh pr merge "$number" --repo "$GITHUB_REPOSITORY" --auto --squash
+          approval="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$number/comments" --jq \
+            "map(select(.user.login == \"$REVIEWER\" and .body == \"/approve\" and .created_at >= \"$head_time\")) | sort_by(.created_at) | last | .body // empty")"
+          [[ "$approval" == "/approve" ]] || exit 0
+          gh pr merge "$number" --repo "$GITHUB_REPOSITORY" --squash

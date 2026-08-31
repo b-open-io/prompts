@@ -19,7 +19,7 @@ feature branch → reviewed change → dev → cooling period → approved PR �
 - Positive human approval is mandatory. Silence is never approval for the default branch. After a fresh approval and green required checks, provider auto-merge may perform the mechanical merge.
 - Protect the default branch with required PR review, stale-approval dismissal, required status checks, and no direct worker pushes.
 
-GitHub's native review request is the baseline notification because it is attached to the artifact being approved. Email or Discord may supplement it, but delivery must be deterministic code—not a model composing and sending ad hoc messages. Keep Resend keys or Discord webhooks in the notification service or local credential store; never place them in prompts, tickets, logs, or disposable test environments.
+GitHub's native review request or PR assignment is the baseline notification because it is attached to the artifact being approved. Email or Discord may supplement it, but delivery must be deterministic code—not a model composing and sending ad hoc messages. Keep Resend keys or Discord webhooks in the notification service or local credential store; never place them in prompts, tickets, logs, or disposable test environments.
 
 ## Disposable plugin-install gate
 
