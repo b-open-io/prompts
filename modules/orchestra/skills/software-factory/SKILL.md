@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.8
+version: 0.0.9
 description: >-
   Design or harden a software factory: an agentic loop that iterates toward a goal with a
   verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic
@@ -180,6 +180,18 @@ The order matters more than the tools. Scheduling something you haven't made rel
 2. **Harden it** — add the stop conditions, circuit breaker, state file, never-touch list; run it watched a few more times; measure accept rate.
 3. **Automate it** — only now wire the heartbeat (cron/`/loop`/Actions). Promotion respects the blast-radius tier above.
 
+### The factory cannot exempt its own bootstrap
+
+Creating or changing the runner, gates, prompts, CI, repository rules, or
+credentials is a High-tier factory-policy change. Bootstrap on a feature
+branch and deliver it through a human-review PR; the factory may propose but
+never approve its own constitution. A prompt saying "propose-only" is not a
+security boundary. Before readiness, verify the live default-branch rule and
+the unattended worker's identity/capability with
+`references/repository-policy.md` and `scripts/check-factory-policy.sh`.
+Missing protection, missing/malformed state, mutable model defaults, or
+documentation-only breakers keep the factory paused and manual.
+
 ## Stop conditions — never optional
 
 Every loop needs at least one of each, or it runs until it succeeds, breaks, or drains the account:
@@ -237,4 +249,5 @@ registration, never no registration.
 - `references/failure-modes.md` — the catalog of quiet failure modes and their guards.
 - `references/human-artifacts.md` — GitHub PRs as human artifacts: AGENTS.md contract, lint-pr.sh, CI.
 - `references/looptop-registration.md` — the worker registration contract, verified against looptop source.
+- `references/repository-policy.md` — self-bootstrap, default-branch enforcement, and delivery identity checks.
 - `references/state-backends.md` — Linear vs GitHub Issues vs repo-vault, with the state-file contract.

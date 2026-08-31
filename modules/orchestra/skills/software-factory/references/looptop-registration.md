@@ -13,6 +13,11 @@ looptop scans `~/Library/LaunchAgents/ai.<slug>.loop.exec.plist` (plus
 optional `ai.<slug>.loop.maintenance.plist`). No plist → the loop does not
 exist to looptop, even for manual `looptop run` kickstarts.
 
+When exec and maintenance use separate jobs, give their wrapper executables
+distinct names (`LoopTop-Name-Exec`, `LoopTop-Name-Maintenance`). macOS lists
+background items by executable name; pointing both jobs at one wrapper creates
+two indistinguishable rows even though they are different schedules.
+
 ## State dir: `~/.<slug>/loop/`
 
 (Resolved from `~/.<slug>/loop/loop.json` first, else the dirname of the
@@ -20,14 +25,20 @@ plist's `StandardOutPath`.) Four files:
 
 - `loop.json` — the manifest:
   `{ schemaVersion: 1, slug, displayName, labelPrefix: "ai.<slug>.loop",
-  stateDir, repoDir, modes: ["exec"], maintenance: [],
-  schedule: { exec: [], maintenance: [] }, host, createdAt }`
+  stateDir, repoDir, runtimeDirs: [repoDir], modes: ["exec"], maintenance: [],
+  schedule: { exec: [], maintenance: [] }, host, createdAt,
+  telemetry: { eventsPath: "<stateDir>/events.jsonl", agentTrail: true },
+  factory: { stages, model, checker, delivery, defaultBranch,
+  defaultBranchProtected } }`
   Empty `schedule.exec` = manual-only (prove phase).
 - `state.json` — mutable: `{ paused: true, exec_total: 0, exec_accepted: 0 }`.
   `looptop pause/resume <slug>` edits `paused`; the runner MUST honor it.
 - `ledger.jsonl` — one line per pass:
   `{ "ts", "mode": "exec"|"maintenance", "rc", "payload": { "result", "ref", "detail" } }`
 - `loop.log` — runner output; also the plist's `StandardOutPath`/`StandardErrorPath`.
+- `events.jsonl` — sanitized append-only run/stage/worker/gate/artifact/decision/
+  policy events. One `runId` per pass; never include credentials, environment
+  values, full prompts, or sensitive tool input.
 
 ## Plist (prove-phase shape)
 
@@ -41,9 +52,11 @@ from it when `~/.<slug>/loop/loop.json` is absent. Promotion to unattended
 
 ## Runner obligations
 
-One pass per invocation; check `state.json` `paused` FIRST and exit 0 with a
+One pass per invocation; missing or malformed `state.json` fails closed. Check
+`paused` FIRST and exit 0 with a
 `"skipped"` ledger entry when paused; append a ledger line for every outcome
-(completed / error / skipped) with the real `rc`; log to `loop.log`.
+(completed / error / skipped) with the real `rc`; append matching factory
+events; log to `loop.log`.
 
 Installing the plist + `launchctl load` is user-machine persistence — get the
 user's explicit go-ahead; never install it silently.

@@ -328,7 +328,7 @@ root-level files keep their filename as the command.
 - `/prime` - Context warm-up — loads git state, plugin inventory, and project conventions
 - `/question` - Read-only Q&A mode — answers questions about the codebase without making changes
 - `/diagnose` - Fan out 3-5 agents to investigate a bug from every angle simultaneously
-- `/factory-init` - Design and scaffold an autonomous agent loop with explicit goals, gates, state, stop conditions, and human-readable GitHub PRs
+- `/factory-init` - Design and scaffold an autonomous agent loop with explicit goals, gates, state, stop conditions, factory-aware Looptop telemetry, repository-policy preflight, and human-readable GitHub PRs
 - `/impact` - Map the full blast radius before changing a file or function
 - `/review-wave` - 4 specialized reviewers examine changes simultaneously (security, perf, correctness, style)
 - `/hammertime` - HammerTime behavioral rules — status dashboard (no args) or create a rule from a description
