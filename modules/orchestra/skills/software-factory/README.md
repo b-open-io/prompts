@@ -48,7 +48,7 @@ The reversibility of what a loop can do — not its accept rate — sets how muc
 
 ## Build order
 
-Prove it once by hand on a real case, watching the gate actually reject bad work. Harden it with stop conditions, a pre-flight budget breaker, and a state file. Only then wire the heartbeat and let it run unattended, because scheduling something you haven't proven reliable is how loops blow up while you sleep.
+Prove it once by hand on a real case, watching the gate actually reject bad work. Harden it with stop conditions, work-item admission control, an emergency runaway breaker, and a state file. Only then wire the heartbeat and let it run unattended, because scheduling something you haven't proven reliable is how loops blow up while you sleep.
 
 ## What's in here
 

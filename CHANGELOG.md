@@ -6,6 +6,15 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- `software-factory` 0.0.9 now budgets at work-item boundaries so an admitted
+  change reaches a gate or durable checkpoint before the worker stops. The new
+  shipping guidance keeps `master` behind fresh human approval, resets a
+  cooling period whenever `dev` changes, and uses disposable CI runners to
+  strict-validate Claude plugins and install Codex plugins from the exact
+  candidate commit. Bumped `orchestra` to 0.1.14.
+
 ## [1.1.153] - 2026-08-31
 
 ### Changed

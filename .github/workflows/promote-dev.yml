@@ -1,0 +1,69 @@
+name: Promote dev
+
+on:
+  push:
+    branches: [dev]
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: promote-dev
+  cancel-in-progress: false
+
+env:
+  REVIEWER: rohenaz
+  COOLING_HOURS: "24"
+
+jobs:
+  notify:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or refresh the promotion review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          number="$(gh pr list --repo "$GITHUB_REPOSITORY" --base master --head dev --state open --json number --jq '.[0].number // empty')"
+          if [[ -z "$number" ]]; then
+            gh pr create --repo "$GITHUB_REPOSITORY" --base master --head dev \
+              --title "Promote tested dev changes" \
+              --body "This standing promotion PR contains changes that passed through dev. Every update resets the 24-hour cooling period and requires a fresh approval. Required checks and a current approval must both be present before auto-merge can be enabled."
+            number="$(gh pr list --repo "$GITHUB_REPOSITORY" --base master --head dev --state open --json number --jq '.[0].number')"
+          fi
+          gh pr edit "$number" --repo "$GITHUB_REPOSITORY" --add-reviewer "$REVIEWER"
+          deadline="$(python3 - <<'PY'
+          from datetime import datetime, timedelta, timezone
+          print((datetime.now(timezone.utc) + timedelta(hours=24)).strftime('%Y-%m-%d %H:%M UTC'))
+          PY
+          )"
+          gh pr comment "$number" --repo "$GITHUB_REPOSITORY" \
+            --body "@$REVIEWER dev changed at $GITHUB_SHA. Review by **$deadline**. This update will not reach master without a fresh approval; another dev commit resets the clock."
+
+  promote:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable auto-merge only after cooling and fresh approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          number="$(gh pr list --repo "$GITHUB_REPOSITORY" --base master --head dev --state open --json number --jq '.[0].number // empty')"
+          [[ -n "$number" ]] || exit 0
+          head_time="$(gh api "repos/$GITHUB_REPOSITORY/commits/dev" --jq '.commit.committer.date')"
+          cooled="$(python3 - "$head_time" "$COOLING_HOURS" <<'PY'
+          from datetime import datetime, timedelta, timezone
+          import sys
+          head = datetime.fromisoformat(sys.argv[1].replace('Z', '+00:00'))
+          print('yes' if datetime.now(timezone.utc) - head >= timedelta(hours=int(sys.argv[2])) else 'no')
+          PY
+          )"
+          [[ "$cooled" == "yes" ]] || exit 0
+          approval="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$number/reviews" --jq \
+            "map(select(.user.login == \"$REVIEWER\" and .state == \"APPROVED\" and .submitted_at >= \"$head_time\")) | sort_by(.submitted_at) | last | .state // empty")"
+          [[ "$approval" == "APPROVED" ]] || exit 0
+          gh pr merge "$number" --repo "$GITHUB_REPOSITORY" --auto --squash
