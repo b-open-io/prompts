@@ -1,6 +1,6 @@
 ---
-allowed-tools: Skill(review:visual-review), Bash(git:*), Bash(gh:*), Bash(open:*), Read, Write, Glob, Grep
-description: Turn a PR, branch, commit, or diff into a visual review — a self-contained HTML recap page with wireframes, contract summaries, file map, and annotated key-change diffs
+allowed-tools: Skill(review:visual-review), Skill(core:humanize), Skill(core:postplan), Bash(git:*), Bash(gh:*), Bash(open:*), Bash(npx bitplan:*), Read, Write, Glob, Grep
+description: Turn a PR, branch, commit, or diff into a plain-language visual review with grounded diagrams and decision questionnaires
 argument-hint: "[branch | commit-sha | PR# | --base <ref>] (default: current branch vs main)"
 ---
 
@@ -22,5 +22,4 @@ building a recap — then stop unless the user insists.
 
 Otherwise build the recap per the skill: copy the template, ground every
 structured section in the real diff, fill the canonical skeleton, and deliver
-the rendered page (Artifact if available, else `open` the local file and report
-the absolute path).
+the rendered page through the delivery path selected by the skill.

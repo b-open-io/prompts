@@ -19,16 +19,19 @@ judge verdicts, the CEO's call, button labels — to these rules.
    as three different things.
 4. **Gloss a term on first use**, in the same sentence. An acronym with no gloss
    costs the reviewer a search.
-5. **Put the outcome first.** State the conclusion, then the reason. Do not
+5. **Name a specification before its identifier on first use.** Write
+   “BRC-100 Wallet Interface,” not just “BRC-100.” Use the source's real title
+   and link it when possible.
+6. **Put the outcome first.** State the conclusion, then the reason. Do not
    build up to the point.
-6. **Use the simple present tense.** "The wallet signs the input." Reserve the
+7. **Use the simple present tense.** "The wallet signs the input." Reserve the
    future tense for work that is genuinely not built yet.
-7. **Give numbers, not adjectives.** Write "adds one 34-byte output", not "adds
+8. **Give numbers, not adjectives.** Write "adds one 34-byte output", not "adds
    minimal overhead". An adjective is an opinion. A number is a fact the
    reviewer can check.
-8. **No idioms, no metaphors, no filler.** A metaphor makes the reader guess at
+9. **No idioms, no metaphors, no filler.** A metaphor makes the reader guess at
    a mechanism. Give the mechanism.
-9. **Argue with evidence, never with adjectives.** "Elegant", "clean",
+10. **Argue with evidence, never with adjectives.** "Elegant", "clean",
    "robust", and "future-proof" carry no information. Name what the thing does.
 
 ## Cut these
@@ -103,6 +106,8 @@ WRITING REGISTER — follow exactly. Your text goes on the page unedited.
 - Active voice. Name the actor: "the indexer rejects the output".
 - One word for one meaning. Never swap in a synonym for variety.
 - Gloss every term and acronym on first use, in the same sentence.
+- Name every specification before its identifier on first use and link the
+  source when possible.
 - Outcome first, reason second.
 - Numbers, not adjectives. "34 bytes per mint", never "cheap" or "elegant".
 - No idioms, no metaphors, no filler ("just", "simply", "it's worth noting",
@@ -159,3 +164,5 @@ Read the assembled page top to bottom and answer each question. Fix what fails.
 6. Does any argument rest on an adjective where a number exists?
 7. Does any advocate, judge, or CEO card exceed its budget above?
 8. Would a reader outside this project understand every sentence on one read?
+9. Does every unresolved decision have a selectable question whose options
+   explain outcome, benefit, cost or risk, reversibility, and follow-up?

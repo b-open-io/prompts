@@ -5,10 +5,10 @@ single self-contained, theme-aware HTML page a reviewer reads before the raw
 diff — before/after UI wireframes, schema/API contract summaries with change
 flags, a file footprint map, and 3-8 tabs of annotated key-change diffs.
 
-Heavily inspired by [BuilderIO's visual recap](https://github.com/BuilderIO/skills#visual-recap),
-adapted for core: no hosted plan service or MCP connector — the
-deliverable is one offline HTML file built from `assets/template.html`, opened
-locally or published as a default-private Artifact.
+Heavily inspired by [BuilderIO's visual recap](https://github.com/BuilderIO/skills#visual-recap).
+The deliverable is one self-contained HTML file built from
+`assets/template.html`, then opened locally or delivered through an Artifact,
+PostPlan, or an explicitly approved BitPlan workflow.
 
 ## Why
 
@@ -42,5 +42,9 @@ opening artifact of large reviews.
   invented. Prose is the only place the model writes freely.
 - UI changes get before/after wireframes; schema/API changes get change-flagged
   contract cards; key files get annotated split diffs in tabs.
+- Relationships and flows get the smallest useful grounded diagram. Every open
+  reviewer decision gets a selectable questionnaire with clear consequences.
+- Copy names specifications, explains unfamiliar context, and passes through
+  `core:humanize` before delivery.
 - Skip the recap for small diffs — they review faster as a plain diff.
 - Redact secrets; treat the recap as being as sensitive as the source.

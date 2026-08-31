@@ -6,6 +6,26 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.153] - 2026-08-31
+
+### Changed
+
+- `visual-review` 0.0.5 and `visual-proposal` 0.0.14 now use plain language,
+  name specifications before their identifiers, and turn every unresolved
+  decision into a questionnaire that explains each option's consequences.
+  Both require grounded diagrams when a visual materially improves
+  comprehension and run `core:humanize` before delivery.
+- The visual skills now distinguish Artifacts, PostPlan, local files, and
+  BitPlan. Before a BitPlan upload, they explain that Bitcoin stores the public
+  ciphertext and that access to an older shared version cannot be revoked.
+  Bumped `review` to 0.1.11 and synchronized the Claude, Codex, and Grok core
+  manifests at 1.1.153.
+
+### Fixed
+
+- Regenerated the Codex DevOps adapter so the already-released 1.3.14 DNS,
+  domain, and project guidance reaches Codex.
+
 ## [1.1.152] - 2026-08-30
 
 ### Fixed

@@ -1,6 +1,6 @@
 ---
 name: visual-review
-version: 0.0.4
+version: 0.0.5
 description: >-
   Turn a PR, branch, commit, or working-tree diff into one self-contained HTML recap page with
   before/after wireframes, contract summaries, a file map, and annotated diffs. Use for "recap
@@ -20,9 +20,8 @@ it.
 
 Heavily inspired by BuilderIO's visual recap skill, adapted for this stack: the
 deliverable is a **single self-contained HTML file** built from
-`assets/template.html`, theme-aware in light and dark. Claude Code can
-publish it as an Artifact (default-private). Grok Build and Codex cannot:
-follow `Skill(postplan)` so the human gets a URL, or `open` the file.
+`assets/template.html`, theme-aware in light and dark. Choose Artifact,
+PostPlan, BitPlan, or a local file from the delivery rules below.
 
 ## When to use — and when to skip
 
@@ -106,6 +105,54 @@ template — `diagram-panel` / `diagram-node` / `diagram-arrow`, two panels for
 before/after) placed near the narrative. Use diagrams for structure and flow
 only; rendered UI always gets wireframes, never a diagram.
 
+## Write for the reviewer
+
+Assume the reviewer has not memorized the issue, specification, or prior
+discussion. Keep the page compact, but give each fact enough context to stand
+on its own.
+
+- Use plain language, one idea per sentence, active voice, and one stable term
+  for each concept. Define an acronym or specialist term on first use.
+- Name a specification before its identifier on first reference. Write
+  “BRC-100 Wallet Interface,” not just “BRC-100.” Use the source's real title;
+  if it has none, add a short description of its purpose. Link the title when a
+  browsable source exists.
+- Run `Skill(core:humanize)` on every heading, caption, annotation, and
+  narrative paragraph before delivery. Preserve exact code names, evidence,
+  uncertainty, and citations.
+
+### Turn every open decision into a questionnaire
+
+If the review leaves a real choice for the human, give that choice an
+interactive question. Do not leave a decision buried in findings, risks, or
+open questions.
+
+For each option, explain in 2–4 short sentences:
+
+1. what changes if the reviewer chooses it;
+2. what it enables;
+3. its cost or risk; and
+4. whether the choice is reversible and what follow-up it creates.
+
+Give enough detail for the reviewer to predict the consequence without a
+follow-up. Stop before repeating the implementation. Use mutually exclusive
+controls for one-of-many choices and a notes field when caveats matter. Include
+a copy-response button that identifies the review and emits every answer. Adapt
+the component in
+`../visual-proposal/references/interactive-choices.md`; omit its CEO-specific
+control when the review has no CEO call. Delete the questionnaire when the
+review contains no unresolved decisions.
+
+## Use the smallest useful visual
+
+Add a diagram whenever it makes a relationship materially faster to
+understand: architecture, request or data flow, ownership, state transitions,
+dependency chains, or comparisons across three or more items. Use a flow for a
+sequence, a tree for hierarchy, a matrix for repeated comparisons, and paired
+panels for before/after state. Keep labels plain and trace every node and edge
+to the diff or a cited source. Use diagrams only for information they clarify.
+UI changes still use wireframes.
+
 ## Budgets — substantial but lean
 
 Lean is not thin. A recap that is one wireframe plus a sentence under-serves the
@@ -150,7 +197,15 @@ The recap's center of gravity is comparison:
      default-private; strip the outer `<!doctype>`/`<html>`/`<head>`/`<body>`
      skeleton and keep the `<style>`, content, and `<script>` — the Artifact
      harness provides the document shell).
-   - **Grok, Codex, or any host without Artifacts** → `Skill(postplan)`.
+   - **BitPlan** → use only when the user explicitly wants the recap preserved
+     as an encrypted, wallet-controlled plan document. BitPlan is not a general
+     HTML host. Explain the consequences and get approval immediately before
+     `npx bitplan upload recaps/<slug>.html --json`: ciphertext is public on
+     Bitcoin, named wallet readers can decrypt it, and an older shared version
+     cannot be revoked. Never request a mnemonic or private key. See
+     [BitPlan agents and wallets](https://bitplan.dev/docs/agents).
+   - **Grok, Codex, or any host without Artifacts** → `Skill(postplan)` when a
+     capability link is appropriate.
    - **PostPlan not signed in** → `open recaps/<slug>.html` (macOS) and report
      the absolute path. A path in the TUI is not a page.
 4. Sanity-check the render before reporting it done: open it, look at it, in
@@ -168,6 +223,9 @@ sentence handoff plus the link/path is the right chat footprint.
   default-private (Artifacts), or ask before a PostPlan upload of a private
   repo. Never publish a recap of a private repo to a public URL without
   the user asking.
+- **Encryption does not make publication reversible.** A BitPlan document is
+  encrypted, but its ciphertext is published on Bitcoin. Confirm the intended
+  readers and explain that access to an older shared version cannot be revoked.
 - **Never transcribe secrets.** Diffs can contain API keys, tokens, webhook
   URLs, `.env` values. Redact them in every block, caption, and annotation
   (`sk-•••`, `<redacted>`) — the recap must be safe to share with anyone who

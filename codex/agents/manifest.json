@@ -149,10 +149,10 @@
     {
       "source_name": "devops",
       "source_path": "modules/dev-ops/agents/devops.md",
-      "source_version": "1.3.13",
-      "source_hash": "sha256:8496ea646d90a79ca6d137297dd882ad8636b68b1b02c0065b83ebc59679fa00",
+      "source_version": "1.3.14",
+      "source_hash": "sha256:d234c57ec1534130105712a6c1c519c71360538c45485b57aa2e5ed2c2cd09fb",
       "generated_file": "bopen-devops.toml",
-      "generated_hash": "sha256:03d8a3802fb5244c6da78c74d4d5a25244f596b8ebddc5cd80b16f871a3e5e6a",
+      "generated_hash": "sha256:8f1c4bab9de24f78f1537f2a6ddb53ba4a9fb569aabd54316781c8503524f816",
       "agent_name": "bopen_devops",
       "curated": false,
       "default_install": false

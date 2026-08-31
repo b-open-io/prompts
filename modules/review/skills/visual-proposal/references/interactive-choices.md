@@ -9,6 +9,21 @@ and a **"copy my response" button** that assembles a clean, agent-readable block
 — stamped with the proposal's version and link so the agent knows exactly which
 iteration was answered.
 
+Before writing markup, inventory every unresolved choice that changes scope,
+behavior, architecture, rollout, risk, or follow-up work. Every such choice
+gets one `.vp-decision`. Do not leave a blocking decision only in prose.
+
+Each option description must tell the reviewer:
+
+- what changes if they select it;
+- what it enables;
+- its cost or risk; and
+- whether it is reversible and what follow-up it creates.
+
+Use 2–4 short sentences or compact labeled rows. Give enough detail for the
+reviewer to predict the consequence without a follow-up. Stop before restating
+the implementation.
+
 Drop the CSS once, then one `.vp-decision` block per decision, then the script.
 Everything is self-contained and CSP-safe. Style it to match the page's palette
 (swap the `--vp-*` fallbacks or map them to your tokens).
@@ -55,9 +70,9 @@ option that should reveal the free-text box.
     <p class="vp-q">Which item form do we ship?</p>
     <div class="vp-opts">
       <label class="vp-opt"><input type="radio" name="d-encoding" value="ord-fs/json (. default entry)">
-        <span class="vp-opt-b"><b>ord-fs/json directory</b><span>Self-describing; `.` default-entry; fails safe. The bench's pick.</span></span></label>
+        <span class="vp-opt-b"><b>ord-fs/json directory</b><span>Stores a self-describing directory with a default entry. Indexers must add this parser. The choice is reversible before publication; later formats need a migration.</span></span></label>
       <label class="vp-opt"><input type="radio" name="d-encoding" value="BSV-21 token member">
-        <span class="vp-opt-b"><b>BSV-21 token member</b><span>Fungible/tradeable members; a token balance, not an NFT tile.</span></span></label>
+        <span class="vp-opt-b"><b>BSV-21 Token Protocol member</b><span>Makes each member transferable through token balances. Existing BSV-21 tools can read it, but the model does not represent a unique NFT tile. Changing later requires reminting.</span></span></label>
     </div>
   </div>
 
@@ -136,5 +151,7 @@ agent knows which iteration you answered.
   Agree / Agree-with-caveats / Disagree, the last two revealing the note box.
 - **No selection ≠ silent default.** The copy block marks unselected decisions
   `(no selection)` and tells the agent to ask, so nothing is assumed.
+- **No hidden decisions.** Every blocking item in Open questions appears here,
+  or is labeled informational because it requires no reviewer choice.
 - Radio `name`s give real mutual exclusion; `:has(input:checked)` styles the
   selected card, with the checked radio dot as a fallback affordance.

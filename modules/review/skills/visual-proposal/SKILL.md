@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.13
+version: 0.0.14
 description: >-
   Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has
   not been built. Use for "make a visual proposal", "present these options visually", "diagram
@@ -75,6 +75,11 @@ Prose then does what prose is good at: intent, nuance, the "why." The test:
 if a section is three paragraphs comparing structures, it probably wants to be a
 diagram plus one caption.
 
+Choose the smallest visual that carries the relationship: a flow for sequence,
+a tree for hierarchy, a matrix for repeated comparisons, and paired panels for
+before/after state. Every node, edge, and label must trace to evidence. Use
+diagrams only for information they clarify.
+
 ### Rule 3 — Write so a stranger understands it on one read.
 
 The reviewer reads this page once, fast, without your context. A sentence that
@@ -90,6 +95,10 @@ plain technical English:
   swap in a synonym for variety — "output", "UTXO", and "coin" on one page read
   as three different things.
 - **Gloss every term and acronym on first use**, in the same sentence.
+- **Name a specification before its identifier on first use.** Write
+  “BRC-100 Wallet Interface,” not just “BRC-100.” Use the source's real title;
+  if it has none, add a short description of its purpose. Link the title when a
+  browsable source exists.
 - **Outcome first**, reason second.
 - **Numbers, not adjectives.** "Adds one 34-byte output", not "adds minimal
   overhead". An adjective is an opinion; a number is a fact the reviewer can
@@ -109,6 +118,26 @@ prose must hit. Do both. The full specification, the rewrite gallery, the
 per-role word budgets, and the drop-in agent brief live in
 [references/plain-language.md](references/plain-language.md) — read it before
 you dispatch any agent or write any page copy.
+
+### Every decision becomes a complete questionnaire
+
+Inventory every unresolved choice that changes scope, architecture, behavior,
+rollout, risk, or follow-up work. Give each one a selectable question in **Your
+call**. Do not leave a blocking choice only in prose or under Open questions.
+
+Each option explains, in 2–4 short sentences:
+
+1. what changes if the reviewer chooses it;
+2. what it enables;
+3. its cost or risk; and
+4. whether it is reversible and what follow-up it creates.
+
+Give enough detail for the reviewer to predict the consequence without a
+follow-up. Stop before restating the implementation. If a question is
+informational and requires no choice, label it that way. The questionnaire must
+include every real decision and emit every answer through the copy-response
+control in
+[references/interactive-choices.md](references/interactive-choices.md).
 
 ### The opening states the problem, not the process
 
@@ -313,6 +342,8 @@ real code, or a real spec — never invented. If a fact is unverified, label it
 A proposal that fudges its facts wastes the reviewer's trust and their time.
 Pull the substance from the session's actual findings (files read, code cited,
 specs quoted); if the substance isn't there yet, gather it before authoring.
+When citing a specification, use its title with its identifier and link the
+source. A bare number assumes context the reviewer may not have.
 
 ## Structure of a proposal page
 
@@ -345,8 +376,9 @@ Adapt to the subject — not every section always applies — but the usual spin
 9. **Open questions** — what still needs deciding, each with the trade-off.
 10. **Your call** — selectable option cards for every decision + a copy-response
     button, so the reviewer answers in-page and pastes a clean, versioned reply
-    back to the agent. Always includes the Agree / Agree-with-caveats / Disagree
-    control on the CEO's final call. See
+    back to the agent. Each option states its outcome, benefit, cost or risk,
+    reversibility, and follow-up. Always includes the Agree /
+    Agree-with-caveats / Disagree control on the CEO's final call. See
     [references/interactive-choices.md](references/interactive-choices.md) for the
     drop-in component (CSS + markup + copy script).
 11. **Archive menu** — a left list of other proposals already on disk. Copy
@@ -400,10 +432,27 @@ sibling file. Local rows are copy buttons: they copy instructions that
 ask the agent to open that path. See
 [references/archive-nav.md](references/archive-nav.md).
 
-Then call the Artifact tool with the same file path, a one-line
-`description`, a stable subject `favicon`, and a version `label` — or
-`Skill(postplan)` / `open` when there is no Artifact pane. After PostPlan
-returns an `https://` URL, stamp it on the saved file as
+Choose the delivery surface deliberately:
+
+- **Artifact** — use for a quick, default-private page inside a host that
+  supports Artifacts.
+- **BitPlan** — use when the user wants an encrypted, wallet-controlled,
+  durable, versioned HTML plan. Explain the consequences and get explicit
+  approval immediately before `npx bitplan upload
+  docs/proposals/<slug>.html --json`: ciphertext is public on Bitcoin, only the
+  configured wallet readers can decrypt it, and access to an older shared
+  version cannot be revoked. A wallet that supports the BRC-100 Wallet
+  Interface keeps the keys and approves the operation. Never request a mnemonic
+  or private key. See
+  [BitPlan agents and wallets](https://bitplan.dev/docs/agents).
+- **PostPlan** — use when a capability link is sufficient and BitPlan's
+  wallet-controlled permanence is not wanted.
+- **Local file** — use when the page should not leave the machine.
+
+For an Artifact, use the same file path, a one-line `description`, a stable
+subject `favicon`, and a version `label`. For PostPlan, follow
+`Skill(postplan)`. After PostPlan returns an `https://` URL, stamp it on the
+saved file as
 `data-vp-url="https://…"`, re-run `list-proposals.sh`, and replace
 `window.VP_ARCHIVE` so the menu can link that row. Redeploy the SAME file
 path to keep the URL stable across revisions; only mint a new URL for a
