@@ -6,6 +6,18 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.154] - 2026-08-31
+
+### Changed
+
+- `software-factory` 0.0.9 and `/factory-init` now treat factory bootstrap and
+  policy changes as High-tier, require feature-branch PR delivery, verify live
+  default-branch protection and the unattended worker identity, and keep loops
+  paused when state, model pins, checkers, or executable breakers are missing.
+  The Looptop contract now includes sanitized `events.jsonl` run/stage/worker/
+  gate telemetry, runtime worktrees, machine-readable factory policy, and
+  distinct exec/maintenance wrapper names for clear macOS background items.
+
 ## [1.1.153] - 2026-08-31
 
 ### Changed

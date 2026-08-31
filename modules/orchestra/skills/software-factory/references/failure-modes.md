@@ -64,6 +64,18 @@ Malicious content in tool output poisons the agent's context and propagates acro
 Verification mutates real state (bogus rows, test users, orphaned files/webhooks); over many iterations the loop poisons its own environment.
 **Guard:** prefer ephemeral environments so there's nothing to clean; otherwise register teardown for every mutation, or explicitly accept the leftover for that project. See `config-questionnaire.md` field 4.
 
+## 12. Factory escapes its own boundary
+
+The runner is propose-only, but the setup session commits the runner or its
+policy directly to the default branch. The factory is safe only after it
+starts, while its constitution remains writable by the same unconstrained
+identity.
+**Guard:** treat bootstrap and factory-policy changes as High-tier. Create them
+on a feature branch through a human-review PR, enforce the default branch at
+the forge, and give the worker a distinct non-bypass identity. Verify the live
+rule with `repository-policy.md`; never trust a prompt or local hook as the
+authorization boundary.
+
 ## Pre-ship checklist
 
 Before automating, confirm a guard exists for each mode above, plus:
@@ -75,6 +87,7 @@ Before automating, confirm a guard exists for each mode above, plus:
 - [ ] Never-touch list defined and loaded each pass
 - [ ] Blast-radius tier assigned; High-tier actions human-gated
 - [ ] If the loop opens PRs: `lint-pr.sh` is wired and has been observed to reject a bad title
+- [ ] Bootstrap/policy changes use PRs; live default-branch protection and worker identity were verified
 
 ## The mega-skill
 

@@ -60,6 +60,12 @@ Classify the loop's actions (Low / Medium / High). Write the **never-touch list*
 for anything irreversible. This boundary governs free-roam permission, the
 automation/promotion gate, and cleanup — all at once.
 
+Treat factory bootstrap and policy changes themselves as High-tier. If this is
+a Git repository, resolve the live default branch, create or reuse a non-default
+feature branch before writing factory files, and deliver the scaffold through a
+human-review PR. Never make the bootstrap commit directly on the default
+branch. Read `software-factory/references/repository-policy.md`.
+
 ### Step 5: Scaffold
 
 Produce a written loop config (store it in the chosen state backend or a
@@ -69,6 +75,15 @@ Produce a written loop config (store it in the chosen state backend or a
 - **State** — initialize the backend (Linear labels, GitHub `loop` labels, or `loop/state.md`).
 - **Maker/checker** — note the model split (cheap maker, strict checker).
 - **Stop conditions** — cap (15–20 to start), retries (2–3), pre-flight budget breaker.
+- **Repository policy** — for GitHub-backed delivery, run
+  `software-factory/scripts/check-factory-policy.sh` against the live default
+  branch and record the unattended worker identity. Protection plus a
+  non-bypass worker credential is required before scheduling; otherwise leave
+  the loop paused and manual. Do not create or change a repository rule without
+  explaining it and getting authorization at the time of that mutation.
+- **Executable safety** — missing/malformed state fails closed; pin every model;
+  enforce the configured iteration, retry, wall-clock, budget, and accept-rate
+  breakers in code rather than merely writing them into config.
 - **Human artifacts** — if field 9 includes `gh pr create`, follow
   `software-factory/references/human-artifacts.md`. Resolve this skill's
   directory and copy:
@@ -80,6 +95,12 @@ Produce a written loop config (store it in the chosen state backend or a
   exec/ship prompt: run `bash scripts/lint-pr.sh --title "$TITLE" --body-file "$BODY"`
   before `gh pr create`; put loop process in a PR **comment**, never the body.
   Do not scaffold this when the loop never opens a GitHub pull request.
+- **Observability** — register the worker with Looptop immediately in a paused,
+  manual-only posture. Include `runtimeDirs`, `telemetry.eventsPath`, and the
+  machine-readable `factory` policy in `loop.json`. Append sanitized
+  `run/stage/worker/gate/artifact/decision/policy` events to `events.jsonl`.
+  When separate exec and maintenance LaunchAgents exist, use distinct wrapper
+  executable names so macOS does not display indistinguishable background rows.
 
 ### Step 6: Prove, don't automate
 
@@ -88,3 +109,9 @@ Run the full cycle **once, watched**, on a real case. Confirm the gate actually
 after the loop is proven and hardened should the heartbeat (cron / `/loop` /
 `/goal` / GitHub Actions) be wired — and High blast-radius actions stay
 human-gated regardless. Hand that automation step to the `devops` agent.
+
+Before declaring the scaffold complete, verify all of the following and attach
+the evidence to the handoff: bootstrap PR URL; live branch-policy and worker
+identity check; valid paused state plus a missing-state rejection; model pins;
+breaker tests; PR-linter self-test; required status names; Looptop discovery;
+and at least one sanitized `events.jsonl` prove event.
