@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.9
+version: 0.0.10
 description: >-
   Design or harden a software factory: an agentic loop that iterates toward a goal with a
   verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic

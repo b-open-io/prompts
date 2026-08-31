@@ -39,6 +39,20 @@ kickstart only via `looptop run <slug> exec`, which needs the job loaded:
 from it when `~/.<slug>/loop/loop.json` is absent. Promotion to unattended
 (per blast-radius) = adding the schedule keys, nothing else changes.
 
+### Make macOS background access understandable
+
+The first `ProgramArguments` entry becomes the name macOS shows under Login
+Items & Extensions. Never make `/bin/bash`, `/bin/sh`, or another generic
+interpreter that entry: the user would see an anonymous `bash` item and could
+not make an informed approval decision.
+
+Point each loop mode at the same executable wrapper with a human-readable,
+loop-specific basename such as `LoopTop-Scribe`; pass `exec` or `maintenance`
+as the next argument. The wrapper should do only one thing: `exec` the versioned
+runner script with all arguments. After loading the jobs, verify the result with
+`sfltool dumpbtm`: the `Name` and `Executable Path` must identify the loop, not
+the shell. Two modes may then appear as two items grouped under that name.
+
 ## Runner obligations
 
 One pass per invocation; check `state.json` `paused` FIRST and exit 0 with a
