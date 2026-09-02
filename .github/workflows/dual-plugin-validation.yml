@@ -25,7 +25,9 @@ jobs:
 
       - name: Check changelog and README inventory
         env:
-          DOCS_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          # Release gate: PRs compare against their base; pushes to master compare
+          # against the previous master. Pushes to dev run the static checks only.
+          DOCS_BASE_SHA: ${{ github.event.pull_request.base.sha || (github.ref == 'refs/heads/master' && github.event.before) || '' }}
         run: python3 scripts/check-docs.py --base "$DOCS_BASE_SHA"
 
       - name: Check generated Codex agents
