@@ -18,6 +18,13 @@ manifests share the same release version.
   command when the manifest is missing. `promote-dev.yml` accepts `/approve`
   from any repository owner, member, or collaborator and merges into the
   repository's default branch, whatever its name.
+- `setup` 1.0.4 (Agent Master) hides Codex ChatGPT app connectors from the
+  plugin inventory, carries each plugin's marketplace so install and update
+  commands name the right one (`marketing-skills@coreyhaines31`, not
+  `@b-open-io`), keeps **Build setup plan** disabled until a selection differs
+  from the detected state, names the skills that use a missing CLI, keeps the
+  runtime selector controlled from first render, and installs `looptop` and
+  `agent-browser` with `bun add -g`.
 
 ## [1.1.157] - 2026-09-02
 

@@ -11,7 +11,7 @@
       ],
       "check": "agent-browser --version",
       "install": {
-        "any": "npm install -g agent-browser && agent-browser install"
+        "any": "bun add -g agent-browser && agent-browser install"
       }
     },
     {
@@ -81,7 +81,7 @@
       ],
       "check": "looptop --version",
       "install": {
-        "any": "npm install -g looptop"
+        "any": "bun add -g looptop"
       }
     },
     {

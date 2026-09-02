@@ -16,6 +16,7 @@ function makeState(overrides: Record<string, unknown> = {}, plugins: any[] = [])
 function makePlugin(overrides: Record<string, unknown> = {}): any {
   return {
     name: "core",
+    marketplace: "b-open-io",
     installedClaude: null,
     installedCodex: null,
     marketplaceVersion: null,
@@ -312,7 +313,7 @@ describe("emitPlan", () => {
     expect(plan).not.toContain("bash bash");
     expect(plan).not.toContain("compgen");
     expect(plan).not.toContain('test "$?"');
-    expect(plan).toContain("bopen-setup-bopen-tools-persona.ok");
+    expect(plan).toContain("bopen-setup-core-persona.ok");
   });
 
   test("Codex agent delivery locates the portable installed root and verifies the manifest check", () => {
@@ -356,6 +357,7 @@ describe("grok dialect", () => {
       plugins: [
         {
           name: "core",
+          marketplace: "b-open-io",
           installedClaude,
           installedCodex: null,
           marketplaceVersion: "9.9.9",

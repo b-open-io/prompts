@@ -13,7 +13,7 @@ import { Sidebar } from "@/components/setup/Sidebar"
 import { Button } from "@/components/ui/button"
 import { openExternalUrl } from "@/lib/native-sdk"
 import { PACK_BY_SLUG } from "@/lib/pack-catalog"
-import { assemblePlanSelections, initAllSelections, reconcileSelections } from "@/lib/selections"
+import { assemblePlanSelections, initAllSelections, reconcileSelections, selectionsDiffer } from "@/lib/selections"
 import type { HarnessState, Runtime, Selections } from "@/lib/types"
 
 type PlanResult = { markdown: string }
@@ -120,6 +120,8 @@ export default function SetupPlaygroundPage() {
 			setRefreshing(false)
 		}
 	}, [fetchState, play, pushTransientError])
+
+	const hasSelections = state !== null && selectionsDiffer(selections, state)
 
 	const handleSelectView = useCallback((view: string) => {
 		setActiveTab(view)
@@ -243,7 +245,7 @@ export default function SetupPlaygroundPage() {
 						<Button
 							variant="primary"
 							onClick={handleBuildPlan}
-							disabled={building || !state || !selectedRuntime}
+							disabled={building || !state || !selectedRuntime || !hasSelections}
 							className="h-8 rounded-md px-3 normal-case shadow-sm"
 						>
 							{building ? (

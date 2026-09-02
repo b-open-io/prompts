@@ -70,18 +70,19 @@ function portableCheck(check: string | undefined, fallback: string): string {
   return portableCommand(check) ?? fallback;
 }
 
-function pluginCacheRoot(runtime: Runtime, pluginName: string): string | null {
+function pluginCacheRoot(runtime: Runtime, plugin: PluginState): string | null {
+  if (!plugin.marketplace) return null;
   if (runtime === "codex") {
-    return `$HOME/.codex/plugins/cache/${MARKETPLACE}/${pluginName}`;
+    return `$HOME/.codex/plugins/cache/${plugin.marketplace}/${plugin.name}`;
   }
   if (runtime === "claude" || runtime === "opencode" || runtime === "grok") {
-    return `$HOME/.claude/plugins/cache/${MARKETPLACE}/${pluginName}`;
+    return `$HOME/.claude/plugins/cache/${plugin.marketplace}/${plugin.name}`;
   }
   return null;
 }
 
-function inPluginRoot(runtime: Runtime, pluginName: string, command: string): string | null {
-  const cacheRoot = pluginCacheRoot(runtime, pluginName);
+function inPluginRoot(runtime: Runtime, plugin: PluginState, command: string): string | null {
+  const cacheRoot = pluginCacheRoot(runtime, plugin);
   const portable = portableCommand(command);
   if (!cacheRoot || !portable) return null;
   return [
@@ -118,11 +119,12 @@ function buildPluginsSection(
     if (!plugin) continue;
 
     if (runtime === "claude" || runtime === "opencode") {
-      const command =
-        plugin.installedClaude === null
-          ? `claude plugin install ${plugin.name}@${MARKETPLACE}`
+      const command = !plugin.marketplace
+        ? null
+        : plugin.installedClaude === null
+          ? `claude plugin install ${plugin.name}@${plugin.marketplace}`
           : plugin.marketplaceVersion && plugin.marketplaceVersion !== plugin.installedClaude
-            ? `claude plugin update ${plugin.name}@${MARKETPLACE}`
+            ? `claude plugin update ${plugin.name}@${plugin.marketplace}`
             : null;
       if (command) {
         blocks.push(
@@ -143,13 +145,13 @@ function buildPluginsSection(
       const needsAction =
         plugin.installedCodex === null ||
         (plugin.marketplaceVersion !== null && plugin.marketplaceVersion !== plugin.installedCodex);
-      if (!needsAction) continue;
+      if (!needsAction || !plugin.marketplace) continue;
       const commands: string[] = [];
       if (!codexMarketplaceUpgradeEmitted) {
         commands.push("codex plugin marketplace upgrade");
         codexMarketplaceUpgradeEmitted = true;
       }
-      commands.push(`codex plugin add ${plugin.name}@${MARKETPLACE}`);
+      commands.push(`codex plugin add ${plugin.name}@${plugin.marketplace}`);
       blocks.push(
         action(
           `${plugin.name}: install or update the plugin`,
@@ -170,13 +172,14 @@ function buildPluginsSection(
           ),
         );
       } else if (
+        plugin.marketplace &&
         plugin.marketplaceVersion !== null &&
         plugin.marketplaceVersion !== plugin.installedClaude
       ) {
         blocks.push(
           action(
             `${plugin.name}: update the Claude-compatible plugin`,
-            `claude plugin update ${plugin.name}@${MARKETPLACE}`,
+            `claude plugin update ${plugin.name}@${plugin.marketplace}`,
             "grok inspect",
           ),
         );
@@ -269,7 +272,7 @@ function buildAgentsSection(
       continue;
     }
 
-    const command = inPluginRoot(runtime, plugin.name, check.install ?? "");
+    const command = inPluginRoot(runtime, plugin, check.install ?? "");
     if (!command) continue;
     blocks.push(
       action(
@@ -388,7 +391,7 @@ function buildSkillSetupScriptsSection(
 ): string[] {
   const blocks: string[] = [];
   for (const { plugin, check } of selectedChecks(state, selections, "setup-script")) {
-    const setupCommand = inPluginRoot(runtime, plugin.name, check.install ?? "");
+    const setupCommand = inPluginRoot(runtime, plugin, check.install ?? "");
     if (!setupCommand) {
       blocks.push(
         `### ${plugin.name}: ${check.name} setup\n\nThis runtime has no installed plugin root from which to run the setup script. Record this item as not applicable.`,

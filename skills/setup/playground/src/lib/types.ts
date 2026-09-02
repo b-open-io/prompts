@@ -46,6 +46,8 @@ export type SkillInterfaceState = {
 
 export type PluginState = {
 	name: string
+	/** Marketplace the plugin installs from (`b-open-io`, `coreyhaines31`, ...). */
+	marketplace: string | null
 	installedClaude: string | null
 	installedCodex: string | null
 	marketplaceVersion: string | null

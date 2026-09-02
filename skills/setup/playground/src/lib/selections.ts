@@ -62,3 +62,20 @@ export function assemblePlanSelections(
 		}),
 	}
 }
+
+/** True when at least one selection differs from the detected state, i.e. a
+ * plan built now would contain an action. */
+export function selectionsDiffer(selections: Selections, state: HarnessState): boolean {
+	for (const plugin of state.plugins) {
+		const selection = selections[plugin.name]
+		if (!selection) continue
+		if (selection.installPlugin) return true
+		for (const check of plugin.checks ?? []) {
+			if (selection.checks.has(check.id) !== !!check.installed) return true
+		}
+		for (const hook of plugin.hooks ?? []) {
+			if (hook.name in selection.hooks && selection.hooks[hook.name] !== !!hook.enabled) return true
+		}
+	}
+	return false
+}

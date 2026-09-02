@@ -54,12 +54,16 @@ function buildAttention(state: HarnessState): AttentionItem[] {
 				["claude", plugin.installedClaude],
 				["codex", plugin.installedCodex],
 			] as const) {
-				if (installed && installed !== plugin.marketplaceVersion) {
+				const command =
+					installed && installed !== plugin.marketplaceVersion
+						? pluginUpdateCommand(plugin.name, runtime, plugin.marketplace)
+						: null
+				if (command) {
 					items.push({
 						id: `drift:${plugin.name}:${runtime}`,
 						kind: "drift",
 						problem: `${plugin.name} — ${runtime} v${installed} · marketplace v${plugin.marketplaceVersion}`,
-						command: pluginUpdateCommand(plugin.name, runtime),
+						command,
 					})
 				}
 			}
@@ -71,7 +75,7 @@ function buildAttention(state: HarnessState): AttentionItem[] {
 				items.push({
 					id: `cli:${plugin.name}:${check.id}`,
 					kind: "cli",
-					problem: `${check.name} — required by ${plugin.name}`,
+					problem: `${check.name} — used by ${check.usedBy?.length ? check.usedBy.join(", ") : plugin.name} (${plugin.name})`,
 					command: check.install ?? check.checkCommand ?? `command -v ${check.name}`,
 				})
 			} else {

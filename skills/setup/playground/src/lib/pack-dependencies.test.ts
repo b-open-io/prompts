@@ -32,6 +32,7 @@ const state: HarnessState = {
 	plugins: [
 		{
 			name: "core",
+			marketplace: "b-open-io",
 			installedClaude: "1.1.70",
 			installedCodex: null,
 			marketplaceVersion: "1.1.70",

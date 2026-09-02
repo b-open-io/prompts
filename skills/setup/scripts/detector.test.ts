@@ -401,7 +401,7 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 60, session_id: "bopen-session", skill: "orchestra:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "bopen-session", skill: "core:humanize" }),
         JSON.stringify({ ts: nowSeconds - 30, session_id: "similar-session", skill: "bopen-tools-extra:helper" }),
       ].join("\n")
     );
@@ -426,7 +426,7 @@ describe("skill activity", () => {
     });
 
     expect(state.plugins.find((plugin) => plugin.name === "core")?.skillActivity).toEqual({
-      "orchestra:advisor": {
+      "core:humanize": {
         lastInvokedAt: nowSeconds - 60,
         sessionId: "bopen-session",
         count24h: 1,

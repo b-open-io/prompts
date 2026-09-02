@@ -17,13 +17,23 @@ export function isSkillSlug(skillName: string): boolean {
 	return SKILL_SLUG_RE.test(skillName)
 }
 
-export function pluginInstallCommand(name: string, runtime: string): string | null {
-	if (runtime === "claude") return `claude plugin install ${name}@b-open-io`
-	if (runtime === "codex") return `codex plugin add ${name}@b-open-io`
+export function pluginInstallCommand(
+	name: string,
+	runtime: string,
+	marketplace: string | null,
+): string | null {
+	if (!marketplace) return null
+	if (runtime === "claude") return `claude plugin install ${name}@${marketplace}`
+	if (runtime === "codex") return `codex plugin add ${name}@${marketplace}`
 	return null
 }
 
-export function pluginUpdateCommand(name: string, runtime: "claude" | "codex"): string {
-	if (runtime === "claude") return `claude plugin update ${name}@b-open-io`
-	return `codex plugin marketplace upgrade && codex plugin add ${name}@b-open-io`
+export function pluginUpdateCommand(
+	name: string,
+	runtime: "claude" | "codex",
+	marketplace: string | null,
+): string | null {
+	if (!marketplace) return null
+	if (runtime === "claude") return `claude plugin update ${name}@${marketplace}`
+	return `codex plugin marketplace upgrade && codex plugin add ${name}@${marketplace}`
 }

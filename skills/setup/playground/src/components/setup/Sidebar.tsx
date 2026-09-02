@@ -370,7 +370,7 @@ export const Sidebar = memo(function Sidebar({
 					<span className="font-mono text-[0.61rem] uppercase tracking-[0.1em] text-muted-foreground">
 						Plan for
 					</span>
-					<Select value={selectedRuntime ?? undefined} onValueChange={selectRuntime}>
+					<Select value={selectedRuntime ?? ""} onValueChange={selectRuntime}>
 						<SelectTrigger className="h-7 rounded-md bg-background/60 px-2 py-0">
 							<SelectValue />
 						</SelectTrigger>
