@@ -8,6 +8,8 @@ stay stale, and the gap is invisible until someone diffs the cache. Claude
 and Codex have separate real manifests, but their shared metadata and release
 version must stay identical. Use `python3 scripts/check-plugin-manifests.py`
 before shipping; use its `--bump-patch` option to bump both manifests together.
+`master` is protected: every PR must pass the `validate` and `isolated-install`
+checks (`scripts/test-isolated-plugin-install.sh` runs the second one locally).
 Codex caches installed plugin contents by version, so a stale Codex version can
 silently preserve stale skills and hooks even when the source changed.
 

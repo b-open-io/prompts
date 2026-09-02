@@ -124,7 +124,7 @@ Use `Skill(agent-browser)` for any page that requires interaction or dynamic loa
 
 ```markdown
 ## Your Available Skills
-- `Skill(resend:resend)` — Resend's own skill (`npx skills add resend/resend-skills`). Do not invent a wrapper.
+- `Skill(resend)` — Resend's own skill (`npx skills add resend/resend-skills`). Do not invent a wrapper.
 - `Skill(mcp-integration)` — invoke when integrating with MCP servers
 
 Invoke the relevant skill before starting any third-party integration.

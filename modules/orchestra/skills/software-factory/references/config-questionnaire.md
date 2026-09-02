@@ -56,7 +56,7 @@ State must be readable by a **cold-start agent** — each iteration gets a fresh
 - **Iteration cap** — start 15–20; raise only on proven accept rate.
 - **Retries per action** — 2–3, then surface the failure.
 - **Success stop** — gate green / measurable condition met.
-- **Budget stop** — pre-flight cost circuit breaker + hard dollar and wall-clock ceilings.
+- **Budget stop** — estimate and reserve enough to finish one bounded work item before admitting it. Finish or checkpoint admitted work; refuse the next item when the reserve is too low. Keep a separate emergency breaker for runaway behavior.
 - **Accept-rate halt** — stop and report if accept rate drops below 50%.
 
 ## 8. Heartbeat
@@ -84,5 +84,7 @@ State must be readable by a **cold-start agent** — each iteration gets a fresh
 ## 10. Economics
 
 - Track cost-per-accepted-change? (`CFO` / Milton owns this.)
-- Hard budget ceiling for the loop, enforced pre-flight.
+- Reserve required to carry one work item through its gate or durable checkpoint.
+- Boundary policy: stop before the next item, never halfway through an admitted item.
+- Emergency ceiling for anomalous runaway behavior, distinct from the normal budget.
 - Remember context re-reads compound every iteration — cost is super-linear.

@@ -6,7 +6,7 @@ reportsTo: ceo
 skills:
   - find-skills
   - confess
-  - resend:resend
+  - resend
   - internal-comms
   - copywriting
   - humanize
@@ -147,7 +147,7 @@ To dispatch an agent from this conversation, use the Agent tool with the appropr
 
 ## Email Communication
 
-Use `Skill(resend:resend)` to send and manage emails. That skill is Resend's,
+Use `Skill(resend)` to send and manage emails. That skill is Resend's,
 not ours. Install it with `npx skills add resend/resend-skills`. If it is
 missing, name that command. Do not invent a Resend wrapper.
 

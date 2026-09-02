@@ -183,9 +183,9 @@
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
       "source_version": "1.1.15",
-      "source_hash": "sha256:0d90fbe143f7835bdeaeb0080faea423521b18b877724581451454402e3d8d96",
+      "source_hash": "sha256:52414cc3122a2bfa1c46fe8c4de818a3c63b9d45c88a4294ca3d085a6138d935",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:4ca3a2a03b3f41aa39550e605c043bee4e4538dedcd4de23961cba647effd144",
+      "generated_hash": "sha256:fb12dd64388dd1c5313e7ba4ff0c1d373fc81090b86e797e982b0a347a4921d9",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true
@@ -194,9 +194,9 @@
       "source_name": "integration-expert",
       "source_path": "modules/dev-ops/agents/integration-expert.md",
       "source_version": "1.2.23",
-      "source_hash": "sha256:dd7056985e3915e3e14aa8c06fbeff9b05197357e487a614b1a92797ade722ea",
+      "source_hash": "sha256:02c5229671b270fe3d045713d1269122950fc004b4d4a21bf9dfceb223846894",
       "generated_file": "bopen-integration-expert.toml",
-      "generated_hash": "sha256:604162d3214ae2de077315ac30d7e0588b2a1debdcd05a07bf83fc5f44d0c928",
+      "generated_hash": "sha256:12518a54774f14132ad0a57e11d7776adbd7eab2932a5a7f9fdb21a2631c86f5",
       "agent_name": "bopen_integration_expert",
       "curated": false,
       "default_install": false
@@ -314,10 +314,10 @@
     {
       "source_name": "social-media-manager",
       "source_path": "modules/brand-rep/agents/social-media-manager.md",
-      "source_version": "1.0.4",
-      "source_hash": "sha256:8aa7a07fe0c0bf4bc6fe078fa0d0e34b88812c2c3779135b236529ac41a117e8",
+      "source_version": "1.0.5",
+      "source_hash": "sha256:0c5df0e9e0461b572b9f84d10126dcb13ce586e0c06f9e8b34bb11f29bcd598f",
       "generated_file": "bopen-social-media-manager.toml",
-      "generated_hash": "sha256:e297fd1ea9510361f2284197e0105a9a6e783e80a68b32e962128be2e771b0eb",
+      "generated_hash": "sha256:cfd38a97babce910435212c4188ffe65d3acec39807790a9c4124ba0bd05f239",
       "agent_name": "bopen_social_media_manager",
       "curated": false,
       "default_install": false

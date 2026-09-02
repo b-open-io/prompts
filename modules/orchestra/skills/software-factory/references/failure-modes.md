@@ -1,6 +1,6 @@
 # Loop Failure Modes & Guards
 
-Loops do not crash — they fail quietly and bill you in silence. Each mode below has a cheap guard; design them in before you automate. If you only do two things: use an **objective external gate** (not LLM self-assessment) and a **pre-flight budget breaker**. Those two prevent the most damage.
+Loops do not crash — they fail quietly and bill you in silence. Each mode below has a cheap guard; design them in before you automate. If you only do two things: use an **objective external gate** (not LLM self-assessment) and admit a work item only when the available reserve can carry it to a gate or durable checkpoint. Those two prevent the most damage.
 
 ## 1. Ralph Wiggum loop (premature done)
 
@@ -10,7 +10,7 @@ The agent decides it's finished too early, exits on a half-done job (sometimes e
 ## 2. Silent runaway / infinite loop
 
 No crash; the model "tries to be helpful" and retries forever. Documented real cases: $16K–$50K in hours, $47K over days.
-**Guard:** pre-flight circuit breaker (check budget *before* each call), hard iteration cap, wall-clock timeout, and an alert on cost *velocity* (not just total).
+**Guard:** estimate and reserve budget before admitting each bounded work item; stop accepting the next item when the reserve is insufficient. Let an admitted item finish or reach a durable checkpoint so a new session never has to reconstruct half-completed work. Add a hard iteration cap, a boundary-checked wall-clock limit, cost-velocity alerts, and a separate emergency breaker for genuine runaway behavior.
 
 ## 3. Context rot / clipping
 
@@ -82,7 +82,7 @@ Before automating, confirm a guard exists for each mode above, plus:
 
 - [ ] Objective external gate that has been observed to *reject* bad output
 - [ ] Three stop conditions present (success, failure/cap, budget)
-- [ ] Pre-flight cost breaker tested (it actually fires)
+- [ ] Work-item admission breaker tested (it refuses the next item without interrupting the active one)
 - [ ] State file is cold-start readable
 - [ ] Never-touch list defined and loaded each pass
 - [ ] Blast-radius tier assigned; High-tier actions human-gated

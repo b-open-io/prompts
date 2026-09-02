@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.9
+version: 0.0.10
 description: >-
   Design or harden a software factory: an agentic loop that iterates toward a goal with a
   verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic
@@ -30,7 +30,7 @@ Every production loop is assembled from these five. Claude Code ships all of the
 | **1. Heartbeat** | the trigger that makes it a loop, not a one-off: schedule + goal | `/loop`, `/goal`, hooks, `CronCreate`, `ScheduleWakeup`, GitHub Actions |
 | **2. Skill** | reusable instructions the loop reads each pass (rules + a *never-touch* list) | this skill + the project's loop config |
 | **3. Sub-agents** | split the **maker** (does the work) from the **checker** (verifies it) | `hunter-skeptic-referee`, `code-auditor`, `tester` |
-| **4. Connectors** | let the loop *act* — open the PR, comment the ticket, ping the channel | Linear MCP, `gh`, `resend`, `devops`. PRs are human artifacts: see `references/human-artifacts.md` |
+| **4. Connectors** | let the loop *act* — open the PR, comment the ticket, ping the channel | Linear MCP, `gh`, `resend`, `devops`. PRs are human artifacts: see `references/human-artifacts.md`; promotion and notifications: `references/shipping-and-isolation.md` |
 | **5. Verifier (the gate)** | the test/typecheck/build/exercise that automatically **rejects** bad output | `tester` (Jason) — owns running it |
 
 The maker is too generous grading its own homework, so block 3 (a separate, often stronger checker) plus block 5 (an objective gate) is *most of the quality*. Make the maker fast and cheap; make the checker slow and strict.
@@ -178,7 +178,7 @@ The order matters more than the tools. Scheduling something you haven't made rel
 0. **Design it by doing it** — walk every node of the workflow yourself, by hand, once. Sketch the result (a Mermaid diagram earns its keep here). Encode only steps you have personally executed; a node you've never run manually is a guess wearing automation.
 1. **Prove it once** — run the full cycle manually, watched, on a real case. Confirm the gate actually fails bad output.
 2. **Harden it** — add the stop conditions, circuit breaker, state file, never-touch list; run it watched a few more times; measure accept rate.
-3. **Automate it** — only now wire the heartbeat (cron/`/loop`/Actions). Promotion respects the blast-radius tier above.
+3. **Automate it** — only now wire the heartbeat (cron/`/loop`/Actions). Promotion respects the blast-radius tier above. A shipping worker must move accepted work out of a local checkout; use `references/shipping-and-isolation.md` for a guarded `dev` → default-branch path and disposable install tests.
 
 ### The factory cannot exempt its own bootstrap
 
@@ -198,7 +198,7 @@ Every loop needs at least one of each, or it runs until it succeeds, breaks, or 
 
 - **Success stop** — the gate goes green / the measurable condition is met.
 - **Failure stop** — a hard iteration cap (start **15–20**, raise only as proven) and ≤ **2–3 retries per action**.
-- **Budget stop** — a **pre-flight** cost circuit breaker (check *before* each model call, never after) + a hard dollar/wall-clock ceiling.
+- **Budget stop** — admit work only when enough budget is reserved to finish and checkpoint one bounded work item. Once admitted, let that item reach its gate or safe checkpoint; do not strand it because a dollar threshold was crossed mid-session. Stop taking the next item when the reserve is insufficient. Keep an emergency breaker only for runaway behavior, and check wall-clock limits at work-item boundaries.
 
 **Self-improving caps:** the cap is raised by evidence, not vibes. When the process surfaces a defect, fix it; when accept rate proves out, raise the cap and log that decision in the state backend. The loop improves itself.
 
@@ -216,14 +216,14 @@ Decisions 3, 4, and 5 below are per-project — **you must ask the project**, ne
 4. **Side-effects & cleanup** — does verification mutate state? ephemeral vs register-teardown vs acceptable-to-leave. *Ask.* Don't bend the app's mechanics to enforce teardown.
 5. **State backend** — Linear / GitHub Issues / Repo vault (Obsidian-compatible). *Ask.* (`references/state-backends.md`)
 6. **Maker/checker** — separate checker agent? cheap maker (Haiku-tier reads/diffs) + strict checker (strong model, high effort).
-7. **Stop conditions** — cap, success condition, budget, halt-below-accept-rate.
+7. **Stop conditions** — cap, success condition, work-item admission budget, emergency runaway breaker, halt-below-accept-rate.
 8. **Heartbeat** — manual now (prove) or scheduled (cron/`/loop`/Actions/hook)? cadence?
 9. **Connectors** — what does it act on? (open PR, comment ticket, ping channel). If it opens PRs, scaffold the human-artifact gate (`references/human-artifacts.md`).
-10. **Economics** — track cost-per-accepted-change? budget ceiling?
+10. **Economics** — track cost-per-accepted-change? reserve needed to finish one work item? emergency ceiling?
 
 ## Failure modes — design the guards in
 
-Loops fail quietly, not loudly. Before shipping, walk `references/failure-modes.md` and confirm a guard for each: the Ralph Wiggum premature-done, silent runaway, context rot, phantom implementation, scope creep, comprehension debt, unintelligible auto-merged PRs, approval fatigue, injection propagation, and the **mega-skill** — one giant skill that interprets the whole build-check-route pipeline in a single agent context, which makes every step untestable and every failure invisible. The two cheapest guards that prevent the most damage: an **objective external gate** (not LLM self-assessment) and a **pre-flight budget breaker**.
+Loops fail quietly, not loudly. Before shipping, walk `references/failure-modes.md` and confirm a guard for each: the Ralph Wiggum premature-done, silent runaway, context rot, phantom implementation, scope creep, comprehension debt, unintelligible auto-merged PRs, approval fatigue, injection propagation, and the **mega-skill** — one giant skill that interprets the whole build-check-route pipeline in a single agent context, which makes every step untestable and every failure invisible. The two cheapest guards that prevent the most damage: an **objective external gate** (not LLM self-assessment) and work-item admission control that refuses new work before it becomes unaffordable.
 
 ## Who does what (roster)
 
@@ -250,4 +250,5 @@ registration, never no registration.
 - `references/human-artifacts.md` — GitHub PRs as human artifacts: AGENTS.md contract, lint-pr.sh, CI.
 - `references/looptop-registration.md` — the worker registration contract, verified against looptop source.
 - `references/repository-policy.md` — self-bootstrap, default-branch enforcement, and delivery identity checks.
+- `references/shipping-and-isolation.md` — guarded branch promotion, review notices, and disposable plugin-install tests.
 - `references/state-backends.md` — Linear vs GitHub Issues vs repo-vault, with the state-file contract.

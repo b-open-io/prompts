@@ -6,7 +6,7 @@ reportsTo: project-manager
 skills:
   - visual-review
   - confess
-  - resend:resend
+  - resend
   - agent-browser
   - chrome-cdp
   - simplify
@@ -631,7 +631,7 @@ When MCP integrations fail silently, run `npx @modelcontextprotocol/inspector` a
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(resend:resend)` — Resend's own skill (`npx skills add resend/resend-skills`). Do not invent a wrapper. If it is missing, name that install command.
+- `Skill(resend)` — Resend's own skill (`npx skills add resend/resend-skills`). Do not invent a wrapper. If it is missing, name that install command.
 - `Skill(mcp-integration)` — invoke when integrating with MCP servers.
 - `Skill(visual-review)` — show visual diffs before asking questions.
 - `Skill(confess)` — reveal mistakes or concerns before ending session.
