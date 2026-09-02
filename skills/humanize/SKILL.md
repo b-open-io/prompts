@@ -1,11 +1,13 @@
 ---
 name: humanize
-version: 1.0.11
+version: 1.0.12
 description: >-
   This skill should be used for human-facing prose — emails, docs, reports, posts, release notes,
   and commit messages — when the user asks to "humanize", "make this sound less AI", "de-AI
-  this", "this sounds like ChatGPT", or "edit this". Preserve facts, evidence, citations, house
-  style, and intended meaning while removing clustered AI-writing patterns.
+  this", "this sounds like ChatGPT", or "edit this". This skill should also be used when the user
+  asks to "humanize this sales email", "this SDR copy sounds like AI", "cold email",
+  "outbound email", or "sales script". Preserve facts, evidence, citations, house style, and
+  intended meaning while removing clustered AI-writing patterns.
 user-invocable: false
 ---
 
@@ -169,6 +171,17 @@ Read [references/style-modeling.md](references/style-modeling.md) before using a
 named writer on long-form work. Skip this step for short copy, reference docs,
 changelogs, and established house voices.
 
+## Sales copy
+
+When the draft is outbound email, a first reply, a discovery question, a call
+opener, or a sales script, also read
+[references/sales.md](references/sales.md).
+
+Use a line as few-shot only when a named person sent or received it and a
+result is attached. Do not use SaaS template mills. Ground one un-fakeable
+fact from this account. If research is thin, say less. Do not invent warmth,
+reach, or prices.
+
 ## Mandatory revision pass
 
 Run this pass silently before delivering human-facing prose. When the user asks
@@ -196,6 +209,10 @@ annotations, or an edit summary.
    disclaimers. Preserve explicit house style.
 10. For operational summaries, replace process assurances with the concrete
     change.
+11. For sales copy, also run the checks in
+    [references/sales.md](references/sales.md): attributed sources only, one
+    un-fakeable fact, banned sales tells, observation then implication then
+    one question.
 
 ## Stop condition
 
@@ -215,3 +232,6 @@ possible indicator disappears; that produces another synthetic house style.
   before/after transformations
 - **[references/style-modeling.md](references/style-modeling.md)** — Structural
   modeling for long-form work
+- **[references/sales.md](references/sales.md)** — Outbound and sales-script
+  checks: source rule, sales tells, attributed examples, voice card. Search
+  `Source rule`, `Sales-specific tells`, `Attributed examples`, `Voice card`.

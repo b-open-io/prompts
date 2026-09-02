@@ -69,6 +69,11 @@ State must be readable by a **cold-start agent** — each iteration gets a fresh
 
 - What does the loop *act* on, not just describe? Open a PR, link/comment a ticket, ping a channel, deploy a preview.
 - Each connector that performs an irreversible action inherits the High blast-radius gate.
+- For GitHub delivery, resolve the live default branch and the exact credential
+  the unattended worker will use. Can that identity bypass branch rules or
+  approve its own PR? Run `scripts/check-factory-policy.sh`; documentation is
+  not evidence of enforcement. Keep the factory paused when protection or a
+  constrained worker identity is missing.
 - **If the loop opens GitHub PRs:** GitHub is for humans. Auto-merge without a
   human rewrite requires a mechanical PR linter, not another prompt. Follow
   `human-artifacts.md` and have `/factory-init` copy `lint-pr.sh`, the PR

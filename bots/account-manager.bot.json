@@ -6,7 +6,7 @@
   "template": "gateway",
   "template_repo": "b-open-io/clawnet-bot",
   "template_path": "templates/gateway",
-  "source_agent": "agents/account-manager.md",
+  "source_agent": "modules/brand-rep/agents/account-manager.md",
   "workspace": ".agents/account-manager",
   "avatar_slug": "kurt",
   "visibility": "public",

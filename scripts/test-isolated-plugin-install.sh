@@ -9,8 +9,10 @@ command -v codex >/dev/null || { echo "codex CLI is required" >&2; exit 1; }
 
 validation_root="$(mktemp -d)"
 trap 'rm -rf "$validation_root"' EXIT
-rsync -aL --exclude '.git' --exclude 'CLAUDE.md' --exclude 'agents.md' \
-  "$repo_root/" "$validation_root/"
+# Mirror a clean checkout: gitignored paths (node_modules, local skill
+# mirrors) never reach the validation copy, so local runs match CI.
+rsync -aL --filter=':- .gitignore' --exclude '.git' --exclude 'CLAUDE.md' \
+  --exclude 'agents.md' "$repo_root/" "$validation_root/"
 
 while IFS= read -r plugin_dir; do
   claude plugin validate --strict "$plugin_dir"

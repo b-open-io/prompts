@@ -46,6 +46,11 @@ Build one only when all four hold. Miss a single box and a good one-shot prompt 
 
 The reversibility of what a loop can do — not its accept rate — sets how much freedom it gets. A loop that's right 99% of the time still deletes the production table on the run where it's wrong. Reversible actions (reads, drafts, sandbox writes) can self-certify once the gate is green; irreversible ones (prod deploys, deletes, payments, pushing to main) stay human-approved every time regardless of track record. This same classifier governs what free roam may touch and whether a verification step needs cleanup.
 
+That boundary includes the factory itself. Bootstrap and changes to runners,
+gates, CI, repository rules, or credentials go through a feature-branch PR;
+the factory may propose but cannot approve its own constitution. Verify the
+live default-branch rule and unattended worker identity before scheduling.
+
 ## Build order
 
 Prove it once by hand on a real case, watching the gate actually reject bad work. Harden it with stop conditions, work-item admission control, an emergency runaway breaker, and a state file. Only then wire the heartbeat and let it run unattended, because scheduling something you haven't proven reliable is how loops blow up while you sleep.

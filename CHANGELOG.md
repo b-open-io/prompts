@@ -6,16 +6,73 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.157] - 2026-09-02
+
+### Added
+
+- Guarded `dev` → `master` promotion. `scripts/prompts-factory-worker.sh` keeps
+  one standing promotion PR open, assigns the reviewer, and restates the review
+  deadline on every `dev` change; it takes its checkout and reviewer from
+  `BOPEN_PROMPTS_FACTORY_REPO_DIR` and `BOPEN_PROMPTS_FACTORY_REVIEWER` and
+  refuses to run without them. `.github/workflows/promote-dev.yml` merges the
+  PR with a merge commit only after a 24-hour cooling period and a fresh
+  `/approve` comment from the reviewer. The `validate` and `isolated-install`
+  gates now also run on pushes to `dev`.
+
+## [1.1.156] - 2026-09-01
+
 ### Changed
 
-- `software-factory` 0.0.10 now budgets at work-item boundaries so an admitted
-  change reaches a gate or durable checkpoint before the worker stops. The new
-  shipping guidance keeps `master` behind fresh human approval, resets a
-  cooling period whenever `dev` changes, and uses disposable CI runners to
-  strict-validate Claude plugins and install Codex plugins from the exact
-  candidate commit. LoopTop registrations now require a human-readable runner
-  name in macOS Background Activity instead of an anonymous shell process.
-  Bumped `orchestra` to 0.1.15.
+- Clarified module ownership across `deploy-agent-team`, its roster reference,
+  `wave-coordinator`, `hunter-skeptic-referee`, and `generative-ui`, so spawned
+  agents and referenced skills resolve to the plugin that actually provides
+  them. Bumped `orchestra` to 0.1.15, `review` to 0.1.12, and `web-dev` to
+  0.1.4.
+- Moved Kurt's deployment source into `brand-rep`, generalized the account
+  manager for the deploying product or site, and removed the local Typefully
+  wrapper in favor of Typefully's own skill. Corrected Resend references to
+  Resend's own `resend` skill (`npx skills add resend/resend-skills`). Bumped
+  `brand-rep` to 0.1.6 and `dev-ops` to 0.1.8.
+- Kept the Vercel Security Dashboard guidance progressively disclosed in the
+  owning agent boundaries; the detailed scan workflow remains out of the
+  always-loaded agent bodies.
+- Corrected `agent-auditor` to reference `web-dev:generative-ui` and bumped
+  `plugin-kit` to 0.1.5.
+- `npm-publish` 3.1.3 now requires a synced default branch, refuses to release
+  from a feature branch, and clearly uses Bun's browser publish confirmation
+  (`bun publish --access public`). The normal flow asks only for the browser
+  checkbox and **Publish** action; it never asks for an OTP or one-time code.
+- `social-media-manager` (Alex) 1.0.5 carries the X split-carousel rules in
+  its body: one master scene cut into two side-by-side tiles or three
+  1024×2048 swipe slices, uploaded left to right, never the tall-left grid.
+  No separate skill; the rules are short enough to live with the agent.
+- `humanize` 1.0.12 adds an attributed-source rule and a dedicated revision
+  pass for outbound email, discovery questions, call openers, and sales
+  scripts. It grounds each draft in a supplied account fact, removes canned
+  sales tells, and does not invent commercial claims.
+- `software-factory` 0.0.10 budgets at work-item boundaries so an admitted
+  change reaches a gate or durable checkpoint before the worker stops, adds
+  `references/shipping-and-isolation.md` for guarded branch promotion and
+  disposable plugin-install tests, and keeps one rule for LoopTop wrappers:
+  one named executable per mode, never a bare shell as the first
+  `ProgramArguments` entry.
+- Added the `isolated-install` GitHub Actions gate
+  (`scripts/test-isolated-plugin-install.sh`): a disposable runner
+  strict-validates every Claude plugin, installs every Codex plugin from the
+  exact commit, and runs the cross-runtime harness. `master` requires this
+  check alongside `validate`.
+
+## [1.1.154] - 2026-08-31
+
+### Changed
+
+- `software-factory` 0.0.9 and `/factory-init` now treat factory bootstrap and
+  policy changes as High-tier, require feature-branch PR delivery, verify live
+  default-branch protection and the unattended worker identity, and keep loops
+  paused when state, model pins, checkers, or executable breakers are missing.
+  The Looptop contract now includes sanitized `events.jsonl` run/stage/worker/
+  gate telemetry, runtime worktrees, machine-readable factory policy, and
+  distinct exec/maintenance wrapper names for clear macOS background items.
 
 ## [1.1.153] - 2026-08-31
 

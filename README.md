@@ -56,7 +56,7 @@ grok plugin install core@b-open-io --trust
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
 | `dev-ops` | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
-| `brand-rep` | personas for public surfaces, Typefully drafting and scheduling; account-manager, social-media-manager |
+| `brand-rep` | personas for public surfaces; account-manager, social-media-manager |
 
 ```bash
 /plugin install orchestra@b-open-io
@@ -68,18 +68,19 @@ Install only what you need. Codex allocates roughly two percent of the model's
 context window to skills across *every* installed plugin, so an unused module
 spends budget another plugin could have used.
 
-Two agents reference skills published outside this marketplace. They degrade
-gracefully — each says which install command is missing rather than guessing —
-but install these to get their full behavior:
+Some agents reference skills published outside this marketplace. They name
+the install command when a skill is missing. They do not wrap those products.
 
 | Agent | Needs | Install |
 |---|---|---|
 | `brand-rep:social-media-manager` (Alex) | `marketing-skills:social`, `:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
-| `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | same |
+| `brand-rep:social-media-manager` (Alex) | Typefully scheduler, if the user uses Typefully | `npx skills add typefully/agent-skills` |
+| `core:front-desk` / `dev-ops:integration-expert` | Resend email | `npx skills add resend/resend-skills` |
+| `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
 
-Corey Haines' `coreyhaines31/marketingskills` is MIT and installs from its own
-marketplace; it is not redistributed here. Skills-only alternative:
-`bunx skills add coreyhaines31/marketingskills --skill social`.
+Those packages are not redistributed here. Corey Haines' `marketingskills` is
+MIT. Typefully and Resend publish their own skills — do not wrap their APIs
+in this repo.
 
 ### Codex
 
@@ -245,7 +246,7 @@ intentional.
 | `cli-demo-gif` | Generate CLI demo GIFs using vhs (Charmbracelet) |
 | `generative-ui` | Guardrailed JSON Render interfaces with flat specs, small catalogs, deterministic directives, and text fallbacks |
 | `html-to-pdf` | Design print-ready collateral and render it through a Playwright PDF pipeline |
-| `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, unsupported significance, vague attribution, promotional drift, and canned change summaries |
+| `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, unsupported significance, vague attribution, promotional drift, canned change summaries, and template-like sales copy; outbound drafts use attributed examples and supplied account facts without inventing commercial claims |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
 | `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and turns every decision into a questionnaire that explains each option's consequences. Plans can stay local, use an Artifact or PostPlan, or publish through BitPlan with explicit wallet approval. |
@@ -268,7 +269,7 @@ intentional.
 | `hunter-skeptic-referee` | Adversarial bug hunting with three isolated agents |
 | `native-sdk-macos-release` | Scaffold or ship a Vercel Native SDK macOS app: native check/build, Developer ID sign, DMG, notary, staple |
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
-| `npm-publish` | Publish packages to npm with changelog and version management |
+| `npm-publish` | Publish packages to npm from the synced default branch with changelog/version management and browser confirmation |
 | `perf-audit` | Run local performance audits without network calls |
 | `postplan` | Host an HTML draft on postplan.dev when Claude Artifacts are not available |
 | `shaders` | Custom shaders for Three.js and WebGL |
@@ -328,7 +329,7 @@ root-level files keep their filename as the command.
 - `/prime` - Context warm-up — loads git state, plugin inventory, and project conventions
 - `/question` - Read-only Q&A mode — answers questions about the codebase without making changes
 - `/diagnose` - Fan out 3-5 agents to investigate a bug from every angle simultaneously
-- `/factory-init` - Design and scaffold an autonomous agent loop with explicit goals, gates, state, stop conditions, and human-readable GitHub PRs
+- `/factory-init` - Design and scaffold an autonomous agent loop with explicit goals, gates, state, stop conditions, factory-aware Looptop telemetry, repository-policy preflight, and human-readable GitHub PRs
 - `/impact` - Map the full blast radius before changing a file or function
 - `/review-wave` - 4 specialized reviewers examine changes simultaneously (security, perf, correctness, style)
 - `/hammertime` - HammerTime behavioral rules — status dashboard (no args) or create a rule from a description

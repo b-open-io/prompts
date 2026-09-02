@@ -149,7 +149,7 @@ Check the agent's `tools:` frontmatter to verify these are listed.
 If the agent's domain involves UI generation, rendering, or cross-platform output, check for generative UI readiness.
 
 **Checks:**
-- Does the agent have `Skill(core:generative-ui)` in tools?
+- Does the agent have `Skill(web-dev:generative-ui)` in tools?
 - If the agent works with React/Next.js, does it know about json-render?
 - If the agent works with React Native, does it know about `@json-render/react-native`?
 - If the agent produces visual assets, does it have relevant gemskills?

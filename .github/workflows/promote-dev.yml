@@ -39,4 +39,4 @@ jobs:
           approval="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$number/comments" --jq \
             "map(select(.user.login == \"$REVIEWER\" and .body == \"/approve\" and .created_at >= \"$head_time\")) | sort_by(.created_at) | last | .body // empty")"
           [[ "$approval" == "/approve" ]] || exit 0
-          gh pr merge "$number" --repo "$GITHUB_REPOSITORY" --squash
+          gh pr merge "$number" --repo "$GITHUB_REPOSITORY" --merge

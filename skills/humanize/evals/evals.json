@@ -117,6 +117,39 @@
           "type": "qualitative"
         }
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "Humanize this outbound sales email. Preserve every supplied fact and do not add prices, reach numbers, named jobs, customers, or capabilities. Return only the rewritten email.\n\nSupplied facts: ConstructionMagazine.ai is a trade magazine about AI that ran on a named construction job. Ads and partner messages are labeled. Write advertising@constructionmagazine.ai. Acme Equipment posted a hiring note last week for a robotics field tech.\n\n\"I hope this email finds you well. I'm reaching out because we help construction-tech leaders leverage cutting-edge media to streamline pipeline. Saw Acme's growth — that kind of growth usually means brand is lagging awareness. We offer a robust, comprehensive sponsorship. Worth a quick 15 minutes? No pitch attached, happy to share if useful, no worries if not. Let me know if you have any questions.\"",
+      "expected_output": "A short outbound note that keeps the labeled-ad magazine, the advertising mailbox, and Acme's robotics-field-tech hiring note; uses observation then implication then one question; and drops template-mill and AI-sales tells.",
+      "files": ["references/sales.md"],
+      "assertions": [
+        {
+          "id": "hum-5-preserves-supplied-facts",
+          "text": "The output keeps ConstructionMagazine.ai as a magazine about AI that ran on a named construction job, labeled ads or partner messages, advertising@constructionmagazine.ai, and Acme Equipment's hiring note for a robotics field tech.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-5-no-invented-commercial-claims",
+          "text": "The output adds no price, subscriber or reach number, named job, customer result, or product capability beyond the supplied facts.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-5-kills-sales-tells",
+          "text": "The output does not retain or paraphrase these tells: 'I hope this email finds you well', 'I'm reaching out', 'leverage', 'cutting-edge', 'streamline', 'that kind of growth usually means', 'robust', 'comprehensive', 'worth a quick 15 minutes', 'no pitch attached', 'happy to share if useful', 'let me know if you have any questions'.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-5-observation-implication-question",
+          "text": "The output leads with the Acme hiring fact (or a direct restatement), draws one implication that stays inside the supplied facts, and ends on one question rather than a meeting-length CTA.",
+          "type": "qualitative"
+        },
+        {
+          "id": "hum-5-copy-only",
+          "text": "The output contains only the rewritten email, with no change log, editorial rationale, annotations, or explanation of the revision.",
+          "type": "qualitative"
+        }
+      ]
     }
   ]
 }

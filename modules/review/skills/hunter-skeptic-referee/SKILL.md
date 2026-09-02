@@ -1,7 +1,7 @@
 ---
 name: hunter-skeptic-referee
 description: "This skill should be used when the user asks to 'find bugs', 'do a thorough code review', 'run a security audit', 'hunt for bugs', 'check for correctness issues', or 'review this code for edge cases'. Orchestrates a three-phase adversarial review using three isolated agents — Jerry (Hunter), Kayle (Skeptic), Jason (Referee) — to neutralize sycophancy and produce high-fidelity bug reports. User-facing command: /bug-hunt"
-version: 1.1.2
+version: 1.1.3
 user-invocable: false
 ---
 
@@ -19,9 +19,9 @@ When a single agent both finds bugs and evaluates them, it anchors on its own ea
 
 | Phase | Agent | Subagent Type | Role |
 |-------|-------|---------------|------|
-| 1. Hunter | **Jerry** | `core:code-auditor` | Find every possible bug. Maximize recall. False positives OK. |
-| 2. Skeptic | **Kayle** | `core:architecture-reviewer` | Challenge every finding. Risk/EV calculation. 2x penalty for wrong dismissals. |
-| 3. Referee | **Jason** | `core:tester` | Final arbiter. Read code independently. Produce ground truth. |
+| 1. Hunter | **Jerry** | `review:code-auditor` | Find every possible bug. Maximize recall. False positives OK. |
+| 2. Skeptic | **Kayle** | `review:architecture-reviewer` | Challenge every finding. Risk/EV calculation. 2x penalty for wrong dismissals. |
+| 3. Referee | **Jason** | `review:tester` | Final arbiter. Read code independently. Produce ground truth. |
 
 ## Target Resolution
 
@@ -106,7 +106,7 @@ Parse arguments for path mode vs branch diff mode. In branch diff mode, run `git
 
 ### Step 2 — Spawn the Hunter (Jerry)
 
-Dispatch `core:code-auditor` with the target scope. The Hunter uses Glob/Read/Grep to examine actual code. Must NOT speculate about unread files.
+Dispatch `review:code-auditor` with the target scope. The Hunter uses Glob/Read/Grep to examine actual code. Must NOT speculate about unread files.
 
 ### Step 2b — Early exit check
 
@@ -114,11 +114,11 @@ If Hunter reports **TOTAL FINDINGS: 0**, skip Skeptic and Referee. Present a cle
 
 ### Step 3 — Spawn the Skeptic (Kayle)
 
-Dispatch `core:architecture-reviewer` with ONLY the structured bug list (BUG-IDs, files, lines, claims, evidence, severity). Do NOT pass the full codebase or any narrative text. The Skeptic reads code independently.
+Dispatch `review:architecture-reviewer` with ONLY the structured bug list (BUG-IDs, files, lines, claims, evidence, severity). Do NOT pass the full codebase or any narrative text. The Skeptic reads code independently.
 
 ### Step 4 — Spawn the Referee (Jason)
 
-Dispatch `core:tester` with the Hunter's full report AND the Skeptic's full report. The Referee reads code independently.
+Dispatch `review:tester` with the Hunter's full report AND the Skeptic's full report. The Referee reads code independently.
 
 ### Step 5 — Present the report
 

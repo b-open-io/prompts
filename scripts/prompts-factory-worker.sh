@@ -2,7 +2,10 @@
 set -euo pipefail
 
 mode="${1:-exec}"
-repo_dir="${BOPEN_PROMPTS_FACTORY_REPO_DIR:-/Users/satchmo/code/worktrees/prompts-factory-worker}"
+# Required configuration. No defaults: a wrong checkout or reviewer must fail
+# here, not open a promotion PR against the wrong repository.
+repo_dir="${BOPEN_PROMPTS_FACTORY_REPO_DIR:?set BOPEN_PROMPTS_FACTORY_REPO_DIR to the worker's checkout}"
+reviewer="${BOPEN_PROMPTS_FACTORY_REVIEWER:?set BOPEN_PROMPTS_FACTORY_REVIEWER to the GitHub login that approves promotion}"
 factory_state_dir="${BOPEN_PROMPTS_FACTORY_STATE_DIR:-${HOME}/.prompts-factory/loop}"
 state_file="$factory_state_dir/state.json"
 ledger_file="$factory_state_dir/ledger.jsonl"
@@ -88,6 +91,7 @@ echo "$$" > "$factory_state_dir/.lock/pid"
 
 current_step="repository sync"
 cd "$repo_dir"
+repo_slug="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
 git fetch origin dev master --quiet
 
 if [[ "$mode" == "maintenance" ]]; then
@@ -105,12 +109,12 @@ fi
 
 current_step="promotion PR"
 dev_sha="$(git rev-parse origin/dev)"
-number="$(gh pr list --repo b-open-io/prompts --base master --head dev --state open --json number --jq '.[0].number // empty')"
+number="$(gh pr list --repo "$repo_slug" --base master --head dev --state open --json number --jq '.[0].number // empty')"
 if [[ -z "$number" ]]; then
-  gh pr create --repo b-open-io/prompts --base master --head dev \
+  gh pr create --repo "$repo_slug" --base master --head dev \
     --title "Promote tested dev changes" \
     --body "This standing promotion PR contains changes that passed through dev. Every update resets the 24-hour cooling period and requires a fresh /approve comment. Required checks must be green before promotion."
-  number="$(gh pr list --repo b-open-io/prompts --base master --head dev --state open --json number --jq '.[0].number')"
+  number="$(gh pr list --repo "$repo_slug" --base master --head dev --state open --json number --jq '.[0].number')"
 fi
 
 last_notified="$(python3 - "$state_file" <<'PY'
@@ -124,10 +128,11 @@ PY
 )"
 
 if [[ "$last_notified" != "$dev_sha" ]]; then
-  gh pr edit "$number" --repo b-open-io/prompts --add-assignee rohenaz
+  gh pr edit "$number" --repo "$repo_slug" --add-assignee "$reviewer"
   deadline="$(git show -s --format=%cI origin/dev | python3 -c 'from datetime import datetime,timedelta; import sys; print((datetime.fromisoformat(sys.stdin.read().strip())+timedelta(hours=24)).strftime("%Y-%m-%d %H:%M %Z"))')"
-  gh pr comment "$number" --repo b-open-io/prompts \
-    --body "@rohenaz dev changed at \`$dev_sha\`. Review by **$deadline**. Comment \`/approve\` after reviewing to permit promotion. Another dev commit resets the clock and invalidates earlier approval."
+  tick='`'
+  body="@${reviewer} dev changed at ${tick}${dev_sha}${tick}. Review by **${deadline}**. Comment ${tick}/approve${tick} after reviewing to permit promotion. Another dev commit resets the clock and invalidates earlier approval."
+  gh pr comment "$number" --repo "$repo_slug" --body "$body"
   python3 - "$state_file" "$dev_sha" "$number" <<'PY'
 import json, os, sys, tempfile
 

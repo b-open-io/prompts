@@ -14,9 +14,33 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+BRANCH=$(git branch --show-current)
+REMOTE_DEFAULT_REF=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)
+DEFAULT_BRANCH="${REMOTE_DEFAULT_REF#origin/}"
+
+# Older/local clones may not have origin/HEAD. Prefer the conventional branch
+# that actually exists on origin rather than guessing a release target.
+if [ -z "$DEFAULT_BRANCH" ] || [ "$DEFAULT_BRANCH" = "$REMOTE_DEFAULT_REF" ]; then
+  for CANDIDATE in master main; do
+    if git show-ref --verify --quiet "refs/remotes/origin/$CANDIDATE"; then
+      DEFAULT_BRANCH="$CANDIDATE"
+      break
+    fi
+  done
+fi
+
+if [ -z "$BRANCH" ] || [ -z "$DEFAULT_BRANCH" ]; then
+  echo "DEFAULT_BRANCH_UNKNOWN: release requires a named branch and origin/HEAD (or origin/master/origin/main)." >&2
+  exit 2
+fi
+
+if [ "$BRANCH" != "$DEFAULT_BRANCH" ]; then
+  echo "WRONG_BRANCH: release must run from $DEFAULT_BRANCH (current: $BRANCH). No commit or push performed." >&2
+  exit 2
+fi
+
 VERSION=$(grep '"version"' package.json | head -1 | sed 's/.*: *"\(.*\)".*/\1/')
 PKG_NAME=$(grep '"name"' package.json | head -1 | sed 's/.*: *"\(.*\)".*/\1/')
-BRANCH=$(git branch --show-current)
 
 # Stage all tracked changes + any new files the agent created (e.g. CHANGELOG.md)
 # Uses git add -u for tracked files, then explicitly adds known release artifacts.
