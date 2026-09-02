@@ -25,6 +25,10 @@ manifests share the same release version.
   from the detected state, names the skills that use a missing CLI, keeps the
   runtime selector controlled from first render, and installs `looptop` and
   `agent-browser` with `bun add -g`.
+- Inside the Agent Master shell the setup UI now fades in over the app's
+  native splash: the root is marked before first paint and the body animates
+  from transparent, so the window never flashes white between the splash and
+  the configurator.
 
 ## [1.1.157] - 2026-09-02
 

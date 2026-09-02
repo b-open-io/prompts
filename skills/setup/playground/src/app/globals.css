@@ -161,6 +161,26 @@ body {
 	}
 }
 
+/* Agent Master shell: the native splash shows through a transparent WebView
+   until the page has painted, then the page fades in over it. The root keeps
+   a near-invisible background so the body background does not propagate to
+   the canvas and skip the fade. */
+html[data-shell="agent-master"] {
+	background-color: rgb(0 0 0 / 0.01);
+}
+html[data-shell="agent-master"] body {
+	min-height: 100vh;
+	animation: shell-fade-in 700ms ease-out both;
+}
+@keyframes shell-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
 a,
 button,
 [role="button"],
