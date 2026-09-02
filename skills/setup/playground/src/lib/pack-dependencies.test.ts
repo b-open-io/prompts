@@ -60,9 +60,7 @@ describe("pack dependency diff", () => {
 
 	test("uses the selected harness instead of another installed harness", () => {
 		const dependencies = diffPackDependencies(pack, state, "codex")
-		expect(dependencies.find((dependency) => dependency.name === "core")?.installed).toBe(
-			false,
-		)
+		expect(dependencies.find((dependency) => dependency.name === "core")?.installed).toBe(false)
 	})
 })
 

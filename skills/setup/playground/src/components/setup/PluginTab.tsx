@@ -94,7 +94,9 @@ function PluginInstallSection({
 					const detail = installed
 						? `v${version}`
 						: `not installed${applicable ? " — check the box to include install in the plan" : " — not the active plan runtime"}`
-					const cmd = !installed ? pluginInstallCommand(plugin.name, runtime, plugin.marketplace) : null
+					const cmd = !installed
+						? pluginInstallCommand(plugin.name, runtime, plugin.marketplace)
+						: null
 					return (
 						<Row key={runtime}>
 							<GlyphToggle

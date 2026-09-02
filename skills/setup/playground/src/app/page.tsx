@@ -13,7 +13,12 @@ import { Sidebar } from "@/components/setup/Sidebar"
 import { Button } from "@/components/ui/button"
 import { openExternalUrl } from "@/lib/native-sdk"
 import { PACK_BY_SLUG } from "@/lib/pack-catalog"
-import { assemblePlanSelections, initAllSelections, reconcileSelections, selectionsDiffer } from "@/lib/selections"
+import {
+	assemblePlanSelections,
+	initAllSelections,
+	reconcileSelections,
+	selectionsDiffer,
+} from "@/lib/selections"
 import type { HarnessState, Runtime, Selections } from "@/lib/types"
 
 type PlanResult = { markdown: string }

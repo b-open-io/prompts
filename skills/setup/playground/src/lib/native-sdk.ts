@@ -24,6 +24,11 @@ function api(): NativeSdkApi {
 	return window.zero
 }
 
+/** True inside the Agent Master shell, where the Native SDK bridge exists. */
+export function hasNativeBridge(): boolean {
+	return typeof window !== "undefined" && window.zero !== undefined
+}
+
 export async function supportsCredentialStore(): Promise<boolean> {
 	if (!window.zero) return false
 	try {
