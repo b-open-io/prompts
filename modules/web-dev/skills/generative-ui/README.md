@@ -101,7 +101,7 @@ Generative UI specs can be delivered inside hosts that negotiate **MCP Apps**. T
 
 Use a single-file build as the portable default, exact CSP allowlists, and app-only helper tools for UI submissions. Do not assume a host supports MCP Apps until capability negotiation confirms it. Treat `@json-render/mcp` as scaffolding and harden its result/CSP boundary for production.
 
-For building MCP Apps that deliver generative UI, use `Skill(core:mcp-apps)`.
+For building MCP Apps that deliver generative UI, use `Skill(mcp-dev:mcp-apps)`.
 
 ## Invoking This Skill
 

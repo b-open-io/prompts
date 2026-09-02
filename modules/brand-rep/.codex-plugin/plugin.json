@@ -1,6 +1,6 @@
 {
   "name": "brand-rep",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Personas for public-facing surfaces, intended for deployments that answer customers rather than developers",
   "author": {
     "name": "b-open-io",

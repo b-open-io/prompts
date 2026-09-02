@@ -13,11 +13,6 @@ looptop scans `~/Library/LaunchAgents/ai.<slug>.loop.exec.plist` (plus
 optional `ai.<slug>.loop.maintenance.plist`). No plist → the loop does not
 exist to looptop, even for manual `looptop run` kickstarts.
 
-When exec and maintenance use separate jobs, give their wrapper executables
-distinct names (`LoopTop-Name-Exec`, `LoopTop-Name-Maintenance`). macOS lists
-background items by executable name; pointing both jobs at one wrapper creates
-two indistinguishable rows even though they are different schedules.
-
 ## State dir: `~/.<slug>/loop/`
 
 (Resolved from `~/.<slug>/loop/loop.json` first, else the dirname of the
@@ -49,6 +44,21 @@ kickstart only via `looptop run <slug> exec`, which needs the job loaded:
 `StandardOutPath` at `<stateDir>/loop.log` — looptop derives the state dir
 from it when `~/.<slug>/loop/loop.json` is absent. Promotion to unattended
 (per blast-radius) = adding the schedule keys, nothing else changes.
+
+### Make macOS background access understandable
+
+The first `ProgramArguments` entry becomes the name macOS shows under Login
+Items & Extensions. Never make `/bin/bash`, `/bin/sh`, or another generic
+interpreter that entry: the user would see an anonymous `bash` item and could
+not make an informed approval decision.
+
+Give each loop mode its own wrapper executable with a human-readable,
+loop-specific basename: `LoopTop-Scribe-Exec` and `LoopTop-Scribe-Maintenance`.
+macOS lists background items by executable name, so pointing both jobs at one
+wrapper produces two indistinguishable rows. Each wrapper does one thing:
+`exec` the versioned runner script with its mode and all arguments. After
+loading the jobs, verify with `sfltool dumpbtm`: the `Name` and
+`Executable Path` must identify the loop and the mode, not the shell.
 
 ## Runner obligations
 

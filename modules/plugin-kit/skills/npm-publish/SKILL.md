@@ -1,7 +1,7 @@
 ---
 name: npm-publish
-version: 3.1.2
-description: This skill should be used when the user wants to publish a package to npm, bump a version, release a new version, or mentions "npm publish", "bun publish", "version bump", or "release to npm". Handles version bumping, changelog updates, git push, npm publishing, and automatic token rotation via agent-browser when auth expires. Do not trigger for unrelated uses of "release" (e.g. GitHub releases, press releases).
+version: 3.1.3
+description: This skill should be used when the user wants to publish a package to npm, bump a version, release a new version, or mentions "npm publish", "bun publish", "version bump", or "release to npm". Handles version bumping, changelog updates, default-branch release delivery, browser-confirmed Bun publishing, and credential recovery only when publishing explicitly reports an authentication failure. Do not trigger for unrelated uses of "release" (e.g. GitHub releases, press releases).
 allowed-tools: Bash(agent-browser:*), Bash(npm:*), Bash(bun:*), Bash(git:*), Bash(pbpaste:*), Bash(pbcopy:*), Bash(chmod:*), Bash(bash:*), Bash(grep:*), Bash(sed:*), Bash(sleep:*)
 ---
 
@@ -9,11 +9,25 @@ allowed-tools: Bash(agent-browser:*), Bash(npm:*), Bash(bun:*), Bash(git:*), Bas
 
 ## MANDATORY — Read Before Doing Anything
 
-**NEVER ask the user for an OTP code.** Auth is handled by scripts + agent-browser.
+**NEVER ask the user for an OTP, one-time code, password, or token.** The normal publish flow opens npm's browser confirmation; the user checks the confirmation box and clicks **Publish**.
 
-**NEVER run manual npm/bun commands** like `npm whoami`, `npm view`, `bun publish`, or `npm publish`.
+**NEVER run `npm publish` or a manually typed `bun publish` command.** Use the bundled scripts. `preflight.sh` may run `npm view` internally for its registry check.
 
 **You MUST run these scripts. Do NOT skip steps.**
+
+## Step 0: Confirm the release branch
+
+Determine the repository's default branch from `refs/remotes/origin/HEAD` (normally `master` or `main`). The release MUST happen from that branch. If currently on another branch, do not run preflight, release, or publish; switch to the default branch first.
+
+Fetch and fast-forward the default branch before changing files:
+
+```bash
+git fetch origin
+git switch <default-branch>
+git pull --ff-only origin <default-branch>
+```
+
+`release.sh` repeats the branch check and refuses to commit or push from a non-default branch.
 
 ## Step 1: Preflight
 
@@ -30,11 +44,13 @@ Read the commit log from preflight output. If CHANGELOG.md exists, add entry at 
 ## Step 3: Release (commit + push), then publish
 
 ```bash
-bash ${CLAUDE_SKILL_DIR}/scripts/release.sh [--access public]
-bash ${CLAUDE_SKILL_DIR}/scripts/publish.sh [--access public]
+bash ${CLAUDE_SKILL_DIR}/scripts/release.sh --access public
+bash ${CLAUDE_SKILL_DIR}/scripts/publish.sh --access public
 ```
 
-`release.sh` commits and pushes. `publish.sh` then publishes. npm may open its normal confirmation in the system default browser, including DIA. Tell the user to approve it there if prompted. Do not open or navigate another browser unless `publish.sh` specifically outputs `AUTH_FAILED`.
+`release.sh` commits and pushes from the verified default branch. `publish.sh` then runs the equivalent of `printf '\n' | bun publish --access public`, using Bun's web-auth flow. That newline accepts the CLI prompt and causes npm's normal confirmation page to open in the system default browser, including DIA. Tell the user to check the confirmation box and click **Publish** there. Do not request or enter any code. Do not open or navigate another browser unless `publish.sh` specifically outputs `AUTH_FAILED`.
+
+The correct underlying publish command is `bun publish --access public`; the wrapper is mandatory because it supplies the browser-opening newline and emits classified status codes. Never substitute `npm publish`.
 
 If publish.sh outputs `PUBLISH_SUCCESS` — done, go to Step 4.
 
@@ -76,10 +92,10 @@ Status codes:
 **After TOKEN_SAVED, retry publish:**
 
 ```bash
-bash ${CLAUDE_SKILL_DIR}/scripts/publish.sh [--access public]
+bash ${CLAUDE_SKILL_DIR}/scripts/publish.sh --access public
 ```
 
-Tell user: "Complete the OTP checkbox in your browser if prompted."
+Tell the user: "Approve the publish confirmation in the browser by checking the box and clicking Publish. No code is needed."
 
 ### If publish.sh outputs `PUBLISH_ERROR`
 

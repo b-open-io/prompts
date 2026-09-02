@@ -1,7 +1,7 @@
 ---
 name: deploy-agent-team
-version: 1.0.5
-description: This skill should be used when the user says "deploy a team", "spin up agents to work on this", "use all our agents", "coordinate specialists", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full core specialist roster.
+version: 1.0.6
+description: This skill should be used when the user says "deploy a team", "spin up agents to work on this", "use all our agents", "coordinate specialists", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full installed specialist roster.
 disable-model-invocation: true
 ---
 
@@ -47,24 +47,25 @@ model.
 
 | Agent | subagent_type | Best for |
 |-------|--------------|----------|
-| **researcher** | `core:researcher` | Libraries, APIs, docs, competitive analysis |
-| **nextjs** | `core:nextjs` | Next.js, React, Vercel, RSC, app router |
-| **native-desktop** | `core:native-desktop` | Native SDK, Zig, WebViews, menu-bar apps, signed DMGs |
-| **designer** | `core:designer` | UI, game HUDs, TV shells, directional focus, Tailwind, accessibility |
+| **researcher** | `research:researcher` | Libraries, APIs, docs, competitive analysis |
+| **nextjs** | `web-dev:nextjs` | Next.js, React, Vercel, RSC, app router |
+| **native-desktop** | `creative:native-desktop` | Native SDK, Zig, WebViews, menu-bar apps, signed DMGs |
+| **designer** | `web-dev:designer` | UI, game HUDs, TV shells, directional focus, Tailwind, accessibility |
 | **agent-builder** | `orchestra:agent-builder` | AI SDK v7 agents, durable runtime selection, conditional eve evaluation |
-| **database** | `core:database` | Schema, queries, PostgreSQL, Redis, Convex |
-| **integration-expert** | `core:integration-expert` | REST APIs, webhooks, third-party services |
-| **code-auditor** | `core:code-auditor` | Security review, vulnerability scanning |
-| **tester** | `core:tester` | Unit, integration, e2e tests, CI |
-| **documentation-writer** | `core:documentation-writer` | READMEs, API docs, PRDs, guides |
-| **devops** | `core:devops` | Vercel+Railway+Bun, CI/CD, monitoring |
-| **optimizer** | `core:optimizer` | Bundle analysis, Lighthouse, Core Web Vitals |
-| **architecture-reviewer** | `core:architecture-reviewer` | System design, refactoring strategy, tech debt |
-| **mobile** | `core:mobile` | Expo-first React Native, Swift, Kotlin, Flutter |
-| **payments** | `core:payments` | Stripe, billing, financial transactions |
+| **database** | `dev-ops:database` | Schema, queries, PostgreSQL, Redis, Convex |
+| **integration-expert** | `dev-ops:integration-expert` | REST APIs, webhooks, third-party services |
+| **code-auditor** | `review:code-auditor` | Security review, vulnerability scanning |
+| **tester** | `review:tester` | Unit, integration, e2e tests, CI |
+| **documentation-writer** | `research:documentation-writer` | READMEs, API docs, PRDs, guides |
+| **devops** | `dev-ops:devops` | Vercel+Railway+Bun, CI/CD, monitoring |
+| **optimizer** | `web-dev:optimizer` | Bundle analysis, Lighthouse, Core Web Vitals |
+| **architecture-reviewer** | `review:architecture-reviewer` | System design, refactoring strategy, tech debt |
+| **mobile** | `web-dev:mobile` | Expo-first React Native, Swift, Kotlin, Flutter |
+| **payments** | `dev-ops:payments` | Stripe, billing, financial transactions |
 | **marketer** | `product-skills:marketer` | CRO, SEO, copy, launch strategy |
 | **legal** | `product-skills:legal` | Privacy, compliance, ToS |
-| **mcp** | `core:mcp` | MCP server setup, config, diagnostics |
+| **mcp** | `mcp-dev:mcp` | MCP server setup, config, diagnostics |
+| **social-media-manager** | `brand-rep:social-media-manager` | Owned-account posts, calendars, mention replies |
 
 Full roster with per-agent skills to mention in spawn prompts: `references/agent-roster.md`
 
@@ -119,7 +120,7 @@ TaskUpdate(taskId: "3", addBlockedBy: ["2"])  # tests wait for Stripe impl
 
 ```
 Agent(
-  subagent_type: "core:designer",
+  subagent_type: "web-dev:designer",
   name: "designer",
   mode: "dontAsk",
   prompt: "..."  # see references/spawn-prompt-guide.md

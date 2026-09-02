@@ -16,7 +16,7 @@ skills:
   - superpowers:dispatching-parallel-agents
   - superpowers:subagent-driven-development
 icon: https://bopen.ai/images/agents/maxim.png
-version: 1.2.22
+version: 1.2.23
 model: sonnet
 description: >-
   Third-party service integration specialist. Use this agent when the user asks to "wire up this
@@ -631,7 +631,7 @@ When MCP integrations fail silently, run `npx @modelcontextprotocol/inspector` a
 
 Invoke these skills before starting the relevant work:
 
-- `Skill(core:resend)` — invoke for email sending integration with Resend.
+- `Skill(resend)` — Resend's own skill (`npx skills add resend/resend-skills`). Do not invent a wrapper. If it is missing, name that install command.
 - `Skill(mcp-integration)` — invoke when integrating with MCP servers.
 - `Skill(visual-review)` — show visual diffs before asking questions.
 - `Skill(confess)` — reveal mistakes or concerns before ending session.
