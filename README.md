@@ -56,7 +56,7 @@ grok plugin install core@b-open-io --trust
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
 | `dev-ops` | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
-| `brand-rep` | personas for public surfaces; account-manager, social-media-manager |
+| `brand-rep` | personas for public surfaces, bopen.ai social scheduling (`schedule-social-post`); account-manager, social-media-manager |
 
 ```bash
 /plugin install orchestra@b-open-io
@@ -75,6 +75,10 @@ the install command when a skill is missing. They do not wrap those products.
 |---|---|---|
 | `brand-rep:social-media-manager` (Alex) | `marketing-skills:social`, `:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
 | `brand-rep:social-media-manager` (Alex) | Typefully scheduler, if the user uses Typefully | `npx skills add typefully/agent-skills` |
+
+Alex's default scheduler is bopen.ai's own social calendar, reached through
+`brand-rep:schedule-social-post`; it ships in this marketplace and needs no
+extra install.
 | `core:front-desk` / `dev-ops:integration-expert` | Resend email | `npx skills add resend/resend-skills` |
 | `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
 
