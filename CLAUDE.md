@@ -2,21 +2,25 @@
 
 ## Shipping rule (read this before ending any session)
 
-Pushing to master IS publishing this plugin. A committed-but-unpushed version
-bump is a stranded release: the marketplaces never see it, local installs
-stay stale, and the gap is invisible until someone diffs the cache. Claude
-and Codex have separate real manifests, but their shared metadata and release
-version must stay identical. Use `python3 scripts/check-plugin-manifests.py`
+The default branch (`master` here; resolve it from `origin/HEAD`, never
+assume) IS the published plugin. Work lands on `dev` first: commit on an
+issue-named feature branch, open the PR against `dev`, and let the standing
+`dev` → default-branch PR carry it through the 24-hour cooling period and a
+`/approve` comment. Never push to the default branch directly. A version bump
+that sits on `dev` is not yet released; say so in the session summary.
+Claude and Codex have separate real manifests, but their shared metadata and
+release version must stay identical. Use `python3 scripts/check-plugin-manifests.py`
 before shipping; use its `--bump-patch` option to bump both manifests together.
-`master` is protected: every PR must pass the `validate` and `isolated-install`
-checks (`scripts/test-isolated-plugin-install.sh` runs the second one locally).
+The default branch is protected: every PR must pass the `validate` and
+`isolated-install` checks (`scripts/test-isolated-plugin-install.sh` runs the
+second one locally).
 Codex caches installed plugin contents by version, so a stale Codex version can
 silently preserve stale skills and hooks even when the source changed.
 
 After ANY commit that bumps either `.claude-plugin/plugin.json` or
 `.codex-plugin/plugin.json`, push in the same breath —
-`git log origin/master..master` must be empty before the session ends. Then
-install via `CLAUDECODE= claude plugin update core@b-open-io` (never
+`git log origin/dev..dev` must be empty before the session ends. Once the
+promotion PR merges, install via `CLAUDECODE= claude plugin update core@b-open-io` (never
 copy files into ~/.claude manually). Refresh the published Codex marketplace
 with `codex plugin marketplace upgrade` — `marketplace add` does NOT refresh
 an existing snapshot and will silently reinstall the stale version — then

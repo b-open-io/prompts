@@ -6,6 +6,19 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.158] - 2026-09-02
+
+### Changed
+
+- The factory worker configures itself. It reads its checkout from the LoopTop
+  manifest that `/factory-init` writes (`~/.prompts-factory/loop/loop.json`),
+  takes the reviewer from the signed-in `gh` user, and resolves the default
+  branch from the repository, so nothing is hardcoded and no environment
+  variables are required. It exits with `NOT_REGISTERED` and the registration
+  command when the manifest is missing. `promote-dev.yml` accepts `/approve`
+  from any repository owner, member, or collaborator and merges into the
+  repository's default branch, whatever its name.
+
 ## [1.1.157] - 2026-09-02
 
 ### Added
