@@ -3,7 +3,7 @@ name: Isolated plugin install
 on:
   pull_request:
   push:
-    branches: [master]
+    branches: [dev, master]
 
 permissions:
   contents: read

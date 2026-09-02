@@ -6,6 +6,19 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.157] - 2026-09-02
+
+### Added
+
+- Guarded `dev` → `master` promotion. `scripts/prompts-factory-worker.sh` keeps
+  one standing promotion PR open, assigns the reviewer, and restates the review
+  deadline on every `dev` change; it takes its checkout and reviewer from
+  `BOPEN_PROMPTS_FACTORY_REPO_DIR` and `BOPEN_PROMPTS_FACTORY_REVIEWER` and
+  refuses to run without them. `.github/workflows/promote-dev.yml` merges the
+  PR with a merge commit only after a 24-hour cooling period and a fresh
+  `/approve` comment from the reviewer. The `validate` and `isolated-install`
+  gates now also run on pushes to `dev`.
+
 ## [1.1.156] - 2026-09-01
 
 ### Changed
