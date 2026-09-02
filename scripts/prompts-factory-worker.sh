@@ -4,7 +4,7 @@ set -euo pipefail
 mode="${1:-exec}"
 # Required configuration. No defaults: a wrong checkout or reviewer must fail
 # here, not open a promotion PR against the wrong repository.
-repo_dir="${BOPEN_PROMPTS_FACTORY_REPO_DIR:?set BOPEN_PROMPTS_FACTORY_REPO_DIR to the worker's checkout}"
+repo_dir="${BOPEN_PROMPTS_FACTORY_REPO_DIR:?set BOPEN_PROMPTS_FACTORY_REPO_DIR to the worker checkout}"
 reviewer="${BOPEN_PROMPTS_FACTORY_REVIEWER:?set BOPEN_PROMPTS_FACTORY_REVIEWER to the GitHub login that approves promotion}"
 factory_state_dir="${BOPEN_PROMPTS_FACTORY_STATE_DIR:-${HOME}/.prompts-factory/loop}"
 state_file="$factory_state_dir/state.json"
