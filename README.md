@@ -554,8 +554,11 @@ prompts/
 ├── settings.json            # Repository-level settings declarations
 ├── settings.schema.json     # Settings declaration schema
 ├── benchmarks/             # Benchmark results (latest.json)
+├── .github/workflows/      # validate, isolated-install, and promote-dev gates
 ├── scripts/
 │   ├── codex-agents/       # Adapter generator and safe installer
+│   ├── prompts-factory-worker.sh # LoopTop worker that keeps the dev → master PR current
+│   ├── test-isolated-plugin-install.sh # Disposable-runner plugin install gate
 │   ├── benchmark.tsx       # Skill output-quality benchmark CLI
 │   ├── plugin-weight.py    # Static catalog/context inventory
 │   ├── capture-*-context.py # Exact Claude/Codex host snapshots
@@ -586,6 +589,16 @@ The repository avoids parallel hand-maintained copies:
 Do not manually copy plugin contents into `~/.claude` or `~/.codex`, and do not
 symlink agent definitions into a versioned plugin cache. Use the marketplace
 and agent setup flows so upgrades remain reproducible.
+
+### Shipping
+
+`master` is the published branch and is protected. Every pull request must pass
+the `validate` and `isolated-install` checks. Work lands on `dev` first. The
+factory worker (`scripts/prompts-factory-worker.sh`) keeps one standing
+`dev` → `master` pull request open and restates the review deadline whenever
+`dev` changes. `promote-dev.yml` merges that pull request only after a 24-hour
+cooling period and a fresh `/approve` comment from the reviewer; a new `dev`
+commit resets both.
 
 ## Plugin Context Harness
 
