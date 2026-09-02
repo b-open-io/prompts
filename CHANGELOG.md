@@ -34,6 +34,12 @@ manifests share the same release version.
   caches (Codex bundled tools, third-party marketplaces) move to a collapsed
   "Other installed" group and stay out of the health counts. The harness state
   carries `inCatalog` per plugin.
+- Plugins can be marked for removal. A plugin's detail view has a
+  "remove from this machine" toggle for the plan runtime and a copy button
+  with the exact command (`claude plugin uninstall <name>@<marketplace>` or
+  `codex plugin remove <name>`). The setup plan gains a "Plugin removals"
+  section whose Verify block passes only when the plugin is gone from that
+  runtime's list. The UI still runs nothing itself.
 
 ## [1.1.157] - 2026-09-02
 

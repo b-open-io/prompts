@@ -82,7 +82,7 @@ describe("emitPlan", () => {
     const state = makeState({}, [plugin]);
     const selections = {
       runtime: "claude",
-      plugins: [{ name: "core", installPlugin: true, checks: [], hooks: {} }],
+      plugins: [{ name: "core", installPlugin: true, uninstallPlugin: false, checks: [], hooks: {} }],
     };
 
     const plan = emitPlan(state, selections);
@@ -99,7 +99,7 @@ describe("emitPlan", () => {
   test("claude and codex use different install dialects for the same selection", () => {
     const plugin = makePlugin({ installedClaude: null, installedCodex: null });
     const state = makeState({}, [plugin]);
-    const basePlugins = [{ name: "core", installPlugin: true, checks: [], hooks: {} }];
+    const basePlugins = [{ name: "core", installPlugin: true, uninstallPlugin: false, checks: [], hooks: {} }];
 
     const claudePlan = emitPlan(state, { runtime: "claude", plugins: basePlugins });
     const codexPlan = emitPlan(state, { runtime: "codex", plugins: basePlugins });
@@ -131,6 +131,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: false,
+          uninstallPlugin: false,
           checks: ["codex-agents:core"],
           hooks: {},
         },
@@ -227,6 +228,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: false,
+          uninstallPlugin: false,
           checks: ["env:ELEVENLABS_API_KEY"],
           hooks: {},
         },
@@ -261,6 +263,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: true,
+          uninstallPlugin: false,
           checks: ["cli:ffmpeg"],
           hooks: { "guard-a": false },
         },
@@ -301,6 +304,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: false,
+          uninstallPlugin: false,
           checks: ["third-party-skill:example", "setup-script:research:persona"],
           hooks: {},
         },
@@ -336,6 +340,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: false,
+          uninstallPlugin: false,
           checks: ["codex-agents"],
           hooks: {},
         },
@@ -374,7 +379,7 @@ describe("grok dialect", () => {
   const grokSel = {
     runtime: "grok",
     plugins: [
-      { name: "core", installPlugin: true, checks: [], hooks: {} },
+      { name: "core", installPlugin: true, uninstallPlugin: false, checks: [], hooks: {} },
     ],
   } as any;
 
@@ -389,5 +394,31 @@ describe("grok dialect", () => {
     const plan = emitPlan(grokState(null), grokSel);
     expect(plan).toContain("grok plugin install b-open-io/prompts --trust");
     expect(plan).toContain("grok plugin details core");
+  });
+});
+
+describe("plugin removals", () => {
+  test("emits the runtime's uninstall command with a negative verify", () => {
+    const plugin = makePlugin({ installedClaude: "1.0.0", installedCodex: "1.0.0", marketplace: "openai-curated-remote" });
+    const state = makeState({}, [plugin]);
+    const base = { name: "core", installPlugin: false, uninstallPlugin: true, checks: [], hooks: {} };
+
+    const claudePlan = emitPlan(state, { runtime: "claude", plugins: [base] });
+    expect(claudePlan).toContain("## Plugin removals");
+    expect(claudePlan).toContain("claude plugin uninstall core@openai-curated-remote");
+    expect(claudePlan).toContain('! claude plugin list | grep -qF "core@"');
+
+    const codexPlan = emitPlan(state, { runtime: "codex", plugins: [base] });
+    expect(codexPlan).toContain("codex plugin remove core");
+    expect(codexPlan).not.toContain("claude plugin uninstall");
+  });
+
+  test("skips removals for runtimes where the plugin is not installed", () => {
+    const plugin = makePlugin({ installedClaude: null, installedCodex: "1.0.0" });
+    const plan = emitPlan(makeState({}, [plugin]), {
+      runtime: "claude",
+      plugins: [{ name: "core", installPlugin: false, uninstallPlugin: true, checks: [], hooks: {} }],
+    });
+    expect(plan).not.toContain("## Plugin removals");
   });
 });

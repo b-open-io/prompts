@@ -5,7 +5,13 @@ import { HookToggle } from "@/components/setup/HookToggle"
 import { ManifestInfo } from "@/components/setup/ManifestInfo"
 import { SkillActivityBadge } from "@/components/setup/SkillActivityBadge"
 import { Card } from "@/components/ui/card"
-import { isSkillSlug, pluginBopenUrl, pluginInstallCommand, skillBopenUrl } from "@/lib/links"
+import {
+	isSkillSlug,
+	pluginBopenUrl,
+	pluginInstallCommand,
+	pluginUninstallCommand,
+	skillBopenUrl,
+} from "@/lib/links"
 import type { CheckKind, PluginState, Selections } from "@/lib/types"
 
 const CHECK_SECTIONS: Array<{ kind: CheckKind; label: string }> = [
@@ -64,12 +70,19 @@ function PluginInstallSection({
 	selection,
 	selectedRuntime,
 	onToggleInstallPlugin,
+	onToggleUninstallPlugin,
 }: {
 	plugin: PluginState
 	selection: Selections[string]
 	selectedRuntime: string
 	onToggleInstallPlugin: () => void
+	onToggleUninstallPlugin: () => void
 }) {
+	const installedForRuntime =
+		selectedRuntime === "codex" ? plugin.installedCodex !== null : plugin.installedClaude !== null
+	const uninstallCommand = installedForRuntime
+		? pluginUninstallCommand(plugin.name, selectedRuntime, plugin.marketplace)
+		: null
 	const rows: Array<["claude" | "codex", string | null]> = [
 		["claude", plugin.installedClaude],
 		["codex", plugin.installedCodex],
@@ -115,6 +128,27 @@ function PluginInstallSection({
 						</Row>
 					)
 				})}
+				{uninstallCommand && (
+					<Row>
+						<GlyphToggle
+							checked={selection.uninstallPlugin}
+							inert={false}
+							onToggle={onToggleUninstallPlugin}
+							label={`${selectedRuntime} uninstall`}
+						/>
+						<div className="min-w-48 flex-1">
+							<div>remove from this machine</div>
+							<div className="text-[0.75rem] text-muted-foreground">
+								{selection.uninstallPlugin
+									? "included in the plan — the agent runs the command below and verifies removal"
+									: "check the box to add the removal to the plan, or copy the command"}
+							</div>
+						</div>
+						<div className="flex flex-none items-center gap-1.5">
+							<CopyButton text={uninstallCommand} />
+						</div>
+					</Row>
+				)}
 				<Row>
 					<div className="text-[0.75rem] text-muted-foreground">
 						marketplace:{" "}
@@ -268,6 +302,7 @@ export function PluginTab({
 	selection,
 	selectedRuntime,
 	onToggleInstallPlugin,
+	onToggleUninstallPlugin,
 	onToggleCheck,
 	onToggleHook,
 }: {
@@ -275,6 +310,7 @@ export function PluginTab({
 	selection: Selections[string]
 	selectedRuntime: string
 	onToggleInstallPlugin: () => void
+	onToggleUninstallPlugin: () => void
 	onToggleCheck: (id: string) => void
 	onToggleHook: (hookName: string) => void
 }) {
@@ -285,6 +321,7 @@ export function PluginTab({
 				selection={selection}
 				selectedRuntime={selectedRuntime}
 				onToggleInstallPlugin={onToggleInstallPlugin}
+				onToggleUninstallPlugin={onToggleUninstallPlugin}
 			/>
 
 			{plugin.hasSetupManifest && (

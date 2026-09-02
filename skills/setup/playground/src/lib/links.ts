@@ -28,6 +28,20 @@ export function pluginInstallCommand(
 	return null
 }
 
+/** The exact removal command for the plan runtime; null when the runtime has
+ *  no plugin mechanism or the Claude marketplace is unknown. */
+export function pluginUninstallCommand(
+	name: string,
+	runtime: string,
+	marketplace: string | null,
+): string | null {
+	if (runtime === "codex") return `codex plugin remove ${name}`
+	if (runtime === "claude" || runtime === "opencode" || runtime === "grok") {
+		return marketplace ? `claude plugin uninstall ${name}@${marketplace}` : null
+	}
+	return null
+}
+
 export function pluginUpdateCommand(
 	name: string,
 	runtime: "claude" | "codex",

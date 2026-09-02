@@ -176,6 +176,13 @@ export default function SetupPlaygroundPage() {
 		}))
 	}
 
+	function toggleUninstallPlugin(pluginName: string) {
+		setSelections((prev) => ({
+			...prev,
+			[pluginName]: { ...prev[pluginName], uninstallPlugin: !prev[pluginName].uninstallPlugin },
+		}))
+	}
+
 	function toggleCheck(pluginName: string, id: string) {
 		setSelections((prev) => {
 			const next = new Set(prev[pluginName].checks)
@@ -304,6 +311,7 @@ export default function SetupPlaygroundPage() {
 							selection={selections[activePlugin.name]}
 							selectedRuntime={selectedRuntime}
 							onToggleInstallPlugin={() => toggleInstallPlugin(activePlugin.name)}
+							onToggleUninstallPlugin={() => toggleUninstallPlugin(activePlugin.name)}
 							onToggleCheck={(id) => toggleCheck(activePlugin.name, id)}
 							onToggleHook={(hookName) => toggleHook(activePlugin.name, hookName)}
 						/>

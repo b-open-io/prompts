@@ -211,6 +211,56 @@ function buildPluginsSection(
   return blocks;
 }
 
+/** Removals the user asked for. The plan runs the runtime's own uninstall
+ * command and verifies the plugin is gone from that runtime's list, so a
+ * cached leftover never passes as removed. */
+function buildRemovalsSection(
+  state: HarnessState,
+  selections: PlanSelections,
+  runtime: Runtime,
+): string[] {
+  const blocks: string[] = [];
+  for (const selection of selections.plugins) {
+    if (!selection.uninstallPlugin) continue;
+    const plugin = findPlugin(state, selection.name);
+    if (!plugin) continue;
+    if (runtime === "codex") {
+      if (plugin.installedCodex === null) continue;
+      blocks.push(
+        action(
+          `${plugin.name}: remove the Codex plugin`,
+          `codex plugin remove ${plugin.name}`,
+          `! codex plugin list | grep -F "${plugin.name}@" | grep -qE " installed, "`,
+        ),
+      );
+      continue;
+    }
+    if (runtime === "claude" || runtime === "opencode" || runtime === "grok") {
+      if (plugin.installedClaude === null) continue;
+      if (!plugin.marketplace) {
+        blocks.push(
+          action(
+            `${plugin.name}: remove the Claude Code plugin`,
+            `claude plugin list`,
+            `! claude plugin list | grep -qF "${plugin.name}@"`,
+            "The marketplace this plugin came from is unknown. Read it from the list output, then run `claude plugin uninstall <name>@<marketplace>` and re-run the Verify block.",
+          ),
+        );
+        continue;
+      }
+      blocks.push(
+        action(
+          `${plugin.name}: remove the Claude Code plugin`,
+          `claude plugin uninstall ${plugin.name}@${plugin.marketplace}`,
+          `! claude plugin list | grep -qF "${plugin.name}@"`,
+          runtime === "claude" ? undefined : "This runtime consumes the Claude Code plugin installation; removing it there removes it here.",
+        ),
+      );
+    }
+  }
+  return blocks;
+}
+
 function buildPackSection(state: HarnessState, runtime: Runtime): string[] {
   if (!state.pack || !validatePackRuntime(runtime)) return [];
   const pack = state.pack;
@@ -438,6 +488,7 @@ export function emitPlan(state: HarnessState, selections: PlanSelections): strin
   const sections: Array<{ title: string; blocks: string[] }> = [
     { title: "Pack dependencies", blocks: buildPackSection(state, runtime) },
     { title: "Plugins", blocks: buildPluginsSection(state, selections, runtime) },
+    { title: "Plugin removals", blocks: buildRemovalsSection(state, selections, runtime) },
     { title: "Agents", blocks: buildAgentsSection(state, selections, runtime) },
     { title: "CLI dependencies", blocks: buildCliSection(state, selections) },
     { title: "Environment keys", blocks: buildEnvSection(state, selections) },

@@ -98,6 +98,7 @@ export type PlanSelections = {
 	plugins: Array<{
 		name: string
 		installPlugin: boolean
+		uninstallPlugin: boolean
 		checks: string[]
 		hooks: Record<string, boolean>
 	}>
@@ -106,6 +107,8 @@ export type PlanSelections = {
 /** Per-plugin UI selection state — not part of the server contract. */
 export type PluginSelection = {
 	installPlugin: boolean
+	/** Remove the plugin from the plan runtime; emitted as a Command/Verify block. */
+	uninstallPlugin: boolean
 	checks: Set<string>
 	hooks: Record<string, boolean>
 }

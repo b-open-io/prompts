@@ -13,7 +13,7 @@ export function initPluginSelection(plugin: PluginState): Selections[string] {
 	for (const h of plugin.hooks ?? []) {
 		hooks[h.name] = !!h.enabled
 	}
-	return { installPlugin: false, checks, hooks }
+	return { installPlugin: false, uninstallPlugin: false, checks, hooks }
 }
 
 export function initAllSelections(state: HarnessState): Selections {
@@ -32,6 +32,7 @@ export function reconcileSelections(oldSel: Selections, newState: HarnessState):
 			continue
 		}
 		fresh.installPlugin = old.installPlugin
+		fresh.uninstallPlugin = old.uninstallPlugin
 		for (const c of p.checks ?? []) {
 			if (c.installed || old.checks.has(c.id)) fresh.checks.add(c.id)
 			else fresh.checks.delete(c.id)
@@ -56,6 +57,7 @@ export function assemblePlanSelections(
 			return {
 				name: p.name,
 				installPlugin: s.installPlugin,
+				uninstallPlugin: s.uninstallPlugin,
 				checks: Array.from(s.checks),
 				hooks: { ...s.hooks },
 			}
@@ -69,7 +71,7 @@ export function selectionsDiffer(selections: Selections, state: HarnessState): b
 	for (const plugin of state.plugins) {
 		const selection = selections[plugin.name]
 		if (!selection) continue
-		if (selection.installPlugin) return true
+		if (selection.installPlugin || selection.uninstallPlugin) return true
 		for (const check of plugin.checks ?? []) {
 			if (selection.checks.has(check.id) !== !!check.installed) return true
 		}

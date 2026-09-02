@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { catalogSummary, partitionPlugins } from "./plugins"
+import { initAllSelections, selectionsDiffer } from "./selections"
 import type { HarnessState, PluginState } from "./types"
 
 function plugin(name: string, inCatalog: boolean, installedClaude: string | null): PluginState {
@@ -35,5 +36,18 @@ describe("plugin partition", () => {
 
 	test("counts installed against the catalog total, not the whole cache", () => {
 		expect(catalogSummary(state)).toEqual({ installed: 1, total: 2 })
+	})
+})
+
+describe("uninstall selection", () => {
+	test("a removal request counts as a plan difference", () => {
+		const state = {
+			plugins: [plugin("browser", false, "1.0.0")],
+			portableSkills: [],
+		} as unknown as HarnessState
+		const selections = initAllSelections(state)
+		expect(selectionsDiffer(selections, state)).toBe(false)
+		selections.browser.uninstallPlugin = true
+		expect(selectionsDiffer(selections, state)).toBe(true)
 	})
 })

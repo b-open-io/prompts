@@ -84,6 +84,7 @@ export type PlanSelections = {
   plugins: Array<{
     name: string;
     installPlugin: boolean;
+    uninstallPlugin: boolean;
     checks: string[];
     hooks: Record<string, boolean>;
   }>;
