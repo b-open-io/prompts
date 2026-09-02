@@ -196,12 +196,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Ridd and Theo migrate an existing codebase off scattered hardcoded colors, spacing, and type onto a single shadcn token source of truth, then use a visual-diff recap to prove no screen regressed. Kills the drift between what the design says and what the code renders.",
-				skills: [
-					"shadcn",
-					"web-design-guidelines",
-					"frontend-design",
-					"review:visual-review",
-				],
+				skills: ["shadcn", "web-design-guidelines", "frontend-design", "review:visual-review"],
 				agents: ["Ridd", "Theo"],
 				sample: false,
 			},
@@ -221,11 +216,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Kris builds an animated 3D centerpiece with real shaders and Torque tunes it so the flashy hero ships without wrecking load performance on mobile. A showcase moment that survives a Lighthouse run.",
-				skills: [
-					"creative:threejs-r3f",
-					"creative:shaders",
-					"web-dev:frontend-performance",
-				],
+				skills: ["creative:threejs-r3f", "creative:shaders", "web-dev:frontend-performance"],
 				agents: ["Kris", "Torque"],
 				sample: false,
 			},
@@ -472,11 +463,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"Lisa builds a themed deck, Frames turns it into a narrated video, and Lisa cuts it down into social clips — one story reused across three formats without re-briefing anyone. The clearest demonstration of chained asset production paying for itself.",
-				skills: [
-					"gemskills:deck-creator",
-					"gemskills:generate-video",
-					"creative:voice-clone",
-				],
+				skills: ["gemskills:deck-creator", "gemskills:generate-video", "creative:voice-clone"],
 				agents: ["Lisa", "Frames"],
 				sample: true,
 			},
@@ -709,11 +696,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Caal designs a cancellation flow with save-offer logic and a follow-up win-back sequence, turning the exit into a retention surface that catches a share of leaving users and re-engages the rest weeks later.",
-				skills: [
-					"marketing-skills:churn-prevention",
-					"marketing-skills:emails",
-					"core:humanize",
-				],
+				skills: ["marketing-skills:churn-prevention", "marketing-skills:emails", "core:humanize"],
 				agents: ["Caal"],
 				sample: false,
 			},
@@ -860,11 +843,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Caal and Ridd produce ten-plus platform-specific ad headlines, hooks, primary text, and matching visuals ready to load into a test, so the creative pipeline stops being the bottleneck on paid experiments.",
-				skills: [
-					"marketing-skills:ad-creative",
-					"gemskills:generate-image",
-					"core:humanize",
-				],
+				skills: ["marketing-skills:ad-creative", "gemskills:generate-image", "core:humanize"],
 				agents: ["Caal", "Ridd"],
 				sample: false,
 			},
@@ -952,11 +931,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Ordi snapshots community health — engagement signal, marketplace activity, price context, and X sentiment — for a BSV-native product, giving a crypto-native go-to-market a real read on its own audience.",
-				skills: [
-					"1sat:ordinals-marketplace",
-					"bsv-skills:check-bsv-price",
-					"research:x-research",
-				],
+				skills: ["1sat:ordinals-marketplace", "bsv-skills:check-bsv-price", "research:x-research"],
 				agents: ["Ordi"],
 				sample: false,
 			},
@@ -966,11 +941,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"Caal writes the positioning-driven copy, Ridd designs the page, and Lisa produces the on-brand imagery — a fully designed landing page carried from message to final visuals through three named handoffs. The canonical Caal-to-Ridd-to-Lisa chain.",
-				skills: [
-					"marketing-skills:copywriting",
-					"gemskills:generate-image",
-					"core:humanize",
-				],
+				skills: ["marketing-skills:copywriting", "gemskills:generate-image", "core:humanize"],
 				agents: ["Caal", "Ridd", "Lisa"],
 				sample: false,
 			},
@@ -1347,11 +1318,7 @@ export const PACK_CATALOG = [
 				class: "feature",
 				summary:
 					"Theo and Orbit build a generative-UI surface that renders from model output via json-render without raw HTML injection, so users get dashboards and forms that recompose around whatever data the model returns.",
-				skills: [
-					"web-dev:generative-ui",
-					"mcp-dev:json-render-core",
-					"mcp-dev:json-render-react",
-				],
+				skills: ["web-dev:generative-ui", "mcp-dev:json-render-core", "mcp-dev:json-render-react"],
 				agents: ["Theo", "Orbit"],
 				sample: false,
 			},
@@ -1441,11 +1408,7 @@ export const PACK_CATALOG = [
 				class: "task",
 				summary:
 					"Paul produces a go/no-go release gate with known CVEs and leaked secrets caught before ship, so a release doesn't carry a supply-chain or credential-exposure surprise into production.",
-				skills: [
-					"static-analysis:semgrep",
-					"static-analysis:codeql",
-					"review:code-audit-scripts",
-				],
+				skills: ["static-analysis:semgrep", "static-analysis:codeql", "review:code-audit-scripts"],
 				agents: ["Paul"],
 				sample: false,
 			},
@@ -1862,11 +1825,7 @@ export const PACK_CATALOG = [
 				class: "blueprint",
 				summary:
 					"Chief, Milton, and Martha stand up the same heartbeat-delegation, budget-gate, and agent-onboarding system bOpen runs internally, scoped to your company and wired to your own tools so it runs real operations on day one.",
-				skills: [
-					"dev-ops:cost-tracking",
-					"core:front-desk",
-					"plugin-kit:agent-onboarding",
-				],
+				skills: ["dev-ops:cost-tracking", "core:front-desk", "plugin-kit:agent-onboarding"],
 				agents: ["Chief", "Milton", "Martha"],
 				sample: false,
 			},
@@ -2172,11 +2131,7 @@ export const PACK_CATALOG = [
 				class: "chain",
 				summary:
 					"Chief sets the objectives, Wags turns them into a costed sprint plan in Linear, and Milton reconciles the budget, so the quarter's strategy lands as funded issues a team can start on Monday.",
-				skills: [
-					"pm-execution:brainstorm-okrs",
-					"core:linear-planning",
-					"dev-ops:cost-tracking",
-				],
+				skills: ["pm-execution:brainstorm-okrs", "core:linear-planning", "dev-ops:cost-tracking"],
 				agents: ["Chief", "Wags", "Milton"],
 				sample: true,
 			},

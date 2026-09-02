@@ -6,6 +6,41 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.158] - 2026-09-02
+
+### Changed
+
+- The factory worker configures itself. It reads its checkout from the LoopTop
+  manifest that `/factory-init` writes (`~/.prompts-factory/loop/loop.json`),
+  takes the reviewer from the signed-in `gh` user, and resolves the default
+  branch from the repository, so nothing is hardcoded and no environment
+  variables are required. It exits with `NOT_REGISTERED` and the registration
+  command when the manifest is missing. `promote-dev.yml` accepts `/approve`
+  from any repository owner, member, or collaborator and merges into the
+  repository's default branch, whatever its name.
+- `setup` 1.0.4 (Agent Master) hides Codex ChatGPT app connectors from the
+  plugin inventory, carries each plugin's marketplace so install and update
+  commands name the right one (`marketing-skills@coreyhaines31`, not
+  `@b-open-io`), keeps **Build setup plan** disabled until a selection differs
+  from the detected state, names the skills that use a missing CLI, keeps the
+  runtime selector controlled from first render, and installs `looptop` and
+  `agent-browser` with `bun add -g`.
+- Inside the Agent Master shell the setup UI now fades in over the app's
+  native splash: the root is marked before first paint and the body animates
+  from transparent, so the window never flashes white between the splash and
+  the configurator.
+- The plugin list is now the bopen.ai marketplace lineup, with an
+  installed-of-total count in the sidebar and overview. Plugins found in other
+  caches (Codex bundled tools, third-party marketplaces) move to a collapsed
+  "Other installed" group and stay out of the health counts. The harness state
+  carries `inCatalog` per plugin.
+- Plugins can be marked for removal. A plugin's detail view has a
+  "remove from this machine" toggle for the plan runtime and a copy button
+  with the exact command (`claude plugin uninstall <name>@<marketplace>` or
+  `codex plugin remove <name>`). The setup plan gains a "Plugin removals"
+  section whose Verify block passes only when the plugin is gone from that
+  runtime's list. The UI still runs nothing itself.
+
 ## [1.1.157] - 2026-09-02
 
 ### Added

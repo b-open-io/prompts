@@ -14,18 +14,18 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  REVIEWER: rohenaz
   COOLING_HOURS: "24"
 
 jobs:
   promote:
     runs-on: ubuntu-latest
     steps:
-      - name: Enable auto-merge only after cooling and fresh approval
+      - name: Merge only after cooling and a fresh /approve from a repository member
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          number="$(gh pr list --repo "$GITHUB_REPOSITORY" --base master --head dev --state open --json number --jq '.[0].number // empty')"
+          base="$(gh repo view "$GITHUB_REPOSITORY" --json defaultBranchRef --jq .defaultBranchRef.name)"
+          number="$(gh pr list --repo "$GITHUB_REPOSITORY" --base "$base" --head dev --state open --json number --jq '.[0].number // empty')"
           [[ -n "$number" ]] || exit 0
           head_time="$(gh api "repos/$GITHUB_REPOSITORY/commits/dev" --jq '.commit.committer.date')"
           cooled="$(python3 - "$head_time" "$COOLING_HOURS" <<'PY'
@@ -37,6 +37,6 @@ jobs:
           )"
           [[ "$cooled" == "yes" ]] || exit 0
           approval="$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$number/comments" --jq \
-            "map(select(.user.login == \"$REVIEWER\" and .body == \"/approve\" and .created_at >= \"$head_time\")) | sort_by(.created_at) | last | .body // empty")"
+            "map(select((.author_association == \"OWNER\" or .author_association == \"MEMBER\" or .author_association == \"COLLABORATOR\") and .body == \"/approve\" and .created_at >= \"$head_time\")) | sort_by(.created_at) | last | .body // empty")"
           [[ "$approval" == "/approve" ]] || exit 0
           gh pr merge "$number" --repo "$GITHUB_REPOSITORY" --merge

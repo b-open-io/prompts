@@ -592,13 +592,16 @@ and agent setup flows so upgrades remain reproducible.
 
 ### Shipping
 
-`master` is the published branch and is protected. Every pull request must pass
-the `validate` and `isolated-install` checks. Work lands on `dev` first. The
-factory worker (`scripts/prompts-factory-worker.sh`) keeps one standing
-`dev` → `master` pull request open and restates the review deadline whenever
-`dev` changes. `promote-dev.yml` merges that pull request only after a 24-hour
-cooling period and a fresh `/approve` comment from the reviewer; a new `dev`
-commit resets both.
+The default branch is the published plugin and is protected. Every pull
+request must pass the `validate` and `isolated-install` checks. Work lands on
+`dev` first. The factory worker (`scripts/prompts-factory-worker.sh`) keeps one
+standing `dev` → default-branch pull request open and restates the review
+deadline whenever `dev` changes. It needs no configuration: `/factory-init`
+registers the loop with LoopTop and writes `~/.prompts-factory/loop/loop.json`,
+the worker reads its checkout from that manifest, and the signed-in `gh` user
+is the reviewer. `promote-dev.yml` merges the pull request only after a
+24-hour cooling period and a fresh `/approve` comment from a repository owner,
+member, or collaborator; a new `dev` commit resets both.
 
 ## Plugin Context Harness
 

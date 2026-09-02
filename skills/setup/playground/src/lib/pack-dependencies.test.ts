@@ -12,6 +12,7 @@ const pack: PackCatalogEntry = {
 		{
 			name: "core",
 			marketplace: "b-open-io",
+			inCatalog: true,
 			install: "claude plugin install core@b-open-io",
 		},
 		{
@@ -32,6 +33,7 @@ const state: HarnessState = {
 	plugins: [
 		{
 			name: "core",
+			marketplace: "b-open-io",
 			installedClaude: "1.1.70",
 			installedCodex: null,
 			marketplaceVersion: "1.1.70",
@@ -59,9 +61,7 @@ describe("pack dependency diff", () => {
 
 	test("uses the selected harness instead of another installed harness", () => {
 		const dependencies = diffPackDependencies(pack, state, "codex")
-		expect(dependencies.find((dependency) => dependency.name === "core")?.installed).toBe(
-			false,
-		)
+		expect(dependencies.find((dependency) => dependency.name === "core")?.installed).toBe(false)
 	})
 })
 

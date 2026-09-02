@@ -446,7 +446,7 @@
   /** @type {any} full HarnessState from GET /api/state, or null before first load */
   var state = null;
 
-  /** @type {Object<string, {installPlugin: boolean, checks: Set<string>, hooks: Object<string, boolean>}>} */
+  /** @type {Object<string, {installPlugin: boolean, uninstallPlugin: boolean, checks: Set<string>, hooks: Object<string, boolean>}>} */
   var selections = {};
 
   var activeTab = "overview";
@@ -476,7 +476,7 @@
     (plugin.hooks || []).forEach(function (h) {
       hooks[h.name] = !!h.enabled;
     });
-    return { installPlugin: false, checks: checks, hooks: hooks };
+    return { installPlugin: false, uninstallPlugin: false, checks: checks, hooks: hooks };
   }
 
   function initAllSelections(newState) {
@@ -497,6 +497,7 @@
         return;
       }
       fresh.installPlugin = old.installPlugin;
+      fresh.uninstallPlugin = !!old.uninstallPlugin;
       (p.checks || []).forEach(function (c) {
         if (c.installed || old.checks.has(c.id)) fresh.checks.add(c.id);
         else fresh.checks.delete(c.id);
@@ -540,6 +541,7 @@
         return {
           name: p.name,
           installPlugin: s.installPlugin,
+          uninstallPlugin: !!s.uninstallPlugin,
           checks: Array.from(s.checks),
           hooks: Object.assign({}, s.hooks)
         };

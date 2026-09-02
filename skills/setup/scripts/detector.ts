@@ -50,6 +50,13 @@ export type SkillInterfaceState = {
 
 export type PluginState = {
   name: string;
+  /** Marketplace the plugin installs from (`b-open-io`, `coreyhaines31`, ...). */
+  marketplace: string | null;
+  /** True when the plugin belongs to the bopen.ai marketplace: the catalog
+   * lists it, or the installed copy came from the `b-open-io` cache. Every
+   * other cache entry (Codex bundled tools, other marketplaces) is inventory
+   * only and stays out of the main list. */
+  inCatalog: boolean;
   installedClaude: string | null;
   installedCodex: string | null;
   marketplaceVersion: string | null;
@@ -77,6 +84,7 @@ export type PlanSelections = {
   plugins: Array<{
     name: string;
     installPlugin: boolean;
+    uninstallPlugin: boolean;
     checks: string[];
     hooks: Record<string, boolean>;
   }>;
@@ -534,6 +542,20 @@ function compareVersions(a: string, b: string): number {
 
 type InstalledPlugin = { version: string; root: string; marketplace: string };
 
+/** Codex also caches ChatGPT app connectors as plugins (`app-<hex>` directories
+ * whose manifest declares `apps`). They carry no skills, agents, or hooks, so
+ * the harness inventory hides them. */
+function isCodexAppPlugin(root: string): boolean {
+  const manifestPath = join(root, ".codex-plugin", "plugin.json");
+  if (!existsSync(manifestPath)) return false;
+  try {
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { apps?: unknown };
+    return manifest.apps !== undefined;
+  } catch {
+    return false;
+  }
+}
+
 async function listLatestPluginVersions(cacheDir: string, marketplace: string): Promise<Map<string, InstalledPlugin>> {
   const result = new Map<string, InstalledPlugin>();
   let pluginNames: string[];
@@ -553,7 +575,9 @@ async function listLatestPluginVersions(cacheDir: string, marketplace: string): 
     }
     if (versions.length === 0) continue;
     const latest = versions.sort(compareVersions).at(-1) as string;
-    result.set(pluginName, { version: latest, root: join(pluginPath, latest), marketplace });
+    const root = join(pluginPath, latest);
+    if (isCodexAppPlugin(root)) continue;
+    result.set(pluginName, { version: latest, root, marketplace });
   }
 
   return result;
@@ -705,7 +729,15 @@ export async function detectHarness(opts: {
     opts.marketplaceCache ?? fetchMarketplaceCatalog(opts.marketplaceUrl),
   ]);
 
-  const pluginNames = new Set<string>([...claudePlugins.keys(), ...codexPlugins.keys(), ...marketplace.versions.keys()]);
+  // Every catalog entry is listed, installed or not, including entries the
+  // catalog publishes without a version (x402), so the marketplace lineup is
+  // complete rather than "whatever happens to carry a version string".
+  const pluginNames = new Set<string>([
+    ...claudePlugins.keys(),
+    ...codexPlugins.keys(),
+    ...marketplace.versions.keys(),
+    ...(marketplace.plugins?.keys() ?? []),
+  ]);
 
   const [plugins, pack] = await Promise.all([
     Promise.all([...pluginNames].sort().map(async (name): Promise<PluginState> => {
@@ -733,6 +765,12 @@ export async function detectHarness(opts: {
 
       return {
         name,
+        marketplace: claude?.marketplace ?? codex?.marketplace ?? marketplace.plugins?.get(name)?.marketplace ?? null,
+        inCatalog:
+          marketplace.versions.has(name) ||
+          (marketplace.plugins?.has(name) ?? false) ||
+          claude?.marketplace === "b-open-io" ||
+          codex?.marketplace === "b-open-io",
         installedClaude: claude?.version ?? null,
         installedCodex: codex?.version ?? null,
         marketplaceVersion: marketplace.versions.get(name) ?? null,

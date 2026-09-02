@@ -29,6 +29,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select"
 import { PACK_CATALOG } from "@/lib/pack-catalog"
+import { catalogSummary, partitionPlugins } from "@/lib/plugins"
 import { type HarnessState, type PluginState, RUNTIMES, type Runtime } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -154,6 +155,9 @@ export const Sidebar = memo(function Sidebar({
 	onOpenStore: (slug: string) => void
 }) {
 	const [pluginsExpanded, setPluginsExpanded] = useState(true)
+	const [othersExpanded, setOthersExpanded] = useState(false)
+	const partition = partitionPlugins(state?.plugins ?? [])
+	const summary = state ? catalogSummary(state) : { installed: 0, total: 0 }
 	const { play } = useSound()
 	const unlockedPacks = new Set(packAccess ?? [])
 	const orderedPacks = [...PACK_CATALOG].sort(
@@ -343,13 +347,18 @@ export const Sidebar = memo(function Sidebar({
 				>
 					<Puzzle className="size-4" strokeWidth={1.7} aria-hidden="true" />
 					<span className="flex-1">Plugins</span>
+					{state && (
+						<span className="text-[0.58rem] text-muted-foreground">
+							{summary.installed} / {summary.total}
+						</span>
+					)}
 					<ChevronRight
 						className={cn("size-3.5 transition-transform", pluginsExpanded && "rotate-90")}
 						aria-hidden="true"
 					/>
 				</button>
 				<div id="setup-plugin-navigation" hidden={!pluginsExpanded} className="space-y-1">
-					{state?.plugins.map((plugin) => (
+					{partition.catalog.map((plugin) => (
 						<SidebarPluginRow
 							key={plugin.name}
 							plugin={plugin}
@@ -357,6 +366,32 @@ export const Sidebar = memo(function Sidebar({
 							onSelect={onSelect}
 						/>
 					))}
+					{partition.other.length > 0 && (
+						<>
+							<button
+								type="button"
+								onClick={() => setOthersExpanded((value) => !value)}
+								aria-expanded={othersExpanded}
+								className="mt-1 flex h-7 w-full items-center gap-2 rounded-md px-2 text-left text-[0.68rem] text-muted-foreground hover:bg-sidebar-accent/60"
+							>
+								<ChevronRight
+									className={cn("size-3 transition-transform", othersExpanded && "rotate-90")}
+									aria-hidden="true"
+								/>
+								<span className="flex-1 truncate">Other installed</span>
+								<span className="text-[0.58rem]">{partition.other.length}</span>
+							</button>
+							{othersExpanded &&
+								partition.other.map((plugin) => (
+									<SidebarPluginRow
+										key={plugin.name}
+										plugin={plugin}
+										active={activeView === plugin.name}
+										onSelect={onSelect}
+									/>
+								))}
+						</>
+					)}
 				</div>
 				{!state && (
 					<div className="flex items-center gap-2 px-2 py-2 text-[0.72rem] text-muted-foreground">
@@ -370,7 +405,7 @@ export const Sidebar = memo(function Sidebar({
 					<span className="font-mono text-[0.61rem] uppercase tracking-[0.1em] text-muted-foreground">
 						Plan for
 					</span>
-					<Select value={selectedRuntime ?? undefined} onValueChange={selectRuntime}>
+					<Select value={selectedRuntime ?? ""} onValueChange={selectRuntime}>
 						<SelectTrigger className="h-7 rounded-md bg-background/60 px-2 py-0">
 							<SelectValue />
 						</SelectTrigger>

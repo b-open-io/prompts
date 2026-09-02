@@ -401,7 +401,7 @@ describe("skill activity", () => {
     await writeFile(
       activityFile,
       [
-        JSON.stringify({ ts: nowSeconds - 60, session_id: "bopen-session", skill: "orchestra:advisor" }),
+        JSON.stringify({ ts: nowSeconds - 60, session_id: "bopen-session", skill: "core:humanize" }),
         JSON.stringify({ ts: nowSeconds - 30, session_id: "similar-session", skill: "bopen-tools-extra:helper" }),
       ].join("\n")
     );
@@ -426,7 +426,7 @@ describe("skill activity", () => {
     });
 
     expect(state.plugins.find((plugin) => plugin.name === "core")?.skillActivity).toEqual({
-      "orchestra:advisor": {
+      "core:humanize": {
         lastInvokedAt: nowSeconds - 60,
         sessionId: "bopen-session",
         count24h: 1,
@@ -592,4 +592,27 @@ describe("resolveInstall (platform-resolution fallback chain)", () => {
     expect(result.install).toBeUndefined();
     expect(result.installNote).toBeUndefined();
   });
+});
+
+test("catalog entries without a version are still listed and flagged as catalog", async () => {
+  const state = await detectHarness({
+    runtimeArg: "generic",
+    pluginCacheRoots: { claude: "/nonexistent/claude", codex: "/nonexistent/codex" },
+    portableSkillRoots: [],
+    marketplaceCache: {
+      fetched: true,
+      error: null,
+      fetchedAt: "2027-01-15T00:00:00.000Z",
+      versions: new Map([["core", "1.0.0"]]),
+      plugins: new Map([
+        ["core", { name: "core", marketplace: "b-open-io", source: "b-open-io/claude-plugins", install: "claude plugin install core@b-open-io", version: "1.0.0" }],
+        ["x402", { name: "x402", marketplace: "calgooon", source: "calgooon/x402", install: "claude plugin install x402@calgooon", version: null }],
+      ]),
+    },
+    env: {},
+  });
+  const names = state.plugins.map((plugin) => plugin.name);
+  expect(names).toContain("x402");
+  expect(state.plugins.find((plugin) => plugin.name === "x402")?.inCatalog).toBe(true);
+  expect(state.plugins.find((plugin) => plugin.name === "x402")?.marketplaceVersion).toBeNull();
 });
