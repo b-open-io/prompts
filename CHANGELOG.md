@@ -6,6 +6,30 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.156] - 2026-09-01
+
+### Changed
+
+- Clarified module ownership across `deploy-agent-team`, its roster reference,
+  `wave-coordinator`, `hunter-skeptic-referee`, and `generative-ui`, so spawned
+  agents and referenced skills resolve to the plugin that actually provides
+  them. Bumped `orchestra` to 0.1.15, `review` to 0.1.12, and `web-dev` to
+  0.1.4.
+- Moved Kurt's deployment source into `brand-rep`, generalized the account
+  manager for the deploying product or site, and removed the local Typefully
+  wrapper in favor of Typefully's own skill. Corrected Resend references to
+  the external `resend:resend` skill. Bumped `brand-rep` to 0.1.6 and
+  `dev-ops` to 0.1.8.
+- Kept the Vercel Security Dashboard guidance progressively disclosed in the
+  owning agent boundaries; the detailed scan workflow remains out of the
+  always-loaded agent bodies.
+- Corrected `agent-auditor` to reference `web-dev:generative-ui` and bumped
+  `plugin-kit` to 0.1.5.
+- `npm-publish` 3.1.3 now requires a synced default branch, refuses to release
+  from a feature branch, and clearly uses Bun's browser publish confirmation
+  (`bun publish --access public`). The normal flow asks only for the browser
+  checkbox and **Publish** action; it never asks for an OTP or one-time code.
+
 ## [1.1.154] - 2026-08-31
 
 ### Changed

@@ -13,9 +13,10 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-# Try publish — pipe ENTER for OTP browser prompt
+# Try Bun's web-auth publish flow. The newline accepts the CLI prompt and
+# opens npm's browser confirmation; it is not an OTP or code input.
 # shellcheck disable=SC2086 # Parsed above into fixed publish flags.
-OUTPUT=$(echo "" | bun publish $EXTRA_FLAGS 2>&1)
+OUTPUT=$(printf '\n' | bun publish $EXTRA_FLAGS 2>&1)
 EXIT_CODE=$?
 
 if [ $EXIT_CODE -eq 0 ]; then

@@ -161,6 +161,7 @@ A literal entity count in a copy diff is a review defect.
 
 ## Never fabricate Linear ticket IDs (2026-07-14)
 Used OPL-2935/2936/2937 in spec filenames and a pushed commit before creating the tickets; Linear then assigned 2935 to an unrelated issue and everything misaligned. Rule: CREATE the ticket first (linear-api.sh issueCreate), then use the identifier it returns. If an ID was already burned in pushed history, realign by retitling/creating tickets in sequence immediately.
+
 ## A new tool does not imply a new skill (2026-08-26)
 
 Start with the smallest representation that changes agent behavior. For a

@@ -56,7 +56,7 @@ grok plugin install core@b-open-io --trust
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
 | `dev-ops` | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
-| `brand-rep` | personas for public surfaces, Typefully drafting and scheduling; account-manager, social-media-manager |
+| `brand-rep` | personas for public surfaces; account-manager, social-media-manager |
 
 ```bash
 /plugin install orchestra@b-open-io
@@ -68,18 +68,19 @@ Install only what you need. Codex allocates roughly two percent of the model's
 context window to skills across *every* installed plugin, so an unused module
 spends budget another plugin could have used.
 
-Two agents reference skills published outside this marketplace. They degrade
-gracefully — each says which install command is missing rather than guessing —
-but install these to get their full behavior:
+Some agents reference skills published outside this marketplace. They name
+the install command when a skill is missing. They do not wrap those products.
 
 | Agent | Needs | Install |
 |---|---|---|
 | `brand-rep:social-media-manager` (Alex) | `marketing-skills:social`, `:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
-| `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | same |
+| `brand-rep:social-media-manager` (Alex) | Typefully scheduler, if the user uses Typefully | `npx skills add typefully/agent-skills` |
+| `core:front-desk` / `dev-ops:integration-expert` | Resend email | `npx skills add resend/resend-skills` |
+| `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
 
-Corey Haines' `coreyhaines31/marketingskills` is MIT and installs from its own
-marketplace; it is not redistributed here. Skills-only alternative:
-`bunx skills add coreyhaines31/marketingskills --skill social`.
+Those packages are not redistributed here. Corey Haines' `marketingskills` is
+MIT. Typefully and Resend publish their own skills — do not wrap their APIs
+in this repo.
 
 ### Codex
 
@@ -268,7 +269,7 @@ intentional.
 | `hunter-skeptic-referee` | Adversarial bug hunting with three isolated agents |
 | `native-sdk-macos-release` | Scaffold or ship a Vercel Native SDK macOS app: native check/build, Developer ID sign, DMG, notary, staple |
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
-| `npm-publish` | Publish packages to npm with changelog and version management |
+| `npm-publish` | Publish packages to npm from the synced default branch with changelog/version management and browser confirmation |
 | `perf-audit` | Run local performance audits without network calls |
 | `postplan` | Host an HTML draft on postplan.dev when Claude Artifacts are not available |
 | `shaders` | Custom shaders for Three.js and WebGL |

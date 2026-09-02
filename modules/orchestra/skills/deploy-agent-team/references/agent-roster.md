@@ -1,6 +1,6 @@
 # Agent Roster
 
-Full core agent roster with `subagent_type` identifiers and the skills to mention in each agent's spawn prompt.
+Full installed agent roster with `subagent_type` identifiers and the skills to mention in each agent's spawn prompt.
 
 > **Why mention skills in spawn prompts?** Each agent has specialized skills available, but agents only invoke skills they're told about. If you don't mention `Skill(semgrep)` in the code-auditor's prompt, it may skip static analysis entirely. Always tell agents which skills apply to their task.
 
@@ -10,29 +10,30 @@ Full core agent roster with `subagent_type` identifiers and the skills to mentio
 
 | Agent | subagent_type | Model | Best for |
 |-------|--------------|-------|----------|
-| **researcher** | `core:researcher` | sonnet | Libraries, APIs, docs, competitive analysis, web sources |
-| **nextjs** | `core:nextjs` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
-| **native-desktop** | `core:native-desktop` | sonnet | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs |
-| **designer** | `core:designer` | sonnet | UI components, game HUDs, TV shells, controller/remote focus, design systems, accessibility |
+| **researcher** | `research:researcher` | sonnet | Libraries, APIs, docs, competitive analysis, web sources |
+| **nextjs** | `web-dev:nextjs` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
+| **native-desktop** | `creative:native-desktop` | sonnet | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs |
+| **designer** | `web-dev:designer` | sonnet | UI components, game HUDs, TV shells, controller/remote focus, design systems, accessibility |
 | **agent-builder** | `orchestra:agent-builder` | opus | AI SDK v7 agents, tool-calling, durable runtime selection, conditional eve evaluation |
-| **database** | `core:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
-| **integration-expert** | `core:integration-expert` | sonnet | REST APIs, webhooks, third-party services |
-| **code-auditor** | `core:code-auditor` | opus | Security review, vulnerability scanning, code quality |
-| **tester** | `core:tester` | sonnet | Unit, integration, e2e tests, mocking, coverage, CI |
-| **documentation-writer** | `core:documentation-writer` | sonnet | READMEs, API docs, PRDs, guides |
-| **devops** | `core:devops` | sonnet | Vercel+Railway+Bun deployments, CI/CD, monitoring |
-| **optimizer** | `core:optimizer` | opus | Bundle analysis, Lighthouse, runtime perf, Core Web Vitals |
-| **architecture-reviewer** | `core:architecture-reviewer` | opus | System design review, refactoring strategy, tech debt |
-| **mobile** | `core:mobile` | sonnet | Expo-first React Native, Swift, Kotlin, Flutter |
-| **data** | `core:data` | sonnet | ETL pipelines, analytics, data visualization |
-| **payments** | `core:payments` | sonnet | Stripe, billing, financial transactions |
-| **mcp** | `core:mcp` | sonnet | MCP server setup, config, diagnostics |
+| **database** | `dev-ops:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
+| **integration-expert** | `dev-ops:integration-expert` | sonnet | REST APIs, webhooks, third-party services |
+| **code-auditor** | `review:code-auditor` | opus | Security review, vulnerability scanning, code quality |
+| **tester** | `review:tester` | sonnet | Unit, integration, e2e tests, mocking, coverage, CI |
+| **documentation-writer** | `research:documentation-writer` | sonnet | READMEs, API docs, PRDs, guides |
+| **devops** | `dev-ops:devops` | sonnet | Vercel+Railway+Bun deployments, CI/CD, monitoring |
+| **optimizer** | `web-dev:optimizer` | opus | Bundle analysis, Lighthouse, runtime perf, Core Web Vitals |
+| **architecture-reviewer** | `review:architecture-reviewer` | opus | System design review, refactoring strategy, tech debt |
+| **mobile** | `web-dev:mobile` | sonnet | Expo-first React Native, Swift, Kotlin, Flutter |
+| **data** | `dev-ops:data` | sonnet | ETL pipelines, analytics, data visualization |
+| **payments** | `dev-ops:payments` | sonnet | Stripe, billing, financial transactions |
+| **mcp** | `mcp-dev:mcp` | sonnet | MCP server setup, config, diagnostics |
 | **marketer** | `product-skills:marketer` | sonnet | CRO, SEO, copy, launch strategy |
 | **social-media-manager** | `brand-rep:social-media-manager` | sonnet | Owned-account posts, calendars, mention replies, humanize pass |
+| **account-manager** | `brand-rep:account-manager` | sonnet | Public pre-sales, visitor chat, booking |
 | **legal** | `product-skills:legal` | opus | Privacy, compliance, ToS, data protection |
-| **audio-specialist** | `core:audio-specialist` | sonnet | Audio, xAI/Grok generation, ElevenLabs |
-| **prompt-engineer** | `core:prompt-engineer` | sonnet | Slash commands, skills, hooks, YAML frontmatter |
-| **consolidator** | `core:consolidator` | sonnet | File structure cleanup, deduplication, organization |
+| **audio-specialist** | `creative:audio-specialist` | sonnet | Audio, xAI/Grok generation, ElevenLabs |
+| **prompt-engineer** | `plugin-kit:prompt-engineer` | sonnet | Slash commands, skills, hooks, YAML frontmatter |
+| **consolidator** | `review:consolidator` | sonnet | File structure cleanup, deduplication, organization |
 
 ## Per-Agent Skills to Mention in Spawn Prompts
 
@@ -55,7 +56,7 @@ Invoke these BEFORE writing any security findings.
 - `Skill(frontend-design)` — invoke for UI component and layout guidance
 - `Skill(web-design-guidelines)` — invoke for design system rules and patterns
 - `Skill(ui-audio-theme)` — invoke for audio/motion design patterns
-- `Skill(core:design-game-ui)` — invoke for game HUDs, TV interfaces, controller/remote input maps, and spatial focus navigation
+- `Skill(creative:design-game-ui)` — invoke for game HUDs, TV interfaces, controller/remote input maps, and spatial focus navigation
 - `Skill(vercel-react-best-practices)` — invoke for React + Vercel performance rules
 
 Invoke `Skill(frontend-design)` first before designing any component.
@@ -65,7 +66,7 @@ Invoke `Skill(frontend-design)` first before designing any component.
 
 ```markdown
 ## Your Available Skills
-- `Skill(core:frontend-performance)` — invoke for Core Web Vitals and bundle optimization
+- `Skill(web-dev:frontend-performance)` — invoke for Core Web Vitals and bundle optimization
 - `Skill(vercel-react-best-practices)` — invoke for Vercel-specific perf patterns
 - `Skill(vercel-composition-patterns)` — invoke for RSC composition and streaming
 
@@ -89,7 +90,7 @@ Use these to ground your review in concrete analysis, not just intuition.
 ## Your Available Skills
 - `Skill(vercel-react-best-practices)` — invoke before any RSC, streaming, or routing work
 - `Skill(vercel-composition-patterns)` — invoke for layout and composition patterns
-- `Skill(core:create-next-project)` — invoke when scaffolding a new Next.js project
+- `Skill(web-dev:create-next-project)` — invoke when scaffolding a new Next.js project
 
 Always invoke `Skill(vercel-react-best-practices)` before writing any server component or route handler.
 ```
@@ -113,7 +114,7 @@ Use the Native SDK for new desktop applications. Treat Wails, Electron, and Elec
 ```markdown
 ## Your Available Skills
 - `Skill(agent-browser)` — invoke for scraping pages, extracting structured data from web content
-- `Skill(core:x-research)` — invoke for real-time X/Twitter data and trends
+- `Skill(research:x-research)` — invoke for real-time X/Twitter data and trends
 - `Skill(notebooklm)` — invoke for deep synthesis of multiple research sources
 
 Use `Skill(agent-browser)` for any page that requires interaction or dynamic loading.
@@ -123,7 +124,7 @@ Use `Skill(agent-browser)` for any page that requires interaction or dynamic loa
 
 ```markdown
 ## Your Available Skills
-- `Skill(core:resend)` — invoke for email sending integration with Resend
+- `Skill(resend:resend)` — Resend's own skill (`npx skills add resend/resend-skills`). Do not invent a wrapper.
 - `Skill(mcp-integration)` — invoke when integrating with MCP servers
 
 Invoke the relevant skill before starting any third-party integration.
@@ -136,7 +137,7 @@ Invoke the relevant skill before starting any third-party integration.
 - `Skill(semgrep)` — invoke to scan CI/CD configuration for security issues
 - `Skill(codeql)` — invoke for deep workflow security analysis
 - `Skill(product-skills:saas-launch-audit)` — invoke before any production deployment
-- `Skill(core:npm-publish)` — invoke when publishing packages
+- `Skill(plugin-kit:npm-publish)` — invoke when publishing packages
 
 Always run `Skill(product-skills:saas-launch-audit)` before a production deploy.
 ```
@@ -160,7 +161,7 @@ go/no-go; failed seam proofs select the v7-native runtime.
 ```markdown
 ## Your Available Skills
 - `Skill(core:humanize)` — invoke to review docs for filler and vague language
-- `Skill(core:cli-demo-gif)` — invoke to create terminal demo GIFs for docs
+- `Skill(creative:cli-demo-gif)` — invoke to create terminal demo GIFs for docs
 
 Invoke `Skill(core:humanize)` after drafting to eliminate padding.
 ```
@@ -169,13 +170,14 @@ Invoke `Skill(core:humanize)` after drafting to eliminate padding.
 
 ```markdown
 ## Your Available Skills
-- `Skill(humanize)` — invoke on every draft before you hand it over
+- `Skill(core:humanize)` — invoke on every draft before you hand it over
 - `Skill(marketing-skills:social)` — invoke for platform cadence and post shape
-- `Skill(typefully)` — invoke to draft or schedule in Typefully
-- `Skill(persona)` — invoke when matching a named voice
-- `Skill(x-research)` — invoke before posting about a live conversation on X
+- `Skill(research:persona)` — invoke when matching a named voice
+- `Skill(research:x-research)` — invoke before posting about a live conversation on X
 
-Always run `Skill(humanize)` last. If it is missing, say so and do not ship the post.
+Always run `Skill(core:humanize)` last. If it is missing, say so and do not ship the post.
+Typefully is a third-party scheduler. If the user uses it, install
+`typefully/agent-skills`. Do not wrap their API.
 ```
 
 ### marketer
@@ -205,7 +207,7 @@ Invoke `Skill(webapp-testing)` before setting up any test infrastructure.
 
 ```markdown
 ## Your Available Skills
-- `Skill(core:plaid-integration)` — invoke for any Plaid/banking integration work
+- `Skill(dev-ops:plaid-integration)` — invoke for any Plaid/banking integration work
 
 Review Stripe docs directly via WebFetch for current API patterns.
 ```

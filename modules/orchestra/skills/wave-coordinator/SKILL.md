@@ -133,7 +133,7 @@ Update the ledger after each wave completes. This prevents re-dispatching work a
 
 Before assigning a wave slot to a generic worker, match it against the roster
 in `../deploy-agent-team/references/agent-roster.md` and pass the specific
-`subagent_type` (e.g. `core:code-auditor`). Each wave slot picks a
+`subagent_type` (e.g. `review:code-auditor`). Each wave slot picks a
 roster agent before defaulting to a generic explorer/worker — use the generic
 adapter only when no roster agent fits, and say so explicitly in the wave
 ledger.

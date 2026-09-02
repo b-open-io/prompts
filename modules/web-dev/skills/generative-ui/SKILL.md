@@ -1,6 +1,6 @@
 ---
 name: generative-ui
-version: 0.2.3
+version: 0.2.4
 description: >-
   Decide between static components and AI-generated interfaces, and build the latter. Use for
   "generative UI", "dynamic UI", "json-render", "render JSON as UI", "AI UI generation", "MCP
@@ -90,7 +90,7 @@ AI generates spec → MCP tool returns structuredContent
                   → User interacts → View calls tools → fresh spec
 ```
 
-For building MCP Apps that deliver generative UI, use Skill(core:mcp-apps).
+For building MCP Apps that deliver generative UI, use Skill(mcp-dev:mcp-apps).
 
 ## Delivery Channels
 

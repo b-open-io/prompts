@@ -1,11 +1,11 @@
 # npm-publish
 
-Publish npm packages from Claude Code with automatic token rotation. When your npm token expires, the skill uses agent-browser to create a new granular access token through Chrome — you click one button, the token is captured via clipboard, and publishing resumes automatically.
+Publish npm packages from Claude Code from the repository's synced default branch. The normal release uses Bun's browser-based publish confirmation: the browser opens, you check the confirmation box, and click **Publish**. No OTP or one-time code is requested. If credentials are explicitly reported as expired or missing, the skill can use agent-browser to create a new granular access token through Chrome.
 
 ## Flow
 
 ```
-preflight.sh → Agent writes CHANGELOG → release.sh → publish.sh → verify.sh
+branch check + sync → preflight.sh → Agent writes CHANGELOG → release.sh → publish.sh → verify.sh
    (script)        (agent)                (script)     (script)     (background)
                                                           │
                                               ┌──── AUTH_FAILED? ────┐
@@ -52,13 +52,13 @@ bash scripts/release.sh --access public  # scoped @org/pkg
 
 ### publish.sh
 
-Attempts `echo "" | bun publish`. Returns status codes:
+Attempts `printf '\n' | bun publish --access public` (with the supplied flags). Returns status codes:
 - `PUBLISH_SUCCESS` — done
 - `VERSION_ALREADY_PUBLISHED` — immutable version collision; rerun preflight and bump, never rotate credentials
 - `AUTH_FAILED` — output contains explicit authentication evidence; agent should run setup-token.sh
 - `PUBLISH_ERROR` — another publish failure; preserve and diagnose the npm output
 
-The piped ENTER opens npm's confirmation in the system default browser when the token is valid but approval is required. That browser may be DIA. The agent must not navigate Chrome or run token setup during this normal confirmation flow.
+The piped newline accepts Bun's CLI prompt and opens npm's normal confirmation in the system default browser when approval is required. That browser may be DIA. Check the confirmation box and click **Publish**. This flow does not use or request an OTP code. The agent must not navigate Chrome or run token setup during this normal confirmation flow.
 
 The classifier checks duplicate-version text before authentication because npm reports both conditions with 403 responses. Generic 403 and 404 responses remain `PUBLISH_ERROR`; status codes alone are not proof that credentials are invalid.
 
@@ -81,7 +81,7 @@ Two-phase token creation via agent-browser + Chrome:
 
 **Security:** The token never appears in terminal output, shell history, or agent context. It flows: npm page → Copy button → system clipboard → `pbpaste` into file → clipboard cleared.
 
-**Why granular tokens:** npm's CLI cannot create granular or automation tokens (`npm token create` only makes legacy publish tokens that require OTP every time). Granular tokens must be created through the website. agent-browser automates the form filling; the user's only interaction is clicking Generate.
+**Why granular tokens:** npm's CLI cannot create granular or automation tokens. Granular tokens must be created through the website. agent-browser automates the form filling; the user's only interaction is clicking Generate when explicit credential recovery is required.
 
 ### verify.sh
 
@@ -98,7 +98,7 @@ Backoff: 5s → 10s → 20s → 40s → 60s. Exits 0 when the version appears on
 The skill uses **granular access tokens** (7-day expiry) stored in `~/.npmrc`. This replaces the old approach of piping ENTER to `bun publish` for browser auth, which broke in bun 1.3.8 when tokens were fully expired (404 instead of auth prompt).
 
 Token lifecycle:
-1. **Token valid** → `bun publish` succeeds, may show OTP checkbox (piped ENTER opens it)
+1. **Token valid** → `bun publish --access public` opens the browser publish confirmation (piped newline opens it)
 2. **Token expired/revoked** → publish output contains explicit authentication evidence → `setup-token.sh` creates a new token via Chrome → retry succeeds
 3. **No token** → same as expired
 
@@ -120,6 +120,7 @@ Key status codes:
 | setup-token.sh capture | `TOKEN_SAVED` | Retry publish.sh |
 | setup-token.sh capture | `CAPTURE_TIMEOUT` | Tell user to copy token manually |
 | release.sh | `RELEASE_DONE:pkg:ver:flags` | Run publish.sh with flags |
+| release.sh | `WRONG_BRANCH` | Stop; switch to the repository default branch and sync it before retrying |
 
 ## Form Interaction Details
 
