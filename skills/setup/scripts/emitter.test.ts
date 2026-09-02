@@ -17,6 +17,7 @@ function makePlugin(overrides: Record<string, unknown> = {}): any {
   return {
     name: "core",
     marketplace: "b-open-io",
+    inCatalog: true,
     installedClaude: null,
     installedCodex: null,
     marketplaceVersion: null,
@@ -358,6 +359,7 @@ describe("grok dialect", () => {
         {
           name: "core",
           marketplace: "b-open-io",
+          inCatalog: true,
           installedClaude,
           installedCodex: null,
           marketplaceVersion: "9.9.9",

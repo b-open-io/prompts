@@ -12,6 +12,7 @@ const pack: PackCatalogEntry = {
 		{
 			name: "core",
 			marketplace: "b-open-io",
+			inCatalog: true,
 			install: "claude plugin install core@b-open-io",
 		},
 		{

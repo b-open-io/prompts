@@ -29,6 +29,11 @@ manifests share the same release version.
   native splash: the root is marked before first paint and the body animates
   from transparent, so the window never flashes white between the splash and
   the configurator.
+- The plugin list is now the bopen.ai marketplace lineup, with an
+  installed-of-total count in the sidebar and overview. Plugins found in other
+  caches (Codex bundled tools, third-party marketplaces) move to a collapsed
+  "Other installed" group and stay out of the health counts. The harness state
+  carries `inCatalog` per plugin.
 
 ## [1.1.157] - 2026-09-02
 

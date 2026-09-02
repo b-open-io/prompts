@@ -52,6 +52,11 @@ export type PluginState = {
   name: string;
   /** Marketplace the plugin installs from (`b-open-io`, `coreyhaines31`, ...). */
   marketplace: string | null;
+  /** True when the plugin belongs to the bopen.ai marketplace: the catalog
+   * lists it, or the installed copy came from the `b-open-io` cache. Every
+   * other cache entry (Codex bundled tools, other marketplaces) is inventory
+   * only and stays out of the main list. */
+  inCatalog: boolean;
   installedClaude: string | null;
   installedCodex: string | null;
   marketplaceVersion: string | null;
@@ -723,7 +728,15 @@ export async function detectHarness(opts: {
     opts.marketplaceCache ?? fetchMarketplaceCatalog(opts.marketplaceUrl),
   ]);
 
-  const pluginNames = new Set<string>([...claudePlugins.keys(), ...codexPlugins.keys(), ...marketplace.versions.keys()]);
+  // Every catalog entry is listed, installed or not, including entries the
+  // catalog publishes without a version (x402), so the marketplace lineup is
+  // complete rather than "whatever happens to carry a version string".
+  const pluginNames = new Set<string>([
+    ...claudePlugins.keys(),
+    ...codexPlugins.keys(),
+    ...marketplace.versions.keys(),
+    ...(marketplace.plugins?.keys() ?? []),
+  ]);
 
   const [plugins, pack] = await Promise.all([
     Promise.all([...pluginNames].sort().map(async (name): Promise<PluginState> => {
@@ -752,6 +765,11 @@ export async function detectHarness(opts: {
       return {
         name,
         marketplace: claude?.marketplace ?? codex?.marketplace ?? marketplace.plugins?.get(name)?.marketplace ?? null,
+        inCatalog:
+          marketplace.versions.has(name) ||
+          (marketplace.plugins?.has(name) ?? false) ||
+          claude?.marketplace === "b-open-io" ||
+          codex?.marketplace === "b-open-io",
         installedClaude: claude?.version ?? null,
         installedCodex: codex?.version ?? null,
         marketplaceVersion: marketplace.versions.get(name) ?? null,
