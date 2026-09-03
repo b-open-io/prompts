@@ -201,6 +201,47 @@ class PluginExtractionTests(unittest.TestCase):
         self.assertEqual(names, ["mod"])
         self.assertNotIn("core", stdout)
 
+    def test_unknown_plugin_name_is_an_error_not_a_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            root.mkdir()
+            dangling_vendored_repo(root)
+            previous = EXTRACTION.ROOT
+            EXTRACTION.ROOT = root
+            try:
+                from io import StringIO
+                from contextlib import redirect_stderr
+
+                err = StringIO()
+                with redirect_stderr(err):
+                    code = EXTRACTION.main(["--plugin", "bogus-name"])
+            finally:
+                EXTRACTION.ROOT = previous
+        self.assertEqual(code, 1)
+        self.assertIn("bogus-name", err.getvalue())
+
+    def test_symlink_resolving_outside_plugin_root_is_escaping(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "repo"
+            root.mkdir()
+            outside = Path(directory) / "outside"
+            outside.mkdir()
+            (outside / "SKILL.md").write_text("# outside\n", encoding="utf-8")
+            write_marketplace(root, [("mod", "./modules/mod")])
+            write_plugin_manifest(root, "mod")
+            link = root / "modules" / "mod" / "skills" / "leak"
+            link.parent.mkdir(parents=True, exist_ok=True)
+            os.symlink(str(outside), link)
+            commit_repo(root)
+            code, report, stdout = self.invoke(root)
+        self.assertEqual(code, 1)
+        problems = self.plugin(report, "mod")["problems"]
+        self.assertTrue(
+            any(item["kind"] == "escaping-symlink" and item["path"] == "skills/leak" for item in problems),
+            problems,
+        )
+        self.assertIn("escaping-symlink", stdout)
+
     def test_unregistered_module_is_reported(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"

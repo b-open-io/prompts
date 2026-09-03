@@ -276,7 +276,7 @@ files.
 
 - Which 8–12 capabilities belong in core after routing evals.
 
-- Vendored skills live inside the module that ships them
+- Resolved: vendored skills live inside the module that ships them
   (`modules/<name>/.agents/skills/`) with a per-module `skills-lock.json`, so
   every module is self-contained under git-subdir sourcing; Codex exposure of
   those skills follows the module's `skills` directory.

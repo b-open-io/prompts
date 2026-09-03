@@ -88,6 +88,12 @@ def load_local_plugins(
         if wanted is not None and name not in wanted:
             continue
         selected.append({"name": name, "path": path})
+    if wanted is not None:
+        missing = sorted(wanted - {plugin["name"] for plugin in selected})
+        if missing:
+            raise RuntimeError(
+                "no local-source marketplace entry named: " + ", ".join(missing)
+            )
     return selected
 
 
