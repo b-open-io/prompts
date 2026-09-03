@@ -1,14 +1,17 @@
 ---
 name: coordinator
-version: 0.0.11
+version: 0.0.12
 description: >-
   Route bounded code-writing volume from a capable Claude Code, Codex, or Grok
   Build main session to cheaper or specialized executors — native plugin-roster
-  agents, Grok subagents, Codex / GPT-5.6 Sol workers or reviewers — while planning, design
-  intent, review, verification, and git stay in the main seat. Use for "dispatch
-  to workers", "plan big execute small", "race worker lanes", "model arbitrage",
+  agents, Grok subagents, Codex / GPT-5.6 Sol workers or reviewers, GPT-5.6 Luna
+  extra-high volume, or Muse Spark 1.3 — while planning, design intent, review,
+  verification, and git stay in the main seat. Use for "dispatch to workers",
+  "plan big execute small", "race worker lanes", "model arbitrage",
   "spec and dispatch", "use Sol as a worker", "use Sol as a reviewer",
-  "use GPT 5.6 Sol", or "create-workflow".
+  "use GPT 5.6 Sol", "use Luna workers", "Luna extra high", "unlimited tokens",
+  "Muse Spark", "cheap workers", or "create-workflow". Luna is the
+  unlimited-feeling volume lane, not the default.
 ---
 
 # Coordinator
@@ -46,8 +49,10 @@ in parallel.
 | **Native Grok agent** (plugin roster id or built-in `explore` / `plan` / `general-purpose`) | Specialist work that should stay inside the current Grok session. Pass `subagent_type`. Inherit `grok-4.6`. Do not dispatch `grok-4.5`. `agent().model` / `spawn_subagent` accept only those two slugs |
 | **Native Claude agent** (plugin agent or lower-tier subagent) | Work needing the current Claude session's tools, browser, MCP servers, or plugin context |
 | **Native Codex agent** (`bopen_*` custom agent or a built-in worker/explorer) | Specialist exploration, review, tests, and bounded work that should stay inside the current Codex runtime |
-| **GPT-5.6 Sol** | On Grok: wrap `grok --single -m gpt-5.6-sol` in a `grok-4.6` workflow agent after a quoted `[model."gpt-5.6-sol"]` is listed by `grok models`. Do not pass Sol as `agent().model` — Grok 1.0.3 rejects it. From Claude, or if the custom id is missing, `codex exec -m gpt-5.6-sol` |
-| **grok** (Grok Build CLI, headless) | Well-specced implementation volume when the host is Claude or Codex |
+| **GPT-5.6 Sol** | Quality Codex/OpenAI worker. On Grok: wrap `grok --single -m gpt-5.6-sol` in a `grok-4.6` workflow agent after a quoted `[model."gpt-5.6-sol"]` is listed by `grok models`. Do not pass Sol as `agent().model` — Grok 1.0.3 rejects it. From Claude, or if the custom id is missing, `codex exec -m gpt-5.6-sol` |
+| **grok** (Grok Build CLI, headless) | Default external quality volume when the host is Claude or Codex. Pin `BOPEN_WORKER_MODEL` |
+| **GPT-5.6 Luna @ extra-high** | Unlimited-feeling volume on leftover Codex/OpenAI quota (Replit Free Mode is the same model). `codex exec -m gpt-5.6-luna -c model_reasoning_effort="xhigh"`. Extra-high — community also uses `max` — is what makes Luna a worker. Luna at none/low/medium is the wrong recipe. **Not the default.** Do not pick Luna silently when Grok or Sol is available unless the user asked for quota or unlimited-feeling volume |
+| **Muse Spark 1.3** (Muse Code CLI) | Cheap Meta volume. Headless `muse exec --prompt-file … --model muse-spark-1.3`. Pin 1.3 — the CLI default may still be 1.2. **Not the default** |
 | **Native Workflow** | Deterministic staged fan-outs. Claude Code: `Workflow` (JS, `pipeline` + `parallel`). Grok Build: `workflow` (Rhai, `parallel` barrier only). Author on Grok with bundled `/create-workflow` — that skill is not in this plugin. Codex: none. See `references/native-workflows.md` |
 
 Before dispatching to `general-purpose`, match the unit against the roster in
@@ -76,12 +81,32 @@ Codex CLI to reproduce work a native agent can do. On a Claude main, native
 Claude agents, Grok, and an external Codex/Sol lane are all valid. Any
 headless coding CLI backed by a suitable quota fits the CLI slot; ask once
 when the user's preference is ambiguous, then keep it stable for the session.
+That slot is how Luna and Muse enter — named cheap-volume options, not inferred
+defaults.
+
+### Cheap volume — not the default
+
+Grok 4.6 and GPT-5.6 Sol remain the quality workers. Luna and Muse are for
+when the user wants the price/quota gap, not when a model is missing.
+
+- **Luna extra-high is the unlimited-feeling lane.** OpenAI treats Luna as the
+  leftover/fallback after advanced-model quota, and Replit Free Mode runs it
+  for almost nothing. Extra-high reasoning (`xhigh`; community also uses
+  `max`) is required — Luna without that effort is a fast nano, not a coding
+  worker. Do not silently swap Sol or Grok to Luna. "Unlimited" is
+  quota-arbitrage, not infinite: the main still burns premium tokens, and
+  Luna/Replit/Codex terms can still bite.
+- **Muse Spark 1.3 is cheap Meta volume.** Muse Code CLI, dropped 2026-09-02,
+  is the other named cheap frontier worker. Pin `--model muse-spark-1.3`.
+  Live docs may still default the CLI to `muse-spark-1.2`.
 
 External lanes cross a data boundary. A Grok dispatch can send its prompt,
-specification, source excerpts, and other repository content to xAI. Before the
-first Grok dispatch, disclose what content will be sent and obtain the user's
-approval unless the user already explicitly authorized that lane for the task.
-Never include secrets, credentials, or unrelated proprietary material.
+specification, source excerpts, and other repository content to xAI. A Muse
+dispatch can send the same class of content to Meta. A Codex/Luna/Sol
+dispatch can send it to OpenAI. Before the first use of each external lane,
+disclose what content will be sent and obtain the user's approval unless the
+user already explicitly authorized that lane for the task. Never include
+secrets, credentials, or unrelated proprietary material.
 
 **Preflight every CLI lane — and fail loudly.** Before a session's first
 dispatch: `command -v <cli>` plus a version/auth check. For Grok, print and
@@ -96,13 +121,18 @@ wanted lane fails preflight, offer to enable it (installs change the user's
 machine; confirm before running, re-run the preflight after):
 - **codex**: `npm i -g @openai/codex` (or install the codex Claude Code
   plugin), then `codex login` in a terminal for the subscription quota, or
-  set `OPENAI_API_KEY` for pay-per-token.
+  set `OPENAI_API_KEY` for pay-per-token. Luna and Sol share this binary;
+  the model id is the lane.
 - **grok**: `curl -fsSL https://x.ai/cli/install.sh | bash` (installs to
   `~/.grok/bin`, no sudo; inspect the script before piping it). Auth, any
   of: `XAI_API_KEY` env var (pay-per-token, zero interaction), `grok login`
   (browser OAuth, subscription quota — hand to the user), or
   `grok login --device-auth` for headless/remote boxes. Verify with
   `grok models`.
+- **muse**: `curl -fsSL https://dev.meta.ai/install.sh | sh` (inspect the
+  script before piping it). Auth: interactive `muse` browser login, or
+  `META_API_KEY` for headless. Verify `muse --version` and that
+  `--model muse-spark-1.3` is accepted.
 
 **codex: plugin vs raw CLI.** Detect once per session and prefer the plugin:
 
@@ -135,8 +165,36 @@ codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-sol \
   > /tmp/dispatch-<id>.log 2>&1 &
 ```
 Preflight `command -v codex` and confirm the id (config `model =` or `-m`).
-Sol is this lane. It is not a Grok native subagent model. `claudex` replaces
-the main seat with a Claude Code session on Sol — do not use it as a worker.
+Sol is the quality Codex lane. It is not a Grok native subagent model.
+`claudex` replaces the main seat with a Claude Code session on Sol — do not
+use it as a worker.
+
+**codex / GPT-5.6 Luna extra-high (unlimited-feeling volume, not the default):**
+```bash
+codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-luna \
+  -c model_reasoning_effort="xhigh" \
+  "<one-line imperative; details in SPEC-*.md>" \
+  > /tmp/dispatch-<id>.log 2>&1 &
+```
+Use this only when the user asked for Luna, leftover/unlimited-feeling
+quota, or cheap Codex volume. Do not silently substitute it for Sol. If
+`xhigh` is rejected, try `max` once and report which effort actually ran.
+Luna without extra-high/max is not this lane.
+
+**muse / Muse Spark 1.3 dispatch shape (cheap Meta volume, not the default):**
+```bash
+PROMPT_FILE=$(mktemp -t muse-prompt.XXXXXX)
+printf '%s\n' "<one-line imperative; details in SPEC-*.md>" > "$PROMPT_FILE"
+muse exec --prompt-file "$PROMPT_FILE" --model muse-spark-1.3 \
+  --reasoning-effort xhigh --disable-approval --workspace <repo> \
+  > /tmp/dispatch-<id>.log 2>&1 &
+```
+Preflight `command -v muse` and confirm `muse-spark-1.3` is accepted.
+`--disable-approval` keeps the OS sandbox (same idea as grok
+`acceptEdits`). Never `--yolo` for a worker — that disables the sandbox
+and trusts the workspace. Muse's process exit code is how the run ended,
+not whether the work is correct; re-run acceptance here. Pin 1.3 every
+time — do not ride a CLI default of `muse-spark-1.2`.
 
 **grok (Grok Build CLI) dispatch shape (from a Claude or Codex host):**
 ```bash
@@ -248,9 +306,10 @@ nothing — five nodes where one loop would ship is pure loss dressed as rigor.
 **What makes this pattern pay is the price gap, not the graph.** Coordinator
 dispatch is justified only when the executor is materially cheaper, or genuinely
 more specialized, than the main seat: bounded code volume routed to a cheap
-worker (a Grok subagent, GPT-5.6 Sol, a lower-tier native agent) while premium
-judgment — plan, interfaces, review, git — stays on the expensive seat. With a
-real price gap, even a 5–15× token multiplier on the *cheap* side is a net win,
+worker (a Grok subagent, GPT-5.6 Sol, Luna extra-high, Muse Spark 1.3, or a
+lower-tier native agent) while premium judgment — plan, interfaces, review,
+git — stays on the expensive seat. With a real price gap, even a 5–15× token
+multiplier on the *cheap* side is a net win,
 because the alternative was spending *premium* tokens typing the same code.
 Remove the price gap and every critique of "agent graphs" applies to you in
 full. So the discriminator for each unit is concrete: **is this executor cheaper
@@ -472,12 +531,15 @@ here, and keep dispatching. Strikes are about the actual implementation.
 | "This code block in my plan is nearly done, I'll just finish it" | A code block longer than an interface signature or a few illustrative lines is a spec that hasn't been delegated yet. Stop and dispatch it. |
 | "Quicker to fix the worker's bug myself" | Same failure in disguise — the main session quietly absorbing volume. Send a corrected spec back to the lane. |
 | "grok/codex isn't installed, I'll implement meanwhile" | That's a silent fallback. Report the lane unavailable, re-route explicitly, and only absorb work via the escape hatch. |
+| "Luna is free so it's the default worker" | Luna extra-high is the unlimited-feeling volume lane when the user asked for quota/cheap Codex volume. Grok/Sol stay the quality default. |
 
 ## Common Mistakes
 
 - Dispatching codex without `--sandbox workspace-write` (raw CLI) or a
-  write-capable run (plugin), or grok without `--permission-mode
-  acceptEdits` → a worker that can't write; wasted dispatch, zero diff.
+  write-capable run (plugin), grok without `--permission-mode
+  acceptEdits`, or muse with `--yolo` → a worker that can't write, or a
+  worker with no sandbox. Luna without `model_reasoning_effort="xhigh"`
+  (or `max`) is not the unlimited-feeling worker lane.
 - Dispatching without acceptance criteria → the worker returns "done" with
   red tests. Always name the test command that must pass.
 - Dispatching without the final-report demand → empty stdout over real (or

@@ -772,14 +772,19 @@ The main model is always the model selected for the current session; the skill
 does not pin or rename it. The supporting skills divide responsibilities:
 
 - `coordinator` writes precise worker specs, assigns non-overlapping files,
-  dispatches implementation, and requires acceptance reports. On a Grok main,
-  native roster agents stay on `grok-4.6`. Do not dispatch `grok-4.5`.
-  Grok 1.0.3 rejects `agent({ model: "gpt-5.6-sol" })` (`Unknown Task.model
-  slug`). Register a quoted `[model."gpt-5.6-sol"]` and wrap
+  dispatches implementation, and requires acceptance reports. Worker volume
+  is a menu: Grok 4.6 or GPT-5.6 Sol for quality, GPT-5.6 Luna at extra-high
+  reasoning for unlimited-feeling Codex/OpenAI quota (not the default), and
+  Muse Spark 1.3 via Muse Code for cheap Meta volume (not the default). On a
+  Grok main, native roster agents stay on `grok-4.6`. Do not dispatch
+  `grok-4.5`. Grok 1.0.3 rejects `agent({ model: "gpt-5.6-sol" })` (`Unknown
+  Task.model slug`). Register a quoted `[model."gpt-5.6-sol"]` and wrap
   `grok --single -m gpt-5.6-sol` in a `grok-4.6` workflow supervisor.
   If that id is missing, use `codex exec -m gpt-5.6-sol`. When Grok is the
   external lane from Claude or Codex, pin `grok-4.6`. Override that with
-  `BOPEN_WORKER_MODEL`.
+  `BOPEN_WORKER_MODEL`. Luna extra-high is `codex exec -m gpt-5.6-luna -c
+  model_reasoning_effort="xhigh"` only when the user asked for leftover or
+  unlimited-feeling volume. Muse is `muse exec --model muse-spark-1.3`.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
@@ -795,10 +800,12 @@ does not pin or rename it. The supporting skills divide responsibilities:
   orchestra. Claude Code and Codex do not have that slash command.
 
 External lanes cross provider boundaries. A Grok dispatch can send its prompt,
-specification, and selected repository content to xAI. A Fable consult can send
-its consult and files inspected by read-only tools to Anthropic. State what will
-be shared before first use, obtain approval unless the user already authorized
-that lane, and never send secrets or unrelated proprietary content.
+specification, and selected repository content to xAI. A Muse dispatch can send
+the same class of content to Meta. A Codex / Sol / Luna dispatch can send it to
+OpenAI. A Fable consult can send its consult and files inspected by read-only
+tools to Anthropic. State what will be shared before first use, obtain approval
+unless the user already authorized that lane, and never send secrets or
+unrelated proprietary content.
 
 ### Custom Workflows
 

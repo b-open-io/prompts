@@ -1,12 +1,13 @@
 ---
 name: orchestrator
-version: 0.0.5
+version: 0.0.6
 description: >-
-  Coordinate native specialist agents, external implementation workers such as Grok, and an
-  independent advisor such as Fable from a capable main session. Use for "orchestrate this",
-  "use Grok workers", "use Fable as advisor", "Codex main with workers", "delegate
-  implementation but keep control here", or cross-model workflows. Never replaces the user's
-  current main model.
+  Coordinate native specialist agents, external implementation workers such as Grok, Sol,
+  Luna extra-high, or Muse Spark 1.3, and an independent advisor such as Fable from a capable
+  main session. Use for "orchestrate this", "use Grok workers", "use Luna workers",
+  "use Fable as advisor", "Codex main with workers", "delegate implementation but keep
+  control here", or cross-model workflows. Never replaces the user's current main model.
+  Luna is the unlimited-feeling volume lane, not the default worker.
 ---
 
 # Orchestrator
@@ -20,9 +21,19 @@ whatever the user selected; never infer, rename, or pin it.
 ```text
 Current Claude or Codex main
 ├── native specialist agents: exploration, review, testing, domain expertise
-├── Grok worker lane: bounded implementation volume
+├── worker lane: bounded implementation volume (menu, not one model)
 └── Fable advisor lane: read-only second opinions at commitment boundaries
 ```
+
+Worker model is Coordinator's menu, never inferred:
+
+- **Quality default:** Grok (`BOPEN_WORKER_MODEL`) or GPT-5.6 Sol
+- **Unlimited-feeling volume, not the default:** GPT-5.6 Luna at extra-high reasoning
+- **Cheap Meta volume, not the default:** Muse Spark 1.3 via Muse Code (`muse exec`)
+
+Do not pin Fable as the main. The main is whatever the user already selected.
+Do not pick Luna because it is cheap; pick it when the user wants leftover /
+unlimited-feeling Codex volume.
 
 On a Claude Code main, a fourth lane exists: the native `Workflow` tool for
 deterministic staged fan-outs (opt-in-gated, Claude-only). Treat it as a
@@ -71,14 +82,18 @@ an advisor. Coordinator governs execution; Advisor governs judgment consults.
   `core:codex-agent-setup` skill. Do not claim the persona was spawned.
 - Keep wave control in the main thread. With Codex's default `max_depth = 1`,
   direct children cannot recursively fan out; that is usually desirable.
-- Use Grok for bounded implementation when authorized. Do not launch a second
-  Codex CLI merely to reproduce what a native Codex subagent can do.
+- Use Grok for bounded implementation when authorized. Luna extra-high is
+  an explicit cheap Codex volume lane, not a silent substitute for native
+  Codex agents. Do not launch a second Codex CLI merely to reproduce what a
+  native Codex subagent can do.
 - Use the Advisor skill's Fable CLI channel for an independent Claude opinion.
 
 ### Claude Code main
 
 - Prefer plugin-qualified Claude agents for specialists.
 - Use Grok or Codex as implementation lanes when authorized and economical.
+  Luna extra-high and Muse Spark 1.3 are cheap-volume options from
+  Coordinator, not defaults.
 - Prefer Claude's native advisor or a read-only premium Claude subagent when
   available. Use an external advisor only when it adds independence.
 
@@ -88,6 +103,8 @@ External lanes are optional and must be transparent:
 
 - A Grok dispatch can send its prompt, specification, code excerpts, and other
   repository content to xAI.
+- A Muse dispatch can send the same class of content to Meta.
+- A Codex / Sol / Luna dispatch can send it to OpenAI.
 - A Fable consult can send its consult package and repository files inspected
   by read tools to Anthropic.
 
@@ -102,16 +119,20 @@ or a broader repository snapshot than the assignment needs.
    state, available agent roster, and relevant evidence. Do not delegate a
    premise that has not been checked.
 2. **Select the topology.** Decide which work stays in the main, which native
-   specialists are useful, which implementation units fit Grok, and whether a
-   Fable consult reaches a real commitment boundary.
+   specialists are useful, which implementation units fit the worker menu
+   (Grok/Sol quality; Luna extra-high or Muse 1.3 only when asked for cheap
+   or unlimited-feeling volume), and whether a Fable consult reaches a real
+   commitment boundary.
 3. **Preflight lanes.** Verify native agent availability. For Grok, inspect the
    complete `grok models` output, require `BOPEN_WORKER_MODEL`, and confirm its
-   exact value exists before dispatch. For Fable, verify
+   exact value exists before dispatch. For Luna, confirm `codex` and
+   `-m gpt-5.6-luna` with extra-high effort. For Muse, confirm `muse` and
+   `--model muse-spark-1.3`. For Fable, verify
    Claude CLI authentication and use
    `${BOPEN_ADVISOR_MODEL:-fable}` without claiming that alias is permanently
    the latest model.
 4. **Disclose external sharing.** Obtain any required approval before sending
-   repository content to xAI or Anthropic.
+   repository content to xAI, OpenAI, Meta, or Anthropic.
 5. **Gather specialist evidence.** Use native agents for independent research,
    architecture, security, testing, documentation, or domain analysis. Give
    each a bounded, self-contained assignment and require a complete report —
