@@ -6,6 +6,20 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Added
+
+- OpenCode is a supported orchestra harness. `coordinator` 0.0.13 dispatches
+  `opencode run --model <provider/model>` workers (no `opencode exec` exists),
+  `orchestrator` 0.0.7 adds an OpenCode main adapter, and `advisor` 0.0.5 adds
+  an `opencode run` consult channel (including Muse Spark 1.3 via a custom
+  provider block). `detect-harness.sh` detects `OPENCODE=1` / `OPENCODE_PID`,
+  reports the `opencode` lane plus `opencode models` output and the configured
+  default, and caps OpenCode mains as flat dispatch (no native workflow).
+  `native-workflows.md` and `harness-capabilities.md` document the OpenCode
+  dispatch shape, and `wave-coordinator` 1.0.7 adds an OpenCode host adapter.
+  Skills are drop-in `SKILL.md` on OpenCode; hooks have no file
+  equivalent there (plugin event handlers). orchestra 0.1.17.
+
 ### Changed
 
 - `coordinator` 0.0.12 / `orchestrator` 0.0.6: worker volume is a named menu.

@@ -1,12 +1,13 @@
 # Native Workflows
 
-Two hosts ship a first-class workflow engine. Codex does not.
+Three hosts ship a first-class workflow engine. Codex and OpenCode do not.
 
 | Host | Tool | Script | Native models | Fan-out primitive |
 |---|---|---|---|---|
 | Claude Code | `Workflow` | JavaScript | Claude aliases / ids | `pipeline()` (no barrier) and `parallel()` (barrier) |
 | Grok Build | `workflow` | Rhai | `workflow` / `spawn_subagent` slugs: `grok-4.6` only (host also lists `grok-4.5`; do not use it). Custom ids work on `grok --single -m`, not on `agent().model` | `parallel()` only — it is a barrier. There is no `pipeline()` |
 | Codex | none | — | — | Subagent spawn and `codex exec` sequenced by the caller |
+| OpenCode | none | — | `provider/model` refs per agent | Subagent dispatch (`--agent <name>`) and `opencode run` sequenced by the caller |
 
 The check is the session tool set, not memory: the host either exposes `Workflow` / `workflow` or it does not. When it does not, use the coordinator's manual dispatch protocol.
 
@@ -63,7 +64,8 @@ Grok.
 On a Grok session, load that bundled skill to author and smoke-check. Then
 apply this file's routing rules (native `grok-4.6` only, Sol/Fable as
 shell-outs, coordinator ownership). On Claude, author a JavaScript workflow
-directly. On Codex, do not author a workflow.
+directly. On Codex and OpenCode, do not author a workflow — sequence
+`codex exec` / `opencode run` dispatches from the caller instead.
 
 Verified 2026-08-13 while authoring `fable-sol-review`:
 
@@ -135,6 +137,22 @@ Author on Grok with bundled `/create-workflow`. Smoke-check with `{ validate_onl
 ## Claude script shape
 
 JavaScript, top-level `await`. `agent(prompt, { label, phase, agentType, model, effort, schema, isolation })`, `pipeline(items, ...stages)`, `parallel(thunks)`, `phase(title)`, `log(msg)`, globals `args` and `budget`. Concurrency caps at 16. Resume is same-session and follows start-order replay: every agent that started after the first unfinished one reruns. Read `<transcriptDir>/journal.jsonl` before diagnosing an empty result.
+
+## OpenCode dispatch shape (no native workflow)
+
+OpenCode has no workflow primitive. Fan-out is caller-sequenced `opencode run`
+invocations, one per unit, with the coordinator owning barriers:
+
+- Native subagents: `.opencode/agent(s)/<name>.md` with `mode: subagent`
+  (or `agent:{}` in `opencode.json`); dispatch with `opencode run --agent <name>`.
+  Subagents without an explicit `model` inherit the invoker's model.
+- Headless lane: `opencode run --model <provider/model> --dir <repo> "<task>"`
+  with `--format json` for scripting and `--attach <server>` to reuse a running
+  `opencode serve` across dispatches. There is no `opencode exec`.
+- Skills are drop-in `SKILL.md` (OpenCode also reads `.claude/skills/` and
+  `.agents/skills/`). Hooks have no file equivalent — they are plugin event
+  handlers, not a dispatch surface.
+- Host marker for the detector: `OPENCODE=1` (`OPENCODE_PID` also set).
 
 ## What the main seat keeps
 

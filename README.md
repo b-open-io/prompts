@@ -4,7 +4,7 @@
 
 # bOpen Tools: Prompts, Skills & AI Agents
 
-**A shared toolkit for Claude Code, Codex, and Grok Build** with specialist
+**A shared toolkit for Claude Code, Codex, Grok Build, and OpenCode** with specialist
 agents, skills, orchestration patterns, safety hooks, and reusable
 development workflows.
 
@@ -14,10 +14,12 @@ This repository provides:
 
 - **Specialized AI agents** for design, security, documentation, architecture,
   testing, payments, infrastructure, and more
-- **Cross-agent skills** shared by Claude Code, Codex, and Grok Build
+- **Cross-agent skills** shared by Claude Code, Codex, Grok Build, and OpenCode
+  (`SKILL.md` is drop-in on OpenCode — it also reads `.claude/skills/`)
 - **Runtime-specific hooks** that preserve the same safety and workflow intent
   on Claude Code (`claude-hooks.json`), Codex (`codex-hooks.json`), and Grok
-  Build (`hooks/hooks.json`)
+  Build (`hooks/hooks.json`). OpenCode has no hooks file — the equivalent is a
+  plugin event handler (`.opencode/plugin(s)/*.ts`)
 - **Agent Master setup UI** for auditing the local harness, viewing purchased
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
@@ -756,10 +758,11 @@ Codex adapter IDs according to the current host:
 
 ### Orchestration: main seat, workers, advisor
 
-Use the `orchestrator` skill when the current Claude Code, Codex, or Grok
-Build main should retain the plan, judgment, verification, and git ownership
+Use the `orchestrator` skill when the current Claude Code, Codex, Grok
+Build, or OpenCode main should retain the plan, judgment, verification, and git ownership
 while other lanes do bounded work. Grok Build also ships a native `workflow`
-tool (Rhai scripts, `/workflows` dashboard). Codex does not.
+tool (Rhai scripts, `/workflows` dashboard). Codex and OpenCode do not — they
+sequence `codex exec` / `opencode run` dispatches from the caller.
 
 ```text
 Use $orchestra:orchestrator. Keep this session in the main seat, use native
@@ -784,11 +787,17 @@ does not pin or rename it. The supporting skills divide responsibilities:
   external lane from Claude or Codex, pin `grok-4.6`. Override that with
   `BOPEN_WORKER_MODEL`. Luna extra-high is `codex exec -m gpt-5.6-luna -c
   model_reasoning_effort="xhigh"` only when the user asked for leftover or
-  unlimited-feeling volume. Muse is `muse exec --model muse-spark-1.3`.
+   unlimited-feeling volume. Muse is `muse exec --model muse-spark-1.3`, or via
+   OpenCode as `opencode run -m muse-spark/muse-spark-1.3` with a custom provider
+   block. OpenCode workers are `opencode run --model <provider/model>` (there is
+   no `opencode exec`); OpenCode skills are drop-in `SKILL.md` and agents live in
+   `.opencode/agent(s)/`.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
+  A fifth channel, `opencode run --model <provider/model>`, covers cheap or
+  in-harness consults (including Muse Spark 1.3 via OpenCode).
 - `orchestrator` composes native specialists, Coordinator, Advisor, and staged
   waves while leaving final decisions with the main session.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
@@ -803,7 +812,9 @@ External lanes cross provider boundaries. A Grok dispatch can send its prompt,
 specification, and selected repository content to xAI. A Muse dispatch can send
 the same class of content to Meta. A Codex / Sol / Luna dispatch can send it to
 OpenAI. A Fable consult can send its consult and files inspected by read-only
-tools to Anthropic. State what will be shared before first use, obtain approval
+tools to Anthropic. An `opencode run` dispatch can send its prompt and repository
+content to whichever provider backs the pinned `provider/model` — confirm the
+`opencode.json` provider block first so the destination is known. State what will be shared before first use, obtain approval
 unless the user already authorized that lane, and never send secrets or
 unrelated proprietary content.
 

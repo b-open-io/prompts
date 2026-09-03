@@ -1,10 +1,10 @@
 ---
 name: advisor
-version: 0.0.4
+version: 0.0.5
 description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
-  the advisor", "get a second opinion", "ask codex", "ask Fable", or "ask a bigger model". The
+  the advisor", "get a second opinion", "ask codex", "ask Fable", "ask opencode", or "ask a bigger model". The
   advisor returns guidance; the main session keeps execution and decision ownership.
 ---
 
@@ -32,7 +32,7 @@ consult package must stand alone.
 
 ## Choosing the Advisor Channel
 
-Four channels. Detect the current host and what exists before picking; never
+Five channels. Detect the current host and what exists before picking; never
 assume.
 
 | Channel | How it works | Prefer when |
@@ -41,6 +41,7 @@ assume.
 | **Native advisor tool** | Claude Code's built-in advisor (`/advisor`, `advisorModel` setting, `--advisor` flag): the executor consults a stronger Claude model mid-turn, server-side | The advisor should be a Claude model and the account has capacity for it |
 | **Premium Claude subagent** | Spawn a read-only `Agent` (Read/Grep/Glob only) pinned to a stronger Claude model; it inspects the repo fresh and returns a verdict | The advisor should be Claude AND the question needs repo inspection the transcript doesn't carry |
 | **Fable CLI from Codex** | Run a clean, read-only Claude Code print session using the configurable `fable` model-family alias | The main is Codex and an independent Claude opinion is valuable, especially for Claude-specific work |
+| **opencode as advisor** | Dispatch a read-only consult via `opencode run --model <provider/model>` | The advisor should be a cheap or independent provider (e.g. Muse Spark 1.3, Luna) reachable through OpenCode, or the main is OpenCode and the consult should stay in-harness |
 
 Passive detection depends on the host:
 
@@ -61,13 +62,18 @@ Passive detection depends on the host:
    session model without erroring.
 5. No channel available at all? Don't silently proceed unadvised — offer to
    enable one (the codex install/auth steps live in the coordinator skill's
-   "Enabling a lane" section).
+   "Enabling a lane" section; OpenCode installs via `npm i -g opencode` plus
+   `opencode auth login` or an `opencode.json` provider block).
 6. Present the finding and recommendation to the user before first use —
    "codex is installed; recommend it as advisor" or "advisorModel is already
    set to X; using the native tool" or "Claude CLI is authenticated; recommend
-   the Fable lane" — and let them override. When multiple channels exist and
+   the Fable lane" or "opencode is installed with provider Y; recommend the
+   opencode lane" — and let them override. When multiple channels exist and
    the user has not expressed a preference, ask once, then keep the answer for
    the session.
+7. On an OpenCode main (`OPENCODE=1` / `OPENCODE_PID`), the opencode channel is
+   the in-harness default; external CLIs (`codex exec`, `claude --print`) are
+   shell-out consults with the same advice contract.
 
 From a Claude main, avoid launching another `claude -p` process unless the user
 asks; the native advisor or a native subagent is cleaner. The deliberate
@@ -180,6 +186,34 @@ unavailable. Do not silently replace Fable with a different advisor.
   follow-ups than a cold start each time.
 - Demand structure or risk silence — an uninstructed codex run can return
   nothing. Use the advice contract below in every consult prompt.
+
+### opencode-as-advisor notes
+
+- **Read-only is correct here.** The advisor advises; it must not edit.
+  Constrain the consult with permissions (`--agent` a read-only subagent where
+  available, or a prompt that says "advisory only, no edits") and keep the
+  advice contract below in every consult prompt — same silence risk as codex.
+- There is no `opencode exec`. The consult entrypoint is `opencode run`:
+
+```bash
+ADVISOR_MODEL="<provider>/<model>"   # e.g. muse-spark/muse-spark-1.3; pin explicitly
+PROMPT_FILE="/absolute/path/to/prepared-advisor-consult.md"
+
+opencode run --model "$ADVISOR_MODEL" --dir <repo> "$(cat "$PROMPT_FILE)"
+```
+
+  Attach evidence with `-f/--file`, reuse a running server with
+  `--attach http://localhost:4096` to skip MCP cold-boot, and use
+  `--format json` when scripting the verdict out.
+- Preflight `command -v opencode` plus `opencode models <provider>` for the
+  pinned id. Custom providers (Muse Spark, Luna) live as `provider:{}` blocks
+  in `opencode.json` — confirm the block exists so the data destination is
+  known before the first consult.
+- This is an external data boundary. The consult file and any repository files
+  the run inspects can be sent to the pinned provider. Disclose and obtain
+  approval before the first consult, excluding secrets and unrelated content.
+- Resume with `-c/--continue` or `-s <session-id> --fork` for follow-up
+  consults on one thread rather than cold starts.
 
 ### The advice contract (all channels)
 
