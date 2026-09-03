@@ -1,9 +1,9 @@
 ---
 name: orchestrator
-version: 0.0.6
+version: 0.0.7
 description: >-
   Coordinate native specialist agents, external implementation workers such as Grok, Sol,
-  Luna extra-high, or Muse Spark 1.3, and an independent advisor such as Fable from a capable
+  Luna extra-high, Muse Spark 1.3, or `opencode run` workers, and an independent advisor such as Fable from a capable
   main session. Use for "orchestrate this", "use Grok workers", "use Luna workers",
   "use Fable as advisor", "Codex main with workers", "delegate implementation but keep
   control here", or cross-model workflows. Never replaces the user's current main model.
@@ -13,13 +13,13 @@ description: >-
 # Orchestrator
 
 Keep one main seat in control while using other agents for the work they do
-best. This skill supports both Claude Code and Codex. The current main model is
+best. This skill supports Claude Code, Codex, Grok Build, and OpenCode mains. The current main model is
 whatever the user selected; never infer, rename, or pin it.
 
 ## Default topology
 
 ```text
-Current Claude or Codex main
+Current Claude, Codex, Grok, or OpenCode main
 ├── native specialist agents: exploration, review, testing, domain expertise
 ├── worker lane: bounded implementation volume (menu, not one model)
 └── Fable advisor lane: read-only second opinions at commitment boundaries
@@ -30,6 +30,9 @@ Worker model is Coordinator's menu, never inferred:
 - **Quality default:** Grok (`BOPEN_WORKER_MODEL`) or GPT-5.6 Sol
 - **Unlimited-feeling volume, not the default:** GPT-5.6 Luna at extra-high reasoning
 - **Cheap Meta volume, not the default:** Muse Spark 1.3 via Muse Code (`muse exec`)
+  or via OpenCode (`opencode run -m muse-spark/muse-spark-1.3` with a custom provider block)
+- **Portable worker lane:** `opencode run --model <provider/model>` from any main —
+  OpenCode skills are drop-in `SKILL.md`, agents are `.opencode/agent(s)/` or `--agent <name>`
 
 Do not pin Fable as the main. The main is whatever the user already selected.
 Do not pick Luna because it is cheap; pick it when the user wants leftover /
@@ -97,6 +100,19 @@ an advisor. Coordinator governs execution; Advisor governs judgment consults.
 - Prefer Claude's native advisor or a read-only premium Claude subagent when
   available. Use an external advisor only when it adds independence.
 
+### OpenCode main
+
+- Prefer native OpenCode subagents (`.opencode/agent(s)/<name>.md`, `--agent <name>`)
+  for specialists. Skills are drop-in `SKILL.md` — OpenCode also reads `.claude/skills/`.
+- Use `opencode run --model <provider/model>` workers for bounded implementation
+  volume, and external CLIs (`codex exec`, `grok`, `muse exec`, `claude --print`)
+  as shell-out lanes when authorized. Same ownership rules: specs here, review
+  here, git here.
+- There is no native workflow primitive and no hooks file on OpenCode — sequence
+  `opencode run` dispatches from the caller, and hooks are plugin event handlers.
+- Detect the host with `OPENCODE=1` / `OPENCODE_PID` (see Coordinator and
+  `detect-harness.sh`); never assume the main from memory.
+
 ## External data boundaries
 
 External lanes are optional and must be transparent:
@@ -107,6 +123,9 @@ External lanes are optional and must be transparent:
 - A Codex / Sol / Luna dispatch can send it to OpenAI.
 - A Fable consult can send its consult package and repository files inspected
   by read tools to Anthropic.
+- An `opencode run` worker dispatch can send its prompt, specification, and
+  repository content to whichever provider backs the pinned `provider/model`
+  (configure custom providers explicitly in `opencode.json` so the destination is known).
 
 Before the first use of each external lane, state what content will be shared
 and obtain approval unless the user already explicitly authorized that lane
@@ -127,12 +146,15 @@ or a broader repository snapshot than the assignment needs.
    complete `grok models` output, require `BOPEN_WORKER_MODEL`, and confirm its
    exact value exists before dispatch. For Luna, confirm `codex` and
    `-m gpt-5.6-luna` with extra-high effort. For Muse, confirm `muse` and
-   `--model muse-spark-1.3`. For Fable, verify
+   `--model muse-spark-1.3`. For OpenCode workers, confirm `opencode` and
+   `opencode models <provider>` listing the pinned `provider/model` (no
+   `opencode exec` exists — the entrypoint is `opencode run`). For Fable, verify
    Claude CLI authentication and use
    `${BOPEN_ADVISOR_MODEL:-fable}` without claiming that alias is permanently
    the latest model.
 4. **Disclose external sharing.** Obtain any required approval before sending
-   repository content to xAI, OpenAI, Meta, or Anthropic.
+   repository content to xAI, OpenAI, Meta, Anthropic, or the provider behind
+   a pinned OpenCode `provider/model`.
 5. **Gather specialist evidence.** Use native agents for independent research,
    architecture, security, testing, documentation, or domain analysis. Give
    each a bounded, self-contained assignment and require a complete report —
