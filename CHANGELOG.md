@@ -6,6 +6,14 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- `coordinator` 0.0.12 / `orchestrator` 0.0.6: worker volume is a named menu.
+  Grok 4.6 and GPT-5.6 Sol stay the quality default. GPT-5.6 Luna at extra-high
+  reasoning is the unlimited-feeling Codex/OpenAI volume lane (not the default).
+  Muse Spark 1.3 via Muse Code is cheap Meta volume (not the default). Luna
+  without extra-high/max is the wrong recipe. orchestra 0.1.16.
+
 ## [1.1.158] - 2026-09-02
 
 ### Changed
