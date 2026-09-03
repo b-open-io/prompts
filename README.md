@@ -165,8 +165,10 @@ bunx skills add b-open-io/prompts --skill <skill-name>
 ```
 
 The list below is the authored core inventory. Third-party skills are
-tracked separately in [`skills-lock.json`](skills-lock.json) and keep their
-upstream provenance.
+vendored inside the module that ships them and tracked in that module's
+`skills-lock.json` (for example
+[`modules/mcp-dev/skills-lock.json`](modules/mcp-dev/skills-lock.json)),
+keeping their upstream provenance.
 
 <details>
 <summary><strong>Authored skills — click to expand</strong></summary>
@@ -559,6 +561,7 @@ prompts/
 │   ├── codex-agents/       # Adapter generator and safe installer
 │   ├── prompts-factory-worker.sh # LoopTop worker that keeps the dev → master PR current
 │   ├── test-isolated-plugin-install.sh # Disposable-runner plugin install gate
+│   ├── check-plugin-extraction.py # Per-plugin git-subdir extraction gate
 │   ├── benchmark.tsx       # Skill output-quality benchmark CLI
 │   ├── plugin-weight.py    # Static catalog/context inventory
 │   ├── capture-*-context.py # Exact Claude/Codex host snapshots
@@ -924,5 +927,5 @@ When adding new content:
 
 Two layers track skill authorship and integrity:
 
-- **`skills-lock.json`** — Vercel Labs format recording third-party skill sources, versions, and SHA256 content hashes. Ensures reproducible installs and detects tampering.
+- **`skills-lock.json`** files (one per module under `modules/<name>/`, root file kept empty) in the Vercel Labs format record third-party skill sources, versions, and SHA256 content hashes. Ensures reproducible installs and detects tampering.
 - **`.clawnet/` directories** — On-chain Bitcoin attestation (B + MAP + AIP + BAP ATTEST) for skills we author. Provides cryptographic proof of authorship anchored to the BSV blockchain.

@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "skills": {
+    "add-app-to-server": {
+      "source": "modelcontextprotocol/ext-apps",
+      "sourceType": "github",
+      "computedHash": "e9441d0b6a4eedf016903b78648e25234d5fd40e191124e1a1d1e56e71e9a4f4"
+    },
+    "convert-web-app": {
+      "source": "modelcontextprotocol/ext-apps",
+      "sourceType": "github",
+      "computedHash": "9e2171bff4ea0d0cf82c8cae3ec6c600c8f3ebd41de73cc8a778ef2cd694ade0"
+    },
+    "create-mcp-app": {
+      "source": "modelcontextprotocol/ext-apps",
+      "sourceType": "github",
+      "computedHash": "39f1ce1c5d4c43b8281e7e51332f9a05f4b689ddd9bf426b4833fb671237f757"
+    },
+    "json-render-core": {
+      "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
+      "sourceType": "github",
+      "skillPath": "skills/core/SKILL.md",
+      "computedHash": "ff1d5f1daa4736237aab6c37b7642ae8e623d65b8cb2eb9916c6ba33384efb81"
+    },
+    "json-render-devtools": {
+      "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
+      "sourceType": "github",
+      "skillPath": "skills/devtools/SKILL.md",
+      "computedHash": "6fcfb1f4db31e1299ca64f2fbddc54d02c14968c6a9fa5b15b864dd0da09f7d0"
+    },
+    "json-render-directives": {
+      "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
+      "sourceType": "github",
+      "skillPath": "skills/directives/SKILL.md",
+      "computedHash": "776cfa67f51752193c406dc23b39f0a69c69bb90c929fb115a5f914263e24fa2"
+    },
+    "json-render-image": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "94214f44c2b0cf794eb17c34e742488d1a72823bd4a6ade41892c3d872baf5f7"
+    },
+    "json-render-mcp": {
+      "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
+      "sourceType": "github",
+      "skillPath": "skills/mcp/SKILL.md",
+      "computedHash": "8601f81c837895c306f30bf75ec494606f9213ae0c13d758c07059ff78540326"
+    },
+    "json-render-react": {
+      "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
+      "sourceType": "github",
+      "skillPath": "skills/react/SKILL.md",
+      "computedHash": "42e6c3acd47b1f2374b7401fae31c5b496a3e12b0949289c9f5b60513c519316"
+    },
+    "json-render-react-email": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "dc5911f0d19b5422376e40ca64e184d0c44529e4e3d67430d04ca8a189d29eb8"
+    },
+    "json-render-react-native": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "c8983fad75fdc3fa05928f49f311ca5a940717d51b88a37fa478df30c2a437ae"
+    },
+    "json-render-remotion": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "computedHash": "1525694637a5211e329c339f614f352b1d4ac8d52e1c4d30c898ff1e84e0895d"
+    },
+    "json-render-shadcn": {
+      "source": "vercel-labs/json-render",
+      "ref": "v0.19.0",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "d6a9be8eeedea18343b5b15d6ac481a55436fe40db4b65d59858388072c239c4"
+    }
+  }
+}

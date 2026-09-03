@@ -4,6 +4,10 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+# The marketplace ships each module on its own (git-subdir), so a module must
+# not depend on files outside its directory. rsync -aL below would hide that.
+python3 scripts/check-plugin-extraction.py
+
 command -v claude >/dev/null || { echo "claude CLI is required" >&2; exit 1; }
 command -v codex >/dev/null || { echo "codex CLI is required" >&2; exit 1; }
 

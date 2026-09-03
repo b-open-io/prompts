@@ -276,7 +276,9 @@ files.
 
 - Which 8–12 capabilities belong in core after routing evals.
 
-- How Codex should expose externally owned skills once repo-local symlinks are
-  removed.
+- Vendored skills live inside the module that ships them
+  (`modules/<name>/.agents/skills/`) with a per-module `skills-lock.json`, so
+  every module is self-contained under git-subdir sourcing; Codex exposure of
+  those skills follows the module's `skills` directory.
 - The first stable per-module context thresholds after clean-profile baselines
   exist.

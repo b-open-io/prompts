@@ -474,15 +474,17 @@ This repo uses the Vercel Labs `skills-lock.json` format to track third-party sk
 - `sourceType` — Always `github` currently
 - `computedHash` — SHA256 hash of the skill folder contents for integrity verification
 
-Third-party skills are installed into `.agents/skills/` and symlinked into `skills/` for plugin discovery. Our own authored skills live directly in `skills/`.
+Third-party skills are vendored inside the module that ships them at `modules/<name>/.agents/skills/<skill>` and symlinked from `modules/<name>/skills/<skill>` with the target `../.agents/skills/<skill>` (one level up from `skills/` is the module root). Each such module carries its own `skills-lock.json`. The root `skills-lock.json` stays present but empty. Authored skills live directly in `skills/` (core) or `modules/<name>/skills/`. The marketplace ships each module with git-subdir, which severs the parent directory, so a symlink that leaves the module dangles after install, and `scripts/check-plugin-extraction.py` enforces this.
 
 Current sources:
-- `modelcontextprotocol/ext-apps` — MCP Apps SDK skills (create-mcp-app, add-app-to-server, convert-web-app)
-- `vercel-labs/json-render` — JSON rendering skills (json-render-core, json-render-react, etc.)
+- `modelcontextprotocol/ext-apps` (mcp-dev): MCP Apps SDK skills (create-mcp-app, add-app-to-server, convert-web-app)
+- `vercel-labs/json-render` (mcp-dev): JSON rendering skills (json-render-core, json-render-react, etc.)
+- `ceorkm/macos-design-skill` (macos-design, creative)
+- `mattpocock/skills` (wayfinder, review)
 
-To add a third-party skill:
+To add a third-party skill, run the command from inside the module directory so the CLI writes `.agents/skills/` and `skills-lock.json` there, then symlink it from `skills/` as `../.agents/skills/<skill>`:
 ```bash
-npx skills add https://github.com/org/repo --skill skill-name
+cd modules/<name> && npx skills add https://github.com/org/repo --skill skill-name
 ```
 
 ### ClawNet On-Chain Attestation
