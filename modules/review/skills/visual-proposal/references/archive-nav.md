@@ -7,7 +7,7 @@ The browser cannot scan the computer. The Artifact CSP also blocks fetches.
 The agent lists the files, then inlines the JSON.
 
 A local Artifact or `file://` page cannot open a sibling HTML file. Those
-rows copy instructions. A PostPlan URL is a real link.
+rows copy instructions. A published HTTPS URL is a real link.
 
 ## Where files live
 
@@ -21,11 +21,11 @@ Write every proposal there, including Artifact copies. Keep the slug stable
 across revisions of the same proposal.
 
 Set `data-vp-title` on `<html>` so the list shows a human title. After
-PostPlan returns an `https://` URL, stamp it on the same tag:
+After the publishing provider returns an `https://` URL, stamp it on the same tag:
 
 ```html
 <html data-vp-title="Referenced-content collections"
-      data-vp-url="https://postplan.dev/d/…">
+      data-vp-url="https://bitplan.dev/d/…">
 ```
 
 Then run the list script again and replace `window.VP_ARCHIVE` so other
@@ -70,7 +70,7 @@ before the archive-nav script runs.
 
 The current page is a marker, not a control.
 
-A row with `url` is an `<a href>` to that PostPlan (or other https) page.
+A row with `url` is an `<a href>` to that published HTTPS page.
 The Artifact CSP blocks embeds. It does not block outbound links.
 
 A row with no `url` is a copy button. A click copies this block:
@@ -82,8 +82,8 @@ Title: <title>
 Path: <absolute path>
 
 Open that HTML and show me the page. Use an Artifact when that tool exists.
-Otherwise follow Skill(postplan) or open the file in the browser. Do not
-summarize the file.
+Otherwise load the installed BitPlan skill or open the file in the browser. Do
+not summarize the file.
 ```
 
 The button then reads **Instructions copied** and shows a **?** mark. The
@@ -103,13 +103,13 @@ Wrap the proposal body:
 </div>
 ```
 
-## Artifact vs PostPlan vs local file
+## Artifact vs BitPlan vs local file
 
 | Host | Row action |
 |---|---|
 | Claude Artifact | Copy instructions. Sibling `file://` links do not open. |
 | Local `file://` | Copy instructions. Same reason. |
-| PostPlan `https://` | Real link, after `data-vp-url` is stamped. |
+| BitPlan `https://` | Real link, after `data-vp-url` is stamped. |
 
-`Skill(postplan)` prints the URL. Stamp it, rebuild `VP_ARCHIVE`, then
+The installed BitPlan skill prints the URL. Stamp it, rebuild `VP_ARCHIVE`, then
 give the user that URL.

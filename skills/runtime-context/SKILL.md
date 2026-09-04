@@ -73,7 +73,10 @@ was missing and what capability it would have provided.
 
 Claude Code can show HTML as an Artifact. Grok Build and Codex cannot.
 When you write a visual plan, recap, or coordinator canvas outside Claude
-Code, follow `Skill(postplan)`. A repo path in chat is not a page.
+Code, load BitPlan's canonical skill: `Skill(bitplan:bitplan)` for the plugin
+or `Skill(bitplan)` for a standalone install. If it is unavailable, give the
+user an open local page and explain how to install BitPlan. A repo path in chat
+is not a page.
 
 ## Adapting Behavior
 
