@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-version: 0.0.7
+version: 0.0.8
 description: >-
   Coordinate native specialist agents, external implementation workers such as Grok, Sol,
   Luna extra-high, Muse Spark 1.3, or `opencode run` workers, and an independent advisor such as Fable from a capable
@@ -31,8 +31,7 @@ Worker model is Coordinator's menu, never inferred:
 - **Unlimited-feeling volume, not the default:** GPT-5.6 Luna at extra-high reasoning
 - **Cheap Meta volume, not the default:** Muse Spark 1.3 via Muse Code (`muse exec`)
   or via OpenCode (`opencode run -m muse-spark/muse-spark-1.3` with a custom provider block)
-- **Portable worker lane:** `opencode run --model <provider/model>` from any main —
-  OpenCode skills are drop-in `SKILL.md`, agents are `.opencode/agent(s)/` or `--agent <name>`
+- **Portable worker lane:** `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"` from any main. `--agent <name>` selects a primary/all-mode agent, not a subagent
 
 Do not pin Fable as the main. The main is whatever the user already selected.
 Do not pick Luna because it is cheap; pick it when the user wants leftover /
@@ -102,14 +101,19 @@ an advisor. Coordinator governs execution; Advisor governs judgment consults.
 
 ### OpenCode main
 
-- Prefer native OpenCode subagents (`.opencode/agent(s)/<name>.md`, `--agent <name>`)
-  for specialists. Skills are drop-in `SKILL.md` — OpenCode also reads `.claude/skills/`.
-- Use `opencode run --model <provider/model>` workers for bounded implementation
-  volume, and external CLIs (`codex exec`, `grok`, `muse exec`, `claude --print`)
-  as shell-out lanes when authorized. Same ownership rules: specs here, review
-  here, git here.
+- Prefer native OpenCode agents (`.opencode/agent(s)/<name>.md`) for specialists.
+  `--agent <name>` does not start a `mode: subagent` agent; invoke the child from
+  a headless primary session:
+  `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"`.
+  Skills are drop-in `SKILL.md` — OpenCode also reads `.claude/skills/`.
+- Use `opencode run --model "<provider>/<model>"` workers for bounded
+  implementation volume, and external CLIs (`codex exec`, `grok`, `muse exec`,
+  `claude --print`) as shell-out lanes when authorized. Verify the model and a
+  child marker in the dispatch log. Coordinator owns the full dispatch contract.
+  Same ownership rules: specs here, review here, git here.
 - There is no native workflow primitive and no hooks file on OpenCode — sequence
-  `opencode run` dispatches from the caller, and hooks are plugin event handlers.
+  `opencode run` dispatches from the caller (the caller owns sequencing and
+  barriers), and hooks are plugin event handlers.
 - Detect the host with `OPENCODE=1` / `OPENCODE_PID` (see Coordinator and
   `detect-harness.sh`); never assume the main from memory.
 

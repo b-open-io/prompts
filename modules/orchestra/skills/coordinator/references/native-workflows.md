@@ -7,7 +7,7 @@ Three hosts ship a first-class workflow engine. Codex and OpenCode do not.
 | Claude Code | `Workflow` | JavaScript | Claude aliases / ids | `pipeline()` (no barrier) and `parallel()` (barrier) |
 | Grok Build | `workflow` | Rhai | `workflow` / `spawn_subagent` slugs: `grok-4.6` only (host also lists `grok-4.5`; do not use it). Custom ids work on `grok --single -m`, not on `agent().model` | `parallel()` only — it is a barrier. There is no `pipeline()` |
 | Codex | none | — | — | Subagent spawn and `codex exec` sequenced by the caller |
-| OpenCode | none | — | `provider/model` refs per agent | Subagent dispatch (`--agent <name>`) and `opencode run` sequenced by the caller |
+| OpenCode | none | — | `provider/model` refs per agent | Primary-agent `--agent <name>` plus `@mention` child invocation, `opencode run` sequenced by the caller |
 
 The check is the session tool set, not memory: the host either exposes `Workflow` / `workflow` or it does not. When it does not, use the coordinator's manual dispatch protocol.
 
@@ -143,12 +143,26 @@ JavaScript, top-level `await`. `agent(prompt, { label, phase, agentType, model, 
 OpenCode has no workflow primitive. Fan-out is caller-sequenced `opencode run`
 invocations, one per unit, with the coordinator owning barriers:
 
-- Native subagents: `.opencode/agent(s)/<name>.md` with `mode: subagent`
-  (or `agent:{}` in `opencode.json`); dispatch with `opencode run --agent <name>`.
-  Subagents without an explicit `model` inherit the invoker's model.
-- Headless lane: `opencode run --model <provider/model> --dir <repo> "<task>"`
+- Primary vs subagent: `.opencode/agent(s)/<name>.md` with `mode: subagent`
+  (or `agent:{}` in `opencode.json`). `opencode run --agent <name>` selects a
+  primary/all-mode agent — it does not directly start a `mode: subagent`
+  agent. A real child invocation is a headless primary session invoking the
+  named child: `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"`.
+  The primary session invokes the named child; subagents without an explicit
+  `model` inherit the invoker's model. OpenCode 1.18.20 logs a warning and
+  falls back to the default primary agent when `--agent` names a subagent.
+- Require dispatch evidence: capture output and verify a child marker such
+  as `General Agent` (or the configured subagent's equivalent) before
+  treating the run as a subagent workflow. A primary `build` line alone does
+  not prove delegation.
+- Headless lane: `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"`
   with `--format json` for scripting and `--attach <server>` to reuse a running
   `opencode serve` across dispatches. There is no `opencode exec`.
+  Verify available models with `opencode models <provider>`; the lane
+  successfully tested here (`opencode/muse-spark-1.3-contributor-free`) is a
+  verified example, not a universal or permanent identifier. OpenCode has no
+  native multi-stage workflow engine — the caller still owns sequencing and
+  barriers.
 - Skills are drop-in `SKILL.md` (OpenCode also reads `.claude/skills/` and
   `.agents/skills/`). Hooks have no file equivalent — they are plugin event
   handlers, not a dispatch surface.

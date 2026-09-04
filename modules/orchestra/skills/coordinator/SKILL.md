@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.13
+version: 0.0.14
 description: >-
   Route bounded code-writing volume from a capable Claude Code, Codex, Grok
   Build, or OpenCode main session to cheaper or specialized executors — native plugin-roster
@@ -80,7 +80,8 @@ use `codex exec -m gpt-5.6-sol`. On a Codex main, prefer native Codex agents and
 use Grok only for external implementation volume — do not launch another
 Codex CLI to reproduce work a native agent can do. On a Claude main, native
 Claude agents, Grok, an external Codex/Sol lane, and `opencode run` workers are all valid. On an OpenCode main,
-native OpenCode subagents (`--agent <name>`) come first; external CLIs
+native OpenCode agents come first — `opencode run --agent <name>` selects a
+primary/all-mode agent, not a `mode: subagent` agent; external CLIs
 (`codex exec`, `grok`, `muse exec`, `claude --print`) are shell-out lanes. Any
 headless coding CLI backed by a suitable quota fits the CLI slot; ask once
 when the user's preference is ambiguous, then keep it stable for the session.
@@ -262,12 +263,28 @@ opencode run --model "<provider>/<model>" --dir <repo> "$(cat "$PROMPT_FILE")" \
   OpenAI-compatible provider in `opencode.json` and dispatch
   `opencode run -m muse-spark/muse-spark-1.3`. For the unlimited-feeling lane,
   register Luna the same way. Model refs are always `provider-id/model-id`.
-- Subagents: `.opencode/agent(s)/<name>.md` (or `agent:{}` in `opencode.json`)
-  with `mode: subagent`; invoke with `--agent <name>`. Skills are drop-in
-  `SKILL.md` (OpenCode also reads `.claude/skills/`). There is no hooks file —
-  hooks are plugin event handlers, not a dispatch surface.
-- Capture full output to a log file, demand the FINAL REPORT in the prompt,
-  and re-run acceptance in the main seat — same as every other CLI lane.
+- Agents: `.opencode/agent(s)/<name>.md` (or `agent:{}` in `opencode.json`).
+  `opencode run --agent <name>` selects a primary/all-mode agent — it does
+  not directly start a `mode: subagent` agent. A real child invocation is a
+  headless primary session that invokes the named child with an `@mention`:
+  `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"`.
+  The primary session invokes the named child; a subagent without its own
+  `model` inherits the parent model. OpenCode 1.18.20 logs a warning and
+  falls back to the default primary agent when `--agent` names a subagent.
+  Skills are drop-in `SKILL.md` (OpenCode also reads `.claude/skills/`).
+  There is no hooks file — hooks are plugin event handlers, not a dispatch surface.
+- Verify available models with `opencode models <provider>` rather than
+  assuming ids. The lane successfully tested here is
+  `opencode/muse-spark-1.3-contributor-free` — a verified example, not a
+  universal or permanent identifier.
+- Require dispatch evidence: capture full output to a log file and verify a
+  child marker such as `General Agent` (or the configured subagent's
+  equivalent) before treating the run as a subagent workflow. A primary
+  `build` line alone does not prove delegation. Demand the FINAL REPORT in
+  the prompt, and re-run acceptance in the main seat — same as every other
+  CLI lane.
+- OpenCode has no native multi-stage workflow engine: the caller still owns
+  sequencing and barriers.
 
 Native subagent workers get a fully self-contained prompt unless the host
 explicitly guarantees inherited context. Include the spec content (or its

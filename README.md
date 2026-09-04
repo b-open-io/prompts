@@ -792,9 +792,11 @@ does not pin or rename it. The supporting skills divide responsibilities:
   model_reasoning_effort="xhigh"` only when the user asked for leftover or
    unlimited-feeling volume. Muse is `muse exec --model muse-spark-1.3`, or via
    OpenCode as `opencode run -m muse-spark/muse-spark-1.3` with a custom provider
-   block. OpenCode workers are `opencode run --model <provider/model>` (there is
-   no `opencode exec`); OpenCode skills are drop-in `SKILL.md` and agents live in
-   `.opencode/agent(s)/`.
+   block. For a real OpenCode child, pin the parent model and invoke the child:
+   `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"`.
+   `--agent <name>` selects a primary/all-mode agent, not a `mode: subagent` agent.
+   Verify the model with `opencode models <provider>` and the child marker in the log;
+   a primary `build` line alone is not delegation. There is no `opencode exec`.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends

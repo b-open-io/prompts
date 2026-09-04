@@ -1,6 +1,6 @@
 ---
 name: wave-coordinator
-version: 1.0.7
+version: 1.0.8
 description: >-
   Dispatch many subagents in coordinated waves with per-wave review. Use for "fan out agents",
   "wave dispatch", "batch agents", "generate N variations", or any fan-out beyond about five
@@ -175,12 +175,12 @@ wave.
 
 ### OpenCode
 
-Use native OpenCode subagents (`.opencode/agent(s)/<name>.md`, `--agent <name>`)
-with the installed roster id where one fits. There is no native workflow
-primitive — the caller sequences `opencode run --model <provider/model>`
-dispatches and owns barriers. Keep wave coordination in the main thread;
-subagents without an explicit `model` inherit the invoker's model, so pin
-`provider/model` on worker slots that must not inherit a premium main.
+Use native OpenCode agents (`.opencode/agent(s)/<name>.md`) with the installed
+roster id where one fits. `--agent <name>` selects a primary/all-mode agent,
+not a subagent; invoke a real child from the primary with `@name`, as defined
+by Coordinator. Pin and verify the parent model, then require a child marker
+in the log before counting the run as delegated. There is no native multi-stage
+workflow engine: the caller sequences dispatches and owns barriers.
 
 ## Integration with superpowers
 
