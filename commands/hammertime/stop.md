@@ -6,13 +6,13 @@ user-invocable: true
 
 # HammerTime Stop
 
-Disable the HammerTime stop hook by creating the sentinel file:
+Pause HammerTime by resolving its shared state directory and creating only the pause sentinel:
 
 ```bash
-mkdir -p ~/.claude/hammertime && touch ~/.claude/hammertime/disabled
+HAMMERTIME_HOME="$(python3 "${CLAUDE_PLUGIN_ROOT}/skills/hammertime/scripts/hammertime_paths.py")" && mkdir -p -- "$HAMMERTIME_HOME" && touch -- "$HAMMERTIME_HOME/disabled" && test -f "$HAMMERTIME_HOME/disabled"
 ```
 
-Then confirm to the user:
+If the command fails or a host guard blocks it, report the failure and do not bypass the guard or claim success. After a successful check, confirm to the user:
 
 ```
 HammerTime paused. The stop hook will not fire until you run `/hammertime:start`.

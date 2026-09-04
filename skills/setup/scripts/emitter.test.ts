@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { emitPlan } from "./emitter";
 
 function makeState(overrides: Record<string, unknown> = {}, plugins: any[] = []): any {
@@ -421,4 +424,82 @@ describe("plugin removals", () => {
     });
     expect(plan).not.toContain("## Plugin removals");
   });
+});
+
+
+describe("OpenCode native plans", () => {
+  const selection = { name: "core", installPlugin: true, uninstallPlugin: false, checks: [], hooks: {} };
+
+  test("installed Claude never suppresses a native install or verifies it", () => {
+    const plan = emitPlan(makeState({}, [makePlugin({ installedClaude: "9.9.9", marketplaceVersion: "9.9.9" })]), {
+      runtime: "opencode", plugins: [selection],
+    });
+    expect(plan).toContain('bun "$BOPEN_SOURCE/opencode/install.ts" --plugin core --global');
+    expect(plan).toContain("git -C \"$BOPEN_SOURCE\" merge --ff-only origin/HEAD");
+    expect(plan).not.toContain("claude plugin");
+    expect(plan).not.toContain("--all");
+    expect(plan).toContain("opencode debug config");
+    expect(plan).toContain("opencode debug skill");
+    for (const match of plan.matchAll(/```sh\n([\s\S]*?)\n```/g)) {
+      const result = Bun.spawnSync(["sh", "-n"], { stdin: Buffer.from(match[1]) });
+      expect(result.exitCode).toBe(0);
+    }
+  });
+
+  test("removal works independently of Claude installation state", () => {
+    const plan = emitPlan(makeState({}, [makePlugin()]), {
+      runtime: "opencode", plugins: [{ ...selection, installPlugin: false, uninstallPlugin: true }],
+    });
+    expect(plan).toContain("--plugin core --global --uninstall");
+    expect(plan).not.toContain("claude plugin");
+  });
+
+  test("unsupported marketplaces do not get an invented native install", () => {
+    const plan = emitPlan(makeState({}, [makePlugin({ marketplace: "third-party" })]), {
+      runtime: "opencode", plugins: [selection],
+    });
+    expect(plan).toContain("native OpenCode delivery unavailable");
+    expect(plan).not.toContain("--plugin core");
+    expect(plan).not.toContain("claude plugin install");
+  });
+});
+
+
+test("native verification checks selected roots, including removal of the last plugin", () => {
+  const temp = mkdtempSync(join(tmpdir(), "bopen-setup-native-"));
+  try {
+    const root = join(temp, "data/bopen/opencode-source");
+    const shim = join(temp, "config/opencode/plugins/bopen.ts");
+    mkdirSync(join(temp, "config/opencode/plugins"), { recursive: true });
+    const run = (remove: boolean) => {
+      const plan = emitPlan(makeState({}, [makePlugin()]), {
+        runtime: "opencode", plugins: [{ name: "core", installPlugin: !remove, uninstallPlugin: remove, checks: [], hooks: {} }],
+      });
+      const block = [...plan.matchAll(/```sh\n([\s\S]*?)\n```/g)].find((match) => match[1].includes("bun -e"))![1];
+      // Run only the registry verification, leaving real CLI discovery to integration tests.
+      return Bun.spawnSync(["sh", "-ec", block.split("\nopencode debug")[0]], {
+        env: { ...process.env, XDG_CONFIG_HOME: join(temp, "config"), XDG_DATA_HOME: join(temp, "data") },
+      }).exitCode;
+    };
+    expect(run(false)).not.toBe(0);
+    writeFileSync(shim, `// bopen-managed: ${JSON.stringify({ schema: 1, adapter: root + "/opencode", roots: [root] })}\nexport default {};\n`);
+    expect(run(false)).toBe(0);
+    expect(run(true)).not.toBe(0);
+    rmSync(shim);
+    expect(run(true)).toBe(0);
+  } finally { rmSync(temp, { recursive: true, force: true }); }
+});
+
+test('OpenCode hook-state script updates the nested hook map and preserves other settings', async()=>{
+ const project=mkdtempSync(join(tmpdir(),'bopen-hook-config-'));
+ try {
+  mkdirSync(join(project,'.opencode'));
+  writeFileSync(join(project,'.opencode/bopen-hooks.json'),JSON.stringify({note:'keep',hooks:{bouncer:false,'publish-gate':false}}));
+  const plan=emitPlan(makeState({},[makePlugin()]),{runtime:'opencode',plugins:[{name:'core',installPlugin:false,uninstallPlugin:false,checks:[],hooks:{bouncer:true,hammertime:false}}]});
+  const block=[...plan.matchAll(/```sh\n([\s\S]*?)\n```/g)].find(m=>m[1].startsWith("python3 - <<'PY'"));
+  expect(block).toBeDefined();
+  const result=Bun.spawnSync(['sh','-c',block![1]],{cwd:project});expect(result.exitCode).toBe(0);
+  const config=await Bun.file(join(project,'.opencode/bopen-hooks.json')).json();
+  expect(config).toEqual({note:'keep',hooks:{bouncer:true,'publish-gate':false,hammertime:false}});
+ }finally{rmSync(project,{recursive:true,force:true});}
 });

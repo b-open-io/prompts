@@ -35,8 +35,13 @@ export function pluginUninstallCommand(
 	runtime: string,
 	marketplace: string | null,
 ): string | null {
+	if (runtime === "opencode") {
+		return marketplace === "b-open-io" && /^[a-z0-9][a-z0-9-]*$/.test(name)
+			? `bun "\${XDG_DATA_HOME:-$HOME/.local/share}/bopen/opencode-source/opencode/install.ts" --plugin ${name} --global --uninstall`
+			: null
+	}
 	if (runtime === "codex") return `codex plugin remove ${name}`
-	if (runtime === "claude" || runtime === "opencode" || runtime === "grok") {
+	if (runtime === "claude" || runtime === "grok") {
 		return marketplace ? `claude plugin uninstall ${name}@${marketplace}` : null
 	}
 	return null
