@@ -28,6 +28,31 @@ manifests share the same release version.
   Muse Spark 1.3 via Muse Code is cheap Meta volume (not the default). Luna
   without extra-high/max is the wrong recipe. orchestra 0.1.16.
 
+### Fixed
+
+- Optional modules installed from the b-open-io marketplace no longer ship
+  dangling skill symlinks. The marketplace sources each module with
+  `git-subdir`, which ships only `modules/<name>`, so the sixteen vendored
+  third-party skills that lived at the repo root `.agents/skills/` and were
+  linked as `../../../.agents/skills/<name>` did not exist after install
+  (mcp-dev: 13 skills, review: wayfinder, creative: macos-design and
+  remotion-best-practices). Each vendored skill now lives inside the module that
+  ships it at `modules/<name>/.agents/skills/`, the symlinks point at
+  `../.agents/skills/<name>` inside the module, and provenance moved to a
+  per-module `skills-lock.json` with the same content hashes. mcp-dev 0.1.3,
+  review 0.1.13, creative 0.1.3.
+- `scripts/check-plugin-extraction.py` extracts every locally sourced plugin on
+  its own, exactly as git-subdir does, and fails on any dangling or escaping
+  symlink, any skill directory without a readable `SKILL.md`, and any module
+  directory missing from the marketplace. It runs first in
+  `scripts/test-isolated-plugin-install.sh`, as its own step in
+  `isolated-plugin-install.yml`, and in `scripts/run-plugin-harness.py`. The
+  previous gate copied the whole repository with `rsync -aL`, which dereferenced
+  the links against the full tree and could not see the failure.
+  `plugin-module-split` 1.0.1 / plugin-kit 0.1.6 now says a vendored copy must
+  live inside the module because git-subdir sourcing severs the parent
+  directory.
+
 ## [1.1.158] - 2026-09-02
 
 ### Changed
