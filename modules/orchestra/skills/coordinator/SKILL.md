@@ -1,624 +1,107 @@
 ---
 name: coordinator
-version: 0.0.14
-description: >-
-  Route bounded code-writing volume from a capable Claude Code, Codex, Grok
-  Build, or OpenCode main session to cheaper or specialized executors — native plugin-roster
-  agents, Grok subagents, Codex / GPT-5.6 Sol workers or reviewers, GPT-5.6 Luna
-  extra-high volume, Muse Spark 1.3, or `opencode run` workers — while planning, design intent, review,
-  verification, and git stay in the main seat. Use for "dispatch to workers",
-  "plan big execute small", "race worker lanes", "model arbitrage",
-  "spec and dispatch", "use Sol as a worker", "use Sol as a reviewer",
-  "use GPT 5.6 Sol", "use Luna workers", "Luna extra high", "unlimited tokens",
-  "Muse Spark", "cheap workers", or "create-workflow". Luna is the
-  unlimited-feeling volume lane, not the default.
+version: 0.0.15
+description: Route bounded implementation from the current main session to native or external workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Muse, Grok, OpenCode, or native workflows.
 ---
 
 # Coordinator
 
-Capable main-model tokens are best spent on judgment while cheaper or more
-specialized executors handle bounded code volume. This pattern works from a
-Claude Code, Codex, Grok Build, or OpenCode main session. Never infer or pin the main
-model: "Here" means the current main session selected by the user.
+Keep the current session in the main seat. The main owns the plan, interfaces,
+review, verification, and final decision. Workers implement bounded units; they
+do not own git or silently change the plan.
 
-**You ARE the main seat.** The main owns the plan, interfaces, review,
-verification, and final decision. An advisor may pressure-test a decision, but
-advice does not transfer ownership. For a workflow that combines workers and an
-independent advisor, use the `orchestrator` skill; for advice alone, use
-`advisor`.
+For independent advice, use `advisor`. For a workflow that combines workers and
+an advisor, use `orchestrator`. For a fan-out larger than the available host
+slots, also load `wave-coordinator`.
 
-## Routing Table
+## Progressive loading
 
-| Work | Where | Why |
-|------|-------|-----|
-| Planning, specs, architecture decisions | Here | Keep the task's controlling judgment in one context |
-| **ALL implementation — backend, frontend, anything that writes code** | Worker dispatch | Worker capacity is cheap; typing code is not where the main adds value |
-| Visual validation of UI work (run the app, screenshot, judge, iterate) | Here | The design eye is worth the price — validate, don't type |
-| Investigation and debugging analysis (root-causing hard bugs) | Here | Judgment work; the resulting fix dispatches with a precise spec |
-| Diff review, commits, pushes, PRs | Here | Git operations stay under your control |
-| Trivial edits riding along with review/validation (one-liners, any layer) | Here | Dispatch overhead exceeds the work |
-| Work a worker has demonstrably struggled with | Here | Escape hatch — see below |
+Do not read every harness guide. Load only the resources needed for this run:
 
-## Worker Selection
+1. Always read [the dispatch contract](references/dispatch-contract.md) before
+   sending implementation work.
+2. Read exactly one current-host guide:
+   [Claude Code](references/hosts/claude.md),
+   [Codex](references/hosts/codex.md),
+   [Grok Build](references/hosts/grok.md), or
+   [OpenCode](references/hosts/opencode.md).
+3. For each external worker actually selected, read only its guide:
+   [Codex / Sol / Luna](references/workers/codex.md),
+   [Grok CLI](references/workers/grok.md),
+   [Muse Code](references/workers/muse.md), or
+   [OpenCode CLI](references/workers/opencode.md).
 
-Worker lanes differ by host. Pick per unit of work; independent lanes can run
-in parallel.
+Example: a Claude main dispatching an OpenCode worker reads this file, the
+dispatch contract, the Claude host guide, and the OpenCode worker guide. It does
+not load Grok, Codex, or Muse instructions.
 
-| Worker | Best for |
-|--------|----------|
-| **Native Grok agent** (plugin roster id or built-in `explore` / `plan` / `general-purpose`) | Specialist work that should stay inside the current Grok session. Pass `subagent_type`. Inherit `grok-4.6`. Do not dispatch `grok-4.5`. `agent().model` / `spawn_subagent` accept only those two slugs |
-| **Native Claude agent** (plugin agent or lower-tier subagent) | Work needing the current Claude session's tools, browser, MCP servers, or plugin context |
-| **Native Codex agent** (`bopen_*` custom agent or a built-in worker/explorer) | Specialist exploration, review, tests, and bounded work that should stay inside the current Codex runtime |
-| **GPT-5.6 Sol** | Quality Codex/OpenAI worker. On Grok: wrap `grok --single -m gpt-5.6-sol` in a `grok-4.6` workflow agent after a quoted `[model."gpt-5.6-sol"]` is listed by `grok models`. Do not pass Sol as `agent().model` — Grok 1.0.3 rejects it. From Claude, or if the custom id is missing, `codex exec -m gpt-5.6-sol` |
-| **grok** (Grok Build CLI, headless) | Default external quality volume when the host is Claude or Codex. Pin `BOPEN_WORKER_MODEL` |
-| **GPT-5.6 Luna @ extra-high** | Unlimited-feeling volume on leftover Codex/OpenAI quota (Replit Free Mode is the same model). `codex exec -m gpt-5.6-luna -c model_reasoning_effort="xhigh"`. Extra-high — community also uses `max` — is what makes Luna a worker. Luna at none/low/medium is the wrong recipe. **Not the default.** Do not pick Luna silently when Grok or Sol is available unless the user asked for quota or unlimited-feeling volume |
-| **Muse Spark 1.3** (Muse Code CLI) | Cheap Meta volume. Headless `muse exec --prompt-file … --model muse-spark-1.3`. Pin 1.3 — the CLI default may still be 1.2. **Not the default** |
-| **opencode** (OpenCode CLI, headless) | Portable worker lane from any host. `opencode run --model <provider/model> "<one-liner; details in SPEC-*.md>"`. Skills load drop-in from `.claude/skills/`; agents live in `.opencode/agent(s)/`; hooks have no file equivalent — they are plugin event handlers. See dispatch shape below |
-| **Native Workflow** | Deterministic staged fan-outs. Claude Code: `Workflow` (JS, `pipeline` + `parallel`). Grok Build: `workflow` (Rhai, `parallel` barrier only). Author on Grok with bundled `/create-workflow` — that skill is not in this plugin. Codex: none. OpenCode: no native workflow primitive — sequence `opencode run` dispatches from the caller. See `references/native-workflows.md` |
+## Ownership boundary
 
-Before dispatching to `general-purpose`, match the unit against the roster in
-`skills/deploy-agent-team/references/agent-roster.md` and pass the specific
-`subagent_type` (e.g. `review:code-auditor` or `research:researcher`). On Grok,
-`bopen-tools:<name>` aliases also resolve when that plugin is installed. Use
-`general-purpose` only when no roster agent fits, and say so explicitly in the
-dispatch note.
+| Work | Owner |
+|---|---|
+| Plan, architecture, interfaces, and acceptance criteria | Main |
+| Bounded implementation | Selected worker |
+| Hard debugging analysis and visual judgment | Main, then dispatch the fix |
+| Diff review, final verification, commits, pushes, and PRs | Main |
+| One-line edits found during review | Main when dispatch overhead is larger |
 
-When the orchestration itself has deterministic shape (stages, loops, majority
-votes) and the user opted into multi-agent work, a native workflow beats
-hand-executing waves turn by turn — the script owns control flow while every
-coordinator rule (specs in agent prompts, main-seat review, git here) still
-applies. Details, gating, Sol-as-worker, Sol-as-reviewer, `/create-workflow`
-origin, and per-host APIs: `references/native-workflows.md`.
+Use a worker only when it is materially cheaper or better for the bounded unit.
+Every dispatch has a context, specification, and review cost. Split at coherent
+API or file-ownership boundaries, not into tiny tasks merely to create a graph.
 
-Pick the lane that stays inside the current host when it can do the work. On a
-Grok main, prefer native roster agents on `grok-4.6`. Never dispatch
-`grok-4.5`. When `grok models` lists `gpt-5.6-sol`, run Sol as
-`grok --single -m gpt-5.6-sol` inside a `grok-4.6` workflow supervisor.
-Do not pass `model: "gpt-5.6-sol"` to `agent()` or `spawn_subagent` —
-the host returns `Unknown Task.model slug`. If the custom id is missing,
-use `codex exec -m gpt-5.6-sol`. On a Codex main, prefer native Codex agents and
-use Grok only for external implementation volume — do not launch another
-Codex CLI to reproduce work a native agent can do. On a Claude main, native
-Claude agents, Grok, an external Codex/Sol lane, and `opencode run` workers are all valid. On an OpenCode main,
-native OpenCode agents come first — `opencode run --agent <name>` selects a
-primary/all-mode agent, not a `mode: subagent` agent; external CLIs
-(`codex exec`, `grok`, `muse exec`, `claude --print`) are shell-out lanes. Any
-headless coding CLI backed by a suitable quota fits the CLI slot; ask once
-when the user's preference is ambiguous, then keep it stable for the session.
-That slot is how Luna and Muse enter — named cheap-volume options, not inferred
-defaults.
+## Select a lane
 
-### Cheap volume — not the default
+Prefer a native specialist on the current host when it has the required tools
+and context. Match named specialist work against
+`../deploy-agent-team/references/agent-roster.md`; use a generic worker only
+when no roster specialist fits, and say so.
 
-Grok 4.6 and GPT-5.6 Sol remain the quality workers. Luna and Muse are for
-when the user wants the price/quota gap, not when a model is missing.
+External quality lanes are Grok and GPT-5.6 Sol. GPT-5.6 Luna at extra-high
+reasoning and Muse Spark 1.3 are explicit cheap-volume choices, not silent
+defaults. OpenCode is a portable lane whose provider and model must be pinned.
+Never infer or replace the user's current main model.
 
-- **Luna extra-high is the unlimited-feeling lane.** OpenAI treats Luna as the
-  leftover/fallback after advanced-model quota, and Replit Free Mode runs it
-  for almost nothing. Extra-high reasoning (`xhigh`; community also uses
-  `max`) is required — Luna without that effort is a fast nano, not a coding
-  worker. Do not silently swap Sol or Grok to Luna. "Unlimited" is
-  quota-arbitrage, not infinite: the main still burns premium tokens, and
-  Luna/Replit/Codex terms can still bite.
-- **Muse Spark 1.3 is cheap Meta volume.** Muse Code CLI, dropped 2026-09-02,
-  is the other named cheap frontier worker. Pin `--model muse-spark-1.3`.
-  Live docs may still default the CLI to `muse-spark-1.2`.
+If the work has deterministic stages, loops, or voting, use a native workflow
+only when the current host guide says the primitive exists and the user opted
+into multi-agent work. The script may own control flow; the main still owns the
+plan, evidence, and ship decision.
 
-External lanes cross a data boundary. A Grok dispatch can send its prompt,
-specification, source excerpts, and other repository content to xAI. A Muse
-dispatch can send the same class of content to Meta. A Codex/Luna/Sol
-dispatch can send it to OpenAI. Before the first use of each external lane,
-disclose what content will be sent and obtain the user's approval unless the
-user already explicitly authorized that lane for the task. Never include
-secrets, credentials, or unrelated proprietary material.
+## External-provider boundary
 
-**Preflight every CLI lane — and fail loudly.** Before a session's first
-dispatch: `command -v <cli>` plus a version/auth check. For Grok, print and
-inspect the complete `grok models` output before selecting a model. A missing or
-unauthenticated lane is reported as unavailable and the spec re-routes to
-another lane *explicitly* — a CLI lane that quietly becomes "I'll just write
-it here" defeats the routing. The main session absorbs implementation
-only through the escape hatch, never through a silent fallback.
+Before first use of an external lane, state which provider will receive the
+prompt, specification, and selected repository content. Obtain approval unless
+the user already authorized that lane for the task. Never send secrets,
+credentials, unrelated proprietary content, or a broader snapshot than the
+assignment requires. An OpenCode model uses the provider behind its pinned
+`provider/model`; verify that destination instead of treating OpenCode itself as
+the provider.
 
-**Enabling a lane.** Unavailable is a state to fix, not just report — when a
-wanted lane fails preflight, offer to enable it (installs change the user's
-machine; confirm before running, re-run the preflight after):
-- **codex**: `npm i -g @openai/codex` (or install the codex Claude Code
-  plugin), then `codex login` in a terminal for the subscription quota, or
-  set `OPENAI_API_KEY` for pay-per-token. Luna and Sol share this binary;
-  the model id is the lane.
-- **grok**: `curl -fsSL https://x.ai/cli/install.sh | bash` (installs to
-  `~/.grok/bin`, no sudo; inspect the script before piping it). Auth, any
-  of: `XAI_API_KEY` env var (pay-per-token, zero interaction), `grok login`
-  (browser OAuth, subscription quota — hand to the user), or
-  `grok login --device-auth` for headless/remote boxes. Verify with
-  `grok models`.
-- **muse**: `curl -fsSL https://dev.meta.ai/install.sh | sh` (inspect the
-  script before piping it). Auth: interactive `muse` browser login, or
-  `META_API_KEY` for headless. Verify `muse --version` and that
-  `--model muse-spark-1.3` is accepted.
-- **opencode**: `npm i -g opencode` (or `brew install opencode`, `curl -fsSL https://opencode.ai/install | bash`).
-  Auth per provider (`opencode auth login`, env keys, or `opencode.json` provider blocks).
-  Verify `opencode --version` and `opencode models <provider>` lists the intended
-  `provider/model`. Skills are drop-in (`SKILL.md` discovery includes
-  `.claude/skills/`); agents are `.opencode/agent(s)/<name>.md` or `agent:{}` in
-  `opencode.json`; there is no hooks file — hooks are plugin event handlers.
+## Run sequence
 
-**codex: plugin vs raw CLI.** Detect once per session and prefer the plugin:
+1. Inspect the task, repository instructions, current state, and the premise
+   behind the requested change.
+2. Choose the current-host adapter and the smallest useful worker lane.
+3. Read the dispatch contract plus only those selected guides.
+4. Preflight the lane. A missing binary, model, authentication, or write policy
+   makes the lane unavailable; never silently absorb the work in the main.
+5. Write a precise spec and partition concurrent file ownership.
+6. Dispatch in the background and keep useful main-seat work moving.
+7. At the barrier, inspect the actual diff and worker report. Treat missing
+   evidence as unverified.
+8. Re-run acceptance in the main environment, then commit and ship from here.
 
-Apply this subsection only when an external Codex lane was deliberately chosen,
-normally from a Claude main. From a Codex main, use native subagents unless
-isolation or an explicit user request justifies a separate Codex process.
+## Failure behavior
 
-- **Plugin installed** (`codex:*` commands / `codex:codex-rescue` agent
-  available): dispatch through it — `/codex:rescue --background <task>` or the
-  `codex:codex-rescue` subagent. The plugin drives the codex app-server
-  directly and adds resumable threads (`--resume`), background job tracking
-  (`/codex:status`, `/codex:result`, `/codex:cancel`), and structured output —
-  the job log preserves worker output even when nothing comes back inline.
-  The underlying sandbox defaults to read-only; the rescue agent adds
-  `--write` for implementation tasks but runs read-only when the request
-  reads like review or diagnosis — phrase dispatches as edit tasks
-  ("implement X, edits expected") so write mode is chosen.
-- **CLI only**: `codex exec --sandbox workspace-write --cd <repo> "..."` with
-  every guardrail in the Dispatch Protocol below.
-- Do not assume the plugin and raw CLI resolve the same model, profile, rules,
-  or sandbox. Record the effective model and policy during preflight; the
-  plugin primarily changes thread/job management, but local configuration can
-  still make the two lanes behave differently.
+- Infrastructure failure is not a quality failure. Preserve the spec and retry
+  or explicitly reroute it.
+- Correct one quality miss with concrete feedback. After a second corrected
+  miss, the main may use the escape hatch and finish the unit directly.
+- Reject environment-driven workarounds such as replacing dependencies,
+  changing bundlers, removing remote assets, or weakening tests.
+- Do not let a worker commit, push, or merge.
 
-**codex / GPT-5.6 Sol dispatch shape (from a Claude or Grok host):**
-```bash
-codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-sol \
-  -c model_reasoning_effort="high" \
-  "<one-line imperative; details in SPEC-*.md>" \
-  > /tmp/dispatch-<id>.log 2>&1 &
-```
-Preflight `command -v codex` and confirm the id (config `model =` or `-m`).
-Sol is the quality Codex lane. It is not a Grok native subagent model.
-`claudex` replaces the main seat with a Claude Code session on Sol — do not
-use it as a worker.
+## Final report
 
-**codex / GPT-5.6 Luna extra-high (unlimited-feeling volume, not the default):**
-```bash
-codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-luna \
-  -c model_reasoning_effort="xhigh" \
-  "<one-line imperative; details in SPEC-*.md>" \
-  > /tmp/dispatch-<id>.log 2>&1 &
-```
-Use this only when the user asked for Luna, leftover/unlimited-feeling
-quota, or cheap Codex volume. Do not silently substitute it for Sol. If
-`xhigh` is rejected, try `max` once and report which effort actually ran.
-Luna without extra-high/max is not this lane.
-
-**muse / Muse Spark 1.3 dispatch shape (cheap Meta volume, not the default):**
-```bash
-PROMPT_FILE=$(mktemp -t muse-prompt.XXXXXX)
-printf '%s\n' "<one-line imperative; details in SPEC-*.md>" > "$PROMPT_FILE"
-muse exec --prompt-file "$PROMPT_FILE" --model muse-spark-1.3 \
-  --reasoning-effort xhigh --disable-approval --workspace <repo> \
-  > /tmp/dispatch-<id>.log 2>&1 &
-```
-Preflight `command -v muse` and confirm `muse-spark-1.3` is accepted.
-`--disable-approval` keeps the OS sandbox (same idea as grok
-`acceptEdits`). Never `--yolo` for a worker — that disables the sandbox
-and trusts the workspace. Muse's process exit code is how the run ended,
-not whether the work is correct; re-run acceptance here. Pin 1.3 every
-time — do not ride a CLI default of `muse-spark-1.2`.
-
-**grok (Grok Build CLI) dispatch shape (from a Claude or Codex host):**
-```bash
-PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)   # unique per dispatch — parallel lanes on a shared path corrupt each other
-grok models                                  # inspect the COMPLETE output; confirm the exact ID below exists
-: "${BOPEN_WORKER_MODEL:?Set BOPEN_WORKER_MODEL to a verified ID from grok models}"
-WORKER_MODEL="$BOPEN_WORKER_MODEL"
-printf '%s\n' "<one-line imperative; details in SPEC-*.md>" > "$PROMPT_FILE"
-grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" --permission-mode acceptEdits \
-  --sandbox workspace --output-format plain --cwd <repo>
-```
-- **Preflight with `grok models`** — one command verifies the binary AND
-  auth and lists the available model IDs. Read the complete, untruncated
-  output. Set `BOPEN_WORKER_MODEL` to the selected available model. **Pin the
-  resulting model explicitly** and confirm the exact ID appears in that output
-  — never ride the CLI default, which may change independently.
-- `acceptEdits`, never `--always-approve`: the worker edits files; you re-run
-  verification yourself. (Its permission mode may also have blocked it from
-  running the acceptance command — your re-run covers that.)
-- `--sandbox workspace` scopes filesystem access; custom profiles live in
-  `.grok/sandbox.toml`. **Footgun: an unknown profile only WARNS ("sandbox
-  could not be applied") and runs unsandboxed** — check stderr before
-  trusting isolation. Unlike codex's sandbox, the grok lane can reach the
-  network, so offline fixtures are usually unneeded — but verify what the
-  chosen profile actually permits rather than assuming, and the "what NOT
-  to touch" list and adversarial review carry full weight here regardless.
-- Parallel dispatches: `--worktree` gives each run an isolated git worktree
-  natively. `--best-of-n <N>` (headless) races N attempts *within* the lane
-  and picks the best — in-lane redundancy; cross-vendor racing (below)
-  remains the stronger diversity play.
-- Wrap dispatches in a timeout so a hung lane returns a status instead of
-  stalling the barrier — but **verify the binary during lane preflight**:
-  `command -v gtimeout || command -v timeout`. Stock macOS ships NEITHER
-  (both come with coreutils); a blind `gtimeout ... grok ...` dies with
-  exit 127 before the worker ever starts, and the failure reads like a lane
-  failure. No timeout binary? Dispatch unwrapped and rely on background-job
-  monitoring. If a flag misbehaves, re-check `grok --help`.
-
-**opencode (OpenCode CLI) dispatch shape (from a Claude, Codex, or Grok host):**
-```bash
-PROMPT_FILE=$(mktemp -t opencode-prompt.XXXXXX)   # unique per dispatch — parallel lanes on a shared path corrupt each other
-printf '%s\n' "<one-line imperative; details in SPEC-*.md>" > "$PROMPT_FILE"
-opencode run --model "<provider>/<model>" --dir <repo> "$(cat "$PROMPT_FILE")" \
-  > /tmp/dispatch-<id>.log 2>&1 &
-```
-- There is no `opencode exec`. The headless entrypoint is `opencode run`
-  (positional message, stdin prepended, `-f/--file` attachments,
-  `--dir` working directory, `--format json` for scripting,
-  `--attach http://localhost:4096` to reuse a running server and skip MCP cold-boot).
-- Preflight `command -v opencode`, `opencode --version`, and
-  `opencode models <provider>` for the intended `provider/model` (e.g.
-  custom `muse-spark/muse-spark-1.3` or `gpt-luna/gpt-luna` provider blocks in
-  `opencode.json`). Pin `provider/model` explicitly every time — never ride
-  the configured default.
-- For cheap Meta volume through OpenCode, register Muse Spark 1.3 as a custom
-  OpenAI-compatible provider in `opencode.json` and dispatch
-  `opencode run -m muse-spark/muse-spark-1.3`. For the unlimited-feeling lane,
-  register Luna the same way. Model refs are always `provider-id/model-id`.
-- Agents: `.opencode/agent(s)/<name>.md` (or `agent:{}` in `opencode.json`).
-  `opencode run --agent <name>` selects a primary/all-mode agent — it does
-  not directly start a `mode: subagent` agent. A real child invocation is a
-  headless primary session that invokes the named child with an `@mention`:
-  `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"`.
-  The primary session invokes the named child; a subagent without its own
-  `model` inherits the parent model. OpenCode 1.18.20 logs a warning and
-  falls back to the default primary agent when `--agent` names a subagent.
-  Skills are drop-in `SKILL.md` (OpenCode also reads `.claude/skills/`).
-  There is no hooks file — hooks are plugin event handlers, not a dispatch surface.
-- Verify available models with `opencode models <provider>` rather than
-  assuming ids. The lane successfully tested here is
-  `opencode/muse-spark-1.3-contributor-free` — a verified example, not a
-  universal or permanent identifier.
-- Require dispatch evidence: capture full output to a log file and verify a
-  child marker such as `General Agent` (or the configured subagent's
-  equivalent) before treating the run as a subagent workflow. A primary
-  `build` line alone does not prove delegation. Demand the FINAL REPORT in
-  the prompt, and re-run acceptance in the main seat — same as every other
-  CLI lane.
-- OpenCode has no native multi-stage workflow engine: the caller still owns
-  sequencing and barriers.
-
-Native subagent workers get a fully self-contained prompt unless the host
-explicitly guarantees inherited context. Include the spec content (or its
-path), acceptance command, and the final-report demand below, exactly as for
-the CLI lanes. Pass the roster `subagent_type` on Grok and Claude
-(`research:researcher`, `review:code-auditor`, …). In Codex, prefer installed
-`bopen_*` specialist agents when a matching adapter exists. Never claim a
-roster agent ran unless that id was the one spawned. Never pass
-`gpt-5.6-sol` as a Grok `agent().model` slug. Wrap
-`grok --single -m gpt-5.6-sol` or `codex exec` instead.
-
-## Parallel Dispatch Without Collisions
-
-Parallel workers step on each other in exactly one place: the files they
-write. Pick an isolation strategy per fan-out, in this order of preference:
-
-| Strategy | When | Cost |
-|----------|------|------|
-| **1. Disjoint file ownership** (default) | Units partition cleanly by file/module | Cheapest: shared tree, no merge step |
-| **2. Sequential waves** | Unit B imports code unit A must first create, or B's spec can't be written until A's output is known | Wall-clock: waves serialize |
-| **3. Worktree isolation** | Two workers genuinely must touch the SAME file, or overlap is uncertain | Coordinator absorbs the merge: integrate each diff here, re-run acceptance after every merge |
-
-**Strategy 1 mechanics — this is the workhorse:**
-- Every spec lists "files you may EDIT (only these)" and names the sibling
-  tasks' files under "do NOT touch". The partition IS the lock.
-- **Pin the seams verbatim in every spec.** Any contract two units share —
-  type signatures, request/response body fields, storage keys, function
-  names — is written exactly, in both specs, by the coordinator. Workers
-  code against the contract, not against each other's unfinished files.
-- Tell workers that type errors originating in a sibling task's not-yet-
-  landed files are expected: report them, never "fix" them. Run the real
-  whole-project typecheck yourself at the barrier.
-- Hard rule: two concurrent workers writing one file in a shared tree is
-  never acceptable — last write wins silently. Re-partition or use waves
-  or worktrees instead.
-
-**Strategy 2 mechanics:** dispatch in dependency order; a later wave's spec
-may reference files an earlier wave landed. A unit that IMPORTS a sibling's
-module but codes against a pinned contract does not need to wait — waves
-are for when the spec itself cannot be finished, not for import edges. For
-fan-outs larger than roughly one host-sized wave, `wave-coordinator` covers wave
-sizing and context budgeting.
-
-**Strategy 3 mechanics:** grok has native `--worktree`; codex sandboxes are
-already isolated workspaces; for native subagents or manual lanes use git
-worktrees directly (`superpowers:using-git-worktrees` where installed,
-plain `git worktree add` otherwise). The isolation is the easy half — the
-coordinator owns integration: review each worker's diff, merge or apply it
-to the main tree here, and re-run acceptance after EACH integration, not
-once at the end. If two isolated diffs rewrote the same lines, judgment
-about which side wins belongs to the main seat; do not dispatch the merge.
-
-Field note: strategy 1 with pinned contracts ran two real fan-outs (five
-dispatches, then three) against one shared tree with zero integration
-conflicts — the whole-project typecheck was green the moment the last
-worker landed.
-
-## Delegation Economics
-
-**The graph tax is real — arbitrage is what offsets it.** Orchestration is not
-free control logic. Every dispatch spends tokens on *management*, not the task:
-the main seat re-establishes context, the worker re-reads a spec, results get
-reviewed and reconciled. An edge in a fan-out diagram looks like a costless
-line; economically it is a communication event — serialize state, move context,
-pay the executor to reprocess it, integrate the result. The measured overhead is
-large: agent runs use ~4× the tokens of a plain chat and multi-agent designs
-~15× (Anthropic, 2025); a supervisor that "translates" worker output can cost
-more tokens *and* lose accuracy versus a flatter design (LangChain, 2025). When
-the manager and the workers are the *same expensive model*, that tax buys
-nothing — five nodes where one loop would ship is pure loss dressed as rigor.
-
-**What makes this pattern pay is the price gap, not the graph.** Coordinator
-dispatch is justified only when the executor is materially cheaper, or genuinely
-more specialized, than the main seat: bounded code volume routed to a cheap
-  worker (a Grok subagent, GPT-5.6 Sol, Luna extra-high, Muse Spark 1.3, an
-  `opencode run` worker on a pinned provider/model, or a
-lower-tier native agent) while premium judgment — plan, interfaces, review,
-git — stays on the expensive seat. With a real price gap, even a 5–15× token
-multiplier on the *cheap* side is a net win,
-because the alternative was spending *premium* tokens typing the same code.
-Remove the price gap and every critique of "agent graphs" applies to you in
-full. So the discriminator for each unit is concrete: **is this executor cheaper
-(or better at this exact unit) than doing it here — by enough to clear the
-dispatch floor?** If yes, dispatch. If the worker is the same tier as the main
-seat, or the unit is a one-liner, the tax has nothing to offset it: do it here.
-Fan out for volume and price arbitrage, never for the appearance of
-sophistication.
-
-- **Every dispatch has a fixed floor cost** — spec writing, context
-  re-establishment, review. Splitting finer does not monotonically get
-  cheaper; over-fragmented briefs raise the total. One owner per coherent
-  unit; split at API boundaries, not mid-feature.
-- **Verify the premise, not just the output.** Acceptance criteria only audit
-  what is downstream of the decomposition. If the plan rests on a factual
-  premise (an API's actual shape, a library's real behavior, "which files are
-  involved"), spend one cheap dispatch verifying it before fanning out —
-  perfectly executed tasks built on a wrong premise all pass review and are
-  all wrong.
-- **Fan out in parallel on independent units; hard barrier before shipping.**
-  Keep planning/review work flowing while workers run, but wait for every
-  outstanding dispatch before synthesis, cross-unit review, or any git
-  operation that assumes the set is complete.
-- **Infra failure ≠ quality failure.** A timeout, quota error, or dead run
-  gets the same spec re-dispatched fresh. A quality miss gets one corrective
-  re-dispatch with concrete feedback, then the two-strike escape hatch.
-- **Race lanes on high-stakes work.** When correctness matters enough to pay
-  twice, dispatch the SAME spec to two independent vendor lanes (codex +
-  grok) and pick the stronger diff. The main session judging two
-  cross-vendor implementations gets three independent perspectives for one
-  extra dispatch. Never race on routine work — that's paying double for
-  volume.
-- **Keep this session's context lean.** Everything in the main context is
-  re-read every turn. Don't paste full worker logs or
-  diffs when a path reference and an excerpt carry the decision; delegate
-  broad exploration to cheap read-only agents and keep only conclusions.
-- **No arbitrage on trivial work.** Dispatch overhead exceeds a one-liner; do
-  those here while reviewing.
-
-## Dispatch Protocol
-
-1. **Spec first.** Write a `SPEC-<ticket>-<slug>.md` at the target repo root:
-   objective, files/areas involved, interfaces (signatures, types, API shapes
-   the code must match), constraints, acceptance criteria — the exact test
-   command that must go green — and what NOT to touch. A spec that can't be
-   finished means the decision isn't made yet: that's judgment work to do
-   here, not ambiguity to hand to a cheaper model. For frontend
-   work the spec carries the design intent: layout, states, interactions,
-   spacing, motion, reference patterns. For the hardest parts, spec down to
-   pseudocode — the thinking stays here; the typing still dispatches. Keep
-   spec files untracked (never commit them). When the spec covers a
-   generator whose output the repo's linter checks, require the generator
-   itself to emit lint-clean output (or gitignore/lint-ignore the emitted
-   path) — hand-formatting generated files at every barrier is a treadmill,
-   not a fix.
-
-2. **Every spec MUST include the environment clause** (verbatim or close):
-   > If you hit an environment blocker (read-only path, no network, blocked
-   > cache), STOP and report it. Never work around it by changing build
-   > tooling, removing dependencies, reimplementing libraries, or deleting
-   > assets. Environment artifacts are the dispatcher's problem, not a code
-   > problem.
-
-3. **Every dispatch prompt MUST demand a structured final report.** An
-   uninstructed codex run frequently returns nothing usable — the work may
-   even be done, silently. Append (verbatim or close):
-   > End with a FINAL REPORT: files changed (paths), commands run and their
-   > pass/fail, status of each acceptance criterion, and anything you could
-   > not do and why. If you changed no files, say so explicitly and explain.
-   If the report still comes back empty, don't re-dispatch blind — read the
-   evidence directly: `git status`/`git diff` in the workspace, or the
-   plugin's `/codex:result` job log. An empty report over a real diff is a
-   reporting failure, not a work failure.
-
-4. **Dispatch in the background — with write access. Always.**
-   ```bash
-   codex exec --sandbox workspace-write --cd <repo> "<one-line imperative; details in SPEC-*.md>"
-   ```
-   (A custom codex prompt like `/goal` may front the one-liner where the
-   user's codex config defines one — optional local sugar, not required.)
-   - Never rely on the user's default Codex sandbox for implementation. Specify
-     `--sandbox workspace-write` and verify the effective policy (plugin path:
-     request a write-capable run explicitly).
-   - Treat network and port access as properties of the effective sandbox, not
-     universal Codex facts. Preflight them when the task depends on installs,
-     generated assets, external APIs, or a local server.
-   - **If the task NEEDS external data, ship it offline.** Fetch the API
-     response/catalog/fixture yourself, save it into the workspace (e.g.
-     `SPEC-catalog-snapshot.json`), and spec an EXPLICIT override (env var or
-     flag) that reads the file — never a silent fallback. The worker develops
-     and tests against the snapshot; you re-verify live after review. A
-     dispatch whose acceptance requires live network is a wasted dispatch.
-   - **The project's bundler/build tool is sacrosanct.** Dev servers and some
-     bundlers (Next 16 Turbopack) bind a port, which the sandbox forbids —
-     builds then fail with `Operation not permitted`. Spec the fallback gate
-     explicitly: "gate on `tsc --noEmit` + lint and REPORT the port error."
-     The worker must never invoke or configure an alternative bundler (e.g.
-     `next build --webpack`) even as a probe: its errors are pure noise for a
-     Turbopack project, and 'fixing' them pollutes the diff. Treat any
-     bundler-switch in output or diff as a sandbox artifact to revert.
-   - Go repos: the default build cache lives outside the workspace. Tell the
-     worker to use `GOCACHE=$PWD/.gocache` (and gitignore it) when the default
-     is blocked.
-   - **Capture the dispatch's full output to a file, never pipe it through
-     `tail`/`head`.** Piping truncates the worker's final report
-     irrecoverably — `codex exec ... | tail -50` can permanently lose the
-     structured report demanded above. Redirect to a log file
-     (`... > /tmp/dispatch-<id>.log 2>&1 &`) and read the tail of that file
-     separately when a quick look is enough.
-   - Keep working while it runs: next spec, review of a prior dispatch,
-     validation.
-
-5. **Review the diff here — adversarially.** A worker under sandbox pressure
-   produces *plausible workarounds*, not just bugs. Real failures seen in the
-   field: removed `next/font` Google fonts to dodge the network; switched
-   `next build` to `--webpack` to make a webpack-only alias apply; and
-   **reimplemented a crypto signing library as a local shim aliased in at
-   build time**. All three shipped a green build. Checklist before accepting:
-   - [ ] `git diff` the build/tool config surface: `package.json` scripts,
-     `next.config.*`, `tsconfig`, `Dockerfile`, CI files, lockfiles. Any
-     change there needs an independent justification, not "build was failing".
-   - [ ] Grep the diff for new aliases, shims, mocks, `patch-package`, vendored
-     copies of dependencies. A "shim" for a real library is a red alert.
-   - [ ] Fonts, remote assets, telemetry, analytics removed? Sandbox artifact.
-     Revert and rebuild outside the sandbox before concluding anything.
-   - [ ] Does the diff exceed the spec's "what NOT to touch" list?
-
-6. **Re-run acceptance yourself, outside the sandbox.** Worker-green is a
-   claim, not evidence — its environment differs from yours (network, caches,
-   bundler). And when you chain the commands, remember that **piping to
-   `tail`/`grep` swallows exit codes**: `bun test | tail -3 && git push` will
-   push on a red suite. Run gating commands unpiped, or check exit status
-   explicitly, before any commit or push.
-
-7. **Ship from here.** Commit, push, PR from this session — never let a
-   worker commit. **In a shared tree with live workers, stage by explicit
-   path list only** (`git add path/one path/two`) — never `git add -A` or
-   `git add .`; a broad add sweeps a mid-flight worker's uncommitted files
-   into your commit, and a production deploy is one careless `git add -A`
-   away. Expect the remote to have moved if other sessions/loops
-   share the repo: on rejected push, `git pull --no-rebase`, resolve (watch
-   for conflicts whose sides each depend on shared closing lines — naive
-   marker stripping breaks functions mid-body), then **re-run acceptance
-   again** before the retry push.
-
-## Visual Validation Loop (frontend)
-
-1. Worker implements the UI per spec.
-2. Run the app here — interact, screenshot, judge against the design intent.
-3. Write concrete visual feedback (what's off, by how much, what good looks
-   like) and re-dispatch.
-4. Loop until it looks right; then diff review + git here.
-
-Auth-gated UIs: you cannot enter credentials (hard boundary). Plan for it —
-mock-data mode, a signed-in user session in the driven browser, or hand the
-sign-in step to the user *early*, before the validation loop blocks on it.
-
-Served-build invalidation: if a worker's acceptance build ran inside the
-directory a long-lived dev/preview server is serving, that build invalidates
-the running server — stale chunk hashes surface in the browser as
-client-side exceptions, not build errors, and look exactly like a real
-regression. Restart the served process at every barrier where a worker
-built in its served directory, before judging step 2 against the design
-intent.
-
-## Background Subagent Etiquette (recon and watch fan-outs)
-
-Recon/research subagents on either host can go idle with a bare notification
-instead of delivering their report:
-
-- In every background-agent prompt, end with: "Your final message is the
-  deliverable — send the complete report; do not stop after an
-  acknowledgment."
-- Stronger (belt and suspenders): also instruct "Before you finish or go
-  idle for any reason, SendMessage your complete report to `main`. An idle
-  notification is not a deliverable." Field data: even with the
-  final-message line, an explicit delivery instruction prevents ambiguity
-  about whether idle means complete.
-- If an idle notification arrives without the report content, immediately use
-  the host's steering or follow-up mechanism to ask: "Send your complete report
-  to main now." One nudge often recovers it; don't wait passively.
-- Treat a second content-free idle from the same agent as a failed dispatch —
-  re-run the recon yourself or spawn a fresh agent.
-
-Field note: two background research/watch agents went fully idle without
-ever delivering their reports in the same session. The explicit delivery
-instruction above is not optional decoration — treat it as a required line
-in every background-spawned agent's prompt, not just recon fan-outs; a
-background agent's final text is not auto-delivered to you.
-
-## Escape Hatch: When a Worker Struggles
-
-Struggle must be **observed, not predicted**. Always dispatch first —
-predicting "the worker can't do this" just means the spec needs
-pseudocode-level detail. But two strikes and it's yours: if a re-dispatch
-with concrete corrective feedback still comes back missing the acceptance
-criteria or mangling the approach, stop re-dispatching and write the code
-here yourself, salvaging whatever of the worker's diff is sound. Switching
-lanes (codex ↔ grok, or CLI → Claude subagent) counts as a legitimate
-second attempt when the failure smells worker-specific rather than
-spec-specific.
-
-Sandbox-artifact workarounds (fonts, bundler switches, shims) are NOT strikes
-against a worker's ability — revert them, confirm the real build passes out
-here, and keep dispatching. Strikes are about the actual implementation.
-
-## Red Flags
-
-| Thought | Reality |
-|---------|---------|
-| "Frontend is design-critical, so I'll code it here" | Taste shows up in the spec and the validation loop, not in typing JSX. Dispatch it. |
-| "Faster to just write it myself" | Premium tokens on rote work. Spec it, dispatch it, validate in parallel. |
-| "This part is too hard for a worker" | Predicted struggle is not observed struggle. Spec it at pseudocode level and dispatch. |
-| "The worker says tests are green, ship it" | Its sandbox is not your machine. Re-run acceptance here, unpiped. |
-| "The diff builds, the workaround is probably fine" | A green build via a shimmed dependency is a failure that compiles. Audit tool-config changes independently. |
-| "I'll let the worker commit and push" | Review the diff and run git from this session. |
-| "No time to write a spec" | An unspecced dispatch comes back wrong and costs more main-seat effort to fix than the spec would have. |
-| "More, smaller dispatches = cheaper" | Each dispatch has a floor cost. Over-fragmenting raises the bill and multiplies review surface. |
-| "This code block in my plan is nearly done, I'll just finish it" | A code block longer than an interface signature or a few illustrative lines is a spec that hasn't been delegated yet. Stop and dispatch it. |
-| "Quicker to fix the worker's bug myself" | Same failure in disguise — the main session quietly absorbing volume. Send a corrected spec back to the lane. |
-| "grok/codex/opencode isn't installed, I'll implement meanwhile" | That's a silent fallback. Report the lane unavailable, re-route explicitly, and only absorb work via the escape hatch. |
-| "Luna is free so it's the default worker" | Luna extra-high is the unlimited-feeling volume lane when the user asked for quota/cheap Codex volume. Grok/Sol stay the quality default. |
-
-## Common Mistakes
-
-- Dispatching codex without `--sandbox workspace-write` (raw CLI) or a
-  write-capable run (plugin), grok without `--permission-mode
-  acceptEdits`, or muse with `--yolo` → a worker that can't write, or a
-  worker with no sandbox. Luna without `model_reasoning_effort="xhigh"`
-  (or `max`) is not the unlimited-feeling worker lane.
-- Dispatching without acceptance criteria → the worker returns "done" with
-  red tests. Always name the test command that must pass.
-- Dispatching without the final-report demand → empty stdout over real (or
-  absent) work; you burn a round-trip discovering which.
-- Dispatching frontend work without design intent in the spec → generic UI
-  comes back; the validation loop burns rounds recovering what the spec
-  should have said.
-- Blocking on a worker → run it in the background; keep doing planning/spec/
-  validation work in parallel.
-- Splitting one coherent unit across dispatches → pick one owner per unit;
-  split at the API boundary, not mid-feature.
-- Fanning out on an unverified premise → every downstream task passes review
-  and the feature is still wrong. Verify the premise with a cheap dispatch
-  first when it matters.
-- Trusting piped exit codes in ship chains → a masked red suite goes to the
-  remote. Gate pushes on unpiped commands.
-- Staging with `git add -A`/`git add .` in a shared tree with live workers →
-  sweeps a mid-flight worker's uncommitted files into your commit. Stage by
-  explicit path list only.
-- Piping a dispatch invocation through `tail`/`head` → truncates the final
-  report irrecoverably. Capture full output to a file, read the tail
-  separately.
-- Trusting a worker's green build when it ran inside a directory your dev/
-  preview server is serving → invalidates the running server; stale chunks
-  read as client-side exceptions. Restart the server at the barrier.
-- Hand-formatting a generator's output at every barrier → the generator
-  should emit lint-clean output itself (or its path should be lint-ignored).
-  Fix it once, not every barrier.
+Tell the user which lanes actually ran, which provider received content, what
+each worker returned, what changed, which verification passed, and what remains
+unresolved. Never imply that a worker or specialist ran when it did not.

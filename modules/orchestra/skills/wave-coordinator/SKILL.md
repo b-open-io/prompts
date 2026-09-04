@@ -18,16 +18,12 @@ runtime owns thread creation.
 
 ## Prefer Native Workflows on Claude Code and Grok Build
 
-Claude Code ships `Workflow` (JavaScript, `pipeline()` + `parallel()`). Grok
-Build ships `workflow` (Rhai, barrier `parallel()` only). Both solve this
-skill's core problems structurally: concurrency clamps and queues, results
-collect as structured returns, `/workflows` shows live progress. When the
-session has that tool AND the user asked for the fan-out, write a workflow
-script instead of hand-managed waves — diversity directives go into the
-per-item `agent()` prompts and dedup runs as plain code between stages. Codex
-has no equivalent; the wave protocols below remain the way there. Gating,
-Sol-as-worker, and per-host APIs:
-`../coordinator/references/native-workflows.md`.
+Claude Code and Grok Build provide different native workflow engines. When the
+current session exposes one and the user asked for a fan-out, prefer it over
+hand-managed waves. Load only the applicable host guide:
+[Claude Code](../coordinator/references/hosts/claude.md) or
+[Grok Build](../coordinator/references/hosts/grok.md). Codex and OpenCode keep
+the manual wave protocol below; see their respective Coordinator host guides.
 
 ## The Core Problem
 
