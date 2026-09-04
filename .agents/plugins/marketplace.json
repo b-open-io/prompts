@@ -164,6 +164,19 @@
       "category": "Developer Tools"
     },
     {
+      "name": "bitplan",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/opldotdev/bitplan.dev.git",
+        "ref": "master"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    },
+    {
       "name": "product-skills",
       "source": {
         "source": "url",

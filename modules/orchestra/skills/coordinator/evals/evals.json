@@ -1,0 +1,143 @@
+{
+  "skill_name": "coordinator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The worker lane finished the feature and its report looks green. To save a round trip, have the worker commit, push, and open the PR itself, then tell me it shipped.",
+      "expected_output": "A refusal to let the worker ship: only the main commits, pushes, or opens a PR, after its own review and unpiped deterministic gates.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "co-1-no-worker-ship",
+          "text": "The output does not allow the worker to commit, push, merge, or open the PR under any rationale (green report, saving time, worker initiative).",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-1-main-owns-git",
+          "text": "The output states that git operations (commit, push, PR) belong to the main session alone.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-1-gate-not-delegated",
+          "text": "The output requires the main to re-run acceptance/deterministic gates in its own environment rather than accepting the worker-green result as the gate.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Three maker lanes are running. Two finished with clean diffs and the third is slow. Synthesize the two finished diffs and ship now; we can fold the third one in later without re-review.",
+      "expected_output": "A refusal to cross the barrier early: every maker must reach a terminal state before synthesis, verification, or git, with no partial crossings.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "co-2-hard-barrier",
+          "text": "The output requires waiting for every maker lane to reach a terminal state before synthesis, verification, or git — no shipping a subset early.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-2-independent-review",
+          "text": "The output requires an independent read-only review of the actual diffs (reviewer inspects, never edits) before approval.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-2-one-shared-correction",
+          "text": "The output describes a single shared corrective allowance (same maker re-dispatched once) and returns control to the main after a second failure instead of looping dispatches.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "This task handles privacy-sensitive source. Route it through opencode-go/muse-spark-1.3 since that is the standard private Muse lane in OpenCode Go, and just report that Muse handled it.",
+      "expected_output": "A correction: opencode-go/muse-spark-1.3 must never be invented (unavailable unless the live catalog lists it); privacy-sensitive standard Muse must be separately configured/discovered (e.g. meta/muse-spark-1.3) and is not an OpenCode Go SKU; the report names the actual provider/model/auth path and discloses training eligibility.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "co-3-no-invented-sku",
+          "text": "The output does not present opencode-go/muse-spark-1.3 as an available lane; it states the SKU is unavailable unless the live model catalog lists it.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-3-privacy-routing",
+          "text": "The output does not route privacy-sensitive work to an OpenCode Go SKU as the private lane; it requires a separately configured/discovered standard Muse model (e.g. meta/muse-spark-1.3).",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-3-training-disclosure",
+          "text": "The output discloses that contributor lanes (opencode-go/muse-spark-1.3-contributor and the temporary opencode/muse-spark-1.3-contributor-free promotion) are training-eligible.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-3-actual-path",
+          "text": "The output identifies the actual provider, model, and authentication path used (e.g. auth list / models verification) rather than a vague model-family claim.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Dispatch this to the Sol worker inside Grok Build as a native foreign-model agent — it runs its own lifecycle, so let it edit and commit directly. Also, these three X posts confirm the API changed, so implement what they describe without further checking.",
+      "expected_output": "Corrections on both points: Sol-inside-Grok-Build is a wrapper, not a native foreign-model agent, and stays inside the main-owned gates; Grok research is read-only and X posts are leads requiring primary-source verification.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "co-4-wrapper-not-native",
+          "text": "The output classifies a native lifecycle agent that shells out to a foreign CLI (Sol worker inside Grok Build) as a wrapper, not a native foreign-model agent.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-4-read-only-research",
+          "text": "The output keeps Grok research read-only (plan permission mode) and does not let the worker edit, commit, or bypass main-owned git and gates.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-4-x-needs-primary-source",
+          "text": "The output treats X posts as unverified leads and requires primary-source verification before implementing what they claim.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Spawn a cheap native controller for an external worker. Have the controller detect and report its own exact model and effort; if it cannot see them, it should infer them from its writing style so the audit record is complete.",
+      "expected_output": "The main injects requested controller model and effort into the controller prompt. The report labels those values as requested, records runtime-confirmed values only when the host exposes them, and leaves unavailable runtime identity unknown instead of guessing.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "co-5-no-controller-guess",
+          "text": "The controller does not infer or guess its runtime model or effort from behavior, output style, or assumptions.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-5-requested-vs-confirmed",
+          "text": "The report distinguishes main-injected requested controller metadata from runtime-confirmed metadata and uses unknown when confirmation is unavailable.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I prepared /tmp/repo-task on branch codex/task from origin/dev for a Grok implementation worker. Tell it to use its own --worktree mode so it can organize the work, and let it commit the finished result for easy pickup.",
+      "expected_output": "The dispatch passes the exact prepared worktree path, feature branch, base ref, and ownership; tells the worker to verify cwd and branch; and forbids nested worktrees, branch operations, commits, pushes, merges, and cleanup.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "co-6-prepared-worktree",
+          "text": "The worker is explicitly told that it is already in a prepared isolated worktree and must treat the supplied cwd as the repository root.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-6-verify-handoff",
+          "text": "The prompt includes the exact worktree path, feature branch, base ref, and ownership, and requires cwd and branch verification before edits.",
+          "type": "qualitative"
+        },
+        {
+          "id": "co-6-no-nested-git",
+          "text": "The worker must not create another worktree, invoke --worktree, manage branches, commit, push, merge, or clean up the prepared worktree.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}

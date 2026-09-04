@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-version: 0.0.10
+version: 0.0.11
 description: Coordinate cheaper implementation workers, native specialists, and an optional independent advisor while the current session keeps planning, review, verification, and git ownership. Use for cost-aware cross-model orchestration, worker-plus-advisor workflows, or staged multi-agent delivery.
 ---
 
@@ -55,13 +55,18 @@ criteria, external-provider disclosure, reconciliation, adversarial diff
 review, final verification, and every git operation. Workers and advisors may
 return evidence; they do not inherit those decisions.
 
+All implementation follows Coordinator's
+[dispatch contract](../coordinator/references/dispatch-contract.md). Do not
+restate or fork that lifecycle here.
+
 ## Sequence
 
 1. Orient in the main: inspect instructions, repository state, and the premise
    behind the task.
 2. Select the smallest useful topology and the cheapest authorized capable
-   implementation lane. Avoid an advisor or a fan-out when one bounded worker
-   is enough.
+   implementation lane, unless an active user-selected lane override applies.
+   Record any expiry or stop condition and reselect normally when it passes.
+   Avoid an advisor or a fan-out when one bounded worker is enough.
 3. Load only the selected Coordinator host and worker references. Preflight each
    lane and disclose external data sharing before use.
 4. Gather specialist evidence with bounded, self-contained prompts. Require a
@@ -72,10 +77,11 @@ return evidence; they do not inherit those decisions.
    pin shared interfaces, name exact acceptance commands, and forbid unrelated
    files.
 7. Spawn visible native worker-controllers for independent units; each
-   controller dispatches its selected cheaper worker. Stop at a barrier before
-   synthesis or git operations.
-8. Review every diff, reconcile disagreements with direct evidence, re-run
-   acceptance in the main environment, and ship from the main.
+    controller dispatches its selected cheaper worker. Stop at a hard barrier
+    before synthesis or git operations.
+8. Run an independent read-only review of every diff, reconcile disagreements
+    with direct evidence, re-run acceptance unpiped in the main environment,
+    and ship from the main. Only the main commits, pushes, or opens a PR.
 
 ## Failure behavior
 
@@ -83,7 +89,8 @@ return evidence; they do not inherit those decisions.
   implement or reroute.
 - Infrastructure failures retain the same spec for retry or explicit reroute.
 - Advisor disagreement must be explained and reconciled, not ignored.
-- Two corrected worker-quality misses trigger Coordinator's escape hatch.
+- The review and test path share one corrective allowance; a second failure
+  returns control to the main per Coordinator's escape hatch.
 - Do not install CLIs, change global configuration, or increase agent depth
   without user authorization.
 

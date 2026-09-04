@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.10
+version: 0.0.11
 description: >-
   Design or harden a software factory: an agentic loop that iterates toward a goal with a
   verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic
@@ -23,7 +23,10 @@ Every workflow node is staffed by one of three actors, and reliability ranks the
 
 ## The five building blocks
 
-Every production loop is assembled from these five. Claude Code ships all of them.
+Every production loop is assembled from these five. Where the current host
+guide confirms each primitive, the host ships them directly (Claude Code
+ships all five); elsewhere substitute the equivalents named in the
+Coordinator host guides.
 
 | Block | What it is | Our tooling |
 |---|---|---|
@@ -70,6 +73,11 @@ run as a deterministic workflow. Load only the current Coordinator host guide:
 `skills/coordinator/references/hosts/grok.md`. On Codex and OpenCode, the
 manual protocols in `wave-coordinator` provide the equivalent barriers.
 
+Execution deliveries follow Coordinator's
+[dispatch contract](../coordinator/references/dispatch-contract.md). Factory
+loops may add scheduling and retention policy, but they do not replace its
+ownership, isolation, review, or shipping rules.
+
 ## The staged multi-model pipeline — the verified recipe
 
 The maker/checker split above is doctrine; this is the concrete, field-verified wiring for an
@@ -80,7 +88,9 @@ a loop asserted "rotate the credential" on a CI outage without evidence; a secon
 then flipped it to "stale, skip it" — also without evidence. Both survived because no adversarial
 reviewer ever existed. The outage was real; both written diagnoses were unverified guesses.)
 
-The verified shape — every lane below was live-tested headless before this section was written:
+The verified shape — every lane below was live-tested headless before this section was written.
+Treat the lane values as a verified example, not fixed defaults: pin the
+actual models in the loop config and verify each at preflight.
 
 | Stage | Model / lane | Invocation (verified) | What it guards |
 |---|---|---|---|

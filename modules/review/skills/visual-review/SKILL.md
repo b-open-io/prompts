@@ -1,6 +1,6 @@
 ---
 name: visual-review
-version: 0.0.5
+version: 0.0.6
 description: >-
   Turn a PR, branch, commit, or working-tree diff into one self-contained HTML recap page with
   before/after wireframes, contract summaries, a file map, and annotated diffs. Use for "recap
@@ -21,7 +21,8 @@ it.
 Heavily inspired by BuilderIO's visual recap skill, adapted for this stack: the
 deliverable is a **single self-contained HTML file** built from
 `assets/template.html`, theme-aware in light and dark. Choose Artifact,
-PostPlan, BitPlan, or a local file from the delivery rules below.
+BitPlan, an explicit last-resort host, or a local file from the delivery rules
+below.
 
 ## When to use — and when to skip
 
@@ -197,17 +198,22 @@ The recap's center of gravity is comparison:
      default-private; strip the outer `<!doctype>`/`<html>`/`<head>`/`<body>`
      skeleton and keep the `<style>`, content, and `<script>` — the Artifact
      harness provides the document shell).
-   - **BitPlan** → use only when the user explicitly wants the recap preserved
-     as an encrypted, wallet-controlled plan document. BitPlan is not a general
-     HTML host. Explain the consequences and get approval immediately before
-     `npx bitplan upload recaps/<slug>.html --json`: ciphertext is public on
-     Bitcoin, named wallet readers can decrypt it, and an older shared version
-     cannot be revoked. Never request a mnemonic or private key. See
-     [BitPlan agents and wallets](https://bitplan.dev/docs/agents).
-   - **Grok, Codex, or any host without Artifacts** → `Skill(postplan)` when a
-     capability link is appropriate.
-   - **PostPlan not signed in** → `open recaps/<slug>.html` (macOS) and report
-     the absolute path. A path in the TUI is not a page.
+   - **BitPlan** → the normal durable or shareable path outside an Artifact.
+     Load BitPlan's canonical skill: `Skill(bitplan:bitplan)` when installed as
+     a plugin, or `Skill(bitplan)` for a standalone skill install. Prefer a
+     BRC-100 wallet the user already has, explain the hosted-versus-on-chain
+     choice, and get approval immediately before upload. Never request a
+     mnemonic, private key, or wallet password.
+   - **No compatible wallet** → explain that the planned 1Sat CLI fallback is
+     not application-compatible yet; `1sat serve wallet` is currently a wallet
+     storage service, not BitPlan's BRC-100 endpoint. Do not pretend it works.
+   - **User explicitly declines a compatible wallet and the planned 1Sat CLI
+     route** → offer a local file first. Only if they explicitly want an
+     unencrypted hosted capability link may you run `bunx --bun postplan
+     upload recaps/<slug>.html --description "<short label>"`. Explain that it
+     is not wallet-encrypted BitPlan storage and ask immediately before upload.
+   - **Local** → `open recaps/<slug>.html` (macOS) and report the absolute path.
+     A path in the TUI is not a page.
 4. Sanity-check the render before reporting it done: open it, look at it, in
    both themes if you changed any color usage. Overlapping labels or a crushed
    diff column means fixing the HTML, not shipping it.
@@ -220,7 +226,7 @@ sentence handoff plus the link/path is the right chat footprint.
 
 - **A recap is as sensitive as the source it summarizes.** It can expose
   unreleased schema, internal endpoints, and architecture. Keep it local,
-  default-private (Artifacts), or ask before a PostPlan upload of a private
+  default-private (Artifacts), or ask before any hosted upload of a private
   repo. Never publish a recap of a private repo to a public URL without
   the user asking.
 - **Encryption does not make publication reversible.** A BitPlan document is

@@ -33,7 +33,7 @@ skills:
   - orchestra:software-factory
   - review:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
-version: 1.7.15
+version: 1.7.16
 model: opus
 description: >-
   Agent architecture specialist. Use this agent when the user asks to "design an agent", "wire
@@ -1276,7 +1276,7 @@ tmux new -s cc-cron                # Detached session survives disconnects
 
 ## Visual Workflow Planning
 
-When designing multi-agent systems, use `Skill(gemskills:visual-planner)` to produce interactive workflow diagrams. This makes agent architectures concrete and reviewable before implementation.
+When designing multi-agent systems, make the architecture concrete and reviewable before implementation. Prefer `Skill(orchestra:visual-coordinator)` when the design has multiple stages, barriers, reject-back edges, or mixed native/wrapper lanes. For simple work with no gates or handoffs, skip the visual step and build directly. `Skill(gemskills:visual-planner)` remains an option for producing interactive workflow diagrams.
 
 **When to visualize:**
 - Designing a new multi-agent system (3+ agents)
@@ -1485,7 +1485,7 @@ When designing or executing multi-agent systems, invoke the relevant superpower 
 | `Skill(superpowers:subagent-driven-development)` | Executing a plan task-by-task with a fresh subagent per task + two-stage review (spec compliance, then code quality) |
 | `Skill(superpowers:executing-plans)` | Running a plan across parallel sessions where human handoff between tasks is acceptable |
 | `Skill(superpowers:writing-plans)` | Before dispatching any agents — write the plan first so subagents get full context |
-| `Skill(orchestra:deploy-agent-team)` | Deploy a full core agent team — TeamCreate, spawn specialists, task management, coordinate and shutdown |
+| `Skill(orchestra:deploy-agent-team)` | Deploy a full core agent team — spawn named teammates, task management, coordinate and wrap up |
 
 ### Decision guide
 

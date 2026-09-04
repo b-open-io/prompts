@@ -24,8 +24,9 @@ This repository provides:
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
 - **Orchestration patterns** that keep a strong main model on judgment, wrap
-  cheaper implementation workers in visible native controllers, and support a
-  read-only Fable advisor
+  cheaper implementation workers in visible native controllers, support a
+  read-only Fable advisor, and let humans edit the plan on an AI Elements
+  workflow canvas before execution
 - **Claude Code slash commands** for common workflows
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
@@ -159,6 +160,17 @@ codex plugin add core@b-open-io
 Start a fresh Claude Code or Codex session after updating so cached plugin
 metadata, skills, agents, and hooks are reloaded.
 
+BitPlan is an app-owned external provider rather than a copied core skill.
+Install it from the same bOpen marketplace with
+`/plugin install bitplan@b-open-io`, or install only its canonical skill with:
+
+```bash
+npx skills add opldotdev/bitplan.dev --skill bitplan -g
+```
+
+The plugin exposes `Skill(bitplan:bitplan)`; a standalone install exposes
+`Skill(bitplan)`. Workflows accept either form and use the same upstream file.
+
 ### Skills only
 
 For other agentic frameworks, install individual skills:
@@ -167,7 +179,7 @@ For other agentic frameworks, install individual skills:
 bunx skills add b-open-io/prompts --skill <skill-name>
 ```
 
-The list below is the authored core inventory. Third-party skills are
+The list below is the authored core inventory. App-owned and third-party skills are
 vendored inside the module that ships them and tracked in that module's
 `skills-lock.json` (for example
 [`modules/mcp-dev/skills-lock.json`](modules/mcp-dev/skills-lock.json)),
@@ -186,7 +198,6 @@ bunx skills add b-open-io/prompts --skill hammertime
 bunx skills add b-open-io/prompts --skill hook-manager
 bunx skills add b-open-io/prompts --skill humanize
 bunx skills add b-open-io/prompts --skill linear-planning
-bunx skills add b-open-io/prompts --skill postplan
 bunx skills add b-open-io/prompts --skill reinforce-skills
 bunx skills add b-open-io/prompts --skill remind
 bunx skills add b-open-io/prompts --skill runtime-context
@@ -254,7 +265,7 @@ intentional.
 | `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, unsupported significance, vague attribution, promotional drift, canned change summaries, and template-like sales copy; outbound drafts use attributed examples and supplied account facts without inventing commercial claims |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
-| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and turns every decision into a questionnaire that explains each option's consequences. Plans can stay local, use an Artifact or PostPlan, or publish through BitPlan with explicit wallet approval. |
+| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and turns every decision into a questionnaire that explains each option's consequences. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
@@ -276,7 +287,6 @@ intentional.
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm from the synced default branch with changelog/version management and browser confirmation |
 | `perf-audit` | Run local performance audits without network calls |
-| `postplan` | Host an HTML draft on postplan.dev when Claude Artifacts are not available |
 | `shaders` | Custom shaders for Three.js and WebGL |
 | `shadscan` | Drive the shadscan analyzer to audit and raise a shadcn app's UI-fundamentals score, and gate it in CI |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |
@@ -781,16 +791,18 @@ does not pin or rename it. The supporting skills divide responsibilities:
 - `coordinator` writes precise worker specs, assigns non-overlapping files,
   dispatches implementation, and requires acceptance reports. It loads one
   shared dispatch contract, the current host guide, and only the selected
-  worker guide. Bounded implementation defaults to the cheapest authorized,
-  capable lane; native specialists stay focused on evidence, review, testing,
-  and domain judgment. OpenCode is a portable harness whose provider and model
-  must be pinned. Unselected harness manuals never enter the skill context.
+  worker guide. Non-trivial writes use isolated worktrees, all makers stop at
+  a barrier before an independent read-only review, and review plus tests share
+  one corrective pass. The main runs the final checks and owns git. Bounded
+  implementation defaults to the cheapest authorized capable lane; native
+  specialists stay focused on evidence, review, testing, and domain judgment.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
-  A fifth channel, `opencode run --model <provider/model>`, covers cheap or
-  in-harness consults (including Muse Spark 1.3 via OpenCode).
+  The skill loads only the selected channel guide and records the provider,
+  model, authentication path, context sent, and proof that the intended
+  advisor ran. OpenCode consults use a permission-constrained child.
 - `orchestrator` composes native specialists, Coordinator, Advisor, and staged
   waves while leaving final decisions with the main session. It delegates
   harness-specific behavior to Coordinator's on-demand references.
@@ -811,6 +823,13 @@ content to whichever provider backs the pinned `provider/model` — confirm the
 `opencode.json` provider block first so the destination is known. State what will be shared before first use, obtain approval
 unless the user already authorized that lane, and never send secrets or
 unrelated proprietary content.
+
+Grok Build can use an API key or the account signed in through grok.com. To
+select the signed-in account, unset both `XAI_API_KEY` and `GROK_API_KEY` for
+preflight and dispatch, then verify that Grok reports `logged in with
+grok.com`. A temporary `GROK_HOME` reduces local configuration, but the account
+may still supply managed plugins and MCP servers; inspect what actually loaded
+before sending repository context.
 
 ### Custom Workflows
 

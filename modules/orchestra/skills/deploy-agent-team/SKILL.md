@@ -1,6 +1,6 @@
 ---
 name: deploy-agent-team
-version: 1.0.6
+version: 1.0.7
 description: This skill should be used when the user says "deploy a team", "spin up agents to work on this", "use all our agents", "coordinate specialists", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full installed specialist roster.
 disable-model-invocation: true
 ---
@@ -26,15 +26,17 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-Without this, `TeamCreate` will fail.
+Without this, team mode stays off and named subagents run as ordinary subagents instead of teammates.
 
 ## Critical: Configure Permissions Before Spawning
 
-Start from the lead session's permission settings and inspect the installed
-`Agent` tool schema before spawning. Current builds can accept a per-spawn
-`mode`; use a safe non-interactive mode such as `dontAsk`/`auto` with narrow
-allow rules when available. If the host does not expose that field, the teammate
-inherits the lead. Permission requests may bubble up to the lead.
+Start from the lead session's permission settings and inspect the live `Agent`
+tool schema before spawning. The schema is the contract: field names and
+accepted values change between builds, so read them in-session rather than
+relying on a frozen signature copied from docs. When the schema offers a
+per-spawn permission mode, prefer a safe non-interactive option with narrow
+allow rules. When it does not, the teammate inherits the lead's posture and
+permission requests may bubble up to the lead.
 
 Do not launch the lead with `--dangerously-skip-permissions` merely to avoid team
 prompts. Reserve that mode for an explicitly trusted, externally sandboxed
@@ -42,6 +44,11 @@ environment.
 
 See `references/permissions-and-isolation.md` for the permission and file-ownership
 model.
+
+When teammates perform implementation, also load and follow Coordinator's
+[dispatch contract](../coordinator/references/dispatch-contract.md). Team mode
+changes communication and scheduling; it does not change worktree isolation,
+the review barrier, main-owned git operations, or cleanup timing.
 
 ## Available Agent Roster (Abbreviated)
 
@@ -78,14 +85,22 @@ Before calling any tools, identify:
 - Which tasks can run in parallel vs. must be sequential?
 - What are the dependencies? (schema before API, API before tests)
 
-### Step 2: Create the team
+### Step 2: Start the team (implicit)
 
-```
-TeamCreate(
-  team_name: "feature-billing",
-  description: "Implement Stripe billing with UI, API, tests, and docs"
-)
-```
+There is no create-team call. The first named `Agent` spawn creates the team
+implicitly. Current lifecycle rules:
+
+- One team per session with a fixed lead.
+- Named subagents become teammates while team mode is enabled.
+- No nesting: teammates cannot spawn their own teams.
+- Teammates are not restored after the lead uses `/resume` or `/rewind`; an
+  idle teammate in the current live session remains messageable — message it
+  or respawn it instead.
+- Manage assignments and ordering with the task tools (`TaskCreate`,
+  `TaskUpdate` with dependencies, `TaskList`, `TaskGet`).
+
+Spawn the first teammate with a name and a self-contained prompt (see Step 4).
+The team exists from that spawn until the session ends.
 
 ### Step 3: Create tasks upfront
 
@@ -118,14 +133,11 @@ TaskUpdate(taskId: "3", addBlockedBy: ["2"])  # tests wait for Stripe impl
 
 ### Step 4: Spawn teammates
 
-```
-Agent(
-  subagent_type: "web-dev:designer",
-  name: "designer",
-  mode: "dontAsk",
-  prompt: "..."  # see references/spawn-prompt-guide.md
-)
-```
+Inspect the live `Agent` tool schema, then spawn each teammate by name with a
+self-contained prompt (see `references/spawn-prompt-guide.md` for the full
+template). Give each spawn the specialist type, a stable teammate name, and the
+prompt. Pass only the fields the live schema exposes; do not copy a frozen
+parameter list from older docs.
 
 Every spawn prompt must be **self-contained** — teammates have zero conversation history. See `references/spawn-prompt-guide.md` for the full template and how to list each agent's available skills.
 
@@ -146,15 +158,16 @@ SendMessage(
 )
 ```
 
-### Step 6: Shutdown and cleanup
+### Step 6: Wrap up
+
+Shutdown requests are optional. When work is complete, you may send each
+teammate a shutdown request and let it finish, or simply end the session: there
+is no delete-team call and the team ends with the session.
 
 ```
 SendMessage(type: "shutdown_request", recipient: "designer", content: "Work complete")
 SendMessage(type: "shutdown_request", recipient: "backend", content: "Work complete")
 SendMessage(type: "shutdown_request", recipient: "tester", content: "Work complete")
-
-# Wait for each shutdown_response, then:
-TeamDelete()
 ```
 
 ## Task Decomposition Patterns
@@ -204,19 +217,19 @@ Blocked until all above complete:
 - **One task at a time**: claim → complete → claim next. No parallel hoarding
 - **No JSON in messages**: use TaskUpdate for status. SendMessage is plain text only
 - **Idle is normal**: teammates go idle between tasks. Send a message to wake them
-- **No nested teams**: only the lead calls TeamCreate
-- **Shutdown before TeamDelete**: TeamDelete fails if any teammate is still active
+- **No nested teams**: one team per session with a fixed lead; teammates never spawn sub-teams
+- **No restore across resume**: teammates are not restored after the lead uses `/resume` or `/rewind`; an idle teammate in the current live session remains messageable
+- **Shutdown is optional**: the session ends the team; there is nothing to delete
 - **Broadcast sparingly**: each broadcast = one API call per teammate
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| `TeamCreate` fails | Check `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set |
+| Team mode stays off (subagents run solo, no teammates) | Check `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set in the lead session |
 | Teammate hits permission prompts | Pre-approve the specific safe operation in the lead's settings, then retry |
 | Teammate not claiming tasks | Check `blockedBy` deps with `TaskGet` |
 | Teammate idle and unresponsive | Send a direct `SendMessage` — idle agents wake on receipt |
-| `TeamDelete` fails | Teammates still running. Send `shutdown_request` to each |
 | Teammate went off-script | Send correction via `SendMessage`. If severe, shutdown and respawn |
 
 ## References
