@@ -6,6 +6,16 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- Orchestra entry skills now compose one shared dispatch contract instead of
+  repeating host and worker manuals. Broken worker command continuations were
+  repaired. Visual Coordinator now treats OpenCode as a distinct host and
+  lane, emits native controller versus actual provider plus disclosure/context
+  boundaries, discovers Codex and OpenCode roster agents, and keeps BitPlan
+  delivery policy in a narrow reusable reference. Deterministic contract checks
+  guard these invariants. orchestra 0.1.22.
+
 ## [1.1.159] - 2026-09-04
 
 ### Added

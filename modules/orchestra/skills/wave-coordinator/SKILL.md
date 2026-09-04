@@ -1,225 +1,113 @@
 ---
 name: wave-coordinator
-version: 1.0.8
-description: >-
-  Dispatch many subagents in coordinated waves with per-wave review. Use for "fan out agents",
-  "wave dispatch", "batch agents", "generate N variations", or any fan-out beyond about five
-  parallel subagents that needs batching, ordering, and result reconciliation.
+version: 1.0.9
+description: Dispatch many independent units in bounded waves with honest host limits, distinct assignments, barriers, and main-seat reconciliation. Use for fan-out, batch agents, many variations, or work that exceeds the host's free subagent slots.
 ---
 
 # Wave Coordinator
 
-Manage large-scale subagent dispatch through structured waves. Prevent context
-exhaustion, preserve output diversity, and avoid duplication across batches.
-On Claude, this can compose with
-`Skill(superpowers:dispatching-parallel-agents)`; on Codex, use the native
-subagent runtime. Wave Coordinator owns batching and diversity while the host
-runtime owns thread creation.
+Batch a large fan-out without losing ownership, context, or diversity. This
+skill owns wave sizing, ordering, the wave ledger, and barriers. It does not
+redefine how workers are selected or launched.
 
-## Prefer Native Workflows on Claude Code and Grok Build
+## Load the shared dispatch rules
 
-Claude Code and Grok Build provide different native workflow engines. When the
-current session exposes one and the user asked for a fan-out, prefer it over
-hand-managed waves. Load only the applicable host guide:
-[Claude Code](../coordinator/references/hosts/claude.md) or
-[Grok Build](../coordinator/references/hosts/grok.md). Codex and OpenCode keep
-the manual wave protocol below; see their respective Coordinator host guides.
+Before a wave that implements anything, read
+[Coordinator](../coordinator/SKILL.md), its
+[dispatch contract](../coordinator/references/dispatch-contract.md), exactly
+one current-host guide, and only the worker guides selected for the wave.
+Those files govern cheap-lane selection, native controllers, provider
+disclosure, isolation, specs, review, verification, and git ownership.
 
-## The Core Problem
+Use roster specialists for evidence, review, testing, and domain judgment.
+Use cheaper external workers for bounded implementation volume. Do not repeat
+host command syntax here; the selected Coordinator references are the source of
+truth.
 
-Dispatching 10+ agents at once causes three failures:
-1. **Context exhaustion** — spawning agents is expensive; running out mid-batch leaves work incomplete
-2. **Homogeneous output** — identical prompts produce near-identical results, wasting compute
-3. **Duplication** — later waves repeat what earlier waves already produced
+## Size each wave from live capacity
 
-Wave coordination solves all three.
+Start with five as a conservative planning ceiling, then use the smallest of:
 
-## Wave Sizing Rule
+1. five, unless the user deliberately chose another ceiling;
+2. the host's advertised concurrency cap;
+3. currently free native child slots;
+4. genuinely independent remaining units; and
+5. the size the remaining context can still synthesize.
 
-Use five concurrent subagents as a conservative planning default, then clamp
-the wave to the host's advertised concurrency limit, currently free thread
-slots, task shape, and remaining context/token budget. Codex defaults to
-`agents.max_threads = 6` when unset, but that is a cap on open threads, not a
-promise that all six slots are free. If N exceeds the effective limit, divide
-the work into sequential waves:
+The configured cap includes already-running children. Reserve at least 20% of
+the main context for reconciliation and the final report. If that reserve is
+at risk, shrink or stop the fan-out.
 
-```
-N=12 → Wave 1 (5) → Wave 2 (5) → Wave 3 (2)
-N=7  → Wave 1 (5) → Wave 2 (2)
-N=5  → Wave 1 (5) — single wave, no split needed
-```
-
-Each wave completes fully before the next launches. Do not launch wave 2 until
-all wave 1 agents have returned results.
-
-Compute the effective wave size as the minimum of:
-
-1. Five, unless the user or host deliberately chooses another wave size.
-2. The host-advertised concurrency cap.
-3. The number of currently free agent slots.
-4. The number of genuinely independent remaining units.
-5. The size the remaining context and token budget can safely synthesize.
-
-Never assume a configured maximum means those slots are all available.
-
-## Context Budget Check
-
-Before launching each wave, estimate context budget:
-
-1. Count tokens consumed so far (rough estimate: each spawned agent costs ~2-4k tokens in overhead)
-2. Reserve at minimum 20% of the context window for synthesis and final output
-3. If budget is tight, reduce the next wave size to 2-3 agents
-4. If budget is critically low, stop dispatching and synthesize from what you have
-
-**Hard rule:** Never launch a wave if you estimate it will hit the context limit before completion. Stop early and synthesize. Incomplete partial output is better than a context overflow crash.
-
-## Directive Diversity
-
-Each agent in a wave must receive **unique creative direction**. Do not send the same prompt to all agents in a wave.
-
-### How to generate diverse directives
-
-Before dispatching, generate N distinct emphasis angles for N agents. Vary along at least one axis:
-
-| Axis | Example variations |
-|------|--------------------|
-| Tone | formal / conversational / terse / expansive |
-| Focus | conciseness / error handling / edge cases / performance / examples |
-| Perspective | beginner / expert / skeptic / advocate |
-| Structure | prose / bullet list / table / code-first |
-| Constraint | max 200 words / no jargon / no code / examples only |
-
-**Example:** Generating 5 skill variants
-
-```
-Agent 1: "Write the most concise version possible. No examples, pure principle."
-Agent 2: "Lead with 3 concrete examples, then derive the rule."
-Agent 3: "Focus entirely on error cases and what can go wrong."
-Agent 4: "Write for someone encountering this concept for the first time."
-Agent 5: "Assume expert audience. Skip fundamentals, go deep on edge cases."
+```text
+12 independent units, five free slots
+wave 1: 5 -> barrier/review
+wave 2: 5 -> barrier/review
+wave 3: 2 -> barrier/final reconciliation
 ```
 
-Never assign the same emphasis to two agents in the same wave.
+Never start the next wave until the prior wave has returned complete reports
+and the main has recorded what remains.
 
-## Deduplication Check
+## Make units distinct
 
-Before launching each wave after the first:
+Every unit needs exclusive ownership and a different purpose. For creative
+variants, vary a real axis such as audience, risk posture, structure, or tone.
+For implementation, split at file or interface boundaries and pin shared seams
+verbatim in every affected spec.
 
-1. Read the output produced by all prior waves
-2. Identify themes, approaches, or content already covered
-3. Add exclusion instructions to the new wave's directives: "Do NOT produce a version similar to [description of prior output]"
-4. If a prior wave already produced a high-quality result for a particular angle, skip that angle in subsequent waves
+Before wave two and later:
 
-## Wave Progress Tracking
+1. read all accepted output from earlier waves;
+2. record approaches already covered;
+3. exclude duplicates explicitly from the new assignments; and
+4. drop units whose intended outcome already exists.
 
-Maintain a mental (or written) wave ledger before each dispatch:
+## Keep a wave ledger
 
+Track the facts needed for the next decision:
+
+```text
+wave 1 - 4/4 returned; 3 accepted; 1 correction pending
+providers - OpenAI via Codex (2), Muse via OpenCode (2)
+controllers - four native child ids
+shared context - SPEC files only; no secrets
+remaining - API adapter, regression test, reconciliation
 ```
-Wave 1: [5 agents] — launched, awaiting results
-Wave 2: [5 agents] — pending (blocked on wave 1)
-Wave 3: [2 agents] — pending (blocked on wave 2)
 
-Output so far: [list of completed items]
-Remaining: [list of items not yet produced]
-```
+The ledger must distinguish the visible native controller from the external
+provider/model that performed implementation. An idle or completed controller
+is lifecycle evidence, not proof that the external process succeeded.
 
-Update the ledger after each wave completes. This prevents re-dispatching work already done and helps identify what the final synthesis pass needs.
+## Run barriers in the main
 
-## Host Dispatch Adapters
+At every barrier, the main:
 
-Before assigning a wave slot to a generic worker, match it against the roster
-in `../deploy-agent-team/references/agent-roster.md` and pass the specific
-`subagent_type` (e.g. `review:code-auditor`). Each wave slot picks a
-roster agent before defaulting to a generic explorer/worker — use the generic
-adapter only when no roster agent fits, and say so explicitly in the wave
-ledger.
+- reads complete reports and actual diffs;
+- rejects edits outside assigned ownership;
+- records provider, model, disclosure state, and context shared;
+- runs the relevant acceptance gate unpiped; and
+- updates the ledger before dispatching again.
 
-### Grok Build
+Independent units may run concurrently. Integration, cross-unit fixes, final
+verification, and all git operations wait behind the barrier.
 
-Use `spawn_subagent` with the installed roster `subagent_type` (e.g.
-`research:researcher`, `review:code-auditor`). `bopen-tools:<name>` aliases
-also resolve when that plugin is installed. Native `agent().model` is
-`grok-4.6` only. Do not dispatch `grok-4.5`. Run Sol as
-`grok --single -m gpt-5.6-sol` inside a supervisor, or `codex exec`.
-Prefer the native `workflow` tool over hand waves when the fan-out has
-shape. Live children default to 32; `agent_budget` defaults to 128.
+## Host shape
 
-### Claude Code
+Use the current-host guide for exact primitives:
 
-Use `Skill(superpowers:dispatching-parallel-agents)` when installed. Otherwise
-use Claude Code's native Agent tool and plugin-qualified agent IDs. Preserve one
-self-contained assignment per agent.
+- Claude Code and Grok Build may offer native workflow engines.
+- Codex uses native children and main-thread barriers; account for occupied
+  slots and do not raise global depth without approval.
+- OpenCode has agents and `opencode run`, not a multi-stage workflow engine;
+  the caller sequences waves and verifies child markers.
 
-### Codex
+When the host supports native children, each external worker runs beneath a
+visible native controller. When it does not, the main may dispatch directly as
+specified by the host guide and must still preserve the same ledger fields.
 
-Use Codex native subagents. Prefer installed `bopen_*` custom agents for named
-specialists and built-in `worker` or `explorer` agents when no matching custom
-adapter exists. Do not claim a `bopen_*` persona was used unless that adapter is
-actually installed and its thread was spawned.
+## Finish
 
-Codex defaults to `agents.max_threads = 6` and `agents.max_depth = 1` when the
-user leaves them unset. Depth 1 lets the main thread spawn direct children but
-prevents those children from recursively spawning their own agents. Keep wave
-coordination in the main thread under that default. If a workflow genuinely
-requires nested delegation, explain the token and runaway-fan-out risk before
-the user raises `agents.max_depth`; never change global Codex configuration as
-part of this skill.
-
-Use `/agent` or the available agent activity view to inspect active and
-completed threads. Account for already-open threads when calculating the next
-wave.
-
-### OpenCode
-
-Use native OpenCode agents (`.opencode/agent(s)/<name>.md`) with the installed
-roster id where one fits. `--agent <name>` selects a primary/all-mode agent,
-not a subagent; invoke a real child from the primary with `@name`, as defined
-by Coordinator. Pin and verify the parent model, then require a child marker
-in the log before counting the run as delegated. There is no native multi-stage
-workflow engine: the caller sequences dispatches and owns barriers.
-
-## Integration with superpowers
-
-Wave-coordinator handles **what** to dispatch and **when**. `Skill(superpowers:dispatching-parallel-agents)` handles **how** to spawn subagents. Use them together:
-
-1. Use this skill to plan wave sizes, generate diverse directives, and track progress
-2. Use `Skill(superpowers:dispatching-parallel-agents)` for the actual subagent spawning call syntax
-
-If the superpowers plugin is not installed, use the current host's native
-subagent runtime instead. Do not silently degrade: state whether the wave uses
-Claude agents, Codex custom/built-in agents, or another explicitly authorized
-worker lane.
-
-## Worked Example
-
-**Task:** Generate 8 variations of a landing page headline.
-
-**Wave plan:**
-
-Wave 1 (5 agents):
-- Agent A: Urgency angle ("Limited time, immediate benefit")
-- Agent B: Social proof angle ("Join 10,000+ users who...")
-- Agent C: Problem-first angle ("Tired of X? Meet Y.")
-- Agent D: Benefit-first angle ("Do X in half the time.")
-- Agent E: Curiosity angle ("The surprising way to X")
-
-Collect wave 1 output. Review for quality and coverage.
-
-Wave 2 (3 agents — note: reduced from 5 because only 3 remain):
-- Check wave 1 output first
-- Agent F: Contrast angle not yet covered
-- Agent G: Minimalist / single-word-impact angle
-- Agent H: Question format not yet tried
-
-Synthesize all 8 results. Rank by quality. Present top 3 with rationale.
-
-## Key Rules
-
-- Five agents per wave is the conservative planning default; clamp it to the host cap and currently free slots
-- Codex's default six-thread cap includes already-open threads; it is not a six-new-agent allowance
-- Keep orchestration at the main thread when Codex `max_depth` remains at its safe default of 1
-- Check context budget before each wave
-- Unique directive per agent — never duplicate prompts within a wave
-- Read prior output before launching the next wave
-- Stop and synthesize if budget runs low — do not push through to completion at the cost of a crash
-- Wave 2+ directives must explicitly exclude angles already covered in prior waves
+Synthesize accepted results rather than concatenating them. Report wave sizes,
+controllers, actual providers/models, rejected or retried units, gates run, and
+remaining uncertainty. Never claim a roster agent, provider, or model ran
+without evidence.

@@ -1,226 +1,83 @@
 ---
 name: deploy-agent-team
-version: 1.0.6
-description: This skill should be used when the user says "deploy a team", "spin up agents to work on this", "use all our agents", "coordinate specialists", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full installed specialist roster.
+version: 1.0.7
+description: Coordinate a Claude Code agent team of named specialists through a shared task list and message bus. Use when the user asks to deploy a team, coordinate specialists, or run a large Claude-native parallel effort.
 disable-model-invocation: true
 ---
 
 # Deploy Agent Team
 
-Deploy a coordinated team of specialized agents from the core kit using Claude Code's agent team system. Agents work in parallel on independent tasks and communicate through a shared task list and message bus.
+Use Claude Code's experimental team system for a coordinated group of named
+specialists. This skill owns team creation, shared tasks, communication, and
+shutdown. It does not redefine worker economics or implementation safety.
+
+## Load the shared contract
+
+Before any implementation dispatch, read [Coordinator](../coordinator/SKILL.md),
+the [dispatch contract](../coordinator/references/dispatch-contract.md), and the
+[Claude host guide](../coordinator/references/hosts/claude.md). If a teammate
+controls an external cheaper worker, also load only that worker guide.
+
+The shared contract governs specs, exclusive ownership, provider disclosure,
+visible native controllers, complete reports, review, verification, and git.
+This team skill adds Claude-specific coordination around it.
 
 ## Prerequisites
 
-Agent teams require this env var to be set:
+Agent teams require `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Inspect the live
+Agent tool schema and permission settings before spawning. Prefer a narrow,
+non-interactive per-child mode when supported. Never enable unrestricted
+permissions just to suppress prompts.
 
-```bash
-CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
-```
+Read:
 
-Add to `~/.claude/settings.json`:
-```json
-{
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  }
-}
-```
+- [permissions and isolation](references/permissions-and-isolation.md) before
+  assigning write access;
+- [agent roster](references/agent-roster.md) before choosing a specialist; and
+- [spawn prompt guide](references/spawn-prompt-guide.md) before creating a
+  teammate.
 
-Without this, `TeamCreate` will fail.
+## Lifecycle
 
-## Critical: Configure Permissions Before Spawning
+1. Decompose the job into independent units and dependency edges.
+2. Write the required specs in the lead session. Pin shared interfaces and
+   exclusive file ownership.
+3. Create one team and all known tasks up front. Express ordering with task
+   dependencies rather than prose.
+4. Match each unit to a named roster specialist. Use a generic teammate only
+   when no specialist fits, and record why.
+5. Spawn self-contained teammates. They receive no conversation history.
+6. When bounded implementation belongs on an external cheap lane, make the
+   teammate a controller: it launches and monitors that lane, reports the
+   actual provider/model and full worker output, and does not implement.
+7. Monitor through the task list and direct messages. Idle between assignments
+   is normal; wake a teammate with a direct message.
+8. Stop at a barrier before reconciliation, final verification, or git.
+9. Request shutdown from every teammate, wait for acknowledgements, then
+   delete the team.
 
-Start from the lead session's permission settings and inspect the installed
-`Agent` tool schema before spawning. Current builds can accept a per-spawn
-`mode`; use a safe non-interactive mode such as `dontAsk`/`auto` with narrow
-allow rules when available. If the host does not expose that field, the teammate
-inherits the lead. Permission requests may bubble up to the lead.
+## Team-specific rules
 
-Do not launch the lead with `--dangerously-skip-permissions` merely to avoid team
-prompts. Reserve that mode for an explicitly trusted, externally sandboxed
-environment.
+- Only the lead creates the team; teammates do not create nested teams.
+- A teammate claims and completes one task at a time.
+- Every prompt contains the absolute repository path, objective, owned paths,
+  forbidden paths, relevant skills, acceptance checks, and final-report shape.
+- Use task state for status and plain text for messages.
+- Broadcast sparingly; it multiplies into one message per teammate.
+- The lead remains responsible for the combined diff and all git operations.
 
-See `references/permissions-and-isolation.md` for the permission and file-ownership
-model.
+## Failure behavior
 
-## Available Agent Roster (Abbreviated)
+- Permission prompts: narrow or pre-approve the specific required operation.
+- Off-script teammate: correct directly; shut down and replace if necessary.
+- Missing report: request the complete report before accepting the task.
+- External controller silently implements or changes provider: reject the
+  result and re-dispatch under the shared contract.
+- Team deletion failure: a teammate is still active; finish shutdown first.
 
-| Agent | subagent_type | Best for |
-|-------|--------------|----------|
-| **researcher** | `research:researcher` | Libraries, APIs, docs, competitive analysis |
-| **nextjs** | `web-dev:nextjs` | Next.js, React, Vercel, RSC, app router |
-| **native-desktop** | `creative:native-desktop` | Native SDK, Zig, WebViews, menu-bar apps, signed DMGs |
-| **designer** | `web-dev:designer` | UI, game HUDs, TV shells, directional focus, Tailwind, accessibility |
-| **agent-builder** | `orchestra:agent-builder` | AI SDK v7 agents, durable runtime selection, conditional eve evaluation |
-| **database** | `dev-ops:database` | Schema, queries, PostgreSQL, Redis, Convex |
-| **integration-expert** | `dev-ops:integration-expert` | REST APIs, webhooks, third-party services |
-| **code-auditor** | `review:code-auditor` | Security review, vulnerability scanning |
-| **tester** | `review:tester` | Unit, integration, e2e tests, CI |
-| **documentation-writer** | `research:documentation-writer` | READMEs, API docs, PRDs, guides |
-| **devops** | `dev-ops:devops` | Vercel+Railway+Bun, CI/CD, monitoring |
-| **optimizer** | `web-dev:optimizer` | Bundle analysis, Lighthouse, Core Web Vitals |
-| **architecture-reviewer** | `review:architecture-reviewer` | System design, refactoring strategy, tech debt |
-| **mobile** | `web-dev:mobile` | Expo-first React Native, Swift, Kotlin, Flutter |
-| **payments** | `dev-ops:payments` | Stripe, billing, financial transactions |
-| **marketer** | `product-skills:marketer` | CRO, SEO, copy, launch strategy |
-| **legal** | `product-skills:legal` | Privacy, compliance, ToS |
-| **mcp** | `mcp-dev:mcp` | MCP server setup, config, diagnostics |
-| **social-media-manager** | `brand-rep:social-media-manager` | Owned-account posts, calendars, mention replies |
+## Final report
 
-Full roster with per-agent skills to mention in spawn prompts: `references/agent-roster.md`
-
-## Full Team Lifecycle
-
-### Step 1: Decompose the task
-
-Before calling any tools, identify:
-- What domains are involved? (frontend, backend, testing, docs, security...)
-- Which tasks can run in parallel vs. must be sequential?
-- What are the dependencies? (schema before API, API before tests)
-
-### Step 2: Create the team
-
-```
-TeamCreate(
-  team_name: "feature-billing",
-  description: "Implement Stripe billing with UI, API, tests, and docs"
-)
-```
-
-### Step 3: Create tasks upfront
-
-Set dependencies with `addBlockedBy` where order matters:
-
-```
-TaskCreate(
-  subject: "Design billing UI components",
-  description: "Create PricingCard, BillingHistory, UpgradeModal using shadcn/ui.
-  Repo: ~/code/myapp. Tailwind v4. Output: src/components/billing/.",
-  activeForm: "Designing billing UI"
-) → id: "1"
-
-TaskCreate(
-  subject: "Implement Stripe integration",
-  description: "Set up webhooks, subscription creation, customer portal.
-  Repo: ~/code/myapp. API routes in app/api/billing/.",
-  activeForm: "Implementing Stripe integration"
-) → id: "2"
-
-TaskCreate(
-  subject: "Write billing test suite",
-  description: "Vitest tests for all billing API routes and webhook handler.
-  Repo: ~/code/myapp. Tests in __tests__/billing/.",
-  activeForm: "Writing billing tests"
-) → id: "3"
-
-TaskUpdate(taskId: "3", addBlockedBy: ["2"])  # tests wait for Stripe impl
-```
-
-### Step 4: Spawn teammates
-
-```
-Agent(
-  subagent_type: "web-dev:designer",
-  name: "designer",
-  mode: "dontAsk",
-  prompt: "..."  # see references/spawn-prompt-guide.md
-)
-```
-
-Every spawn prompt must be **self-contained** — teammates have zero conversation history. See `references/spawn-prompt-guide.md` for the full template and how to list each agent's available skills.
-
-### Step 5: Monitor and coordinate
-
-Messages from teammates arrive automatically. Check progress:
-```
-TaskList()
-```
-
-Answer a blocked teammate:
-```
-SendMessage(
-  type: "message",
-  recipient: "backend",
-  content: "Stripe webhook secret is STRIPE_WEBHOOK_SECRET in .env.local",
-  summary: "Stripe secret location"
-)
-```
-
-### Step 6: Shutdown and cleanup
-
-```
-SendMessage(type: "shutdown_request", recipient: "designer", content: "Work complete")
-SendMessage(type: "shutdown_request", recipient: "backend", content: "Work complete")
-SendMessage(type: "shutdown_request", recipient: "tester", content: "Work complete")
-
-# Wait for each shutdown_response, then:
-TeamDelete()
-```
-
-## Task Decomposition Patterns
-
-### Feature implementation
-```
-Parallel from the start:
-├── researcher: research best practices / prior art
-├── designer: UI components
-├── nextjs or integration-expert: API / server logic
-└── database: schema changes
-
-Blocked until implementation complete:
-├── tester: test suite
-└── documentation-writer: feature docs
-```
-
-### Security audit + fix
-```
-Parallel:
-├── code-auditor: full vulnerability scan (Semgrep, CodeQL)
-└── architecture-reviewer: structural/design issues
-
-Blocked until audit complete:
-├── nextjs or integration-expert: fix findings
-└── tester: regression tests
-```
-
-### Launch prep
-```
-Parallel:
-├── code-auditor: security review
-├── tester: coverage audit
-├── optimizer: Lighthouse + bundle
-├── documentation-writer: user-facing docs
-└── legal: privacy / ToS
-
-Blocked until all above complete:
-└── devops: deploy pipeline
-```
-
-## Key Rules
-
-- **Use the safest effective permission mode**: pre-approve only the operations teammates need; never default to bypass
-- **Self-contained prompts**: teammates get zero conversation history — include repo path, conventions, and full context
-- **Mention agent skills in spawn prompts** — each agent has specialized skills; tell them which to use
-- **One task at a time**: claim → complete → claim next. No parallel hoarding
-- **No JSON in messages**: use TaskUpdate for status. SendMessage is plain text only
-- **Idle is normal**: teammates go idle between tasks. Send a message to wake them
-- **No nested teams**: only the lead calls TeamCreate
-- **Shutdown before TeamDelete**: TeamDelete fails if any teammate is still active
-- **Broadcast sparingly**: each broadcast = one API call per teammate
-
-## Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| `TeamCreate` fails | Check `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set |
-| Teammate hits permission prompts | Pre-approve the specific safe operation in the lead's settings, then retry |
-| Teammate not claiming tasks | Check `blockedBy` deps with `TaskGet` |
-| Teammate idle and unresponsive | Send a direct `SendMessage` — idle agents wake on receipt |
-| `TeamDelete` fails | Teammates still running. Send `shutdown_request` to each |
-| Teammate went off-script | Send correction via `SendMessage`. If severe, shutdown and respawn |
-
-## References
-
-- `references/permissions-and-isolation.md` — inherited permissions and safe file partitioning
-- `references/agent-roster.md` — full roster table + which skills to mention per agent in spawn prompts
-- `references/spawn-prompt-guide.md` — complete spawn prompt template with skills section
+Name the specialists and controllers that actually ran, each external
+provider/model and disclosure state, accepted and rejected work, verification
+results, and unresolved dependencies. Never claim a teammate or provider ran
+from configuration alone.

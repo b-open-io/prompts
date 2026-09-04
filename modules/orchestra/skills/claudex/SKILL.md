@@ -1,11 +1,7 @@
 ---
 name: claudex
-description: >-
-  Run the Claude Code harness on GPT-5.6 Sol through a local CLIProxyAPI proxy when Anthropic
-  usage runs out, and diagnose that setup when it drifts. Use for "my Anthropic usage ran out",
-  "keep working on another model", "run Claude Code on GPT-5.6 Sol", "set up claudex", "claudex
-  isn't working", or "bill against my Codex subscription". macOS + Homebrew.
-version: 0.0.2
+description: 'Run the Claude Code harness on GPT-5.6 Sol through a local CLIProxyAPI proxy when Anthropic usage runs out, and diagnose that setup when it drifts. Use for "my Anthropic usage ran out", "keep working on another model", "run Claude Code on GPT-5.6 Sol", "set up claudex", "claudex isn''t working", or "bill against my Codex subscription". macOS + Homebrew.'
+version: 0.0.3
 user-invocable: true
 ---
 

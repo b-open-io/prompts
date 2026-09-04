@@ -98,11 +98,16 @@ esac
 # rather than a filename, and skip legacy caches so retired ids never appear.
 roster_json="[]"
 roster_json=$(
-  python3 - "$HOME/.claude/plugins/cache" "$HOME/.grok/installed-plugins" <<'PY_INNER'
+  python3 - "$HOME/.claude/plugins/cache" "$HOME/.grok/installed-plugins" \
+    "${CODEX_HOME:-$HOME/.codex}/agents" "$PWD/.opencode/agents" \
+    "$PWD/.opencode/agent" "$HOME/.config/opencode/agents" \
+    "$HOME/.config/opencode/agent" <<'PY_INNER'
 import json, os, re, sys
 
 claude_cache = sys.argv[1]
 grok_plugins = sys.argv[2]
+codex_agents = sys.argv[3]
+opencode_dirs = sys.argv[4:]
 latest = {}
 
 def field(text, name):
@@ -125,6 +130,25 @@ def add_agents(plugin_name, agents_dir):
         latest[key] = {
             "id": key,
             "display_name": field(text, "display_name") or agent_id,
+            "summary": field(text, "description")[:110],
+        }
+
+def add_flat_agents(prefix, agents_dir):
+    if not os.path.isdir(agents_dir):
+        return
+    for f in sorted(os.listdir(agents_dir)):
+        if not f.endswith(".md"):
+            continue
+        path = os.path.join(agents_dir, f)
+        try:
+            text = open(path, encoding="utf-8").read(4000)
+        except OSError:
+            continue
+        agent_id = f[:-3]
+        key = f"{prefix}:{agent_id}"
+        latest[key] = {
+            "id": key,
+            "display_name": field(text, "display_name") or field(text, "name") or agent_id,
             "summary": field(text, "description")[:110],
         }
 
@@ -160,6 +184,10 @@ if os.path.isdir(grok_plugins):
             except (OSError, json.JSONDecodeError):
                 pass
         add_agents(name, os.path.join(root, "agents"))
+
+add_flat_agents("codex", codex_agents)
+for directory in opencode_dirs:
+    add_flat_agents("opencode", directory)
 
 print(json.dumps(list(latest.values())))
 PY_INNER

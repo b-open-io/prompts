@@ -15,7 +15,7 @@ not from a hardcoded example and not from a phase list the user never saw.
 
 ````
 # Workflow: <name>
-Host harness: <claude-code|codex|grok>   (fixed — set by how this session started)
+Host harness: <claude-code|codex|grok|opencode>   (fixed — set by how this session started)
 Isolation: <shared-tree|worktree-per-agent>
 Concurrency: <n>
 cwd: <path>
@@ -30,6 +30,9 @@ cwd: <path>
   model: grok-4.6 · effort: medium
 - **Implement B** — SHELL-OUT to codex
   model: gpt-5.6-sol · effort: medium
+  controller: native-worker-2
+  provider: OpenAI · disclosure: approved
+  context: SPEC file and owned paths only
   command: codex exec ...
 
 ## Verification gate
@@ -51,6 +54,10 @@ cwd: <path>
       "model": "grok-4.6",
       "effort": "medium",
       "agentType": null,
+      "controller": "native-worker-2",
+      "provider": "OpenAI",
+      "disclosure": "approved",
+      "context": "SPEC file and owned paths only",
       "task": "<prompt>",
       "shell": false
     },
@@ -90,6 +97,12 @@ edges is a staffing list.
 `agentType` must be an id from the installed roster. `model` and `effort`
 must come from the detected lists for that lane.
 
+`controller` identifies the native child supervising an external process;
+`provider` identifies the company receiving the selected context. They are not
+the same identity. `disclosure` is `approved` | `not-required` | `pending`, and
+`context` states exactly what may cross the boundary. An external node with
+pending disclosure is retained for review but emitted with `omit: true`.
+
 `gateNode` points at the gate node. `gateCmd` on that node is the command
 that proves the work. Seed a gate if the user did not place one, and say
 it was defaulted.
@@ -108,6 +121,11 @@ runs the CLI. Fan-out uses `parallel()`. `pipeline()` is Claude-only.
 **Codex**: no workflow runtime. Translate the forward path into ordered
 `codex exec` calls. Say that sequencing is the caller's job. A reject
 edge is a second dispatch after a failed gate, not a native loop.
+
+**OpenCode**: no workflow runtime. Translate the forward path into ordered
+`opencode run --model "<provider>/<model>" --dir <repo>` calls. A named
+`mode: subagent` child is invoked with `@name`, not `--agent`. Require a child
+marker before claiming it ran. OpenCode never uses the Grok translation.
 
 **Grok**: emit a Rhai workflow. Follow the bundled `/create-workflow`
 skill. Native `agent().model` is `grok-4.6` only. A non-Grok lane is a

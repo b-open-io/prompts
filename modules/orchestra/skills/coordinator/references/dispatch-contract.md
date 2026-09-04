@@ -57,8 +57,9 @@ cross-unit synthesis, final verification, or git operations.
 - On hosts with native subagents, the main spawns a native worker-controller
   and the controller runs the external worker command. Tell the controller not
   to implement the spec itself or silently fall back to its own model.
-- Require the controller to report external provider/model, process outcome,
-  log location, and the worker's complete final report. Its native UI status is
+- Require the controller to report its native controller identity, external
+  provider/model, disclosure state, exact context shared, process outcome, log
+  location, and the worker's complete final report. Its native UI status is
   lifecycle evidence, not proof that the external implementation succeeded.
 - Run implementation with write access but the narrowest available sandbox.
 - Run independent work in the background and preserve the complete output in a

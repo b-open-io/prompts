@@ -1,12 +1,7 @@
 ---
 name: software-factory
-version: 0.0.10
-description: >-
-  Design or harden a software factory: an agentic loop that iterates toward a goal with a
-  verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic
-  loop", "self-iterating agent", "/loop", "/goal", "Ralph loop", "maker-checker", "agentic
-  SDLC", "ADW", picking a verification gate, bounding a loop's blast radius, unintelligible
-  auto-merged PR titles, or loop process dumped into a GitHub PR body.
+version: 0.0.11
+description: 'Design or harden a software factory: an agentic loop that iterates toward a goal with a verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic loop", "self-iterating agent", "/loop", "/goal", "Ralph loop", "maker-checker", "agentic SDLC", "ADW", picking a verification gate, bounding a loop''s blast radius, unintelligible auto-merged PR titles, or loop process dumped into a GitHub PR body.'
 ---
 
 # Software Factory
@@ -64,60 +59,37 @@ The dedup-vs-open-tickets step is what stops discovery from re-filing the same i
 
 At factory scale, a **router** sits above all worker types: work arrives typed (chore, bug, feature, hotfix), and the router picks the workflow and the model tier for it — a workhorse maker for volume, a state-of-the-art model only where planning or checking earns it. Speed-critical work (hotfixes) can **race**: several isolated agents attack the same fix in parallel and the first one through the gate wins. Isolation progresses with maturity — git worktrees are a great place to start and a poor place to end; sandboxes give full isolation plus a place a human can step into mid-run.
 
-On a host with a native workflow engine, staged fan-outs inside a loop pass can
-run as a deterministic workflow. Load only the current Coordinator host guide:
-`skills/coordinator/references/hosts/claude.md` or
-`skills/coordinator/references/hosts/grok.md`. On Codex and OpenCode, the
-manual protocols in `wave-coordinator` provide the equivalent barriers.
+## Compose dispatch instead of embedding it
 
-## The staged multi-model pipeline — the verified recipe
+When a factory pass dispatches implementation, read
+[Coordinator](../coordinator/SKILL.md), the shared
+[dispatch contract](../coordinator/references/dispatch-contract.md), exactly
+one current-host guide, and only the selected worker guides. Those resources
+govern cheap-lane selection, native controllers, provider disclosure, specs,
+logs, review, verification, and git. Do not copy their command manuals into a
+factory configuration.
 
-The maker/checker split above is doctrine; this is the concrete, field-verified wiring for an
-execution worker. **A headless loop that runs one monolithic session — one model playing planner,
-maker, checker, and shipper in a single context — will eventually write a wrong diagnosis into a
-ticket as fact, because its mechanical gate verifies code and nothing verifies claims.** (Field case:
-a loop asserted "rotate the credential" on a CI outage without evidence; a second single-context agent
-then flipped it to "stale, skip it" — also without evidence. Both survived because no adversarial
-reviewer ever existed. The outage was real; both written diagnoses were unverified guesses.)
+The factory adds recurrence and promotion policy:
 
-The verified shape — every lane below was live-tested headless before this section was written:
+- pin the model and provider for every agent stage;
+- keep planning, implementation, independent review, and the objective gate as
+  distinct nodes;
+- make external implementation visible under a native controller when the host
+  supports children;
+- record controller id, actual provider/model, disclosure state, and context
+  shared in the durable ledger;
+- if the checker is unavailable, stop at propose-only; and
+- let only the main/promotion worker perform reviewed git and release actions.
 
-| Stage | Model / lane | Invocation (verified) | What it guards |
-|---|---|---|---|
-| **Plan** | strongest planner (e.g. fable) | native `Workflow` `agent(..., { model: 'fable', schema })` | Premise verification BEFORE decomposition; routes each item to a lane + named roster agent |
-| **Implement** | cheap workers: external CLI (e.g. `grok -m grok-4.6 --permission-mode acceptEdits`) or named roster agents (`agentType`) | supervisor-agent pattern: a thin workflow agent writes the spec file, drives the CLI via Bash, relays the report + `git diff --stat` | Volume off the main seat; disjoint file partitions per item |
-| **Review** | independent CROSS-VENDOR checker (e.g. `codex exec -m gpt-5.6-sol --sandbox read-only`) | supervisor agent builds a review brief (diff + every claim), demands a schema verdict | The missing gate: adversarial review of the diff AND the claims; one corrective round max |
-| **Gate + ship** | main seat, model PINNED in loop config | mechanical gate unpiped, then `lint-pr.sh` if opening a PR, then git | Merge requires gate green **AND** `verdict.approved`. Auto-merged PRs also require the human-artifact linter green |
+On Claude Code or Grok Build, a native workflow engine may express deterministic
+stages. Codex and OpenCode use caller-owned sequencing and Wave Coordinator
+barriers. Runtime-specific syntax belongs in Coordinator host references.
 
-Non-negotiables learned the hard way:
-
-- **The native `Workflow` tool works inside headless `claude -p`** — verified. Commit the workflow
-  script to the repo (`scriptPath`), version it like code, and give it a `selftest` arg so CI and
-  humans can probe parse/load without spawning agents. (Runtime gotcha: the exported `meta` const is
-  not in scope in the script body; `Date.now()`/`Math.random()` are unavailable — pass timestamps in
-  via args.)
-- **Pin every model explicitly — the loop config, the workflow stages, the CLI dispatches.** A loop
-  that inherits a mutable CLI default silently runs on whatever model the maintainer's interactive
-  sessions last saved; a real loop ran weeks on a stale model this way and nobody knew.
-- **The checker reviews CLAIMS, not just diffs.** Any diagnosis, decline rationale, or "X is broken
-  because Y" that will be written to a ticket must carry evidence and pass the checker first.
-  Unverifiable ⇒ label it "unverified hypothesis" or write nothing. Claims-only tickets route through
-  the same review stage with no diff.
-- **No checker ⇒ propose-only.** Lane preflight (binary + auth + pinned-model-exists, e.g.
-  `grok models | grep`) runs every cycle; a down worker lane re-routes explicitly to roster agents,
-  and a down checker lane downgrades the cycle to open-PR-and-stop. The loop never self-approves, and
-  a lane never silently collapses into the main seat.
-- **Data boundary:** external lanes cross vendors (specs to xAI, review briefs to OpenAI). Specs and
-  briefs carry code excerpts, never secrets or env values. launchd does not source shell profiles —
-  file-based auth (codex `auth.json`, `grok login`) or an explicitly-sourced env file, checked at
-  preflight.
-- **GitHub is for humans.** Tickets hold work items; the loop ledger holds process. A loop that
-  auto-merges without a human rewrite must lint PR titles and bodies as **code**
-  (`scripts/lint-pr.sh` + CI), not as another prompt. Field case: auto-merged PRs with ticket-id
-  prefixes and checker dumps a human could not scan (Scribe, 2026-08). T3 Code discovers the
-  same contract via always-on `AGENTS.md`; T3 does not auto-merge, so prompt-only is enough
-  there. Follow `references/human-artifacts.md`. `/factory-init` copies the templates when the
-  connector list includes `gh pr create`.
+The checker reviews claims as well as diffs. A diagnosis written into a ticket
+needs evidence; otherwise label it an unverified hypothesis or omit it. Keep
+human-facing PR policy in [human artifacts](references/human-artifacts.md) and
+promotion behavior in
+[shipping and isolation](references/shipping-and-isolation.md).
 
 ### Agent runtime selection
 

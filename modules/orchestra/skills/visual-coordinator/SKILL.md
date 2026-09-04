@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.8
+version: 0.1.9
 ---
 
 # Visual Coordinator
@@ -90,6 +90,9 @@ Required on the page:
 - **Isolation, live-children, and cwd dials** — bounded by detector caps.
   Effort lists come from `models.<lane>_effort`. Unavailable lanes stay
   selectable and warn.
+- **External boundary fields** — every external node distinguishes its visible
+  native controller from the actual provider/model, records disclosure state,
+  and names the exact context allowed to cross the boundary.
 - **Refusal list** — impossible settings (foreign native model, over-cap
   concurrency, schema on a shell-out, missing CLI) show on the page and
   in Copy spec.
@@ -100,18 +103,10 @@ Required on the page:
 
 ### 3b. Deliver the page
 
-A file path in chat is not a page. Claude Code can host HTML as an
-Artifact. Grok Build and Codex cannot.
-
-On Claude Code, publish the canvas as an Artifact. On every other host, load
-BitPlan's canonical skill (`Skill(bitplan:bitplan)` for the plugin or
-`Skill(bitplan)` for a standalone install) and use a hosted encrypted draft
-after the user approves it. Prefer an existing BRC-100 wallet. The planned 1Sat CLI
-fallback is not application-compatible yet, so do not point BitPlan at `1sat
-serve wallet`. If no compatible wallet is available, open the local file. Only
-after the user explicitly declines the wallet paths may you offer PostPlan as
-an unencrypted hosted fallback and ask before uploading. Do not stop after
-writing `docs/*.html` without giving the user a page they can actually open.
+A file path in chat is not a page. Follow
+[the visual delivery policy](references/visual-delivery.md). It keeps BitPlan's
+external-provider and wallet rules narrow and reusable rather than mixing them
+with graph construction.
 
 ### 4. Emit the spec
 
@@ -129,7 +124,12 @@ JavaScript workflow script; Grok maps onto a Rhai workflow (bundled
 `/create-workflow`, native `agent_type` + `model`, Sol/Claude nodes as
 Grok-CLI or Claude-CLI shell-outs);
 Codex becomes an ordered series of `codex exec` dispatches the caller sequences.
-Then run it under the ordinary `coordinator` rules: specs before dispatch,
+OpenCode becomes caller-sequenced `opencode run` dispatches and `@agent`
+children; it must never fall through to Grok translation.
+Before dispatch, read [Coordinator](../coordinator/SKILL.md), its shared
+[dispatch contract](../coordinator/references/dispatch-contract.md), exactly
+one current-host guide, and only the selected worker guides. Then run it under
+those rules: specs before dispatch,
 review diffs adversarially, re-run acceptance outside the worker's sandbox, and
 keep every git operation in the main session. Smoke-check a Grok script with
 `validate_only: true` before a real run.
@@ -146,7 +146,7 @@ draws initials from `display_name` in a coloured circle.
 
 ### Reference Files
 
-- **`references/harness-capabilities.md`** — what Claude Code, Codex, and Grok
+- **`references/harness-capabilities.md`** — what Claude Code, Codex, Grok, and OpenCode
   each genuinely support: primitives, caps, isolation, resume semantics, model
   identifiers, and the claims the canvas must never make.
 - **`references/emitted-spec-format.md`** — the exact shape of the paste-back
@@ -154,6 +154,8 @@ draws initials from `display_name` in a coloured circle.
   configuration.
 - **`references/decomposition.md`** — how to choose the graph: nodes, edges,
   reject-back, barriers, sizing, isolation. Read before seeding, not after.
+- **`references/visual-delivery.md`** — Artifact, BitPlan, wallet, local-file,
+  and explicit unencrypted-fallback policy.
 
 ### Assets
 
@@ -162,10 +164,9 @@ draws initials from `display_name` in a coloured circle.
 
 ### Scripts
 
-- **`scripts/detect-harness.sh`** — reports host harness (`GROK_AGENT` for
-  Grok Build), `native_workflow`, live-child / budget caps, available lanes,
-  real model lists per lane, and the deduplicated installed agent roster
-  (Claude plugin cache plus `~/.grok/installed-plugins`).
+- **`scripts/detect-harness.sh`** — reports host harness, workflow/capacity,
+  available lanes, real model lists, and deduplicated Claude, Grok, Codex, and
+  OpenCode roster agents.
 
 ### Related Skills
 

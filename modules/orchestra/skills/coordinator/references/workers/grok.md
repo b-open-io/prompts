@@ -15,11 +15,16 @@ and offer setup rather than silently implementing in the main.
 
 Use a unique prompt file for every parallel run:
 
-    PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
-    grok models
-    : "${BOPEN_WORKER_MODEL:?Select an id listed by grok models}"
-    printf '%s\n' "<imperative; details in SPEC file>" > "$PROMPT_FILE"
-    grok --prompt-file "$PROMPT_FILE" -m "$BOPEN_WORKER_MODEL" +      --permission-mode acceptEdits --sandbox workspace +      --output-format plain --cwd <repo> +      > /tmp/dispatch-<id>.log 2>&1 &
+```bash
+PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
+grok models
+: "${BOPEN_WORKER_MODEL:?Select an id listed by grok models}"
+printf '%s\n' "<imperative; details in SPEC file>" > "$PROMPT_FILE"
+grok --prompt-file "$PROMPT_FILE" -m "$BOPEN_WORKER_MODEL" \
+  --permission-mode acceptEdits --sandbox workspace \
+  --output-format plain --cwd <repo> \
+  > /tmp/dispatch-<id>.log 2>&1 &
+```
 
 Use acceptEdits for implementation, never an unrestricted approval mode.
 Verify that the named sandbox profile actually applied: an unknown Grok

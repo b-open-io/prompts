@@ -23,9 +23,13 @@ exists in another environment.
 
 Use a unique prompt file for every parallel run:
 
-    PROMPT_FILE=$(mktemp -t opencode-prompt.XXXXXX)
-    printf '%s\n' "<imperative; details in SPEC file>" > "$PROMPT_FILE"
-    opencode run --model "<provider>/<model>" --dir <repo> +      "$(cat "$PROMPT_FILE")" > /tmp/dispatch-<id>.log 2>&1 &
+```bash
+PROMPT_FILE=$(mktemp -t opencode-prompt.XXXXXX)
+printf '%s\n' "<imperative; details in SPEC file>" > "$PROMPT_FILE"
+opencode run --model "<provider>/<model>" --dir <repo> \
+  "$(cat "$PROMPT_FILE")" \
+  > /tmp/dispatch-<id>.log 2>&1 &
+```
 
 Use JSON output for scripting or attach to a running server when that avoids
 repeated MCP startup. Capture the full log and demand the shared final report.
@@ -39,7 +43,10 @@ one declared with mode: subagent.
 For a real child, start a headless primary session and invoke the named child
 with an @mention:
 
-    opencode run --model "<provider>/<model>" --dir <repo> +      "@general <bounded task>"
+```bash
+opencode run --model "<provider>/<model>" --dir <repo> \
+  "@general <bounded task>"
+```
 
 A subagent without its own model inherits the parent model. Verify a child
 marker such as General Agent in the captured output before claiming delegation;

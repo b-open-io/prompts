@@ -12,14 +12,16 @@
  *   {
  *     name, isolation, concurrency, cwd,
  *     nodes: [{ id, kind, x, y, label, detail, lane, model, effort,
- *               agentType, task, gateCmd, schema, paths, command }],
+ *               agentType, controller, provider, disclosure, context,
+ *               task, gateCmd, schema, paths, command }],
  *     edges: [{ id, from, to, label, kind: "forward"|"reject"|"memory" }]
  *   }
  * Env: {
  *   harness,
- *   models: { grok, grok_effort, claude, claude_effort, codex, codex_effort },
+ *   models: { grok, grok_effort, claude, claude_effort, codex, codex_effort,
+ *             opencode, opencode_effort },
  *   roster: [{ id, display_name, avatar? }],
- *   lanes: { grok, claude, codex }  // "available" | "unavailable"
+ *   lanes: { grok, claude, codex, opencode }  // "available" | "unavailable"
  *   caps: { live_children },
  *   cwd
  * }

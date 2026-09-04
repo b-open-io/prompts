@@ -805,7 +805,9 @@ does not pin or rename it. The supporting skills divide responsibilities:
   harness-specific behavior to Coordinator's on-demand references.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
   edges, reject-back gates) before it runs. Staffing, isolation,
-  concurrency, refusals, and the paste-back spec live on that canvas.
+  concurrency, native controller versus external provider, disclosure/context
+  boundaries, refusals, and the paste-back spec live on that canvas. OpenCode
+  is a distinct caller-sequenced lane and never falls through to Grok.
   On Grok it translates to a Rhai workflow, not a vague `/workflow` brief.
   `/create-workflow` is a Grok-bundled authoring skill
   (`~/.grok/bundled/skills/create-workflow/SKILL.md`). It is not part of

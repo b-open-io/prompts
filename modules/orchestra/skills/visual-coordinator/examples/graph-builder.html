@@ -141,9 +141,10 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   var MODELS = ENV.models || {
     grok:["grok-4.6"], grok_effort:["none","minimal","low","medium","high","xhigh"],
     claude:["fable","sonnet","opus"], claude_effort:["low","medium","high","xhigh","max"],
-    codex:["gpt-5.6-sol"], codex_effort:["minimal","low","medium","high","xhigh"]
+    codex:["gpt-5.6-sol"], codex_effort:["minimal","low","medium","high","xhigh"],
+    opencode:[], opencode_effort:["low","medium","high"]
   };
-  var LANES = ENV.lanes || { grok:"available", claude:"available", codex:"available" };
+  var LANES = ENV.lanes || { grok:"available", claude:"available", codex:"available", opencode:"unavailable" };
   var ROSTER = ENV.roster || ["","orchestra:coordinator","orchestra:agent-builder","review:tester"];
   var HARNESS = ENV.harness || "grok";
   var AVATAR_HUE = ["#3ec9b0","#8b7cf7","#c45b7a","#c9a227","#6ea8ff","#e38f1a"];
@@ -154,12 +155,16 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   var hist = [], hpos = -1;
 
   function uid(p){ return p + (p==="n"? nid++ : eid++); }
-  function node(o){ return Object.assign({ id:uid("n"), kind:"process", x:80, y:160, label:"Step", detail:"", lane:hostLane(), model:(modelsFor(hostLane())[0]||"grok-4.6"), effort:"medium", agentType:"", task:"", gateCmd:"", schema:"", paths:"", command:"" }, o); }
+  function node(o){ return Object.assign({ id:uid("n"), kind:"process", x:80, y:160, label:"Step", detail:"", lane:hostLane(), model:defaultModel(hostLane()), effort:"medium", agentType:"", controller:"", provider:"", disclosure:"pending", context:"", task:"", gateCmd:"", schema:"", paths:"", command:"" }, o); }
   function edge(o){ return Object.assign({ id:uid("e"), from:"", to:"", label:"", kind:"forward" }, o); }
   function hostLane(){
     if(HARNESS==="claude-code") return "claude";
     if(HARNESS==="codex") return "codex";
+    if(HARNESS==="opencode") return "opencode";
     return "grok";
+  }
+  function defaultModel(lane){
+    return modelsFor(lane)[0] || (lane==="grok" ? "grok-4.6" : "");
   }
   function staffed(n){ return n.kind==="process" || n.kind==="gate"; }
   function isShell(n){ return staffed(n) && n.lane && n.lane !== hostLane(); }
@@ -211,14 +216,12 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   function seedMinimal(){
     nid=1; eid=1;
     var native=hostLane();
-    var nativeModel=modelsFor(native)[0]||"grok-4.6";
-    var gateLane=modelsFor("claude").length && laneAvailable("claude") ? "claude" : native;
-    var gateModel=gateLane==="claude" && modelsFor("claude").indexOf("fable")>=0 ? "fable" : (modelsFor(gateLane)[0]||nativeModel);
+    var nativeModel=defaultModel(native);
     S.name = "untitled";
     S.nodes = [
       node({id:"n1", kind:"source", x:36, y:188, label:"Start", detail:"brief in"}),
       node({id:"n2", kind:"process", x:280, y:178, label:"Work", detail:"do the job", lane:native, model:nativeModel, effort:"medium"}),
-      node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:gateLane, model:gateModel, effort:"high", gateCmd:"bun test"}),
+      node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:native, model:nativeModel, effort:"high", gateCmd:"bun test"}),
       node({id:"n4", kind:"process", x:780, y:178, label:"Done", detail:"ship or complete", lane:native, model:nativeModel, effort:"low"})
     ];
     nid=5;
@@ -429,6 +432,9 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     }
     var n=byId(sel.id); if(!n) return;
     var native=!isShell(n);
+    var convertedExternal=HARNESS==="grok" && native && n.model && n.model!=="grok-4.6";
+    var external=isShell(n)||convertedExternal;
+    var boundary=external||n.lane==="opencode";
     var r=resolved(n);
     var fate=r.omit ? ("Not emitted: "+r.omitReason) : (r.shell ? ("Emits as CLI shell-out to "+r.lane+(r.converted?" (converted from native)":"")) : (staffed(n)?"Emits as native agent":"Emits as "+n.kind));
     aside.innerHTML="<h2>"+esc(n.label)+"</h2><p class='who'>"+esc(kindLabel(n))+"</p>"+
@@ -436,13 +442,17 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       fsel("kind","Node type",["source","process","gate","artifact","memory"].map(function(k){return '<option '+(n.kind===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
       ftext("label","Title",n.label)+ftext("detail","Subtitle",n.detail)+
       (staffed(n)?
-        fsel("lane","Lane",["grok","claude","codex"].map(function(k){
+        fsel("lane","Lane",["grok","claude","codex","opencode"].map(function(k){
           var miss=!laneAvailable(k);
           return '<option '+(n.lane===k?"selected":"")+' value="'+k+'">'+k+(miss?" (not installed)":"")+"</option>";
         }).join(""))+
         fsel("model","Model",modelsFor(n.lane).map(function(k){return '<option '+(n.model===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
         fsel("effort","Effort",effortsFor(n.lane).map(function(k){return '<option '+(n.effort===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join(""))+
         (native?fsel("agentType","Agent",rosterList().map(function(k){return '<option '+(n.agentType===k.id?"selected":"")+' value="'+esc(k.id)+'">'+esc(k.name)+"</option>";}).join("")):"")+
+        (boundary?ftext("provider","Actual provider",n.provider||""):"")+
+        (external?ftext("controller","Native controller",n.controller||""):"")+
+        (boundary?fsel("disclosure","Disclosure",["pending","approved","not-required"].map(function(k){return '<option '+(n.disclosure===k?"selected":"")+' value="'+k+'">'+k+"</option>";}).join("")):"")+
+        (boundary?fta("context","Context shared",n.context||""):"")+
         ftext("paths","Owned paths",n.paths||"")+
         fta("task","Task",n.task)+
         (native?fta("schema","Structured output schema (JSON, optional)",n.schema||""):fta("command","CLI command (blank = composed)",n.command||""))
@@ -450,7 +460,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       (n.kind==="gate"?fta("gateCmd","Gate command",n.gateCmd):"")+
       (r.shell && !n.command?'<p class="hint">Composed command: '+esc(r.command)+"</p>":"")+
       '<p class="hint">Change type, lane, or title — the card restyles in place. Connect cards on the graph, not in this panel.</p>';
-    bind(["kind","label","detail","lane","model","effort","agentType","paths","task","schema","gateCmd","command"], onNodeField);
+    bind(["kind","label","detail","lane","model","effort","agentType","controller","provider","disclosure","context","paths","task","schema","gateCmd","command"], onNodeField);
   }
   function fsel(id,lab,inner,note){ return '<div class="field"><label for="'+id+'">'+lab+"</label><select id='"+id+"'>"+inner+"</select>"+(note?'<p class="hint">'+note+"</p>":"")+"</div>"; }
   function ftext(id,lab,v){ return '<div class="field"><label for="'+id+'">'+lab+'</label><input id="'+id+'" type="text" value="'+esc(v)+'"></div>'; }
@@ -473,6 +483,12 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
         n.model=val("model"); n.effort=val("effort");
         if(!isShell(n)){ n.agentType=val("agentType"); n.schema=val("schema"); }
         n.task=val("task"); n.paths=val("paths"); n.command=val("command");
+        var convertedExternal=HARNESS==="grok" && !isShell(n) && n.model && n.model!=="grok-4.6";
+        var external=isShell(n)||convertedExternal;
+        if(external||n.lane==="opencode"){
+          n.provider=val("provider"); n.disclosure=val("disclosure")||"pending"; n.context=val("context");
+        }
+        if(external) n.controller=val("controller");
       }
     }
     if(n.kind==="gate") n.gateCmd=val("gateCmd");
@@ -490,7 +506,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       label: kind==="gate"?"Gate": kind==="source"?"Source": kind==="artifact"?"Artifact": kind==="memory"?"Memory":"Step",
       detail: kind==="gate"?"prove the work":"",
       lane: kind==="gate" && laneAvailable("claude")?"claude":hostLane(),
-      model: kind==="gate" && modelsFor("claude").length? (modelsFor("claude").indexOf("fable")>=0?"fable":modelsFor("claude")[0]) : (modelsFor(hostLane())[0]||"grok-4.6"),
+      model: kind==="gate" && modelsFor("claude").length? (modelsFor("claude").indexOf("fable")>=0?"fable":modelsFor("claude")[0]) : defaultModel(hostLane()),
       gateCmd: kind==="gate"?"bun test":"" });
     S.nodes.push(n);
     if(sel&&sel.k==="node"&&byId(sel.id)&&sel.id!==n.id){
@@ -546,23 +562,46 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   function composeCommand(n){
     if(n.command) return n.command;
     var dir=S.cwd || ".";
-    var task=(n.task||n.label||"task").replace(/"/g,'\\"');
+    var task=n.task||n.label||"task";
     var effort="";
     if(n.effort && n.lane==="codex") effort=' -c model_reasoning_effort="'+n.effort+'"';
     if(n.effort && n.lane==="grok") effort=" --reasoning-effort "+n.effort;
-    if(n.lane==="codex") return 'codex exec --sandbox workspace-write --cd "'+dir+'" -m "'+n.model+'"'+effort+' "'+task+'"';
-    if(n.lane==="grok") return 'grok --single "'+task+'" -m "'+n.model+'"'+effort+' --permission-mode acceptEdits --sandbox workspace --cwd "'+dir+'"';
-    if(n.lane==="claude") return 'claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communication.md" --model "'+n.model+'" --permission-mode plan --tools "Read,Grep,Glob" --no-session-persistence "'+task+'"';
+    if(n.lane==="codex") return 'codex exec --sandbox workspace-write --cd '+shQuote(dir)+' -m '+shQuote(n.model)+effort+' '+shQuote(task);
+    if(n.lane==="grok") return 'grok --single '+shQuote(task)+' -m '+shQuote(n.model)+effort+' --permission-mode acceptEdits --sandbox workspace --cwd '+shQuote(dir);
+    if(n.lane==="claude") return 'claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communication.md" --model '+shQuote(n.model)+' --permission-mode plan --tools "Read,Grep,Glob" --no-session-persistence '+shQuote(task);
+    if(n.lane==="opencode") return 'opencode run --model '+shQuote(n.model)+' --dir '+shQuote(dir)+' '+shQuote(task);
+    return "";
+  }
+  function shQuote(value){
+    return "'"+String(value||"").replace(/'/g,"'\\\"'\\\"'")+"'";
+  }
+  function boundaryIssue(n, shell){
+    if(!(shell || n.lane==="opencode")) return "";
+    if(!n.provider) return "actual provider is required";
+    if(shell && !n.controller) return "native controller is required";
+    if(!n.context) return "context shared must be stated";
+    if((n.disclosure||"pending")==="pending") return "external provider disclosure is still pending";
     return "";
   }
   function resolved(n){
     var row={
       id:n.id, kind:n.kind, label:n.label, detail:n.detail, x:n.x, y:n.y,
       lane:n.lane||null, model:n.model||null, effort:n.effort||null,
+      controller:n.controller||null, provider:n.provider||null,
+      disclosure:n.disclosure||null, context:n.context||null,
       task:n.task||"", paths:n.paths||null, gateCmd:n.kind==="gate"?n.gateCmd:null,
       shell:false, agentType:null, schema:null, command:null, converted:false, omit:false, omitReason:null
     };
     if(!staffed(n)) return row;
+    if(!n.model){
+      row.omit=true; row.omitReason="no model was detected for the "+n.lane+" lane";
+      row.shell=isShell(n); return row;
+    }
+    var issue=boundaryIssue(n,isShell(n));
+    if(issue){
+      row.omit=true; row.omitReason=issue;
+      row.shell=isShell(n); return row;
+    }
     if(!laneAvailable(n.lane) && isShell(n)){
       row.omit=true; row.omitReason="the "+n.lane+" CLI is not installed";
       row.shell=true; return row;
@@ -581,6 +620,8 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       }
       var remapped=Object.assign({}, n, {lane:lane});
       row.shell=true; row.converted=true; row.lane=lane;
+      var convertedIssue=boundaryIssue(remapped,true);
+      if(convertedIssue){ row.omit=true; row.omitReason=convertedIssue; return row; }
       row.command=composeCommand(remapped);
       return row;
     }
@@ -600,12 +641,19 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     S.nodes.forEach(function(n){
       if(!staffed(n)) return;
       var ms=modelsFor(n.lane);
+      if(!n.model) out.push(n.label+": no model was detected for the "+n.lane+" lane.");
       if(n.model && ms.length && ms.indexOf(n.model)<0) out.push(n.label+": "+n.model+" is not on the "+n.lane+" lane.");
       if(isShell(n) && !laneAvailable(n.lane)) out.push(n.label+": the "+n.lane+" CLI is not installed, so this shell-out cannot run here.");
       if(HARNESS==="grok" && !isShell(n) && n.model && n.model!=="grok-4.6")
         out.push(n.label+": Grok agent().model accepts grok-4.6 only; "+n.model+" will emit as a shell-out.");
       if(n.schema && isShell(n)) out.push(n.label+": structured output is native-only; schema will not be emitted.");
       if(n.agentType && isShell(n)) out.push(n.label+": roster agentType is native-only; it will not be emitted.");
+      var converted=HARNESS==="grok" && !isShell(n) && n.model && n.model!=="grok-4.6";
+      var boundary=isShell(n)||n.lane==="opencode"||converted;
+      if(boundary && !n.provider) out.push(n.label+": actual provider is required.");
+      if((isShell(n)||converted) && !n.controller) out.push(n.label+": native controller is required for visible external dispatch.");
+      if(boundary && (n.disclosure||"pending")==="pending") out.push(n.label+": provider disclosure is pending.");
+      if(boundary && !n.context) out.push(n.label+": context shared must be stated.");
     });
     if(!S.nodes.some(function(n){ return n.kind==="gate"; }))
       out.push("No gate node. Add a Gate so fail can return to an earlier step.");
@@ -622,11 +670,16 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     if(r.shell){
       return "- **"+n.label+"** — SHELL-OUT to "+r.lane+(r.converted?" (converted from native)":"")+"\n"+
         "  model: "+(r.model||"")+" · effort: "+(r.effort||"tool default")+"\n"+
+        "  controller: "+(r.controller||"(missing)")+"\n"+
+        "  provider: "+(r.provider||"(missing)")+" · disclosure: "+(r.disclosure||"pending")+"\n"+
+        "  context: "+(r.context||"(missing)")+"\n"+
         "  command: "+r.command+(n.task?"\n  "+n.task:"");
     }
     if(staffed(n)){
       return "- **"+n.label+"** — "+person+"\n"+
-        "  model: "+(r.model||"")+" · effort: "+(r.effort||"")+(n.paths?"\n  paths: "+n.paths:"")+(n.task?"\n  "+n.task:"");
+        "  model: "+(r.model||"")+" · effort: "+(r.effort||"")+
+        (n.lane==="opencode"?("\n  provider: "+(r.provider||"(missing)")+" · disclosure: "+(r.disclosure||"pending")+"\n  context: "+(r.context||"(missing)")):"")+
+        (n.paths?"\n  paths: "+n.paths:"")+(n.task?"\n  "+n.task:"");
     }
     return "- **"+n.label+"** — "+n.kind+(n.detail?(" · "+n.detail):"");
   }
@@ -649,6 +702,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     var lines=["# Workflow: "+S.name,"Host harness: "+HARNESS+"   (fixed — set by how this session started)",
       "Isolation: "+iso,"Concurrency: "+c,"cwd: "+(S.cwd||".")];
     if(HARNESS==="codex") lines.push("Codex has no workflow runtime. The forward path becomes ordered `codex exec` calls the caller sequences.");
+    if(HARNESS==="opencode") lines.push("OpenCode has no workflow runtime. The forward path becomes ordered `opencode run` calls and `@agent` children the caller sequences.");
     lines.push("","## Graph");
     S.edges.forEach(function(e){
       var a=byId(e.from), b=byId(e.to);
