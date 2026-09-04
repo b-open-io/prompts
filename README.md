@@ -778,25 +778,12 @@ The main model is always the model selected for the current session; the skill
 does not pin or rename it. The supporting skills divide responsibilities:
 
 - `coordinator` writes precise worker specs, assigns non-overlapping files,
-  dispatches implementation, and requires acceptance reports. Worker volume
-  is a menu: Grok 4.6 or GPT-5.6 Sol for quality, GPT-5.6 Luna at extra-high
-  reasoning for unlimited-feeling Codex/OpenAI quota (not the default), and
-  Muse Spark 1.3 via Muse Code for cheap Meta volume (not the default). On a
-  Grok main, native roster agents stay on `grok-4.6`. Do not dispatch
-  `grok-4.5`. Grok 1.0.3 rejects `agent({ model: "gpt-5.6-sol" })` (`Unknown
-  Task.model slug`). Register a quoted `[model."gpt-5.6-sol"]` and wrap
-  `grok --single -m gpt-5.6-sol` in a `grok-4.6` workflow supervisor.
-  If that id is missing, use `codex exec -m gpt-5.6-sol`. When Grok is the
-  external lane from Claude or Codex, pin `grok-4.6`. Override that with
-  `BOPEN_WORKER_MODEL`. Luna extra-high is `codex exec -m gpt-5.6-luna -c
-  model_reasoning_effort="xhigh"` only when the user asked for leftover or
-   unlimited-feeling volume. Muse is `muse exec --model muse-spark-1.3`, or via
-   OpenCode as `opencode run -m muse-spark/muse-spark-1.3` with a custom provider
-   block. For a real OpenCode child, pin the parent model and invoke the child:
-   `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"`.
-   `--agent <name>` selects a primary/all-mode agent, not a `mode: subagent` agent.
-   Verify the model with `opencode models <provider>` and the child marker in the log;
-   a primary `build` line alone is not delegation. There is no `opencode exec`.
+  dispatches implementation, and requires acceptance reports. It loads one
+  shared dispatch contract, the current host guide, and only the selected
+  worker guide. Grok and GPT-5.6 Sol are quality lanes; Luna extra-high and
+  Muse Spark 1.3 are explicit cheap-volume choices; OpenCode is a portable
+  harness whose provider and model must be pinned. Unselected harness manuals
+  never enter the skill context.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
@@ -804,7 +791,8 @@ does not pin or rename it. The supporting skills divide responsibilities:
   A fifth channel, `opencode run --model <provider/model>`, covers cheap or
   in-harness consults (including Muse Spark 1.3 via OpenCode).
 - `orchestrator` composes native specialists, Coordinator, Advisor, and staged
-  waves while leaving final decisions with the main session.
+  waves while leaving final decisions with the main session. It delegates
+  harness-specific behavior to Coordinator's on-demand references.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
   edges, reject-back gates) before it runs. Staffing, isolation,
   concurrency, refusals, and the paste-back spec live on that canvas.

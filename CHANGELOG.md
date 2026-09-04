@@ -22,6 +22,14 @@ manifests share the same release version.
 
 ### Changed
 
+- Orchestra now loads harness guidance progressively. `coordinator` 0.0.15
+  keeps only shared ownership and routing rules in its entrypoint, moves the
+  implementation contract into one shared reference, and separates Claude,
+  Codex, Grok, OpenCode, Sol/Luna, Muse, and external CLI details so a run reads
+  only its current host and selected worker. `orchestrator` 0.0.9 now composes
+  those references instead of repeating every harness manual. The former
+  cross-harness `native-workflows.md` monolith was replaced by host-specific
+  guides. orchestra 0.1.19.
 - `coordinator` 0.0.12 / `orchestrator` 0.0.6: worker volume is a named menu.
   Grok 4.6 and GPT-5.6 Sol stay the quality default. GPT-5.6 Luna at extra-high
   reasoning is the unlimited-feeling Codex/OpenAI volume lane (not the default).

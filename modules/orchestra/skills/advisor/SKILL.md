@@ -19,10 +19,10 @@ never delegated implementation. If another model should write bounded code,
 that is the `coordinator` worker pattern. Use `orchestrator` when the current
 main combines specialist agents, external workers, and an advisor.
 
-When one advisor's verdict isn't enough — you want N independent perspectives
-or an adversarial panel voting on a finding — Claude Code's native `Workflow`
-tool runs judge panels as a deterministic script (opt-in gated, Claude-only);
-see `../coordinator/references/native-workflows.md`. A single well-packaged
+When one advisor's verdict is not enough, a native workflow can run an
+adversarial panel on hosts that support it. Load only the current host guide:
+[Claude Code](../coordinator/references/hosts/claude.md) or
+[Grok Build](../coordinator/references/hosts/grok.md). A single well-packaged
 consult remains the default; panels are for the highest-stakes calls.
 
 The advisor's value is only partly the stronger model: a consult also
