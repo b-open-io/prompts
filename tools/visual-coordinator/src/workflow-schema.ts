@@ -186,6 +186,10 @@ const looksLikeForeignNativeModel = (lane: string, model: string): boolean => {
   return foreignByLane[lane]?.test(model) ?? false;
 };
 
+const rejectedDisclosures = new Set(["", "pending", "denied", "missing", "required", "unapproved"]);
+const hasApprovedDisclosure = (value: string | undefined): boolean =>
+  !rejectedDisclosures.has(value?.trim().toLowerCase() ?? "");
+
 const worktree = (id: string, owner: string) => ({
   root: "~/code/worktrees",
   repoPath: "{repo}",
@@ -312,12 +316,16 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     const lane = environment.lanes[node.lane];
     if (!lane) issues.push({ id: node.id, message: `${node.title} uses an undetected lane: ${node.lane}.` });
     else {
+      const detectedGrokShellOut = node.provider === "native"
+        && node.lane === "grok"
+        && model !== "grok-4.6"
+        && lane.models.includes(model);
       if (lane.availability !== "available") issues.push({ id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
       if (lane.inventory === "complete" && !lane.models.includes(model)) issues.push({ id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
       if (lane.efforts.length > 0 && !lane.efforts.includes(node.effort)) issues.push({ id: node.id, message: `${node.title} uses an effort unavailable on ${lane.label}: ${node.effort}.` });
       if (node.provider === "native" && environment.hostLane !== node.lane) issues.push({ id: node.id, message: `${node.title} marks ${lane.label} as native, but the current host is ${environment.hostLane ?? "unknown"}.` });
-      if (node.provider === "native" && looksLikeForeignNativeModel(node.lane, model)) issues.push({ id: node.id, message: `${node.title} pairs a native ${lane.label} lane with a foreign model: ${model}.` });
-      if (node.lane === "grok" && node.provider === "native" && model === "grok-4.5") issues.push({ id: node.id, message: `${node.title} cannot use the retired Grok 4.5 native model; choose Grok 4.6.` });
+      if (node.provider === "native" && !detectedGrokShellOut && looksLikeForeignNativeModel(node.lane, model)) issues.push({ id: node.id, message: `${node.title} pairs a native ${lane.label} lane with a foreign model: ${model}.` });
+      if (detectedGrokShellOut && !hasApprovedDisclosure(node.disclosure)) issues.push({ id: node.id, message: `${node.title} needs an approved external-provider disclosure for this Grok CLI shell-out.` });
     }
     if (node.provider === "external" && !node.disclosure?.trim()) issues.push({ id: node.id, message: `${node.title} needs an external-provider disclosure.` });
     if (node.role === "reviewer" && node.execution !== "read-only-review") issues.push({ id: node.id, message: `${node.title} must use read-only review execution.` });

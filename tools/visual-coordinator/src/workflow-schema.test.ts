@@ -135,6 +135,18 @@ describe("workflow schema", () => {
     );
   });
 
+  it("requires disclosure before converting a detected non-4.6 native Grok model", () => {
+    const environment = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.6", "ox-alpha"] } });
+    const workflow = defaultWorkflow(environment);
+    workflow.nodes[0].model = "ox-alpha";
+
+    expect(validateWorkflow(workflow, environment).map((issue) => issue.message)).toContain(
+      "Coordinate needs an approved external-provider disclosure for this Grok CLI shell-out.",
+    );
+    workflow.nodes[0].disclosure = "Approved Grok CLI conversion";
+    expect(validateWorkflow(workflow, environment)).toEqual([]);
+  });
+
   it("sanitizes node ids before using them in generated worktree metadata", () => {
     const workflow = parseSeed({
       nodes: [{ id: "../../escape", title: "Unsafe" }, { id: "../../escape", title: "Collision" }],

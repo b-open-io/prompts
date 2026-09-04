@@ -25,7 +25,10 @@ manifests share the same release version.
   the intended advisor ran.
 - `visual-coordinator` 0.1.10 is now a real React + AI Elements workflow
   canvas with registry-installed shadcn controls, a focused inspector, typed
-  handoffs, validation-gated export, and a compact mobile review mode. Its
+  handoffs, validation-gated versioned export, and a compact mobile review
+  mode. Harness-aware selectors use the detected Codex, Claude, Grok, and
+  OpenCode model inventories; OpenCode models are grouped by provider and put
+  preferred worker choices such as Muse and Luna first. Its
   canonical source and schema tests live under `tools/visual-coordinator`; a
   deterministic build produces the self-contained plugin HTML and detects
   drift without a CDN or second workflow engine.

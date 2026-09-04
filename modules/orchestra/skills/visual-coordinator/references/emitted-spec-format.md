@@ -70,19 +70,17 @@ cleanup policy (after-approved-merge)
     },
     {
       "id": "n3",
-      "kind": "gate",
-      "label": "Gate",
+      "kind": "process",
+      "label": "Review",
       "lane": "claude",
       "model": "fable",
-      "gateCmd": "bun test",
+      "actor": "reviewer",
+      "execution": "read-only-review",
       "shell": true,
       "nativeController": "grok",
       "provider": "anthropic",
       "disclosure": "approved",
       "context": "<exact shared context>",
-      "session": "<session id>",
-      "log": "<log path>",
-      "process": "<process evidence>",
       "command": "<safe stdin/prompt-file dispatch>"
     }
   ],
@@ -90,22 +88,26 @@ cleanup policy (after-approved-merge)
     { "from": "n2", "to": "n3", "label": "result", "kind": "forward" },
     { "from": "n3", "to": "n2", "label": "fail · retry", "kind": "reject" }
   ],
-  "gates": [{ "id": "n3", "command": "bun test", "correctionBudget": "workflow" }],
-  "worktreeLifecycle": ["controller-creates", "maker-edits-owned-paths", "main-integrates-and-verifies", "human-approves", "cleanup-after-merge"]
+  "gates": [],
+  "worktreeLifecycle": ["controller-creates", "maker-edits-owned-paths", "main-integrates-and-verifies", "human-approves", "cleanup-after-merge"],
+  "omissions": []
 }
 ```
 ````
 
 ## Field rules
 
-Node `kind` is `source` | `process` | `gate` | `artifact` | `memory`.
+The current canvas emits executable agent steps as `kind: "process"`.
 Node `lane` is `grok` | `claude` | `codex` | `opencode`.
 A process or gate with `lane` not equal to the host is a shell-out (`shell:
 true`). A shell-out is a subprocess of another vendor's CLI. A Grok native
-node whose model is not `grok-4.6` is converted (`converted: true`) to a
-shell-out. A model on no detected lane, or a shell-out whose CLI is not
-installed, is kept in the graph with `omit: true` and named under
-`Not emitted`. Every shell-out also carries `nativeController`, actual
+node whose detected model is not `grok-4.6` is converted (`converted: true`)
+to a shell-out. A model on no detected lane, or a shell-out whose CLI is not
+installed, is omitted from executable `nodes[]` and named under `Not emitted`
+with `kind: "node"` and `omit: true` in `omissions[]`. Every incident handoff is
+also recorded there with `kind: "edge"`, so removing an unavailable reviewer,
+prerequisite, or retry target cannot silently change the visible plan. The
+executable `nodes[]` and `edges[]` remain internally runnable. Every shell-out also carries `nativeController`, actual
 `provider`/`model`, `disclosure`, and exact `context`; pending/denied disclosure
 or a missing boundary field omits that node from executable `nodes[]` and human
 Nodes output.
@@ -119,13 +121,15 @@ must come from the detected lists for that lane.
 
 `actor` / `execution` are required to distinguish maker/reviewer agents from
 main-controller, deterministic-gate, human-approval, and main-ship actions.
-Main-only actions never shell out. `gates[]` contains every gate and its command; `gateNode` is a compatibility
-pointer to the first gate. The single workflow-level `correctionBudget` covers
+Main-only actions never shell out. `gates[]` and `gateNode` are reserved for a
+future deterministic-gate editor and remain empty/null in this release. The
+single workflow-level `correctionBudget` covers
 review and deterministic tests. Reject edges carry structured `failureOwner`,
 `failureCondition`, `correctionBudget: "workflow"`, and
 `onExhausted: "return-to-main"`; labels are explanatory only.
-Use a distinct human gate before irreversible merge/ship. Seed a gate if the
-user did not place one, and say it was defaulted.
+The controller still owns deterministic verification and the distinct human
+approval before irreversible merge/ship; the canvas does not pretend those are
+editable agent nodes yet.
 
 ## Translating the spec per harness
 
@@ -168,6 +172,12 @@ Not emitted: <what> — <why the host cannot do it>
 
 The most common case is a foreign model on a native node. Convert it to a
 shell-out node and say so, or drop it. Never leave it looking configured.
+
+The Visual Coordinator's version-2 serializer emits this shape from the live
+canvas. Nodes without an executable boundary are omitted from `nodes[]` and
+listed in `omissions[]` together with every affected edge; the human plan
+repeats those refusals under `Not emitted`. A native Grok node whose model is detected but not `grok-4.6` is
+converted to a Grok CLI shell-out and marked `converted: true`.
 
 Generated commands encode task text before passing it through stdin or
 `--prompt-file`; never interpolate backticks, `$()`, backslashes, or newlines

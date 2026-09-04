@@ -175,6 +175,66 @@ class VisualWorkflowContractTests(unittest.TestCase):
         refused = subprocess.run(["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env, capture_output=True, text=True, check=True)
         self.assertEqual(json.loads(refused.stdout)["harness"], "unknown")
 
+    def test_detector_queries_each_configured_opencode_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            config_dir = temp / ".config" / "opencode"
+            config_dir.mkdir(parents=True)
+            (config_dir / "opencode.json").write_text(
+                '{"model":"alpha/first","provider":{"alpha":{"models":{"first":{}}},"beta":{"models":{"second":{}}}}}\n',
+                encoding="utf-8",
+            )
+            calls = temp / "calls"
+            fake = temp / "opencode"
+            fake.write_text(
+                "#!/usr/bin/env bash\n"
+                "printf '%s\\n' \"$*\" >> \"$OPENCODE_CALLS\"\n"
+                "case \"$1:$2\" in\n"
+                "  models:alpha) printf '%s\\n' 'first' 'alpha/shared' 'first' ;;\n"
+                "  models:beta) printf '%s\\n' 'beta/second' 'beta/shared' ;;\n"
+                "  models:) printf '%s\\n' 'unscoped/should-not-be-used'; exit 9 ;;\n"
+                "  *) exit 9 ;;\n"
+                "esac\n",
+                encoding="utf-8",
+            )
+            fake.chmod(0o755)
+            env = dict(os.environ)
+            env.update({"HOME": str(temp), "PATH": f"{temp}:/usr/bin:/bin", "OPENCODE_CALLS": str(calls)})
+            env["BOPEN_HOST_HARNESS"] = "codex"
+            detected = json.loads(
+                subprocess.run(
+                    ["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env,
+                    capture_output=True, text=True, check=True,
+                ).stdout
+            )
+            self.assertEqual(detected["models"]["opencode"], [
+                "alpha/first", "alpha/shared", "beta/second", "beta/shared",
+            ])
+            self.assertEqual(calls.read_text(encoding="utf-8").splitlines(), ["models alpha", "models beta"])
+
+    def test_detector_handles_opencode_inventory_failure_without_logging_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            fake = temp / "opencode"
+            fake.write_text(
+                "#!/usr/bin/env bash\n"
+                "printf '%s\\n' 'token=do-not-log' >&2\n"
+                "exit 7\n",
+                encoding="utf-8",
+            )
+            fake.chmod(0o755)
+            env = dict(os.environ)
+            env.update({"HOME": str(temp), "PATH": f"{temp}:/usr/bin:/bin"})
+            env["BOPEN_HOST_HARNESS"] = "opencode"
+            result = subprocess.run(
+                ["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env,
+                capture_output=True, text=True, check=True,
+            )
+            detected = json.loads(result.stdout)
+            self.assertEqual(detected["models"]["opencode"], [])
+            self.assertNotIn("do-not-log", result.stdout)
+            self.assertNotIn("do-not-log", result.stderr)
+
     def test_clean_tree_passes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -11,8 +11,8 @@ import { WorkflowNode } from "@/components/workflow-node";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { generateNodeCommand } from "@/command";
-import { defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, toPlan, validateWorkflow, type EdgeKind, type Workflow, type WorkflowEdge, type WorkflowNode as WorkflowNodeData } from "@/workflow-schema";
+import { generateNodeCommand, toExportText } from "@/command";
+import { defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, validateWorkflow, type EdgeKind, type Workflow, type WorkflowEdge, type WorkflowNode as WorkflowNodeData } from "@/workflow-schema";
 import "./styles.css";
 
 declare global { interface Window { VC_ENV?: unknown; VC_SEED?: unknown } }
@@ -68,7 +68,7 @@ function VisualCoordinator() {
   })), [environment, workflow]);
   const commandIssues = commands.filter((command) => !command.executable).map((command) => ({ id: command.nodeId, message: command.reason ?? `${command.nodeId} is not executable.` }));
   const allIssues = [...issues, ...commandIssues];
-  const exportText = `${toPlan(workflow)}\n\n---\n\n${JSON.stringify({ ...workflow, dispatch: commands }, null, 2)}`;
+  const exportText = useMemo(() => toExportText(workflow, environment), [environment, workflow]);
 
   const onNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => setNodes((current) => applyNodeChanges(changes, current)), []);
   const onEdgesChange = useCallback((changes: EdgeChange<FlowEdge>[]) => setEdges((current) => applyEdgeChanges(changes, current)), []);

@@ -64,6 +64,11 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
   const unavailableLanes = lanes.filter((candidate) => !candidate.isHost && candidate.availability !== "available");
   const modelIsPreset = lane.models.includes(node.model);
   const modelValue = modelIsPreset ? node.model : lane.inventory === "incomplete" ? CUSTOM_MODEL : UNKNOWN_MODEL;
+  const modelGroups = Object.entries(lane.models.reduce<Record<string, string[]>>((groups, model) => {
+    const provider = lane.id === "opencode" && model.includes("/") ? model.split("/", 1)[0] : lane.label;
+    groups[provider] = [...(groups[provider] ?? []), model];
+    return groups;
+  }, {}));
   const efforts = lane.efforts.length > 0 ? lane.efforts : fallbackEfforts;
   const onLaneChange = (nextLane: string) => {
     const next = environment.lanes[nextLane] ?? missingLane(nextLane);
@@ -73,6 +78,15 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
       model: next.models[0] ?? "",
       effort: next.efforts[0] ?? "medium",
       provider: environment.hostLane === nextLane ? "native" : "external",
+    });
+  };
+  const onModelChange = (selected: string) => {
+    const model = selected === CUSTOM_MODEL ? "" : selected;
+    const requiresGrokShellOut = node.lane === "grok" && model !== "" && model !== "grok-4.6";
+    onNodeChange({
+      ...node,
+      model,
+      provider: requiresGrokShellOut || environment.hostLane !== node.lane ? "external" : "native",
     });
   };
 
@@ -93,8 +107,8 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
       {unavailableLanes.length > 0 && <SelectGroup><SelectLabel>Unavailable or not detected</SelectLabel>{unavailableLanes.map((candidate) => <LaneItem key={candidate.id} lane={candidate} />)}</SelectGroup>}
       {!environment.lanes[node.lane] && node.lane && <SelectItem value={node.lane} disabled>{node.lane} · not detected</SelectItem>}
     </SelectContent></Select></label>
-    <label>Model<Select value={modelValue} onValueChange={(model) => update("model", model === CUSTOM_MODEL ? "" : model)}><SelectTrigger><SelectValue placeholder="Choose a model" /></SelectTrigger><SelectContent>
-      {lane.models.length > 0 && <SelectGroup><SelectLabel>Detected {lane.label} models</SelectLabel>{lane.models.map((model) => <SelectItem key={model} value={model}>{model}</SelectItem>)}</SelectGroup>}
+    <label>Model<Select value={modelValue} onValueChange={onModelChange}><SelectTrigger><SelectValue placeholder="Choose a model" /></SelectTrigger><SelectContent>
+      {modelGroups.map(([provider, models]) => <SelectGroup key={provider}><SelectLabel>{lane.id === "opencode" ? `${provider} provider` : `Detected ${provider} models`}</SelectLabel>{models?.map((model) => <SelectItem key={model} value={model}>{model}</SelectItem>)}</SelectGroup>)}
       {lane.inventory === "incomplete" && <SelectGroup><SelectLabel>Fallback</SelectLabel><SelectItem value={CUSTOM_MODEL}>Custom model…</SelectItem></SelectGroup>}
       {lane.inventory === "complete" && !modelIsPreset && <SelectItem value={UNKNOWN_MODEL} disabled>Current model not detected</SelectItem>}
     </SelectContent></Select></label>

@@ -98,8 +98,8 @@ Required on the page:
   branch/base-ref/cleanup metadata. Codex and
   OpenCode callers preserve that choice by creating worktree cwd values.
   Bounded by detector caps.
-  Effort lists come from `models.<lane>_effort`. Unavailable lanes stay
-  selectable and warn.
+  Effort lists come from `models.<lane>_effort`. Unavailable lanes are shown
+  in the inspector but disabled; choose an available lane before exporting.
 - **Refusal list** — impossible settings (foreign native model, over-cap
   concurrency, schema on a shell-out, missing CLI, or incomplete external
   disclosure boundary) show on the page and

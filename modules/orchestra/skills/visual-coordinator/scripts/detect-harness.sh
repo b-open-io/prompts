@@ -79,22 +79,100 @@ PY_CODEX_MODELS
 fi
 
 # opencode enumerates per configured provider: `opencode models <provider>`.
-# Without a provider arg the output shape varies, so report the configured
-# default model from opencode.json plus a best-effort id list. Never fail.
+# Provider IDs come from the config's provider map and the configured model;
+# only use the unscoped command when no provider can be discovered.
 opencode_model=""
+opencode_providers=""
+rank_opencode_models() {
+  python3 -c '
+import re, sys
+default = sys.argv[1]
+preferred = {
+    "muse-spark-1.3-contributor-free": 1,
+    "gpt-5.6-luna": 2,
+    "grok-4.6": 3,
+    "gpt-5.6-sol": 4,
+    "gpt-5.6-terra": 5,
+    "claude-fable-5": 6,
+}
+seen = set()
+models = []
+for index, raw in enumerate(sys.stdin):
+    model = raw.strip()
+    if not re.fullmatch(r"[A-Za-z0-9._-]+/[A-Za-z0-9._:@/-]+", model) or model in seen:
+        continue
+    seen.add(model)
+    suffix = model.rsplit("/", 1)[-1]
+    rank = 0 if model == default else preferred.get(suffix, 10 if suffix.endswith("-free") else 20)
+    models.append((rank, index, model))
+for _, _, model in sorted(models)[:80]:
+    print(model)
+' "$1"
+}
+opencode_config_info() {
+  python3 - "$1" <<'PY_OPENCODE_CONFIG'
+import json, re, sys
+
+try:
+    data = json.load(open(sys.argv[1], encoding="utf-8"))
+except (OSError, TypeError, ValueError):
+    data = {}
+
+if isinstance(data, dict):
+    model = data.get("model")
+    if isinstance(model, str) and model:
+        print("model\t" + model)
+    providers = data.get("provider")
+    if isinstance(providers, dict):
+        for provider in providers:
+            if isinstance(provider, str) and re.fullmatch(r"[A-Za-z0-9._-]+", provider):
+                print("provider\t" + provider)
+PY_OPENCODE_CONFIG
+}
 for _cfg in "$PWD/opencode.json" "$HOME/.config/opencode/opencode.json"; do
   if [[ -f "$_cfg" ]]; then
-    _m=$(grep -m1 '"model"' "$_cfg" 2>/dev/null | sed 's/.*: *//; s/"//g; s/,//g; s/ //g')
-    if [[ -n "$_m" ]]; then opencode_model="$_m"; break; fi
+    while IFS=$'\t' read -r _kind _value; do
+      case "$_kind" in
+        model) [[ -n "$opencode_model" ]] && continue; opencode_model="$_value" ;;
+        provider) opencode_providers=$(printf '%s\n%s' "$opencode_providers" "$_value") ;;
+      esac
+    done < <(opencode_config_info "$_cfg")
   fi
 done
-unset _cfg _m
+if [[ "$opencode_model" == */* ]]; then
+  opencode_providers=$(printf '%s\n%s' "$opencode_providers" "${opencode_model%%/*}")
+fi
+opencode_providers=$(printf '%s\n' "$opencode_providers" \
+  | sed -n '/^[A-Za-z0-9._-]*$/p' \
+  | awk 'NF && !seen[$0]++' \
+  | head -24)
+unset _cfg _kind _value
 opencode_models=""
 if [[ "$opencode_bin" == "available" ]]; then
-  opencode_models=$(opencode models 2>/dev/null \
-    | sed -n 's/^[[:space:]]*\([A-Za-z0-9._:\/-]*\).*/\1/p' \
-    | awk 'NF && !seen[$0]++' \
-    | head -40 \
+  if [[ -n "$opencode_providers" ]]; then
+    while IFS= read -r _provider; do
+      [[ -n "$_provider" ]] || continue
+      opencode_models=$(printf '%s\n%s' "$opencode_models" \
+        "$(opencode models "$_provider" 2>/dev/null \
+          | awk -v provider="$_provider" '
+            {
+              token = $1
+              if (token ~ /^[*+-]$/) token = $2
+              sub(/^[*+-][[:space:]]*/, "", token)
+              if (token ~ /^[A-Za-z0-9._-]+\/[A-Za-z0-9._:@\/-]+$/) print token
+              else if (token ~ /^[A-Za-z0-9._:@-]+$/ && token !~ /^(Error|Unknown|Unexpected|Models|model)$/) print provider "/" token
+            }' \
+          | head -200)")
+    done <<< "$opencode_providers"
+  else
+    # No local provider IDs: retain a bounded compatibility fallback for older
+    # CLIs whose unscoped command is the only available inventory source.
+    opencode_models=$(opencode models 2>/dev/null \
+      | awk '{ token=$1; if (token ~ /^[A-Za-z0-9._-]+\/[A-Za-z0-9._:@\/-]+$/) print token }' \
+      | head -1200)
+  fi
+  opencode_models=$(printf '%s\n' "$opencode_models" \
+    | rank_opencode_models "$opencode_model" \
     | paste -sd, -)
 fi
 

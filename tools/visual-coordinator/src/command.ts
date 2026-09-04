@@ -1,4 +1,4 @@
-import type { WorkflowNode } from "./workflow-schema";
+import type { Workflow, WorkflowEnvironment, WorkflowNode } from "./workflow-schema";
 
 /**
  * Inputs that are known by the host of the visual coordinator.  The
@@ -36,6 +36,58 @@ export type NodeCommandSpec = {
   disclosure: string | null;
   executable: boolean;
   reason?: string;
+};
+
+export type EmittedNodeSpec = {
+  id: string;
+  kind: "process";
+  label: string;
+  lane: string;
+  model: string;
+  effort: WorkflowNode["effort"];
+  actor: "maker" | "reviewer" | "main-controller";
+  execution: CommandExecution;
+  agentType: string | null;
+  task: string;
+  shell: boolean;
+  command: string | null;
+  nativeController: string | null;
+  provider: string;
+  disclosure: string | null;
+  context: string;
+  converted?: boolean;
+};
+
+export type EmittedWorkflowSpec = {
+  version: 2;
+  harness: string;
+  name: string;
+  isolation: "shared-tree" | "worktree-per-agent";
+  concurrency: number;
+  cwd: string;
+  isolationPolicy: {
+    worktreeRoot: string;
+    branchTemplate: string;
+    baseRef: string;
+    owner: string;
+    cleanupPolicy: string;
+  };
+  correctionBudget: { max: 1; scope: "review+deterministic-test"; exhausted: "return-to-main" };
+  nodes: EmittedNodeSpec[];
+  edges: Array<{
+    from: string;
+    to: string;
+    label?: string;
+    kind: Workflow["edges"][number]["kind"];
+    failureOwner?: string;
+    failureCondition?: string;
+    correctionBudget?: "workflow";
+    onExhausted?: "return-to-main";
+  }>;
+  gates: Array<{ id: string; command: string; correctionBudget: "workflow" }>;
+  gateNode: string | null;
+  worktreeLifecycle: string[];
+  omissions: Array<{ id: string; kind: "node" | "edge"; label: string; reason: string; omit: true }>;
 };
 
 const NON_APPROVAL_DISCLOSURES = new Set(["pending", "denied", "missing", "required", "unapproved"]);
@@ -195,3 +247,192 @@ export const commandForNode = (node: WorkflowNode, options: CommandGenerationOpt
 
 /** Alias for callers that describe the exported object as a spec. */
 export const generateNodeSpec = generateNodeCommand;
+
+const providerForLane: Record<string, string> = {
+  claude: "anthropic",
+  codex: "openai",
+  grok: "xai",
+  opencode: "opencode",
+};
+
+const providerForNode = (node: WorkflowNode): string => {
+  if (node.lane.toLowerCase() === "opencode" && node.model.includes("/")) {
+    return node.model.split("/", 1)[0] || "opencode";
+  }
+  return providerForLane[node.lane.toLowerCase()] ?? node.provider;
+};
+
+const actorForNode = (node: WorkflowNode): EmittedNodeSpec["actor"] =>
+  node.role === "reviewer" ? "reviewer" : node.role === "coordinator" ? "main-controller" : "maker";
+
+const rosterId = (environment: WorkflowEnvironment, node: WorkflowNode): string | null => {
+  const entry = environment.roster.find((candidate) => {
+    if (!candidate || typeof candidate !== "object") return false;
+    const record = candidate as Record<string, unknown>;
+    return record.id === node.id || record.name === node.id;
+  });
+  if (!entry || typeof entry !== "object") return null;
+  const id = (entry as Record<string, unknown>).id;
+  return typeof id === "string" && id.trim() ? id : null;
+};
+
+const convertedGrokNode = (node: WorkflowNode, environment: WorkflowEnvironment): boolean =>
+  node.provider === "native"
+  && node.lane.toLowerCase() === "grok"
+  && node.model !== "grok-4.6"
+  && environment.lanes.grok?.models.includes(node.model) === true;
+
+const worktreePolicy = (workflow: Workflow) => {
+  const first = workflow.nodes.find((node) => node.worktree)?.worktree;
+  if (!first) return { worktreeRoot: "", branchTemplate: "", baseRef: "", owner: "", cleanupPolicy: "" };
+  const branchTemplate = first.branch.replace(/[^/]+$/, "{node}");
+  return {
+    worktreeRoot: first.root,
+    branchTemplate,
+    baseRef: first.baseRef,
+    owner: first.owner,
+    cleanupPolicy: first.cleanup,
+  };
+};
+
+/** Serialize the live canvas into the versioned paste-back contract. */
+export const serializeWorkflow = (
+  workflow: Workflow,
+  environment: WorkflowEnvironment,
+  options: CommandGenerationOptions = {},
+): EmittedWorkflowSpec => {
+  const dispatchOptions = {
+    ...options,
+    hostHarness: options.hostHarness ?? (environment.simulationOnly ? undefined : environment.harness),
+    nativeController: options.nativeController ?? (environment.simulationOnly ? undefined : environment.harness),
+  };
+  const emitted: EmittedNodeSpec[] = [];
+  const omissions: EmittedWorkflowSpec["omissions"] = [];
+
+  for (const original of workflow.nodes) {
+    const converted = convertedGrokNode(original, environment);
+    const node = converted ? { ...original, provider: "external" as const } : original;
+    const lane = environment.lanes[original.lane];
+    const generated = generateNodeCommand(node, dispatchOptions);
+    const unavailable = lane && lane.availability !== "available";
+    if (unavailable) {
+      omissions.push({ id: original.id, kind: "node", label: original.title, reason: `${lane.label} is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.`, omit: true });
+      continue;
+    }
+    if (!generated.executable) {
+      omissions.push({ id: original.id, kind: "node", label: original.title, reason: generated.reason ?? "The dispatch is not executable.", omit: true });
+      continue;
+    }
+    emitted.push({
+      id: original.id,
+      kind: "process",
+      label: original.title,
+      lane: original.lane,
+      model: original.model,
+      effort: original.effort,
+      actor: actorForNode(original),
+      execution: generated.execution,
+      agentType: rosterId(environment, original),
+      task: original.task,
+      shell: generated.command !== null,
+      command: generated.command,
+      nativeController: generated.nativeController,
+      provider: providerForNode(original),
+      disclosure: generated.disclosure,
+      context: generated.prompt,
+      ...(converted ? { converted: true } : {}),
+    });
+  }
+
+  const emittedIds = new Set(emitted.map((node) => node.id));
+  for (const edge of workflow.edges) {
+    if (emittedIds.has(edge.source) && emittedIds.has(edge.target)) continue;
+    const missing = [edge.source, edge.target].filter((id) => !emittedIds.has(id));
+    omissions.push({
+      id: edge.id,
+      kind: "edge",
+      label: edge.label || `${edge.source} → ${edge.target}`,
+      reason: `Handoff omitted because ${missing.join(" and ")} ${missing.length === 1 ? "is" : "are"} not executable.`,
+      omit: true,
+    });
+  }
+  const edges = workflow.edges
+    .filter((edge) => emittedIds.has(edge.source) && emittedIds.has(edge.target))
+    .map((edge) => edge.kind === "reject"
+    ? {
+        from: edge.source,
+        to: edge.target,
+        ...(edge.label ? { label: edge.label } : {}),
+        kind: edge.kind,
+        failureOwner: edge.source,
+        failureCondition: edge.label || "gate failed",
+        correctionBudget: "workflow" as const,
+        onExhausted: "return-to-main" as const,
+      }
+    : {
+        from: edge.source,
+        to: edge.target,
+        ...(edge.label ? { label: edge.label } : {}),
+        kind: edge.kind,
+      });
+  const policy = worktreePolicy(workflow);
+  const cwd = workflow.nodes.find((node) => node.worktree?.taskPath)?.worktree?.taskPath
+    ?? workflow.nodes.find((node) => node.worktree?.repoPath)?.worktree?.repoPath
+    ?? ".";
+  const isolation = workflow.nodes.length > 0 && workflow.nodes.every((node) => Boolean(node.worktree)) ? "worktree-per-agent" : "shared-tree";
+  const concurrency = Math.min(environment.caps.liveChildren ?? emitted.length, emitted.length);
+  const gates: EmittedWorkflowSpec["gates"] = [];
+
+  return {
+    version: 2,
+    harness: environment.harness,
+    name: workflow.title,
+    isolation,
+    concurrency: Math.max(0, concurrency),
+    cwd,
+    isolationPolicy: policy,
+    correctionBudget: { max: 1, scope: "review+deterministic-test", exhausted: "return-to-main" },
+    nodes: emitted,
+    edges,
+    gates,
+    gateNode: gates[0]?.id ?? null,
+    worktreeLifecycle: ["controller-creates", "maker-edits-owned-paths", "main-integrates-and-verifies", "human-approves", "cleanup-after-merge"],
+    omissions,
+  };
+};
+
+const edgePlanLabel = (kind: Workflow["edges"][number]["kind"]) =>
+  kind === "reject" ? "fail · retry" : kind === "memory" ? "carried forward" : "";
+
+/** Render the human plan and machine block from one serialized snapshot. */
+export const toExportText = (workflow: Workflow, environment: WorkflowEnvironment, options: CommandGenerationOptions = {}): string => {
+  const spec = serializeWorkflow(workflow, environment, options);
+  const lines = [
+    `# Workflow: ${spec.name}`,
+    `Host harness: ${spec.harness}`,
+    `Isolation: ${spec.isolation}`,
+    `Concurrency: ${spec.concurrency}`,
+    `cwd: ${spec.cwd}`,
+    `Isolation policy: ${spec.isolationPolicy.worktreeRoot || "none"}; branch ${spec.isolationPolicy.branchTemplate || "none"}; base ${spec.isolationPolicy.baseRef || "none"}; owner ${spec.isolationPolicy.owner || "none"}; cleanup ${spec.isolationPolicy.cleanupPolicy || "none"}`,
+    "",
+    "## Graph",
+    ...spec.edges.map((edge) => `- ${edge.from} —${edge.kind} · ${edge.label || edgePlanLabel(edge.kind)}→ ${edge.to}`),
+    "",
+    "## Nodes",
+    ...spec.nodes.flatMap((node) => [
+      `- **${node.label}** (${node.id})`,
+      `  ${node.shell ? "SHELL-OUT" : "Native"} · ${node.provider}/${node.model} · ${node.effort} effort`,
+      `  actor: ${node.actor} · execution: ${node.execution}`,
+      ...(node.shell ? [`  controller: ${node.nativeController ?? "unknown"} · disclosure: ${node.disclosure ?? "none"} · context: exact prompt`, `  command: ${node.command}`] : []),
+    ]),
+    "",
+    "## Verification gate",
+    ...(spec.gates.length ? spec.gates.map((gate) => `${gate.id}: ${gate.command}`) : ["None configured."]),
+    ...(spec.omissions.length ? ["", "Not emitted:", ...spec.omissions.map((item) => `- ${item.kind} · ${item.label} (${item.id}) — ${item.reason}`)] : []),
+    "",
+    "---",
+    "",
+    JSON.stringify(spec, null, 2),
+  ];
+  return lines.join("\n");
+};

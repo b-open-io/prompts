@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { defaultWorkflow, type WorkflowNode } from "./workflow-schema";
-import { commandForNode, generateNodeCommand, shellQuote } from "./command";
+import { defaultWorkflow, parseEnvironment, type WorkflowNode } from "./workflow-schema";
+import { commandForNode, generateNodeCommand, serializeWorkflow, shellQuote, toExportText } from "./command";
 
 const node = (id: string, changes: Partial<WorkflowNode> = {}): WorkflowNode => ({
   ...defaultWorkflow().nodes[1],
@@ -89,6 +89,53 @@ describe("visual coordinator command generation", () => {
     expect(quoted).toContain("'\"'\"'");
     const generated = commandForNode(node("writer", { provider: "external", lane: "opencode", disclosure: "Approved", task: value }), { hostHarness: "grok", nativeController: "grok" });
     expect(generated).toContain(shellQuote(generatedNodePrompt(value)));
+  });
+});
+
+describe("versioned export contract", () => {
+  const environment = parseEnvironment({
+    harness: "codex",
+    lanes: { codex: "available", grok: "available" },
+    models: { codex: ["gpt-5.6-luna"], grok: ["grok-4.6"] },
+  });
+
+  it("serializes metadata, actors, graph edges, and lifecycle from the live workflow", () => {
+    const spec = serializeWorkflow(defaultWorkflow(environment), environment);
+
+    expect(spec.version).toBe(2);
+    expect(spec.harness).toBe("codex");
+    expect(spec.isolation).toBe("worktree-per-agent");
+    expect(spec.isolationPolicy).toMatchObject({ worktreeRoot: "~/code/worktrees", baseRef: "origin/dev" });
+    expect(spec.nodes.map((node) => node.id)).toEqual(["coordinate", "build", "review"]);
+    expect(spec.nodes[0]).toMatchObject({ kind: "process", actor: "main-controller", execution: "native-agent", shell: false, command: null });
+    expect(spec.edges.find((edge) => edge.kind === "reject")).toMatchObject({ failureOwner: "review", failureCondition: "revise", correctionBudget: "workflow", onExhausted: "return-to-main" });
+    expect(spec.gates).toEqual([]);
+    expect(spec.worktreeLifecycle).toContain("human-approves");
+    expect(toExportText(defaultWorkflow(environment), environment)).toContain("\"version\": 2");
+  });
+
+  it("emits exact shell-out records and omits an unapproved boundary", () => {
+    const workflow = defaultWorkflow(environment);
+    workflow.nodes[1] = { ...workflow.nodes[1], lane: "grok", provider: "external", model: "grok-4.6", disclosure: "Approved external worker" };
+    workflow.nodes[2] = { ...workflow.nodes[2], lane: "grok", provider: "external", model: "grok-4.6", disclosure: "pending" };
+
+    const spec = serializeWorkflow(workflow, environment);
+    expect(spec.nodes.find((node) => node.id === "build")).toMatchObject({ shell: true, nativeController: "codex", provider: "xai", disclosure: "Approved external worker" });
+    expect(spec.nodes.find((node) => node.id === "build")?.command).toContain("grok");
+    expect(spec.nodes.find((node) => node.id === "review")).toBeUndefined();
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "review", kind: "node" }));
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "build-review", kind: "edge" }));
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "review-build", kind: "edge" }));
+    expect(spec.edges.every((edge) => edge.from !== "review" && edge.to !== "review")).toBe(true);
+  });
+
+  it("converts a detected native non-4.6 Grok model to an explicit shell-out", () => {
+    const grok = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.6", "ox-alpha"] } });
+    const workflow = defaultWorkflow(grok);
+    workflow.nodes[0] = { ...workflow.nodes[0], model: "ox-alpha", disclosure: "Approved Grok CLI conversion" };
+
+    const spec = serializeWorkflow(workflow, grok);
+    expect(spec.nodes.find((node) => node.id === "coordinate")).toMatchObject({ converted: true, shell: true, execution: "external-provider", model: "ox-alpha" });
   });
 });
 
