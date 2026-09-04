@@ -11,6 +11,21 @@ You manage HammerTime rules — behavioral guardrails that run as a Stop hook to
 
 **Related command:** `/hammertime:manage` — Interactive management (enable, disable, remove, view, test rules)
 
+## Resolve the state directory
+
+Before reading or writing HammerTime state, use its shared resolver:
+
+```bash
+HAMMERTIME_HOME="$(python3 "${CLAUDE_PLUGIN_ROOT}/skills/hammertime/scripts/hammertime_paths.py")" && printf '%s\n' "$HAMMERTIME_HOME"
+```
+
+Use the printed absolute directory for file-tool operations. Shell variables do
+not persist between tool calls; repeat this assignment in the same shell as any
+subsequent state operation, and stop that operation if resolution fails. The
+resolver honors `BOPEN_HAMMERTIME_HOME`, preserves an existing legacy state
+directory, and otherwise chooses the shared default. Do not hardcode a
+harness-specific location or move existing state.
+
 ## Interpret the User's Intent
 
 The user's argument (after `/hammertime`) tells you what to do:
@@ -32,12 +47,16 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/hammertime/scripts/create-timer.py" "<dura
 
 The script:
 - Computes the correct deadline using the system clock
-- Writes the rule directly to `~/.claude/hammertime/rules.json`
+- Writes the rule directly to `$HAMMERTIME_HOME/rules.json`
 - Prints JSON with the timer details: `{"name": "...", "duration": "...", "deadline": "...", "rule": "..."}`
 
 If the user provides no description after the duration, omit the description argument (the script defaults to a generic focus message).
 
-After the script runs, check if HammerTime is paused: `test -f ~/.claude/hammertime/disabled && echo "PAUSED"`.
+After the script runs, check if HammerTime is paused:
+
+```bash
+HAMMERTIME_HOME="$(python3 "${CLAUDE_PLUGIN_ROOT}/skills/hammertime/scripts/hammertime_paths.py")" && test -f "$HAMMERTIME_HOME/disabled" && echo "PAUSED"
+```
 
 If **not** paused, show:
 1. "Timer set for **{duration}** — expires at **{deadline}**"
@@ -65,7 +84,7 @@ Example: `/hammertime always fix all pre-existing issues`
 Example: `/hammertime when you find lint errors, invoke Skill(simplify) to clean them up`
 Example: `/hammertime never say everything looks good when there are warnings`
 
-Read `~/.claude/hammertime/rules.json` first (may not exist).
+Read `$HAMMERTIME_HOME/rules.json` first (may not exist).
 
 #### Step 1: Mine real examples from production logs
 
@@ -118,7 +137,7 @@ For builtin rules, add an override entry with `enabled: false` to disable.
 
 ## After Any Change
 
-1. Write the updated rules array to `~/.claude/hammertime/rules.json` (create `~/.claude/hammertime/` directory if needed)
+1. Write the updated rules array to `$HAMMERTIME_HOME/rules.json` (create the resolved directory if needed; preserve unrelated state files)
 2. Show the **complete rules table** — all rules, not just the one that changed. Use sequential numbering starting from 1 (matching array order). Include the builtin `project-owner` rule as #0.
 
    | # | Rule | Status | Scope | Threshold | Full Turn |
@@ -127,5 +146,5 @@ For builtin rules, add an override entry with `enabled: false` to disable.
    | 1 | `rule-name` | enabled/disabled | prefix or global | N | yes/no |
    | ... | ... | ... | ... | ... | ... |
 
-3. Check if HammerTime is paused: `test -f ~/.claude/hammertime/disabled && echo "PAUSED"`. If paused, warn: **"Note: HammerTime is currently paused. This rule has been saved but won't fire until you run `/hammertime:start`."**
-4. Remind: **"Restart Claude Code for changes to take effect."**
+3. Resolve the state directory again and check `$HAMMERTIME_HOME/disabled` using the pause-check command above. If paused, warn: **"Note: HammerTime is currently paused. This rule has been saved but won't fire until you run `/hammertime:start`."**
+4. Confirm that rule changes are read on the next HammerTime evaluation. If paused, they remain inactive until HammerTime resumes.

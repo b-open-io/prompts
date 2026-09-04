@@ -8,6 +8,20 @@ user-invocable: true
 
 Guide the user through managing their HammerTime rules interactively.
 
+## Resolve the state directory
+
+Run the canonical resolver before reading or writing state:
+
+```bash
+HAMMERTIME_HOME="$(python3 "${CLAUDE_PLUGIN_ROOT}/skills/hammertime/scripts/hammertime_paths.py")" && printf '%s\n' "$HAMMERTIME_HOME"
+```
+
+Use the printed absolute directory for file operations and substitute it for
+`<resolved-home>` in the delegated prompts below. Repeat the resolver assignment
+in the same shell as any later state operation; shell variables do not persist
+between tool calls. Stop on resolution failure. Preserve the resolver's choice
+of override, existing legacy state, or shared default; do not move state.
+
 ## Step 1: Load current state via subagent
 
 Delegate to a subagent to read and format the current rules. Do not read rule files in the main context.
@@ -18,7 +32,7 @@ Agent(prompt: "Read HammerTime rules and return a Markdown table.
 BUILTIN RULES (always present):
 1. project-owner (builtin, enabled) — Fix all errors instead of dismissing them as pre-existing. (evaluate_full_turn: true)
 
-Read ~/.claude/hammertime/rules.json (may not exist — that means no user rules).
+Read <resolved-home>/rules.json (may not exist — that means no user rules).
 Use columns: #, Rule, Status, Scope, Summary. Show cwd_prefix in Scope, joining
 arrays with commas; show 'global' when cwd_prefix is absent.
 For timer rules (rules with a 'deadline' field), also show the deadline and remaining time (or 'EXPIRED').
@@ -71,7 +85,7 @@ Ask which rule (by number or name). Cannot remove builtin rules — tell the use
 Delegate to a subagent to read and format the full rule config:
 
 ```
-Agent(prompt: "Read ~/.claude/hammertime/rules.json and return the full config for rule '<name>'.
+Agent(prompt: "Read <resolved-home>/rules.json and return the full config for rule '<name>'.
 Show: name, rule text, enabled, cwd_prefix (or global when absent), keywords (numbered), intent_patterns (with explanation of what each catches), dismissal_verbs, qualifiers, confidence_threshold, evaluate_full_turn, skill.
 If it's the builtin 'project-owner' rule, use the hardcoded values: 15 keywords, 8 intent patterns, co-occurrence configured, threshold 5, evaluate_full_turn true.",
 subagent_type: "general-purpose")
@@ -92,15 +106,17 @@ Say goodbye and exit.
 
 ## Step 4: After any change
 
-1. Write updated rules to `~/.claude/hammertime/rules.json` (create `~/.claude/hammertime/` if needed)
+1. Write updated rules to `<resolved-home>/rules.json` (create `<resolved-home>/` if needed)
 2. Show the change
-3. Check if HammerTime is paused: `test -f ~/.claude/hammertime/disabled && echo "PAUSED"`. If paused, warn: **"Note: HammerTime is currently paused. This change has been saved but won't take effect until you run `/hammertime:start`."**
+3. Resolve the state directory again and check for `<resolved-home>/disabled`. If paused, warn: **"Note: HammerTime is currently paused. This change has been saved but won't take effect until you run `/hammertime:start`."**
 4. Ask: "Want to do anything else?" — if yes, return to Step 2
-5. Remind: **"Restart Claude Code for changes to take effect."**
+5. Confirm that rule changes are read on the next HammerTime evaluation; paused rules remain inactive until resumed.
 
 ## Important
 
 - Always read the current rules file before making changes (it may have been edited externally)
 - Never modify builtin rules in the hook source — only add user overrides
 - When showing rules, clearly distinguish builtin from user rules
-- Create `~/.claude/hammertime/` directory if it doesn't exist when writing
+- Create `<resolved-home>/` directory if it doesn't exist when writing
+
+- If a host guard blocks a state operation, report the block rather than bypassing it or claiming success.

@@ -1,6 +1,6 @@
 {
   "name": "review",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Code review, security auditing, and exploratory testing with visual review artifacts",
   "author": {
     "name": "b-open-io",

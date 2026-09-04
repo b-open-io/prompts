@@ -15,11 +15,10 @@ This repository provides:
 - **Specialized AI agents** for design, security, documentation, architecture,
   testing, payments, infrastructure, and more
 - **Cross-agent skills** shared by Claude Code, Codex, Grok Build, and OpenCode
-  (`SKILL.md` is drop-in on OpenCode — it also reads `.claude/skills/`)
+  with source-preserving native OpenCode skill discovery
 - **Runtime-specific hooks** that preserve the same safety and workflow intent
   on Claude Code (`claude-hooks.json`), Codex (`codex-hooks.json`), and Grok
-  Build (`hooks/hooks.json`). OpenCode has no hooks file — the equivalent is a
-  plugin event handler (`.opencode/plugin(s)/*.ts`)
+  Build (`hooks/hooks.json`), plus a native OpenCode plugin bridge
 - **Agent Master setup UI** for auditing the local harness, viewing purchased
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
@@ -27,12 +26,26 @@ This repository provides:
   cheaper implementation workers in visible native controllers, support a
   read-only Fable advisor, and let humans edit the plan on an AI Elements
   workflow canvas before execution
-- **Claude Code slash commands** for common workflows
+- **Slash commands** for common workflows, including native OpenCode command registration
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
 historical baseline.
 
 ## Installation
+
+OpenCode now has a [native suite installer](opencode/README.md). From a persistent
+checkout, run `bun opencode/install.ts --all --global`, or select modules with
+`--plugin core --plugin orchestra`. It registers the same agents, commands,
+skills and supported MCP definitions, plus core's hook bridge. Restart OpenCode
+and inspect `opencode debug config`, `opencode debug skill`, and
+`opencode debug agent bopen-core-front-desk`. The tested source inventory exposes
+30 agents, 14 commands and 85 discovered skills across the suite.
+
+HammerTime uses bounded follow-up turns in persistent OpenCode sessions. Guard
+requests for additional confirmation block with an explanation; native host
+permissions remain in force. See the adapter guide for update/removal steps,
+headless behavior, and unsupported host-specific capabilities.
+
 
 `core` holds the shared foundation: session context, setup and hook
 management, completion auditing, session recall, routing, identity work, and
@@ -523,6 +536,20 @@ bun skills/setup/scripts/server.ts --runtime <claude|codex|grok|opencode|hermes|
 **Moved to Plugin:** Statusline is now distributed as the `claude-peacock` plugin.
 
 ### Installation
+
+OpenCode now has a [native suite installer](opencode/README.md). From a persistent
+checkout, run `bun opencode/install.ts --all --global`, or select modules with
+`--plugin core --plugin orchestra`. It registers the same agents, commands,
+skills and supported MCP definitions, plus core's hook bridge. Restart OpenCode
+and inspect `opencode debug config`, `opencode debug skill`, and
+`opencode debug agent bopen-core-front-desk`. The tested source inventory exposes
+30 agents, 14 commands and 85 discovered skills across the suite.
+
+HammerTime uses bounded follow-up turns in persistent OpenCode sessions. Guard
+requests for additional confirmation block with an explanation; native host
+permissions remain in force. See the adapter guide for update/removal steps,
+headless behavior, and unsupported host-specific capabilities.
+
 
 ```bash
 /plugin marketplace add b-open-io/claude-plugins

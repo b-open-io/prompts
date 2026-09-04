@@ -18,8 +18,9 @@ function installedVersion(
 
 	const installed = state.plugins.find((candidate) => candidate.name === plugin.name)
 	if (!installed) return null
+	if (runtime === "opencode") return null // Claude/Codex caches are not native installation evidence.
 	if (runtime === "codex") return installed.installedCodex
-	if (runtime === "claude" || runtime === "opencode" || runtime === "grok") {
+	if (runtime === "claude" || runtime === "grok") {
 		return installed.installedClaude
 	}
 	return installed.installedCodex ?? installed.installedClaude
@@ -31,6 +32,11 @@ function installedVersion(
 export function installCommandForRuntime(plugin: PackPlugin, runtime: Runtime): string {
 	if (plugin.marketplace === "portable-skill") {
 		return plugin.install.replace(/\s+\(source pinned in the pack setup manifest\)$/, "")
+	}
+	if (runtime === "opencode") {
+		// Pack execution is only supported for Claude, Codex and Grok; never
+		// leak its Claude install hint into an OpenCode copy button.
+		return ""
 	}
 	if (runtime === "codex") {
 		return `codex plugin marketplace upgrade\ncodex plugin add ${plugin.name}@${plugin.marketplace}`

@@ -6,13 +6,13 @@ user-invocable: true
 
 # HammerTime Start
 
-Re-enable the HammerTime stop hook by removing the sentinel file. Use Python to bypass the damage-control hook's `noDeletePaths` rule on `~/.claude/`:
+Re-enable HammerTime by resolving its shared state directory and removing only the pause sentinel:
 
 ```bash
-python3 -c "import os; p=os.path.expanduser('~/.claude/hammertime/disabled'); os.path.exists(p) and os.remove(p)"
+HAMMERTIME_HOME="$(python3 "${CLAUDE_PLUGIN_ROOT}/skills/hammertime/scripts/hammertime_paths.py")" && rm -f -- "$HAMMERTIME_HOME/disabled" && test ! -e "$HAMMERTIME_HOME/disabled"
 ```
 
-Then confirm to the user:
+If the command fails or a host guard blocks it, report the failure and do not bypass the guard or claim success. After a successful check, confirm to the user:
 
 ```
 HammerTime active. All enabled rules are now enforced.
