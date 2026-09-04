@@ -23,8 +23,9 @@ This repository provides:
 - **Agent Master setup UI** for auditing the local harness, viewing purchased
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
-- **Orchestration patterns** for a strong main model, native specialists,
-  Grok implementation workers, and a read-only Fable advisor
+- **Orchestration patterns** that keep a strong main model on judgment, wrap
+  cheaper implementation workers in visible native controllers, and support a
+  read-only Fable advisor
 - **Claude Code slash commands** for common workflows
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
@@ -780,10 +781,10 @@ does not pin or rename it. The supporting skills divide responsibilities:
 - `coordinator` writes precise worker specs, assigns non-overlapping files,
   dispatches implementation, and requires acceptance reports. It loads one
   shared dispatch contract, the current host guide, and only the selected
-  worker guide. Grok and GPT-5.6 Sol are quality lanes; Luna extra-high and
-  Muse Spark 1.3 are explicit cheap-volume choices; OpenCode is a portable
-  harness whose provider and model must be pinned. Unselected harness manuals
-  never enter the skill context.
+  worker guide. Bounded implementation defaults to the cheapest authorized,
+  capable lane; native specialists stay focused on evidence, review, testing,
+  and domain judgment. OpenCode is a portable harness whose provider and model
+  must be pinned. Unselected harness manuals never enter the skill context.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends

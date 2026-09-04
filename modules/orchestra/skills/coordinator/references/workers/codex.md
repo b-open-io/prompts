@@ -2,14 +2,15 @@
 
 Read this only when a separate Codex CLI process is the selected worker.
 Normally this is an external lane from Claude, Grok, or OpenCode. From a Codex
-main, prefer native agents unless isolation or the user explicitly requires a
-separate process.
+main, use native agents for specialist evidence and review; select a separate
+Codex process when it is the chosen cheaper or isolated implementation lane.
 
 ## Choose the model
 
 - GPT-5.6 Sol is the quality Codex worker.
 - GPT-5.6 Luna at extra-high reasoning is the cheap, unlimited-feeling volume
-  lane. It is not the default and must not silently replace Sol or Grok.
+  lane. Prefer it for routine implementation when it meets the acceptance
+  criteria, but never replace a lane the user explicitly selected.
 
 Both send the prompt, spec, and selected repository content to OpenAI. Apply
 the Coordinator disclosure rule before first use.
