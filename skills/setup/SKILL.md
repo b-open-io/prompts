@@ -1,6 +1,6 @@
 ---
 name: setup
-version: 1.0.4
+version: 1.0.5
 description: >-
   Audit which bOpen plugins, CLIs, env keys, third-party skills, agents, and hooks are installed
   across the harness, then emit a runtime-tailored instruction plan; it installs nothing itself.
@@ -106,13 +106,26 @@ detection still works. Never fabricate a version number to fill the gap.
 |---|---|---|---|
 | Claude Code | `claude plugin install x@marketplace` | bundled with plugin | `CLAUDECODE` env |
 | Codex CLI | `codex plugin add` + marketplace | `codex-agent-setup` scripts | Codex session env/paths |
-| OpenCode | reads `.claude/skills/` + Claude Code agent `.md` natively | native parse of CC agent files | `$OPENCODE` / `$AGENT` env, `opencode.json` |
+| OpenCode | native bOpen adapter from a persistent prompts checkout | namespaced agents and commands, native skill paths, supported MCP and core hook bridge | `$OPENCODE` / `$AGENT` env, `opencode.json` |
 | Grok Build | zero-config Claude Code compat (marketplaces, plugins, skills, agents, hooks, CLAUDE.md) | native (CC compat) | `~/.grok/config.toml` + `grok` on PATH |
 | Hermes | SKILL.md supported but installs to `~/.hermes/skills/`, never the repo tree | not deliverable — no CC agent-file parsing | `hermes` on PATH + `~/.hermes/` present |
 | Pi / unknown | no skill-discovery mechanism | n/a | none — generic fallback |
 
-For OpenCode and Grok Build the plan mostly verifies discovery rather than
-installing anything new (Grok: `grok inspect` shows exactly what it found).
+OpenCode uses `bun <prompts-checkout>/opencode/install.ts --plugin NAME --global`.
+The generated plan keeps the source at `${XDG_DATA_HOME:-$HOME/.local/share}/bopen/opencode-source`,
+clones it once, and updates with a clean working tree and fast-forward merge.
+Repeat `--plugin` for selected plugins; `--all` is only for an explicit full-suite request.
+For project scope, omit `--global` in the target project or pass `--project PATH`.
+Use the same scope and selection with `--uninstall` to remove only managed entries.
+An existing Claude installation does not prove anything is installed in OpenCode.
+Verify the native shim and inspect `opencode debug config`, `opencode debug skill`,
+and `opencode debug agent <exact-name>` without making model requests.
+Namespaced agents and commands use `bopen-<plugin>-<name>`.
+The adapter supports the core source and modules shipped in the prompts repository;
+third-party catalog entries need their own supported installation path. Report
+unsupported components from the adapter's capability report instead of claiming parity.
+Restart OpenCode after changing the installation. Grok Build continues to verify
+Claude-compatible discovery with `grok inspect`.
 Hermes gets its own dialect since it can't consume agent `.md` files and
 caches skill content as injected user messages — the plan calls that out
 rather than assuming parity. Unrecognized runtimes get the generic tier:

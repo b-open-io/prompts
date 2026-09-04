@@ -91,3 +91,10 @@ describe("runtime install commands", () => {
 		expect(installCommandForRuntime(portable, "codex")).toBe("npx skills add react-doctor")
 	})
 })
+
+
+test("OpenCode does not inherit Claude plugin status or install commands", () => {
+  const dependencies = diffPackDependencies(pack, state, "opencode")
+  expect(dependencies.find((item) => item.name === "core")?.installed).toBe(false)
+  expect(dependencies.find((item) => item.name === "core")?.installCommand).toBe("")
+})

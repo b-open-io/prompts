@@ -1,0 +1,24 @@
+name: Native OpenCode
+on:
+  pull_request:
+  push:
+    branches: [dev, master]
+permissions:
+  contents: read
+jobs:
+  opencode-native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Adapter and setup regression tests
+        run: bun test opencode skills/setup/scripts/emitter.test.ts skills/setup/playground/src/lib/pack-dependencies.test.ts
+      - name: Install tested native runtime
+        run: npm install --global opencode-ai@1.18.20
+      - name: Verify native discovery without model requests
+        run: bash scripts/test-opencode-install.sh

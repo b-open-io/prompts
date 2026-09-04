@@ -12,6 +12,61 @@ import { validatePackRuntime } from "./pack";
 import { RUNTIMES, type Runtime } from "./runtimes";
 
 const MARKETPLACE = "b-open-io";
+const OPENCODE_SOURCE = '${XDG_DATA_HOME:-$HOME/.local/share}/bopen/opencode-source';
+const OPENCODE_CONFIG = '${XDG_CONFIG_HOME:-$HOME/.config}/opencode';
+
+function openCodeSource(): string {
+  return `BOPEN_SOURCE="${OPENCODE_SOURCE}"`;
+}
+
+function openCodeBootstrap(): string {
+  return [
+    "set -e",
+    openCodeSource(),
+    'if [ ! -e "$BOPEN_SOURCE" ]; then',
+    '  mkdir -p "$(dirname "$BOPEN_SOURCE")"',
+    '  git clone https://github.com/b-open-io/prompts.git "$BOPEN_SOURCE"',
+    "else",
+    '  test -d "$BOPEN_SOURCE/.git"',
+    '  test "$(git -C "$BOPEN_SOURCE" remote get-url origin)" = "https://github.com/b-open-io/prompts.git"',
+    '  test -z "$(git -C "$BOPEN_SOURCE" status --porcelain)"',
+    '  git -C "$BOPEN_SOURCE" fetch origin',
+    '  git -C "$BOPEN_SOURCE" merge --ff-only origin/HEAD',
+    "fi",
+    'test -f "$BOPEN_SOURCE/opencode/install.ts"',
+  ].join("\n");
+}
+
+function openCodeSelection(plugin: PluginState): boolean {
+  return plugin.marketplace === MARKETPLACE && /^[a-z0-9][a-z0-9-]*$/.test(plugin.name);
+}
+
+
+function openCodeVerify(pluginName: string, present: boolean): string {
+  const suffix = pluginName === "core" ? "" : `/modules/${pluginName}`;
+  // The shim metadata is the installer's sole registry. Verify selection as
+  // well as shim existence; debug inspection then checks runtime discovery.
+  const script = [
+    'const fs = require("node:fs");',
+    'const [shim, root, expected] = process.argv.slice(1);',
+    'let roots = [];',
+    'if (fs.existsSync(shim)) {',
+    'const line = fs.readFileSync(shim, "utf8").split("\\n")[0];',
+    'if (!line.startsWith("// bopen-managed: ")) process.exit(1);',
+    'const state = JSON.parse(line.slice("// bopen-managed: ".length));',
+    'if (state.schema !== 1 || !Array.isArray(state.roots)) process.exit(1);',
+    'roots = state.roots;',
+    '}',
+    'if (roots.includes(root) !== (expected === "yes")) process.exit(1);',
+  ].join(" ");
+  return [
+    "set -e",
+    openCodeSource(),
+    `bun -e '${script}' "${OPENCODE_CONFIG}/plugins/bopen.ts" "$BOPEN_SOURCE${suffix}" ${present ? "yes" : "no"}`,
+    "opencode debug config",
+    "opencode debug skill",
+  ].join("\n");
+}
 
 function findPlugin(state: HarnessState, name: string): PluginState | undefined {
   return state.plugins.find((plugin) => plugin.name === name);
@@ -75,15 +130,20 @@ function pluginCacheRoot(runtime: Runtime, plugin: PluginState): string | null {
   if (runtime === "codex") {
     return `$HOME/.codex/plugins/cache/${plugin.marketplace}/${plugin.name}`;
   }
-  if (runtime === "claude" || runtime === "opencode" || runtime === "grok") {
+  if (runtime === "claude" || runtime === "grok") {
     return `$HOME/.claude/plugins/cache/${plugin.marketplace}/${plugin.name}`;
   }
   return null;
 }
 
 function inPluginRoot(runtime: Runtime, plugin: PluginState, command: string): string | null {
-  const cacheRoot = pluginCacheRoot(runtime, plugin);
   const portable = portableCommand(command);
+  if (runtime === "opencode") {
+    if (!openCodeSelection(plugin) || !portable) return null;
+    const suffix = plugin.name === "core" ? "" : `/modules/${plugin.name}`;
+    return [openCodeSource(), `cd "$BOPEN_SOURCE${suffix}"`, portable].join("\n");
+  }
+  const cacheRoot = pluginCacheRoot(runtime, plugin);
   if (!cacheRoot || !portable) return null;
   return [
     `CACHE_ROOT="${cacheRoot}"`,
@@ -95,7 +155,10 @@ function inPluginRoot(runtime: Runtime, plugin: PluginState, command: string): s
 }
 
 function pluginVerify(runtime: Runtime, pluginName: string): string {
-  if (runtime === "claude" || runtime === "opencode") {
+  if (runtime === "opencode") {
+    return openCodeVerify(pluginName, true);
+  }
+  if (runtime === "claude") {
     return `claude plugin list | grep -F "${pluginName}"`;
   }
   if (runtime === "codex") {
@@ -118,7 +181,21 @@ function buildPluginsSection(
     const plugin = findPlugin(state, selection.name);
     if (!plugin) continue;
 
-    if (runtime === "claude" || runtime === "opencode") {
+    if (runtime === "opencode") {
+      if (!openCodeSelection(plugin)) {
+        blocks.push(`### ${plugin.name}: native OpenCode delivery unavailable\n\nThis selection has no supported bOpen source adapter. Report it as not applicable; do not install a Claude plugin as a substitute.`);
+        continue;
+      }
+      blocks.push(action(
+        `${plugin.name}: install or update the native OpenCode plugin`,
+        `${openCodeBootstrap()}\nbun "$BOPEN_SOURCE/opencode/install.ts" --plugin ${plugin.name} --global`,
+        pluginVerify(runtime, plugin.name),
+        `The adapter installs only the selected source plugin. If ${plugin.name} is not present in this repository, stop this item as unsupported. Inspect the emitted capability report and confirm its namespaced agents, commands, skills and supported MCP entries in the debug output; a Claude cache is not installation evidence. Restart OpenCode after installation.`,
+      ));
+      continue;
+    }
+
+    if (runtime === "claude") {
       const command = !plugin.marketplace
         ? null
         : plugin.installedClaude === null
@@ -132,9 +209,7 @@ function buildPluginsSection(
             `${plugin.name}: install or update the plugin`,
             command,
             pluginVerify(runtime, plugin.name),
-            runtime === "opencode"
-              ? "OpenCode consumes the Claude Code-compatible plugin installation."
-              : undefined,
+            undefined,
           ),
         );
       }
@@ -224,6 +299,19 @@ function buildRemovalsSection(
     if (!selection.uninstallPlugin) continue;
     const plugin = findPlugin(state, selection.name);
     if (!plugin) continue;
+    if (runtime === "opencode") {
+      if (!openCodeSelection(plugin)) {
+        blocks.push(`### ${plugin.name}: removal unavailable\n\nThis plugin has no supported bOpen OpenCode adapter. Inspect its actual installation mechanism before removing it.`);
+        continue;
+      }
+      blocks.push(action(
+        `${plugin.name}: remove the native OpenCode plugin`,
+        `set -e\n${openCodeSource()}\ntest -f "$BOPEN_SOURCE/opencode/install.ts"\nbun "$BOPEN_SOURCE/opencode/install.ts" --plugin ${plugin.name} --global --uninstall`,
+        openCodeVerify(plugin.name, false),
+        `Confirm the adapter's managed ${plugin.name} source and its namespaced capabilities are absent. Other selected plugins and user configuration remain installed. Restart OpenCode after removal.`,
+      ));
+      continue;
+    }
     if (runtime === "codex") {
       if (plugin.installedCodex === null) continue;
       blocks.push(
@@ -235,7 +323,7 @@ function buildRemovalsSection(
       );
       continue;
     }
-    if (runtime === "claude" || runtime === "opencode" || runtime === "grok") {
+    if (runtime === "claude" || runtime === "grok") {
       if (plugin.installedClaude === null) continue;
       if (!plugin.marketplace) {
         blocks.push(
@@ -311,10 +399,14 @@ function buildAgentsSection(
 ): string[] {
   const blocks: string[] = [];
   for (const { plugin, check } of selectedChecks(state, selections, "codex-agents")) {
+    if (runtime === "opencode") {
+      blocks.push(`### ${plugin.name}: native agent delivery\n\nAgents require this plugin's native OpenCode adapter installation above; if it was not selected, inspect the existing installation first. Use \`opencode debug config\` to list its bopen-${plugin.name}- agent names, then run \`opencode debug agent <exact-name>\` for the agents you need. Missing agents are a failed delivery check, not a successful Claude cache discovery.`);
+      continue;
+    }
     if (runtime !== "codex") {
       blocks.push(
         `### ${plugin.name}: agent delivery\n\nNo command is required: ${
-          runtime === "claude" || runtime === "opencode" || runtime === "grok"
+          runtime === "claude" || runtime === "grok"
             ? "agents are bundled with the compatible plugin installation."
             : "agent files are not deliverable on this runtime. Record this item as not applicable."
         }`,
@@ -392,6 +484,31 @@ function buildHooksSection(state: HarnessState, selections: PlanSelections): str
     if (!plugin) continue;
     const desiredEntries = Object.entries(selection.hooks ?? {});
     if (desiredEntries.length === 0) continue;
+
+    if (selections.runtime === "opencode") {
+      const encoded = Buffer.from(JSON.stringify(Object.fromEntries(desiredEntries))).toString("base64");
+      blocks.push(action(
+        `${plugin.name}: apply the selected OpenCode hook states`,
+        [
+          "python3 - <<'PY'",
+          "import base64, json",
+          "from pathlib import Path",
+          'path = Path(".opencode/bopen-hooks.json")',
+          'if path.is_symlink(): raise ValueError("Refusing a symlinked hook config")',
+          'current = json.loads(path.read_text()) if path.exists() else {}',
+          'if not isinstance(current, dict): raise ValueError("Hook config must be an object")',
+          'hooks = current.setdefault("hooks", {})',
+          'if not isinstance(hooks, dict): raise ValueError("hooks must be an object")',
+          `hooks.update(json.loads(base64.b64decode("${encoded}")))`,
+          'path.parent.mkdir(parents=True, exist_ok=True)',
+          'path.write_text(json.dumps(current, indent=2) + "\\n")',
+          "PY",
+        ].join("\n"),
+        'python3 -m json.tool .opencode/bopen-hooks.json >/dev/null',
+        "Run in the target OpenCode project. Hook configuration is ask-tier: confirm with the user before writing this file. Existing unrelated keys are preserved.",
+      ));
+      continue;
+    }
 
     const currentByName = new Map(plugin.hooks.map((hook) => [hook.name, hook.enabled]));
     if (!desiredEntries.some(([name, desired]) => currentByName.get(name) !== desired)) continue;
@@ -478,7 +595,7 @@ function finalRuntimeVerification(runtime: Runtime): string {
   if (runtime === "claude") return "claude plugin list";
   if (runtime === "codex") return "codex plugin list";
   if (runtime === "grok") return "grok inspect";
-  if (runtime === "opencode") return "opencode --version\nclaude plugin list";
+  if (runtime === "opencode") return "opencode --version\nopencode debug config\nopencode debug skill";
   if (runtime === "hermes") return "hermes --version\nnpx skills list";
   return "npx skills list";
 }

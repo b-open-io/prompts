@@ -79,13 +79,14 @@ function PluginInstallSection({
 	onToggleUninstallPlugin: () => void
 }) {
 	const installedForRuntime =
-		selectedRuntime === "codex" ? plugin.installedCodex !== null : plugin.installedClaude !== null
-	const uninstallCommand = installedForRuntime
+		selectedRuntime === "opencode" ? false : selectedRuntime === "codex" ? plugin.installedCodex !== null : plugin.installedClaude !== null
+	const uninstallCommand = installedForRuntime || selectedRuntime === "opencode"
 		? pluginUninstallCommand(plugin.name, selectedRuntime, plugin.marketplace)
 		: null
-	const rows: Array<["claude" | "codex", string | null]> = [
+	const rows: Array<["claude" | "codex" | "opencode", string | null]> = [
 		["claude", plugin.installedClaude],
 		["codex", plugin.installedCodex],
+		...(selectedRuntime === "opencode" ? [["opencode", null] as ["opencode", null]] : []),
 	]
 
 	return (
@@ -104,7 +105,9 @@ function PluginInstallSection({
 					const applicable = runtime === selectedRuntime
 					const checked = installed || (applicable && selection.installPlugin)
 					const inert = installed || !applicable
-					const detail = installed
+					const detail = runtime === "opencode"
+						? "native installation not audited — select to install or update and verify"
+						: installed
 						? `v${version}`
 						: `not installed${applicable ? " — check the box to include install in the plan" : " — not the active plan runtime"}`
 					const cmd = !installed

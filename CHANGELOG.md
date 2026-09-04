@@ -6,6 +6,30 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.161] - 2026-09-04
+
+### Added
+
+- Native OpenCode suite adapter over canonical agent, command and skill sources,
+  with compatible MCP registration and a reviewed core hook bridge. Scoped or
+  whole-suite installation owns one entrypoint, preserves user configuration,
+  and supports additive updates and removal.
+- Bounded HammerTime follow-up turns with cancellation/error checks, per-session
+  caps and private transcript normalization. Native guard checks preserve source
+  restrictions; unsupported confirmation requests block instead of granting access.
+- Explicit per-module OpenCode compatibility declarations, real CLI discovery
+  verification and regression coverage for installer ownership, credentials,
+  source containment, permissions and continuation lifecycle.
+
+### Fixed
+
+- Setup no longer treats Claude plugin installation as OpenCode support. Native
+  install/update/removal plans and hook configuration use OpenCode's actual paths.
+- HammerTime commands now share the same resolved state directory on every host;
+  pause/resume no longer assumes a legacy Claude directory or suggests bypassing guards.
+  Host apps, arbitrary hook registries and headless Stop parity remain documented
+  limitations rather than advertised capabilities.
+
 ## [1.1.160] - 2026-09-04
 
 ### Changed
