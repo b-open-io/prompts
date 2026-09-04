@@ -1,11 +1,11 @@
 ---
 name: coordinator
-version: 0.0.12
+version: 0.0.13
 description: >-
-  Route bounded code-writing volume from a capable Claude Code, Codex, or Grok
-  Build main session to cheaper or specialized executors — native plugin-roster
+  Route bounded code-writing volume from a capable Claude Code, Codex, Grok
+  Build, or OpenCode main session to cheaper or specialized executors — native plugin-roster
   agents, Grok subagents, Codex / GPT-5.6 Sol workers or reviewers, GPT-5.6 Luna
-  extra-high volume, or Muse Spark 1.3 — while planning, design intent, review,
+  extra-high volume, Muse Spark 1.3, or `opencode run` workers — while planning, design intent, review,
   verification, and git stay in the main seat. Use for "dispatch to workers",
   "plan big execute small", "race worker lanes", "model arbitrage",
   "spec and dispatch", "use Sol as a worker", "use Sol as a reviewer",
@@ -18,7 +18,7 @@ description: >-
 
 Capable main-model tokens are best spent on judgment while cheaper or more
 specialized executors handle bounded code volume. This pattern works from a
-Claude Code, Codex, or Grok Build main session. Never infer or pin the main
+Claude Code, Codex, Grok Build, or OpenCode main session. Never infer or pin the main
 model: "Here" means the current main session selected by the user.
 
 **You ARE the main seat.** The main owns the plan, interfaces, review,
@@ -53,7 +53,8 @@ in parallel.
 | **grok** (Grok Build CLI, headless) | Default external quality volume when the host is Claude or Codex. Pin `BOPEN_WORKER_MODEL` |
 | **GPT-5.6 Luna @ extra-high** | Unlimited-feeling volume on leftover Codex/OpenAI quota (Replit Free Mode is the same model). `codex exec -m gpt-5.6-luna -c model_reasoning_effort="xhigh"`. Extra-high — community also uses `max` — is what makes Luna a worker. Luna at none/low/medium is the wrong recipe. **Not the default.** Do not pick Luna silently when Grok or Sol is available unless the user asked for quota or unlimited-feeling volume |
 | **Muse Spark 1.3** (Muse Code CLI) | Cheap Meta volume. Headless `muse exec --prompt-file … --model muse-spark-1.3`. Pin 1.3 — the CLI default may still be 1.2. **Not the default** |
-| **Native Workflow** | Deterministic staged fan-outs. Claude Code: `Workflow` (JS, `pipeline` + `parallel`). Grok Build: `workflow` (Rhai, `parallel` barrier only). Author on Grok with bundled `/create-workflow` — that skill is not in this plugin. Codex: none. See `references/native-workflows.md` |
+| **opencode** (OpenCode CLI, headless) | Portable worker lane from any host. `opencode run --model <provider/model> "<one-liner; details in SPEC-*.md>"`. Skills load drop-in from `.claude/skills/`; agents live in `.opencode/agent(s)/`; hooks have no file equivalent — they are plugin event handlers. See dispatch shape below |
+| **Native Workflow** | Deterministic staged fan-outs. Claude Code: `Workflow` (JS, `pipeline` + `parallel`). Grok Build: `workflow` (Rhai, `parallel` barrier only). Author on Grok with bundled `/create-workflow` — that skill is not in this plugin. Codex: none. OpenCode: no native workflow primitive — sequence `opencode run` dispatches from the caller. See `references/native-workflows.md` |
 
 Before dispatching to `general-purpose`, match the unit against the roster in
 `skills/deploy-agent-team/references/agent-roster.md` and pass the specific
@@ -78,7 +79,9 @@ the host returns `Unknown Task.model slug`. If the custom id is missing,
 use `codex exec -m gpt-5.6-sol`. On a Codex main, prefer native Codex agents and
 use Grok only for external implementation volume — do not launch another
 Codex CLI to reproduce work a native agent can do. On a Claude main, native
-Claude agents, Grok, and an external Codex/Sol lane are all valid. Any
+Claude agents, Grok, an external Codex/Sol lane, and `opencode run` workers are all valid. On an OpenCode main,
+native OpenCode subagents (`--agent <name>`) come first; external CLIs
+(`codex exec`, `grok`, `muse exec`, `claude --print`) are shell-out lanes. Any
 headless coding CLI backed by a suitable quota fits the CLI slot; ask once
 when the user's preference is ambiguous, then keep it stable for the session.
 That slot is how Luna and Muse enter — named cheap-volume options, not inferred
@@ -133,6 +136,12 @@ machine; confirm before running, re-run the preflight after):
   script before piping it). Auth: interactive `muse` browser login, or
   `META_API_KEY` for headless. Verify `muse --version` and that
   `--model muse-spark-1.3` is accepted.
+- **opencode**: `npm i -g opencode` (or `brew install opencode`, `curl -fsSL https://opencode.ai/install | bash`).
+  Auth per provider (`opencode auth login`, env keys, or `opencode.json` provider blocks).
+  Verify `opencode --version` and `opencode models <provider>` lists the intended
+  `provider/model`. Skills are drop-in (`SKILL.md` discovery includes
+  `.claude/skills/`); agents are `.opencode/agent(s)/<name>.md` or `agent:{}` in
+  `opencode.json`; there is no hooks file — hooks are plugin event handlers.
 
 **codex: plugin vs raw CLI.** Detect once per session and prefer the plugin:
 
@@ -233,6 +242,33 @@ grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" --permission-mode acceptEdi
   failure. No timeout binary? Dispatch unwrapped and rely on background-job
   monitoring. If a flag misbehaves, re-check `grok --help`.
 
+**opencode (OpenCode CLI) dispatch shape (from a Claude, Codex, or Grok host):**
+```bash
+PROMPT_FILE=$(mktemp -t opencode-prompt.XXXXXX)   # unique per dispatch — parallel lanes on a shared path corrupt each other
+printf '%s\n' "<one-line imperative; details in SPEC-*.md>" > "$PROMPT_FILE"
+opencode run --model "<provider>/<model>" --dir <repo> "$(cat "$PROMPT_FILE")" \
+  > /tmp/dispatch-<id>.log 2>&1 &
+```
+- There is no `opencode exec`. The headless entrypoint is `opencode run`
+  (positional message, stdin prepended, `-f/--file` attachments,
+  `--dir` working directory, `--format json` for scripting,
+  `--attach http://localhost:4096` to reuse a running server and skip MCP cold-boot).
+- Preflight `command -v opencode`, `opencode --version`, and
+  `opencode models <provider>` for the intended `provider/model` (e.g.
+  custom `muse-spark/muse-spark-1.3` or `gpt-luna/gpt-luna` provider blocks in
+  `opencode.json`). Pin `provider/model` explicitly every time — never ride
+  the configured default.
+- For cheap Meta volume through OpenCode, register Muse Spark 1.3 as a custom
+  OpenAI-compatible provider in `opencode.json` and dispatch
+  `opencode run -m muse-spark/muse-spark-1.3`. For the unlimited-feeling lane,
+  register Luna the same way. Model refs are always `provider-id/model-id`.
+- Subagents: `.opencode/agent(s)/<name>.md` (or `agent:{}` in `opencode.json`)
+  with `mode: subagent`; invoke with `--agent <name>`. Skills are drop-in
+  `SKILL.md` (OpenCode also reads `.claude/skills/`). There is no hooks file —
+  hooks are plugin event handlers, not a dispatch surface.
+- Capture full output to a log file, demand the FINAL REPORT in the prompt,
+  and re-run acceptance in the main seat — same as every other CLI lane.
+
 Native subagent workers get a fully self-contained prompt unless the host
 explicitly guarantees inherited context. Include the spec content (or its
 path), acceptance command, and the final-report demand below, exactly as for
@@ -306,7 +342,8 @@ nothing — five nodes where one loop would ship is pure loss dressed as rigor.
 **What makes this pattern pay is the price gap, not the graph.** Coordinator
 dispatch is justified only when the executor is materially cheaper, or genuinely
 more specialized, than the main seat: bounded code volume routed to a cheap
-worker (a Grok subagent, GPT-5.6 Sol, Luna extra-high, Muse Spark 1.3, or a
+  worker (a Grok subagent, GPT-5.6 Sol, Luna extra-high, Muse Spark 1.3, an
+  `opencode run` worker on a pinned provider/model, or a
 lower-tier native agent) while premium judgment — plan, interfaces, review,
 git — stays on the expensive seat. With a real price gap, even a 5–15× token
 multiplier on the *cheap* side is a net win,
@@ -530,7 +567,7 @@ here, and keep dispatching. Strikes are about the actual implementation.
 | "More, smaller dispatches = cheaper" | Each dispatch has a floor cost. Over-fragmenting raises the bill and multiplies review surface. |
 | "This code block in my plan is nearly done, I'll just finish it" | A code block longer than an interface signature or a few illustrative lines is a spec that hasn't been delegated yet. Stop and dispatch it. |
 | "Quicker to fix the worker's bug myself" | Same failure in disguise — the main session quietly absorbing volume. Send a corrected spec back to the lane. |
-| "grok/codex isn't installed, I'll implement meanwhile" | That's a silent fallback. Report the lane unavailable, re-route explicitly, and only absorb work via the escape hatch. |
+| "grok/codex/opencode isn't installed, I'll implement meanwhile" | That's a silent fallback. Report the lane unavailable, re-route explicitly, and only absorb work via the escape hatch. |
 | "Luna is free so it's the default worker" | Luna extra-high is the unlimited-feeling volume lane when the user asked for quota/cheap Codex volume. Grok/Sol stay the quality default. |
 
 ## Common Mistakes

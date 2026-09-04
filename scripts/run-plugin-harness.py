@@ -72,6 +72,10 @@ def main() -> int:
             "plugin manifests",
             [sys.executable, "scripts/check-plugin-manifests.py"],
         ),
+        (
+            "plugin extraction",
+            [sys.executable, "scripts/check-plugin-extraction.py"],
+        ),
         ("release documentation", [sys.executable, "scripts/check-docs.py"]),
         (
             "Codex generated agents",

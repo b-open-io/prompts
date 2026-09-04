@@ -1,12 +1,12 @@
 ---
 name: plugin-module-split
-version: 1.0.0
+version: 1.0.1
 description: >-
   Split a large Claude Code or Codex plugin into a small core plus optional modules. Use for
   "split this plugin", "my plugin is too big", "reduce startup context", "Codex is omitting my
   skills", "core plus optional packs", or "publish part of my plugin separately". Covers
   marketplace subdirectory sourcing, the dependency field's silent-load behaviour, Codex adapter
-  regeneration, and symlink depth. Use agent-auditor to measure first and benchmark-skills to
+  regeneration, and vendored-skill placement. Use agent-auditor to measure first and benchmark-skills to
   verify routing after.
 ---
 
@@ -101,9 +101,17 @@ python3 scripts/codex-agents/generate.py --check
 `../<name>.md` dangles the moment its target moves. Move the directory with the
 agent.
 
-**Third-party symlinks.** A vendored skill symlinked as `../.agents/skills/X`
-needs `../../../.agents/skills/X` from `modules/<m>/skills/`. Adjust the target
-for the added depth so vendor ownership and lockfile provenance survive.
+**Third-party skills.** Marketplaces source a module with git-subdir, which
+ships only the module directory and severs everything above it, so a symlink
+that points outside the module (for example `../../../.agents/skills/X` from
+`modules/<m>/skills/`) dangles after install even though it resolves inside
+the monorepo. The vendored copy must live inside the module at
+`modules/<m>/.agents/skills/X`, linked as `../.agents/skills/X` (one level up
+from `skills/` is the module root), with that module's own
+`skills-lock.json` carrying the provenance. Extract the module
+alone (`git archive HEAD:modules/<m> | tar -x -C <tmp>`) and confirm no
+symlink dangles; `scripts/check-plugin-extraction.py` in this repo does that
+for every module.
 
 **Bundled resources.** Anything a desktop app, installer, or script resolves at
 a fixed path stays in core. Check for hardcoded `skills/<name>` paths before
@@ -143,3 +151,4 @@ the test. Rewrite the assertion or the fixture, never one silently.
 - Core's cost is measured from the installed plugin, not the source tree.
 - Codex adapters regenerate clean and install into a scratch project.
 - No reference anywhere names a resource its plugin no longer provides.
+- Every module survives extraction on its own: no symlink leaves the module directory.

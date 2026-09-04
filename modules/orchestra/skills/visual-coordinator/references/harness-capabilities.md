@@ -118,6 +118,29 @@ single-shot: one prompt, one run, no phases.
 **Render Codex as a flat subagent roster, not a pipeline.** A DAG canvas for
 Codex would imply sequencing machinery that does not exist.
 
+## OpenCode — subagents + `opencode run`, no workflows
+
+Verified 2026-09-03 against `opencode` 1.18.20 (`opencode run --help`,
+live docs at `opencode.ai/docs`). OpenCode has no workflow, pipeline, or DAG
+verb and no hooks file. `opencode run` is single-shot: one prompt, one run,
+no phases. There is no `opencode exec`.
+
+| Capability | Detail |
+|---|---|
+| Orchestration | Subagent dispatch (`--agent <name>`) plus caller-sequenced `opencode run` |
+| Headless | `opencode run "<task>"` (positional message, stdin prepended, `-f/--file` attachments, `--dir` cwd, `--format json` for scripting, `--attach <server>` to reuse `opencode serve`, `--auto` to auto-approve non-denied permissions) |
+| Custom agents | `.opencode/agent(s)/<name>.md` (project) or `~/.config/opencode/agent(s)/` (global); filename is the agent name, body is the prompt; `mode: subagent`, `permission:` per agent. Inline `agent:{}` in `opencode.json` also works |
+| Per-agent model | `provider/model` refs (`-m/--model`, per-agent `model:`, per-command `model:`). Subagents without explicit `model` inherit the invoker's model |
+| Custom providers | `provider:{}` blocks in `opencode.json` (`npm: @ai-sdk/openai-compatible`, `baseURL` ending at `/v1`, key via `{env:VAR}`); verify with `opencode models <provider>` |
+| Skills | Drop-in `SKILL.md` — OpenCode also reads `.claude/skills/` and `.agents/skills/`; `name` must equal the directory name |
+| Hooks | No hooks file — plugin event handlers (`.opencode/plugin(s)/*.ts`, `tool.execute.before/after`, `permission.asked`, `session.*`) |
+| Commands | `.opencode/command(s)/<name>.md`; headless via `opencode run --command <name>` |
+
+**Render OpenCode as a flat subagent roster plus `opencode run` shell-out
+nodes, not a pipeline.** Same rule as Codex.
+
+Host marker for the detector: `OPENCODE=1` (`OPENCODE_PID` also set).
+
 ## Model identifiers
 
 Discover rather than assume; `scripts/detect-harness.sh` does this.
@@ -129,6 +152,9 @@ Discover rather than assume; `scripts/detect-harness.sh` does this.
   truth. The in-app picker has lagged behind what `-m` accepts.
 - **Grok**: whatever `grok models` prints for the authenticated account, plus
   any custom `[model.<alias>]` the user registered.
+- **OpenCode**: whatever `opencode models <provider>` prints for the configured
+  providers, referenced as `provider/model`. Custom Muse Spark / Luna lanes are
+  `provider:{}` blocks in `opencode.json` — never assume the id without listing it.
 
 ## Shell-out invocations for cross-provider nodes
 
@@ -149,6 +175,10 @@ grok --prompt-file <file> -m gpt-5.6-sol \
 claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communication.md" \
   --model "${BOPEN_ADVISOR_MODEL:-fable}" \
   --permission-mode plan --tools "Read,Grep,Glob" --no-session-persistence
+
+# opencode worker — no `opencode exec` exists; `opencode run` is the entrypoint
+opencode run --model "<provider>/<model>" --dir <repo> "$(cat <file>)" \
+  > /tmp/dispatch-<id>.log 2>&1 &
 ```
 
 Two caveats worth putting in front of the user:
@@ -164,7 +194,8 @@ in the wrapped process, not the wrapper.
 1. That a Claude workflow step can run a Grok or GPT model natively. It cannot.
 2. That a Grok native node can run an id `grok models` does not list. Register it first, or emit a shell-out.
 3. That Codex has a workflow. It has subagents.
-4. That "hundreds of parallel agents" is a Grok specification. Default budget is 128.
-5. That a resumed Claude workflow preserves all completed agents. See the replay rule.
-6. That Grok has `pipeline()`. It has barrier `parallel()` only.
-7. That `/create-workflow` exists on Claude or Codex. It is a Grok-bundled skill only.
+4. That OpenCode has a workflow or an `exec` subcommand. It has subagents and `opencode run`.
+5. That "hundreds of parallel agents" is a Grok specification. Default budget is 128.
+6. That a resumed Claude workflow preserves all completed agents. See the replay rule.
+7. That Grok has `pipeline()`. It has barrier `parallel()` only.
+8. That `/create-workflow` exists on Claude, Codex, or OpenCode. It is a Grok-bundled skill only.
