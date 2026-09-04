@@ -15,6 +15,10 @@ Pin the full provider/model id. A previously tested id is evidence for that
 environment, not a permanent universal id. There is no opencode exec command;
 the headless entrypoint is opencode run.
 
+When preflight lists `opencode/muse-spark-1.3-contributor-free`, it is a known
+cheap implementation choice. Pin that exact id for the run; do not assume it
+exists in another environment.
+
 ## Dispatch
 
 Use a unique prompt file for every parallel run:

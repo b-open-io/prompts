@@ -1,7 +1,7 @@
 ---
 name: coordinator
-version: 0.0.15
-description: Route bounded implementation from the current main session to native or external workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Muse, Grok, OpenCode, or native workflows.
+version: 0.0.16
+description: Route bounded implementation from a capable main session to cheaper workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Muse, Grok, OpenCode, or native workflows.
 ---
 
 # Coordinator
@@ -40,7 +40,8 @@ not load Grok, Codex, or Muse instructions.
 | Work | Owner |
 |---|---|
 | Plan, architecture, interfaces, and acceptance criteria | Main |
-| Bounded implementation | Selected worker |
+| External-worker launch, monitoring, and complete report | Native worker-controller when supported |
+| Bounded implementation | Selected cheaper worker |
 | Hard debugging analysis and visual judgment | Main, then dispatch the fix |
 | Diff review, final verification, commits, pushes, and PRs | Main |
 | One-line edits found during review | Main when dispatch overhead is larger |
@@ -51,20 +52,42 @@ API or file-ownership boundaries, not into tiny tasks merely to create a graph.
 
 ## Select a lane
 
-Prefer a native specialist on the current host when it has the required tools
-and context. Match named specialist work against
-`../deploy-agent-team/references/agent-roster.md`; use a generic worker only
-when no roster specialist fits, and say so.
+Choose implementation lanes by economics first. Preserve a user-selected cheap
+lane; otherwise use the cheapest authorized, preflighted worker that can meet
+the acceptance criteria. If provider authorization or preference is unresolved,
+ask once. Do not silently implement on the premium main or native lane.
+
+Prefer native specialists for evidence, investigation, review, testing, and
+tool- or domain-bound judgment. Match that work against
+`../deploy-agent-team/references/agent-roster.md`; use a generic specialist only
+when no roster specialist fits. This native-first rule does not apply to routine
+implementation volume.
 
 External quality lanes are Grok and GPT-5.6 Sol. GPT-5.6 Luna at extra-high
-reasoning and Muse Spark 1.3 are explicit cheap-volume choices, not silent
-defaults. OpenCode is a portable lane whose provider and model must be pinned.
+reasoning and Muse Spark 1.3 are cheap-volume choices. OpenCode is a portable
+lane whose provider and model must be pinned. Prefer an already authorized,
+configured cheap lane over a quality lane when both can satisfy the spec.
 Never infer or replace the user's current main model.
 
 If the work has deterministic stages, loops, or voting, use a native workflow
 only when the current host guide says the primitive exists and the user opted
 into multi-agent work. The script may own control flow; the main still owns the
 plan, evidence, and ship decision.
+
+## Keep external work visible
+
+When the current host supports native subagents, spawn one native
+worker-controller per independent implementation unit. Give it the spec and
+the selected worker guide; instruct it to preflight, launch, monitor, and report
+the external worker without writing the implementation itself. This keeps the
+cheap worker visible in the host's subagent panel and lets native workflows own
+its lifecycle. The wrapper is control plane; the cheaper model remains the
+implementation plane.
+
+Use direct external dispatch from the main only when the host has no usable
+native child primitive. Do not claim the external model appears as a native
+agent—the visible item is its controller, and its final report must identify
+the actual provider/model that performed the implementation.
 
 ## External-provider boundary
 
@@ -85,7 +108,8 @@ the provider.
 4. Preflight the lane. A missing binary, model, authentication, or write policy
    makes the lane unavailable; never silently absorb the work in the main.
 5. Write a precise spec and partition concurrent file ownership.
-6. Dispatch in the background and keep useful main-seat work moving.
+6. Spawn a native worker-controller when supported; it dispatches in the
+   background while the main keeps useful work moving.
 7. At the barrier, inspect the actual diff and worker report. Treat missing
    evidence as unverified.
 8. Re-run acceptance in the main environment, then commit and ship from here.

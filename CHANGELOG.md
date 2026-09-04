@@ -38,6 +38,19 @@ manifests share the same release version.
 
 ### Fixed
 
+- Orchestra no longer lets native-first specialist guidance absorb routine
+  implementation into the premium lane. Invoking `orchestrator` now defaults
+  bounded code volume to the cheapest authorized, preflighted capable worker,
+  while native agents remain preferred for evidence, investigation, review,
+  testing, and tool- or domain-bound judgment. The Codex, Claude, Grok, and
+  OpenCode host guides carry the same boundary. When a host supports native
+  children, each external worker now runs under a visible native controller so
+  it participates in subagent panels and workflow lifecycle without moving the
+  implementation back to the controller model. The OpenCode guide records the
+  conditional `opencode/muse-spark-1.3-contributor-free` recipe. `coordinator`
+  0.0.16, `orchestrator` 0.0.10, orchestra 0.1.20.
+- The Orchestrator Codex UI prompt now names the correct
+  `$orchestra:orchestrator` skill and asks for cheaper implementation workers.
 - Corrected OpenCode subagent dispatch: `--agent <name>` selects a primary
   agent and falls back when given a subagent on OpenCode 1.18.20. The tested
   headless pattern now pins the parent model, invokes `@general`, and requires
