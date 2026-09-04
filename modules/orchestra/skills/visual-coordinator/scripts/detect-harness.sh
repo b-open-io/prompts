@@ -148,12 +148,32 @@ opencode_providers=$(printf '%s\n' "$opencode_providers" \
   | head -24)
 unset _cfg _kind _value
 opencode_models=""
+# OpenCode writes its runtime database and logs below XDG_DATA_HOME even for a
+# read-only inventory query. The host may deliberately make the user's normal
+# data directory read-only (for example, a Codex worker sandbox), so give this
+# short-lived probe an isolated writable data home. Leave XDG_CONFIG_HOME and
+# HOME alone: OpenCode still reads the user's configured providers and models,
+# while the temporary directory is removed when this detector exits.
+opencode_data_home=""
+if [[ "$opencode_bin" == "available" ]]; then
+  opencode_data_home=$(mktemp -d "${TMPDIR:-/tmp}/bopen-opencode-data.XXXXXX" 2>/dev/null || true)
+  if [[ -n "$opencode_data_home" ]]; then
+    trap '[[ -n "${opencode_data_home:-}" ]] && rm -rf -- "$opencode_data_home"' EXIT
+  fi
+fi
+run_opencode_models() {
+  if [[ -n "$opencode_data_home" ]]; then
+    XDG_DATA_HOME="$opencode_data_home" opencode models "$@"
+  else
+    opencode models "$@"
+  fi
+}
 if [[ "$opencode_bin" == "available" ]]; then
   if [[ -n "$opencode_providers" ]]; then
     while IFS= read -r _provider; do
       [[ -n "$_provider" ]] || continue
       opencode_models=$(printf '%s\n%s' "$opencode_models" \
-        "$(opencode models "$_provider" 2>/dev/null \
+        "$(run_opencode_models "$_provider" 2>/dev/null \
           | awk -v provider="$_provider" '
             {
               token = $1
@@ -167,7 +187,7 @@ if [[ "$opencode_bin" == "available" ]]; then
   else
     # No local provider IDs: retain a bounded compatibility fallback for older
     # CLIs whose unscoped command is the only available inventory source.
-    opencode_models=$(opencode models 2>/dev/null \
+    opencode_models=$(run_opencode_models 2>/dev/null \
       | awk '{ token=$1; if (token ~ /^[A-Za-z0-9._-]+\/[A-Za-z0-9._:@\/-]+$/) print token }' \
       | head -1200)
   fi
