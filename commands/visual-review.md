@@ -1,5 +1,5 @@
 ---
-allowed-tools: Skill(review:visual-review), Skill(core:humanize), Skill(core:postplan), Bash(git:*), Bash(gh:*), Bash(open:*), Bash(npx bitplan:*), Read, Write, Glob, Grep
+allowed-tools: Skill(review:visual-review), Skill(core:humanize), Skill(bitplan:bitplan), Skill(bitplan), Bash(git:*), Bash(gh:*), Bash(open:*), Bash(npx bitplan:*), Bash(bunx bitplan:*), Bash(bunx postplan:*), Read, Write, Glob, Grep
 description: Turn a PR, branch, commit, or diff into a plain-language visual review with grounded diagrams and decision questionnaires
 argument-hint: "[branch | commit-sha | PR# | --base <ref>] (default: current branch vs main)"
 ---

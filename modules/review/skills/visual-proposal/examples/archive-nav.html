@@ -5,7 +5,7 @@
     bash scripts/list-proposals.sh --current <slug> [workspace-root ...]
 
   The browser cannot list docs/proposals/. The agent inlines that JSON here.
-  A row with url (https, from data-vp-url after PostPlan) is a real link.
+  A row with url (https, from data-vp-url after publishing) is a real link.
   A local row copies instructions for the agent to open that file.
 -->
 <style>
@@ -57,7 +57,7 @@ window.VP_ARCHIVE = window.VP_ARCHIVE || [];
 /* Agent: replace the array above with list-proposals.sh JSON, e.g.
 window.VP_ARCHIVE = [
   {"slug":"ord-fs-json","title":"Referenced-content collections","project":"prompts","mtime":"2026-08-19","path":"/abs/docs/proposals/ord-fs-json.html","current":true},
-  {"slug":"hosted","title":"Hosted draft","project":"prompts","mtime":"2026-08-20","path":"/abs/docs/proposals/hosted.html","url":"https://postplan.dev/d/example","current":false}
+  {"slug":"hosted","title":"Hosted draft","project":"prompts","mtime":"2026-08-20","path":"/abs/docs/proposals/hosted.html","url":"https://bitplan.dev/d/example","current":false}
 ];
 */
 (function(){
@@ -80,7 +80,7 @@ window.VP_ARCHIVE = [
     var title=row.title||row.slug||'this proposal';
     var path=row.path||'';
     return 'Show me the previous visual proposal.\n\nTitle: '+title+'\nPath: '+path+
-      '\n\nOpen that HTML and show me the page. Use an Artifact when that tool exists. Otherwise follow Skill(postplan) or open the file in the browser. Do not summarize the file.';
+      '\n\nOpen that HTML and show me the page. Use an Artifact when that tool exists. Otherwise load the installed BitPlan skill or open the file in the browser. Do not summarize the file.';
   }
   function fillLabel(el,row,copied){
     el.textContent='';

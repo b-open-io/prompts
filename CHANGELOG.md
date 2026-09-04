@@ -6,6 +6,8 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.159] - 2026-09-04
+
 ### Added
 
 - OpenCode is a supported orchestra harness. `coordinator` 0.0.13 dispatches
@@ -21,6 +23,14 @@ manifests share the same release version.
   equivalent there (plugin event handlers). orchestra 0.1.17.
 
 ### Changed
+
+- BitPlan is now the first-class external provider for encrypted visual plans
+  and reviews. Core no longer bundles the obsolete `postplan` skill; review,
+  runtime, and orchestra guidance load BitPlan from its owning plugin instead.
+  Existing BRC-100 wallets remain the supported path. The planned 1Sat CLI
+  fallback is called out as not yet application-compatible, and PostPlan is
+  available only as an explicitly approved unencrypted last resort. Core
+  1.1.159, review 0.1.14, orchestra 0.1.21.
 
 - `social-media-manager` (Alex) 1.0.6 now prefers runtime-provided first-party
   social tools and their native claim flow. On bOpen.ai, Alex creates or updates

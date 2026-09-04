@@ -159,6 +159,17 @@ codex plugin add core@b-open-io
 Start a fresh Claude Code or Codex session after updating so cached plugin
 metadata, skills, agents, and hooks are reloaded.
 
+BitPlan is an app-owned external provider rather than a copied core skill.
+Install it from the same bOpen marketplace with
+`/plugin install bitplan@b-open-io`, or install only its canonical skill with:
+
+```bash
+npx skills add opldotdev/bitplan.dev --skill bitplan -g
+```
+
+The plugin exposes `Skill(bitplan:bitplan)`; a standalone install exposes
+`Skill(bitplan)`. Workflows accept either form and use the same upstream file.
+
 ### Skills only
 
 For other agentic frameworks, install individual skills:
@@ -167,7 +178,7 @@ For other agentic frameworks, install individual skills:
 bunx skills add b-open-io/prompts --skill <skill-name>
 ```
 
-The list below is the authored core inventory. Third-party skills are
+The list below is the authored core inventory. App-owned and third-party skills are
 vendored inside the module that ships them and tracked in that module's
 `skills-lock.json` (for example
 [`modules/mcp-dev/skills-lock.json`](modules/mcp-dev/skills-lock.json)),
@@ -186,7 +197,6 @@ bunx skills add b-open-io/prompts --skill hammertime
 bunx skills add b-open-io/prompts --skill hook-manager
 bunx skills add b-open-io/prompts --skill humanize
 bunx skills add b-open-io/prompts --skill linear-planning
-bunx skills add b-open-io/prompts --skill postplan
 bunx skills add b-open-io/prompts --skill reinforce-skills
 bunx skills add b-open-io/prompts --skill remind
 bunx skills add b-open-io/prompts --skill runtime-context
@@ -254,7 +264,7 @@ intentional.
 | `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, unsupported significance, vague attribution, promotional drift, canned change summaries, and template-like sales copy; outbound drafts use attributed examples and supplied account facts without inventing commercial claims |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
-| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and turns every decision into a questionnaire that explains each option's consequences. Plans can stay local, use an Artifact or PostPlan, or publish through BitPlan with explicit wallet approval. |
+| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and turns every decision into a questionnaire that explains each option's consequences. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
@@ -276,7 +286,6 @@ intentional.
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm from the synced default branch with changelog/version management and browser confirmation |
 | `perf-audit` | Run local performance audits without network calls |
-| `postplan` | Host an HTML draft on postplan.dev when Claude Artifacts are not available |
 | `shaders` | Custom shaders for Three.js and WebGL |
 | `shadscan` | Drive the shadscan analyzer to audit and raise a shadcn app's UI-fundamentals score, and gate it in CI |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |

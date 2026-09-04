@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.14
+version: 0.0.15
 description: >-
   Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has
   not been built. Use for "make a visual proposal", "present these options visually", "diagram
@@ -384,7 +384,7 @@ Adapt to the subject — not every section always applies — but the usual spin
 11. **Archive menu** — a left list of other proposals already on disk. Copy
     [examples/archive-nav.html](examples/archive-nav.html). Fill `window.VP_ARCHIVE`
     from `scripts/list-proposals.sh`. Local rows copy agent instructions.
-    PostPlan rows (`data-vp-url` https) are real links. See
+    published rows (`data-vp-url` https) are real links. See
     [references/archive-nav.md](references/archive-nav.md).
 
 ## Craft (via artifact-design)
@@ -436,23 +436,26 @@ Choose the delivery surface deliberately:
 
 - **Artifact** — use for a quick, default-private page inside a host that
   supports Artifacts.
-- **BitPlan** — use when the user wants an encrypted, wallet-controlled,
-  durable, versioned HTML plan. Explain the consequences and get explicit
-  approval immediately before `npx bitplan upload
-  docs/proposals/<slug>.html --json`: ciphertext is public on Bitcoin, only the
-  configured wallet readers can decrypt it, and access to an older shared
-  version cannot be revoked. A wallet that supports the BRC-100 Wallet
-  Interface keeps the keys and approves the operation. Never request a mnemonic
-  or private key. See
-  [BitPlan agents and wallets](https://bitplan.dev/docs/agents).
-- **PostPlan** — use when a capability link is sufficient and BitPlan's
-  wallet-controlled permanence is not wanted.
+- **BitPlan** — the normal durable or shareable path. Load BitPlan's canonical
+  skill as `Skill(bitplan:bitplan)` from its plugin, or `Skill(bitplan)` from a
+  standalone skill install. Prefer a compatible BRC-100 wallet the user already
+  has, explain hosted ciphertext versus an on-chain version, and get approval
+  immediately before upload. Never request a mnemonic, private key, or wallet
+  password.
+- **No compatible wallet** — explain that the planned 1Sat CLI fallback is not
+  application-compatible yet; `1sat serve wallet` currently exposes wallet
+  storage, not BitPlan's BRC-100 application endpoint. Do not point BitPlan at
+  it.
+- **Explicit last resort** — only after the user declines a compatible wallet
+  and the planned 1Sat CLI route, offer a local file. If they explicitly ask
+  for an unencrypted hosted capability link, use `bunx --bun postplan upload
+  docs/proposals/<slug>.html --description "<short label>"` after explaining
+  that it is not BitPlan and asking immediately before upload.
 - **Local file** — use when the page should not leave the machine.
 
 For an Artifact, use the same file path, a one-line `description`, a stable
-subject `favicon`, and a version `label`. For PostPlan, follow
-`Skill(postplan)`. After PostPlan returns an `https://` URL, stamp it on the
-saved file as
+subject `favicon`, and a version `label`. After a host returns an `https://`
+URL, stamp it on the saved file as
 `data-vp-url="https://…"`, re-run `list-proposals.sh`, and replace
 `window.VP_ARCHIVE` so the menu can link that row. Redeploy the SAME file
 path to keep the URL stable across revisions; only mint a new URL for a

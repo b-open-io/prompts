@@ -8,7 +8,8 @@ flags, a file footprint map, and 3-8 tabs of annotated key-change diffs.
 Heavily inspired by [BuilderIO's visual recap](https://github.com/BuilderIO/skills#visual-recap).
 The deliverable is one self-contained HTML file built from
 `assets/template.html`, then opened locally or delivered through an Artifact,
-PostPlan, or an explicitly approved BitPlan workflow.
+the externally owned BitPlan workflow, an explicitly approved last-resort
+host, or a local file.
 
 ## Why
 
