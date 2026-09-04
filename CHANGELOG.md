@@ -22,6 +22,12 @@ manifests share the same release version.
 
 ### Changed
 
+- `social-media-manager` (Alex) 1.0.6 now prefers runtime-provided first-party
+  social tools and their native claim flow. On bOpen.ai, Alex creates or updates
+  drafts through the site's social capability, returns the private review link,
+  and distinguishes `planned` from confirmed scheduling or publishing. Chrome
+  CDP, browser automation, and Typefully are no longer substitutes when the
+  first-party workflow is available. brand-rep 0.1.7.
 - Orchestra now loads harness guidance progressively. `coordinator` 0.0.15
   keeps only shared ownership and routing rules in its entrypoint, moves the
   implementation contract into one shared reference, and separates Claude,
