@@ -235,6 +235,50 @@ class VisualWorkflowContractTests(unittest.TestCase):
             self.assertNotIn("do-not-log", result.stdout)
             self.assertNotIn("do-not-log", result.stderr)
 
+    def test_detector_redirects_opencode_data_home_for_read_only_sandbox(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            readonly_data = temp / "readonly-data"
+            readonly_data.mkdir()
+            readonly_data.chmod(0o500)
+            config_dir = temp / ".config" / "opencode"
+            config_dir.mkdir(parents=True)
+            (config_dir / "opencode.json").write_text(
+                '{"provider":{"alpha":{"models":{"first":{}}}}}\n',
+                encoding="utf-8",
+            )
+            fake = temp / "opencode"
+            fake.write_text(
+                "#!/usr/bin/env bash\n"
+                "if [[ -z \"${XDG_DATA_HOME:-}\" || \"$XDG_DATA_HOME\" == \"$OPENCODE_READONLY_DATA\" ]]; then\n"
+                "  printf '%s\\n' 'OpenCode received its read-only data home' >&2\n"
+                "  exit 17\n"
+                "fi\n"
+                "mkdir -p \"$XDG_DATA_HOME/opencode\"\n"
+                "printf '%s\\n' 'alpha/first'\n",
+                encoding="utf-8",
+            )
+            fake.chmod(0o755)
+            env = dict(os.environ)
+            env.update({
+                "HOME": str(temp),
+                "PATH": f"{temp}:/usr/bin:/bin",
+                "XDG_DATA_HOME": str(readonly_data),
+                "OPENCODE_READONLY_DATA": str(readonly_data),
+                "BOPEN_HOST_HARNESS": "codex",
+            })
+            try:
+                result = subprocess.run(
+                    ["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env,
+                    capture_output=True, text=True, check=True,
+                )
+            finally:
+                readonly_data.chmod(0o700)
+            detected = json.loads(result.stdout)
+            self.assertEqual(detected["models"]["opencode"], ["alpha/first"])
+            self.assertNotIn("read-only data home", result.stdout)
+            self.assertNotIn("read-only data home", result.stderr)
+
     def test_clean_tree_passes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
