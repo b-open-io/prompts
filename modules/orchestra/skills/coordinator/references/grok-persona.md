@@ -6,23 +6,16 @@ generated adapters carrying the persona body. Grok has no such adapter; a raw
 `scripts/grok-persona.sh` closes that gap by prefixing the task with an
 agent's system-prompt body (frontmatter stripped).
 
-## Preflight the model
+## Preflight the model and auth lane
 
-`grok` reads `XAI_API_KEY`. Confirm the key resolves and the worker model is
-actually available to the account before dispatching:
-
-```bash
-grok models          # lists available models; verify your target is present
-: "${BOPEN_WORKER_MODEL:?Set BOPEN_WORKER_MODEL to a verified ID from grok models}"
-WORKER_MODEL="$BOPEN_WORKER_MODEL"
-```
-
-Pin the verified ID for reproducible work; do not inherit a changing CLI
-default.
+Follow [the Grok worker guide](workers/grok.md). It distinguishes the saved
+grok.com login from `XAI_API_KEY` billing and requires the preflight and worker
+command to use the same lane. Pin the verified model ID; do not inherit a
+changing CLI default.
 
 ## Usage with the grok dispatch shape
 
-Code-writing lane (agent edits the repo):
+Code-writing lane (agent edits the repo in an explicitly isolated worktree):
 
 ```bash
 PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
@@ -31,17 +24,17 @@ grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" --permission-mode acceptEdi
   --sandbox workspace --output-format plain --cwd <repo>
 ```
 
-Read-only lane (research, summaries, reviews — no edits): drop `acceptEdits`
-and `--sandbox workspace`. Make the task self-contained (inline the material)
-so no filesystem or network tools are needed and headless never stalls on an
-approval prompt:
+Read-only lane (research, summaries, reviews — no edits): use plan permission
+mode and retain the workspace sandbox. Keep the task and allowed repository
+scope narrow so headless operation does not stall on unrelated approvals:
 
 ```bash
 PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
 bash scripts/grok-persona.sh researcher "Summarize this README:
 $(head -60 README.md)" > "$PROMPT_FILE"
 grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" \
-  --output-format plain --permission-mode default --cwd "$(pwd)"
+  --output-format plain --permission-mode plan \
+  --sandbox workspace --cwd "$(pwd)"
 ```
 
 Persona activation shows up in the output shape: a `researcher` dispatch

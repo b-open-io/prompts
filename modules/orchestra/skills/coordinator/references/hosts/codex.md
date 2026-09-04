@@ -30,3 +30,11 @@ Native background agents must return the complete deliverable. If the runtime
 does not automatically surface final text, instruct the worker to send its
 report to the main before going idle. One content-free idle can be followed up;
 a second is a failed dispatch.
+
+On macOS, Codex's outer filesystem sandbox can prevent Grok from installing its
+own `workspace` sandbox and return `Operation not permitted`. Ask the host to
+run the exact Grok process with escalation while keeping Grok's sandbox on.
+The host may require explicit user approval naming xAI and the repository
+context that can leave the machine. If escalation is unavailable or denied,
+report the Grok lane unavailable for that run. Never drop Grok's sandbox or
+silently route the work elsewhere.

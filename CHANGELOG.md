@@ -6,6 +6,51 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.160] - 2026-09-04
+
+### Changed
+
+- Orchestra now uses one execution contract for non-trivial changes: the main
+  owns the plan and git, implementation workers use isolated worktrees, all
+  makers stop at a hard barrier, an independent reviewer can return one shared
+  corrective pass, and the main runs the final checks. A user-selected worker
+  lane may include an expiry or stop condition; normal lane selection resumes
+  afterward. `coordinator` 0.0.17, `orchestrator` 0.0.11,
+  `software-factory` 0.0.11, `deploy-agent-team` 1.0.7, and
+  `wave-coordinator` 1.0.9.
+- `advisor` 0.0.7 is now a short router. Shared consult and reporting rules
+  live in one reference, while Claude, Fable, Codex, and OpenCode mechanics
+  load only when that channel is selected. Consults remain read-only and must
+  report the provider, model, authentication path, context sent, and proof that
+  the intended advisor ran.
+- `visual-coordinator` 0.1.10 is now a real React + AI Elements workflow
+  canvas with registry-installed shadcn controls, a focused inspector, typed
+  handoffs, validation-gated versioned export, and a compact mobile review
+  mode. Harness-aware selectors use the detected Codex, Claude, Grok, and
+  OpenCode model inventories; OpenCode models are grouped by provider and put
+  preferred worker choices such as Muse and Luna first. Its
+  canonical source and schema tests live under `tools/visual-coordinator`; a
+  deterministic build produces the self-contained plugin HTML and detects
+  drift without a CDN or second workflow engine.
+
+### Fixed
+
+- Grok worker guidance now distinguishes API-key billing from the account
+  signed in through grok.com. Signed-in runs remove both `XAI_API_KEY` and
+  `GROK_API_KEY`, keep the same authentication lane for preflight and
+  dispatch, and report managed plugins or child agents that still load despite
+  a clean temporary Grok home. A new launcher verifies the exact model, Grok
+  version, repository root, branch, base ancestry, and workspace sandbox;
+  keeps only a redacted capability inventory; preserves subagents by default;
+  and tells writable workers exactly which prepared worktree and branch they
+  own. Temporary-home cleanup cannot target the user's real Grok home.
+- OpenCode worker and advisor examples attach prepared prompt files instead of
+  interpolating their contents into shell commands. Agent Builder 1.7.16 now
+  routes gated multi-stage designs through Visual Coordinator and no longer
+  documents a removed team-creation call.
+
+Core 1.1.160, orchestra 0.1.22.
+
 ## [1.1.159] - 2026-09-04
 
 ### Added

@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.16
+version: 0.0.17
 description: Route bounded implementation from a capable main session to cheaper workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Muse, Grok, OpenCode, or native workflows.
 ---
 
@@ -54,8 +54,12 @@ API or file-ownership boundaries, not into tiny tasks merely to create a graph.
 
 Choose implementation lanes by economics first. Preserve a user-selected cheap
 lane; otherwise use the cheapest authorized, preflighted worker that can meet
-the acceptance criteria. If provider authorization or preference is unresolved,
-ask once. Do not silently implement on the premium main or native lane.
+the acceptance criteria. A user may attach an expiry or another stop condition
+to that preference. Record it, honor the override while it is active, then run
+normal lane selection again when it expires; do not bake a session-specific
+deadline into the reusable skill. If provider authorization or preference is
+unresolved, ask once. Do not silently implement on the premium main or native
+lane.
 
 Prefer native specialists for evidence, investigation, review, testing, and
 tool- or domain-bound judgment. Match that work against
@@ -110,16 +114,18 @@ the provider.
 5. Write a precise spec and partition concurrent file ownership.
 6. Spawn a native worker-controller when supported; it dispatches in the
    background while the main keeps useful work moving.
-7. At the barrier, inspect the actual diff and worker report. Treat missing
-   evidence as unverified.
-8. Re-run acceptance in the main environment, then commit and ship from here.
+7. At the hard barrier, run an independent read-only review: inspect the
+    actual diff and worker report. Treat missing evidence as unverified.
+8. Re-run acceptance unpiped in the main environment, then commit and ship
+    from here. Only the main commits, pushes, or opens a pull request.
 
 ## Failure behavior
 
 - Infrastructure failure is not a quality failure. Preserve the spec and retry
   or explicitly reroute it.
-- Correct one quality miss with concrete feedback. After a second corrected
-  miss, the main may use the escape hatch and finish the unit directly.
+- The review and test path share one corrective allowance: re-dispatch the
+  same maker once with concrete feedback. After a second failure, control
+  returns to the main to fix or stop.
 - Reject environment-driven workarounds such as replacing dependencies,
   changing bundlers, removing remote assets, or weakening tests.
 - Do not let a worker commit, push, or merge.

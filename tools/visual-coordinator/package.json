@@ -1,0 +1,39 @@
+{
+  "name": "@bopen/visual-coordinator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "vite build && node scripts/check-portable.mjs",
+    "check:portable": "node scripts/check-portable.mjs",
+    "sync:plugin": "bun run build && node scripts/sync-plugin-artifact.mjs",
+    "check:plugin": "bun run build && node scripts/sync-plugin-artifact.mjs --check"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "@xyflow/react": "latest",
+    "class-variance-authority": "latest",
+    "clsx": "latest",
+    "cn": "^0.2.5",
+    "lucide-react": "latest",
+    "radix-ui": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "shadcn": "latest",
+    "tailwind-merge": "latest",
+    "tailwindcss": "latest",
+    "tw-animate-css": "latest",
+    "vite": "latest",
+    "vite-plugin-singlefile": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}

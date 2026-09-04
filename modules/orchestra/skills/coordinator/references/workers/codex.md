@@ -29,11 +29,17 @@ the user approves the machine-level change.
 
 Sol:
 
-    codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-sol +      -c model_reasoning_effort="high" +      "<imperative; details in SPEC file>" +      > /tmp/dispatch-<id>.log 2>&1 &
+    codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-sol \
+      -c model_reasoning_effort="high" \
+      "<imperative; details in SPEC file>" \
+      > /tmp/dispatch-<id>.log 2>&1 &
 
 Luna:
 
-    codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-luna +      -c model_reasoning_effort="xhigh" +      "<imperative; details in SPEC file>" +      > /tmp/dispatch-<id>.log 2>&1 &
+    codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-luna \
+      -c model_reasoning_effort="xhigh" \
+      "<imperative; details in SPEC file>" \
+      > /tmp/dispatch-<id>.log 2>&1 &
 
 If Luna rejects xhigh, try max once and report which effort actually ran. Luna
 without extra-high or max is not this lane. Capture complete output and demand

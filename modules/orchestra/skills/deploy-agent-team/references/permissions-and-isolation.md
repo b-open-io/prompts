@@ -43,6 +43,11 @@ Then the agent proceeds with implementation.
 
 ## File Isolation for Parallel Edits
 
+Coordinator's
+[dispatch contract](../../coordinator/references/dispatch-contract.md) is the
+normative source for worktree creation, ownership, review, and cleanup. This
+section adds only Claude team-specific guidance.
+
 Partition work so every teammate owns a disjoint set of files, and pin shared
 interfaces in each task description before work starts. When the installed
 `Agent` schema supports `isolation: "worktree"`, use it for workers whose edits

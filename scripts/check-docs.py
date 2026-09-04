@@ -19,6 +19,75 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+# Stable stale-claim identifiers (Wave 2 orchestra gates). These are literal
+# strings/regexes that must not reappear in active docs. CHANGELOG.md history
+# and negative eval fixtures intentionally retain old claims, so both are
+# excluded from this check.
+STALE_TEAM_CALL = re.compile(r"Team(Create|Delete)\s*\(")
+STALE_OPENCODE_EXEC = re.compile(r"opencode exec")
+STALE_OPENCODE_EXEC_NEGATION = re.compile(r"(?i)\bno\b[^.\n]{0,60}opencode exec")
+STALE_LEGACY_SKU = re.compile(r"muse-spark/muse-spark-1\.3")
+STALE_BARE_GO_SKU = re.compile(r"opencode-go/muse-spark-1\.3(?!-contributor)")
+STALE_BARE_GO_SKU_NEGATION = re.compile(r"(?i)unavailable")
+STALE_WRAP_ARTIFACT = "+      --"
+
+
+def is_stale_check_excluded(relative_posix: str) -> bool:
+    if relative_posix == "CHANGELOG.md":
+        return True
+    parts = relative_posix.split("/")
+    return "evals" in parts
+
+
+def stale_claim_problems(relative_posix: str, text: str) -> list[str]:
+    problems: list[str] = []
+    for lineno, line in enumerate(text.splitlines(), start=1):
+        if STALE_TEAM_CALL.search(line):
+            problems.append(f"{relative_posix}:{lineno}: active TeamCreate(/TeamDelete( call")
+        if STALE_OPENCODE_EXEC.search(line) and not STALE_OPENCODE_EXEC_NEGATION.search(line):
+            problems.append(f"{relative_posix}:{lineno}: stale `opencode exec` claim (entrypoint is `opencode run`)")
+        if STALE_LEGACY_SKU.search(line):
+            problems.append(f"{relative_posix}:{lineno}: stale `muse-spark/muse-spark-1.3` SKU")
+        if STALE_BARE_GO_SKU.search(line) and not STALE_BARE_GO_SKU_NEGATION.search(line):
+            problems.append(
+                f"{relative_posix}:{lineno}: bare `opencode-go/muse-spark-1.3` presented as available"
+            )
+        if STALE_WRAP_ARTIFACT in line:
+            problems.append(f"{relative_posix}:{lineno}: pasted diff line-wrap artifact ` +      --`")
+    return problems
+
+
+def iter_stale_check_files(root: Path) -> list[Path]:
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "*.md"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        return [root / entry for entry in result.stdout.split("\0") if entry]
+    return sorted(root.rglob("*.md"))
+
+
+def validate_stale_claims(problems: list[str], root: Path | None = None) -> None:
+    root = root or ROOT
+    for path in iter_stale_check_files(root):
+        try:
+            relative = path.relative_to(root).as_posix()
+        except ValueError:
+            continue
+        if is_stale_check_excluded(relative):
+            continue
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        problems.extend(stale_claim_problems(relative, text))
+
+
 def section(text: str, start: str, end: str) -> str:
     start_match = re.search(start, text, flags=re.MULTILINE)
     if not start_match:
@@ -178,6 +247,7 @@ def main(argv: list[str] | None = None) -> int:
 
     problems: list[str] = []
     validate_static(problems)
+    validate_stale_claims(problems)
     validate_release_gate(args.base, problems)
     if problems:
         print("Documentation validation failed:", file=sys.stderr)
