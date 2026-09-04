@@ -7,7 +7,8 @@ Read this only when Claude Code is the current main session.
 Prefer plugin-qualified Claude agents for specialist work that needs the
 session's tools, browser, MCP servers, or plugin context. Pass the specific
 subagent type from the installed roster. Use a generic agent only when no
-specialist fits.
+specialist fits. This applies to specialist judgment, not routine bounded
+implementation, which follows Coordinator's cheaper-worker default.
 
 Claude's native Workflow tool is appropriate for deterministic staged fan-outs,
 loop-until-dry discovery, verification panels, or jobs large enough that manual
@@ -26,6 +27,11 @@ the first unfinished one; consult the workflow journal when diagnosing an empty
 result.
 
 ## External workers
+
+Wrap each selected external worker in a native Claude child so it is visible
+to the host and can participate in a Workflow. The child supervises the CLI
+lane and must not implement the ticket itself. Direct shell dispatch from the
+main is only the fallback when native child dispatch is unavailable.
 
 Load only the selected worker guide:
 

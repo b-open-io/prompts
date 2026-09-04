@@ -4,8 +4,8 @@ Read this only when Muse Spark 1.3 is the selected external worker. A dispatch
 can send the prompt, spec, and selected repository content to Meta; apply the
 Coordinator disclosure rule before first use.
 
-Muse is a cheap-volume option, not the quality default. Pin Muse Spark 1.3
-because the CLI default may differ.
+Muse is a cheap implementation-volume lane, not a judgment or review lane. Pin
+Muse Spark 1.3 because the CLI default may differ.
 
 ## Preflight
 

@@ -1,7 +1,7 @@
 ---
 name: orchestrator
-version: 0.0.9
-description: Coordinate implementation workers, native specialists, and an optional independent advisor while the current session keeps planning, review, verification, and git ownership. Use for cross-model orchestration, worker-plus-advisor workflows, or staged multi-agent delivery.
+version: 0.0.10
+description: Coordinate cheaper implementation workers, native specialists, and an optional independent advisor while the current session keeps planning, review, verification, and git ownership. Use for cost-aware cross-model orchestration, worker-plus-advisor workflows, or staged multi-agent delivery.
 ---
 
 # Orchestrator
@@ -13,9 +13,24 @@ it.
 ```text
 current main session
 ├── native specialists: evidence, review, testing, domain expertise
-├── implementation workers: bounded code volume
+├── native worker-controllers: visible supervision in the host UI/workflow
+│   └── cheaper implementation workers: bounded code volume
 └── optional advisor: read-only opinion at a commitment boundary
 ```
+
+Invoking Orchestrator is a routing decision: spend the main model on judgment
+and send bounded implementation to an authorized, available cheaper worker.
+Do not wait for the user to repeat "cheap workers" or "model arbitrage."
+Native specialists remain preferred for evidence, investigation, review,
+testing, and tool- or domain-bound judgment; their availability is not a reason
+to keep routine implementation on the premium lane.
+
+When the host supports native subagents, wrap each external implementation
+worker in a native worker-controller. The controller launches and monitors the
+selected cheaper lane, returns its complete report, and makes the job visible
+to the host UI and native workflows. It does not implement the ticket itself.
+Dispatch the external process directly from the main only when the host lacks a
+usable native child primitive.
 
 ## Compose, do not duplicate
 
@@ -44,8 +59,9 @@ return evidence; they do not inherit those decisions.
 
 1. Orient in the main: inspect instructions, repository state, and the premise
    behind the task.
-2. Select the smallest useful topology. Avoid an advisor or a fan-out when one
-   bounded worker is enough.
+2. Select the smallest useful topology and the cheapest authorized capable
+   implementation lane. Avoid an advisor or a fan-out when one bounded worker
+   is enough.
 3. Load only the selected Coordinator host and worker references. Preflight each
    lane and disclose external data sharing before use.
 4. Gather specialist evidence with bounded, self-contained prompts. Require a
@@ -55,7 +71,8 @@ return evidence; they do not inherit those decisions.
 6. Write worker specs in the main. Partition ownership or isolate worktrees,
    pin shared interfaces, name exact acceptance commands, and forbid unrelated
    files.
-7. Dispatch independent work in parallel, then stop at a barrier before
+7. Spawn visible native worker-controllers for independent units; each
+   controller dispatches its selected cheaper worker. Stop at a barrier before
    synthesis or git operations.
 8. Review every diff, reconcile disagreements with direct evidence, re-run
    acceptance in the main environment, and ship from the main.

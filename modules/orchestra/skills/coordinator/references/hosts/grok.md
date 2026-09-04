@@ -4,9 +4,11 @@ Read this only when Grok Build is the current main session.
 
 ## Native agents
 
-Prefer roster agents on grok-4.6. Pass the named agent type; installed bOpen
-aliases may also resolve. Do not dispatch grok-4.5. Native agent model fields
-accept Grok-native slugs, not arbitrary custom model ids.
+Prefer roster agents on grok-4.6 for evidence, review, testing, and specialist
+judgment. Routine bounded implementation follows Coordinator's cheaper-worker
+default. Pass the named agent type; installed bOpen aliases may also resolve.
+Do not dispatch grok-4.5. Native agent model fields accept Grok-native slugs,
+not arbitrary custom model ids.
 
 ## Native workflows
 
@@ -26,6 +28,11 @@ grok --single -m gpt-5.6-sol in a grok-4.6 supervisor after confirming the
 quoted model entry. An unquoted dotted TOML key creates the wrong nested id.
 
 ## External workers
+
+Wrap each selected external worker in a native Grok agent so it is visible to
+the host and can participate in a workflow. The native controller supervises
+the CLI lane and must not implement the ticket itself. Direct shell dispatch
+from the main is only the fallback when native agent dispatch is unavailable.
 
 Load only the chosen guide:
 

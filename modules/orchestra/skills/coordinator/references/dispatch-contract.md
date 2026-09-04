@@ -54,6 +54,12 @@ cross-unit synthesis, final verification, or git operations.
 
 ## Dispatch safely
 
+- On hosts with native subagents, the main spawns a native worker-controller
+  and the controller runs the external worker command. Tell the controller not
+  to implement the spec itself or silently fall back to its own model.
+- Require the controller to report external provider/model, process outcome,
+  log location, and the worker's complete final report. Its native UI status is
+  lifecycle evidence, not proof that the external implementation succeeded.
 - Run implementation with write access but the narrowest available sandbox.
 - Run independent work in the background and preserve the complete output in a
   log. Do not pipe the worker invocation through head or tail; that can discard

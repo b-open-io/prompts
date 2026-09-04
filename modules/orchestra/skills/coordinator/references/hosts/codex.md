@@ -3,17 +3,21 @@
 Read this only when Codex is the current main session.
 
 Prefer installed bopen specialist agents, then built-in worker or explorer
-roles as an explicit fallback. Never claim a named persona ran unless that
-adapter was actually spawned. Keep orchestration in the main task; the safe
-default depth prevents children from recursively creating an uncontrolled
-tree.
+roles, for evidence, investigation, review, testing, and tool-bound judgment.
+That preference does not override Coordinator's cheaper-worker default for
+routine implementation. Never claim a named persona ran unless that adapter
+was actually spawned. Keep orchestration in the main task; the safe default
+depth prevents children from recursively creating an uncontrolled tree.
 
 Codex has native subagent coordination but no first-class workflow script
-engine. The main sequences stages and barriers. Use native Codex agents for
-work that should stay inside the current runtime; do not launch a second Codex
-CLI merely to reproduce a native subagent.
+engine. The main sequences stages and barriers. For every external
+implementation unit, spawn a native `worker` as its controller so progress is
+visible in the subagent panel. Tell that controller to run the selected cheaper
+worker guide, monitor it, and return its report—not to write the implementation
+with its own model. Use native specialists directly for judgment that should
+stay inside the current runtime.
 
-External implementation is optional. Read only the chosen guide:
+Read only the chosen implementation-worker guide:
 
 - [Grok CLI](../workers/grok.md)
 - [Muse Code](../workers/muse.md)
