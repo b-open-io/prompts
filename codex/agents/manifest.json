@@ -314,10 +314,10 @@
     {
       "source_name": "social-media-manager",
       "source_path": "modules/brand-rep/agents/social-media-manager.md",
-      "source_version": "1.0.5",
-      "source_hash": "sha256:0c5df0e9e0461b572b9f84d10126dcb13ce586e0c06f9e8b34bb11f29bcd598f",
+      "source_version": "1.0.6",
+      "source_hash": "sha256:1d469d477fbfe8939e9dcfcc9209db93f708114d34019533353abe748f0407a6",
       "generated_file": "bopen-social-media-manager.toml",
-      "generated_hash": "sha256:cfd38a97babce910435212c4188ffe65d3acec39807790a9c4124ba0bd05f239",
+      "generated_hash": "sha256:e63142170cf487b9e31bc61cd61ea7c6c8e29520cc6d650a84a07d82f3b21174",
       "agent_name": "bopen_social_media_manager",
       "curated": false,
       "default_install": false

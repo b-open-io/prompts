@@ -77,7 +77,7 @@ the install command when a skill is missing. They do not wrap those products.
 | Agent | Needs | Install |
 |---|---|---|
 | `brand-rep:social-media-manager` (Alex) | `marketing-skills:social`, `:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
-| `brand-rep:social-media-manager` (Alex) | Typefully scheduler, if the user uses Typefully | `npx skills add typefully/agent-skills` |
+| `brand-rep:social-media-manager` (Alex) | Typefully fallback, only when no first-party scheduler is available and the user wants Typefully | `npx skills add typefully/agent-skills` |
 | `core:front-desk` / `dev-ops:integration-expert` | Resend email | `npx skills add resend/resend-skills` |
 | `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
 
