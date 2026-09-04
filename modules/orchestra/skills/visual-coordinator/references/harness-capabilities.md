@@ -1,7 +1,7 @@
 # What each harness can actually do
 
 Researched July 2026 against installed CLIs, then re-verified 2026-08-13 on
-Grok Build 1.0.3 (GROK_AGENT=1), grok 1.0.3, claude 2.1.228, and
+Grok Build 1.0.13, grok 1.0.13, claude 2.1.228, and
 codex-cli 0.145.0. Every row is marked with how it was established. Do not let
 the canvas offer a control this file does not support — an unbuildable option
 in a dropdown is worse than an absent one, because the user configures around
@@ -10,7 +10,7 @@ it and the emitted spec fails.
 ## The single most important constraint
 
 **No host `agent().model` slug is a foreign vendor.** Claude stays Claude.
-Codex stays OpenAI-family. Grok 1.0.3 Task slugs are `grok-4.6` and
+Codex stays OpenAI-family. Grok 1.0.13 task slugs are `grok-4.6` and
 `grok-4.5` only. Custom ids run through `grok --single -m`, which is a
 shell-out node on the canvas.
 
@@ -51,7 +51,7 @@ Verified against official docs and a real persisted run.
 | Per-step model | Yes: `opts.model` (`opus`/`sonnet`/`haiku`/`fable`/full id/`inherit`) and `opts.effort` (`low`…`max`) |
 | Structured output | `opts.schema` (JSON Schema) forces a validated object return |
 | Named agents | `opts.agentType` uses a roster `subagent_type`, inheriting its tools and model |
-| Isolation | `opts.isolation: 'worktree'` per agent; expensive, only when agents write the same paths |
+| Isolation | `opts.isolation: 'worktree'` per agent; controller owns predictable worktree/branch lifecycle |
 | Resume | Same session only. See the replay rule below |
 | Persistence | Script at `~/.claude/projects/<hash>/<session>/workflows/scripts/`; run state JSON alongside |
 | Saved workflows | `.claude/workflows/` (project) or `~/.claude/workflows/` (personal); plugin `workflows/` dir namespaces as `/<plugin>:<name>` |
@@ -68,7 +68,7 @@ not count against session subagent limits; workflows have their own per-run cap.
 
 ## Grok Build — Rhai workflows, native roster agents
 
-Verified 2026-08-13 in a live Grok Build 1.0.3 session (`GROK_AGENT=1`). The
+Verified 2026-09-04 with Grok Build 1.0.13 (`grok --version`). The
 authoring format is public: Rhai scripts via the in-session `workflow` tool,
 documented by the Grok-bundled skill at
 `~/.grok/bundled/skills/create-workflow/SKILL.md` (`/create-workflow`)
@@ -83,18 +83,20 @@ and `~/.grok/docs/user-guide/`. That skill is not in this plugin.
 | Per-step `agent().model` | `grok-4.6` only. Do not offer `grok-4.5`. Custom ids from `grok models` are Grok-CLI shell-outs |
 | Structured output | `opts.output_schema` (JSON Schema map) — supported, same job as Claude `schema` |
 | Named agents | `opts.agent_type` is a roster `subagent_type`. Verified: `research:researcher` and `bopen-tools:researcher` both spawn |
-| Isolation | `opts.isolation_worktree` — private worktree, no automatic merge |
+| Isolation | `opts.isolation_worktree` — private worktree, no automatic merge; preserve the caller's worktree cwd and clean up only after approved merge |
 | Saved workflows | `.grok/workflows/<name>.rhai` (project) or `~/.grok/workflows/<name>.rhai` (user) |
 | UI | `/workflow` launches; `/workflows` is the run dashboard |
 
-Host marker for the detector: `GROK_AGENT=1` (this session). `GROK_HOME` /
-`GROK_SANDBOX` may also be set. Do not require them.
+The main passes its known host as `BOPEN_HOST_HARNESS=grok`. The detector
+validates that marker; it never infers the host from system-wide processes or
+inherited `GROK_HOME`/`GROK_SANDBOX` configuration. Without an explicit valid
+marker, report the host as unknown and refuse executable native assumptions.
 
 CLI still confirmed: `-p/--single` (same flag; requires a prompt value),
 `--prompt-file` (long briefs), `--verbatim`, `-w/--worktree`,
 `--permission-mode` (`default|acceptEdits|auto|dontAsk|bypassPermissions|plan`),
 `--sandbox`, `--reasoning-effort`, `grok models`. Implementers use
-`acceptEdits`. Reviewers use `plan`. `--best-of-n` is not in 1.0.3 help.
+`acceptEdits`. Reviewers use `plan`. `--best-of-n` is not in 1.0.13 help.
 Do not expose it.
 
 xAI's "hundreds of parallel agents" is marketing. The real default budget is
@@ -107,9 +109,8 @@ single-shot: one prompt, one run, no phases.
 
 | Capability | Detail |
 |---|---|
-| Orchestration | Subagent spawn only, on explicit request or an AGENTS.md/skill directive |
-| Concurrency | `agents.max_concurrent_threads_per_session` (default 6) |
-| Depth | `agents.max_depth` (default 1 — no recursive spawning unless raised) |
+| Orchestration | Subagent spawn only, on explicit request or an AGENTS.md/skill directive; caller creates worktrees when selected |
+| Concurrency | Host-configured. Inspect the current runtime/config schema; do not assume a fixed default |
 | Custom agents | `~/.codex/agents/*.toml`, requiring `name`, `description`, `developer_instructions` |
 | Per-subagent model | Supported per OpenAI docs, though every verified example stays OpenAI-family |
 | Sandbox | `-s {read-only\|workspace-write\|danger-full-access}` |
@@ -127,7 +128,7 @@ no phases. There is no `opencode exec`.
 
 | Capability | Detail |
 |---|---|
-| Orchestration | Primary-agent `--agent <name>` plus `@mention` child invocation, caller-sequenced `opencode run` (no native multi-stage workflow engine) |
+| Orchestration | Primary-agent `--agent <name>` plus `@mention` child invocation, caller-sequenced `opencode run` (no native multi-stage workflow engine); caller creates worktrees when selected |
 | Headless | `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"` (positional message, stdin prepended, `-f/--file` attachments, `--dir` cwd, `--format json` for scripting, `--attach <server>` to reuse `opencode serve`, `--auto` to auto-approve non-denied permissions) |
 | Custom agents | `.opencode/agent(s)/<name>.md` (project) or `~/.config/opencode/agent(s)/` (global); filename is the agent name, body is the prompt; `mode: subagent`, `permission:` per agent. Inline `agent:{}` in `opencode.json` also works |
 | Per-agent model | `provider/model` refs (`-m/--model`, per-agent `model:`, per-command `model:`). Subagents without explicit `model` inherit the invoker's model |
@@ -137,13 +138,19 @@ no phases. There is no `opencode exec`.
 | Commands | `.opencode/command(s)/<name>.md`; headless via `opencode run --command <name>` |
 
 **Render OpenCode as a flat subagent roster plus `opencode run` shell-out
-nodes, not a pipeline.** Same rule as Codex.
+nodes, not a pipeline.** Same rule as Codex. Parallelism is caller-managed
+waves and barriers: the caller sequences `opencode run` dispatches and waits
+for the whole panel. OpenCode has no native `parallel()`, `pipeline()`, DAG,
+or multi-stage workflow engine; a reject-back edge is a second caller
+dispatch, not a native loop.
 
-Host marker for the detector: `OPENCODE=1` (`OPENCODE_PID` also set).
+The main passes its known host as `BOPEN_HOST_HARNESS=opencode`. Inherited
+`OPENCODE` variables alone are not sufficient.
 
 ## Model identifiers
 
-Discover rather than assume; `scripts/detect-harness.sh` does this.
+Discover rather than assume; invoke `scripts/detect-harness.sh` with the
+main-known `BOPEN_HOST_HARNESS` value.
 
 - **Claude**: `opus`, `sonnet`, `haiku`, `fable`, `inherit`, or full ids like
   `claude-opus-5`. Effort `low|medium|high|xhigh|max`.
@@ -182,8 +189,9 @@ claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communicat
 # A real child invocation is a primary session invoking the named child.
 opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>" \
   > /tmp/dispatch-<id>.log 2>&1 &
-# Verify models with `opencode models <provider>`; verified example (not
-# universal/permanent): `opencode/muse-spark-1.3-contributor-free`.
+# Verify models with `opencode models <provider>`; live-catalog-confirmed
+# authenticated OpenCode Go lane (training-eligible, not
+# universal/permanent): `opencode-go/muse-spark-1.3-contributor`.
 # Require dispatch evidence: a child marker such as `General Agent` — a
 # primary `build` line alone does not prove delegation. A subagent without
 # its own `model` inherits the parent model.

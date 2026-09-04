@@ -17,7 +17,9 @@ the user's machine, then repeat preflight.
 
     PROMPT_FILE=$(mktemp -t muse-prompt.XXXXXX)
     printf '%s\n' "<imperative; details in SPEC file>" > "$PROMPT_FILE"
-    muse exec --prompt-file "$PROMPT_FILE" --model muse-spark-1.3 +      --reasoning-effort xhigh --disable-approval --workspace <repo> +      > /tmp/dispatch-<id>.log 2>&1 &
+    muse exec --prompt-file "$PROMPT_FILE" --model muse-spark-1.3 \
+      --reasoning-effort xhigh --disable-approval --workspace <repo> \
+      > /tmp/dispatch-<id>.log 2>&1 &
 
 Disable approval while retaining the OS sandbox. Never use yolo mode for a
 worker because it removes that boundary. A successful process exit is not proof

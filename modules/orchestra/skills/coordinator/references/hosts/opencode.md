@@ -2,7 +2,9 @@
 
 Read this only when OpenCode is the current main session.
 
-Detect the host from OPENCODE=1 or OPENCODE_PID. Prefer native OpenCode agents
+The main identifies this host and passes `BOPEN_HOST_HARNESS=opencode` to tools
+that require an explicit host marker. Do not infer the host from inherited
+`OPENCODE` variables. Prefer native OpenCode agents
 from .opencode/agent/, .opencode/agents/, or opencode.json for specialist
 judgment and context-bound work. For routine bounded implementation, follow
 Coordinator's cheaper-worker default and pin the selected provider/model.

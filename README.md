@@ -24,8 +24,9 @@ This repository provides:
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
 - **Orchestration patterns** that keep a strong main model on judgment, wrap
-  cheaper implementation workers in visible native controllers, and support a
-  read-only Fable advisor
+  cheaper implementation workers in visible native controllers, support a
+  read-only Fable advisor, and let humans edit the plan on an AI Elements
+  workflow canvas before execution
 - **Claude Code slash commands** for common workflows
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
@@ -790,16 +791,18 @@ does not pin or rename it. The supporting skills divide responsibilities:
 - `coordinator` writes precise worker specs, assigns non-overlapping files,
   dispatches implementation, and requires acceptance reports. It loads one
   shared dispatch contract, the current host guide, and only the selected
-  worker guide. Bounded implementation defaults to the cheapest authorized,
-  capable lane; native specialists stay focused on evidence, review, testing,
-  and domain judgment. OpenCode is a portable harness whose provider and model
-  must be pinned. Unselected harness manuals never enter the skill context.
+  worker guide. Non-trivial writes use isolated worktrees, all makers stop at
+  a barrier before an independent read-only review, and review plus tests share
+  one corrective pass. The main runs the final checks and owns git. Bounded
+  implementation defaults to the cheapest authorized capable lane; native
+  specialists stay focused on evidence, review, testing, and domain judgment.
 - `advisor` packages a narrow, read-only consult. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
-  A fifth channel, `opencode run --model <provider/model>`, covers cheap or
-  in-harness consults (including Muse Spark 1.3 via OpenCode).
+  The skill loads only the selected channel guide and records the provider,
+  model, authentication path, context sent, and proof that the intended
+  advisor ran. OpenCode consults use a permission-constrained child.
 - `orchestrator` composes native specialists, Coordinator, Advisor, and staged
   waves while leaving final decisions with the main session. It delegates
   harness-specific behavior to Coordinator's on-demand references.
@@ -820,6 +823,13 @@ content to whichever provider backs the pinned `provider/model` — confirm the
 `opencode.json` provider block first so the destination is known. State what will be shared before first use, obtain approval
 unless the user already authorized that lane, and never send secrets or
 unrelated proprietary content.
+
+Grok Build can use an API key or the account signed in through grok.com. To
+select the signed-in account, unset both `XAI_API_KEY` and `GROK_API_KEY` for
+preflight and dispatch, then verify that Grok reports `logged in with
+grok.com`. A temporary `GROK_HOME` reduces local configuration, but the account
+may still supply managed plugins and MCP servers; inspect what actually loaded
+before sending repository context.
 
 ### Custom Workflows
 

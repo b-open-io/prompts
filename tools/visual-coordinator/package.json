@@ -19,6 +19,7 @@
     "clsx": "latest",
     "cn": "^0.2.5",
     "lucide-react": "latest",
+    "radix-ui": "latest",
     "react": "latest",
     "react-dom": "latest",
     "shadcn": "latest",

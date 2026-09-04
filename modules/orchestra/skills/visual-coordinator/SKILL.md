@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.8
+version: 0.1.10
 ---
 
 # Visual Coordinator
@@ -27,7 +27,7 @@ when the user has asked to see or change the plan first.
 ## The rule that governs every control
 
 **No host `agent().model` slug is a foreign vendor.** Claude workflow
-models stay Claude. Codex stays OpenAI-family. Grok 1.0.3 accepts only
+models stay Claude. Codex stays OpenAI-family. Grok 1.0.13 accepts only
 `grok-4.6` (use it) and `grok-4.5` (do not offer it) as `agent().model`.
 A quoted `[model."gpt-5.6-sol"]` makes `grok --single -m gpt-5.6-sol`
 work; that is a Grok-CLI shell-out node, not a native slug. Never render
@@ -43,16 +43,19 @@ adding any control, and treat it as authoritative over memory.
 
 ### 1. Establish the runtime facts
 
-Run the detector rather than assuming anything:
+The main already knows which harness is hosting the session. Pass that exact
+fact to the detector rather than asking the script to guess from unrelated
+processes or inherited configuration:
 
 ```bash
-bash scripts/detect-harness.sh
+BOPEN_HOST_HARNESS=codex bash scripts/detect-harness.sh
 ```
 
 It reports the host harness, which other CLIs are reachable as shell-out lanes,
 the models each lane actually offers, and the installed agent roster with
-display names. Grok's model list is account-scoped and Codex has no enumeration
-command, so both are read from the live environment.
+display names. Grok's model list is account-scoped. Codex has no enumeration
+command, so the detector reads its account-scoped local model cache and keeps
+the configured model as a fallback.
 
 The host harness is a **fact, not a choice** — it is decided by how the session
 was invoked. Render it as a fixed banner. Everything else is configurable.
@@ -69,8 +72,11 @@ Seed the most defensible graph. The user will rewire it on the canvas.
 
 ### 3. Build the artifact
 
-Copy [examples/graph-builder.html](examples/graph-builder.html). That file
-is the canvas. Do not invent a phase list with dropdowns on each box.
+Copy [examples/graph-builder.html](examples/graph-builder.html). That file is
+the generated, self-contained React + AI Elements canvas. Do not hand-edit the
+generated HTML or invent a phase list with dropdowns on each box. Maintainers
+change the source under `tools/visual-coordinator/`, then run
+`bun run sync:plugin` from that directory.
 
 Set `window.VC_ENV` from the detector (harness, models, roster, lanes,
 caps). Set `window.VC_SEED` to the graph from step 2 — nodes and edges
@@ -83,19 +89,27 @@ Required on the page:
 - **Live graph** — add and remove nodes, drag a mint port to connect, drag
   cards, set an edge to `forward` / `reject` / `memory`. The chart redraws
   from state. A non-host lane is a shell-out card and looks distinct.
-- **Inspector** — staffing for the selected card (lane, model, effort,
-  agent, owned paths, task, optional JSON schema, gate command, CLI
-  override). Empty inspector shows the live spec. Structure is not
-  edited here.
-- **Isolation, live-children, and cwd dials** — bounded by detector caps.
+- **Inspector** — role, task, and owned paths first; advanced lane/model,
+  effort, and schema second. Shell-outs additionally show native controller,
+  provider, disclosure, and exact context. Empty inspector stays concise;
+  export is separate. Structure is not edited here.
+- **Isolation, live-children, and cwd dials** — worktree-per-agent is the safe
+  default with predictable `~/code/worktrees/{repo}-{workflow}-{node}` placement,
+  branch/base-ref/cleanup metadata. Codex and
+  OpenCode callers preserve that choice by creating worktree cwd values.
+  Bounded by detector caps.
   Effort lists come from `models.<lane>_effort`. Unavailable lanes stay
   selectable and warn.
 - **Refusal list** — impossible settings (foreign native model, over-cap
-  concurrency, schema on a shell-out, missing CLI) show on the page and
+  concurrency, schema on a shell-out, missing CLI, or incomplete external
+  disclosure boundary) show on the page and
   in Copy spec.
-- **Copy button** — emits the live graph (`nodes[]` + `edges[]`), a
-  **Nodes** staffing list (display name, model, command), and exact CLI
-  for each shell-out node. A Grok native node whose model is not
+- **Export / copy button** — opens a deliberate preview and emits the live graph
+  (`nodes[]` + `edges[]`), a **Nodes** staffing list (display name,
+  provider/model, command), and exact CLI for each shell-out node. Every
+  shell-out includes native controller identity, actual provider/model,
+  disclosure state, and exact context shared. Copy is disabled while unresolved
+  validation/refusal items remain. A Grok native node whose model is not
   `grok-4.6` emits as a shell-out.
 
 ### 3b. Deliver the page
@@ -103,7 +117,8 @@ Required on the page:
 A file path in chat is not a page. Claude Code can host HTML as an
 Artifact. Grok Build and Codex cannot.
 
-On Claude Code, publish the canvas as an Artifact. On every other host, load
+On Claude Code, publish the canvas as an Artifact. On Grok Build, Codex,
+OpenCode, or any other non-Claude host, load
 BitPlan's canonical skill (`Skill(bitplan:bitplan)` for the plugin or
 `Skill(bitplan)` for a standalone install) and use a hosted encrypted draft
 after the user approves it. Prefer an existing BRC-100 wallet. The planned 1Sat CLI
@@ -120,7 +135,13 @@ Emit a human-readable plan and a machine-readable JSON block generated from the
 same canvas state, so they cannot disagree.
 
 When the user configured something the host cannot do, omit it and say so under
-the plan. Never leave an impossible setting looking configured.
+the plan. External nodes are omitted from executable JSON and human Nodes output
+while disclosure is pending/denied or a required boundary field is missing.
+Never leave an impossible setting looking configured.
+
+The canvas is desktop-first. At tablet/mobile widths it shows a compact,
+readable ordered node outline and inspector while graph mutation controls are
+disabled; it never shrinks the infinite canvas into an unreadable editor.
 
 ### 5. Execute what came back
 
@@ -129,7 +150,11 @@ JavaScript workflow script; Grok maps onto a Rhai workflow (bundled
 `/create-workflow`, native `agent_type` + `model`, Sol/Claude nodes as
 Grok-CLI or Claude-CLI shell-outs);
 Codex becomes an ordered series of `codex exec` dispatches the caller sequences.
-Then run it under the ordinary `coordinator` rules: specs before dispatch,
+OpenCode becomes an ordered series of caller-sequenced `opencode run`
+dispatches (positional message, `--model "<provider>/<model>" --dir <repo>`,
+real child-agent work via a primary session invoking `@<agent> <bounded task>`;
+there is no `opencode exec` and no native DAG/workflow engine).
+Then load and follow the shared [coordinator dispatch contract](../coordinator/SKILL.md): specs before dispatch,
 review diffs adversarially, re-run acceptance outside the worker's sandbox, and
 keep every git operation in the main session. Smoke-check a Grok script with
 `validate_only: true` before a real run.
@@ -146,8 +171,8 @@ draws initials from `display_name` in a coloured circle.
 
 ### Reference Files
 
-- **`references/harness-capabilities.md`** — what Claude Code, Codex, and Grok
-  each genuinely support: primitives, caps, isolation, resume semantics, model
+- **`references/harness-capabilities.md`** — what Claude Code, Codex, Grok,
+  and OpenCode each genuinely support: primitives, caps, isolation, resume semantics, model
   identifiers, and the claims the canvas must never make.
 - **`references/emitted-spec-format.md`** — the exact shape of the paste-back
   spec, field rules, per-harness translation, and how to refuse an impossible
@@ -155,15 +180,35 @@ draws initials from `display_name` in a coloured circle.
 - **`references/decomposition.md`** — how to choose the graph: nodes, edges,
   reject-back, barriers, sizing, isolation. Read before seeding, not after.
 
+### Implementation guidance
+
+The portable HTML is generated output. The canonical React source lives in
+`tools/visual-coordinator/`; its AI Elements and shadcn registry files stay
+unmodified while Orchestra-specific wrappers and graph logic live outside
+their managed directories. To refresh the registry components:
+
+```bash
+bunx shadcn@latest add @ai-elements/canvas @ai-elements/controls \
+  @ai-elements/panel @ai-elements/toolbar button dialog dropdown-menu \
+  input textarea
+```
+
+Use `@xyflow/react` through the registry components (`Canvas`, `Node`, `Edge`,
+`Controls`, `Panel`, `Toolbar`). Adapt `VC_ENV`/`VC_SEED` at the boundary and
+validate the domain graph independently. `bun run sync:plugin` creates the
+offline-safe single file; `bun run check:plugin` detects drift. Do not add a CDN
+or a second workflow engine.
+
 ### Assets
 
-- **`examples/graph-builder.html`** — the self-contained canvas to copy.
-- **`assets/canvas-runtime.js`** — seed/env contract for that canvas.
+- **`examples/graph-builder.html`** — generated self-contained canvas to copy.
+- **`../../../../tools/visual-coordinator/`** — canonical React, AI Elements,
+  schema, tests, and deterministic artifact generator.
 
 ### Scripts
 
-- **`scripts/detect-harness.sh`** — reports host harness (`GROK_AGENT` for
-  Grok Build), `native_workflow`, live-child / budget caps, available lanes,
+- **`scripts/detect-harness.sh`** — validates the main-supplied host harness,
+  then reports `native_workflow`, live-child / budget caps, available lanes,
   real model lists per lane, and the deduplicated installed agent roster
   (Claude plugin cache plus `~/.grok/installed-plugins`).
 
@@ -171,7 +216,7 @@ draws initials from `display_name` in a coloured circle.
 
 - `Skill(orchestra:coordinator)` — the dispatch discipline this builds on
 - `Skill(orchestra:wave-coordinator)` — sizing large fan-outs into waves
-- Grok-bundled `create-workflow` (`~/.grok/bundled/skills/create-workflow/SKILL.md`) — not in this plugin. Authors Rhai. Claude and Codex do not have `/create-workflow`
+- Grok-bundled `create-workflow` (`~/.grok/bundled/skills/create-workflow/SKILL.md`) — not in this plugin. Authors Rhai. Claude, Codex, and OpenCode do not have `/create-workflow`
 - `Skill(artifact-design)` — craft for the artifact itself
 - `Skill(bitplan:bitplan)` / `Skill(bitplan)` — host encrypted HTML through the
   external BitPlan provider on Grok, Codex, or any non-Claude harness
