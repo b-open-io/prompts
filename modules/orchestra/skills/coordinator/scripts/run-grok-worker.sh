@@ -47,8 +47,6 @@ done
 if [[ "$mode" == "write" ]]; then
   [[ -n "$branch" && -n "$base_ref" && -n "$ownership" ]] || { echo "write mode requires --branch, --base-ref, and --ownership" >&2; exit 2; }
 fi
-command -v grok >/dev/null || { echo "grok is not installed" >&2; exit 1; }
-
 worker_cwd=$(cd "$worker_cwd" && pwd -P)
 if [[ "$mode" == "write" ]]; then
   repo_root=$(git -C "$worker_cwd" rev-parse --show-toplevel 2>/dev/null) || { echo "write cwd is not a git worktree" >&2; exit 2; }
@@ -59,6 +57,7 @@ if [[ "$mode" == "write" ]]; then
   git -C "$worker_cwd" rev-parse --verify --quiet "${base_ref}^{commit}" >/dev/null || { echo "base ref does not resolve: $base_ref" >&2; exit 2; }
   git -C "$worker_cwd" merge-base --is-ancestor "$base_ref" HEAD || { echo "base ref is not an ancestor of the prepared worktree HEAD: $base_ref" >&2; exit 2; }
 fi
+command -v grok >/dev/null || { echo "grok is not installed" >&2; exit 1; }
 
 real_grok_home="${GROK_HOME:-$HOME/.grok}"
 grok_run_home="$real_grok_home"

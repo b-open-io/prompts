@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -133,12 +134,16 @@ class VisualWorkflowContractTests(unittest.TestCase):
     TOOL = ROOT / "tools/visual-coordinator"
 
     def test_schema_and_command_contracts(self) -> None:
+        if shutil.which("bun") is None:
+            self.skipTest("Bun is not installed in the isolated Python runner")
         result = subprocess.run(
             ["bun", "run", "test"], cwd=self.TOOL, capture_output=True, text=True, check=True
         )
         self.assertIn("passed", result.stdout)
 
     def test_generated_artifact_is_current_and_portable(self) -> None:
+        if shutil.which("bun") is None:
+            self.skipTest("Bun is not installed in the isolated Python runner")
         result = subprocess.run(
             ["bun", "run", "check:plugin"], cwd=self.TOOL, capture_output=True, text=True, check=True
         )
