@@ -64,7 +64,11 @@ The dedup-vs-open-tickets step is what stops discovery from re-filing the same i
 
 At factory scale, a **router** sits above all worker types: work arrives typed (chore, bug, feature, hotfix), and the router picks the workflow and the model tier for it — a workhorse maker for volume, a state-of-the-art model only where planning or checking earns it. Speed-critical work (hotfixes) can **race**: several isolated agents attack the same fix in parallel and the first one through the gate wins. Isolation progresses with maturity — git worktrees are a great place to start and a poor place to end; sandboxes give full isolation plus a place a human can step into mid-run.
 
-**On Claude Code specifically**, staged fan-outs inside a loop pass — find → adversarially verify → synthesize, judge panels, loop-until-dry discovery — can run as a native `Workflow` (deterministic script, live `/workflows` progress, resumable). This is framework-dependent and opt-in-gated; see `skills/coordinator/references/native-workflows.md` for when it applies. On other runtimes, the manual wave protocols in `wave-coordinator` do the same job.
+On a host with a native workflow engine, staged fan-outs inside a loop pass can
+run as a deterministic workflow. Load only the current Coordinator host guide:
+`skills/coordinator/references/hosts/claude.md` or
+`skills/coordinator/references/hosts/grok.md`. On Codex and OpenCode, the
+manual protocols in `wave-coordinator` provide the equivalent barriers.
 
 ## The staged multi-model pipeline — the verified recipe
 

@@ -1,6 +1,6 @@
 ---
 name: wave-coordinator
-version: 1.0.7
+version: 1.0.8
 description: >-
   Dispatch many subagents in coordinated waves with per-wave review. Use for "fan out agents",
   "wave dispatch", "batch agents", "generate N variations", or any fan-out beyond about five
@@ -18,16 +18,12 @@ runtime owns thread creation.
 
 ## Prefer Native Workflows on Claude Code and Grok Build
 
-Claude Code ships `Workflow` (JavaScript, `pipeline()` + `parallel()`). Grok
-Build ships `workflow` (Rhai, barrier `parallel()` only). Both solve this
-skill's core problems structurally: concurrency clamps and queues, results
-collect as structured returns, `/workflows` shows live progress. When the
-session has that tool AND the user asked for the fan-out, write a workflow
-script instead of hand-managed waves — diversity directives go into the
-per-item `agent()` prompts and dedup runs as plain code between stages. Codex
-has no equivalent; the wave protocols below remain the way there. Gating,
-Sol-as-worker, and per-host APIs:
-`../coordinator/references/native-workflows.md`.
+Claude Code and Grok Build provide different native workflow engines. When the
+current session exposes one and the user asked for a fan-out, prefer it over
+hand-managed waves. Load only the applicable host guide:
+[Claude Code](../coordinator/references/hosts/claude.md) or
+[Grok Build](../coordinator/references/hosts/grok.md). Codex and OpenCode keep
+the manual wave protocol below; see their respective Coordinator host guides.
 
 ## The Core Problem
 
@@ -175,12 +171,12 @@ wave.
 
 ### OpenCode
 
-Use native OpenCode subagents (`.opencode/agent(s)/<name>.md`, `--agent <name>`)
-with the installed roster id where one fits. There is no native workflow
-primitive — the caller sequences `opencode run --model <provider/model>`
-dispatches and owns barriers. Keep wave coordination in the main thread;
-subagents without an explicit `model` inherit the invoker's model, so pin
-`provider/model` on worker slots that must not inherit a premium main.
+Use native OpenCode agents (`.opencode/agent(s)/<name>.md`) with the installed
+roster id where one fits. `--agent <name>` selects a primary/all-mode agent,
+not a subagent; invoke a real child from the primary with `@name`, as defined
+by Coordinator. Pin and verify the parent model, then require a child marker
+in the log before counting the run as delegated. There is no native multi-stage
+workflow engine: the caller sequences dispatches and owns barriers.
 
 ## Integration with superpowers
 

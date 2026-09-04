@@ -1,6 +1,6 @@
 ---
 name: advisor
-version: 0.0.5
+version: 0.0.6
 description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
@@ -19,10 +19,10 @@ never delegated implementation. If another model should write bounded code,
 that is the `coordinator` worker pattern. Use `orchestrator` when the current
 main combines specialist agents, external workers, and an advisor.
 
-When one advisor's verdict isn't enough — you want N independent perspectives
-or an adversarial panel voting on a finding — Claude Code's native `Workflow`
-tool runs judge panels as a deterministic script (opt-in gated, Claude-only);
-see `../coordinator/references/native-workflows.md`. A single well-packaged
+When one advisor's verdict is not enough, a native workflow can run an
+adversarial panel on hosts that support it. Load only the current host guide:
+[Claude Code](../coordinator/references/hosts/claude.md) or
+[Grok Build](../coordinator/references/hosts/grok.md). A single well-packaged
 consult remains the default; panels are for the highest-stakes calls.
 
 The advisor's value is only partly the stronger model: a consult also
@@ -190,21 +190,27 @@ unavailable. Do not silently replace Fable with a different advisor.
 ### opencode-as-advisor notes
 
 - **Read-only is correct here.** The advisor advises; it must not edit.
-  Constrain the consult with permissions (`--agent` a read-only subagent where
-  available, or a prompt that says "advisory only, no edits") and keep the
-  advice contract below in every consult prompt — same silence risk as codex.
+  Use an agent whose configuration denies edits and shell execution; a prompt
+  saying "no edits" is not a permission boundary. Invoke a `mode: subagent`
+  advisor through `@name`, or use `--agent <name>` only when that name is a
+  read-only primary/all-mode agent. Keep the advice contract below in every
+  consult prompt — same silence risk as codex.
 - There is no `opencode exec`. The consult entrypoint is `opencode run`:
 
 ```bash
 ADVISOR_MODEL="<provider>/<model>"   # e.g. muse-spark/muse-spark-1.3; pin explicitly
 PROMPT_FILE="/absolute/path/to/prepared-advisor-consult.md"
 
-opencode run --model "$ADVISOR_MODEL" --dir <repo> "$(cat "$PROMPT_FILE)"
+opencode run --model "$ADVISOR_MODEL" --dir <repo> \
+  "@<read-only-subagent> $(cat "$PROMPT_FILE")"
 ```
 
   Attach evidence with `-f/--file`, reuse a running server with
   `--attach http://localhost:4096` to skip MCP cold-boot, and use
   `--format json` when scripting the verdict out.
+- Capture the run and verify the configured advisor's child marker. A primary
+  `build` line alone does not prove the read-only child ran. OpenCode 1.18.20
+  falls back to the default primary agent when `--agent` names a subagent.
 - Preflight `command -v opencode` plus `opencode models <provider>` for the
   pinned id. Custom providers (Muse Spark, Luna) live as `provider:{}` blocks
   in `opencode.json` — confirm the block exists so the data destination is
