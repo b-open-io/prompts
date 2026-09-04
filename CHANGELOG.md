@@ -30,6 +30,15 @@ manifests share the same release version.
 
 ### Fixed
 
+- Corrected OpenCode subagent dispatch: `--agent <name>` selects a primary
+  agent and falls back when given a subagent on OpenCode 1.18.20. The tested
+  headless pattern now pins the parent model, invokes `@general`, and requires
+  a child marker in the log before counting the run as delegated. Model ids
+  remain discovery-driven. Read-only consults require a permission-constrained
+  `@name` child or a read-only primary/all-mode agent; prompt-only restrictions
+  are not treated as a boundary. `advisor` 0.0.6, `coordinator` 0.0.14,
+  `orchestrator` 0.0.8, `wave-coordinator` 1.0.8, `visual-coordinator` 0.1.7.
+  orchestra 0.1.18.
 - Optional modules installed from the b-open-io marketplace no longer ship
   dangling skill symlinks. The marketplace sources each module with
   `git-subdir`, which ships only `modules/<name>`, so the sixteen vendored

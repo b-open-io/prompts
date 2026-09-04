@@ -127,8 +127,8 @@ no phases. There is no `opencode exec`.
 
 | Capability | Detail |
 |---|---|
-| Orchestration | Subagent dispatch (`--agent <name>`) plus caller-sequenced `opencode run` |
-| Headless | `opencode run "<task>"` (positional message, stdin prepended, `-f/--file` attachments, `--dir` cwd, `--format json` for scripting, `--attach <server>` to reuse `opencode serve`, `--auto` to auto-approve non-denied permissions) |
+| Orchestration | Primary-agent `--agent <name>` plus `@mention` child invocation, caller-sequenced `opencode run` (no native multi-stage workflow engine) |
+| Headless | `opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"` (positional message, stdin prepended, `-f/--file` attachments, `--dir` cwd, `--format json` for scripting, `--attach <server>` to reuse `opencode serve`, `--auto` to auto-approve non-denied permissions) |
 | Custom agents | `.opencode/agent(s)/<name>.md` (project) or `~/.config/opencode/agent(s)/` (global); filename is the agent name, body is the prompt; `mode: subagent`, `permission:` per agent. Inline `agent:{}` in `opencode.json` also works |
 | Per-agent model | `provider/model` refs (`-m/--model`, per-agent `model:`, per-command `model:`). Subagents without explicit `model` inherit the invoker's model |
 | Custom providers | `provider:{}` blocks in `opencode.json` (`npm: @ai-sdk/openai-compatible`, `baseURL` ending at `/v1`, key via `{env:VAR}`); verify with `opencode models <provider>` |
@@ -176,9 +176,17 @@ claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communicat
   --model "${BOPEN_ADVISOR_MODEL:-fable}" \
   --permission-mode plan --tools "Read,Grep,Glob" --no-session-persistence
 
-# opencode worker — no `opencode exec` exists; `opencode run` is the entrypoint
-opencode run --model "<provider>/<model>" --dir <repo> "$(cat <file>)" \
+# opencode worker — no `opencode exec` exists; `opencode run` is the entrypoint.
+# `--agent <name>` selects a primary/all-mode agent, not a `mode: subagent`
+# agent (1.18.20 warns and falls back to the default primary agent).
+# A real child invocation is a primary session invoking the named child.
+opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>" \
   > /tmp/dispatch-<id>.log 2>&1 &
+# Verify models with `opencode models <provider>`; verified example (not
+# universal/permanent): `opencode/muse-spark-1.3-contributor-free`.
+# Require dispatch evidence: a child marker such as `General Agent` — a
+# primary `build` line alone does not prove delegation. A subagent without
+# its own `model` inherits the parent model.
 ```
 
 Two caveats worth putting in front of the user:
