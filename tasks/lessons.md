@@ -189,3 +189,12 @@ CI is green, and it is merged (or the user explicitly wants to review first).
 Before the final report, run `git log origin/master..HEAD` on every repo
 touched and act on anything it prints. When a PR must wait on checks,
 subscribe to it and keep a check-in scheduled until it merges.
+
+## "Required checks expected" can mean "branch out of date" (2026-09-05)
+
+A 405 merge refusal saying "N of N required status checks are expected" on a
+green PR was a strict up-to-date rule: the base had moved and the checks had
+to re-run on a head containing it. Before blaming rulesets or admin bypass,
+merge the base branch in, let CI re-run, and retry. In a shallow clone, fetch
+the base explicitly (`git fetch origin dev:refs/remotes/origin/dev`); a bare
+`git fetch origin dev` only lands in FETCH_HEAD.
