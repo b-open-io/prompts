@@ -172,3 +172,24 @@ test('matching hook filenames in arbitrary modules are never executed',async()=>
  try{await hooks['tool.execute.before']({tool:'bash',sessionID:'s'},{args:{command:'echo hello'}});}
  finally{await hooks.dispose();await f.cleanup();}
 });
+
+
+test("disposal stops pending and future message routing but leaves guards enforced", async () => {
+ let started!: () => void, release!: () => void;
+ const ready = new Promise<void>(resolve => { started = resolve; });
+ const hold = new Promise<void>(resolve => { release = resolve; });
+ const calls: string[] = [];
+ const f = await fixture(async (_root, script) => {
+  calls.push(script);
+  if (script === "session-context.sh") { started(); await hold; }
+  if (script === "pretooluse-bash.sh") return { hookSpecificOutput: {permissionDecision: "deny", permissionDecisionReason: "guard remains active"} };
+  return {};
+ });
+ try {
+  const pending = f.hooks["chat.message"]({sessionID: "s1"}, {parts: [{type: "text", text: "hello"}]});
+  await ready; await f.hooks.dispose(); release(); await pending;
+  await f.hooks["chat.message"]({sessionID: "s1"}, {parts: [{type: "text", text: "again"}]});
+  expect(calls).toEqual(["session-context.sh"]);
+  await expect(f.hooks["tool.execute.before"]({tool:"bash",sessionID:"s1"},{args:{command:"echo hello"}})).rejects.toThrow("guard remains active");
+ } finally { release(); await f.cleanup(); }
+});

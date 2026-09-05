@@ -33,4 +33,15 @@ describe("benchmarkCacheKey", () => {
     expect(benchmarkCacheKey("model", "skill", evalCase, "baseline", ""))
       .not.toBe(benchmarkCacheKey("model", "skill", changed, "baseline", ""));
   });
+
+  test("keeps equal bare skill names isolated by qualified identity", () => {
+    expect(benchmarkCacheKey("model", "review:skill", evalCase, "baseline", ""))
+      .not.toBe(benchmarkCacheKey("model", "other:skill", evalCase, "baseline", ""));
+  });
+
+  test("invalidates when the eval file contract changes", () => {
+    const changed = { ...evalCase, files: ["fixtures/example.ts"] };
+    expect(benchmarkCacheKey("model", "skill", evalCase, "baseline", ""))
+      .not.toBe(benchmarkCacheKey("model", "skill", changed, "baseline", ""));
+  });
 });

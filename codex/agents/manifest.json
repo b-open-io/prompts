@@ -282,9 +282,9 @@
       "source_name": "prompt-engineer",
       "source_path": "modules/plugin-kit/agents/prompt-engineer.md",
       "source_version": "2.3.20",
-      "source_hash": "sha256:5a104e9cb882e766e15d95ef4e11efd3f13eb7a78edafceeb9db9d23d22011a3",
+      "source_hash": "sha256:eb6781159dfb23cd3f9e00cf7d1a7f198d357c97361e126b48ac477d6d365ffd",
       "generated_file": "bopen-prompt-engineer.toml",
-      "generated_hash": "sha256:b0a48bbc9e0297ef7dfdf714e10c2334c4222a0cc7bbbad684d27ba1bc260458",
+      "generated_hash": "sha256:0ab9165db9f1ccf35b8e05aaf337087c6180d66a15d0683c6b083cd5f998a05e",
       "agent_name": "bopen_prompt_engineer",
       "curated": true,
       "default_install": true

@@ -207,6 +207,7 @@ export function createHooks({ client, directory }: Context, roots: string[], opt
 
   return {
     async "chat.message"(input: RecordValue, output: RecordValue) {
+      if (disposed) return;
       const s = state(input.sessionID);
       const expected = pendingContinuation.get(input.sessionID);
       if (expected && output.parts.some((p: any) => p.type === "text" && p.text === expected)) { pendingContinuation.delete(input.sessionID); return; }
@@ -215,7 +216,12 @@ export function createHooks({ client, directory }: Context, roots: string[], opt
       const prompt = output.parts.filter((p: any) => p.type === "text" && !p.synthetic).map((p: any) => p.text).join("\n");
       const data = { session_id: input.sessionID, prompt };
       await ensureContextSnapshot(s, data);
-      s.guidance = guidance([...(await invoke("browser-intent.sh", data)), ...(await invoke("prompt-router.sh", data))]);
+      if (disposed) return;
+      const browser = await invoke("browser-intent.sh", data);
+      if (disposed) return;
+      const router = await invoke("prompt-router.sh", data);
+      if (disposed) return;
+      s.guidance = guidance([...browser, ...router]);
     },
     async "experimental.chat.system.transform"(input: RecordValue, output: { system: string[] }) {
       const s = input.sessionID ? state(input.sessionID) : undefined;

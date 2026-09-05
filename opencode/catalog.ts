@@ -145,37 +145,7 @@ function addRule(permission: Record<string, PermissionValue>, key: string, patte
 
 function setRule(rules: Record<string, PermissionRule>, pattern: string, action: PermissionRule): void {
   delete rules[pattern];
-  rules[pattern] = action;
-}
-
-function mergePermission(catalogPermission: any, userPermission: any): any {
-  if (typeof userPermission !== 'object' || userPermission === null || Array.isArray(userPermission)) return userPermission;
-  if (typeof catalogPermission !== 'object' || catalogPermission === null || Array.isArray(catalogPermission)) return { ...userPermission };
-  const merged = { ...catalogPermission };
-  for (const [key, value] of Object.entries(userPermission)) {
-    const catalogValue = catalogPermission[key];
-    merged[key] = catalogValue && typeof catalogValue === 'object' && value && typeof value === 'object'
-      ? sameRuleMap(catalogValue, value) ? { ...catalogValue } : mergeRuleMap(catalogValue, value)
-      : value;
-  }
-  return merged;
-}
-
-function sameRuleMap(first: Record<string, PermissionRule>, second: Record<string, PermissionRule>): boolean {
-  const firstEntries = Object.entries(first);
-  const secondEntries = Object.entries(second);
-  return firstEntries.length === secondEntries.length && firstEntries.every(([pattern, action], index) => {
-    const [otherPattern, otherAction] = secondEntries[index] ?? [];
-    return pattern === otherPattern && action === otherAction;
-  });
-}
-
-function mergeRuleMap(catalogRules: Record<string, PermissionRule>, userRules: Record<string, PermissionRule>): Record<string, PermissionRule> {
-  const merged = { ...catalogRules };
-  for (const [pattern, rule] of Object.entries(userRules)) {
-    setRule(merged, pattern, rule);
-  }
-  return merged;
+  Object.defineProperty(rules, pattern, { value: action, enumerable: true, configurable: true, writable: true });
 }
 
 function simplePattern(pattern: string): boolean {
@@ -213,6 +183,9 @@ function clampRules(value: PermissionValue, inherited: PermissionRule | Record<s
     return rules;
   }
   if (value === 'deny') return value;
+  const entries = Object.entries(inherited);
+  if (!entries.length) return value;
+  if (entries.length === 1 && entries[0][0] === '*') return clampRules(value, entries[0][1]);
   const source = ruleMap(value);
   for (const pattern of [...Object.keys(source), ...Object.keys(inherited)]) {
     if (!simplePattern(pattern)) throw new Error(`Cannot safely combine unsupported OpenCode permission pattern ${pattern}; configure this agent explicitly.`);
@@ -227,47 +200,63 @@ function clampRules(value: PermissionValue, inherited: PermissionRule | Record<s
     });
   const rules: Record<string, PermissionRule> = {};
   for (const pattern of patterns) {
-    rules[pattern] = cappedAction(matchingRule(source, pattern) ?? 'allow', matchingRule(inherited, pattern));
+    setRule(rules, pattern, cappedAction(matchingRule(source, pattern) ?? 'allow', matchingRule(inherited, pattern)));
   }
   return rules;
 }
 
-function clampPermission(permission: any, inherited: any): any {
-  if (inherited === undefined || inherited === null) return permission;
-  if (typeof permission === 'string') {
-    if (inherited === 'deny') return 'deny';
-    if (inherited === 'ask') return permission === 'allow' ? 'ask' : permission;
-    if (typeof inherited === 'object' && permission !== 'deny') return clampRules(permission, inherited);
-    if (typeof inherited === 'object' && inherited['*'] === 'deny') return 'deny';
-    if (typeof inherited === 'object' && inherited['*'] === 'ask') return permission === 'allow' ? 'ask' : permission;
-    return permission;
+// Native OpenCode matches permission names and input patterns in insertion order.
+function matchesTool(pattern: string, tool: string): boolean {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+  return new RegExp('^' + escaped.replaceAll('*', '.*').replaceAll('?', '.') + '$').test(tool);
+}
+
+function userRulesFor(tool: string, ...policies: any[]): Record<string, PermissionRule> {
+  const rules: Record<string, PermissionRule> = {};
+  for (const policy of policies) {
+    if (typeof policy === 'string') {
+      setRule(rules, '*', policy as PermissionRule);
+    } else if (policy && typeof policy === 'object' && !Array.isArray(policy)) {
+      for (const [pattern, value] of Object.entries(policy)) {
+        if (!matchesTool(pattern, tool)) continue;
+        for (const [input, action] of Object.entries(ruleMap(value as PermissionValue))) {
+          setRule(rules, input, action);
+        }
+      }
+    }
   }
-  if (typeof inherited === 'string') {
-    const result: Record<string, PermissionValue> = {};
-    for (const [key, value] of Object.entries(permission)) result[key] = clampRules(value, inherited as PermissionRule);
-    return result;
-  }
-  if (typeof inherited !== 'object' || Array.isArray(inherited) || typeof permission !== 'object' || permission === null || Array.isArray(permission)) return permission;
-  const result = { ...permission };
-  const global = inherited['*'];
-  for (const [key, value] of Object.entries(permission)) {
-    const specific = inherited[key];
-    const inheritedValue = specific ?? global;
-    if (inheritedValue === undefined) continue;
-    result[key] = clampRules(value, inheritedValue);
-  }
-  return result;
+  const entries = Object.entries(rules);
+  const catchAll = entries.findIndex(([pattern]) => pattern === '*');
+  return Object.fromEntries(entries.slice(Math.max(0, catchAll))); // earlier rules are shadowed
+
 }
 
 function mergeAgent(value: any, existing: any, inheritedPermission?: any): any {
   const merged = { ...value, ...existing };
-  if (value?.permission !== undefined && existing?.permission !== undefined) {
-    merged.permission = mergePermission(value.permission, existing.permission);
-  } else if (value?.permission !== undefined) {
-    merged.permission = typeof value.permission === 'object' ? { ...value.permission } : value.permission;
+  if (value?.permission === undefined) return merged;
+  // User agent rules override user global rules, as on the native host. The
+  // source agent's tool restrictions are an independent upper bound on both.
+  const permission: Record<string, PermissionValue> = existing?.permission === undefined
+    ? {} : typeof existing.permission === 'string'
+      ? { '*': existing.permission } : { ...existing.permission };
+  for (const [tool, source] of Object.entries(value.permission)) {
+    const effectiveUserRules = userRulesFor(tool, inheritedPermission, existing?.permission);
+    const constrained = clampRules(source as PermissionValue, effectiveUserRules);
+    delete permission[tool];
+    permission[tool] = constrained;
   }
-  if (merged.permission !== undefined) merged.permission = clampPermission(merged.permission, inheritedPermission);
+  merged.permission = permission;
   return merged;
+}
+
+function nativeSkillScope(specifier: string): string | undefined {
+  if (!specifier || /[()\s]/.test(specifier)) return undefined;
+  if (!specifier.includes(':')) return specifier;
+  const parts = specifier.split(':');
+  // OpenCode names skills without their Claude plugin qualifier. A namespace
+  // wildcard cannot be mapped to '*' without allowing unrelated skills.
+  if (parts.length !== 2 || !validName.test(parts[0]) || !validName.test(parts[1])) return undefined;
+  return parts[1];
 }
 
 export function loadCatalog(roots: string[]): Catalog {
@@ -318,12 +307,13 @@ export function loadCatalog(roots: string[]): Catalog {
           }
           for (const pattern of patterns) addRule(permission, key, pattern, 'allow');
         } else if (parsed.name === 'Skill') {
-          if (!parsed.specifier || parsed.specifier.includes('(') || parsed.specifier.includes(')')) {
+          const scope = nativeSkillScope(parsed.specifier);
+          if (!scope) {
             warning(result.warnings, id, 'tools', raw, 'unsupported Skill scope');
             permission[key] = 'deny';
             continue;
           }
-          addRule(permission, key, parsed.specifier, 'allow');
+          addRule(permission, key, scope, 'allow');
         } else {
           warning(result.warnings, id, 'tools', raw, `unsupported ${parsed.name} scope`);
           permission[key] = 'deny';
@@ -357,19 +347,25 @@ export function loadCatalog(roots: string[]): Catalog {
           }
           for (const pattern of patterns) addRule(permission, key, pattern, 'deny');
         } else if (parsed.name === 'Skill') {
-          if (!parsed.specifier || parsed.specifier.includes('(') || parsed.specifier.includes(')')) {
+          const scope = nativeSkillScope(parsed.specifier);
+          if (!scope) {
             warning(result.warnings, id, 'disallowedTools', raw, 'unsupported Skill scope');
             permission[key] = 'deny';
             continue;
           }
-          addRule(permission, key, parsed.specifier, 'deny');
+          addRule(permission, key, scope, 'deny');
         } else {
           warning(result.warnings, id, 'disallowedTools', raw, `unsupported ${parsed.name} scope`);
           permission[key] = 'deny';
         }
       }
       for (const key of permissionKeys) {
-        if (typeof permission[key] === 'object' && permission[key]['*'] === undefined) permission[key] = { '*': 'allow', ...permission[key] };
+        if (typeof permission[key] === 'object') {
+          if (permission[key]['*'] === undefined) permission[key] = { '*': 'allow', ...permission[key] };
+          // A redundant scoped entry beside a bare tool grant adds no native
+          // permission; defer to the host instead of overwriting its defaults.
+          if (allowedNative.has(key) && Object.values(permission[key]).every(action => action === 'allow')) delete permission[key];
+        }
       }
       if (Object.keys(permission).length) result.agent[id].permission = permission;
     }
@@ -406,7 +402,7 @@ export function applyCatalog(config: any, catalog: Catalog) {
   for (const key of ['agent','command','mcp'] as const) {
     config[key] ??= {};
     for (const [id, value] of Object.entries(catalog[key])) {
-      // User configuration is authoritative, including explicit disabled entries.
+      // Preserve user configuration; source agent tool restrictions remain enforced.
       config[key][id] = key === 'agent'
         ? mergeAgent(value, config[key][id], config.permission)
         : config[key][id] === undefined ? value : { ...value, ...config[key][id] };

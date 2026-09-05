@@ -75,8 +75,8 @@ test('scoped Bash and Skill metadata preserves native allowlists and explicit de
  expect(agent.permission.read).toBeUndefined();
  expect(agent.permission.bash).toEqual({'git':'allow','git *':'allow','*':'deny'});
  expect(Object.keys(agent.permission.bash)).toEqual(['*','git','git *']);
- expect(agent.permission.skill).toEqual({'semgrep':'allow','codeql':'deny','review:visual-review':'allow','*':'deny'});
- expect(Object.keys(agent.permission.skill)).toEqual(['*','semgrep','review:visual-review','codeql']);
+ expect(agent.permission.skill).toEqual({'semgrep':'allow','codeql':'deny','visual-review':'allow','*':'deny'});
+ expect(Object.keys(agent.permission.skill)).toEqual(['*','semgrep','visual-review','codeql']);
  expect(agent.permission.edit).toBe('deny');
  expect(agent.permission.webfetch).toBe('deny');
 });
@@ -105,12 +105,11 @@ test('agent permission maps merge without dropping catalog rules or user restric
  const config:any={agent:{'bopen-demo-reviewer':{model:'openai/custom',permission:{bash:{'*':'deny'},read:'ask'}}},permission:{read:'deny'}};
  applyCatalog(config,catalog);
  expect(config.agent['bopen-demo-reviewer'].model).toBe('openai/custom');
- expect(config.agent['bopen-demo-reviewer'].permission.bash).toEqual({'git':'allow','git *':'allow','*':'deny'});
- expect(Object.keys(config.agent['bopen-demo-reviewer'].permission.bash)).toEqual(['git','git *','*']);
- expect(config.agent['bopen-demo-reviewer'].permission.read).toBe('deny');
+ expect(config.agent['bopen-demo-reviewer'].permission.bash).toBe('deny');
+ expect(config.agent['bopen-demo-reviewer'].permission.read).toBe('ask');
  expect(config.permission).toEqual({read:'deny'});
  applyCatalog(config,catalog);
- expect(config.agent['bopen-demo-reviewer'].permission).toEqual({bash:{'git':'allow','git *':'allow','*':'deny'},read:'deny',edit:'deny',glob:'deny',grep:'deny',webfetch:'deny',websearch:'deny',task:'deny',skill:'deny'});
+ expect(config.agent['bopen-demo-reviewer'].permission).toEqual({bash:'deny',read:'ask',edit:'deny',glob:'deny',grep:'deny',webfetch:'deny',websearch:'deny',task:'deny',skill:'deny'});
 });
 test('inherited global deny and ask rules clamp scoped grants',()=>{
  const root=fixture();
@@ -181,4 +180,38 @@ test('combined command scopes never weaken either ordered policy', () => {
    expect(severity[action(config.agent['bopen-demo-reviewer'].permission.bash,command)]).toBe(expected);
   }
  }
+});
+
+
+test('ordered native user policies cannot erase source restrictions',()=>{
+ const root=fixture();
+ const action=(rules:any,input:string):string=>{
+  if(typeof rules==='string') return rules;
+  let result='allow';
+  for(const [pattern,value] of Object.entries(rules??{})) {
+   const re=pattern.split('*').map(part=>part.split('?').map(text=>text.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('.')).join('.*');
+   if(new RegExp('^'+re+'$').test(input)) result=value as string;
+  }
+  return result;
+ };
+ const policy=(tools:string,disallowed:string,global:any,user:any={})=>{
+  writeFileSync(join(root,'agents/reviewer.md'),`---\ndescription: Test\ntools: ${tools}\ndisallowedTools: ${disallowed}\n---\nReview`);
+  const catalog=loadCatalog([root]);
+  const config:any={permission:global,agent:{'bopen-demo-reviewer':{permission:user}}};
+  applyCatalog(config,catalog);
+  const p=config.agent['bopen-demo-reviewer'].permission;
+  const first=structuredClone(p);applyCatalog(config,catalog);
+  expect(config.agent['bopen-demo-reviewer'].permission).toEqual(first);
+  return p;
+ };
+ expect(action(policy('Bash(git:*)','[]',{bash:'allow','*':'deny'}).bash,'git status')).toBe('deny');
+ expect(action(policy('Bash(git:*)','[]',{'b?sh':'deny'}).bash,'git status')).toBe('deny');
+ const override=policy('Bash(git:*)','[]',{bash:'deny'},{bash:'allow'});
+ expect(action(override.bash,'git status')).toBe('allow');
+ expect(action(override.bash,'rm file')).toBe('deny');
+ const restricted=policy('Bash, Write','Write, Bash(git:*)',{}, {bash:'allow',edit:'allow'});
+ expect(action(restricted.bash,'git status')).toBe('deny');
+ expect(action(restricted.edit,'file')).toBe('deny');
+ expect(action(policy('Skill(core:humanize)','[]',{}).skill,'humanize')).toBe('allow');
+ expect(action(policy('Skill(core:*)','[]',{}).skill,'arbitrary')).toBe('deny');
 });

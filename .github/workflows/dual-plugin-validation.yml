@@ -26,6 +26,16 @@ jobs:
         working-directory: tools/visual-coordinator
         run: bun install --frozen-lockfile
 
+      - name: Install benchmark dependencies
+        working-directory: scripts
+        run: bun install --frozen-lockfile
+
+      - name: Check benchmark entrypoint and types
+        working-directory: scripts
+        run: |
+          bun run check:entrypoint
+          bun run typecheck
+
       - name: Run Python script tests
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
 
@@ -66,6 +76,9 @@ jobs:
 
       - name: Test OpenCode adapter
         run: bun test opencode
+
+      - name: Test benchmark isolation and grading
+        run: bun test ./scripts/tests
 
       - name: Check whitespace
         run: git diff --check

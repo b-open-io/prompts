@@ -54,6 +54,10 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     checks = [
+        ("benchmark entrypoint", ["bun", "run", "--cwd", "scripts", "check:entrypoint"]),
+        ("benchmark TypeScript", ["bun", "run", "--cwd", "scripts", "typecheck"]),
+        ("OpenCode adapter regressions", ["bun", "test", "opencode"]),
+        ("benchmark regressions", ["bun", "test", "./scripts/tests"]),
         (
             "plugin context unit tests",
             [
