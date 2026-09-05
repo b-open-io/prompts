@@ -166,3 +166,7 @@ Read the assembled page top to bottom and answer each question. Fix what fails.
 8. Would a reader outside this project understand every sentence on one read?
 9. Does every unresolved decision have a selectable question whose options
    explain outcome, benefit, cost or risk, reversibility, and follow-up?
+10. Does Unsure name the next check and the work that waits, without accepting
+    another option silently? Does the decision tree use the questionnaire's IDs?
+11. When choices are settled, does the implementation brief state scope,
+    constraints, steps, and observable done conditions instead of asking again?

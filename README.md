@@ -278,7 +278,7 @@ intentional.
 | `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, unsupported significance, vague attribution, promotional drift, canned change summaries, and template-like sales copy; outbound drafts use attributed examples and supplied account facts without inventing commercial claims |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
-| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and turns every decision into a questionnaire that explains each option's consequences. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
+| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and uses a uniform BitPlan reading layout without an embedded proposals menu. Decision trees connect dependent choices; questionnaires include Unsure, consequences, and a copyable response that works with scripts off. Settled plans end with an implementation brief and done conditions. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
@@ -825,7 +825,10 @@ does not pin or rename it. The supporting skills divide responsibilities:
   one corrective pass. The main runs the final checks and owns git. Bounded
   implementation defaults to the cheapest authorized capable lane; native
   specialists stay focused on evidence, review, testing, and domain judgment.
-- `advisor` packages a narrow, read-only consult. From a Codex main it can use
+- `advisor` packages a narrow, read-only consult. It recommends `gpt-6-astra`
+  through Codex CLI from Claude Code, Codex, Grok Build, OpenCode, or any host
+  with shell access, with an explicit read-only sandbox and model pin. Override
+  the Codex model with `BOPEN_CODEX_ADVISOR_MODEL`. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
