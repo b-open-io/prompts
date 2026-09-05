@@ -450,9 +450,9 @@ function buildEnvSection(state: HarnessState, selections: PlanSelections): strin
   return selectedChecks(state, selections, "env").map(({ check }) =>
     action(
       `${check.name}: configure the environment key`,
-      `export ${check.name}="<value supplied securely by the user>"`,
-      `test -n "\${${check.name}:-}"`,
-      `${check.obtain ? `Obtain the value from ${check.obtain}. ` : ""}Ask the user for the secret if it is unavailable; never print the value. After confirmation, persist it in the active shell's user profile.`,
+      `# Template for the profile editor; do not execute this placeholder.\nexport ${check.name}="YOUR_API_KEY_HERE"`,
+      `test -n "\${${check.name}:-}" && test "\${${check.name}}" != "YOUR_API_KEY_HERE"`,
+      `${check.obtain ? `Obtain the value from ${check.obtain}. ` : ""}Open the active shell's user profile in the user's editor and have them replace the placeholder directly there. Preserve existing settings and use owner-only file permissions. Never ask for a secret in chat or place its value in a tool argument. Do not read the saved profile back into the conversation. After the user confirms saving, check only whether the key is available; never print it.`,
     ),
   );
 }
@@ -629,9 +629,9 @@ export function emitPlan(state: HarnessState, selections: PlanSelections): strin
     "",
     "## Execution rules",
     "",
-    "1. Execute the sections in order and run every Verify block immediately after its Command block.",
+    "1. Execute sections in order. For credential templates, wait for the user to save in their editor instead of executing the placeholder. Then run the Verify block in a fresh shell that loads the edited profile; never enable shell tracing. For other items, run Verify immediately after Command.",
     "2. Stop the affected item on any command or verification failure, preserve the error output, and continue only with independent items.",
-    "3. Never print secret values. Ask the user when a credential or ask-tier hook write requires confirmation.",
+    "3. Never request or print secret values in chat or tool arguments. Have the user enter credentials directly in their editor. Ask for confirmation of completion or an ask-tier hook write, never for the secret itself.",
     "4. Do not claim success from command exit alone; the corresponding Verify block must pass.",
   ];
 

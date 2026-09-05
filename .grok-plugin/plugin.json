@@ -1,6 +1,6 @@
 {
   "name": "core",
-  "version": "1.1.161",
+  "version": "1.1.162",
   "description": "Cross-agent development skills, hooks, orchestration, and native adapters for Claude Code, Codex, Grok Build, and OpenCode",
   "author": {
     "name": "b-open-io",

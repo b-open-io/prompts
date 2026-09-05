@@ -481,6 +481,8 @@ the plugin detail view; they advertise a skill-owned dashboard or configurator
 without granting capabilities, persisting settings, or requiring the skill to
 own a separate build. This release uses that contract for **Visual Wayfinder**.
 
+Setup plans keep credential values out of chat and tool arguments: enter keys directly in your editor, then verify availability without displaying them.
+
 When Agent Master is launched through Portless with `--agent-master`, it also
 exposes an origin-restricted local broker at
 `https://agent-master.localhost`. Skill pages on bopen.ai can detect that
