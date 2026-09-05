@@ -1,0 +1,146 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "benchmark entrypoint",
+      "command": [
+        "bun",
+        "run",
+        "--cwd",
+        "scripts",
+        "check:entrypoint"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "benchmark TypeScript",
+      "command": [
+        "bun",
+        "run",
+        "--cwd",
+        "scripts",
+        "typecheck"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "OpenCode adapter regressions",
+      "command": [
+        "bun",
+        "test",
+        "opencode"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "benchmark regressions",
+      "command": [
+        "bun",
+        "test",
+        "./scripts/tests"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "plugin context unit tests",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "plugin manifests",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/check-plugin-manifests.py"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "plugin extraction",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/check-plugin-extraction.py"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "release documentation",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/check-docs.py"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "Codex generated agents",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/codex-agents/generate.py",
+        "--check"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "static plugin weight (core budget)",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/plugin-weight.py",
+        "--max-startup-tokens",
+        "3000",
+        "--max-agent-description-chars",
+        "600",
+        "--max-agent-examples",
+        "0",
+        "--fail-on-duplicates"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "static plugin weight (suite budget)",
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/plugin-weight.py",
+        "--all-plugins",
+        "--max-startup-tokens",
+        "18000",
+        "--max-agent-description-chars",
+        "600",
+        "--max-agent-examples",
+        "0",
+        "--fail-on-duplicates"
+      ],
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "hook regressions",
+      "command": [
+        "bash",
+        "hooks/tests/run-tests.sh"
+      ],
+      "passed": true,
+      "exit_code": 0
+    }
+  ],
+  "model_calls": 0,
+  "production_promoted": false
+}

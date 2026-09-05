@@ -47,4 +47,8 @@ PY
 done
 
 codex plugin list
-python3 scripts/run-plugin-harness.py
+# Keep the full source inventory out of the CI console: a runtime may leave
+# its inherited stdout nonblocking, and a large JSON write can fail with EAGAIN.
+harness_report="${RUNNER_TEMP:-$validation_root}/bopen-plugin-harness.json"
+python3 scripts/run-plugin-harness.py --output "$harness_report"
+echo "Release harness passed; full report: $harness_report"

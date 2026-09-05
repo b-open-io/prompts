@@ -37,6 +37,25 @@ and `skill` tool for progressive loading. Claude model aliases are not OpenCode
 model IDs: agents inherit the current model. Explicit native user configuration
 can override individual agent settings and disable a bundled MCP server.
 
+## Permissions and session context
+
+Source `tools` and `disallowedTools` metadata sets an upper bound on each
+agent. Ordered native user agent rules override user global rules within that
+bound. Scoped Bash rules preserve command limits; unsupported intersections
+fail with an explanation. A bare allowed tool preserves native permission
+defaults instead of granting execution.
+
+OpenCode identifies skills by their bare names. An exact Claude reference such
+as `Skill(core:humanize)` maps to `humanize`; the adapter cannot enforce provider
+identity when different providers use the same name. A namespace wildcard such
+as `Skill(core:*)` is denied with a warning because translating it to `*` would
+allow unrelated skills.
+
+The initial context snapshot is loaded once per session, with concurrent loads
+coalesced and failures retried. Browser intent and prompt routing remain per
+message. Disposal stops subsequent message hooks; tool safeguards continue to
+fail closed.
+
 ## Update and uninstall
 
 Keep the checkout at a stable path. Update it using a fast-forward pull, then

@@ -1,0 +1,9 @@
+{
+  "name": "complete usage with Claude cache tokens",
+  "usage": {
+    "input_tokens": 12,
+    "output_tokens": 4,
+    "cache_read_input_tokens": 8,
+    "cache_creation_input_tokens": 3
+  }
+}

@@ -20,6 +20,25 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install visual coordinator dependencies
+        working-directory: tools/visual-coordinator
+        run: bun install --frozen-lockfile
+
+      - name: Install benchmark dependencies
+        working-directory: scripts
+        run: bun install --frozen-lockfile
+
+      - name: Check benchmark entrypoint and types
+        working-directory: scripts
+        run: |
+          bun run check:entrypoint
+          bun run typecheck
+
+      - name: Run Python script tests
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
+
       - name: Check Claude and Codex manifest parity
         run: python3 scripts/check-plugin-manifests.py
 
@@ -38,6 +57,28 @@ jobs:
 
       - name: Test dual-runtime hooks
         run: bash hooks/tests/run-tests.sh
+
+      - name: Check core source-token budget
+        run: >-
+          python3 scripts/plugin-weight.py
+          --max-startup-tokens 3000
+          --max-agent-description-chars 600
+          --max-agent-examples 0
+          --fail-on-duplicates
+
+      - name: Check shipped plugin suite source-token budget
+        run: >-
+          python3 scripts/plugin-weight.py --all-plugins
+          --max-startup-tokens 18000
+          --max-agent-description-chars 600
+          --max-agent-examples 0
+          --fail-on-duplicates
+
+      - name: Test OpenCode adapter
+        run: bun test opencode
+
+      - name: Test benchmark isolation and grading
+        run: bun test ./scripts/tests
 
       - name: Check whitespace
         run: git diff --check

@@ -1,0 +1,19 @@
+{
+  "name": "@bopen/plugin-checks",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "ink": "7.1.1",
+    "react": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.0",
+    "@types/react": "19.2.14",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "test": "bun test ./tests",
+    "typecheck": "tsc --noEmit --target ESNext --module ESNext --moduleResolution bundler --jsx react-jsx --allowImportingTsExtensions --skipLibCheck --strict --types bun,react benchmark.tsx benchmark-runner.ts benchmark-cache.ts benchmark-grade.ts",
+    "check:entrypoint": "bun -e 'await import(\"./benchmark.tsx\")'"
+  }
+}

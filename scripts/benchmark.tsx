@@ -25,15 +25,26 @@ import { render, Box, Text } from "ink";
 import {
   existsSync,
   mkdirSync,
-  readdirSync,
   readFileSync,
   writeFileSync,
-} from "fs";
-import { join, resolve } from "path";
+  rmSync,
+} from "node:fs";
+import { join, relative, resolve } from "node:path";
 import {
   benchmarkCacheKey,
   type BenchmarkEvalCase,
 } from "./benchmark-cache.ts";
+import {
+  createBenchmarkWorkingDirectory,
+  buildClaudeArgs,
+  discoverSkills,
+  normalizeTokenCount,
+  preflightClaude,
+  runClaude,
+  usageTokens,
+  validateConcurrency,
+  validateTextAblationEvalFile,
+} from "./benchmark-runner.ts";
 import {
   GRADE_SCHEMA,
   GradeParseError,
@@ -51,11 +62,6 @@ export { GRADE_SCHEMA, GradeParseError, parseJudgeGrades };
 type EvalCase = BenchmarkEvalCase;
 type Assertion = BenchmarkEvalCase["assertions"][number];
 
-interface EvalsFile {
-  skill_name: string;
-  evals: EvalCase[];
-}
-
 interface AssertionResult {
   id: string;
   text: string;
@@ -65,7 +71,7 @@ interface AssertionResult {
 
 interface VariantRunResult {
   output: string;
-  tokens: number;
+  tokens: number | null;
   duration_ms: number;
   assertions: AssertionResult[];
   pass_rate: number;
@@ -74,6 +80,8 @@ interface VariantRunResult {
   judge_raw?: string;
   /** Present only when grading failed to parse; not a real assertion grade. */
   grade_error?: string;
+  /** Present when the Claude arm itself failed or timed out. */
+  run_error?: string;
 }
 
 interface GradeOutcome {
@@ -96,12 +104,14 @@ interface SkillBenchmark {
   runner: string;
   script_url: string;
   skill_name: string;
+  skill_id: string;
   skill_path: string;
+  evaluation_mode: "text-body-ablation";
   eval_count: number;
   pass_rate: number;
   baseline_pass_rate: number;
-  avg_tokens_with_skill: number;
-  avg_tokens_baseline: number;
+  avg_tokens_with_skill: number | null;
+  avg_tokens_baseline: number | null;
   avg_duration_ms_with_skill: number;
   avg_duration_ms_baseline: number;
   evals: EvalRunResult[];
@@ -112,6 +122,7 @@ interface BenchmarkReport {
   model: string;
   runner: string;
   script_url: string;
+  evaluation_mode: "text-body-ablation";
   total_skills: number;
   total_evals: number;
   overall_pass_rate: number;
@@ -151,7 +162,7 @@ type Job = RunJob | GradeJob;
 
 interface CacheEntry {
   output: string;
-  tokens: number;
+  tokens: number | null;
   duration_ms: number;
   assertions: AssertionResult[];
   pass_rate: number;
@@ -161,7 +172,18 @@ function readCache(cacheDir: string, key: string): CacheEntry | null {
   const path = join(cacheDir, `${key}.json`);
   if (!existsSync(path)) return null;
   try {
-    return JSON.parse(readFileSync(path, "utf-8")) as CacheEntry;
+    const parsed = JSON.parse(readFileSync(path, "utf-8")) as Partial<CacheEntry>;
+    if (typeof parsed.output !== "string"
+      || !Array.isArray(parsed.assertions)
+      || typeof parsed.pass_rate !== "number"
+      || typeof parsed.duration_ms !== "number") return null;
+    return {
+      output: parsed.output,
+      tokens: normalizeTokenCount(parsed.tokens),
+      duration_ms: parsed.duration_ms,
+      assertions: parsed.assertions,
+      pass_rate: parsed.pass_rate,
+    };
   } catch {
     return null;
   }
@@ -184,7 +206,7 @@ interface EvalState {
   variant: Variant;
   status: EvalStatus;
   passRate: number | null;
-  tokens: number;
+  tokens: number | null;
   duration_ms: number;
 }
 
@@ -199,7 +221,7 @@ interface AppState {
 type AppAction =
   | { type: "PLAN"; totalOps: number; evalKeys: { skill: string; evalId: number; variant: Variant }[] }
   | { type: "RUN_START"; skill: string; evalId: number; variant: Variant }
-  | { type: "RUN_DONE"; skill: string; evalId: number; variant: Variant; tokens: number; duration_ms: number; cached: boolean }
+  | { type: "RUN_DONE"; skill: string; evalId: number; variant: Variant; tokens: number | null; duration_ms: number; cached: boolean }
   | { type: "GRADE_DONE"; skill: string; evalId: number; variant: Variant; passRate: number }
   | { type: "ERROR"; skill: string; evalId: number; variant: Variant; error: string }
   | { type: "COMPLETE"; reportPath: string };
@@ -214,7 +236,7 @@ function reducer(state: AppState, action: AppAction): AppState {
       const evals = new Map<string, EvalState>();
       for (const { skill, evalId, variant } of action.evalKeys) {
         evals.set(evalKey(skill, evalId, variant), {
-          skill, evalId, variant, status: "pending", passRate: null, tokens: 0, duration_ms: 0,
+          skill, evalId, variant, status: "pending", passRate: null, tokens: null, duration_ms: 0,
         });
       }
       return { ...state, totalOps: action.totalOps, evals };
@@ -455,92 +477,22 @@ function parseArgs(): { skill?: string; skillRoot?: string; model: string; concu
     if (args[i] === "--skill" && args[i + 1]) skill = args[++i];
     else if (args[i] === "--skill-root" && args[i + 1]) skillRoot = resolve(args[++i]);
     else if (args[i] === "--model" && args[i + 1]) model = args[++i];
-    else if (args[i] === "--concurrency" && args[i + 1]) concurrency = parseInt(args[++i], 10);
+    else if (args[i] === "--concurrency") concurrency = validateConcurrency(args[++i]);
   }
 
   return { skill, skillRoot, model, concurrency };
 }
 
 // ---------------------------------------------------------------------------
-// Discovery
-// ---------------------------------------------------------------------------
-
-function discoverSkills(repoRoot: string, filter?: string) {
-  const dir = join(repoRoot, "skills");
-  return readdirSync(dir, { withFileTypes: true })
-    .filter(e => e.isDirectory() && (!filter || e.name === filter))
-    .map(e => ({
-      name: e.name,
-      evalsPath: join(dir, e.name, "evals", "evals.json"),
-      skillPath: join(dir, e.name),
-    }))
-    .filter(s => existsSync(s.evalsPath));
-}
-
-// ---------------------------------------------------------------------------
-// Claude CLI runner
-// ---------------------------------------------------------------------------
-
-async function runClaude(
-  prompt: string,
-  opts: { model: string; skillPath?: string },
-): Promise<{ output: string; tokens: number; duration_ms: number }> {
-  const args = [
-    "claude", "-p", prompt,
-    "--model", opts.model,
-    "--output-format", "json",
-    "--dangerously-skip-permissions",
-  ];
-
-  if (opts.skillPath) {
-    const skillMdPath = join(opts.skillPath, "SKILL.md");
-    if (existsSync(skillMdPath)) {
-      args.push("--append-system-prompt", readFileSync(skillMdPath, "utf-8"));
-    }
-  }
-
-  const start = performance.now();
-  const env = { ...process.env };
-  delete env.CLAUDECODE;
-
-  const proc = Bun.spawn(args, { stdout: "pipe", stderr: "pipe", env });
-  const stdout = await new Response(proc.stdout).text();
-  const stderr = await new Response(proc.stderr).text();
-  const exitCode = await proc.exited;
-  const duration_ms = Math.round(performance.now() - start);
-
-  if (exitCode !== 0) {
-    throw new Error(`claude exited ${exitCode}: ${stderr.slice(0, 400)}`);
-  }
-
-  try {
-    const parsed = JSON.parse(stdout);
-    const output = parsed.result ?? parsed.content ?? parsed.text ?? stdout;
-    const tokens = parsed.usage?.total_tokens
-      ?? (parsed.usage?.input_tokens + parsed.usage?.output_tokens)
-      ?? 0;
-    return { output, tokens, duration_ms };
-  } catch {
-    return { output: stdout, tokens: 0, duration_ms };
-  }
-}
-
-// ---------------------------------------------------------------------------
 // LLM-as-judge grading — schema-locked, judge only (never the skill-under-test)
 // ---------------------------------------------------------------------------
-
-function usageTokens(usage: unknown): number {
-  if (!usage || typeof usage !== "object") return 0;
-  const u = usage as { total_tokens?: number; input_tokens?: number; output_tokens?: number };
-  return u.total_tokens ?? ((u.input_tokens ?? 0) + (u.output_tokens ?? 0));
-}
 
 /** Preferred: Messages API constrained decoding. No tools, no skill. */
 async function runJudgeMessages(
   prompt: string,
   model: string,
   apiKey: string,
-): Promise<{ output: string; tokens: number; duration_ms: number }> {
+): Promise<{ output: string; tokens: number | null; duration_ms: number }> {
   const start = performance.now();
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -584,14 +536,8 @@ async function runJudgeMessages(
 async function runJudgeClaude(
   prompt: string,
   model: string,
-): Promise<{ output: string; tokens: number; duration_ms: number }> {
-  const args = [
-    "claude", "-p", prompt,
-    "--model", model,
-    "--output-format", "json",
-    "--json-schema", JSON.stringify(GRADE_SCHEMA),
-    "--dangerously-skip-permissions",
-  ];
+): Promise<{ output: string; tokens: number | null; duration_ms: number }> {
+  const args = buildClaudeArgs(prompt, { model, jsonSchema: GRADE_SCHEMA });
 
   const start = performance.now();
   const env = { ...process.env };
@@ -607,7 +553,7 @@ async function runJudgeClaude(
     throw judgeCliExitError(exitCode, stderr);
   }
 
-  let tokens = 0;
+  let tokens: number | null = null;
   try {
     const parsed = JSON.parse(stdout) as { usage?: unknown };
     tokens = usageTokens(parsed.usage);
@@ -620,7 +566,7 @@ async function runJudgeClaude(
 async function runJudge(
   prompt: string,
   model: string,
-): Promise<{ output: string; tokens: number; duration_ms: number }> {
+): Promise<{ output: string; tokens: number | null; duration_ms: number }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (apiKey) return runJudgeMessages(prompt, model, apiKey);
   return runJudgeClaude(prompt, model);
@@ -650,34 +596,49 @@ async function gradeAssertions(
 // ---------------------------------------------------------------------------
 
 function variantResult(
-  run: { output: string; tokens: number; duration_ms: number; cached: boolean } | undefined,
+  run: { output: string; tokens: number | null; duration_ms: number; cached: boolean; run_error?: string } | undefined,
   grade: GradeOutcome | undefined,
 ): VariantRunResult {
   return {
     output: (run?.output ?? "").slice(0, 2000),
-    tokens: run?.tokens ?? 0,
+    tokens: run?.tokens ?? null,
     duration_ms: run?.duration_ms ?? 0,
     assertions: grade?.assertions ?? [],
     pass_rate: grade?.pass_rate ?? 0,
     cached: run?.cached ?? false,
     ...(grade?.judge_raw ? { judge_raw: grade.judge_raw } : {}),
     ...(grade?.grade_error ? { grade_error: grade.grade_error } : {}),
+    ...(run?.run_error ? { run_error: run.run_error } : {}),
   };
 }
 
 async function main() {
   const repoRoot = resolve(import.meta.dir, "..");
-  const { skill: filterSkill, skillRoot = repoRoot, model, concurrency } = parseArgs();
+  let parsedArgs: ReturnType<typeof parseArgs>;
+  try {
+    parsedArgs = parseArgs();
+  } catch (error) {
+    console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
+  }
+  const { skill: filterSkill, skillRoot = repoRoot, model, concurrency } = parsedArgs;
   const cacheDir = join(repoRoot, "benchmarks", "cache");
 
   // Pre-flight
-  const which = Bun.spawn(["which", "claude"], { stdout: "pipe", stderr: "pipe" });
-  if (await which.exited !== 0) {
-    console.error("Error: `claude` CLI not found in PATH.");
+  try {
+    await preflightClaude();
+  } catch (error) {
+    console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
   }
 
-  const skills = discoverSkills(skillRoot, filterSkill);
+  let skills: ReturnType<typeof discoverSkills>;
+  try {
+    skills = discoverSkills(skillRoot, filterSkill);
+  } catch (error) {
+    console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
+  }
   if (skills.length === 0) {
     console.error(filterSkill
       ? `No evals found for skill "${filterSkill}".`
@@ -686,19 +647,27 @@ async function main() {
     process.exit(1);
   }
 
+  // Both arms of each ablation use this same fresh, empty directory.
+  const workingDirectory = createBenchmarkWorkingDirectory();
+  let cleanupUi: (() => void) | undefined;
+  try {
+
   // Load all evals and plan jobs
-  const skillEvalMap = new Map<string, { evalsFile: EvalsFile; skillPath: string }>();
+  const skillEvalMap = new Map<string, { evalsFile: ReturnType<typeof validateTextAblationEvalFile>; skillPath: string; skill: typeof skills[number] }>();
   const runJobs: RunJob[] = [];
   const evalKeys: { skill: string; evalId: number; variant: Variant }[] = [];
 
   for (const skill of skills) {
-    const evalsFile: EvalsFile = JSON.parse(readFileSync(skill.evalsPath, "utf-8"));
-    skillEvalMap.set(skill.name, { evalsFile, skillPath: skill.skillPath });
+    const evalsFile = validateTextAblationEvalFile(
+      JSON.parse(readFileSync(skill.evalsPath, "utf-8")),
+      skill.evalsPath,
+    );
+    skillEvalMap.set(skill.qualifiedName, { evalsFile, skillPath: skill.skillPath, skill });
 
     for (const evalCase of evalsFile.evals) {
       for (const variant of ["with-skill", "baseline"] as Variant[]) {
-        runJobs.push({ kind: "run", skill: skill.name, skillPath: skill.skillPath, evalCase, variant });
-        evalKeys.push({ skill: skill.name, evalId: evalCase.id, variant });
+        runJobs.push({ kind: "run", skill: skill.qualifiedName, skillPath: skill.skillPath, evalCase, variant });
+        evalKeys.push({ skill: skill.qualifiedName, evalId: evalCase.id, variant });
       }
     }
   }
@@ -724,6 +693,7 @@ async function main() {
   }
 
   const { rerender, unmount } = render(<RootApp />);
+  cleanupUi = unmount;
   const triggerRerender = () => rerender(<RootApp />);
 
   // Plan
@@ -731,7 +701,7 @@ async function main() {
   triggerRerender();
 
   // Result storage
-  const runResults = new Map<string, { output: string; tokens: number; duration_ms: number; cached: boolean }>();
+  const runResults = new Map<string, { output: string; tokens: number | null; duration_ms: number; cached: boolean; run_error?: string }>();
   const gradeResults = new Map<string, GradeOutcome>();
   const gradeFailures: { key: string; error: string; raw?: string }[] = [];
 
@@ -766,6 +736,7 @@ async function main() {
             const result = await runClaude(job.evalCase.prompt, {
               model,
               skillPath: job.variant === "with-skill" ? job.skillPath : undefined,
+              cwd: workingDirectory,
             });
 
             runResults.set(key, { ...result, cached: false });
@@ -783,8 +754,17 @@ async function main() {
               assertions: job.evalCase.assertions,
             });
           } catch (err) {
-            dispatch({ type: "ERROR", skill: job.skill, evalId: job.evalCase.id, variant: job.variant, error: err instanceof Error ? err.message : String(err) });
+            const message = err instanceof Error ? err.message : String(err);
+            runResults.set(key, {
+              output: "",
+              tokens: null,
+              duration_ms: 0,
+              cached: false,
+              run_error: message,
+            });
+            dispatch({ type: "ERROR", skill: job.skill, evalId: job.evalCase.id, variant: job.variant, error: message });
             // Consume grade op too
+            gradeResults.set(key, { assertions: [], pass_rate: 0, grade_error: `run failed: ${message}` });
             dispatch({ type: "GRADE_DONE", skill: job.skill, evalId: job.evalCase.id, variant: job.variant, passRate: 0 });
             triggerRerender();
           }
@@ -795,7 +775,9 @@ async function main() {
 
         try {
           const grades = await gradeAssertions(job.output, job.expectedOutput, job.assertions, model);
-          const passRate = grades.filter(a => a.passed).length / grades.length;
+          const passRate = grades.length > 0
+            ? grades.filter(a => a.passed).length / grades.length
+            : 0;
 
           gradeResults.set(key, { assertions: grades, pass_rate: passRate });
 
@@ -854,12 +836,12 @@ async function main() {
   const skillResults: SkillBenchmark[] = [];
 
   for (const skill of skills) {
-    const { evalsFile } = skillEvalMap.get(skill.name)!;
+    const { evalsFile } = skillEvalMap.get(skill.qualifiedName)!;
     const evalResults: EvalRunResult[] = [];
 
     for (const evalCase of evalsFile.evals) {
-      const wsKey = `${skill.name}:${evalCase.id}:with-skill`;
-      const blKey = `${skill.name}:${evalCase.id}:baseline`;
+      const wsKey = `${skill.qualifiedName}:${evalCase.id}:with-skill`;
+      const blKey = `${skill.qualifiedName}:${evalCase.id}:baseline`;
       const wsRun = runResults.get(wsKey);
       const blRun = runResults.get(blKey);
       const wsGrade = gradeResults.get(wsKey);
@@ -874,7 +856,11 @@ async function main() {
     }
 
     const avg = (arr: number[]) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-    const graded = evalResults.filter(e => !e.with_skill.grade_error && !e.baseline.grade_error);
+    const avgKnownTokens = (arr: Array<number | null>) => {
+      if (!arr.length || arr.some(value => value === null)) return null;
+      return Math.round((arr as number[]).reduce((sum, value) => sum + value, 0) / arr.length);
+    };
+    const graded = evalResults; // Retain failed/incomplete cases in the denominator.
     const wsPassRates = graded.map(e => e.with_skill.pass_rate);
     const blPassRates = graded.map(e => e.baseline.pass_rate);
 
@@ -888,12 +874,14 @@ async function main() {
       runner,
       script_url: scriptUrl,
       skill_name: skill.name,
-      skill_path: `skills/${skill.name}`,
+      skill_id: skill.qualifiedName,
+      skill_path: relative(skillRoot, skill.skillPath),
+      evaluation_mode: "text-body-ablation",
       eval_count: evalResults.length,
       pass_rate: Math.round(avg(wsPassRates) * 1000) / 1000,
       baseline_pass_rate: Math.round(avg(blPassRates) * 1000) / 1000,
-      avg_tokens_with_skill: Math.round(avg(evalResults.map(e => e.with_skill.tokens))),
-      avg_tokens_baseline: Math.round(avg(evalResults.map(e => e.baseline.tokens))),
+      avg_tokens_with_skill: avgKnownTokens(evalResults.map(e => e.with_skill.tokens)),
+      avg_tokens_baseline: avgKnownTokens(evalResults.map(e => e.baseline.tokens)),
       avg_duration_ms_with_skill: Math.round(avg(evalResults.map(e => e.with_skill.duration_ms))),
       avg_duration_ms_baseline: Math.round(avg(evalResults.map(e => e.baseline.duration_ms))),
       evals: evalResults,
@@ -902,7 +890,7 @@ async function main() {
     skillResults.push(skillBenchmark);
 
     // Write per-skill benchmark file
-    const skillBenchDir = join(skillRoot, "skills", skill.name, "evals");
+    const skillBenchDir = join(skill.skillPath, "evals");
     if (!existsSync(skillBenchDir)) mkdirSync(skillBenchDir, { recursive: true });
     writeFileSync(
       join(skillBenchDir, "benchmark.json"),
@@ -918,6 +906,7 @@ async function main() {
     model,
     runner: getRunner(),
     script_url: "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
+    evaluation_mode: "text-body-ablation",
     total_skills: skillResults.length,
     total_evals: totalEvals,
     overall_pass_rate: Math.round(avg(skillResults.map(s => s.pass_rate)) * 1000) / 1000,
@@ -933,9 +922,11 @@ async function main() {
   if (filterSkill && existsSync(outPath)) {
     try {
       const existing: BenchmarkReport = JSON.parse(readFileSync(outPath, "utf-8"));
-      const updatedSkillNames = new Set(skillResults.map(s => s.skill_name));
+      const updatedSkillIds = new Set(
+        skillResults.flatMap(s => [s.skill_id, s.skill_name]),
+      );
       const mergedSkills = [
-        ...existing.skills.filter(s => !updatedSkillNames.has(s.skill_name)),
+        ...existing.skills.filter(s => !updatedSkillIds.has(s.skill_id ?? s.skill_name)),
         ...skillResults,
       ];
       const mergedTotalEvals = mergedSkills.reduce((s, sk) => s + sk.eval_count, 0);
@@ -958,7 +949,9 @@ async function main() {
   await new Promise(r => setTimeout(r, 600));
   unmount();
 
-  if (gradeFailures.length > 0) {
+  const runFailures = [...runResults.values()].filter(result => result.run_error);
+  if (runFailures.length || gradeFailures.length) {
+    for (const failure of runFailures) console.error(`Run failed: ${failure.run_error}`);
     console.error(`\nBenchmark failed: ${gradeFailures.length} unparseable judge ${gradeFailures.length === 1 ? "reply" : "replies"}`);
     for (const f of gradeFailures) {
       console.error(`  ${f.key}: ${f.error}`);
@@ -969,13 +962,15 @@ async function main() {
       }
     }
     console.error(`Diagnostics written to ${outPath}`);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   console.log(`\nBenchmark Complete`);
   console.log(`  Skills: ${report.total_skills}  Evals: ${report.total_evals}`);
   console.log(`  With skill: ${(report.overall_pass_rate * 100).toFixed(1)}%  Baseline: ${(report.overall_baseline_pass_rate * 100).toFixed(1)}%`);
   console.log(`  Report: ${outPath}`);
+  } finally { cleanupUi?.(); rmSync(workingDirectory, { recursive: true, force: true }); }
 }
 
 if (import.meta.main) {

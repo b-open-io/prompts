@@ -1,6 +1,6 @@
 ---
 name: benchmark-skills
-version: 2.0.1
+version: 2.0.2
 description: >-
   Run skill benchmarks and write evals that score a skill against a no-skill baseline. Use for
   "benchmark this skill", "run the skill evals", "write an eval for this skill", or "did this
@@ -13,29 +13,23 @@ Write evals for skills and run the benchmark harness to measure whether a skill 
 
 ## The Core Principle
 
-**Only two types of skills produce measurable benchmark delta:**
+Benchmark the behavior the skill is meant to change, and keep the evaluation mode explicit. Three related questions need different evidence:
 
-1. **Behavioral suppression** — The skill suppresses patterns the model naturally produces. The baseline consistently exhibits the bad behavior; the skill stops it. This is the highest-signal category.
-2. **Genuinely novel knowledge** — The skill injects domain knowledge NOT in the model's training data. If a knowledgeable human would need to look it up, the model probably doesn't know it either.
+1. **Text-output ablation** — Does the injected skill text improve correctness, coverage, or a defined behavior for a fixed prompt? The harness runs a baseline and a with-skill arm in the same empty, tool-free environment. This is an ablation of the text body, not an installed workflow invocation.
+2. **Routing** — Does the host select the right skill or agent for a request? Use the host's routing evaluator and its exact qualified resource identifiers. A routing result does not measure the quality of the eventual answer.
+3. **Tool or artifact integration** — Does the skill complete a workflow involving files, tools, or artifacts? Use an integration fixture with explicit tool permissions and inspect the resulting artifact. A text-only ablation cannot establish this.
 
-**What does NOT produce delta (don't waste time benchmarking these):**
-- Knowledge the model already has (common frameworks, well-known patterns)
-- General quality improvement without a specific behavioral target
-- Skills requiring real system access (filesystem, APIs, browsers)
-- Skills requiring multi-turn interaction
+Skills may provide measurable value through suppression, new knowledge, reliable structure, or general quality improvement. Do not discard a benchmark because a baseline succeeds: retain representative baseline successes and negatives, and keep adversarial cases in a separately labeled set so the suite measures both capability and failure modes.
 
 ## Pre-Flight Checklist
 
-Before writing evals for a skill, verify ALL of these:
+Before writing evals for a skill, record the following:
 
-- [ ] The skill changes default model behavior OR injects genuinely novel knowledge
-- [ ] The skill works in single-prompt-in/single-response-out mode (no interactivity)
-- [ ] The skill doesn't require real system access to demonstrate value
-- [ ] The skill is ours (not copied from another publisher)
-- [ ] You can design at least 2 trap prompts that reliably elicit baseline failure
-- [ ] Assertions are concrete and binary (not vague quality judgments)
-
-If any box fails, the skill is not a good benchmark candidate.
+- [ ] The intended evaluation mode is text ablation, routing, or integration
+- [ ] The task contract and the success criteria are observable
+- [ ] The skill is ours (not copied from another publisher), or its provenance is recorded
+- [ ] The suite includes ordinary held-out prompts, baseline successes, negative cases, and separately labeled adversarial cases where relevant
+- [ ] Assertions are concrete enough to judge consistently, with a deterministic check preferred when one exists
 
 ## Eval File Format
 
@@ -72,33 +66,26 @@ skills/
 }
 ```
 
-## Trap Input Design
+## Prompt and sample design
 
-**Every eval prompt must be a trap** — a prompt that reliably elicits the bad behavior the skill suppresses. If the baseline model passes your assertions without the skill, your test case is useless.
+Use a mixture of representative held-out prompts and adversarial cases. A trap is useful when it tests a known failure mode, but it is one part of the suite rather than a requirement for every eval. Label adversarial cases so they can be read separately from ordinary capability and regression results.
 
-### How to design traps
+### Examples of targeted cases
 
-1. Identify what the skill changes (what patterns it suppresses or what knowledge it injects)
-2. Write a prompt that naturally invites those patterns
-3. Verify the baseline model actually falls into the trap (run without the skill first)
-4. If the baseline passes, redesign the prompt or drop the test case
+These are development prompts and behavior hypotheses. Freeze the assertion
+contract before scoring held-out cases; the examples do not establish what a
+baseline will do.
 
-### Examples of good traps
-
-| Skill | Trap prompt | What baseline does wrong |
+| Skill | Development prompt | Behavior hypothesis to verify on held-out cases |
 |-------|------------|------------------------|
-| humanize | "Write 4 company values with descriptions" | Produces tricolons, binary contrasts, punchline endings |
-| humanize | "Explain the pros and cons of X" | Uses "not X — it's Y" pattern |
-| geo-optimizer | "Generate an AgentFacts schema following NANDA" | Doesn't know NANDA protocol, hallucinates |
-| geo-optimizer | "Audit this site for AI search visibility" | Doesn't know hedge density, 1MB threshold |
+| humanize | "Write 4 company values with descriptions" | Check punctuation, contrast, and ending patterns against the frozen contract |
+| humanize | "Explain the pros and cons of X" | Check for the specified contrast pattern on untouched prompts |
+| geo-optimizer | "Generate an AgentFacts schema following NANDA" | Check protocol fields and unsupported claims against the task contract |
+| geo-optimizer | "Audit this site for AI search visibility" | Check the specified visibility criteria against held-out audits |
 
 ### Contrastive validation
 
-A proper eval checks BOTH directions:
-1. **Baseline DOES exhibit** the bad pattern (trap works)
-2. **Skill output does NOT exhibit** the bad pattern (skill works)
-
-If baseline passes an assertion, that assertion is not measuring delta.
+Compare paired outputs, while retaining cases where both arms pass and cases where both arms fail. A baseline success is evidence about the task's difficulty and guards against publishing a skill that only appears useful on selected failures. Report uncertainty from the paired sample instead of treating a small difference as proof.
 
 ## Writing Assertions
 
@@ -108,18 +95,18 @@ If baseline passes an assertion, that assertion is not measuring delta.
 |------|-------------|------|----------|
 | `not-contains` / regex | Highest | Free | Banned phrases, specific patterns |
 | Binary LLM judge | High | 1 API call | Presence/absence of behavior |
-| G-Eval rubric (CoT) | Medium | 1 API call | Multi-dimensional quality |
+| Rubric judge | Medium | 1 API call | Multi-dimensional quality |
 
-**Default to negative assertions for suppression skills.** "Output does NOT contain tricolons" is more reliable than "output sounds natural."
+Prefer deterministic negative or positive assertions when the behavior has a clear marker. Use a rubric or pairwise judge when correctness or quality cannot be reduced to a reliable string check.
 
 ### Good vs bad assertions
 
-**Bad assertions (will show 0% delta):**
+**Weak assertions:**
 - "The response is helpful" — too vague, baseline passes
 - "The response is correct" — not specific to skill
 - "The response describes three phases" — model already knows this
 
-**Good assertions (will show real delta):**
+**Strong assertions:**
 - "The output does NOT use binary contrast patterns such as 'not X — it's Y'" — specific, testable, baseline fails
 - "The response includes the @context field pointing to nanda.dev namespace" — genuinely novel knowledge
 - "Processes are categorized into safety levels rather than a flat list" — specific format the skill teaches
@@ -128,20 +115,23 @@ If baseline passes an assertion, that assertion is not measuring delta.
 
 1. **Be specific**: test for exact patterns, not vibes
 2. **Be binary**: the judge must answer yes/no unambiguously
-3. **Target what the skill uniquely provides**: if the baseline would pass anyway, the assertion is worthless
-4. **3-5 assertions per eval**: enough to measure, not so many that noise accumulates
-5. **Mix negative and positive**: "does NOT contain X" AND "DOES contain Y"
+3. **Target the task contract**: a baseline pass remains a useful result
+4. **Use enough assertions to cover the contract**: avoid arbitrary counts that inflate judge noise
+5. **State the minimum acceptable quality and no-regression boundary** before looking at delta
+6. **Treat equal correctness with lower cost, token use, or latency as useful evidence**
 
 ## Assertion Discovery (VibeCheck Method)
 
 If you're unsure what assertions to write for a new skill:
 
-1. Generate 10-20 paired outputs (with skill vs. without) on diverse prompts
-2. Have a model compare the two sets and propose behavioral differences
-3. Check which differences appear consistently
-4. Those consistent patterns become your formal assertions
+1. Generate development paired outputs (with skill vs. without) on diverse prompts
+2. Have a model compare the two sets and propose behavioral hypotheses
+3. Freeze the eval contract and assertion wording before inspecting held-out results
+4. Check the frozen assertions on untouched held-out prompts and retain the full failure split
 
-This prevents guessing at assertions that don't actually differentiate.
+Observed development differences are hypotheses, not proof that an assertion
+will differentiate. Do not derive an assertion from the same held-out outputs
+used to report its result.
 
 ## Running the Benchmark
 
@@ -156,14 +146,28 @@ bun run scripts/benchmark.tsx --concurrency 4                    # Parallel work
 From within Claude Code, prefix with `CLAUDECODE=` to avoid nested session errors.
 
 Use `--skill-root` when the skill is published from another plugin repository.
-That repository must expose the skill under `skills/<name>`. The aggregate
-report is still written to `benchmarks/latest.json` in the prompts repository,
-and the per-skill result is written to the source repository's
-`skills/<name>/evals/benchmark.json`.
+The harness discovers root `skills/<name>/` entries and module entries under
+`modules/<plugin>/skills/<name>/` when they contain `evals/evals.json`. A unique
+bare `--skill <name>` remains supported; when names collide, select the exact
+qualified id such as `review:code-auditor`. Vendored symlinks are followed only
+when their resolved target stays inside the supplied repository.
 
-The harness runs each eval prompt twice: once with the skill injected via `--append-system-prompt`, once without. Both outputs are graded by LLM-as-judge.
-Its cache includes the complete eval contract and injected SKILL.md content, so
-changing guidance or assertions cannot silently reuse an older score.
+The aggregate report is still written to `benchmarks/latest.json` in the
+prompts repository, and the per-skill result is written beside the source
+skill's `evals/benchmark.json`.
+
+The text-output harness runs each eval prompt twice: once with the skill body
+injected via `--append-system-prompt`, once without. Both arms use the same
+fresh empty working directory, bare mode, disabled tools, disabled slash
+commands, and empty strict MCP configuration. Both outputs are graded by
+LLM-as-judge. This measures text-body ablation; it does not invoke the skill's
+installed workflow, scripts, tools, or artifacts.
+
+Its cache includes the complete eval contract, qualified skill identity,
+injected `SKILL.md` content, and the current isolation namespace, so changing
+guidance, assertions, identity, or arm semantics cannot silently reuse an
+older score. Missing or errored JSON is retained as an infrastructure failure,
+not counted as a successful raw stdout response.
 
 ## Reading Results
 
@@ -173,20 +177,23 @@ Results go to `benchmarks/latest.json` and per-skill `evals/benchmark.json`:
 
 - **pass_rate**: Assertion pass rate with skill active
 - **baseline_pass_rate**: Assertion pass rate without skill
-- **Delta** (pass_rate - baseline_pass_rate): The signal
+- **Delta** (pass_rate - baseline_pass_rate): A paired comparison signal, interpreted with the sample size and uncertainty
+- **Cost and latency**: Useful secondary evidence when correctness is equal
+- **Token telemetry**: Complete usage includes input, output, and Claude cache read/creation tokens; `null` means usage was missing or corrupt and is not a zero-token measurement
 
-| Delta | Meaning | Action |
+| Result | Meaning | Action |
 |-------|---------|--------|
-| > +20% | Strong skill | Publish |
-| +1% to +20% | Weak signal | Improve evals or skill |
-| 0% | No effect | Skill is redundant OR evals test wrong thing |
-| Negative | Skill hurts | Skill confuses model or evals are bad |
+| Meets minimum quality with no regression | The skill clears the absolute acceptance bar | Consider adoption; lower cost/token/latency strengthens the case |
+| Small paired difference | Evidence is inconclusive at this sample size | Collect more held-out cases or inspect the failure split |
+| Below minimum quality or regresses baseline | The skill is not ready for that task | Fix the skill, prompt, or workflow before adoption |
 
-## Publishing Policy
+## Adoption policy
 
-- Only publish skills with **positive delta**
-- Zero or negative = don't publish, refine skill or evals
-- `latest.json` merges per-skill results when using `--skill` flag
+Use the minimum absolute quality and no-regression boundary as the first gate.
+A positive delta is useful evidence, but it is not required when the skill
+meets that boundary and provides equal correctness at lower cost, token use, or
+latency. Keep routing and integration evidence separate from this text-output
+decision. `latest.json` merges per-skill results when using `--skill`.
 
 ## Judge Quality
 
@@ -195,119 +202,36 @@ The LLM-as-judge has known failure modes. When results seem wrong:
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
 | Everything passes | Assertions too vague | Make assertions more specific and binary |
-| Inconsistent across runs | Judge non-deterministic | Need temperature=0, CoT before verdict |
-| Skill and baseline score the same | Testing knowledge model already has | Redesign as behavioral suppression test |
+| Inconsistent across runs | Judge non-deterministic | Use temperature=0, schema-constrained output, and repeated held-out samples |
+| Skill and baseline score the same | The task may be easy, the effect may be small, or the mode may be wrong | Inspect held-out cases, uncertainty, and whether routing or integration evidence is needed |
 | Skill scores lower than baseline | Skill constraining model too much | Check if skill instructions conflict with prompt |
 
-## Routing evals with `claude plugin eval`
+## Routing evals
 
-The benchmark above measures output quality. It cannot tell you whether the
-model reaches for your skill in the first place. Claude Code ships a separate
-runner for that, added in 2.1.198 and absent from the public changelog.
+The text-body benchmark cannot establish whether the host selects a specialist.
+Use the shipped `scripts/run-agent-routing.py` probe and score its JSONL with
+`scripts/evaluate-skill-routing.py`. The probe asks for the selected
+`subagent_type` as text; it records a selection measurement and does not invoke
+the selected agent or measure the agent's eventual work.
 
-### Unlocking it
-
-```bash
-export CLAUDE_CODE_WALNUT_SPIRE=1
-claude plugin eval .
-```
-
-Before 2.1.207 the gate was a server-side flag with no local override, so on an
-older CLI the command refuses regardless of environment.
-
-### Case layout
-
-A case is a directory under `evals/` holding a prompt and at least one grader.
-`claude plugin eval init --bare <name>` scaffolds the pair.
-
-```
-evals/routes-to-code-auditor/
-  prompt.md
-  graders/expected-agent.md
-```
-
-```markdown
-<!-- prompt.md -->
----
-max_turns: 1
-allowed_tools: [Skill]
-runs: 3
----
-Audit this diff for injection risks. Reply with only the skill you would invoke.
-```
-
-```markdown
-<!-- graders/expected-agent.md -->
----
-type: regex
-weight: 1
-pattern: '^\s*(review:)?(code-auditor)\s*$'
----
-```
-
-A single `case.yaml` is the alternative form. It requires `schema_version`,
-`name`, and an `execution` block, and every grader needs `name` and `type`.
-
-### Grader types
-
-| `type` | Required fields | Scores by |
-|---|---|---|
-| `regex` | `pattern` | matching the final message |
-| `tool_used` | `tool` | whether a tool was called |
-| `tool_order` | `before`, `after` | relative order of two calls |
-| `file_exists` | `path` | a file present after the run |
-| `llm` | `criteria` | a judge model's verdict |
-| `baseline` | `baseline_file`, `criteria` | comparison with a recorded answer |
-
-The first four cost nothing to score. For "which skill did it pick", `regex` is
-exact and free, and a judge has nothing to weigh.
-
-### Ablation
-
-`--ablation with-without` runs every case twice, with the plugin loaded and
-without it, and reports the delta. It answers whether the plugin causes the
-behaviour or the model would have got there anyway.
-
-```bash
-claude plugin eval . --runs 3 --ablation with-without --report report.html
-```
-
-Include negative cases that expect no skill. They are the only thing that
-catches a catalog claiming requests it should decline, and they should pass in
-both arms.
-
-### Failures that are not routing failures
-
-Three setups produce red results indistinguishable from a genuine miss.
-
-`allowed_tools: []` removes the Skill tool and the entire catalog with it, so
-the model correctly answers that nothing applies. Skill-selection cases need
-`allowed_tools: [Skill]`.
-
-A grader pattern must allow the prefix the model returns; asking for
-`visual-review` and receiving `review:visual-review` scores as a miss
-unless the prefix is optional.
-
-A case can name a resource its target plugin does not contain, which happens
-whenever resources move between distributions. Audit expected names against the
-plugin's real inventory before trusting any failure.
-
-On the CLI itself, repeated `--case` flags do not accumulate. The last glob
-wins, so a run that looks like ten cases may have been two.
+Write routing prompts against the actual agent catalog. `review:code-auditor`
+is an agent resource, so a selection case should request that exact qualified
+agent id (or the exact `subagent_type` returned by the catalog), rather than
+asking the model to call a `Skill` with that name. Keep `selected_agent`
+separate from the scorer's legacy `invoked_skills` compatibility field. Before
+using a probe command, run `claude --help` and verify each flag against the
+installed CLI; do not rely on undocumented gates or environment variables.
 
 ### Sampling
 
-Use `--runs 3` or higher. On a thirty-case suite a single sample per arm swings
-by one to two cases on its own, which is enough to invent a difference between
-two versions that does not exist.
+Use repeated runs when the model is stochastic, and report the run count with
+the result. Interpret small paired differences cautiously; add held-out cases
+or repeat the run before treating them as a durable effect.
 
-## Lessons Learned
+## Practical principles
 
-These patterns have been confirmed through multiple benchmark runs:
-
-- **Behavioral suppression skills are easiest to benchmark** (humanize: +53%)
-- **Novel knowledge injection works if truly novel** (geo-optimizer: +50%, NANDA protocol)
-- **Common knowledge injection shows 0% delta** (charting, prd-creator, hunter-skeptic-referee)
-- **Skills needing system access can't be benchmarked this way** (process-cleanup: -5%)
-- **Long, expensive prompts waste money without improving signal** (saas-launch-audit)
-- **2-3 well-designed evals beat 10 mediocre ones**
+- Keep task correctness and regression checks ahead of a delta threshold.
+- Use deterministic assertions where the contract has a clear observable marker.
+- Record errors, incomplete runs, and sampling details alongside successful grades.
+- Do not invent benchmark results or improvement percentages; publish only data
+  produced by the current, inspectable run.
