@@ -825,7 +825,10 @@ does not pin or rename it. The supporting skills divide responsibilities:
   one corrective pass. The main runs the final checks and owns git. Bounded
   implementation defaults to the cheapest authorized capable lane; native
   specialists stay focused on evidence, review, testing, and domain judgment.
-- `advisor` packages a narrow, read-only consult. From a Codex main it can use
+- `advisor` packages a narrow, read-only consult. It recommends `gpt-6-astra`
+  through Codex CLI from Claude Code, Codex, Grok Build, OpenCode, or any host
+  with shell access, with an explicit read-only sandbox and model pin. Override
+  the Codex model with `BOPEN_CODEX_ADVISOR_MODEL`. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
