@@ -82,8 +82,33 @@ def main() -> int:
             [sys.executable, "scripts/codex-agents/generate.py", "--check"],
         ),
         (
-            "static plugin weight",
-            [sys.executable, "scripts/plugin-weight.py"],
+            "static plugin weight (core budget)",
+            [
+                sys.executable,
+                "scripts/plugin-weight.py",
+                "--max-startup-tokens",
+                "3000",
+                "--max-agent-description-chars",
+                "600",
+                "--max-agent-examples",
+                "0",
+                "--fail-on-duplicates",
+            ],
+        ),
+        (
+            "static plugin weight (suite budget)",
+            [
+                sys.executable,
+                "scripts/plugin-weight.py",
+                "--all-plugins",
+                "--max-startup-tokens",
+                "18000",
+                "--max-agent-description-chars",
+                "600",
+                "--max-agent-examples",
+                "0",
+                "--fail-on-duplicates",
+            ],
         ),
     ]
     if args.hooks:

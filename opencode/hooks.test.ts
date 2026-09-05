@@ -42,6 +42,64 @@ describe("native guard adapter", () => {
   });
 });
 
+describe("session context lifecycle", () => {
+  test("loads the initial snapshot once while routing stays per message", async () => {
+    const counts = new Map<string, number>();
+    const f = await fixture(async (_root, script) => {
+      counts.set(script, (counts.get(script) ?? 0) + 1);
+      return script === "session-context.sh"
+        ? { hookSpecificOutput: { additionalContext: "initial snapshot" } }
+        : {};
+    });
+    try {
+      await f.hooks["chat.message"]({ sessionID: "s1" }, { parts: [{ type: "text", text: "First" }] });
+      await f.hooks["chat.message"]({ sessionID: "s1" }, { parts: [{ type: "text", text: "Second" }] });
+      expect(counts.get("session-context.sh")).toBe(1);
+      expect(counts.get("browser-intent.sh")).toBe(2);
+      expect(counts.get("prompt-router.sh")).toBe(2);
+      const system: string[] = [];
+      await f.hooks["experimental.chat.system.transform"]({ sessionID: "s1" }, { system });
+      expect(system[0]).toContain("initial snapshot");
+    } finally { await f.cleanup(); }
+  });
+
+  test("initializes different sessions independently and retries a failed load", async () => {
+    let contextCalls = 0;
+    const f = await fixture(async (_root, script) => {
+      if (script !== "session-context.sh") return {};
+      contextCalls++;
+      if (contextCalls === 1) throw new Error("context unavailable");
+      return { hookSpecificOutput: { additionalContext: "snapshot" } };
+    });
+    try {
+      await f.hooks["chat.message"]({ sessionID: "s1" }, { parts: [{ type: "text", text: "Retry" }] });
+      await f.hooks["chat.message"]({ sessionID: "s1" }, { parts: [{ type: "text", text: "Retry now" }] });
+      await f.hooks["chat.message"]({ sessionID: "s2" }, { parts: [{ type: "text", text: "Other session" }] });
+      expect(contextCalls).toBe(3);
+    } finally { await f.cleanup(); }
+  });
+
+  test("coalesces concurrent initial snapshot loads", async () => {
+    let contextCalls = 0;
+    let release!: () => void;
+    const hold = new Promise<void>(resolve => { release = resolve; });
+    const f = await fixture(async (_root, script) => {
+      if (script !== "session-context.sh") return {};
+      contextCalls++;
+      await hold;
+      return { hookSpecificOutput: { additionalContext: "snapshot" } };
+    });
+    try {
+      const first = f.hooks["chat.message"]({ sessionID: "s1" }, { parts: [{ type: "text", text: "First" }] });
+      const second = f.hooks["chat.message"]({ sessionID: "s1" }, { parts: [{ type: "text", text: "Second" }] });
+      await Promise.resolve();
+      expect(contextCalls).toBe(1);
+      release();
+      await Promise.all([first, second]);
+    } finally { release(); await f.cleanup(); }
+  });
+});
+
 describe("HammerTime lifecycle", () => {
   test("normalizes private transcript, preserves model, deduplicates idle, cleans up", async () => {
     let transcript = "";

@@ -1,105 +1,51 @@
 ---
 name: runtime-context
 description: >-
-  This skill should be used when the user asks "what runtime am I in",
-  "detect the execution environment",
-  "adapt behavior for Claude Code vs a hosted bot", or
-  "check what tools are available in this environment". Detects the current
-  agent execution environment (Claude Code, Vercel Sandbox, or local dev) and
-  adapts behavior accordingly — for agents or bots that run in Claude Code as
-  subagents AND as hosted bots, or a SOUL.md/SKILL.md that must work across
-  runtimes.
+  Use when the user asks what runtime or host is active, which capabilities are
+  available, or how behavior should adapt across Claude Code, Codex, Grok,
+  OpenCode, a sandbox, or local development. Reports observed capabilities
+  without inferring tools from host identity.
 user-invocable: false
 ---
 
 # Runtime Context
 
-Agents run in different environments with different capabilities. This skill
-detects the current runtime so agents can use the right tools and fail clearly
-when a required capability is missing.
+Host identity and available capabilities are separate facts. Use the host value
+to choose a compatible workflow, and use the observed capability fields to
+choose tools. Never claim a tool exists because an environment variable names
+a host.
 
-## The Three Runtimes
+## Host detection
 
-| Runtime | How to detect | Tools available | Skills via |
-|---------|--------------|-----------------|-----------|
-| **Claude Code** | `CLAUDE_CODE=1` env var, or Skill()/Agent()/Read tools exist | Full suite: Read, Write, Edit, Bash, Grep, Glob, Agent, Skill, WebFetch, WebSearch | `Skill()` tool |
-| **Vercel Sandbox** | `/vercel/sandbox/` paths exist, `VERCEL_SANDBOX_ID` env var set | bash-tool trio: `bash`, `readFile`, `writeFile`, plus `skill` if configured | `createSkillTool()` from `bash-tool` |
-| **Local dev** | Neither of the above, `process.cwd()` is in user home or project dir | Whatever the app provides (usually just HTTP + AI SDK) | Direct file reads or none |
-
-## Detection Script
-
-Run `scripts/detect.sh` to get a JSON summary of the current environment:
+Run the detector from the plugin root:
 
 ```bash
 bash skills/runtime-context/scripts/detect.sh
 ```
 
-Returns:
-```json
-{
-  "runtime": "sandbox",
-  "has_bash": true,
-  "has_skill_tool": true,
-  "sandbox_id": "sbx_abc123",
-  "working_dir": "/vercel/sandbox/bot",
-  "node_version": "v22.x.x",
-  "bun_version": "1.x.x"
-}
-```
+The detector reports `claude-code`, `codex`, `grok`, `opencode`, `sandbox`,
+`local`, or `unknown`. An explicit `BOPEN_HOST_HARNESS` marker is authoritative;
+without it, the Vercel sandbox marker selects `sandbox`, trusted Claude or
+Codex session markers identify those hosts, and the fallback is `unknown`.
+Installed CLIs and directories are reported as capabilities and do not identify
+the host. An explicit `local` marker is available when a local lane is known.
 
-## For SOUL.md / System Prompt Authors
+The JSON keeps `has_bash`, `has_bun`, `has_node`, `has_skills`, `skills_count`,
+`sandbox_id`, `working_dir`, and runtime version fields for existing callers.
+The `capabilities` object lists observed command and skill-directory access.
+The detector cannot see tools exposed by the parent agent, so it does not
+fabricate a `has_skill_tool` field.
 
-When writing a system prompt that works across runtimes, structure it like this:
+## Working across hosts
 
-```markdown
-## Environment Awareness
+Use the file, browser, shell, and visualization tools exposed in the current
+session. If a needed tool is unavailable, say which capability is missing and
+adapt using the tools that are actually available. Load a skill directly from
+its `SKILL.md` only when the current host does not expose a skill loader.
 
-Before taking action, check your environment:
-1. If you have `Skill()` and `Agent()` tools, you are in Claude Code
-   - Use skills via `Skill(name)`, delegate via `Agent()`
-   - Full file access via Read/Write/Edit
-2. If you have `bash`, `readFile`, `writeFile` tools, you are in a Sandbox
-   - Run scripts via `bash`, read context via `readFile`
-   - Skills available via the `skill` tool if configured
-3. If you have no tools, you are text-only
-   - Answer from your training and system prompt context
-   - Tell the user what you would do if you had tools
+BitPlan is optional. Use it when it is available and useful for the requested
+visual plan; the current tool availability remains authoritative.
 
-Do not guess which tools exist. If a tool call fails, state what tool
-was missing and what capability it would have provided.
-```
-
-## HTML a human must see
-
-Claude Code can show HTML as an Artifact. Grok Build and Codex cannot.
-When you write a visual plan, recap, or coordinator canvas outside Claude
-Code, load BitPlan's canonical skill: `Skill(bitplan:bitplan)` for the plugin
-or `Skill(bitplan)` for a standalone install. If it is unavailable, give the
-user an open local page and explain how to install BitPlan. A repo path in chat
-is not a page.
-
-## Adapting Behavior
-
-The goal is NOT fallbacks. The goal is clarity.
-
-**Correct:** "I'm in a Sandbox. I have bash and file tools but no Skill() tool.
-I'll read the skill instructions directly from ./skills/clawnet/SKILL.md."
-
-**Incorrect:** Silently trying Skill() first, catching the error, then trying
-readFile, then trying fetch, then giving up without telling the user.
-
-### Capability Declaration Pattern
-
-At the start of a conversation or task, state what tools are available:
-
-```
-I'm running in a Vercel Sandbox with bash, file, and skill tools.
-I can: run scripts, read/write files, look up skill instructions.
-I cannot: spawn subagents, use Claude Code tools, access the host filesystem.
-```
-
-This sets expectations immediately so users and orchestrators know what to ask for.
-
-## Reference Files
-
-- `README.md` — Three runtimes explained, capability matrix, bash-tool integration guide for SDK developers, skill declaration across runtimes
+Do not announce the environment at the start of every task. Report it when the
+user asks, when a capability changes the plan, or when a failed tool call needs
+an explanation.

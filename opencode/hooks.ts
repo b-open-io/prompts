@@ -70,7 +70,7 @@ export async function normalizeTool(tool: string, args: RecordValue, directory: 
   return { tool_name: names[tool] ?? tool, tool_input: input };
 }
 
-type State = { epoch: number; retries: number; blocked: boolean; busy: boolean; seen: Set<string>; context: string; guidance: string };
+type State = { epoch: number; retries: number; blocked: boolean; busy: boolean; seen: Set<string>; context: string; contextLoaded: boolean; contextLoading?: Promise<void>; guidance: string };
 export function createHooks({ client, directory }: Context, roots: string[], options: { run?: HookRunner; maxContinuations?: number; coreRoot?: string } = {}) {
   let runtimeHome: string | undefined;
   let runtimeEnvironment: Promise<Record<string, string>> | undefined;
@@ -110,7 +110,7 @@ export function createHooks({ client, directory }: Context, roots: string[], opt
   const pendingContinuation = new Map<string, string>();
   let disposed = false;
   const state = (id: string) => {
-    if (!states.has(id)) states.set(id, { epoch: 0, retries: 0, blocked: false, busy: false, seen: new Set(), context: "", guidance: "" });
+    if (!states.has(id)) states.set(id, { epoch: 0, retries: 0, blocked: false, busy: false, seen: new Set(), context: "", contextLoaded: false, guidance: "" });
     return states.get(id)!;
   };
   const coreRoot = realpathSync(options.run && options.coreRoot ? options.coreRoot : join(import.meta.dir, ".."));
@@ -128,6 +128,24 @@ export function createHooks({ client, directory }: Context, roots: string[], opt
       catch (error) { if (guard) throw error; }
     }
     return results;
+  };
+  // session-context.sh is the initial session snapshot; routing stays per message.
+  const ensureContextSnapshot = async (s: State, data: RecordValue) => {
+    if (s.contextLoaded) return;
+    if (s.contextLoading) return s.contextLoading;
+    let loading: Promise<void>;
+    loading = (async () => {
+      try {
+        s.context = guidance(await invoke("session-context.sh", data, true));
+        s.contextLoaded = true;
+      } catch {
+        s.context = "";
+      } finally {
+        if (s.contextLoading === loading) s.contextLoading = undefined;
+      }
+    })();
+    s.contextLoading = loading;
+    return loading;
   };
   const guidance = (results: RecordValue[]) => results.map(r => r.hookSpecificOutput?.additionalContext).filter(v => typeof v === "string").join("\n")
     .replace(/Skill\((?:[\w-]+:)?([\w-]+)\)/g, 'skill tool with name "$1"')
@@ -196,7 +214,7 @@ export function createHooks({ client, directory }: Context, roots: string[], opt
       s.epoch++; s.retries = 0; s.blocked = false;
       const prompt = output.parts.filter((p: any) => p.type === "text" && !p.synthetic).map((p: any) => p.text).join("\n");
       const data = { session_id: input.sessionID, prompt };
-      s.context = guidance(await invoke("session-context.sh", data));
+      await ensureContextSnapshot(s, data);
       s.guidance = guidance([...(await invoke("browser-intent.sh", data)), ...(await invoke("prompt-router.sh", data))]);
     },
     async "experimental.chat.system.transform"(input: RecordValue, output: { system: string[] }) {
@@ -221,7 +239,6 @@ export function createHooks({ client, directory }: Context, roots: string[], opt
     },
     async "experimental.session.compacting"(input: RecordValue, output: { context: string[] }) {
       output.context.push(nativeGuidance);
-      state(input.sessionID).context = "";
     },
     async event({ event }: { event: RecordValue }) {
       const id = event.properties?.sessionID ?? event.properties?.info?.id;

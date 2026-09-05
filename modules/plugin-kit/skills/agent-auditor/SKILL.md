@@ -2,11 +2,10 @@
 name: agent-auditor
 version: 0.1.2
 description: >-
-  Comprehensive audit skill for agents and skills across the plugin ecosystem.
-  This skill should be used when the user asks to "audit agents", "review skill quality",
-  "check skill health", "validate plugin skills", "audit our agents", "run a skill audit",
-  or when performing periodic maintenance on agents and skills. Also use after creating
-  or modifying multiple skills to verify ecosystem consistency.
+  Audit agents and skills across the plugin ecosystem for triggering, structure,
+  progressive disclosure, permissions, and benchmark readiness. Apply for requests
+  to audit agents, review skill quality, check skill health, validate plugin skills,
+  or run periodic authoring maintenance.
 user-invocable: false
 ---
 
@@ -32,7 +31,7 @@ Report four numbers and act on them:
 | Signal | Budget | Why |
 |---|---|---|
 | Agent description chars | ≤ 600 each | Anthropic's guidance is 200–1,000; catalogs drift well past it |
-| `<example>` blocks per agent | 0 | Examples constrain the model's matching and cost bytes on every request |
+| `<example>` blocks per agent | 0 | Examples constrain model matching and cost bytes on every request |
 | Aggregate startup tokens | project ceiling | The number a session pays before doing any work |
 | Agent share of always-on cost | report it | Agents are frequently the larger half and are easy to overlook |
 
@@ -41,19 +40,20 @@ Gate a catalog in CI with:
 ```bash
 python3 scripts/plugin-weight.py \
   --max-agent-description-chars 600 \
-  --max-agent-examples 2 \
+  --max-agent-examples 0 \
   --max-startup-tokens 16000
 ```
 
 Two failure modes to name explicitly in the report. A weight report that shows
 agents as a bare count lets the agent half of a catalog grow past any gate built
 on it, so confirm the report measures agent description and `tools:` bytes.
-And an agent that enumerates `Skill(a), Skill(b), …` can reach only those
-entries; collapsing the list to a bare `Skill` grant widens access while cutting
-bytes.
+If an agent has a broad `Skill` grant, treat that as valid access and do not
+require it to enumerate `Skill(a), Skill(b), …`. If its access is deliberately
+restricted, preserve that boundary and assess only whether the listed entries
+meet the task; never widen the list merely to reduce startup bytes.
 
 Any compression here changes routing behaviour, so pair it with a routing eval
-from `benchmark-skills` before shipping.
+from `plugin-kit:benchmark-skills` before shipping.
 
 ### 1. Scope & Invocation
 
@@ -69,13 +69,13 @@ Verify the invocation control fields are set correctly.
 | Agent-only + no auto-invoke | `false` | `true` |
 
 **Checks:**
-- Does the skill require user interaction (OTP, confirmation, subjective input)? If yes, needs `disable-model-invocation: true`
-- Does the skill have irreversible side effects (sends money, publishes, deploys)? If yes, needs `disable-model-invocation: true`
-- Would a user ever type `/skill-name` directly? If no, needs `user-invocable: false`
-- Is this purely internal agent plumbing? If yes, needs `user-invocable: false`
-- Cross-reference: which agents list this skill in their `tools:` frontmatter? Does that match the intended audience?
+- Read these fields using the target host's current invocation semantics; defaults and discovery behavior can differ by host.
+- Distinguish discovery from the mutation boundary. Do not disable model discovery automatically because a workflow includes interaction or approval; preserve the user's discovery policy and require approval immediately before an irreversible mutation.
+- Set `disable-model-invocation: true` when the repository policy requires explicit user invocation or when host behavior would otherwise cross that approval boundary.
+- Set `user-invocable: false` for internal plumbing that should stay out of the user's command menu.
+- Cross-reference which agents list this skill in their `tools:` frontmatter and whether that matches the intended audience.
 
-**Common failure:** Skills that are agent-internal but missing `user-invocable: false`, cluttering the user's `/` menu.
+**Common failure:** Treating a host's default discovery policy as a universal safety control instead of enforcing approval at the mutation boundary.
 
 ### 2. Location & Cross-Client
 
@@ -92,8 +92,7 @@ The description is the single most important field -- it determines whether Clau
 **Structure:** `[What it does] + [When to use it] + [Key capabilities]`
 
 **Checks:**
-- Uses third-person format ("This skill should be used when..." not "Use when...")
-- Includes specific trigger phrases users would actually say
+- States the capability and real trigger phrases users would use; no fixed lead-in sentence is required.
 - Under 1024 characters
 - No XML angle brackets (`<` or `>`)
 - Not too vague ("Helps with projects" = fail)
@@ -101,7 +100,7 @@ The description is the single most important field -- it determines whether Clau
 - Includes negative triggers if the skill is easily confused with similar skills
 - Mentions relevant file types if applicable
 
-**Test the description:** Ask Claude "When would you use the [skill name] skill?" -- Claude should quote the description back accurately. If it can't, the triggers are weak.
+**Test the description:** Exercise it with representative should-trigger and should-not-trigger requests on the target host. Judge whether the skill activates for the right work and stays quiet for nearby work; do not use the model's ability to quote the description as the test.
 
 ### 4. Structure & Progressive Disclosure
 
@@ -139,10 +138,14 @@ Agents that create or modify skills should have access to the right toolkit:
 |---------------|---------|
 | `Skill(skill-creator:skill-creator)` | Interactive skill creation workflow |
 | `Skill(plugin-dev:skill-development)` | Skill writing best practices |
-| `Skill(core:benchmark-skills)` | Eval/benchmark harness |
-| `Skill(core:agent-auditor)` | This audit skill |
+| `Skill(plugin-kit:benchmark-skills)` | Eval/benchmark harness |
+| `Skill(plugin-kit:agent-auditor)` | This audit skill |
 
-Check the agent's `tools:` frontmatter to verify these are listed.
+Check the agent's `tools:` frontmatter to verify the required access. A bare
+`Skill` grant is valid when the host grants broad skill access; do not demand
+explicit `Skill(...)` entries. When a list is intentionally restricted, do not
+widen it just to satisfy a size target; report a missing capability only when
+the requested audit genuinely needs it.
 
 ### 7. Generative UI Awareness
 
@@ -163,19 +166,25 @@ If the agent's domain involves UI generation, rendering, or cross-platform outpu
 
 ### Step 1: Enumerate & Classify (via subagent)
 
-Delegate enumeration and classification to a subagent to keep the main context clean:
+Resolve the owning plugin root before enumerating. Scan the root and module
+trees that belong to that plugin; do not assume the repository's root roster is
+the complete catalog. Delegate enumeration and classification when the host
+supports it to keep the main context clean:
 
 ```
 Agent(prompt: "Enumerate and classify all skills in the target plugin.
 
-1. Run: ls skills/*/SKILL.md and count total
+1. Use the host's file-search or glob tool for `skills/*/SKILL.md` and
+   `modules/*/skills/*/SKILL.md`, skipping absent directories, and count the
+   returned files
 2. For each skill, read the YAML frontmatter and classify:
    - Type: agent-only (user-invocable: false), user-only (disable-model-invocation: true), or default
    - Plugin it belongs in
-   - Which agents reference it (grep agents/*.md for Skill(name))
+   - Which agents reference it (search `agents/*.md` and
+     `modules/*/agents/*.md` for `Skill(name)`)
 3. Return a table: | Skill | Type | Referenced By | Notes |
 
-Target directory: skills/",
+Target plugin root and its `modules/*` children:",
 subagent_type: "general-purpose")
 ```
 
@@ -199,6 +208,10 @@ Record per dimension:
 - **Pass**: Meets criteria
 - **Warn**: Minor issue, non-blocking
 - **Fail**: Must fix before publishing
+
+Cost or model choice alone is not a failure. Mark a less expensive skill or
+implementation as pass when it meets the same observable quality criteria;
+record any measured tradeoff separately from the quality status.
 
 ### Step 4: Generate Report
 
