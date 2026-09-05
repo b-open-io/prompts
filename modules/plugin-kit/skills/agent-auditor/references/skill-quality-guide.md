@@ -25,9 +25,9 @@ The description field is the single most critical piece of a skill. It determine
 **Structure:** `[What it does] + [When to use it] + [Key capabilities]`
 
 **Good descriptions:**
-- Include specific phrases users would actually say
+- State the capability and include specific phrases users would actually say
 - Mention relevant file types, tool names, or domain terms
-- Use third-person format ("This skill should be used when...")
+- Use natural, concise wording; no fixed lead-in sentence is required
 - Stay under 1024 characters
 - Include negative triggers when disambiguation is needed
 
@@ -37,7 +37,10 @@ The description field is the single most critical piece of a skill. It determine
 - Too technical: "Implements the Project entity model with hierarchical relationships"
 - Missing use cases: only says what it does, not when to use it
 
-**Testing the description:** Ask Claude "When would you use the [skill name] skill?" If Claude can't articulate when to trigger it, the description needs work.
+**Testing the description:** Exercise the skill with representative requests
+that should and should not trigger it on the target host. Judge actual routing
+behavior and nearby false positives; do not treat quoting the description as a
+trigger test.
 
 ### Composability
 
@@ -118,7 +121,8 @@ The same information appears in SKILL.md body and a references/ file. Single sou
 2. **Test:** Run trigger tests (10 should-trigger, 10 should-not-trigger), functional tests
 3. **Review:** Self-review against this guide, or have another agent audit it
 4. **Improve:** Fix issues found in testing/review, iterate on description
-5. **Publish:** Merge to default branch, bump plugin version
+5. **Publish:** Follow the owning repository's release and promotion policy;
+   bump the plugin version only at the approved release stage
 6. **Maintain:** Periodic re-audit, update for API changes, refine based on usage feedback
 
 ## Audit Criteria Summary

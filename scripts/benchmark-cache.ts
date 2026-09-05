@@ -1,4 +1,8 @@
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
+
+/** Changing this namespace invalidates results produced before clean-arm isolation. */
+export const BENCHMARK_CACHE_NAMESPACE = "text-body-ablation-v2";
+export const BENCHMARK_CACHE_VERSION = 2;
 
 export interface BenchmarkAssertion {
   id: string;
@@ -23,12 +27,15 @@ export function benchmarkCacheKey(
 ): string {
   return createHash("sha1")
     .update(JSON.stringify({
+      namespace: BENCHMARK_CACHE_NAMESPACE,
+      version: BENCHMARK_CACHE_VERSION,
       model,
-      skill,
+      skillIdentity: skill,
       evalId: evalCase.id,
       variant,
       prompt: evalCase.prompt,
       expectedOutput: evalCase.expected_output,
+      files: evalCase.files,
       assertions: evalCase.assertions,
       skillContent: variant === "with-skill" ? skillContent : "",
     }))

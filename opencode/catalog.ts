@@ -48,6 +48,217 @@ function substitute(value: string, root: string): string {
       return result;
     });
 }
+
+type PermissionRule = 'allow' | 'ask' | 'deny';
+type PermissionValue = PermissionRule | Record<string, PermissionRule>;
+type ToolSpec = { name: string; specifier?: string; malformed?: boolean };
+
+const nativeToolNames: Record<string, string> = {
+  Bash: 'bash',
+  Read: 'read',
+  Write: 'edit',
+  Edit: 'edit',
+  MultiEdit: 'edit',
+  apply_patch: 'edit',
+  Grep: 'grep',
+  Glob: 'glob',
+  WebSearch: 'websearch',
+  WebFetch: 'webfetch',
+  Task: 'task',
+  Agent: 'task',
+  Skill: 'skill',
+};
+const permissionKeys = ['bash', 'read', 'edit', 'glob', 'grep', 'webfetch', 'websearch', 'task', 'skill'];
+
+function splitToolMetadata(value: unknown, id: string, field: string, warnings: string[]): string[] {
+  if (value === undefined || value === null) return [];
+  const values = Array.isArray(value) ? value : [value];
+  const tokens: string[] = [];
+  for (const entry of values) {
+    if (typeof entry !== 'string') {
+      warnings.push(`${id}: unsupported ${field} entry ${JSON.stringify(entry)}; denied.`);
+      continue;
+    }
+    let token = '';
+    let depth = 0;
+    let malformed = false;
+    const flush = () => {
+      const trimmed = token.trim();
+      if (trimmed) tokens.push(trimmed);
+      token = '';
+    };
+    for (const character of entry) {
+      if (character === '(') depth += 1;
+      if (character === ')') depth -= 1;
+      if (depth < 0) {
+        malformed = true;
+        break;
+      }
+      if ((character === ',' || /\s/.test(character)) && depth === 0) flush();
+      else token += character;
+    }
+    if (malformed || depth !== 0) {
+      const name = entry.trim().split(/[\s,(]/, 1)[0];
+      tokens.push(name ? `${name}(` : entry.trim());
+    } else flush();
+  }
+  return tokens;
+}
+
+function parseToolSpec(raw: string): ToolSpec {
+  const open = raw.indexOf('(');
+  if (open === -1) return { name: raw };
+  if (!raw.endsWith(')') || open === 0) return { name: raw.slice(0, open) || raw, malformed: true };
+  return { name: raw.slice(0, open), specifier: raw.slice(open + 1, -1).trim() };
+}
+
+function warning(warnings: string[], id: string, field: string, raw: string, reason: string): void {
+  warnings.push(`${id}: cannot translate ${field} entry ${raw}: ${reason}; denied.`);
+}
+
+function bashPatterns(specifier: string): string[] | undefined {
+  if (!specifier || specifier.includes('(') || specifier.includes(')') || specifier.includes(':')) {
+    if (specifier.endsWith(':*')) {
+      const command = specifier.slice(0, -2);
+      if (command && !command.includes(':')) return [command, `${command} *`];
+    }
+    return undefined;
+  }
+  // Claude's trailing space-wildcard also matches the command without arguments.
+  if (specifier.endsWith(' *')) {
+    const command = specifier.slice(0, -2);
+    return command ? [command, specifier] : undefined;
+  }
+  return [specifier];
+}
+
+function ruleMap(value: PermissionValue): Record<string, PermissionRule> {
+  return typeof value === 'string' ? { '*': value } : { ...value };
+}
+
+function addRule(permission: Record<string, PermissionValue>, key: string, pattern: string, action: PermissionRule): void {
+  const existing = permission[key];
+  const rules = existing === undefined ? {} : ruleMap(existing);
+  setRule(rules, pattern, action);
+  permission[key] = rules;
+}
+
+function setRule(rules: Record<string, PermissionRule>, pattern: string, action: PermissionRule): void {
+  delete rules[pattern];
+  Object.defineProperty(rules, pattern, { value: action, enumerable: true, configurable: true, writable: true });
+}
+
+function simplePattern(pattern: string): boolean {
+  // Intersect exact names and trailing command prefixes; reject richer globs.
+  return pattern === '*' || (!pattern.includes('*') && !pattern.includes('?')) || (pattern.endsWith(' *') && !pattern.slice(0, -2).includes('*') && !pattern.slice(0, -2).includes('?'));
+}
+
+function matchesPattern(pattern: string, candidate: string): boolean {
+  if (pattern === '*' || pattern === candidate) return true;
+  if (!pattern.endsWith(' *')) return false;
+  const command = pattern.slice(0, -2);
+  return Boolean(command) && candidate.startsWith(`${command} `);
+}
+
+function matchingRule(rules: Record<string, PermissionRule>, candidate: string): PermissionRule | undefined {
+  let action: PermissionRule | undefined;
+  for (const [pattern, value] of Object.entries(rules)) if (matchesPattern(pattern, candidate)) action = value;
+  return action;
+}
+
+function cappedAction(action: PermissionRule, inherited: PermissionRule | undefined): PermissionRule {
+  if (inherited === 'deny' || action === 'deny') return 'deny';
+  if (inherited === 'ask' && action === 'allow') return 'ask';
+  return action;
+}
+
+function clampRules(value: PermissionValue, inherited: PermissionRule | Record<string, PermissionRule>): PermissionValue {
+  if (inherited === 'deny') return 'deny';
+  if (inherited === 'allow') return value;
+  if (inherited === 'ask') {
+    if (value === 'deny') return value;
+    if (value === 'allow') return 'ask';
+    const rules = { ...value };
+    for (const [pattern, action] of Object.entries(rules)) if (action === 'allow') rules[pattern] = 'ask';
+    return rules;
+  }
+  if (value === 'deny') return value;
+  const entries = Object.entries(inherited);
+  if (!entries.length) return value;
+  if (entries.length === 1 && entries[0][0] === '*') return clampRules(value, entries[0][1]);
+  const source = ruleMap(value);
+  for (const pattern of [...Object.keys(source), ...Object.keys(inherited)]) {
+    if (!simplePattern(pattern)) throw new Error(`Cannot safely combine unsupported OpenCode permission pattern ${pattern}; configure this agent explicitly.`);
+  }
+  // Exact names and trailing command prefixes form nested or disjoint scopes.
+  // Emit their union broadest-first, evaluating each original ordered policy
+  // independently so a later exception cannot erase the other policy's deny.
+  const patterns = [...new Set([...Object.keys(source), ...Object.keys(inherited)])]
+    .sort((a, b) => {
+      const width = (p: string) => p.endsWith('*') ? p.length - 1 : p.length;
+      return width(a) - width(b) || Number(b.endsWith('*')) - Number(a.endsWith('*')) || a.localeCompare(b);
+    });
+  const rules: Record<string, PermissionRule> = {};
+  for (const pattern of patterns) {
+    setRule(rules, pattern, cappedAction(matchingRule(source, pattern) ?? 'allow', matchingRule(inherited, pattern)));
+  }
+  return rules;
+}
+
+// Native OpenCode matches permission names and input patterns in insertion order.
+function matchesTool(pattern: string, tool: string): boolean {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+  return new RegExp('^' + escaped.replaceAll('*', '.*').replaceAll('?', '.') + '$').test(tool);
+}
+
+function userRulesFor(tool: string, ...policies: any[]): Record<string, PermissionRule> {
+  const rules: Record<string, PermissionRule> = {};
+  for (const policy of policies) {
+    if (typeof policy === 'string') {
+      setRule(rules, '*', policy as PermissionRule);
+    } else if (policy && typeof policy === 'object' && !Array.isArray(policy)) {
+      for (const [pattern, value] of Object.entries(policy)) {
+        if (!matchesTool(pattern, tool)) continue;
+        for (const [input, action] of Object.entries(ruleMap(value as PermissionValue))) {
+          setRule(rules, input, action);
+        }
+      }
+    }
+  }
+  const entries = Object.entries(rules);
+  const catchAll = entries.findIndex(([pattern]) => pattern === '*');
+  return Object.fromEntries(entries.slice(Math.max(0, catchAll))); // earlier rules are shadowed
+
+}
+
+function mergeAgent(value: any, existing: any, inheritedPermission?: any): any {
+  const merged = { ...value, ...existing };
+  if (value?.permission === undefined) return merged;
+  // User agent rules override user global rules, as on the native host. The
+  // source agent's tool restrictions are an independent upper bound on both.
+  const permission: Record<string, PermissionValue> = existing?.permission === undefined
+    ? {} : typeof existing.permission === 'string'
+      ? { '*': existing.permission } : { ...existing.permission };
+  for (const [tool, source] of Object.entries(value.permission)) {
+    const effectiveUserRules = userRulesFor(tool, inheritedPermission, existing?.permission);
+    const constrained = clampRules(source as PermissionValue, effectiveUserRules);
+    delete permission[tool];
+    permission[tool] = constrained;
+  }
+  merged.permission = permission;
+  return merged;
+}
+
+function nativeSkillScope(specifier: string): string | undefined {
+  if (!specifier || /[()\s]/.test(specifier)) return undefined;
+  if (!specifier.includes(':')) return specifier;
+  const parts = specifier.split(':');
+  // OpenCode names skills without their Claude plugin qualifier. A namespace
+  // wildcard cannot be mapped to '*' without allowing unrelated skills.
+  if (parts.length !== 2 || !validName.test(parts[0]) || !validName.test(parts[1])) return undefined;
+  return parts[1];
+}
+
 export function loadCatalog(roots: string[]): Catalog {
   const result: Catalog = { roots, agent: {}, command: {}, skillPaths: [], mcp: {}, warnings: [] };
   for (const source of roots) {
@@ -66,21 +277,97 @@ export function loadCatalog(roots: string[]): Catalog {
       const id = prefix + relative(join(root,'agents'),path).slice(0,-3).split(sep).join('-');
       if (!meta.description) throw new Error(`Missing agent description: ${path}`);
       result.agent[id] = { description: String(meta.description), mode: 'subagent', prompt: PRELUDE + `Source root: ${root}\n\n` + body.replaceAll('${CLAUDE_PLUGIN_ROOT}', root) };
-      // Never convert a source allowlist into permission grants. Native user rules win.
-      const denied = typeof meta.disallowedTools === 'string' ? meta.disallowedTools.split(/[ ,]+/) : meta.disallowedTools;
-      const tools: Record<string,string> = { Bash:'bash', Read:'read', Write:'edit', Edit:'edit', MultiEdit:'edit', apply_patch:'edit', Grep:'grep', Glob:'glob', WebSearch:'websearch', WebFetch:'webfetch', Task:'task', Agent:'task', Skill:'skill' };
-      if (Array.isArray(denied)) {
-        const unknown = denied.filter(t => !tools[t]);
-        if (unknown.length) throw new Error(`${id}: cannot preserve disallowed tools ${unknown.join(', ')}`);
-        result.agent[id].permission = Object.fromEntries(denied.map(t => [tools[t], 'deny']));
-      }
-      const allowed = typeof meta.tools === 'string' ? meta.tools.split(/[ ,]+/) : meta.tools;
-      if (Array.isArray(allowed)) {
-        const native = new Set(allowed.map(t => tools[t]).filter(Boolean));
-        for (const key of ['bash','read','edit','glob','grep','webfetch','websearch','task','skill']) {
-          if (!native.has(key)) (result.agent[id].permission ??= {})[key] = 'deny';
+      const allowed = splitToolMetadata(meta.tools, id, 'tools', result.warnings);
+      const denied = splitToolMetadata(meta.disallowedTools, id, 'disallowedTools', result.warnings);
+      const hasAllowlist = meta.tools !== undefined && meta.tools !== null;
+      const permission: Record<string, PermissionValue> = {};
+      const allowedNative = new Set<string>();
+      for (const raw of allowed) {
+        const parsed = parseToolSpec(raw);
+        const key = nativeToolNames[parsed.name];
+        if (!key) {
+          if (raw.includes('(')) warning(result.warnings, id, 'tools', raw, 'unknown tool');
+          continue;
+        }
+        if (parsed.malformed || parsed.specifier === undefined && raw.includes('(')) {
+          warning(result.warnings, id, 'tools', raw, 'malformed scoped syntax');
+          permission[key] = 'deny';
+          continue;
+        }
+        if (parsed.specifier === undefined) {
+          allowedNative.add(key);
+          continue;
+        }
+        if (parsed.name === 'Bash') {
+          const patterns = bashPatterns(parsed.specifier);
+          if (!patterns) {
+            warning(result.warnings, id, 'tools', raw, 'unsupported Bash scope');
+            permission[key] = 'deny';
+            continue;
+          }
+          for (const pattern of patterns) addRule(permission, key, pattern, 'allow');
+        } else if (parsed.name === 'Skill') {
+          const scope = nativeSkillScope(parsed.specifier);
+          if (!scope) {
+            warning(result.warnings, id, 'tools', raw, 'unsupported Skill scope');
+            permission[key] = 'deny';
+            continue;
+          }
+          addRule(permission, key, scope, 'allow');
+        } else {
+          warning(result.warnings, id, 'tools', raw, `unsupported ${parsed.name} scope`);
+          permission[key] = 'deny';
         }
       }
+      if (hasAllowlist) {
+        for (const key of permissionKeys) {
+          if (!allowedNative.has(key) && permission[key] === undefined) permission[key] = 'deny';
+          else if (!allowedNative.has(key) && typeof permission[key] === 'object' && permission[key]['*'] !== 'allow') permission[key] = { '*': 'deny', ...permission[key] };
+        }
+      }
+      for (const raw of denied) {
+        const parsed = parseToolSpec(raw);
+        const key = nativeToolNames[parsed.name];
+        if (!key) throw new Error(`${id}: cannot preserve disallowed tool ${raw}`);
+        if (parsed.specifier === undefined && !parsed.malformed) {
+          permission[key] = 'deny';
+          continue;
+        }
+        if (parsed.malformed || parsed.specifier === undefined) {
+          warning(result.warnings, id, 'disallowedTools', raw, 'malformed scoped syntax');
+          permission[key] = 'deny';
+          continue;
+        }
+        if (parsed.name === 'Bash') {
+          const patterns = bashPatterns(parsed.specifier);
+          if (!patterns) {
+            warning(result.warnings, id, 'disallowedTools', raw, 'unsupported Bash scope');
+            permission[key] = 'deny';
+            continue;
+          }
+          for (const pattern of patterns) addRule(permission, key, pattern, 'deny');
+        } else if (parsed.name === 'Skill') {
+          const scope = nativeSkillScope(parsed.specifier);
+          if (!scope) {
+            warning(result.warnings, id, 'disallowedTools', raw, 'unsupported Skill scope');
+            permission[key] = 'deny';
+            continue;
+          }
+          addRule(permission, key, scope, 'deny');
+        } else {
+          warning(result.warnings, id, 'disallowedTools', raw, `unsupported ${parsed.name} scope`);
+          permission[key] = 'deny';
+        }
+      }
+      for (const key of permissionKeys) {
+        if (typeof permission[key] === 'object') {
+          if (permission[key]['*'] === undefined) permission[key] = { '*': 'allow', ...permission[key] };
+          // A redundant scoped entry beside a bare tool grant adds no native
+          // permission; defer to the host instead of overwriting its defaults.
+          if (allowedNative.has(key) && Object.values(permission[key]).every(action => action === 'allow')) delete permission[key];
+        }
+      }
+      if (Object.keys(permission).length) result.agent[id].permission = permission;
     }
     for (const path of files(root, join(root,'commands'), '.md')) {
       const {meta,body} = markdown(path);
@@ -115,8 +402,10 @@ export function applyCatalog(config: any, catalog: Catalog) {
   for (const key of ['agent','command','mcp'] as const) {
     config[key] ??= {};
     for (const [id, value] of Object.entries(catalog[key])) {
-      // User configuration is authoritative, including explicit disabled entries.
-      config[key][id] = config[key][id] === undefined ? value : { ...value, ...config[key][id] };
+      // Preserve user configuration; source agent tool restrictions remain enforced.
+      config[key][id] = key === 'agent'
+        ? mergeAgent(value, config[key][id], config.permission)
+        : config[key][id] === undefined ? value : { ...value, ...config[key][id] };
     }
   }
   config.skills ??= {};

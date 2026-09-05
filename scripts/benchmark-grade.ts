@@ -106,7 +106,7 @@ function stopReason(parsed: unknown): string | undefined {
 
 function mapGrades(grades: unknown[], assertions: GradeAssertion[]): AssertionResult[] {
   return assertions.map(a => {
-    const grade = grades.find(g => looksLikeGrade(g) && g.id === a.id);
+    const grade = grades.filter(looksLikeGrade).find(g => g.id === a.id);
     return {
       id: a.id,
       text: a.text,

@@ -1,20 +1,22 @@
 ---
 name: setup
-version: 1.0.5
+version: 1.0.6
 description: >-
   Audit which bOpen plugins, CLIs, env keys, third-party skills, agents, and hooks are installed
-  across the harness, then emit a runtime-tailored instruction plan; it installs nothing itself.
-  Use for "bopen setup", "setup ui", "harness install", "audit my setup", "install everything",
-  or "unified installer". For a single hook, use hook-manager.
+  across the harness, then emit a runtime-tailored instruction plan with optional
+  user-triggered installation of selected dependencies. Use for "bopen setup",
+  "setup ui", "harness install", "audit my setup", "install everything", or
+  "unified installer". For a single hook, use hook-manager.
 ---
 
 # Setup
 
-A cross-plugin installer that shows the true state of a user's agent harness —
-plugins, CLIs, env keys, third-party skills, agents, hooks — and turns
-selections into a plan the parent agent executes. The fallback installer never
-installs, writes config, or mutates anything; the playground may run a pack's
-missing installs only after the user clicks **Install missing**.
+A cross-plugin setup assistant that shows the true state of a user's agent
+harness — plugins, CLIs, env keys, third-party skills, agents, and hooks — and
+turns selections into a plan. The launcher may bootstrap its own playground UI
+dependencies on first run; it installs selected harness dependency entries only
+after the user chooses **Install missing**. The fallback path emits instructions
+without installing or mutating anything.
 
 ## What it does
 

@@ -682,14 +682,33 @@ measurements and commands, and
 [the domain-plugin architecture](docs/plugin-context-architecture.md) for the
 planned core/optional-pack migration.
 
+## Context and harness checks
+
+`python3 scripts/run-plugin-harness.py --hooks` checks generated adapters,
+module extraction, release documentation, hook regressions, routing/scoring
+fixtures, and benchmark isolation. Install the locked dependencies under
+`tools/visual-coordinator` and `scripts` first (`bun install --frozen-lockfile`
+in each directory); Python 3.12 or newer and Bun are required.
+
+The source inventory includes skill, agent, and command descriptions. CI caps
+estimated startup metadata at 3,000 tokens for core and 18,000 for the complete
+suite. These are reproducible source estimates, not measured host token usage.
+Install the modules needed for a task and load longer authoring manuals on demand.
+
+OpenCode loads the initial session context once per session, sharing concurrent
+loads and retrying failures. Prompt routing still runs for each message and tool
+guards still run for each tool call. Explicit host evidence takes precedence over
+ambient CLI detection; unavailable runtime facts are reported as unknown.
+
 ## Skill Benchmarks
 
 Skills with benchmark coverage keep eval cases in
-`skills/<name>/evals/evals.json`. Each eval runs twice — once with the skill
+`skills/<name>/evals/evals.json` or the equivalent module path. Each eval runs twice — once with the skill
 injected and once as a bare baseline — and an LLM judge scores each assertion
 via a constrained `{grades:[...]}` schema (Messages API
 `output_config.format`, or `claude -p --json-schema` when no API key).
-The delta is the signal. Not every authored skill has coverage yet; the CLI
+Absolute task quality and regression checks come first; paired delta and cost
+are supporting evidence. Not every authored skill has coverage yet; the CLI
 runs the skills that currently include an `evals/` directory, and new or
 materially changed skills should add focused cases where the behavior can be
 judged reliably.
@@ -729,6 +748,9 @@ Add evals alongside any skill at `skills/<name>/evals/evals.json`:
 ### Running the Benchmark CLI
 
 ```bash
+# Install the pinned benchmark runtime once
+bun install --cwd scripts --frozen-lockfile
+
 # Run all skills with evals
 bun run scripts/benchmark.tsx
 
@@ -746,7 +768,7 @@ Results are written to `benchmarks/latest.json`. Commit reviewed results to publ
 
 **Resume support:** Each eval result is cached by content hash
 (`benchmarks/cache/`). The hash includes the model, full eval contract, and
-injected skill content. Interrupted runs resume without reusing a score after
+injected skill content, qualified plugin identity, and isolation version. Interrupted runs resume without reusing a score after
 the skill or assertions change.
 
 ### Writing Evals for Your Skill
@@ -765,7 +787,18 @@ Or ask the tester agent directly:
 
 ### Publishing Results
 
-Benchmarks run **locally** using your existing Claude session — no API key needed. They are not run in CI. Commit `benchmarks/latest.json` alongside the reviewed skill changes; bopen.ai picks up the committed results via ISR.
+Benchmarks run locally in Claude bare mode with provider credentials supported
+by that mode; a logged-in interactive session alone is insufficient. The CLI
+checks authentication and required flags before requesting a model. Both arms
+use an empty temporary working directory, disabled tools and slash commands,
+and strict empty MCP configuration. This is **text-body ablation**; it does not
+measure installed skill routing or execution of scripts, files, or integrations.
+Use a qualified skill name when multiple modules share a directory name.
+Missing usage remains unknown and failed runs remain visible.
+
+CI runs deterministic benchmark and adapter regressions without model calls.
+Live benchmark results require an explicit local run. Commit reviewed results
+alongside the skill changes; bopen.ai reads the committed results via ISR.
 
 ---
 
