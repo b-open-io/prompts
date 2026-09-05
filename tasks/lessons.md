@@ -179,3 +179,13 @@ surface. References and dedicated eval suites need the same justification;
 they are not free structure. Do not turn progressive disclosure into an excuse
 to manufacture a capability package for every tool. Complexity is itself a
 context, catalog, maintenance, and routing cost.
+
+## Shipped means merged, not pushed to a branch (2026-09-05)
+
+Pushed the schedule-social-post skill and the bopen-ai carousel preview to
+feature branches, reported "done", and left both unmerged with no PR. The user
+had to ask a second time. Rule: a task is not finished until the PR is open,
+CI is green, and it is merged (or the user explicitly wants to review first).
+Before the final report, run `git log origin/master..HEAD` on every repo
+touched and act on anything it prints. When a PR must wait on checks,
+subscribe to it and keep a check-in scheduled until it merges.

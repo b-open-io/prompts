@@ -73,7 +73,7 @@ grok plugin install core@b-open-io --trust
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
 | `dev-ops` | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
-| `brand-rep` | personas for public surfaces; account-manager, social-media-manager |
+| `brand-rep` | personas for public surfaces, bopen.ai social scheduling from any harness (`schedule-social-post`); account-manager, social-media-manager |
 
 ```bash
 /plugin install orchestra@b-open-io
@@ -92,6 +92,11 @@ the install command when a skill is missing. They do not wrap those products.
 |---|---|---|
 | `brand-rep:social-media-manager` (Alex) | `marketing-skills:social`, `:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
 | `brand-rep:social-media-manager` (Alex) | Typefully fallback, only when no first-party scheduler is available and the user wants Typefully | `npx skills add typefully/agent-skills` |
+
+Alex's first-party scheduler is bopen.ai's social calendar. Inside bopen.ai chat
+the native draft tools apply; from any other harness `brand-rep:schedule-social-post`
+reaches the same scheduler through the auth.md API. Both ship here and need no
+extra install.
 | `core:front-desk` / `dev-ops:integration-expert` | Resend email | `npx skills add resend/resend-skills` |
 | `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
 
