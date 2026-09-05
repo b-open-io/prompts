@@ -240,8 +240,11 @@ describe("emitPlan", () => {
 
     const plan = emitPlan(state, selections);
 
-    expect(plan).toContain('export ELEVENLABS_API_KEY="<value supplied securely by the user>"');
+    expect(plan).toContain('export ELEVENLABS_API_KEY="YOUR_API_KEY_HERE"');
     expect(plan).not.toContain("sk-should-never-appear-in-plan");
+    expect(plan).toContain("replace the placeholder directly there");
+    expect(plan).toContain("Never ask for a secret in chat");
+    expect(plan).not.toContain("Ask the user for the secret");
   });
 
   test("identical inputs produce a strictly equal plan", () => {

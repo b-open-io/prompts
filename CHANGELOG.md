@@ -6,6 +6,12 @@ manifests share the same release version.
 
 ## Unreleased
 
+## [1.1.162] - 2026-09-04
+
+### Fixed
+
+- Setup plans direct users to enter API keys in their editor, preserving existing settings and keeping secrets out of chat and tool arguments.
+
 ## [1.1.161] - 2026-09-04
 
 ### Added
