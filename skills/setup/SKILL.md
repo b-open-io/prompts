@@ -1,6 +1,6 @@
 ---
 name: setup
-version: 1.0.5
+version: 1.0.6
 description: >-
   Audit which bOpen plugins, CLIs, env keys, third-party skills, agents, and hooks are installed
   across the harness, then emit a runtime-tailored instruction plan with optional

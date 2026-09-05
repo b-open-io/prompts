@@ -21,6 +21,16 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+## [1.1.163] - Pending production promotion
+
+### Fixed
+
+- OpenCode preserves scoped Bash/Skill restrictions and source denies while honoring ordered native user overrides. Session context loads once per session; disposed message routing stops without disabling tool guards.
+- Routing probes retain run identity and failures; scoring rejects duplicate cases and incomplete or forbidden routes.
+- Benchmarks isolate tool-free text ablations, discover module skills, reject invalid eval contracts, report unknown usage honestly, and fail on provider or judge errors. Pinned runtime dependencies and deterministic CLI tests cover the executable entrypoint.
+- Plugin-kit 0.1.8 moves prompt-engineer manuals into on-demand module references and corrects authoring permissions, publishing, and benchmark guidance. Component patches: prompt-engineer 2.3.21, agent-auditor 0.1.3, benchmark-skills 2.0.2, skill-publish 1.0.2.
+- Setup 1.0.6 and runtime context distinguish the active host, installed CLIs, and unavailable capabilities. CI enforces core/suite metadata budgets and adapter, hook, benchmark, and extraction checks.
+
 ## [1.1.162] - 2026-09-04
 
 ### Fixed

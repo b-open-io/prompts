@@ -1,6 +1,6 @@
 ---
 name: agent-auditor
-version: 0.1.2
+version: 0.1.3
 description: >-
   Audit agents and skills across the plugin ecosystem for triggering, structure,
   progressive disclosure, permissions, and benchmark readiness. Apply for requests

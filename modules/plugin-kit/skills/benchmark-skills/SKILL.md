@@ -1,6 +1,6 @@
 ---
 name: benchmark-skills
-version: 2.0.1
+version: 2.0.2
 description: >-
   Run skill benchmarks and write evals that score a skill against a no-skill baseline. Use for
   "benchmark this skill", "run the skill evals", "write an eval for this skill", or "did this

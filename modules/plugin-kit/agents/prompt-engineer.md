@@ -14,7 +14,7 @@ skills:
   - hook-development
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/zack.png
-version: 2.3.20
+version: 2.3.21
 description: >-
   Claude Code configuration and authoring agent. Use this agent when the user asks to "create a
   slash command", "write a new skill", "fix this permission denied error", or "configure

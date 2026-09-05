@@ -9,7 +9,7 @@ description: >-
 disable-model-invocation: true
 metadata:
   author: b-open-io
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # Skill Publish
