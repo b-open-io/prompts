@@ -37,3 +37,11 @@ jobs:
 
       - name: Validate and install from this commit
         run: bash scripts/test-isolated-plugin-install.sh
+
+      - name: Save isolated harness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: isolated-plugin-harness
+          path: ${{ runner.temp }}/bopen-plugin-harness.json
+          if-no-files-found: ignore
