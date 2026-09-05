@@ -15,29 +15,88 @@ class EvaluationError(RuntimeError):
     """Raised when routing fixtures or results are invalid."""
 
 
-def load_cases(path: Path) -> list[dict[str, Any]]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+def _require_string(value: Any, field: str, *, allow_none: bool = False) -> str | None:
+    if allow_none and value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise EvaluationError(f"{field} must be a non-empty string")
+    return value
+
+
+def _require_string_list(value: Any, field: str) -> list[str]:
+    if not isinstance(value, list) or not all(
+        isinstance(item, str) and item.strip() for item in value
+    ):
+        raise EvaluationError(f"{field} must be a string list")
+    return value
+
+
+def _validate_cases_payload(payload: Any) -> list[dict[str, Any]]:
     cases = payload.get("cases") if isinstance(payload, dict) else payload
     if not isinstance(cases, list):
         raise EvaluationError("cases file must contain a list or {'cases': [...]}")
+    if not cases:
+        raise EvaluationError("cases must contain at least one case")
     seen: set[str] = set()
     for case in cases:
-        if not isinstance(case, dict) or not isinstance(case.get("id"), str):
-            raise EvaluationError("every case must have a string id")
-        if case["id"] in seen:
-            raise EvaluationError(f"duplicate case id: {case['id']}")
-        seen.add(case["id"])
+        if not isinstance(case, dict):
+            raise EvaluationError("every case must be an object")
+        case_id = _require_string(case.get("id"), "case id")
+        assert case_id is not None
+        if case_id in seen:
+            raise EvaluationError(f"duplicate case id: {case_id}")
+        seen.add(case_id)
         for key in (
             "expected_skills",
             "acceptable_alternatives",
             "forbidden_skills",
         ):
-            value = case.get(key, [])
-            if not isinstance(value, list) or not all(
-                isinstance(item, str) for item in value
-            ):
-                raise EvaluationError(f"{case['id']}.{key} must be a string list")
+            _require_string_list(case.get(key, []), f"{case_id}.{key}")
     return cases
+
+
+def load_cases(path: Path) -> list[dict[str, Any]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise EvaluationError(f"invalid cases JSON: {exc.msg}") from exc
+    return _validate_cases_payload(payload)
+
+
+def _validate_result_record(result: Any) -> dict[str, Any]:
+    if not isinstance(result, dict):
+        raise EvaluationError("every result must be an object")
+    case_id = _require_string(result.get("case_id"), "result case_id")
+    assert case_id is not None
+
+    invoked = result.get("invoked_skills", [])
+    _require_string_list(invoked, f"{case_id}.invoked_skills")
+
+    if "selected_agent" in result:
+        _require_string(result["selected_agent"], f"{case_id}.selected_agent", allow_none=True)
+        if "invoked_skills" in result:
+            selected = result["selected_agent"]
+            expected_invoked = [] if selected is None or selected.upper() == "NONE" else [selected]
+            if list(dict.fromkeys(invoked)) != expected_invoked:
+                raise EvaluationError(
+                    f"{case_id}.selected_agent conflicts with invoked_skills"
+                )
+    if "error" in result and not isinstance(result["error"], str):
+        raise EvaluationError(f"{case_id}.error must be a string")
+    return result
+
+
+def _observed_skills(result: dict[str, Any]) -> list[str]:
+    """Return the selected label or legacy invocation list used for scoring.
+
+    The probe records a selection, since it deliberately does not invoke an
+    agent. Existing single-host result files use ``invoked_skills`` and remain
+    supported by this fallback.
+    """
+    if "selected_agent" in result:
+        selected = result["selected_agent"]
+        return [] if selected is None or selected.upper() == "NONE" else [selected]
+    return list(result.get("invoked_skills", []))
 
 
 def load_results(path: Path) -> list[dict[str, Any]]:
@@ -46,27 +105,42 @@ def load_results(path: Path) -> list[dict[str, Any]]:
         payload = json.loads(text)
         results = payload.get("results") if isinstance(payload, dict) else payload
     except json.JSONDecodeError:
-        results = [json.loads(line) for line in text.splitlines() if line.strip()]
+        results = []
+        for line_number, line in enumerate(text.splitlines(), 1):
+            if not line.strip():
+                continue
+            try:
+                results.append(json.loads(line))
+            except json.JSONDecodeError as exc:
+                raise EvaluationError(
+                    f"invalid results JSON on line {line_number}: {exc.msg}"
+                ) from exc
     if not isinstance(results, list):
         raise EvaluationError("results must be JSON/JSONL records")
+    validated = [_validate_result_record(result) for result in results]
+    _reject_duplicate_results(validated)
+    return validated
+
+
+def _reject_duplicate_results(results: list[dict[str, Any]]) -> None:
+    seen: set[str] = set()
     for result in results:
-        if not isinstance(result, dict) or not isinstance(
-            result.get("case_id"), str
-        ):
-            raise EvaluationError("every result must have a string case_id")
-        invoked = result.get("invoked_skills", [])
-        if not isinstance(invoked, list) or not all(
-            isinstance(item, str) for item in invoked
-        ):
+        case_id = result["case_id"]
+        if case_id in seen:
             raise EvaluationError(
-                f"{result['case_id']}.invoked_skills must be a string list"
+                f"duplicate case_id result: {case_id}; "
+                "score each host/run separately"
             )
-    return results
+        seen.add(case_id)
 
 
 def evaluate(
     cases: list[dict[str, Any]], results: list[dict[str, Any]]
 ) -> dict[str, Any]:
+    _validate_cases_payload(cases)
+    validated_results = [_validate_result_record(result) for result in results]
+    _reject_duplicate_results(validated_results)
+    results = validated_results
     result_by_case = {result["case_id"]: result for result in results}
     unknown = sorted(set(result_by_case) - {case["id"] for case in cases})
     if unknown:
@@ -78,12 +152,15 @@ def evaluate(
     recalled_cases = 0
     forbidden_hits = 0
     omissions = 0
+    errors = 0
     case_reports: list[dict[str, Any]] = []
     confusion: Counter[tuple[str, str]] = Counter()
 
     for case in cases:
-        result = result_by_case.get(case["id"], {})
-        invoked = list(dict.fromkeys(result.get("invoked_skills", [])))
+        result = result_by_case.get(case["id"])
+        missing = result is None
+        result = result or {}
+        invoked = list(dict.fromkeys(_observed_skills(result)))
         expected = set(case.get("expected_skills", []))
         alternatives = set(case.get("acceptable_alternatives", []))
         accepted = expected | alternatives
@@ -91,6 +168,10 @@ def evaluate(
         matched = sorted(set(invoked) & accepted)
         forbidden_for_case = sorted(set(invoked) & forbidden)
         unexpected = sorted(set(invoked) - accepted)
+        error = result.get("error")
+        has_error = isinstance(error, str) and bool(error)
+        if has_error:
+            errors += 1
         total_invocations += len(invoked)
         true_invocations += sum(skill in accepted for skill in invoked)
         forbidden_hits += len(forbidden_for_case)
@@ -103,16 +184,30 @@ def evaluate(
         expected_label = sorted(expected)[0] if expected else "<none>"
         for skill in invoked or ["<none>"]:
             confusion[(expected_label, skill)] += 1
+        passed = (
+            not missing
+            and not has_error
+            and not unexpected
+            and not forbidden_for_case
+            and (bool(matched) if expected else not invoked)
+        )
+        case_report = {
+            "id": case["id"],
+            "host": result.get("host", "unknown"),
+            "invoked_skills": invoked,
+            "matched": matched,
+            "unexpected": unexpected,
+            "forbidden_hits": forbidden_for_case,
+            "passed": passed,
+        }
+        if "selected_agent" in result:
+            case_report["selected_agent"] = result["selected_agent"]
+        if missing:
+            case_report["error"] = "missing result"
+        elif "error" in result:
+            case_report["error"] = error
         case_reports.append(
-            {
-                "id": case["id"],
-                "host": result.get("host", "unknown"),
-                "invoked_skills": invoked,
-                "matched": matched,
-                "unexpected": unexpected,
-                "forbidden_hits": forbidden_for_case,
-                "passed": bool(matched) if expected else not invoked,
-            }
+            case_report
         )
 
     missing_results = sorted(
@@ -128,11 +223,9 @@ def evaluate(
         "recall": recalled_cases / positive_cases if positive_cases else 1.0,
         "forbidden_hit_count": forbidden_hits,
         "omission_count": omissions,
+        "error_count": errors,
         "missing_results": missing_results,
-        "passed": not missing_results
-        and forbidden_hits == 0
-        and omissions == 0
-        and all(report["passed"] for report in case_reports),
+        "passed": all(report["passed"] for report in case_reports),
         "confusion": [
             {"expected": expected, "invoked": invoked, "count": count}
             for (expected, invoked), count in sorted(confusion.items())
