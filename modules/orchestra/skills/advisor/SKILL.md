@@ -1,10 +1,10 @@
 ---
 name: advisor
-version: 0.0.7
+version: 0.0.8
 description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
-  the advisor", "get a second opinion", "ask codex", "ask Fable", "ask opencode", or "ask a bigger model". The
+  the advisor", "get a second opinion", "ask codex", "ask Astra", "ask gpt-6-astra", "ask Fable", "ask opencode", or "ask a bigger model". The
   advisor returns guidance; the main session keeps execution and decision ownership.
 ---
 
@@ -14,6 +14,11 @@ Use an advisor for independent judgment. The advisor never edits, merges,
 commits, ships, or makes the final decision. Use Coordinator for implementation
 workers and Orchestrator when one task combines workers, specialists, and an
 advisor.
+
+For a strong general-purpose advisor, recommend `gpt-6-astra` through the
+Codex CLI from any host with shell access, including Claude Code, Codex,
+Grok Build, and OpenCode. Honor an explicit model or channel preference. See
+[codex-cli.md](references/channels/codex-cli.md) for preflight and dispatch.
 
 ## When to consult
 

@@ -6,6 +6,13 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- Orchestra 0.1.25 / Advisor 0.0.8 recommends `gpt-6-astra` via Codex CLI across Claude Code,
+  Codex, Grok Build, OpenCode, and other shell-capable hosts. The shared lane
+  documents authentication preflight, an explicit read-only sandbox, model
+  overrides, and saved runtime evidence and verdicts.
+
 ## [1.1.162] - 2026-09-04
 
 ### Fixed
