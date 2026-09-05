@@ -8,6 +8,14 @@ manifests share the same release version.
 
 ### Changed
 
+- Review plugin 0.1.16: updated `visual-proposal` to 0.0.16 with BitPlan's reading aesthetic, explicit
+  Unsure choices and consequences, scripts-off response copying, decision-tree
+  guidance, revision summaries, and implementation handoffs with done conditions.
+- Preserved advocates, cross-examination, judging, and the CEO call. Kept option
+  cards neutral and recommendations attributed to the panel.
+- Removed the embedded proposals archive menu and its scanner and example;
+  BitPlan handles plan organization. Responses use non-secret plan identifiers.
+
 - Orchestra 0.1.25 / Advisor 0.0.8 recommends `gpt-6-astra` via Codex CLI across Claude Code,
   Codex, Grok Build, OpenCode, and other shell-capable hosts. The shared lane
   documents authentication preflight, an explicit read-only sandbox, model
