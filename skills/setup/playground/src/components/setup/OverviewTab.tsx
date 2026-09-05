@@ -20,6 +20,7 @@ import { isRecentSkillActivity, SkillActivityBadge } from "@/components/setup/Sk
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { pluginUpdateCommand } from "@/lib/links"
+import { isInstalled, partitionPlugins } from "@/lib/plugins"
 import type { HarnessState, PluginState } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -54,12 +55,16 @@ function buildAttention(state: HarnessState): AttentionItem[] {
 				["claude", plugin.installedClaude],
 				["codex", plugin.installedCodex],
 			] as const) {
-				if (installed && installed !== plugin.marketplaceVersion) {
+				const command =
+					installed && installed !== plugin.marketplaceVersion
+						? pluginUpdateCommand(plugin.name, runtime, plugin.marketplace)
+						: null
+				if (command) {
 					items.push({
 						id: `drift:${plugin.name}:${runtime}`,
 						kind: "drift",
 						problem: `${plugin.name} — ${runtime} v${installed} · marketplace v${plugin.marketplaceVersion}`,
-						command: pluginUpdateCommand(plugin.name, runtime),
+						command,
 					})
 				}
 			}
@@ -71,7 +76,7 @@ function buildAttention(state: HarnessState): AttentionItem[] {
 				items.push({
 					id: `cli:${plugin.name}:${check.id}`,
 					kind: "cli",
-					problem: `${check.name} — required by ${plugin.name}`,
+					problem: `${check.name} — used by ${check.usedBy?.length ? check.usedBy.join(", ") : plugin.name} (${plugin.name})`,
 					command: check.install ?? check.checkCommand ?? `command -v ${check.name}`,
 				})
 			} else {
@@ -239,14 +244,15 @@ export function OverviewTab({
 	const missingClis = attention.filter((item) => item.kind === "cli").length
 	const unsetEnv = attention.filter((item) => item.kind === "env").length
 	const drifts = attention.filter((item) => item.kind === "drift").length
-	const installedCount = state.plugins.filter(
-		(plugin) => plugin.installedClaude !== null || plugin.installedCodex !== null,
-	).length
-	const hooks = state.plugins.flatMap((plugin) => plugin.hooks ?? [])
+	const [showOthers, setShowOthers] = useState(false)
+	const partition = useMemo(() => partitionPlugins(state.plugins), [state.plugins])
+	const listed = showOthers ? state.plugins : partition.catalog
+	const installedCount = partition.catalog.filter(isInstalled).length
+	const hooks = partition.catalog.flatMap((plugin) => plugin.hooks ?? [])
 	const hooksOn = hooks.filter((hook) => hook.enabled).length
 	const allGood =
-		state.plugins.length > 0 &&
-		state.plugins.every((plugin) => pluginState(plugin) === "complete") &&
+		partition.catalog.length > 0 &&
+		partition.catalog.every((plugin) => pluginState(plugin) === "complete") &&
 		missingClis === 0 &&
 		unsetEnv === 0 &&
 		drifts === 0 &&
@@ -278,7 +284,7 @@ export function OverviewTab({
 
 	const filteredPlugins = useMemo(() => {
 		const normalized = query.trim().toLowerCase()
-		return state.plugins.filter((plugin) => {
+		return listed.filter((plugin) => {
 			if (normalized && !plugin.name.toLowerCase().includes(normalized)) return false
 			if (gridFilter === "installed")
 				return plugin.installedClaude !== null || plugin.installedCodex !== null
@@ -289,7 +295,7 @@ export function OverviewTab({
 			if (gridFilter === "hooks") return (plugin.hooks?.length ?? 0) > 0
 			return true
 		})
-	}, [gridFilter, query, state.plugins])
+	}, [gridFilter, query, listed])
 
 	return (
 		<div className="space-y-6">
@@ -315,12 +321,12 @@ export function OverviewTab({
 					<HealthChip
 						icon={<PackageCheck className="size-4" />}
 						value={
-							installedCount === state.plugins.length
+							installedCount === partition.catalog.length
 								? "All installed"
-								: `${installedCount} of ${state.plugins.length}`
+								: `${installedCount} of ${partition.catalog.length}`
 						}
 						label="plugins installed"
-						good={installedCount === state.plugins.length}
+						good={installedCount === partition.catalog.length}
 						active={gridFilter === "installed"}
 						onClick={() => chooseFilter("installed", "grid")}
 					/>
@@ -412,7 +418,20 @@ export function OverviewTab({
 							Plugins
 						</h2>
 						<p className="mt-0.5 text-[0.7rem] text-muted-foreground">
-							{filteredPlugins.length} of {state.plugins.length} shown
+							{filteredPlugins.length} of {listed.length} shown · {partition.catalog.length} in the
+							bopen.ai marketplace
+							{partition.other.length > 0 && (
+								<>
+									{" · "}
+									<button
+										type="button"
+										onClick={() => setShowOthers((value) => !value)}
+										className="underline decoration-dotted underline-offset-2 hover:text-foreground"
+									>
+										{showOthers ? "hide" : "show"} {partition.other.length} other installed
+									</button>
+								</>
+							)}
 						</p>
 					</div>
 					<div

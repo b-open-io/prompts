@@ -55,7 +55,7 @@ export function Header({
 				<span className="font-mono text-[0.7rem] uppercase tracking-wide text-muted-foreground">
 					plan for:
 				</span>
-				<Select value={selectedRuntime ?? undefined} onValueChange={onRuntimeChange}>
+				<Select value={selectedRuntime ?? ""} onValueChange={onRuntimeChange}>
 					<SelectTrigger>
 						<SelectValue />
 					</SelectTrigger>

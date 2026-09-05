@@ -1,5 +1,10 @@
 # Choosing the decomposition
 
+Use the shared [coordinator dispatch contract](../../coordinator/references/dispatch-contract.md)
+for every dispatch. Concurrent writable workers use controller-created
+worktrees. A single simple, low-risk writable worker may use a shared tree only
+when the main selects that strategy explicitly.
+
 Drawing the canvas is mechanical. Deciding what becomes a phase, what becomes a
 node, and where a barrier belongs is the judgement the artifact exists to expose.
 A confident diagram of the wrong shape is worse than no diagram, because the user
@@ -36,6 +41,8 @@ same result.
 Default to `pipeline`, which has no barrier: each item flows through the stages
 independently, so a fast item finishes while a slow one is still moving. Wall
 clock is the slowest single item, not the sum of the slowest per stage.
+This default is Claude-only: `pipeline()` exists on Claude Code and on no
+other host.
 
 Use `parallel`, which is a barrier, only when the next phase genuinely needs
 every prior result at once. Three real cases:
@@ -49,6 +56,30 @@ These are **not** reasons for a barrier: needing to flatten or filter a list
 more tidily. A barrier that is not required is wall-clock spent for nothing, and
 on a canvas it misleads the user into thinking a dependency exists.
 
+## Host-specific sequencing
+
+The canonical ship shape is always the same — the controller creates predictable
+worktrees and planning pins interfaces, bounded makers run in parallel, a hard
+barrier waits for every maker, an independent read-only review approves or sends
+back at most one correction to the responsible maker, then main runs
+deterministic tests. Test failure uses that same single correction allowance and
+returns exhausted control to main. A distinct human gate approves irreversible
+merge/ship; only then does main commit/push/open the PR and cleanup the exact
+merged local/remote branch. Workers never commit or ship.
+
+How that shape is executed depends on the host:
+
+- **Claude Code** may use `pipeline()` (no barrier, items flow independently)
+  or `parallel()` (barrier) between stages.
+- **Grok Build** has barrier `parallel()` plus later phases, but no
+  `pipeline()` — a later item cannot advance while an earlier one is still
+  running.
+- **Codex and OpenCode** have no workflow runtime at all. They use
+  caller-managed waves and barriers: the caller creates each worktree cwd,
+  sequences `codex exec` or `opencode run` dispatches, waits for the whole
+  panel, then dispatches the next wave. Never draw a native pipeline or DAG
+  node for these hosts; a non-host lane is a shell-out card.
+
 ## Sizing
 
 Dispatch has a floor cost — spec writing, context re-establishment, review. Ten
@@ -61,10 +92,11 @@ If the unit list runs to dozens, size waves rather than drawing dozens of nodes;
 
 ## Where isolation is actually needed
 
-Worktree-per-agent is expensive and the coordinator absorbs the merge. Reach for
-it only when two nodes in the same phase write the same file. When the partition
-is clean — each node owns its own paths — a shared tree is correct and cheaper.
-Name each node's owned paths on the canvas; that list is the lock.
+Use worktree-per-agent for concurrent or non-trivial writable work. For one
+obvious, low-risk writable worker, an explicitly selected shared tree can be
+cheaper. Name each node's owned paths on the canvas; that list is the lock. A
+second writer, overlap, or uncertainty returns the workflow to
+controller-created worktrees.
 
 ## Which model where
 

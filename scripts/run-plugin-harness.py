@@ -54,6 +54,10 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     checks = [
+        ("benchmark entrypoint", ["bun", "run", "--cwd", "scripts", "check:entrypoint"]),
+        ("benchmark TypeScript", ["bun", "run", "--cwd", "scripts", "typecheck"]),
+        ("OpenCode adapter regressions", ["bun", "test", "opencode"]),
+        ("benchmark regressions", ["bun", "test", "./scripts/tests"]),
         (
             "plugin context unit tests",
             [
@@ -72,14 +76,43 @@ def main() -> int:
             "plugin manifests",
             [sys.executable, "scripts/check-plugin-manifests.py"],
         ),
+        (
+            "plugin extraction",
+            [sys.executable, "scripts/check-plugin-extraction.py"],
+        ),
         ("release documentation", [sys.executable, "scripts/check-docs.py"]),
         (
             "Codex generated agents",
             [sys.executable, "scripts/codex-agents/generate.py", "--check"],
         ),
         (
-            "static plugin weight",
-            [sys.executable, "scripts/plugin-weight.py"],
+            "static plugin weight (core budget)",
+            [
+                sys.executable,
+                "scripts/plugin-weight.py",
+                "--max-startup-tokens",
+                "3000",
+                "--max-agent-description-chars",
+                "600",
+                "--max-agent-examples",
+                "0",
+                "--fail-on-duplicates",
+            ],
+        ),
+        (
+            "static plugin weight (suite budget)",
+            [
+                sys.executable,
+                "scripts/plugin-weight.py",
+                "--all-plugins",
+                "--max-startup-tokens",
+                "18000",
+                "--max-agent-description-chars",
+                "600",
+                "--max-agent-examples",
+                "0",
+                "--fail-on-duplicates",
+            ],
         ),
     ]
     if args.hooks:

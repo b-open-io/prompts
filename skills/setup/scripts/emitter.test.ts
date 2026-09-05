@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { emitPlan } from "./emitter";
 
 function makeState(overrides: Record<string, unknown> = {}, plugins: any[] = []): any {
@@ -16,6 +19,8 @@ function makeState(overrides: Record<string, unknown> = {}, plugins: any[] = [])
 function makePlugin(overrides: Record<string, unknown> = {}): any {
   return {
     name: "core",
+    marketplace: "b-open-io",
+    inCatalog: true,
     installedClaude: null,
     installedCodex: null,
     marketplaceVersion: null,
@@ -80,7 +85,7 @@ describe("emitPlan", () => {
     const state = makeState({}, [plugin]);
     const selections = {
       runtime: "claude",
-      plugins: [{ name: "core", installPlugin: true, checks: [], hooks: {} }],
+      plugins: [{ name: "core", installPlugin: true, uninstallPlugin: false, checks: [], hooks: {} }],
     };
 
     const plan = emitPlan(state, selections);
@@ -97,7 +102,7 @@ describe("emitPlan", () => {
   test("claude and codex use different install dialects for the same selection", () => {
     const plugin = makePlugin({ installedClaude: null, installedCodex: null });
     const state = makeState({}, [plugin]);
-    const basePlugins = [{ name: "core", installPlugin: true, checks: [], hooks: {} }];
+    const basePlugins = [{ name: "core", installPlugin: true, uninstallPlugin: false, checks: [], hooks: {} }];
 
     const claudePlan = emitPlan(state, { runtime: "claude", plugins: basePlugins });
     const codexPlan = emitPlan(state, { runtime: "codex", plugins: basePlugins });
@@ -129,6 +134,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: false,
+          uninstallPlugin: false,
           checks: ["codex-agents:core"],
           hooks: {},
         },
@@ -225,6 +231,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: false,
+          uninstallPlugin: false,
           checks: ["env:ELEVENLABS_API_KEY"],
           hooks: {},
         },
@@ -233,8 +240,11 @@ describe("emitPlan", () => {
 
     const plan = emitPlan(state, selections);
 
-    expect(plan).toContain('export ELEVENLABS_API_KEY="<value supplied securely by the user>"');
+    expect(plan).toContain('export ELEVENLABS_API_KEY="YOUR_API_KEY_HERE"');
     expect(plan).not.toContain("sk-should-never-appear-in-plan");
+    expect(plan).toContain("replace the placeholder directly there");
+    expect(plan).toContain("Never ask for a secret in chat");
+    expect(plan).not.toContain("Ask the user for the secret");
   });
 
   test("identical inputs produce a strictly equal plan", () => {
@@ -259,6 +269,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: true,
+          uninstallPlugin: false,
           checks: ["cli:ffmpeg"],
           hooks: { "guard-a": false },
         },
@@ -299,6 +310,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: false,
+          uninstallPlugin: false,
           checks: ["third-party-skill:example", "setup-script:research:persona"],
           hooks: {},
         },
@@ -312,7 +324,7 @@ describe("emitPlan", () => {
     expect(plan).not.toContain("bash bash");
     expect(plan).not.toContain("compgen");
     expect(plan).not.toContain('test "$?"');
-    expect(plan).toContain("bopen-setup-bopen-tools-persona.ok");
+    expect(plan).toContain("bopen-setup-core-persona.ok");
   });
 
   test("Codex agent delivery locates the portable installed root and verifies the manifest check", () => {
@@ -334,6 +346,7 @@ describe("emitPlan", () => {
         {
           name: "core",
           installPlugin: false,
+          uninstallPlugin: false,
           checks: ["codex-agents"],
           hooks: {},
         },
@@ -356,6 +369,8 @@ describe("grok dialect", () => {
       plugins: [
         {
           name: "core",
+          marketplace: "b-open-io",
+          inCatalog: true,
           installedClaude,
           installedCodex: null,
           marketplaceVersion: "9.9.9",
@@ -370,7 +385,7 @@ describe("grok dialect", () => {
   const grokSel = {
     runtime: "grok",
     plugins: [
-      { name: "core", installPlugin: true, checks: [], hooks: {} },
+      { name: "core", installPlugin: true, uninstallPlugin: false, checks: [], hooks: {} },
     ],
   } as any;
 
@@ -386,4 +401,108 @@ describe("grok dialect", () => {
     expect(plan).toContain("grok plugin install b-open-io/prompts --trust");
     expect(plan).toContain("grok plugin details core");
   });
+});
+
+describe("plugin removals", () => {
+  test("emits the runtime's uninstall command with a negative verify", () => {
+    const plugin = makePlugin({ installedClaude: "1.0.0", installedCodex: "1.0.0", marketplace: "openai-curated-remote" });
+    const state = makeState({}, [plugin]);
+    const base = { name: "core", installPlugin: false, uninstallPlugin: true, checks: [], hooks: {} };
+
+    const claudePlan = emitPlan(state, { runtime: "claude", plugins: [base] });
+    expect(claudePlan).toContain("## Plugin removals");
+    expect(claudePlan).toContain("claude plugin uninstall core@openai-curated-remote");
+    expect(claudePlan).toContain('! claude plugin list | grep -qF "core@"');
+
+    const codexPlan = emitPlan(state, { runtime: "codex", plugins: [base] });
+    expect(codexPlan).toContain("codex plugin remove core");
+    expect(codexPlan).not.toContain("claude plugin uninstall");
+  });
+
+  test("skips removals for runtimes where the plugin is not installed", () => {
+    const plugin = makePlugin({ installedClaude: null, installedCodex: "1.0.0" });
+    const plan = emitPlan(makeState({}, [plugin]), {
+      runtime: "claude",
+      plugins: [{ name: "core", installPlugin: false, uninstallPlugin: true, checks: [], hooks: {} }],
+    });
+    expect(plan).not.toContain("## Plugin removals");
+  });
+});
+
+
+describe("OpenCode native plans", () => {
+  const selection = { name: "core", installPlugin: true, uninstallPlugin: false, checks: [], hooks: {} };
+
+  test("installed Claude never suppresses a native install or verifies it", () => {
+    const plan = emitPlan(makeState({}, [makePlugin({ installedClaude: "9.9.9", marketplaceVersion: "9.9.9" })]), {
+      runtime: "opencode", plugins: [selection],
+    });
+    expect(plan).toContain('bun "$BOPEN_SOURCE/opencode/install.ts" --plugin core --global');
+    expect(plan).toContain("git -C \"$BOPEN_SOURCE\" merge --ff-only origin/HEAD");
+    expect(plan).not.toContain("claude plugin");
+    expect(plan).not.toContain("--all");
+    expect(plan).toContain("opencode debug config");
+    expect(plan).toContain("opencode debug skill");
+    for (const match of plan.matchAll(/```sh\n([\s\S]*?)\n```/g)) {
+      const result = Bun.spawnSync(["sh", "-n"], { stdin: Buffer.from(match[1]) });
+      expect(result.exitCode).toBe(0);
+    }
+  });
+
+  test("removal works independently of Claude installation state", () => {
+    const plan = emitPlan(makeState({}, [makePlugin()]), {
+      runtime: "opencode", plugins: [{ ...selection, installPlugin: false, uninstallPlugin: true }],
+    });
+    expect(plan).toContain("--plugin core --global --uninstall");
+    expect(plan).not.toContain("claude plugin");
+  });
+
+  test("unsupported marketplaces do not get an invented native install", () => {
+    const plan = emitPlan(makeState({}, [makePlugin({ marketplace: "third-party" })]), {
+      runtime: "opencode", plugins: [selection],
+    });
+    expect(plan).toContain("native OpenCode delivery unavailable");
+    expect(plan).not.toContain("--plugin core");
+    expect(plan).not.toContain("claude plugin install");
+  });
+});
+
+
+test("native verification checks selected roots, including removal of the last plugin", () => {
+  const temp = mkdtempSync(join(tmpdir(), "bopen-setup-native-"));
+  try {
+    const root = join(temp, "data/bopen/opencode-source");
+    const shim = join(temp, "config/opencode/plugins/bopen.ts");
+    mkdirSync(join(temp, "config/opencode/plugins"), { recursive: true });
+    const run = (remove: boolean) => {
+      const plan = emitPlan(makeState({}, [makePlugin()]), {
+        runtime: "opencode", plugins: [{ name: "core", installPlugin: !remove, uninstallPlugin: remove, checks: [], hooks: {} }],
+      });
+      const block = [...plan.matchAll(/```sh\n([\s\S]*?)\n```/g)].find((match) => match[1].includes("bun -e"))![1];
+      // Run only the registry verification, leaving real CLI discovery to integration tests.
+      return Bun.spawnSync(["sh", "-ec", block.split("\nopencode debug")[0]], {
+        env: { ...process.env, XDG_CONFIG_HOME: join(temp, "config"), XDG_DATA_HOME: join(temp, "data") },
+      }).exitCode;
+    };
+    expect(run(false)).not.toBe(0);
+    writeFileSync(shim, `// bopen-managed: ${JSON.stringify({ schema: 1, adapter: root + "/opencode", roots: [root] })}\nexport default {};\n`);
+    expect(run(false)).toBe(0);
+    expect(run(true)).not.toBe(0);
+    rmSync(shim);
+    expect(run(true)).toBe(0);
+  } finally { rmSync(temp, { recursive: true, force: true }); }
+});
+
+test('OpenCode hook-state script updates the nested hook map and preserves other settings', async()=>{
+ const project=mkdtempSync(join(tmpdir(),'bopen-hook-config-'));
+ try {
+  mkdirSync(join(project,'.opencode'));
+  writeFileSync(join(project,'.opencode/bopen-hooks.json'),JSON.stringify({note:'keep',hooks:{bouncer:false,'publish-gate':false}}));
+  const plan=emitPlan(makeState({},[makePlugin()]),{runtime:'opencode',plugins:[{name:'core',installPlugin:false,uninstallPlugin:false,checks:[],hooks:{bouncer:true,hammertime:false}}]});
+  const block=[...plan.matchAll(/```sh\n([\s\S]*?)\n```/g)].find(m=>m[1].startsWith("python3 - <<'PY'"));
+  expect(block).toBeDefined();
+  const result=Bun.spawnSync(['sh','-c',block![1]],{cwd:project});expect(result.exitCode).toBe(0);
+  const config=await Bun.file(join(project,'.opencode/bopen-hooks.json')).json();
+  expect(config).toEqual({note:'keep',hooks:{bouncer:true,'publish-gate':false,hammertime:false}});
+ }finally{rmSync(project,{recursive:true,force:true});}
 });

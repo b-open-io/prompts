@@ -89,3 +89,7 @@ __pycache__/
 
 # plugin eval run artifacts (regenerated per run)
 evals/results/
+
+# Private benchmark/check runtime, not a published npm package
+!/scripts/package.json
+!/scripts/bun.lock

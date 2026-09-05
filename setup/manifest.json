@@ -11,7 +11,7 @@
       ],
       "check": "agent-browser --version",
       "install": {
-        "any": "npm install -g agent-browser && agent-browser install"
+        "any": "bun add -g agent-browser && agent-browser install"
       }
     },
     {
@@ -19,7 +19,7 @@
       "usedBy": [
         "benchmark-skills",
         "visual-review",
-        "postplan",
+        "bitplan",
         "many scripts"
       ],
       "check": "bun --version",
@@ -81,7 +81,7 @@
       ],
       "check": "looptop --version",
       "install": {
-        "any": "npm install -g looptop"
+        "any": "bun add -g looptop"
       }
     },
     {
@@ -116,6 +116,12 @@
     }
   ],
   "thirdPartySkills": [
+    {
+      "name": "bitplan",
+      "source": "opldotdev/bitplan.dev",
+      "check": "path:~/.claude/skills/bitplan/SKILL.md",
+      "install": "npx skills add opldotdev/bitplan.dev --skill bitplan -g"
+    },
     {
       "name": "vercel-react-best-practices",
       "source": "vercel-labs/agent-skills",

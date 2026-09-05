@@ -1,10 +1,15 @@
 ---
 name: skill-publish
-description: This skill should be used when the user asks to "publish a plugin", "release a plugin", "bump plugin version", "update a Claude Code plugin", "update a Codex plugin", "publish skills", or mentions plugin publishing, plugin release, or skill distribution. Handles synchronized host manifests, changelog and README updates, git workflow, cache refresh, and standalone Agent Skills.
+description: >-
+  Publish a plugin or standalone skill when the user asks to "publish a plugin",
+  "release a plugin", "bump plugin version", "update a Claude Code plugin",
+  "update a Codex plugin", or "publish skills". Covers synchronized host
+  manifests, changelog and README updates, repository promotion, cache refresh,
+  and standalone Agent Skills.
 disable-model-invocation: true
 metadata:
   author: b-open-io
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # Skill Publish
@@ -20,10 +25,10 @@ Before starting, identify the publish type based on project structure:
 | `.claude-plugin/plugin.json` and/or `.codex-plugin/plugin.json` exists | **Hosted plugin** |
 | Standalone `SKILL.md` with no plugin manifest | **Standalone Agent Skill** |
 
-Hosted plugins publish by pushing to GitHub. Repositories supporting multiple
-hosts must keep every real manifest and their shared marketplace metadata in
-sync. Codex caches plugin contents by version, so a stale version can preserve
-stale skills even after the source commit moves.
+Hosted plugins are promoted through the owning repository's GitHub workflow.
+Repositories supporting multiple hosts must keep every real manifest and their
+shared marketplace metadata in sync. Codex caches plugin contents by version,
+so a stale version can preserve stale skills even after the source commit moves.
 
 Standalone Agent Skills follow the agentskills.io specification and distribute as directories containing `SKILL.md`.
 
@@ -116,25 +121,34 @@ bash hooks/tests/run-tests.sh
 git diff --check
 ```
 
-### 6. Commit and Push
+### 6. Commit and Promote
 
-**Critical: Pushing to the default branch IS publishing.** The Claude Code plugin marketplace automatically picks up the latest commit.
+Follow the owning repository's release policy before running any git command.
+For `b-open-io/prompts`, promotion is part of publication: commit on the
+issue-named feature branch, open a PR into `dev`, wait for the standing
+`dev`-to-`master` promotion PR to pass its checks and 24-hour cooling period,
+then obtain the required `/approve` comment. Never push directly to `master`.
+A version bump committed or merged on `dev` is not published until promotion
+to `master` completes. For any other repository, inspect and follow that
+repository's policy instead of applying this route automatically.
 
 ```bash
 # Stage only reviewed, owned paths; never sweep unrelated worktree changes.
 git add .claude-plugin/plugin.json .codex-plugin/plugin.json CHANGELOG.md README.md
 git add path/to/each/reviewed/component
 git commit -m "Release vX.X.X"
-git push origin <default-branch>
-git log origin/<default-branch>..<default-branch>
+git push origin <feature-branch>
+gh pr create --base dev --head <feature-branch>
 ```
 
-If either real manifest was bumped, push in the same session. A committed but
-unpushed bump is a stranded release.
+After the feature PR merges, follow the repository's standing promotion
+workflow and its approval gate. If either real manifest was bumped, do not call
+the result published until the promotion reaches `master`.
 
 ### 7. Verify Publication on Every Host
 
-After pushing, verify the plugin update is available:
+Only after the approved promotion to `master` completes, verify the plugin
+update is available:
 
 ```bash
 CLAUDECODE= claude plugin update <plugin-name>@<publisher>
@@ -200,7 +214,9 @@ Standalone skills distribute as directories. Common methods:
 ### Plugin Not Updating
 
 If `claude plugin update` does not pick up changes:
-- Verify the push landed on the default branch (usually `main` or `master`)
+- Verify the approved promotion landed on the repository's published branch
+  (`master` for `b-open-io/prompts`) and that the marketplace snapshot was
+  refreshed
 - Check that `.claude-plugin/plugin.json` is valid JSON
 - Wait a few minutes for marketplace propagation
 

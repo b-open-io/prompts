@@ -1,7 +1,7 @@
 {
   "name": "orchestra",
-  "version": "0.1.15",
-  "description": "Multi-agent orchestration for Claude Code, Grok and Codex: worker dispatch, second opinions, wave fan-out, and autonomous loops",
+  "version": "0.1.25",
+  "description": "Multi-agent orchestration for Claude Code, Grok, Codex, and OpenCode: worker dispatch, second opinions, wave fan-out, and autonomous loops",
   "author": {
     "name": "b-open-io",
     "url": "https://github.com/b-open-io"

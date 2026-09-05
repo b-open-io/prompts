@@ -4,6 +4,10 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+# The marketplace ships each module on its own (git-subdir), so a module must
+# not depend on files outside its directory. rsync -aL below would hide that.
+python3 scripts/check-plugin-extraction.py
+
 command -v claude >/dev/null || { echo "claude CLI is required" >&2; exit 1; }
 command -v codex >/dev/null || { echo "codex CLI is required" >&2; exit 1; }
 
@@ -43,4 +47,8 @@ PY
 done
 
 codex plugin list
-python3 scripts/run-plugin-harness.py
+# Keep the full source inventory out of the CI console: a runtime may leave
+# its inherited stdout nonblocking, and a large JSON write can fail with EAGAIN.
+harness_report="${RUNNER_TEMP:-$validation_root}/bopen-plugin-harness.json"
+python3 scripts/run-plugin-harness.py --output "$harness_report"
+echo "Release harness passed; full report: $harness_report"

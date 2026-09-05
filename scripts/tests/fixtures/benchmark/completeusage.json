@@ -1,0 +1,7 @@
+{
+  "name": "complete usage",
+  "usage": {
+    "input_tokens": 12,
+    "output_tokens": 4
+  }
+}

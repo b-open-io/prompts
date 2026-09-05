@@ -163,8 +163,8 @@ def _manifest(root: Path, relative: str) -> dict[str, Any]:
     }
 
 
-def collect_inventory(root: Path) -> dict[str, Any]:
-    """Collect the plugin's model-visible and on-demand resource weights."""
+def _collect_inventory_single(root: Path) -> dict[str, Any]:
+    """Collect one plugin's model-visible and on-demand resource weights."""
     root = root.resolve()
     skills: list[dict[str, Any]] = []
     skills_dir = root / "skills"
@@ -269,6 +269,9 @@ def collect_inventory(root: Path) -> dict[str, Any]:
         "command_description_bytes": total(
             commands, "description_metrics", "bytes"
         ),
+        "command_description_estimated_tokens": total(
+            commands, "description_metrics", "estimated_tokens"
+        ),
         "command_body_bytes": total(commands, "body_metrics", "bytes"),
         "duplicate_skill_name_count": len(duplicates),
     }
@@ -281,6 +284,7 @@ def collect_inventory(root: Path) -> dict[str, Any]:
         + totals["skill_identity_path_bytes"]
         + totals["agent_description_bytes"]
         + totals["agent_tools_bytes"]
+        + totals["command_description_bytes"]
     )
     totals["model_visible_startup_estimated_tokens"] = math.ceil(
         totals["model_visible_startup_bytes"] / 4
@@ -298,6 +302,87 @@ def collect_inventory(root: Path) -> dict[str, Any]:
         "skills": skills,
         "agents": agents,
         "commands": commands,
+    }
+
+
+PLUGIN_MANIFESTS = (
+    ".claude-plugin/plugin.json",
+    ".codex-plugin/plugin.json",
+    "opencode/manifest.json",
+)
+
+
+def shipped_plugin_roots(root: Path) -> list[Path]:
+    """Return the root plugin followed by each direct, shipped module."""
+    root = root.resolve()
+    roots = [root]
+    modules = root / "modules"
+    if modules.is_dir():
+        roots.extend(
+            child.resolve()
+            for child in sorted(modules.iterdir(), key=lambda value: value.name)
+            if child.is_dir()
+            and any((child / manifest).is_file() for manifest in PLUGIN_MANIFESTS)
+        )
+    return roots
+
+
+def _plugin_name(inventory: dict[str, Any], root: Path) -> str:
+    for host in ("claude", "codex"):
+        name = inventory["manifests"].get(host, {}).get("name")
+        if isinstance(name, str) and name:
+            return name
+    try:
+        manifest = json.loads(
+            (root / "opencode/manifest.json").read_text(encoding="utf-8")
+        )
+    except (OSError, json.JSONDecodeError):
+        manifest = {}
+    name = manifest.get("plugin") if isinstance(manifest, dict) else None
+    return name if isinstance(name, str) and name else root.name
+
+
+def collect_plugin_inventories(root: Path) -> list[dict[str, Any]]:
+    """Collect the root plugin and every shipped direct module."""
+    reports: list[dict[str, Any]] = []
+    for plugin_root in shipped_plugin_roots(root):
+        report = _collect_inventory_single(plugin_root)
+        report["plugin"] = _plugin_name(report, plugin_root)
+        reports.append(report)
+    return reports
+
+
+def collect_inventory(root: Path, *, all_plugins: bool = False) -> dict[str, Any]:
+    """Collect one plugin, or all shipped plugins when requested."""
+    if not all_plugins:
+        return _collect_inventory_single(root)
+
+    plugins = collect_plugin_inventories(root)
+    totals: dict[str, int] = {}
+    for report in plugins:
+        for key, value in report["totals"].items():
+            if isinstance(value, (int, float)):
+                totals[key] = totals.get(key, 0) + value
+    # Startup tokens are estimated after summing source bytes so the aggregate
+    # remains one source estimate rather than a sum of independently rounded
+    # plugin estimates.
+    startup_bytes = sum(
+        report["totals"]["model_visible_startup_bytes"] for report in plugins
+    )
+    totals["model_visible_startup_estimated_tokens"] = math.ceil(
+        startup_bytes / 4
+    )
+    return {
+        "schema_version": 1,
+        "root": str(Path(root).resolve()),
+        "all_plugins": True,
+        "plugins": plugins,
+        "totals": totals,
+        "duplicate_skill_names": {
+            report["plugin"]: report["duplicate_skill_names"]
+            for report in plugins
+            if report["duplicate_skill_names"]
+        },
     }
 
 

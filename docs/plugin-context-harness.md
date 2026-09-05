@@ -40,10 +40,12 @@ cardinality must therefore be measured in every fresh host profile.
 
 Codex's installed core package currently contains the 69 authored skills
 but not the 16 source symlinks. Those third-party skills are visible in this
-repository through `.agents/skills`. The parity checker reports the omission as
-an error by default. Release diagnostics may temporarily classify the exact
-known set as warnings with `--allow-codex-third-party-omissions` while
-OPL-3191 owns the optional-pack migration.
+repository through `modules/<name>/.agents/skills`.
+`scripts/check-plugin-extraction.py` verifies every module is self-contained.
+The parity checker reports the omission as an error by default. Release
+diagnostics may temporarily classify the exact known set as warnings with
+`--allow-codex-third-party-omissions` while OPL-3191 owns the optional-pack
+migration.
 
 ## Static weight report
 

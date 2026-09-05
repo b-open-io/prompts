@@ -2,7 +2,6 @@
 
 import {
 	Check,
-	CircleAlert,
 	ExternalLink,
 	KeyRound,
 	LoaderCircle,
@@ -18,6 +17,7 @@ import { CopyButton } from "@/components/setup/CopyButton"
 import { Button } from "@/components/ui/button"
 import {
 	deleteSessionToken,
+	hasNativeBridge,
 	loadSessionToken,
 	openExternalUrl,
 	storeSessionToken,
@@ -149,7 +149,9 @@ export function MyPacksTab({
 				if (!cancelled) {
 					setAuthState("blocked")
 					setMessage(
-						"This Native SDK build does not expose an OS credential store. Sign-in is disabled; no plaintext fallback will be used.",
+						hasNativeBridge()
+							? "This Agent Master build cannot keep your sign-in in the macOS Keychain. Update Agent Master to sign in."
+							: "Your pack library needs the Agent Master app, which keeps your sign-in in the macOS Keychain. Open Agent Master to see your packs.",
 					)
 				}
 				return
@@ -272,11 +274,15 @@ export function MyPacksTab({
 
 	if (authState === "blocked") {
 		return (
-			<div className="native-card border-destructive/40 bg-card p-5">
+			<div className="native-card bg-card p-5">
 				<div className="flex gap-3">
-					<CircleAlert className="mt-0.5 size-5 shrink-0 text-destructive" />
+					<KeyRound className="mt-0.5 size-5 shrink-0 text-primary" />
 					<div>
-						<h2 className="text-sm font-semibold">Secure sign-in unavailable</h2>
+						<h2 className="text-sm font-semibold">
+							{hasNativeBridge()
+								? "Update Agent Master to sign in"
+								: "Open Agent Master to sign in"}
+						</h2>
 						<p className="mt-1 text-[0.74rem] leading-relaxed text-muted-foreground">{message}</p>
 					</div>
 				</div>

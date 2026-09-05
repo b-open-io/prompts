@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -23,6 +24,15 @@ def load_script(name: str, filename: str):
 
 
 PLUGIN_WEIGHT = load_script("plugin_weight", "plugin-weight.py")
+
+
+def write_manifest(root: Path, name: str) -> None:
+    for directory in (".claude-plugin", ".codex-plugin"):
+        path = root / directory
+        path.mkdir(parents=True, exist_ok=True)
+        (path / "plugin.json").write_text(
+            json.dumps({"name": name, "version": "1.0.0"}), encoding="utf-8"
+        )
 
 
 class PluginWeightTests(unittest.TestCase):
@@ -162,6 +172,83 @@ class PluginWeightTests(unittest.TestCase):
             {"skills": 8, "bytes": 120, "label": "old"},
         )
         self.assertEqual(delta, {"skills": 2, "bytes": -20})
+
+    def test_root_output_stays_single_plugin_and_command_descriptions_count(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            before = collect_inventory(root)
+            (root / "commands").mkdir()
+            (root / "commands" / "describe.md").write_text(
+                "---\ndescription: command bytes\n---\nBody.\n", encoding="utf-8"
+            )
+            report = collect_inventory(root)
+
+        self.assertNotIn("all_plugins", report)
+        self.assertEqual(report["totals"]["command_description_bytes"], len("command bytes"))
+        self.assertEqual(
+            report["totals"]["model_visible_startup_bytes"],
+            before["totals"]["model_visible_startup_bytes"] + len("command bytes"),
+        )
+
+    def test_all_plugins_preserves_records_and_aggregate_gate_catches_module(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_manifest(root, "core")
+            module = root / "modules" / "addon"
+            write_manifest(module, "addon")
+            (module / "agents").mkdir(parents=True)
+            (module / "agents" / "large.md").write_text(
+                "---\nname: large\ndescription: " + "x" * 601 + "\n---\nBody.\n",
+                encoding="utf-8",
+            )
+            report = collect_inventory(root, all_plugins=True)
+            command = [
+                sys.executable,
+                str(SCRIPTS / "plugin-weight.py"),
+                "--root",
+                str(root),
+                "--all-plugins",
+                "--max-startup-tokens",
+                "18000",
+                "--max-agent-description-chars",
+                "600",
+                "--max-agent-examples",
+                "0",
+                "--fail-on-duplicates",
+            ]
+            result = subprocess.run(command, capture_output=True, text=True, check=False)
+
+        self.assertEqual([plugin["plugin"] for plugin in report["plugins"]], ["core", "addon"])
+        self.assertGreater(report["totals"]["model_visible_startup_estimated_tokens"], 0)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("plugin addon agent large", result.stderr)
+
+    def test_all_plugins_duplicate_gate_is_scoped_to_plugin(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_manifest(root, "core")
+            module = root / "modules" / "addon"
+            write_manifest(module, "addon")
+            skills = module / "skills"
+            for folder in ("one", "two"):
+                skill = skills / folder
+                skill.mkdir(parents=True)
+                (skill / "SKILL.md").write_text(
+                    "---\nname: same\ndescription: route\n---\nBody.\n",
+                    encoding="utf-8",
+                )
+            command = [
+                sys.executable,
+                str(SCRIPTS / "plugin-weight.py"),
+                "--root",
+                str(root),
+                "--all-plugins",
+                "--fail-on-duplicates",
+            ]
+            result = subprocess.run(command, capture_output=True, text=True, check=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("plugin addon has duplicate skill names", result.stderr)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 ---
 name: wave-coordinator
-version: 1.0.6
+version: 1.0.9
 description: >-
   Dispatch many subagents in coordinated waves with per-wave review. Use for "fan out agents",
   "wave dispatch", "batch agents", "generate N variations", or any fan-out beyond about five
@@ -18,16 +18,12 @@ runtime owns thread creation.
 
 ## Prefer Native Workflows on Claude Code and Grok Build
 
-Claude Code ships `Workflow` (JavaScript, `pipeline()` + `parallel()`). Grok
-Build ships `workflow` (Rhai, barrier `parallel()` only). Both solve this
-skill's core problems structurally: concurrency clamps and queues, results
-collect as structured returns, `/workflows` shows live progress. When the
-session has that tool AND the user asked for the fan-out, write a workflow
-script instead of hand-managed waves — diversity directives go into the
-per-item `agent()` prompts and dedup runs as plain code between stages. Codex
-has no equivalent; the wave protocols below remain the way there. Gating,
-Sol-as-worker, and per-host APIs:
-`../coordinator/references/native-workflows.md`.
+Claude Code and Grok Build provide different native workflow engines. When the
+current session exposes one and the user asked for a fan-out, prefer it over
+hand-managed waves. Load only the applicable host guide:
+[Claude Code](../coordinator/references/hosts/claude.md) or
+[Grok Build](../coordinator/references/hosts/grok.md). Codex and OpenCode keep
+the manual wave protocol below; see their respective Coordinator host guides.
 
 ## The Core Problem
 
@@ -38,14 +34,20 @@ Dispatching 10+ agents at once causes three failures:
 
 Wave coordination solves all three.
 
+## Waves inside the canonical flow
+
+Before external implementation dispatch, load the shared contract at
+`../coordinator/references/dispatch-contract.md` and follow it. Waves are how
+its parallel-maker stage runs at scale; this skill adds only batching,
+diversity, and reconciliation.
+
 ## Wave Sizing Rule
 
 Use five concurrent subagents as a conservative planning default, then clamp
-the wave to the host's advertised concurrency limit, currently free thread
-slots, task shape, and remaining context/token budget. Codex defaults to
-`agents.max_threads = 6` when unset, but that is a cap on open threads, not a
-promise that all six slots are free. If N exceeds the effective limit, divide
-the work into sequential waves:
+the wave to the host's advertised concurrency limit, currently free agent
+slots, task shape, and remaining context/token budget. Treat any advertised
+concurrency cap as an upper bound, not a promise that all slots are free. If
+N exceeds the effective limit, divide the work into sequential waves:
 
 ```
 N=12 → Wave 1 (5) → Wave 2 (5) → Wave 3 (2)
@@ -142,11 +144,14 @@ ledger.
 
 Use `spawn_subagent` with the installed roster `subagent_type` (e.g.
 `research:researcher`, `review:code-auditor`). `bopen-tools:<name>` aliases
-also resolve when that plugin is installed. Native `agent().model` is
+also resolve when that plugin is installed. Confirm the current model name
+and budget defaults in the live configuration before dispatching; the values
+below were correct when written and may have moved. Native `agent().model` is
 `grok-4.6` only. Do not dispatch `grok-4.5`. Run Sol as
 `grok --single -m gpt-5.6-sol` inside a supervisor, or `codex exec`.
 Prefer the native `workflow` tool over hand waves when the fan-out has
-shape. Live children default to 32; `agent_budget` defaults to 128.
+shape and the host guide confirms the primitive exists. Live children default
+to 32; `agent_budget` defaults to 128.
 
 ### Claude Code
 
@@ -161,17 +166,25 @@ specialists and built-in `worker` or `explorer` agents when no matching custom
 adapter exists. Do not claim a `bopen_*` persona was used unless that adapter is
 actually installed and its thread was spawned.
 
-Codex defaults to `agents.max_threads = 6` and `agents.max_depth = 1` when the
-user leaves them unset. Depth 1 lets the main thread spawn direct children but
-prevents those children from recursively spawning their own agents. Keep wave
-coordination in the main thread under that default. If a workflow genuinely
-requires nested delegation, explain the token and runaway-fan-out risk before
-the user raises `agents.max_depth`; never change global Codex configuration as
-part of this skill.
+Check the live configuration for the current concurrency cap and delegation
+depth instead of assuming fixed defaults. Keep wave coordination in the main
+thread under the default depth. If a workflow genuinely requires nested
+delegation, explain the token and runaway-fan-out risk before the user raises
+the depth limit; never change global Codex configuration as part of this
+skill.
 
 Use `/agent` or the available agent activity view to inspect active and
 completed threads. Account for already-open threads when calculating the next
 wave.
+
+### OpenCode
+
+Use native OpenCode agents (`.opencode/agent(s)/<name>.md`) with the installed
+roster id where one fits. `--agent <name>` selects a primary/all-mode agent,
+not a subagent; invoke a real child from the primary with `@name`, as defined
+by Coordinator. Pin and verify the parent model, then require a child marker
+in the log before counting the run as delegated. There is no native multi-stage
+workflow engine: the caller sequences dispatches and owns barriers.
 
 ## Integration with superpowers
 
@@ -211,8 +224,8 @@ Synthesize all 8 results. Rank by quality. Present top 3 with rationale.
 ## Key Rules
 
 - Five agents per wave is the conservative planning default; clamp it to the host cap and currently free slots
-- Codex's default six-thread cap includes already-open threads; it is not a six-new-agent allowance
-- Keep orchestration at the main thread when Codex `max_depth` remains at its safe default of 1
+- A host concurrency cap includes already-open threads; it is not a fresh allowance of that many new agents
+- Keep orchestration at the main thread unless the live configuration explicitly permits nested delegation
 - Check context budget before each wave
 - Unique directive per agent — never duplicate prompts within a wave
 - Read prior output before launching the next wave

@@ -1,6 +1,6 @@
 {
   "name": "mcp-dev",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "MCP servers and MCP Apps, including the json-render framework for interactive in-chat UI",
   "author": {
     "name": "b-open-io",

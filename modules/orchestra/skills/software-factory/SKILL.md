@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.10
+version: 0.0.11
 description: >-
   Design or harden a software factory: an agentic loop that iterates toward a goal with a
   verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic
@@ -23,7 +23,10 @@ Every workflow node is staffed by one of three actors, and reliability ranks the
 
 ## The five building blocks
 
-Every production loop is assembled from these five. Claude Code ships all of them.
+Every production loop is assembled from these five. Where the current host
+guide confirms each primitive, the host ships them directly (Claude Code
+ships all five); elsewhere substitute the equivalents named in the
+Coordinator host guides.
 
 | Block | What it is | Our tooling |
 |---|---|---|
@@ -64,7 +67,16 @@ The dedup-vs-open-tickets step is what stops discovery from re-filing the same i
 
 At factory scale, a **router** sits above all worker types: work arrives typed (chore, bug, feature, hotfix), and the router picks the workflow and the model tier for it — a workhorse maker for volume, a state-of-the-art model only where planning or checking earns it. Speed-critical work (hotfixes) can **race**: several isolated agents attack the same fix in parallel and the first one through the gate wins. Isolation progresses with maturity — git worktrees are a great place to start and a poor place to end; sandboxes give full isolation plus a place a human can step into mid-run.
 
-**On Claude Code specifically**, staged fan-outs inside a loop pass — find → adversarially verify → synthesize, judge panels, loop-until-dry discovery — can run as a native `Workflow` (deterministic script, live `/workflows` progress, resumable). This is framework-dependent and opt-in-gated; see `skills/coordinator/references/native-workflows.md` for when it applies. On other runtimes, the manual wave protocols in `wave-coordinator` do the same job.
+On a host with a native workflow engine, staged fan-outs inside a loop pass can
+run as a deterministic workflow. Load only the current Coordinator host guide:
+`skills/coordinator/references/hosts/claude.md` or
+`skills/coordinator/references/hosts/grok.md`. On Codex and OpenCode, the
+manual protocols in `wave-coordinator` provide the equivalent barriers.
+
+Execution deliveries follow Coordinator's
+[dispatch contract](../coordinator/references/dispatch-contract.md). Factory
+loops may add scheduling and retention policy, but they do not replace its
+ownership, isolation, review, or shipping rules.
 
 ## The staged multi-model pipeline — the verified recipe
 
@@ -76,7 +88,9 @@ a loop asserted "rotate the credential" on a CI outage without evidence; a secon
 then flipped it to "stale, skip it" — also without evidence. Both survived because no adversarial
 reviewer ever existed. The outage was real; both written diagnoses were unverified guesses.)
 
-The verified shape — every lane below was live-tested headless before this section was written:
+The verified shape — every lane below was live-tested headless before this section was written.
+Treat the lane values as a verified example, not fixed defaults: pin the
+actual models in the loop config and verify each at preflight.
 
 | Stage | Model / lane | Invocation (verified) | What it guards |
 |---|---|---|---|

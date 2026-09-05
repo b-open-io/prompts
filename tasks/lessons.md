@@ -1,5 +1,12 @@
 # Lessons
 
+## Finish by shipping (2026-09-05)
+
+The user expects completed changes to be validated, committed, pushed, and
+submitted through the repository release flow. Do not stop at an uncommitted
+working-tree edit. Resolve validation dependencies and report the actual
+staging or published status; follow required promotion gates.
+
 ## The user is the author of this repository (2026-08-19)
 
 Do not treat other sessions as other authors. The owner is the author of

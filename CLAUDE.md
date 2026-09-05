@@ -2,21 +2,25 @@
 
 ## Shipping rule (read this before ending any session)
 
-Pushing to master IS publishing this plugin. A committed-but-unpushed version
-bump is a stranded release: the marketplaces never see it, local installs
-stay stale, and the gap is invisible until someone diffs the cache. Claude
-and Codex have separate real manifests, but their shared metadata and release
-version must stay identical. Use `python3 scripts/check-plugin-manifests.py`
+The default branch (`master` here; resolve it from `origin/HEAD`, never
+assume) IS the published plugin. Work lands on `dev` first: commit on an
+issue-named feature branch, open the PR against `dev`, and let the standing
+`dev` → default-branch PR carry it through the 24-hour cooling period and a
+`/approve` comment. Never push to the default branch directly. A version bump
+that sits on `dev` is not yet released; say so in the session summary.
+Claude and Codex have separate real manifests, but their shared metadata and
+release version must stay identical. Use `python3 scripts/check-plugin-manifests.py`
 before shipping; use its `--bump-patch` option to bump both manifests together.
-`master` is protected: every PR must pass the `validate` and `isolated-install`
-checks (`scripts/test-isolated-plugin-install.sh` runs the second one locally).
+The default branch is protected: every PR must pass the `validate` and
+`isolated-install` checks (`scripts/test-isolated-plugin-install.sh` runs the
+second one locally).
 Codex caches installed plugin contents by version, so a stale Codex version can
 silently preserve stale skills and hooks even when the source changed.
 
 After ANY commit that bumps either `.claude-plugin/plugin.json` or
 `.codex-plugin/plugin.json`, push in the same breath —
-`git log origin/master..master` must be empty before the session ends. Then
-install via `CLAUDECODE= claude plugin update core@b-open-io` (never
+`git log origin/dev..dev` must be empty before the session ends. Once the
+promotion PR merges, install via `CLAUDECODE= claude plugin update core@b-open-io` (never
 copy files into ~/.claude manually). Refresh the published Codex marketplace
 with `codex plugin marketplace upgrade` — `marketplace add` does NOT refresh
 an existing snapshot and will silently reinstall the stale version — then
@@ -45,34 +49,12 @@ into skills folders — install the plugin that owns them so updates flow.
 
 ## Version Management for Agents, Commands, and Skills
 
-**CRITICAL - READ THIS FIRST**: Only increment by +0.0.1 (patch) for virtually ALL changes.
-
-### The Rule
-```
-ALWAYS: x.y.z → x.y.(z+1)    e.g., 2.0.0 → 2.0.1
-NEVER:  x.y.z → x.(y+1).0    unless explicitly told to
-NEVER:  x.y.z → (x+1).0.0    unless explicitly told to
-```
-
-### What Counts as Patch (+0.0.1)
-- Bug fixes
-- New features
-- Documentation updates
-- Adding new sections
-- Refactoring
-- Adding fallbacks
-- Improving error messages
-- ANY normal development work
-
-### What Counts as Minor (+0.1.0) - RARE
-- Complete API redesign (user explicitly requests)
-- Major architectural change (user explicitly requests)
-
-### What Counts as Major (+1.0.0) - EXTREMELY RARE
-- Breaking changes requiring user migration
-- Complete rewrite with incompatible interface
-
-**When in doubt, use +0.0.1. You almost certainly want +0.0.1.**
+Use patch increments (`x.y.z` → `x.y.(z+1)`) for ordinary changes to agents,
+commands, prompts, and skills. Reserve minor or major increments for an
+explicit release decision that documents the new capability or breaking
+migration. Keep synchronized manifests and release artifacts under the
+shipping rule above; do not invent or bump versions in an unreviewed content
+edit or worker task.
 
 ## Repository Overview
 
@@ -164,33 +146,6 @@ This plugin is distributed via the Claude Code marketplace:
 - Test prompts thoroughly before committing
 - Keep prompts focused on specific, repeatable tasks
 - **Analyze tasks and reorganize for sub-agent parallelization** - Break complex operations into parallel sub-tasks that can be executed by multiple specialized agents simultaneously
-
-## Version Management Guidelines
-
-**CRITICAL VERSION POLICY**: When updating agents, commands, or prompts, use minimal version increments to avoid version number inflation:
-
-### Version Bump Rules
-- ✅ **PATCH updates only**: Use `x.y.z` → `x.y.(z+1)` format (e.g., 3.1.0 → 3.1.1)
-- ❌ **NO major bumps**: Never increment `x.0.0` unless it's a complete rewrite
-- ❌ **NO minor bumps**: Avoid `x.y.0` increments unless adding entirely new major functionality
-
-### When to Bump Versions
-- **Patch (0.0.1)**: Bug fixes, small improvements, content additions, diagnostic enhancements
-- **Minor (0.1.0)**: New features, new tools, significant capability additions  
-- **Major (1.0.0)**: Complete rewrites, breaking changes, fundamental restructuring
-
-### Examples
-```
-✅ Good: 3.1.0 → 3.1.1 (added diagnostic section)
-✅ Good: 2.5.3 → 2.5.4 (fixed command syntax)  
-✅ Good: 1.8.9 → 1.8.10 (improved error handling)
-
-❌ Bad: 3.1.0 → 4.0.0 (just for adding diagnostics)
-❌ Bad: 2.5.3 → 3.0.0 (minor content update)
-❌ Bad: 1.8.9 → 2.0.0 (small enhancement)
-```
-
-**Remember**: We want sustainable versioning - at current rate we'd hit version 400 within weeks!
 
 ## Agent Color Scheme
 
@@ -357,8 +312,8 @@ grep -r "shadcn" design/
 ## Prompt Creation Guidelines
 
 When creating new prompts or commands:
-1. **Metadata First**: Always include complete YAML frontmatter with version, description, and tags
-2. **Self-Contained**: Each prompt should work independently without external dependencies
+1. **Metadata**: Preserve required frontmatter and existing supported fields; do not invent a mandatory version or tags field for formats that do not define one
+2. **Self-Contained**: Keep each prompt independently usable and place required supporting material with its owning plugin/module
 3. **Clear Mission**: Start with a clear mission statement of what the prompt accomplishes
 4. **Structured Format**: Follow the established sections (Mission, Core Capabilities, etc.)
 5. **Practical Examples**: Include real-world usage examples
@@ -448,18 +403,18 @@ This ensures that commands follow our established patterns and maintain consiste
 
 For creating and maintaining skills, reference the official **skill-development** skill from Anthropic:
 
-**Location:** https://github.com/anthropics/claude-code/tree/main/plugins/skill-development
+**Location:** https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev/skills/skill-development
 
 **Key principles from the skill:**
 - **Progressive Disclosure**: Keep SKILL.md lean (1,500-2,000 words), put detailed content in references/
 - **Strong Triggering**: Description should include specific phrases that trigger the skill
-- **Third-Person Descriptions**: Use "This skill should be used when..." not "Use when..."
+- **Clear Descriptions**: State the capability and natural trigger phrases; no fixed lead-in sentence is required
 - **Bundled Resources**: Include references/, examples/, scripts/ directories as needed
-- **YAML Frontmatter**: Always include name, description, and version
+- **YAML Frontmatter**: Include required fields and preserve supported optional fields; manage versions through the owning repository's release policy
 
 **Additional Resources:**
-- `references/MODULAR_PROMPTS_GUIDE.md` - Comprehensive guide for modular prompt system
-- `templates/agent-update-template.md` - Template for updating agent configurations
+- [Claude Code skills documentation](https://code.claude.com/docs/en/skills)
+- [Agent Skills specification](https://agentskills.io/specification)
 
 ## Third-Party Skills & Provenance
 
@@ -470,15 +425,17 @@ This repo uses the Vercel Labs `skills-lock.json` format to track third-party sk
 - `sourceType` — Always `github` currently
 - `computedHash` — SHA256 hash of the skill folder contents for integrity verification
 
-Third-party skills are installed into `.agents/skills/` and symlinked into `skills/` for plugin discovery. Our own authored skills live directly in `skills/`.
+Third-party skills are vendored inside the module that ships them at `modules/<name>/.agents/skills/<skill>` and symlinked from `modules/<name>/skills/<skill>` with the target `../.agents/skills/<skill>` (one level up from `skills/` is the module root). Each such module carries its own `skills-lock.json`. The root `skills-lock.json` stays present but empty. Authored skills live directly in `skills/` (core) or `modules/<name>/skills/`. The marketplace ships each module with git-subdir, which severs the parent directory, so a symlink that leaves the module dangles after install, and `scripts/check-plugin-extraction.py` enforces this.
 
 Current sources:
-- `modelcontextprotocol/ext-apps` — MCP Apps SDK skills (create-mcp-app, add-app-to-server, convert-web-app)
-- `vercel-labs/json-render` — JSON rendering skills (json-render-core, json-render-react, etc.)
+- `modelcontextprotocol/ext-apps` (mcp-dev): MCP Apps SDK skills (create-mcp-app, add-app-to-server, convert-web-app)
+- `vercel-labs/json-render` (mcp-dev): JSON rendering skills (json-render-core, json-render-react, etc.)
+- `ceorkm/macos-design-skill` (macos-design, creative)
+- `mattpocock/skills` (wayfinder, review)
 
-To add a third-party skill:
+To add a third-party skill, run the command from inside the module directory so the CLI writes `.agents/skills/` and `skills-lock.json` there, then symlink it from `skills/` as `../.agents/skills/<skill>`:
 ```bash
-npx skills add https://github.com/org/repo --skill skill-name
+cd modules/<name> && npx skills add https://github.com/org/repo --skill skill-name
 ```
 
 ### ClawNet On-Chain Attestation

@@ -4,7 +4,7 @@
 
 # bOpen Tools: Prompts, Skills & AI Agents
 
-**A shared toolkit for Claude Code, Codex, and Grok Build** with specialist
+**A shared toolkit for Claude Code, Codex, Grok Build, and OpenCode** with specialist
 agents, skills, orchestration patterns, safety hooks, and reusable
 development workflows.
 
@@ -14,21 +14,38 @@ This repository provides:
 
 - **Specialized AI agents** for design, security, documentation, architecture,
   testing, payments, infrastructure, and more
-- **Cross-agent skills** shared by Claude Code, Codex, and Grok Build
+- **Cross-agent skills** shared by Claude Code, Codex, Grok Build, and OpenCode
+  with source-preserving native OpenCode skill discovery
 - **Runtime-specific hooks** that preserve the same safety and workflow intent
   on Claude Code (`claude-hooks.json`), Codex (`codex-hooks.json`), and Grok
-  Build (`hooks/hooks.json`)
+  Build (`hooks/hooks.json`), plus a native OpenCode plugin bridge
 - **Agent Master setup UI** for auditing the local harness, viewing purchased
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
-- **Orchestration patterns** for a strong main model, native specialists,
-  Grok implementation workers, and a read-only Fable advisor
-- **Claude Code slash commands** for common workflows
+- **Orchestration patterns** that keep a strong main model on judgment, wrap
+  cheaper implementation workers in visible native controllers, support a
+  read-only Fable advisor, and let humans edit the plan on an AI Elements
+  workflow canvas before execution
+- **Slash commands** for common workflows, including native OpenCode command registration
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
 historical baseline.
 
 ## Installation
+
+OpenCode now has a [native suite installer](opencode/README.md). From a persistent
+checkout, run `bun opencode/install.ts --all --global`, or select modules with
+`--plugin core --plugin orchestra`. It registers the same agents, commands,
+skills and supported MCP definitions, plus core's hook bridge. Restart OpenCode
+and inspect `opencode debug config`, `opencode debug skill`, and
+`opencode debug agent bopen-core-front-desk`. The tested source inventory exposes
+30 agents, 14 commands and 85 discovered skills across the suite.
+
+HammerTime uses bounded follow-up turns in persistent OpenCode sessions. Guard
+requests for additional confirmation block with an explanation; native host
+permissions remain in force. See the adapter guide for update/removal steps,
+headless behavior, and unsupported host-specific capabilities.
+
 
 `core` holds the shared foundation: session context, setup and hook
 management, completion auditing, session recall, routing, identity work, and
@@ -56,7 +73,7 @@ grok plugin install core@b-open-io --trust
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
 | `dev-ops` | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
-| `brand-rep` | personas for public surfaces, bopen.ai social scheduling (`schedule-social-post`); account-manager, social-media-manager |
+| `brand-rep` | personas for public surfaces, bopen.ai social scheduling from any harness (`schedule-social-post`); account-manager, social-media-manager |
 
 ```bash
 /plugin install orchestra@b-open-io
@@ -74,10 +91,11 @@ the install command when a skill is missing. They do not wrap those products.
 | Agent | Needs | Install |
 |---|---|---|
 | `brand-rep:social-media-manager` (Alex) | `marketing-skills:social`, `:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
-| `brand-rep:social-media-manager` (Alex) | Typefully scheduler, if the user uses Typefully | `npx skills add typefully/agent-skills` |
+| `brand-rep:social-media-manager` (Alex) | Typefully fallback, only when no first-party scheduler is available and the user wants Typefully | `npx skills add typefully/agent-skills` |
 
-Alex's default scheduler is bopen.ai's own social calendar, reached through
-`brand-rep:schedule-social-post`; it ships in this marketplace and needs no
+Alex's first-party scheduler is bopen.ai's social calendar. Inside bopen.ai chat
+the native draft tools apply; from any other harness `brand-rep:schedule-social-post`
+reaches the same scheduler through the auth.md API. Both ship here and need no
 extra install.
 | `core:front-desk` / `dev-ops:integration-expert` | Resend email | `npx skills add resend/resend-skills` |
 | `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
@@ -160,6 +178,17 @@ codex plugin add core@b-open-io
 Start a fresh Claude Code or Codex session after updating so cached plugin
 metadata, skills, agents, and hooks are reloaded.
 
+BitPlan is an app-owned external provider rather than a copied core skill.
+Install it from the same bOpen marketplace with
+`/plugin install bitplan@b-open-io`, or install only its canonical skill with:
+
+```bash
+npx skills add opldotdev/bitplan.dev --skill bitplan -g
+```
+
+The plugin exposes `Skill(bitplan:bitplan)`; a standalone install exposes
+`Skill(bitplan)`. Workflows accept either form and use the same upstream file.
+
 ### Skills only
 
 For other agentic frameworks, install individual skills:
@@ -168,9 +197,11 @@ For other agentic frameworks, install individual skills:
 bunx skills add b-open-io/prompts --skill <skill-name>
 ```
 
-The list below is the authored core inventory. Third-party skills are
-tracked separately in [`skills-lock.json`](skills-lock.json) and keep their
-upstream provenance.
+The list below is the authored core inventory. App-owned and third-party skills are
+vendored inside the module that ships them and tracked in that module's
+`skills-lock.json` (for example
+[`modules/mcp-dev/skills-lock.json`](modules/mcp-dev/skills-lock.json)),
+keeping their upstream provenance.
 
 <details>
 <summary><strong>Authored skills — click to expand</strong></summary>
@@ -185,7 +216,6 @@ bunx skills add b-open-io/prompts --skill hammertime
 bunx skills add b-open-io/prompts --skill hook-manager
 bunx skills add b-open-io/prompts --skill humanize
 bunx skills add b-open-io/prompts --skill linear-planning
-bunx skills add b-open-io/prompts --skill postplan
 bunx skills add b-open-io/prompts --skill reinforce-skills
 bunx skills add b-open-io/prompts --skill remind
 bunx skills add b-open-io/prompts --skill runtime-context
@@ -253,7 +283,7 @@ intentional.
 | `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, unsupported significance, vague attribution, promotional drift, canned change summaries, and template-like sales copy; outbound drafts use attributed examples and supplied account facts without inventing commercial claims |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
-| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and turns every decision into a questionnaire that explains each option's consequences. Plans can stay local, use an Artifact or PostPlan, or publish through BitPlan with explicit wallet approval. |
+| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and uses a uniform BitPlan reading layout without an embedded proposals menu. Decision trees connect dependent choices; questionnaires include Unsure, consequences, and a copyable response that works with scripts off. Settled plans end with an implementation brief and done conditions. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
@@ -275,7 +305,6 @@ intentional.
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm from the synced default branch with changelog/version management and browser confirmation |
 | `perf-audit` | Run local performance audits without network calls |
-| `postplan` | Host an HTML draft on postplan.dev when Claude Artifacts are not available |
 | `shaders` | Custom shaders for Three.js and WebGL |
 | `shadscan` | Drive the shadscan analyzer to audit and raise a shadcn app's UI-fundamentals score, and gate it in CI |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |
@@ -457,6 +486,8 @@ the plugin detail view; they advertise a skill-owned dashboard or configurator
 without granting capabilities, persisting settings, or requiring the skill to
 own a separate build. This release uses that contract for **Visual Wayfinder**.
 
+Setup plans keep credential values out of chat and tool arguments: enter keys directly in your editor, then verify availability without displaying them.
+
 When Agent Master is launched through Portless with `--agent-master`, it also
 exposes an origin-restricted local broker at
 `https://agent-master.localhost`. Skill pages on bopen.ai can detect that
@@ -513,6 +544,20 @@ bun skills/setup/scripts/server.ts --runtime <claude|codex|grok|opencode|hermes|
 
 ### Installation
 
+OpenCode now has a [native suite installer](opencode/README.md). From a persistent
+checkout, run `bun opencode/install.ts --all --global`, or select modules with
+`--plugin core --plugin orchestra`. It registers the same agents, commands,
+skills and supported MCP definitions, plus core's hook bridge. Restart OpenCode
+and inspect `opencode debug config`, `opencode debug skill`, and
+`opencode debug agent bopen-core-front-desk`. The tested source inventory exposes
+30 agents, 14 commands and 85 discovered skills across the suite.
+
+HammerTime uses bounded follow-up turns in persistent OpenCode sessions. Guard
+requests for additional confirmation block with an explanation; native host
+permissions remain in force. See the adapter guide for update/removal steps,
+headless behavior, and unsupported host-specific capabilities.
+
+
 ```bash
 /plugin marketplace add b-open-io/claude-plugins
 /plugin install claude-peacock@b-open-io
@@ -563,6 +608,7 @@ prompts/
 │   ├── codex-agents/       # Adapter generator and safe installer
 │   ├── prompts-factory-worker.sh # LoopTop worker that keeps the dev → master PR current
 │   ├── test-isolated-plugin-install.sh # Disposable-runner plugin install gate
+│   ├── check-plugin-extraction.py # Per-plugin git-subdir extraction gate
 │   ├── benchmark.tsx       # Skill output-quality benchmark CLI
 │   ├── plugin-weight.py    # Static catalog/context inventory
 │   ├── capture-*-context.py # Exact Claude/Codex host snapshots
@@ -596,13 +642,16 @@ and agent setup flows so upgrades remain reproducible.
 
 ### Shipping
 
-`master` is the published branch and is protected. Every pull request must pass
-the `validate` and `isolated-install` checks. Work lands on `dev` first. The
-factory worker (`scripts/prompts-factory-worker.sh`) keeps one standing
-`dev` → `master` pull request open and restates the review deadline whenever
-`dev` changes. `promote-dev.yml` merges that pull request only after a 24-hour
-cooling period and a fresh `/approve` comment from the reviewer; a new `dev`
-commit resets both.
+The default branch is the published plugin and is protected. Every pull
+request must pass the `validate` and `isolated-install` checks. Work lands on
+`dev` first. The factory worker (`scripts/prompts-factory-worker.sh`) keeps one
+standing `dev` → default-branch pull request open and restates the review
+deadline whenever `dev` changes. It needs no configuration: `/factory-init`
+registers the loop with LoopTop and writes `~/.prompts-factory/loop/loop.json`,
+the worker reads its checkout from that manifest, and the signed-in `gh` user
+is the reviewer. `promote-dev.yml` merges the pull request only after a
+24-hour cooling period and a fresh `/approve` comment from a repository owner,
+member, or collaborator; a new `dev` commit resets both.
 
 ## Plugin Context Harness
 
@@ -638,14 +687,33 @@ measurements and commands, and
 [the domain-plugin architecture](docs/plugin-context-architecture.md) for the
 planned core/optional-pack migration.
 
+## Context and harness checks
+
+`python3 scripts/run-plugin-harness.py --hooks` checks generated adapters,
+module extraction, release documentation, hook regressions, routing/scoring
+fixtures, and benchmark isolation. Install the locked dependencies under
+`tools/visual-coordinator` and `scripts` first (`bun install --frozen-lockfile`
+in each directory); Python 3.12 or newer and Bun are required.
+
+The source inventory includes skill, agent, and command descriptions. CI caps
+estimated startup metadata at 3,000 tokens for core and 18,000 for the complete
+suite. These are reproducible source estimates, not measured host token usage.
+Install the modules needed for a task and load longer authoring manuals on demand.
+
+OpenCode loads the initial session context once per session, sharing concurrent
+loads and retrying failures. Prompt routing still runs for each message and tool
+guards still run for each tool call. Explicit host evidence takes precedence over
+ambient CLI detection; unavailable runtime facts are reported as unknown.
+
 ## Skill Benchmarks
 
 Skills with benchmark coverage keep eval cases in
-`skills/<name>/evals/evals.json`. Each eval runs twice — once with the skill
+`skills/<name>/evals/evals.json` or the equivalent module path. Each eval runs twice — once with the skill
 injected and once as a bare baseline — and an LLM judge scores each assertion
 via a constrained `{grades:[...]}` schema (Messages API
 `output_config.format`, or `claude -p --json-schema` when no API key).
-The delta is the signal. Not every authored skill has coverage yet; the CLI
+Absolute task quality and regression checks come first; paired delta and cost
+are supporting evidence. Not every authored skill has coverage yet; the CLI
 runs the skills that currently include an `evals/` directory, and new or
 materially changed skills should add focused cases where the behavior can be
 judged reliably.
@@ -685,6 +753,9 @@ Add evals alongside any skill at `skills/<name>/evals/evals.json`:
 ### Running the Benchmark CLI
 
 ```bash
+# Install the pinned benchmark runtime once
+bun install --cwd scripts --frozen-lockfile
+
 # Run all skills with evals
 bun run scripts/benchmark.tsx
 
@@ -702,7 +773,7 @@ Results are written to `benchmarks/latest.json`. Commit reviewed results to publ
 
 **Resume support:** Each eval result is cached by content hash
 (`benchmarks/cache/`). The hash includes the model, full eval contract, and
-injected skill content. Interrupted runs resume without reusing a score after
+injected skill content, qualified plugin identity, and isolation version. Interrupted runs resume without reusing a score after
 the skill or assertions change.
 
 ### Writing Evals for Your Skill
@@ -721,7 +792,18 @@ Or ask the tester agent directly:
 
 ### Publishing Results
 
-Benchmarks run **locally** using your existing Claude session — no API key needed. They are not run in CI. Commit `benchmarks/latest.json` alongside the reviewed skill changes; bopen.ai picks up the committed results via ISR.
+Benchmarks run locally in Claude bare mode with provider credentials supported
+by that mode; a logged-in interactive session alone is insufficient. The CLI
+checks authentication and required flags before requesting a model. Both arms
+use an empty temporary working directory, disabled tools and slash commands,
+and strict empty MCP configuration. This is **text-body ablation**; it does not
+measure installed skill routing or execution of scripts, files, or integrations.
+Use a qualified skill name when multiple modules share a directory name.
+Missing usage remains unknown and failed runs remain visible.
+
+CI runs deterministic benchmark and adapter regressions without model calls.
+Live benchmark results require an explicit local run. Commit reviewed results
+alongside the skill changes; bopen.ai reads the committed results via ISR.
 
 ---
 
@@ -757,10 +839,11 @@ Codex adapter IDs according to the current host:
 
 ### Orchestration: main seat, workers, advisor
 
-Use the `orchestrator` skill when the current Claude Code, Codex, or Grok
-Build main should retain the plan, judgment, verification, and git ownership
+Use the `orchestrator` skill when the current Claude Code, Codex, Grok
+Build, or OpenCode main should retain the plan, judgment, verification, and git ownership
 while other lanes do bounded work. Grok Build also ships a native `workflow`
-tool (Rhai scripts, `/workflows` dashboard). Codex does not.
+tool (Rhai scripts, `/workflows` dashboard). Codex and OpenCode do not — they
+sequence `codex exec` / `opencode run` dispatches from the caller.
 
 ```text
 Use $orchestra:orchestrator. Keep this session in the main seat, use native
@@ -773,20 +856,26 @@ The main model is always the model selected for the current session; the skill
 does not pin or rename it. The supporting skills divide responsibilities:
 
 - `coordinator` writes precise worker specs, assigns non-overlapping files,
-  dispatches implementation, and requires acceptance reports. On a Grok main,
-  native roster agents stay on `grok-4.6`. Do not dispatch `grok-4.5`.
-  Grok 1.0.3 rejects `agent({ model: "gpt-5.6-sol" })` (`Unknown Task.model
-  slug`). Register a quoted `[model."gpt-5.6-sol"]` and wrap
-  `grok --single -m gpt-5.6-sol` in a `grok-4.6` workflow supervisor.
-  If that id is missing, use `codex exec -m gpt-5.6-sol`. When Grok is the
-  external lane from Claude or Codex, pin `grok-4.6`. Override that with
-  `BOPEN_WORKER_MODEL`.
-- `advisor` packages a narrow, read-only consult. From a Codex main it can use
+  dispatches implementation, and requires acceptance reports. It loads one
+  shared dispatch contract, the current host guide, and only the selected
+  worker guide. Non-trivial writes use isolated worktrees, all makers stop at
+  a barrier before an independent read-only review, and review plus tests share
+  one corrective pass. The main runs the final checks and owns git. Bounded
+  implementation defaults to the cheapest authorized capable lane; native
+  specialists stay focused on evidence, review, testing, and domain judgment.
+- `advisor` packages a narrow, read-only consult. It recommends `gpt-6-astra`
+  through Codex CLI from Claude Code, Codex, Grok Build, OpenCode, or any host
+  with shell access, with an explicit read-only sandbox and model pin. Override
+  the Codex model with `BOPEN_CODEX_ADVISOR_MODEL`. From a Codex main it can use
   the Claude CLI with the `fable` model-family alias. Override it with
   `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
+  The skill loads only the selected channel guide and records the provider,
+  model, authentication path, context sent, and proof that the intended
+  advisor ran. OpenCode consults use a permission-constrained child.
 - `orchestrator` composes native specialists, Coordinator, Advisor, and staged
-  waves while leaving final decisions with the main session.
+  waves while leaving final decisions with the main session. It delegates
+  harness-specific behavior to Coordinator's on-demand references.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
   edges, reject-back gates) before it runs. Staffing, isolation,
   concurrency, refusals, and the paste-back spec live on that canvas.
@@ -796,10 +885,21 @@ does not pin or rename it. The supporting skills divide responsibilities:
   orchestra. Claude Code and Codex do not have that slash command.
 
 External lanes cross provider boundaries. A Grok dispatch can send its prompt,
-specification, and selected repository content to xAI. A Fable consult can send
-its consult and files inspected by read-only tools to Anthropic. State what will
-be shared before first use, obtain approval unless the user already authorized
-that lane, and never send secrets or unrelated proprietary content.
+specification, and selected repository content to xAI. A Muse dispatch can send
+the same class of content to Meta. A Codex / Sol / Luna dispatch can send it to
+OpenAI. A Fable consult can send its consult and files inspected by read-only
+tools to Anthropic. An `opencode run` dispatch can send its prompt and repository
+content to whichever provider backs the pinned `provider/model` — confirm the
+`opencode.json` provider block first so the destination is known. State what will be shared before first use, obtain approval
+unless the user already authorized that lane, and never send secrets or
+unrelated proprietary content.
+
+Grok Build can use an API key or the account signed in through grok.com. To
+select the signed-in account, unset both `XAI_API_KEY` and `GROK_API_KEY` for
+preflight and dispatch, then verify that Grok reports `logged in with
+grok.com`. A temporary `GROK_HOME` reduces local configuration, but the account
+may still supply managed plugins and MCP servers; inspect what actually loaded
+before sending repository context.
 
 ### Custom Workflows
 
@@ -918,5 +1018,5 @@ When adding new content:
 
 Two layers track skill authorship and integrity:
 
-- **`skills-lock.json`** — Vercel Labs format recording third-party skill sources, versions, and SHA256 content hashes. Ensures reproducible installs and detects tampering.
+- **`skills-lock.json`** files (one per module under `modules/<name>/`, root file kept empty) in the Vercel Labs format record third-party skill sources, versions, and SHA256 content hashes. Ensures reproducible installs and detects tampering.
 - **`.clawnet/` directories** — On-chain Bitcoin attestation (B + MAP + AIP + BAP ATTEST) for skills we author. Provides cryptographic proof of authorship anchored to the BSV blockchain.

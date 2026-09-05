@@ -8,26 +8,252 @@ manifests share the same release version.
 
 ### Added
 
-- `brand-rep:schedule-social-post` 1.0.0 teaches any agent harness to use the
-  bopen.ai social scheduler for X: the auth.md service-auth login with the
-  `social:draft` scope, image upload, thread creation as a `planned` post, the
-  private review URL where the user confirms, and the X split-carousel rules
-  (two equal portrait tiles or three 1024×2048 slices, uploaded left to
-  right). `scripts/bopen-social.sh` wraps discovery, login, refresh, accounts,
-  next-slot, upload, create, get, update, delete, review-url, and open.
-  `references/bopen-social-api.md` records the endpoint contract and
-  `references/x-carousel.md` the carousel brief for Lisa. The skill icon is
-  briefed in bopen-ai (`docs/art-batches/2026-09-02-schedule-social-post.md`)
-  and still needs Lisa to paint it.
+- `brand-rep:schedule-social-post` 1.0.0 teaches any agent harness without
+  bopen.ai's native draft tools to use the bopen.ai social scheduler for X:
+  the auth.md service-auth login with the `social:draft` scope, image upload,
+  thread creation as a `planned` post, the private review URL where the user
+  confirms, and the X split-carousel rules (two equal portrait tiles or three
+  1024×2048 slices, uploaded left to right). `scripts/bopen-social.sh` wraps
+  discovery, login, refresh, accounts, next-slot, upload, create, get, update,
+  delete, review-url, and open. `references/bopen-social-api.md` records the
+  endpoint contract and `references/x-carousel.md` the carousel brief for
+  Lisa. The skill icon is briefed in bopen-ai
+  (`docs/art-batches/2026-09-02-schedule-social-post.md`), Linear OPL-4363.
 
 ### Changed
 
-- `social-media-manager` (Alex) 1.0.6 knows bopen.ai is the first-party
-  scheduler: what an agent may set (`draft`, `planned`), what stays on the
-  website session (confirm, schedule, retry), the consent step before the
-  login email, and that every post ends with a review URL. Loads
-  `brand-rep:schedule-social-post` and points its carousel section at the
-  skill's reference. Bumped `brand-rep` to 0.1.7.
+- `social-media-manager` (Alex) 1.0.7 loads `brand-rep:schedule-social-post`
+  for harnesses outside bopen.ai chat, states the agent ceiling (`draft`,
+  `planned`) and the consent step before the login email, and points its
+  carousel section at the skill's reference. Bumped `brand-rep` to 0.1.9.
+
+### Changed
+
+- Review plugin 0.1.16: updated `visual-proposal` to 0.0.16 with BitPlan's reading aesthetic, explicit
+  Unsure choices and consequences, scripts-off response copying, decision-tree
+  guidance, revision summaries, and implementation handoffs with done conditions.
+- Preserved advocates, cross-examination, judging, and the CEO call. Kept option
+  cards neutral and recommendations attributed to the panel.
+- Removed the embedded proposals archive menu and its scanner and example;
+  BitPlan handles plan organization. Responses use non-secret plan identifiers.
+
+- Orchestra 0.1.25 / Advisor 0.0.8 recommends `gpt-6-astra` via Codex CLI across Claude Code,
+  Codex, Grok Build, OpenCode, and other shell-capable hosts. The shared lane
+  documents authentication preflight, an explicit read-only sandbox, model
+  overrides, and saved runtime evidence and verdicts.
+
+## [1.1.163] - Pending production promotion
+
+### Fixed
+
+- OpenCode preserves scoped Bash/Skill restrictions and source denies while honoring ordered native user overrides. Session context loads once per session; disposed message routing stops without disabling tool guards.
+- Routing probes retain run identity and failures; scoring rejects duplicate cases and incomplete or forbidden routes.
+- Benchmarks isolate tool-free text ablations, discover module skills, reject invalid eval contracts, report unknown usage honestly, and fail on provider or judge errors. Pinned runtime dependencies and deterministic CLI tests cover the executable entrypoint.
+- Plugin-kit 0.1.8 moves prompt-engineer manuals into on-demand module references and corrects authoring permissions, publishing, and benchmark guidance. Component patches: prompt-engineer 2.3.21, agent-auditor 0.1.3, benchmark-skills 2.0.2, skill-publish 1.0.2.
+- Setup 1.0.6 and runtime context distinguish the active host, installed CLIs, and unavailable capabilities. CI enforces core/suite metadata budgets and adapter, hook, benchmark, and extraction checks.
+
+## [1.1.162] - 2026-09-04
+
+### Fixed
+
+- Setup plans direct users to enter API keys in their editor, preserving existing settings and keeping secrets out of chat and tool arguments.
+
+## [1.1.161] - 2026-09-04
+
+### Added
+
+- Native OpenCode suite adapter over canonical agent, command and skill sources,
+  with compatible MCP registration and a reviewed core hook bridge. Scoped or
+  whole-suite installation owns one entrypoint, preserves user configuration,
+  and supports additive updates and removal.
+- Bounded HammerTime follow-up turns with cancellation/error checks, per-session
+  caps and private transcript normalization. Native guard checks preserve source
+  restrictions; unsupported confirmation requests block instead of granting access.
+- Explicit per-module OpenCode compatibility declarations, real CLI discovery
+  verification and regression coverage for installer ownership, credentials,
+  source containment, permissions and continuation lifecycle.
+
+### Fixed
+
+- Setup no longer treats Claude plugin installation as OpenCode support. Native
+  install/update/removal plans and hook configuration use OpenCode's actual paths.
+- HammerTime commands now share the same resolved state directory on every host;
+  pause/resume no longer assumes a legacy Claude directory or suggests bypassing guards.
+  Host apps, arbitrary hook registries and headless Stop parity remain documented
+  limitations rather than advertised capabilities.
+
+## [1.1.160] - 2026-09-04
+
+### Changed
+
+- Orchestra now uses one execution contract for non-trivial changes: the main
+  owns the plan and git, implementation workers use isolated worktrees, all
+  makers stop at a hard barrier, an independent reviewer can return one shared
+  corrective pass, and the main runs the final checks. A user-selected worker
+  lane may include an expiry or stop condition; normal lane selection resumes
+  afterward. `coordinator` 0.0.17, `orchestrator` 0.0.11,
+  `software-factory` 0.0.11, `deploy-agent-team` 1.0.7, and
+  `wave-coordinator` 1.0.9.
+- `advisor` 0.0.7 is now a short router. Shared consult and reporting rules
+  live in one reference, while Claude, Fable, Codex, and OpenCode mechanics
+  load only when that channel is selected. Consults remain read-only and must
+  report the provider, model, authentication path, context sent, and proof that
+  the intended advisor ran.
+- `visual-coordinator` 0.1.10 is now a real React + AI Elements workflow
+  canvas with registry-installed shadcn controls, a focused inspector, typed
+  handoffs, validation-gated versioned export, and a compact mobile review
+  mode. Harness-aware selectors use the detected Codex, Claude, Grok, and
+  OpenCode model inventories; OpenCode models are grouped by provider and put
+  preferred worker choices such as Muse and Luna first. Its
+  canonical source and schema tests live under `tools/visual-coordinator`; a
+  deterministic build produces the self-contained plugin HTML and detects
+  drift without a CDN or second workflow engine.
+
+### Fixed
+
+- Grok worker guidance now distinguishes API-key billing from the account
+  signed in through grok.com. Signed-in runs remove both `XAI_API_KEY` and
+  `GROK_API_KEY`, keep the same authentication lane for preflight and
+  dispatch, and report managed plugins or child agents that still load despite
+  a clean temporary Grok home. A new launcher verifies the exact model, Grok
+  version, repository root, branch, base ancestry, and workspace sandbox;
+  keeps only a redacted capability inventory; preserves subagents by default;
+  and tells writable workers exactly which prepared worktree and branch they
+  own. Temporary-home cleanup cannot target the user's real Grok home.
+- OpenCode worker and advisor examples attach prepared prompt files instead of
+  interpolating their contents into shell commands. Agent Builder 1.7.16 now
+  routes gated multi-stage designs through Visual Coordinator and no longer
+  documents a removed team-creation call.
+
+Core 1.1.160, orchestra 0.1.22.
+
+## [1.1.159] - 2026-09-04
+
+### Added
+
+- OpenCode is a supported orchestra harness. `coordinator` 0.0.13 dispatches
+  `opencode run --model <provider/model>` workers (no `opencode exec` exists),
+  `orchestrator` 0.0.7 adds an OpenCode main adapter, and `advisor` 0.0.5 adds
+  an `opencode run` consult channel (including Muse Spark 1.3 via a custom
+  provider block). `detect-harness.sh` detects `OPENCODE=1` / `OPENCODE_PID`,
+  reports the `opencode` lane plus `opencode models` output and the configured
+  default, and caps OpenCode mains as flat dispatch (no native workflow).
+  `native-workflows.md` and `harness-capabilities.md` document the OpenCode
+  dispatch shape, and `wave-coordinator` 1.0.7 adds an OpenCode host adapter.
+  Skills are drop-in `SKILL.md` on OpenCode; hooks have no file
+  equivalent there (plugin event handlers). orchestra 0.1.17.
+
+### Changed
+
+- BitPlan is now the first-class external provider for encrypted visual plans
+  and reviews. Core no longer bundles the obsolete `postplan` skill; review,
+  runtime, and orchestra guidance load BitPlan from its owning plugin instead.
+  Existing BRC-100 wallets remain the supported path. The planned 1Sat CLI
+  fallback is called out as not yet application-compatible, and PostPlan is
+  available only as an explicitly approved unencrypted last resort. Core
+  1.1.159, review 0.1.14, orchestra 0.1.21.
+
+- `social-media-manager` (Alex) 1.0.6 now prefers runtime-provided first-party
+  social tools and their native claim flow. On bOpen.ai, Alex creates or updates
+  drafts through the site's social capability, returns the private review link,
+  and distinguishes `planned` from confirmed scheduling or publishing. Chrome
+  CDP, browser automation, and Typefully are no longer substitutes when the
+  first-party workflow is available. brand-rep 0.1.7.
+- Orchestra now loads harness guidance progressively. `coordinator` 0.0.15
+  keeps only shared ownership and routing rules in its entrypoint, moves the
+  implementation contract into one shared reference, and separates Claude,
+  Codex, Grok, OpenCode, Sol/Luna, Muse, and external CLI details so a run reads
+  only its current host and selected worker. `orchestrator` 0.0.9 now composes
+  those references instead of repeating every harness manual. The former
+  cross-harness `native-workflows.md` monolith was replaced by host-specific
+  guides. orchestra 0.1.19.
+- `coordinator` 0.0.12 / `orchestrator` 0.0.6: worker volume is a named menu.
+  Grok 4.6 and GPT-5.6 Sol stay the quality default. GPT-5.6 Luna at extra-high
+  reasoning is the unlimited-feeling Codex/OpenAI volume lane (not the default).
+  Muse Spark 1.3 via Muse Code is cheap Meta volume (not the default). Luna
+  without extra-high/max is the wrong recipe. orchestra 0.1.16.
+
+### Fixed
+
+- Orchestra no longer lets native-first specialist guidance absorb routine
+  implementation into the premium lane. Invoking `orchestrator` now defaults
+  bounded code volume to the cheapest authorized, preflighted capable worker,
+  while native agents remain preferred for evidence, investigation, review,
+  testing, and tool- or domain-bound judgment. The Codex, Claude, Grok, and
+  OpenCode host guides carry the same boundary. When a host supports native
+  children, each external worker now runs under a visible native controller so
+  it participates in subagent panels and workflow lifecycle without moving the
+  implementation back to the controller model. The OpenCode guide records the
+  conditional `opencode/muse-spark-1.3-contributor-free` recipe. `coordinator`
+  0.0.16, `orchestrator` 0.0.10, orchestra 0.1.20.
+- The Orchestrator Codex UI prompt now names the correct
+  `$orchestra:orchestrator` skill and asks for cheaper implementation workers.
+- Corrected OpenCode subagent dispatch: `--agent <name>` selects a primary
+  agent and falls back when given a subagent on OpenCode 1.18.20. The tested
+  headless pattern now pins the parent model, invokes `@general`, and requires
+  a child marker in the log before counting the run as delegated. Model ids
+  remain discovery-driven. Read-only consults require a permission-constrained
+  `@name` child or a read-only primary/all-mode agent; prompt-only restrictions
+  are not treated as a boundary. `advisor` 0.0.6, `coordinator` 0.0.14,
+  `orchestrator` 0.0.8, `wave-coordinator` 1.0.8, `visual-coordinator` 0.1.7.
+  orchestra 0.1.18.
+- Optional modules installed from the b-open-io marketplace no longer ship
+  dangling skill symlinks. The marketplace sources each module with
+  `git-subdir`, which ships only `modules/<name>`, so the sixteen vendored
+  third-party skills that lived at the repo root `.agents/skills/` and were
+  linked as `../../../.agents/skills/<name>` did not exist after install
+  (mcp-dev: 13 skills, review: wayfinder, creative: macos-design and
+  remotion-best-practices). Each vendored skill now lives inside the module that
+  ships it at `modules/<name>/.agents/skills/`, the symlinks point at
+  `../.agents/skills/<name>` inside the module, and provenance moved to a
+  per-module `skills-lock.json` with the same content hashes. mcp-dev 0.1.3,
+  review 0.1.13, creative 0.1.3.
+- `scripts/check-plugin-extraction.py` extracts every locally sourced plugin on
+  its own, exactly as git-subdir does, and fails on any dangling or escaping
+  symlink, any skill directory without a readable `SKILL.md`, and any module
+  directory missing from the marketplace. It runs first in
+  `scripts/test-isolated-plugin-install.sh`, as its own step in
+  `isolated-plugin-install.yml`, and in `scripts/run-plugin-harness.py`. The
+  previous gate copied the whole repository with `rsync -aL`, which dereferenced
+  the links against the full tree and could not see the failure.
+  `plugin-module-split` 1.0.1 / plugin-kit 0.1.6 now says a vendored copy must
+  live inside the module because git-subdir sourcing severs the parent
+  directory.
+
+## [1.1.158] - 2026-09-02
+
+### Changed
+
+- The factory worker configures itself. It reads its checkout from the LoopTop
+  manifest that `/factory-init` writes (`~/.prompts-factory/loop/loop.json`),
+  takes the reviewer from the signed-in `gh` user, and resolves the default
+  branch from the repository, so nothing is hardcoded and no environment
+  variables are required. It exits with `NOT_REGISTERED` and the registration
+  command when the manifest is missing. `promote-dev.yml` accepts `/approve`
+  from any repository owner, member, or collaborator and merges into the
+  repository's default branch, whatever its name.
+- `setup` 1.0.4 (Agent Master) hides Codex ChatGPT app connectors from the
+  plugin inventory, carries each plugin's marketplace so install and update
+  commands name the right one (`marketing-skills@coreyhaines31`, not
+  `@b-open-io`), keeps **Build setup plan** disabled until a selection differs
+  from the detected state, names the skills that use a missing CLI, keeps the
+  runtime selector controlled from first render, and installs `looptop` and
+  `agent-browser` with `bun add -g`.
+- Inside the Agent Master shell the setup UI now fades in over the app's
+  native splash: the root is marked before first paint and the body animates
+  from transparent, so the window never flashes white between the splash and
+  the configurator.
+- The plugin list is now the bopen.ai marketplace lineup, with an
+  installed-of-total count in the sidebar and overview. Plugins found in other
+  caches (Codex bundled tools, third-party marketplaces) move to a collapsed
+  "Other installed" group and stay out of the health counts. The harness state
+  carries `inCatalog` per plugin.
+- Plugins can be marked for removal. A plugin's detail view has a
+  "remove from this machine" toggle for the plan runtime and a copy button
+  with the exact command (`claude plugin uninstall <name>@<marketplace>` or
+  `codex plugin remove <name>`). The setup plan gains a "Plugin removals"
+  section whose Verify block passes only when the plugin is gone from that
+  runtime's list. The UI still runs nothing itself.
 
 ## [1.1.157] - 2026-09-02
 

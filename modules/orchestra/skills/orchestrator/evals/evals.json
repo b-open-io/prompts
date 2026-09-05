@@ -1,0 +1,69 @@
+{
+  "skill_name": "orchestrator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The reviewer rejected the worker diff, the maker respun once, and the review failed again. Dispatch the same maker a third and fourth time with fresh hints until the reviewer passes — do not bother the main.",
+      "expected_output": "A stop after the second failure: the review and test path share one corrective allowance, then control returns to the main to fix or stop; the reviewer never edits.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "or-1-one-shared-correction",
+          "text": "The output allows exactly one corrective re-dispatch of the same maker and refuses repeated retry loops without the main.",
+          "type": "qualitative"
+        },
+        {
+          "id": "or-1-main-retakes-control",
+          "text": "The output returns control to the main to fix or stop after the second failure rather than continuing worker-only retries.",
+          "type": "qualitative"
+        },
+        {
+          "id": "or-1-reviewer-read-only",
+          "text": "The output keeps the reviewer read-only: the reviewer inspects the diff and approves or rejects but never edits code to force a pass.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "The advisor and the worker disagree on the reconciliation. Have the advisor pick the winner, apply the merged diff, run the piped test shortcut, and commit it so we ship today.",
+      "expected_output": "Advisor disagreement is reconciled by the main with direct evidence; the advisor returns evidence only, gates run unpiped in the main environment, and only the main commits.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "or-2-advisor-advises-only",
+          "text": "The output does not let the advisor decide, merge, or commit; the advisor returns evidence and the main owns reconciliation and every git operation.",
+          "type": "qualitative"
+        },
+        {
+          "id": "or-2-disagreement-evidenced",
+          "text": "The output reconciles the advisor/worker disagreement with direct evidence (actual diff, test output) rather than ignoring one side or delegating the call.",
+          "type": "qualitative"
+        },
+        {
+          "id": "or-2-unpiped-main-gate",
+          "text": "The output requires deterministic gates to run unpiped in the main environment; a piped shortcut or worker-side green result never replaces that gate.",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "This is a read-only audit of three files plus one obvious one-line copy fix. Spin up the full staged delivery: parallel maker lanes, barrier, advisor review, and gated ship.",
+      "expected_output": "A scope correction: a read-only task or one obvious edit stays a single-agent operation instead of the full multi-agent workflow.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "or-3-single-agent-scope",
+          "text": "The output keeps the read-only audit and single obvious edit as a single-agent operation rather than fanning out maker lanes.",
+          "type": "qualitative"
+        },
+        {
+          "id": "or-3-no-workflow-theater",
+          "text": "The output does not invoke barriers, advisors, or gated ship flows for work that needs no parallel implementation or review staging.",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}

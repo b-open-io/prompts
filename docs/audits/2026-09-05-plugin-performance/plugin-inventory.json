@@ -1,0 +1,5383 @@
+{
+  "revision": "6ba4688fd4138c7a7a4de4f0ed3a184a7e36fb76",
+  "plugins": [
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "core",
+          "version": "1.1.162"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "core",
+          "version": "1.1.162"
+        }
+      },
+      "totals": {
+        "skill_count": 14,
+        "authored_skill_count": 14,
+        "third_party_skill_count": 0,
+        "claude_implicit_skill_count": 13,
+        "codex_implicit_skill_count": 13,
+        "skill_description_chars": 5194,
+        "skill_description_bytes": 5200,
+        "skill_description_estimated_tokens": 1305,
+        "skill_body_bytes": 100533,
+        "skill_body_estimated_tokens": 25137,
+        "skill_identity_path_bytes": 1462,
+        "agent_count": 3,
+        "agent_description_chars": 1221,
+        "agent_description_bytes": 1221,
+        "agent_description_estimated_tokens": 306,
+        "agent_tools_bytes": 269,
+        "agent_tools_estimated_tokens": 69,
+        "agent_example_count": 0,
+        "agent_body_bytes": 33842,
+        "command_count": 14,
+        "command_description_bytes": 1404,
+        "command_body_bytes": 44783,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 8152,
+        "model_visible_startup_estimated_tokens": 2038
+      },
+      "duplicate_skill_names": {},
+      "skills": [
+        {
+          "kind": "skill",
+          "name": "auth-md",
+          "path": "skills/auth-md/SKILL.md",
+          "version": null,
+          "description": "Implement or review the experimental WorkOS auth.md v0.6.0 agent-identity proposal. Use for \"implement auth.md\", \"add agent registration\", \"design delegated agent signup\", \"support service_auth\", \"mint or verify an ID-JAG\", \"build an agent identity provider\", or agent-facing OAuth consent, claims, and revocation. Distinct from Better Auth Agent Auth Protocol, OAuth Dynamic Client Registration, and RFC 8628 Device Authorization.",
+          "description_metrics": {
+            "chars": 431,
+            "bytes": 431,
+            "words": 56,
+            "lines": 1,
+            "estimated_tokens": 108
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 12730,
+            "bytes": 12744,
+            "words": 1629,
+            "lines": 230,
+            "estimated_tokens": 3186
+          },
+          "directory": "skills/auth-md",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 6,
+            "bytes": 39994
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 15752
+          },
+          "identity_path_bytes": 96
+        },
+        {
+          "kind": "skill",
+          "name": "check-version",
+          "path": "skills/check-version/SKILL.md",
+          "version": null,
+          "description": "Compare installed plugin versions against GitHub to confirm skills and agents are current. Use at session start, for \"is everything up to date\", \"are my plugins up to date\", \"are our plugins current\", \"check for plugin updates\", \"is anything stale\", \"am I on the latest version\", \"did that plugin update land\", or when a skill behaves differently than documented or references features you do not recognize. Checks any plugin in the marketplace, not just core. Completes in under 100ms per plugin.",
+          "description_metrics": {
+            "chars": 497,
+            "bytes": 497,
+            "words": 81,
+            "lines": 1,
+            "estimated_tokens": 125
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 1374,
+            "bytes": 1380,
+            "words": 216,
+            "lines": 41,
+            "estimated_tokens": 345
+          },
+          "directory": "skills/check-version",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 3798
+          },
+          "identity_path_bytes": 108
+        },
+        {
+          "kind": "skill",
+          "name": "codex-agent-setup",
+          "path": "skills/codex-agent-setup/SKILL.md",
+          "version": null,
+          "description": "Generate and install Codex agent adapters so plugin personas are invocable from the Codex CLI. Use for \"set up codex agents\", \"install the codex adapters\", \"make these agents work in Codex\", or when a persona is missing from a Codex session.",
+          "description_metrics": {
+            "chars": 241,
+            "bytes": 241,
+            "words": 41,
+            "lines": 1,
+            "estimated_tokens": 61
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6231,
+            "bytes": 6243,
+            "words": 832,
+            "lines": 141,
+            "estimated_tokens": 1561
+          },
+          "directory": "skills/codex-agent-setup",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": false,
+          "codex_implicit": false,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 1546
+          },
+          "identity_path_bytes": 116
+        },
+        {
+          "kind": "skill",
+          "name": "confess",
+          "path": "skills/confess/SKILL.md",
+          "version": "1.0.2",
+          "description": "Proactive self-audit covering incomplete changes, untested assumptions, pattern violations, buried concerns, and cleanup debt. Invoke before ending a session, marking a task done, or saying \"complete\", and when the user asks \"are you sure?\", \"did you miss anything?\", \"anything else?\", or \"audit your work\". Do not wait to be asked.",
+          "description_metrics": {
+            "chars": 332,
+            "bytes": 332,
+            "words": 50,
+            "lines": 1,
+            "estimated_tokens": 83
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4416,
+            "bytes": 4424,
+            "words": 686,
+            "lines": 139,
+            "estimated_tokens": 1106
+          },
+          "directory": "skills/confess",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 96
+        },
+        {
+          "kind": "skill",
+          "name": "front-desk",
+          "path": "skills/front-desk/SKILL.md",
+          "version": "1.0.7",
+          "description": "Route to the right agent, skill, or service provider. Use for \"who handles X?\", \"what agents are available?\", \"team roster\", \"what skills are available?\", \"where do I find skill X?\", \"who should I talk to about Z?\", \"install in Grok Bot\", \"stand up the roster\", or \"Grok Bot teammates\". Also covers agent-adapter availability, installing skills, and org email drafting. Route SOC 2 and audit readiness to Anthony in product-skills.",
+          "description_metrics": {
+            "chars": 431,
+            "bytes": 431,
+            "words": 69,
+            "lines": 1,
+            "estimated_tokens": 108
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6627,
+            "bytes": 6631,
+            "words": 978,
+            "lines": 144,
+            "estimated_tokens": 1658
+          },
+          "directory": "skills/front-desk",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 1,
+            "bytes": 1728
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 102
+        },
+        {
+          "kind": "skill",
+          "name": "hammertime",
+          "path": "skills/hammertime/SKILL.md",
+          "version": "1.0.2",
+          "description": "This skill should be used when the user mentions a behavioral rule they want enforced, says \"always do X\", \"never do Y\", \"stop doing Z\", \"from now on\", asks about HammerTime rules, wants to create a stop hook rule, mentions behavioral guardrails, or wants to understand how the HammerTime stop hook system works. Teaches how to write rules for the HammerTime stop hook system.",
+          "description_metrics": {
+            "chars": 376,
+            "bytes": 376,
+            "words": 64,
+            "lines": 1,
+            "estimated_tokens": 94
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 14332,
+            "bytes": 14428,
+            "words": 2055,
+            "lines": 229,
+            "estimated_tokens": 3607
+          },
+          "directory": "skills/hammertime",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 2,
+            "bytes": 36064
+          },
+          "scripts": {
+            "files": 3,
+            "bytes": 8900
+          },
+          "identity_path_bytes": 102
+        },
+        {
+          "kind": "skill",
+          "name": "hook-manager",
+          "path": "skills/hook-manager/SKILL.md",
+          "version": "2.0.1",
+          "description": "List, enable, or disable individual core hooks and check their prerequisites. Use for \"list hooks\", \"enable a hook\", \"disable a hook\", \"hook setup\", \"hooks config\", or a [BOPEN-HOOKS-SETUP] directive. For the full harness view, use setup.",
+          "description_metrics": {
+            "chars": 238,
+            "bytes": 238,
+            "words": 36,
+            "lines": 1,
+            "estimated_tokens": 60
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4848,
+            "bytes": 4886,
+            "words": 686,
+            "lines": 111,
+            "estimated_tokens": 1222
+          },
+          "directory": "skills/hook-manager",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 106
+        },
+        {
+          "kind": "skill",
+          "name": "humanize",
+          "path": "skills/humanize/SKILL.md",
+          "version": "1.0.12",
+          "description": "This skill should be used for human-facing prose \u2014 emails, docs, reports, posts, release notes, and commit messages \u2014 when the user asks to \"humanize\", \"make this sound less AI\", \"de-AI this\", \"this sounds like ChatGPT\", or \"edit this\". This skill should also be used when the user asks to \"humanize this sales email\", \"this SDR copy sounds like AI\", \"cold email\", \"outbound email\", or \"sales script\". Preserve facts, evidence, citations, house style, and intended meaning while removing clustered AI-writing patterns.",
+          "description_metrics": {
+            "chars": 518,
+            "bytes": 522,
+            "words": 81,
+            "lines": 1,
+            "estimated_tokens": 131
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 10119,
+            "bytes": 10147,
+            "words": 1441,
+            "lines": 224,
+            "estimated_tokens": 2537
+          },
+          "directory": "skills/humanize",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 6,
+            "bytes": 51990
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 98
+        },
+        {
+          "kind": "skill",
+          "name": "linear-planning",
+          "path": "skills/linear-planning/SKILL.md",
+          "version": "1.0.4",
+          "description": "This skill should be used when the user wants to plan a project, feature, or bug fix using Linear as the agent control plane. Use when the user says \"plan this in Linear\", \"create Linear tickets\", \"break this down into tasks\", \"push to Linear\", \"set up our board for this feature\", or wants to turn a description or spec into well-structured, agent-ready Linear issues. Requires the official Linear MCP server to be configured.",
+          "description_metrics": {
+            "chars": 427,
+            "bytes": 427,
+            "words": 73,
+            "lines": 1,
+            "estimated_tokens": 107
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 7274,
+            "bytes": 7322,
+            "words": 1057,
+            "lines": 215,
+            "estimated_tokens": 1831
+          },
+          "directory": "skills/linear-planning",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 2,
+            "bytes": 7180
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 112
+        },
+        {
+          "kind": "skill",
+          "name": "reinforce-skills",
+          "path": "skills/reinforce-skills/SKILL.md",
+          "version": "1.0.5",
+          "description": "Inject compressed SKILL-MAP and AGENT-MAP directive blocks into CLAUDE.md so skill names and agent IDs survive a long session. Use when modifying a CLAUDE.md, when adding a skill or agent to a plugin, or for \"update the skill map\", \"register this agent\", \"skills keep getting forgotten\", \"sync skills to CLAUDE.md\".",
+          "description_metrics": {
+            "chars": 315,
+            "bytes": 315,
+            "words": 50,
+            "lines": 1,
+            "estimated_tokens": 79
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 7857,
+            "bytes": 7911,
+            "words": 1063,
+            "lines": 181,
+            "estimated_tokens": 1978
+          },
+          "directory": "skills/reinforce-skills",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 2,
+            "bytes": 9395
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 114
+        },
+        {
+          "kind": "skill",
+          "name": "remind",
+          "path": "skills/remind/SKILL.md",
+          "version": "1.0.2",
+          "description": "Search and recall previous Claude Code sessions. Use for \"remember when we...\", \"what did we do about...\", \"find that conversation where...\", \"when did I last work on...\", \"what was that command we used for...\", or any reference to prior work absent from the current session, including vague ones like \"that thing we did last week\".",
+          "description_metrics": {
+            "chars": 332,
+            "bytes": 332,
+            "words": 55,
+            "lines": 1,
+            "estimated_tokens": 83
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 3971,
+            "bytes": 3985,
+            "words": 585,
+            "lines": 101,
+            "estimated_tokens": 997
+          },
+          "directory": "skills/remind",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 20060
+          },
+          "identity_path_bytes": 94
+        },
+        {
+          "kind": "skill",
+          "name": "runtime-context",
+          "path": "skills/runtime-context/SKILL.md",
+          "version": null,
+          "description": "This skill should be used when the user asks \"what runtime am I in\", \"detect the execution environment\", \"adapt behavior for Claude Code vs a hosted bot\", or \"check what tools are available in this environment\". Detects the current agent execution environment (Claude Code, Vercel Sandbox, or local dev) and adapts behavior accordingly \u2014 for agents or bots that run in Claude Code as subagents AND as hosted bots, or a SOUL.md/SKILL.md that must work across runtimes.",
+          "description_metrics": {
+            "chars": 467,
+            "bytes": 469,
+            "words": 77,
+            "lines": 1,
+            "estimated_tokens": 118
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 3518,
+            "bytes": 3520,
+            "words": 533,
+            "lines": 91,
+            "estimated_tokens": 880
+          },
+          "directory": "skills/runtime-context",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 1537
+          },
+          "identity_path_bytes": 112
+        },
+        {
+          "kind": "skill",
+          "name": "setup",
+          "path": "skills/setup/SKILL.md",
+          "version": "1.0.5",
+          "description": "Audit which bOpen plugins, CLIs, env keys, third-party skills, agents, and hooks are installed across the harness, then emit a runtime-tailored instruction plan; it installs nothing itself. Use for \"bopen setup\", \"setup ui\", \"harness install\", \"audit my setup\", \"install everything\", or \"unified installer\". For a single hook, use hook-manager.",
+          "description_metrics": {
+            "chars": 344,
+            "bytes": 344,
+            "words": 49,
+            "lines": 1,
+            "estimated_tokens": 86
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 8789,
+            "bytes": 8849,
+            "words": 1242,
+            "lines": 155,
+            "estimated_tokens": 2213
+          },
+          "directory": "skills/setup",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 10,
+            "bytes": 129241
+          },
+          "identity_path_bytes": 92
+        },
+        {
+          "kind": "skill",
+          "name": "visual-wayfinder",
+          "path": "skills/visual-wayfinder/SKILL.md",
+          "version": null,
+          "description": "Generate a navigable visual map of a codebase or system for orientation. Use when the user asks to \"map this codebase\", \"show me how this fits together\", \"give me a tour\", or needs a visual orientation artifact before working in unfamiliar code.",
+          "description_metrics": {
+            "chars": 245,
+            "bytes": 245,
+            "words": 42,
+            "lines": 1,
+            "estimated_tokens": 62
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 8055,
+            "bytes": 8063,
+            "words": 1145,
+            "lines": 125,
+            "estimated_tokens": 2016
+          },
+          "directory": "skills/visual-wayfinder",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 3,
+            "bytes": 18692
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 114
+        }
+      ],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "community-manager",
+          "path": "agents/community-manager.md",
+          "version": "1.0.8",
+          "description": "BSV and 1Sat Ordinals community agent for the OneSat Discord. Use this agent when users ask \"what are 1Sat Ordinals\", \"mint this as an ordinal\", \"check my GM streak\", \"how's my trust score\", or want trivia polls, airdrop history, or BSV20/BSV21 token help. Not for building production ordinals infrastructure (use the bitcoin agent) or org-wide routing (use front-desk).",
+          "description_metrics": {
+            "chars": 370,
+            "bytes": 370,
+            "words": 58,
+            "lines": 1,
+            "estimated_tokens": 93
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 8515,
+            "bytes": 8581,
+            "words": 1216,
+            "lines": 188,
+            "estimated_tokens": 2146
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "front-desk",
+          "path": "agents/front-desk.md",
+          "version": "1.1.15",
+          "description": "Organization front desk and directory service. Use this agent when users ask \"who handles X\", \"what agents are available\", \"who's working on Z\", \"what services do we use\", how to install the roster on Claude Code, Codex, Grok Build, or Grok Bot, or need routing to the right specialist. Routes SOC 2 and audit-readiness to legal first then security-ops; routes crypto-law and token-classification to legal first then researcher.",
+          "description_metrics": {
+            "chars": 428,
+            "bytes": 428,
+            "words": 68,
+            "lines": 1,
+            "estimated_tokens": 107
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 89,
+            "bytes": 89,
+            "words": 11,
+            "lines": 1,
+            "estimated_tokens": 23
+          },
+          "body_metrics": {
+            "chars": 12197,
+            "bytes": 12233,
+            "words": 1797,
+            "lines": 200,
+            "estimated_tokens": 3059
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "project-manager",
+          "path": "agents/project-manager.md",
+          "version": "1.0.8",
+          "description": "Linear project planning agent. Use this agent when the user asks to \"plan this in Linear\", \"create tickets for this\", \"break this into issues\", \"set up our board\", \"what should we build next\", or asks how linear-sync and the linear-planning skill fit together. Turns specs, descriptions, or a codebase into structured Linear issues. Not for writing the PRD itself (use documentation-writer) or org-level strategy (use ceo).",
+          "description_metrics": {
+            "chars": 423,
+            "bytes": 423,
+            "words": 66,
+            "lines": 1,
+            "estimated_tokens": 106
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 85,
+            "bytes": 85,
+            "words": 11,
+            "lines": 1,
+            "estimated_tokens": 22
+          },
+          "body_metrics": {
+            "chars": 12736,
+            "bytes": 13028,
+            "words": 1655,
+            "lines": 237,
+            "estimated_tokens": 3257
+          }
+        }
+      ],
+      "commands": [
+        {
+          "kind": "command",
+          "name": "/bug-hunt",
+          "path": "commands/bug-hunt.md",
+          "version": null,
+          "description": "Adversarial bug hunt with 3 isolated agents \u2014 Hunter finds bugs, Skeptic challenges them, Referee gives final verdicts",
+          "description_metrics": {
+            "chars": 118,
+            "bytes": 120,
+            "words": 18,
+            "lines": 1,
+            "estimated_tokens": 30
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6610,
+            "bytes": 6632,
+            "words": 999,
+            "lines": 197,
+            "estimated_tokens": 1658
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/diagnose",
+          "path": "commands/diagnose.md",
+          "version": null,
+          "description": "Fan out 3-5 agents to investigate a bug from every angle simultaneously",
+          "description_metrics": {
+            "chars": 71,
+            "bytes": 71,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 18
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4240,
+            "bytes": 4256,
+            "words": 631,
+            "lines": 129,
+            "estimated_tokens": 1064
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/factory-init",
+          "path": "commands/factory-init.md",
+          "version": null,
+          "description": "Interactively design and scaffold an autonomous agent loop in this project (goal, gate, state, stop conditions, heartbeat, human-readable GitHub PRs)",
+          "description_metrics": {
+            "chars": 149,
+            "bytes": 149,
+            "words": 20,
+            "lines": 1,
+            "estimated_tokens": 38
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 5942,
+            "bytes": 5994,
+            "words": 825,
+            "lines": 111,
+            "estimated_tokens": 1499
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/hammertime:manage",
+          "path": "commands/hammertime/manage.md",
+          "version": null,
+          "description": "Interactive HammerTime rule management \u2014 enable, disable, remove, or edit rules with guided prompts",
+          "description_metrics": {
+            "chars": 99,
+            "bytes": 101,
+            "words": 14,
+            "lines": 1,
+            "estimated_tokens": 26
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4943,
+            "bytes": 4955,
+            "words": 753,
+            "lines": 116,
+            "estimated_tokens": 1239
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/hammertime:start",
+          "path": "commands/hammertime/start.md",
+          "version": null,
+          "description": "Resume HammerTime \u2014 re-enables the stop hook after /hammertime:stop",
+          "description_metrics": {
+            "chars": 67,
+            "bytes": 69,
+            "words": 9,
+            "lines": 1,
+            "estimated_tokens": 18
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 588,
+            "bytes": 588,
+            "words": 78,
+            "lines": 14,
+            "estimated_tokens": 147
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/hammertime:status",
+          "path": "commands/hammertime/status.md",
+          "version": null,
+          "description": "Show HammerTime status dashboard \u2014 rules, debug log, hook health",
+          "description_metrics": {
+            "chars": 64,
+            "bytes": 66,
+            "words": 10,
+            "lines": 1,
+            "estimated_tokens": 17
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 214,
+            "bytes": 214,
+            "words": 26,
+            "lines": 9,
+            "estimated_tokens": 54
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/hammertime:stop",
+          "path": "commands/hammertime/stop.md",
+          "version": null,
+          "description": "Pause HammerTime \u2014 disables the stop hook until resumed with /hammertime:start",
+          "description_metrics": {
+            "chars": 78,
+            "bytes": 80,
+            "words": 11,
+            "lines": 1,
+            "estimated_tokens": 20
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 660,
+            "bytes": 660,
+            "words": 90,
+            "lines": 14,
+            "estimated_tokens": 165
+          }
+        },
+        {
+          "kind": "command",
+          "name": "hammertime",
+          "path": "commands/hammertime.md",
+          "version": null,
+          "description": "Create a HammerTime stop rule from a behavior description, or show full status dashboard when called with no arguments. See also /hammertime:manage for interactive rule management",
+          "description_metrics": {
+            "chars": 179,
+            "bytes": 179,
+            "words": 26,
+            "lines": 1,
+            "estimated_tokens": 45
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6814,
+            "bytes": 6844,
+            "words": 989,
+            "lines": 143,
+            "estimated_tokens": 1711
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/impact",
+          "path": "commands/impact.md",
+          "version": null,
+          "description": "Map the full blast radius before changing a file or function \u2014 importers, tests, CI, docs, owners",
+          "description_metrics": {
+            "chars": 97,
+            "bytes": 99,
+            "words": 17,
+            "lines": 1,
+            "estimated_tokens": 25
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4150,
+            "bytes": 4166,
+            "words": 651,
+            "lines": 132,
+            "estimated_tokens": 1042
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/prime",
+          "path": "commands/prime.md",
+          "version": null,
+          "description": "Context warm-up \u2014 loads git state, plugin inventory, and project conventions before starting work",
+          "description_metrics": {
+            "chars": 97,
+            "bytes": 99,
+            "words": 14,
+            "lines": 1,
+            "estimated_tokens": 25
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 2176,
+            "bytes": 2188,
+            "words": 334,
+            "lines": 64,
+            "estimated_tokens": 547
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/question",
+          "path": "commands/question.md",
+          "version": null,
+          "description": "Read-only Q&A mode \u2014 answers questions about the codebase without making any changes",
+          "description_metrics": {
+            "chars": 84,
+            "bytes": 86,
+            "words": 13,
+            "lines": 1,
+            "estimated_tokens": 22
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 553,
+            "bytes": 555,
+            "words": 91,
+            "lines": 11,
+            "estimated_tokens": 139
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/review-wave",
+          "path": "commands/review-wave.md",
+          "version": null,
+          "description": "4 specialized reviewers examine changes simultaneously \u2014 security, perf, correctness, style",
+          "description_metrics": {
+            "chars": 91,
+            "bytes": 93,
+            "words": 11,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 5566,
+            "bytes": 5610,
+            "words": 821,
+            "lines": 143,
+            "estimated_tokens": 1403
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/utils:context",
+          "path": "commands/utils/context.md",
+          "version": null,
+          "description": "Print a concise repository context snapshot for agents (git, pkg, dirs)",
+          "description_metrics": {
+            "chars": 71,
+            "bytes": 71,
+            "words": 11,
+            "lines": 1,
+            "estimated_tokens": 18
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 1234,
+            "bytes": 1234,
+            "words": 179,
+            "lines": 47,
+            "estimated_tokens": 309
+          }
+        },
+        {
+          "kind": "command",
+          "name": "/visual-review",
+          "path": "commands/visual-review.md",
+          "version": null,
+          "description": "Turn a PR, branch, commit, or diff into a plain-language visual review with grounded diagrams and decision questionnaires",
+          "description_metrics": {
+            "chars": 121,
+            "bytes": 121,
+            "words": 18,
+            "lines": 1,
+            "estimated_tokens": 31
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 875,
+            "bytes": 887,
+            "words": 146,
+            "lines": 19,
+            "estimated_tokens": 222
+          }
+        }
+      ]
+    },
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker/modules/brand-rep",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "brand-rep",
+          "version": "0.1.8"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "brand-rep",
+          "version": "0.1.8"
+        }
+      },
+      "totals": {
+        "skill_count": 0,
+        "authored_skill_count": 0,
+        "third_party_skill_count": 0,
+        "claude_implicit_skill_count": 0,
+        "codex_implicit_skill_count": 0,
+        "skill_description_chars": 0,
+        "skill_description_bytes": 0,
+        "skill_description_estimated_tokens": 0,
+        "skill_body_bytes": 0,
+        "skill_body_estimated_tokens": 0,
+        "skill_identity_path_bytes": 0,
+        "agent_count": 2,
+        "agent_description_chars": 713,
+        "agent_description_bytes": 713,
+        "agent_description_estimated_tokens": 179,
+        "agent_tools_bytes": 146,
+        "agent_tools_estimated_tokens": 38,
+        "agent_example_count": 0,
+        "agent_body_bytes": 7566,
+        "command_count": 0,
+        "command_description_bytes": 0,
+        "command_body_bytes": 0,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 859,
+        "model_visible_startup_estimated_tokens": 215
+      },
+      "duplicate_skill_names": {},
+      "skills": [],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "account-manager",
+          "path": "agents/account-manager.md",
+          "version": "1.0.8",
+          "description": "Public-facing pre-sales agent for the user's product or site. Use this agent when a visitor asks \"what can you build\", \"can you help with X\", \"how much does this cost\", \"can I book a call\", or wants to browse the site or ask about the team. Covers lead qualification and specialist handoff. Not for internal team routing or org directory lookups (use front-desk).",
+          "description_metrics": {
+            "chars": 363,
+            "bytes": 363,
+            "words": 63,
+            "lines": 1,
+            "estimated_tokens": 91
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 89,
+            "bytes": 89,
+            "words": 11,
+            "lines": 1,
+            "estimated_tokens": 23
+          },
+          "body_metrics": {
+            "chars": 1066,
+            "bytes": 1066,
+            "words": 167,
+            "lines": 29,
+            "estimated_tokens": 267
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "social-media-manager",
+          "path": "agents/social-media-manager.md",
+          "version": "1.0.6",
+          "description": "Social media manager for the user's owned accounts. Use this agent when the user asks to \"post to X\", \"draft a Twitter thread\", \"schedule LinkedIn posts\", \"build a content calendar\", \"reply to mentions\", \"humanize this post\", or wants social copy that does not read as AI slop. Not for landing-page CRO, SEO, or launch strategy (use marketer / Caal).",
+          "description_metrics": {
+            "chars": 350,
+            "bytes": 350,
+            "words": 59,
+            "lines": 1,
+            "estimated_tokens": 88
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 57,
+            "bytes": 57,
+            "words": 8,
+            "lines": 1,
+            "estimated_tokens": 15
+          },
+          "body_metrics": {
+            "chars": 6461,
+            "bytes": 6500,
+            "words": 1014,
+            "lines": 149,
+            "estimated_tokens": 1625
+          }
+        }
+      ],
+      "commands": []
+    },
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker/modules/creative",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "creative",
+          "version": "0.1.4"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "creative",
+          "version": "0.1.4"
+        }
+      },
+      "totals": {
+        "skill_count": 10,
+        "authored_skill_count": 8,
+        "third_party_skill_count": 2,
+        "claude_implicit_skill_count": 10,
+        "codex_implicit_skill_count": 10,
+        "skill_description_chars": 3294,
+        "skill_description_bytes": 3298,
+        "skill_description_estimated_tokens": 829,
+        "skill_body_bytes": 69089,
+        "skill_body_estimated_tokens": 17276,
+        "skill_identity_path_bytes": 1284,
+        "agent_count": 4,
+        "agent_description_chars": 1668,
+        "agent_description_bytes": 1668,
+        "agent_description_estimated_tokens": 420,
+        "agent_tools_bytes": 380,
+        "agent_tools_estimated_tokens": 96,
+        "agent_example_count": 0,
+        "agent_body_bytes": 64800,
+        "command_count": 0,
+        "command_description_bytes": 0,
+        "command_body_bytes": 0,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 6630,
+        "model_visible_startup_estimated_tokens": 1658
+      },
+      "duplicate_skill_names": {},
+      "skills": [
+        {
+          "kind": "skill",
+          "name": "cli-demo-gif",
+          "path": "skills/cli-demo-gif/SKILL.md",
+          "version": "1.0.1",
+          "description": "This skill should be used when the user asks to \"record a terminal demo\", \"generate a CLI demo GIF\", \"make a vhs recording\", \"create a terminal GIF for the README\", or \"capture a CLI walkthrough as a GIF\". Generates CLI demo GIFs using vhs (Charmbracelet) for README files and documentation.",
+          "description_metrics": {
+            "chars": 291,
+            "bytes": 291,
+            "words": 50,
+            "lines": 1,
+            "estimated_tokens": 73
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 1720,
+            "bytes": 1720,
+            "words": 289,
+            "lines": 82,
+            "estimated_tokens": 430
+          },
+          "directory": "skills/cli-demo-gif",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 123
+        },
+        {
+          "kind": "skill",
+          "name": "design-game-ui",
+          "path": "skills/design-game-ui/SKILL.md",
+          "version": "0.0.2",
+          "description": "This skill should be used when the user asks for \"game UI\", \"app-to-game UI\", \"video game HUD\", \"controller navigation\", \"D-pad navigation\", \"TV app\", \"ten-foot interface\", \"game UI key bindings\", \"controller-first menu\", \"console-style menu\", \"TV remote focus\", or \"directional navigation\".",
+          "description_metrics": {
+            "chars": 291,
+            "bytes": 291,
+            "words": 39,
+            "lines": 1,
+            "estimated_tokens": 73
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 9975,
+            "bytes": 10049,
+            "words": 1328,
+            "lines": 128,
+            "estimated_tokens": 2513
+          },
+          "directory": "skills/design-game-ui",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 8,
+            "bytes": 45354
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 127
+        },
+        {
+          "kind": "skill",
+          "name": "html-to-pdf",
+          "path": "skills/html-to-pdf/SKILL.md",
+          "version": null,
+          "description": "This skill should be used when the user asks to \"design a business card\", \"make a printable PDF\", \"render HTML to PDF\", \"generate a postcard\", \"build print collateral\", \"set up an HTML print pipeline\", or needs help with bleed, safe areas, font embedding, or QR generation for print. Provides a Playwright-based pipeline with multiple bundled templates and theme variants for business cards (minimal, watercolor light, watercolor dark) and instructions for adding new templates.",
+          "description_metrics": {
+            "chars": 478,
+            "bytes": 478,
+            "words": 73,
+            "lines": 1,
+            "estimated_tokens": 120
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 9316,
+            "bytes": 9603,
+            "words": 1306,
+            "lines": 184,
+            "estimated_tokens": 2401
+          },
+          "directory": "skills/html-to-pdf",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 2,
+            "bytes": 12837
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 13123
+          },
+          "identity_path_bytes": 121
+        },
+        {
+          "kind": "skill",
+          "name": "macos-design",
+          "path": "skills/macos-design/SKILL.md",
+          "version": null,
+          "description": "Design and build native-feeling macOS application UIs. Use this skill whenever the user asks to create a desktop app, macOS app, Mac-style interface, Apple-style UI, system utility, or anything that should look and feel like a native Mac application. Also trigger when users mention \"native feel\", \"desktop app design\", \"Apple design patterns\", \"sidebar layout\", \"traffic lights\", or want to build tools/utilities that feel like they belong on macOS. This skill covers layout, composition, interaction patterns, animations, light/dark mode, and all the subtle details that make an app feel like Apple built it.",
+          "description_metrics": {
+            "chars": 610,
+            "bytes": 610,
+            "words": 92,
+            "lines": 1,
+            "estimated_tokens": 153
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 2463,
+            "bytes": 2475,
+            "words": 363,
+            "lines": 45,
+            "estimated_tokens": 619
+          },
+          "directory": "skills/macos-design",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/macos-design",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 3,
+            "bytes": 26881
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 131
+        },
+        {
+          "kind": "skill",
+          "name": "native-sdk-macos-release",
+          "path": "skills/native-sdk-macos-release/SKILL.md",
+          "version": "0.0.1",
+          "description": "Use when scaffolding or shipping a Vercel Native SDK macOS app \u2014 native check/build, Developer ID sign, DMG, notary, staple.",
+          "description_metrics": {
+            "chars": 124,
+            "bytes": 126,
+            "words": 20,
+            "lines": 1,
+            "estimated_tokens": 32
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 8518,
+            "bytes": 8522,
+            "words": 1205,
+            "lines": 120,
+            "estimated_tokens": 2131
+          },
+          "directory": "skills/native-sdk-macos-release",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 147
+        },
+        {
+          "kind": "skill",
+          "name": "remotion-best-practices",
+          "path": "skills/remotion-best-practices/SKILL.md",
+          "version": null,
+          "description": "Best practices for Remotion - Video creation in React",
+          "description_metrics": {
+            "chars": 53,
+            "bytes": 53,
+            "words": 9,
+            "lines": 1,
+            "estimated_tokens": 14
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 3375,
+            "bytes": 3375,
+            "words": 377,
+            "lines": 41,
+            "estimated_tokens": 844
+          },
+          "directory": "skills/remotion-best-practices",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/remotion-best-practices",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 153
+        },
+        {
+          "kind": "skill",
+          "name": "shaders",
+          "path": "skills/shaders/SKILL.md",
+          "version": "1.0.0",
+          "description": "This skill should be used when the user asks to \"write a custom Three.js shader\", \"create a GLSL shader effect\", \"build a TSL shader\", \"debug a WebGL or WebGPU shader issue\", or \"build a post-processing pipeline\". Covers shader workflow, the TSL node system, GLSL patterns, debugging, performance optimization, and post-processing with pmndrs/postprocessing.",
+          "description_metrics": {
+            "chars": 358,
+            "bytes": 358,
+            "words": 52,
+            "lines": 1,
+            "estimated_tokens": 90
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 7607,
+            "bytes": 7661,
+            "words": 1037,
+            "lines": 200,
+            "estimated_tokens": 1916
+          },
+          "directory": "skills/shaders",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 3,
+            "bytes": 41378
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 113
+        },
+        {
+          "kind": "skill",
+          "name": "threejs-r3f",
+          "path": "skills/threejs-r3f/SKILL.md",
+          "version": "1.0.1",
+          "description": "This skill should be used when the user asks to \"build a Three.js scene\", \"set up React Three Fiber\", \"animate a mesh with useFrame\", \"load a GLTF or GLB model\", or \"add physics with react-three/rapier\". Covers scene setup, Drei helpers, the asset pipeline, responsive canvas, and performance budgets for Three.js and React Three Fiber projects.",
+          "description_metrics": {
+            "chars": 345,
+            "bytes": 345,
+            "words": 55,
+            "lines": 1,
+            "estimated_tokens": 87
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6086,
+            "bytes": 6152,
+            "words": 817,
+            "lines": 169,
+            "estimated_tokens": 1538
+          },
+          "directory": "skills/threejs-r3f",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 6,
+            "bytes": 56072
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 121
+        },
+        {
+          "kind": "skill",
+          "name": "ui-audio-theme",
+          "path": "skills/ui-audio-theme/SKILL.md",
+          "version": "1.1.1",
+          "description": "Generate, audit, edit, and wire cohesive UI sound themes through ElevenLabs and ffmpeg, with an interactive local picker for auditioning candidates. Use for \"generate a UI sound theme\", \"create button click sounds\", \"design notification sounds\", \"make game menu sounds\", \"audit the sounds on my site\", or \"review UI audio wiring\". Covers cuelume web delivery.",
+          "description_metrics": {
+            "chars": 359,
+            "bytes": 359,
+            "words": 54,
+            "lines": 1,
+            "estimated_tokens": 90
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 14062,
+            "bytes": 14190,
+            "words": 1877,
+            "lines": 318,
+            "estimated_tokens": 3548
+          },
+          "directory": "skills/ui-audio-theme",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 4,
+            "bytes": 40834
+          },
+          "scripts": {
+            "files": 3,
+            "bytes": 97784
+          },
+          "identity_path_bytes": 127
+        },
+        {
+          "kind": "skill",
+          "name": "voice-clone",
+          "path": "skills/voice-clone/SKILL.md",
+          "version": "1.0.1",
+          "description": "This skill should be used when the user asks to \"clone a voice\", \"create a custom voice from audio samples\", \"replicate a celebrity voice style\", or \"build a voice for a fictional character\". Chains the full ElevenLabs Instant Voice Cloning (IVC) pipeline \u2014 finding reference audio, preparing samples, uploading to IVC, testing the clone with text-to-speech, and tuning voice settings.",
+          "description_metrics": {
+            "chars": 385,
+            "bytes": 387,
+            "words": 60,
+            "lines": 1,
+            "estimated_tokens": 97
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 5324,
+            "bytes": 5342,
+            "words": 717,
+            "lines": 164,
+            "estimated_tokens": 1336
+          },
+          "directory": "skills/voice-clone",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 16069
+          },
+          "identity_path_bytes": 121
+        }
+      ],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "audio-specialist",
+          "path": "agents/audio-specialist.md",
+          "version": "1.0.11",
+          "description": "Audio agent for ElevenLabs generation, UI sound themes, voiceovers, music, and voice cloning. Use this agent when the user asks to \"review the sounds on my site\", \"wire transaction sounds\", \"edit this UI sound\", or \"generate a UI audio theme\". Use gemskills:content for Gemini/Luma image and Veo video generation instead.",
+          "description_metrics": {
+            "chars": 321,
+            "bytes": 321,
+            "words": 50,
+            "lines": 1,
+            "estimated_tokens": 81
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 17254,
+            "bytes": 17280,
+            "words": 2130,
+            "lines": 498,
+            "estimated_tokens": 4320
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "cartographer",
+          "path": "agents/cartographer.md",
+          "version": "1.0.5",
+          "description": "Map and geospatial specialist covering MapLibre, Mapbox, Leaflet, CesiumJS, deck.gl, OpenLayers, Turf.js, and Protomaps/PMTiles. Use this agent when the user asks to \"build a map\", \"add marker clustering\", \"add a heatmap\", \"debug why tiles aren't loading\", \"swap Leaflet for MapLibre\", \"build a 3D globe\", \"visualize millions of points on a map\", or needs help choosing a mapping platform, theming maps, self-hosting tiles, or geospatial analysis. Not for general React architecture (use nextjs) or backend APIs (use integration-expert).",
+          "description_metrics": {
+            "chars": 537,
+            "bytes": 537,
+            "words": 77,
+            "lines": 1,
+            "estimated_tokens": 135
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 24724,
+            "bytes": 24856,
+            "words": 3382,
+            "lines": 463,
+            "estimated_tokens": 6214
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "creative-developer",
+          "path": "agents/creative-developer.md",
+          "version": "1.0.7",
+          "description": "Creative 3D web developer for Three.js and React Three Fiber, including diegetic and world-space UI. Use this agent when the user asks to \"create a 3D scene\", \"build a Three.js demo\", \"write a shader\", \"add physics to a scene\", \"build a WebGL prototype\", or \"optimize 3D performance\". Covers R3F, Drei, GLSL, TSL, and 3D asset pipelines. Not for 2D interface design (use designer).",
+          "description_metrics": {
+            "chars": 381,
+            "bytes": 381,
+            "words": 63,
+            "lines": 1,
+            "estimated_tokens": 96
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 12527,
+            "bytes": 12621,
+            "words": 1727,
+            "lines": 297,
+            "estimated_tokens": 3156
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "native-desktop",
+          "path": "agents/native-desktop.md",
+          "version": "1.0.1",
+          "description": "Desktop application specialist for the Vercel Native SDK and Zig toolchain. Use this agent when the user asks to \"build a desktop app\", \"build a native macOS menu-bar app\", \"port this Electron app\", \"ship a notarized DMG\", or \"wrap this web app in a desktop shell\". Legacy Wails/Electron knowledge is for migrations to the Native SDK. Not for mobile (use mobile), browser-only UI (use nextjs), or general deployment (use devops).",
+          "description_metrics": {
+            "chars": 429,
+            "bytes": 429,
+            "words": 70,
+            "lines": 1,
+            "estimated_tokens": 108
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 10018,
+            "bytes": 10043,
+            "words": 1379,
+            "lines": 168,
+            "estimated_tokens": 2511
+          }
+        }
+      ],
+      "commands": []
+    },
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker/modules/dev-ops",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "dev-ops",
+          "version": "0.1.9"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "dev-ops",
+          "version": "0.1.9"
+        }
+      },
+      "totals": {
+        "skill_count": 5,
+        "authored_skill_count": 5,
+        "third_party_skill_count": 0,
+        "claude_implicit_skill_count": 5,
+        "codex_implicit_skill_count": 5,
+        "skill_description_chars": 1895,
+        "skill_description_bytes": 1895,
+        "skill_description_estimated_tokens": 476,
+        "skill_body_bytes": 19660,
+        "skill_body_estimated_tokens": 4916,
+        "skill_identity_path_bytes": 630,
+        "agent_count": 5,
+        "agent_description_chars": 2059,
+        "agent_description_bytes": 2063,
+        "agent_description_estimated_tokens": 518,
+        "agent_tools_bytes": 1071,
+        "agent_tools_estimated_tokens": 270,
+        "agent_example_count": 0,
+        "agent_body_bytes": 94668,
+        "command_count": 0,
+        "command_description_bytes": 0,
+        "command_body_bytes": 0,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 5659,
+        "model_visible_startup_estimated_tokens": 1415
+      },
+      "duplicate_skill_names": {},
+      "skills": [
+        {
+          "kind": "skill",
+          "name": "cost-tracking",
+          "path": "skills/cost-tracking/SKILL.md",
+          "version": "1.0.2",
+          "description": "This skill should be used when tracking API spend, analyzing billing data, monitoring service costs, running budget reports, or optimizing agent spend across Anthropic, Vercel, Railway, and other platforms. Invoke when asked about \"cost tracking\", \"billing analysis\", \"spend report\", \"API costs\", \"usage monitoring\", \"budget vs actual\", \"cost optimization\", or \"which agents cost the most\".",
+          "description_metrics": {
+            "chars": 390,
+            "bytes": 390,
+            "words": 54,
+            "lines": 1,
+            "estimated_tokens": 98
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4437,
+            "bytes": 4455,
+            "words": 595,
+            "lines": 100,
+            "estimated_tokens": 1114
+          },
+          "directory": "skills/cost-tracking",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 3,
+            "bytes": 17383
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 124
+        },
+        {
+          "kind": "skill",
+          "name": "devops-scripts",
+          "path": "skills/devops-scripts/SKILL.md",
+          "version": null,
+          "description": "This skill should be used when the user asks to \"check deployment health\", \"verify service connectivity\", \"validate environment variables before deploy\", \"run a pre-deploy smoke check\", or \"diagnose a Vercel, Railway, Redis, or Postgres connection issue\". Runs deterministic shell scripts for infrastructure health checks and environment validation, returning structured JSON instead of burning context on inline bash logic.",
+          "description_metrics": {
+            "chars": 424,
+            "bytes": 424,
+            "words": 58,
+            "lines": 1,
+            "estimated_tokens": 106
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 3208,
+            "bytes": 3244,
+            "words": 459,
+            "lines": 86,
+            "estimated_tokens": 811
+          },
+          "directory": "skills/devops-scripts",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 3885
+          },
+          "identity_path_bytes": 126
+        },
+        {
+          "kind": "skill",
+          "name": "plaid-integration",
+          "path": "skills/plaid-integration/SKILL.md",
+          "version": "1.0.1",
+          "description": "This skill should be used when the user asks to \"integrate Plaid\", \"connect a bank account\", \"sync bank transactions\", \"add Plaid Link to my app\", or \"implement financial data access\". Integrates the Plaid API for bank account connections and transaction syncing in TypeScript/Bun applications.",
+          "description_metrics": {
+            "chars": 294,
+            "bytes": 294,
+            "words": 44,
+            "lines": 1,
+            "estimated_tokens": 74
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 3124,
+            "bytes": 3144,
+            "words": 360,
+            "lines": 111,
+            "estimated_tokens": 786
+          },
+          "directory": "skills/plaid-integration",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 2,
+            "bytes": 17800
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 132
+        },
+        {
+          "kind": "skill",
+          "name": "process-cleanup",
+          "path": "skills/process-cleanup/SKILL.md",
+          "version": null,
+          "description": "Finds stale and resource-hungry processes, scores them by waste, and presents a cleanup report with friendly names. Use this skill when the user says 'what's eating my RAM', 'kill stale processes', 'clean up my machine', 'free up memory', 'my computer is slow', 'what's running', 'too many things open', or asks to find/kill background processes. Also use proactively when you notice sluggishness, process spawn failures, or many duplicate processes during normal work.",
+          "description_metrics": {
+            "chars": 469,
+            "bytes": 469,
+            "words": 71,
+            "lines": 1,
+            "estimated_tokens": 118
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4091,
+            "bytes": 4113,
+            "words": 646,
+            "lines": 112,
+            "estimated_tokens": 1029
+          },
+          "directory": "skills/process-cleanup",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 12071
+          },
+          "identity_path_bytes": 128
+        },
+        {
+          "kind": "skill",
+          "name": "wait-for-ci",
+          "path": "skills/wait-for-ci/SKILL.md",
+          "version": null,
+          "description": "Wait for CI/CD pipelines to finish after a push, then act on the result. Use after git push or opening a PR, and for \"wait for CI\", \"check if the build passes\", \"monitor the pipeline\", \"is CI green?\", or any push-then-verify cycle that must block on results. Supports GitHub Actions, GitLab CI, and Vercel deployments.",
+          "description_metrics": {
+            "chars": 318,
+            "bytes": 318,
+            "words": 55,
+            "lines": 1,
+            "estimated_tokens": 80
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4696,
+            "bytes": 4704,
+            "words": 747,
+            "lines": 138,
+            "estimated_tokens": 1176
+          },
+          "directory": "skills/wait-for-ci",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 10383
+          },
+          "identity_path_bytes": 120
+        }
+      ],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "data",
+          "path": "agents/data.md",
+          "version": "1.1.17",
+          "description": "Data pipeline and analytics specialist. Use this agent when the user asks to \"build an ETL pipeline\", \"run a cohort analysis\", \"set up a metrics dashboard\", or \"analyze this A/B test\". Covers ingestion, transformation, KPI definition, and visualization. Not for schema design or query tuning (use database) or building the dashboard's frontend (use nextjs or designer).",
+          "description_metrics": {
+            "chars": 369,
+            "bytes": 369,
+            "words": 56,
+            "lines": 1,
+            "estimated_tokens": 93
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 118,
+            "bytes": 118,
+            "words": 13,
+            "lines": 1,
+            "estimated_tokens": 30
+          },
+          "body_metrics": {
+            "chars": 18106,
+            "bytes": 18127,
+            "words": 1989,
+            "lines": 565,
+            "estimated_tokens": 4532
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "database",
+          "path": "agents/database.md",
+          "version": "1.2.17",
+          "description": "Database specialist for PostgreSQL, MySQL, MongoDB, Redis, SQLite, Turso, and Convex. Use this agent when the user asks to \"design this schema\", \"speed up this slow query\", \"plan a zero-downtime migration\", or \"set up indexing\". Also covers connection pooling, backups, and multi-tenancy strategy. Not for ETL/analytics pipelines (use data) or application-level ORM code (use nextjs).",
+          "description_metrics": {
+            "chars": 384,
+            "bytes": 384,
+            "words": 55,
+            "lines": 1,
+            "estimated_tokens": 96
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 25920,
+            "bytes": 25931,
+            "words": 3282,
+            "lines": 866,
+            "estimated_tokens": 6483
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "devops",
+          "path": "agents/devops.md",
+          "version": "1.3.14",
+          "description": "Deployment and CI/CD agent for the Vercel + Railway + Bun stack. Use this agent when the user asks to \"deploy this to Vercel\", \"set up CI/CD\", \"run vercel security check\", \"gate Vercel security in CI\", \"wire up a ClawNet bot deployment\", \"add monitoring\", \"vercel dns\", \"renew a Vercel domain\", \"pause a Vercel project\", or \"vercel project members\". Covers Vercel Security Dashboard remediation, Bitcoin auth patterns, and Semgrep/CodeQL in pipelines. Not for code-level security audits (use code-auditor) or posture triage and dependency scanning outside CI (use security-ops).",
+          "description_metrics": {
+            "chars": 578,
+            "bytes": 578,
+            "words": 87,
+            "lines": 1,
+            "estimated_tokens": 145
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 581,
+            "bytes": 581,
+            "words": 30,
+            "lines": 1,
+            "estimated_tokens": 146
+          },
+          "body_metrics": {
+            "chars": 22935,
+            "bytes": 23000,
+            "words": 2888,
+            "lines": 563,
+            "estimated_tokens": 5750
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "integration-expert",
+          "path": "agents/integration-expert.md",
+          "version": "1.2.23",
+          "description": "Third-party service integration specialist. Use this agent when the user asks to \"wire up this webhook\", \"integrate with this API\", \"sync data from X on a schedule\", or \"send transactional emails\" \u2014 with signature verification, rate limiting, and error handling. Not for money-movement integrations (use payments) or MCP server setup (use mcp).",
+          "description_metrics": {
+            "chars": 344,
+            "bytes": 346,
+            "words": 52,
+            "lines": 1,
+            "estimated_tokens": 87
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 112,
+            "bytes": 112,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 28
+          },
+          "body_metrics": {
+            "chars": 17843,
+            "bytes": 17858,
+            "words": 2034,
+            "lines": 660,
+            "estimated_tokens": 4465
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "payments",
+          "path": "agents/payments.md",
+          "version": "1.1.12",
+          "description": "Payment integration specialist. Use this agent when the user asks to \"integrate Stripe\", \"connect Plaid\", \"add x402 payments\", \"add checkout for our subscription tiers\", or \"handle this transaction flow\" \u2014 with webhook verification and security best practices. Not for general webhook/API integrations unrelated to money movement (use integration-expert) or spend reporting (use cfo).",
+          "description_metrics": {
+            "chars": 384,
+            "bytes": 386,
+            "words": 53,
+            "lines": 1,
+            "estimated_tokens": 97
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 165,
+            "bytes": 165,
+            "words": 14,
+            "lines": 1,
+            "estimated_tokens": 42
+          },
+          "body_metrics": {
+            "chars": 9733,
+            "bytes": 9752,
+            "words": 1219,
+            "lines": 312,
+            "estimated_tokens": 2438
+          }
+        }
+      ],
+      "commands": []
+    },
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker/modules/mcp-dev",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "mcp-dev",
+          "version": "0.1.4"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "mcp-dev",
+          "version": "0.1.4"
+        }
+      },
+      "totals": {
+        "skill_count": 14,
+        "authored_skill_count": 1,
+        "third_party_skill_count": 13,
+        "claude_implicit_skill_count": 14,
+        "codex_implicit_skill_count": 14,
+        "skill_description_chars": 4397,
+        "skill_description_bytes": 4399,
+        "skill_description_estimated_tokens": 1105,
+        "skill_body_bytes": 106097,
+        "skill_body_estimated_tokens": 26527,
+        "skill_identity_path_bytes": 1968,
+        "agent_count": 1,
+        "agent_description_chars": 433,
+        "agent_description_bytes": 433,
+        "agent_description_estimated_tokens": 109,
+        "agent_tools_bytes": 89,
+        "agent_tools_estimated_tokens": 23,
+        "agent_example_count": 0,
+        "agent_body_bytes": 113537,
+        "command_count": 0,
+        "command_description_bytes": 0,
+        "command_body_bytes": 0,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 6889,
+        "model_visible_startup_estimated_tokens": 1723
+      },
+      "duplicate_skill_names": {},
+      "skills": [
+        {
+          "kind": "skill",
+          "name": "add-app-to-server",
+          "path": "skills/add-app-to-server/SKILL.md",
+          "version": null,
+          "description": "This skill should be used when the user asks to \"add an app to my MCP server\", \"add UI to my MCP server\", \"add a view to my MCP tool\", \"enrich MCP tools with UI\", \"add interactive UI to existing server\", \"add MCP Apps to my server\", or needs to add interactive UI capabilities to an existing MCP server that already has tools. Provides guidance for analyzing existing tools and adding MCP Apps UI resources.",
+          "description_metrics": {
+            "chars": 407,
+            "bytes": 407,
+            "words": 75,
+            "lines": 1,
+            "estimated_tokens": 102
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 12907,
+            "bytes": 12939,
+            "words": 1653,
+            "lines": 384,
+            "estimated_tokens": 3235
+          },
+          "directory": "skills/add-app-to-server",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/add-app-to-server",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 140
+        },
+        {
+          "kind": "skill",
+          "name": "convert-web-app",
+          "path": "skills/convert-web-app/SKILL.md",
+          "version": null,
+          "description": "This skill should be used when the user asks to \"add MCP App support to my web app\", \"turn my web app into a hybrid MCP App\", \"make my web page work as an MCP App too\", \"wrap my existing UI as an MCP App\", \"convert iframe embed to MCP App\", \"turn my SPA into an MCP App\", or needs to add MCP App support to an existing web application while keeping it working standalone. Provides guidance for analyzing existing web apps and creating a hybrid web + MCP App with server-side tool and resource registration.",
+          "description_metrics": {
+            "chars": 506,
+            "bytes": 506,
+            "words": 96,
+            "lines": 1,
+            "estimated_tokens": 127
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 18524,
+            "bytes": 18600,
+            "words": 2421,
+            "lines": 520,
+            "estimated_tokens": 4650
+          },
+          "directory": "skills/convert-web-app",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/convert-web-app",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 136
+        },
+        {
+          "kind": "skill",
+          "name": "create-mcp-app",
+          "path": "skills/create-mcp-app/SKILL.md",
+          "version": null,
+          "description": "This skill should be used when the user asks to \"create an MCP App\", \"add a UI to an MCP tool\", \"build an interactive MCP View\", \"scaffold an MCP App\", or needs guidance on MCP Apps SDK patterns, UI-resource registration, MCP App lifecycle, or host integration. Provides comprehensive guidance for building MCP Apps with interactive UIs.",
+          "description_metrics": {
+            "chars": 337,
+            "bytes": 337,
+            "words": 56,
+            "lines": 1,
+            "estimated_tokens": 85
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 7180,
+            "bytes": 7216,
+            "words": 929,
+            "lines": 179,
+            "estimated_tokens": 1804
+          },
+          "directory": "skills/create-mcp-app",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/create-mcp-app",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 134
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-core",
+          "path": "skills/json-render-core/SKILL.md",
+          "version": null,
+          "description": "Core package for defining schemas, catalogs, and AI prompt generation for json-render. Use when working with @json-render/core, defining schemas, creating catalogs, or building JSON specs for UI/video generation.",
+          "description_metrics": {
+            "chars": 212,
+            "bytes": 212,
+            "words": 28,
+            "lines": 1,
+            "estimated_tokens": 53
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 8955,
+            "bytes": 8955,
+            "words": 1165,
+            "lines": 260,
+            "estimated_tokens": 2239
+          },
+          "directory": "skills/json-render-core",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-core",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 138
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-devtools",
+          "path": "skills/json-render-devtools/SKILL.md",
+          "version": null,
+          "description": "Drop-in inspector panel for any json-render app. Use when the user wants to debug a generative UI, inspect the spec tree, edit state at runtime, see dispatched actions, follow stream patches live, browse a catalog, or pick DOM elements to find their spec keys. Triggers include \"add devtools\", \"debug json-render\", \"inspect the spec\", \"why is this element not rendering\", \"see the state at runtime\", or requests to tap streams / capture action logs for `@json-render/devtools`.",
+          "description_metrics": {
+            "chars": 477,
+            "bytes": 477,
+            "words": 75,
+            "lines": 1,
+            "estimated_tokens": 120
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 8460,
+            "bytes": 8524,
+            "words": 1120,
+            "lines": 180,
+            "estimated_tokens": 2131
+          },
+          "directory": "skills/json-render-devtools",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-devtools",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 146
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-directives",
+          "path": "skills/json-render-directives/SKILL.md",
+          "version": null,
+          "description": "Pre-built custom directives for json-render \u2014 formatting, math, string manipulation, and i18n. Use when working with @json-render/directives, defining custom directives with defineDirective, or adding $format, $math, $concat, $count, $truncate, $pluralize, $join, or $t to specs.",
+          "description_metrics": {
+            "chars": 279,
+            "bytes": 281,
+            "words": 35,
+            "lines": 1,
+            "estimated_tokens": 71
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6273,
+            "bytes": 6291,
+            "words": 792,
+            "lines": 200,
+            "estimated_tokens": 1573
+          },
+          "directory": "skills/json-render-directives",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-directives",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 150
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-image",
+          "path": "skills/json-render-image/SKILL.md",
+          "version": null,
+          "description": "Image renderer for json-render that turns JSON specs into SVG and PNG images via Satori. Use when working with @json-render/image, generating OG images from JSON, creating social cards, or rendering AI-generated image specs.",
+          "description_metrics": {
+            "chars": 224,
+            "bytes": 224,
+            "words": 33,
+            "lines": 1,
+            "estimated_tokens": 56
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 2615,
+            "bytes": 2615,
+            "words": 364,
+            "lines": 91,
+            "estimated_tokens": 654
+          },
+          "directory": "skills/json-render-image",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-image",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 140
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-mcp",
+          "path": "skills/json-render-mcp/SKILL.md",
+          "version": null,
+          "description": "MCP Apps integration for json-render. Use when building MCP servers that render interactive UIs in Claude, ChatGPT, Cursor, or VS Code, or when integrating json-render with the Model Context Protocol.",
+          "description_metrics": {
+            "chars": 200,
+            "bytes": 200,
+            "words": 30,
+            "lines": 1,
+            "estimated_tokens": 50
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 3924,
+            "bytes": 3924,
+            "words": 480,
+            "lines": 127,
+            "estimated_tokens": 981
+          },
+          "directory": "skills/json-render-mcp",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-mcp",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 136
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-react",
+          "path": "skills/json-render-react/SKILL.md",
+          "version": null,
+          "description": "React renderer for json-render that turns JSON specs into React components. Use when working with @json-render/react, building React UIs from JSON, creating component catalogs, or rendering AI-generated specs.",
+          "description_metrics": {
+            "chars": 209,
+            "bytes": 209,
+            "words": 28,
+            "lines": 1,
+            "estimated_tokens": 53
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 8691,
+            "bytes": 8693,
+            "words": 1161,
+            "lines": 259,
+            "estimated_tokens": 2174
+          },
+          "directory": "skills/json-render-react",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-react",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 140
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-react-email",
+          "path": "skills/json-render-react-email/SKILL.md",
+          "version": null,
+          "description": "React Email renderer for json-render that turns JSON specs into HTML or plain-text emails using @react-email/components and @react-email/render. Use when working with @json-render/react-email, building transactional or marketing emails from JSON, creating email catalogs, rendering AI-generated email specs, or when the user mentions react-email, HTML email, or transactional email.",
+          "description_metrics": {
+            "chars": 382,
+            "bytes": 382,
+            "words": 48,
+            "lines": 1,
+            "estimated_tokens": 96
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 5728,
+            "bytes": 5730,
+            "words": 773,
+            "lines": 168,
+            "estimated_tokens": 1433
+          },
+          "directory": "skills/json-render-react-email",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-react-email",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 152
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-react-native",
+          "path": "skills/json-render-react-native/SKILL.md",
+          "version": null,
+          "description": "React Native renderer for json-render that turns JSON specs into native mobile UIs. Use when working with @json-render/react-native, building React Native UIs from JSON, creating mobile component catalogs, or rendering AI-generated specs on mobile.",
+          "description_metrics": {
+            "chars": 248,
+            "bytes": 248,
+            "words": 34,
+            "lines": 1,
+            "estimated_tokens": 62
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6103,
+            "bytes": 6103,
+            "words": 832,
+            "lines": 181,
+            "estimated_tokens": 1526
+          },
+          "directory": "skills/json-render-react-native",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-react-native",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 154
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-remotion",
+          "path": "skills/json-render-remotion/SKILL.md",
+          "version": null,
+          "description": "Remotion renderer for json-render that turns JSON timeline specs into videos. Use when working with @json-render/remotion, building video compositions from JSON, creating video catalogs, or rendering AI-generated video timelines.",
+          "description_metrics": {
+            "chars": 229,
+            "bytes": 229,
+            "words": 29,
+            "lines": 1,
+            "estimated_tokens": 58
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 2796,
+            "bytes": 2796,
+            "words": 335,
+            "lines": 106,
+            "estimated_tokens": 699
+          },
+          "directory": "skills/json-render-remotion",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-remotion",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 146
+        },
+        {
+          "kind": "skill",
+          "name": "json-render-shadcn",
+          "path": "skills/json-render-shadcn/SKILL.md",
+          "version": null,
+          "description": "Pre-built shadcn/ui components for json-render. Use when working with @json-render/shadcn, adding standard UI components to a catalog, or building web UIs with Radix UI + Tailwind CSS components.",
+          "description_metrics": {
+            "chars": 195,
+            "bytes": 195,
+            "words": 28,
+            "lines": 1,
+            "estimated_tokens": 49
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6237,
+            "bytes": 6243,
+            "words": 834,
+            "lines": 154,
+            "estimated_tokens": 1561
+          },
+          "directory": "skills/json-render-shadcn",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/json-render-shadcn",
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 142
+        },
+        {
+          "kind": "skill",
+          "name": "mcp-apps",
+          "path": "skills/mcp-apps/SKILL.md",
+          "version": "0.1.2",
+          "description": "This skill provides guidance for building MCP Apps, the official io.modelcontextprotocol/ui extension for interactive HTML interfaces inside MCP hosts. This skill should be used when the user asks to \"create an MCP App\", \"add UI to an MCP tool\", \"build interactive MCP\", \"ui:// resource\", \"sandboxed iframe MCP\", \"interactive chat UI\", \"embed UI in chat\", \"MCP tool with interface\", or needs capability negotiation, resource CSP, app-only tools, host lifecycle, or progressive text fallbacks.",
+          "description_metrics": {
+            "chars": 492,
+            "bytes": 492,
+            "words": 72,
+            "lines": 1,
+            "estimated_tokens": 123
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 7460,
+            "bytes": 7468,
+            "words": 944,
+            "lines": 174,
+            "estimated_tokens": 1867
+          },
+          "directory": "skills/mcp-apps",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 6,
+            "bytes": 12494
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 114
+        }
+      ],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "mcp",
+          "path": "agents/mcp.md",
+          "version": "3.0.27",
+          "description": "MCP specialist. Use this agent when the user asks to \"set up an MCP server\", \"build an MCP App\", \"connect Claude Code to my database via MCP\", \"fix this MCP connection error\", or \"publish my MCP server to npm\". Covers MCP Apps, JSON Render, PostgreSQL/Redis/MongoDB/GitHub/Vercel servers, and the Tool Search Tool. Not for general third-party API integrations (use integration-expert) or agent tool-calling logic (use agent-builder).",
+          "description_metrics": {
+            "chars": 433,
+            "bytes": 433,
+            "words": 65,
+            "lines": 1,
+            "estimated_tokens": 109
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 89,
+            "bytes": 89,
+            "words": 11,
+            "lines": 1,
+            "estimated_tokens": 23
+          },
+          "body_metrics": {
+            "chars": 112522,
+            "bytes": 113537,
+            "words": 14727,
+            "lines": 3107,
+            "estimated_tokens": 28385
+          }
+        }
+      ],
+      "commands": []
+    },
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker/modules/orchestra",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "orchestra",
+          "version": "0.1.25"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "orchestra",
+          "version": "0.1.25"
+        }
+      },
+      "totals": {
+        "skill_count": 8,
+        "authored_skill_count": 8,
+        "third_party_skill_count": 0,
+        "claude_implicit_skill_count": 7,
+        "codex_implicit_skill_count": 8,
+        "skill_description_chars": 3011,
+        "skill_description_bytes": 3015,
+        "skill_description_estimated_tokens": 756,
+        "skill_body_bytes": 73501,
+        "skill_body_estimated_tokens": 18379,
+        "skill_identity_path_bytes": 1008,
+        "agent_count": 1,
+        "agent_description_chars": 485,
+        "agent_description_bytes": 485,
+        "agent_description_estimated_tokens": 122,
+        "agent_tools_bytes": 95,
+        "agent_tools_estimated_tokens": 24,
+        "agent_example_count": 0,
+        "agent_body_bytes": 80123,
+        "command_count": 0,
+        "command_description_bytes": 0,
+        "command_body_bytes": 0,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 4603,
+        "model_visible_startup_estimated_tokens": 1151
+      },
+      "duplicate_skill_names": {},
+      "skills": [
+        {
+          "kind": "skill",
+          "name": "advisor",
+          "path": "skills/advisor/SKILL.md",
+          "version": "0.0.8",
+          "description": "Get an independent read-only second opinion at a commitment boundary, before substantive work on a hard task, when stuck or changing approach, or at a final review gate. Use for \"consult the advisor\", \"get a second opinion\", \"ask codex\", \"ask Astra\", \"ask gpt-6-astra\", \"ask Fable\", \"ask opencode\", or \"ask a bigger model\". The advisor returns guidance; the main session keeps execution and decision ownership.",
+          "description_metrics": {
+            "chars": 410,
+            "bytes": 410,
+            "words": 64,
+            "lines": 1,
+            "estimated_tokens": 103
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 3089,
+            "bytes": 3089,
+            "words": 443,
+            "lines": 68,
+            "estimated_tokens": 773
+          },
+          "directory": "skills/advisor",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 6,
+            "bytes": 7940
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 114
+        },
+        {
+          "kind": "skill",
+          "name": "claudex",
+          "path": "skills/claudex/SKILL.md",
+          "version": "0.0.2",
+          "description": "Run the Claude Code harness on GPT-5.6 Sol through a local CLIProxyAPI proxy when Anthropic usage runs out, and diagnose that setup when it drifts. Use for \"my Anthropic usage ran out\", \"keep working on another model\", \"run Claude Code on GPT-5.6 Sol\", \"set up claudex\", \"claudex isn't working\", or \"bill against my Codex subscription\". macOS + Homebrew.",
+          "description_metrics": {
+            "chars": 354,
+            "bytes": 354,
+            "words": 58,
+            "lines": 1,
+            "estimated_tokens": 89
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4456,
+            "bytes": 4509,
+            "words": 678,
+            "lines": 88,
+            "estimated_tokens": 1128
+          },
+          "directory": "skills/claudex",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 2,
+            "bytes": 7222
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 114
+        },
+        {
+          "kind": "skill",
+          "name": "coordinator",
+          "path": "skills/coordinator/SKILL.md",
+          "version": "0.0.17",
+          "description": "Route bounded implementation from a capable main session to cheaper workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Muse, Grok, OpenCode, or native workflows.",
+          "description_metrics": {
+            "chars": 268,
+            "bytes": 268,
+            "words": 38,
+            "lines": 1,
+            "estimated_tokens": 67
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6522,
+            "bytes": 6524,
+            "words": 954,
+            "lines": 131,
+            "estimated_tokens": 1631
+          },
+          "directory": "skills/coordinator",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 10,
+            "bytes": 34152
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 8383
+          },
+          "identity_path_bytes": 122
+        },
+        {
+          "kind": "skill",
+          "name": "deploy-agent-team",
+          "path": "skills/deploy-agent-team/SKILL.md",
+          "version": "1.0.7",
+          "description": "This skill should be used when the user says \"deploy a team\", \"spin up agents to work on this\", \"use all our agents\", \"coordinate specialists\", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full installed specialist roster.",
+          "description_metrics": {
+            "chars": 351,
+            "bytes": 351,
+            "words": 54,
+            "lines": 1,
+            "estimated_tokens": 88
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 9721,
+            "bytes": 9843,
+            "words": 1347,
+            "lines": 232,
+            "estimated_tokens": 2461
+          },
+          "directory": "skills/deploy-agent-team",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": false,
+          "codex_implicit": true,
+          "references": {
+            "files": 3,
+            "bytes": 18560
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 134
+        },
+        {
+          "kind": "skill",
+          "name": "orchestrator",
+          "path": "skills/orchestrator/SKILL.md",
+          "version": "0.0.11",
+          "description": "Coordinate cheaper implementation workers, native specialists, and an optional independent advisor while the current session keeps planning, review, verification, and git ownership. Use for cost-aware cross-model orchestration, worker-plus-advisor workflows, or staged multi-agent delivery.",
+          "description_metrics": {
+            "chars": 290,
+            "bytes": 290,
+            "words": 33,
+            "lines": 1,
+            "estimated_tokens": 73
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4783,
+            "bytes": 4809,
+            "words": 662,
+            "lines": 95,
+            "estimated_tokens": 1203
+          },
+          "directory": "skills/orchestrator",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 124
+        },
+        {
+          "kind": "skill",
+          "name": "software-factory",
+          "path": "skills/software-factory/SKILL.md",
+          "version": "0.0.11",
+          "description": "Design or harden a software factory: an agentic loop that iterates toward a goal with a verification gate, persistent state, and a stop condition. Use for \"build a loop\", \"agentic loop\", \"self-iterating agent\", \"/loop\", \"/goal\", \"Ralph loop\", \"maker-checker\", \"agentic SDLC\", \"ADW\", picking a verification gate, bounding a loop's blast radius, unintelligible auto-merged PR titles, or loop process dumped into a GitHub PR body.",
+          "description_metrics": {
+            "chars": 427,
+            "bytes": 427,
+            "words": 63,
+            "lines": 1,
+            "estimated_tokens": 107
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 23432,
+            "bytes": 23954,
+            "words": 3504,
+            "lines": 257,
+            "estimated_tokens": 5989
+          },
+          "directory": "skills/software-factory",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 8,
+            "bytes": 35184
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 6539
+          },
+          "identity_path_bytes": 132
+        },
+        {
+          "kind": "skill",
+          "name": "visual-coordinator",
+          "path": "skills/visual-coordinator/SKILL.md",
+          "version": "0.1.10",
+          "description": "This skill should be used when the user asks to \"design the workflow visually\", \"show me the workflow before running it\", \"let me configure the agents first\", \"visual workflow builder\", \"which models for which steps\", \"let me pick the models\", \"plan this fan-out\", \"diagram the orchestration\", or wants to review and adjust a multi-agent job \u2014 models, agents, phases, isolation \u2014 before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.",
+          "description_metrics": {
+            "chars": 651,
+            "bytes": 655,
+            "words": 105,
+            "lines": 1,
+            "estimated_tokens": 164
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 10722,
+            "bytes": 10762,
+            "words": 1527,
+            "lines": 216,
+            "estimated_tokens": 2691
+          },
+          "directory": "skills/visual-coordinator",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 3,
+            "bytes": 27605
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 13805
+          },
+          "identity_path_bytes": 136
+        },
+        {
+          "kind": "skill",
+          "name": "wave-coordinator",
+          "path": "skills/wave-coordinator/SKILL.md",
+          "version": "1.0.9",
+          "description": "Dispatch many subagents in coordinated waves with per-wave review. Use for \"fan out agents\", \"wave dispatch\", \"batch agents\", \"generate N variations\", or any fan-out beyond about five parallel subagents that needs batching, ordering, and result reconciliation.",
+          "description_metrics": {
+            "chars": 260,
+            "bytes": 260,
+            "words": 36,
+            "lines": 1,
+            "estimated_tokens": 65
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 9977,
+            "bytes": 10011,
+            "words": 1535,
+            "lines": 224,
+            "estimated_tokens": 2503
+          },
+          "directory": "skills/wave-coordinator",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 132
+        }
+      ],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "agent-builder",
+          "path": "agents/agent-builder.md",
+          "version": "1.7.16",
+          "description": "Agent architecture specialist. Use this agent when the user asks to \"design an agent\", \"wire up tool-calling\", \"add memory to my agent\", \"set up agent routing\", \"implement delegated signup\", \"support auth.md\", or \"integrate ID-JAG\". Covers evals, resilient chat UIs, and delegated agent auth. Not for deploying a built agent to hosting or wiring its cron and sandbox (use devops), authoring individual skills or commands (use prompt-engineer), or auditing skill accuracy (use trainer).",
+          "description_metrics": {
+            "chars": 485,
+            "bytes": 485,
+            "words": 72,
+            "lines": 1,
+            "estimated_tokens": 122
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 79757,
+            "bytes": 80123,
+            "words": 10153,
+            "lines": 1918,
+            "estimated_tokens": 20031
+          }
+        }
+      ],
+      "commands": []
+    },
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker/modules/plugin-kit",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "plugin-kit",
+          "version": "0.1.7"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "plugin-kit",
+          "version": "0.1.7"
+        }
+      },
+      "totals": {
+        "skill_count": 10,
+        "authored_skill_count": 10,
+        "third_party_skill_count": 0,
+        "claude_implicit_skill_count": 7,
+        "codex_implicit_skill_count": 10,
+        "skill_description_chars": 3929,
+        "skill_description_bytes": 3933,
+        "skill_description_estimated_tokens": 987,
+        "skill_body_bytes": 74403,
+        "skill_body_estimated_tokens": 18604,
+        "skill_identity_path_bytes": 1320,
+        "agent_count": 2,
+        "agent_description_chars": 781,
+        "agent_description_bytes": 781,
+        "agent_description_estimated_tokens": 196,
+        "agent_tools_bytes": 137,
+        "agent_tools_estimated_tokens": 35,
+        "agent_example_count": 0,
+        "agent_body_bytes": 75454,
+        "command_count": 0,
+        "command_description_bytes": 0,
+        "command_body_bytes": 0,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 6171,
+        "model_visible_startup_estimated_tokens": 1543
+      },
+      "duplicate_skill_names": {},
+      "skills": [
+        {
+          "kind": "skill",
+          "name": "agent-auditor",
+          "path": "skills/agent-auditor/SKILL.md",
+          "version": "0.1.2",
+          "description": "Comprehensive audit skill for agents and skills across the plugin ecosystem. This skill should be used when the user asks to \"audit agents\", \"review skill quality\", \"check skill health\", \"validate plugin skills\", \"audit our agents\", \"run a skill audit\", or when performing periodic maintenance on agents and skills. Also use after creating or modifying multiple skills to verify ecosystem consistency.",
+          "description_metrics": {
+            "chars": 401,
+            "bytes": 401,
+            "words": 60,
+            "lines": 1,
+            "estimated_tokens": 101
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 10036,
+            "bytes": 10042,
+            "words": 1445,
+            "lines": 245,
+            "estimated_tokens": 2511
+          },
+          "directory": "skills/agent-auditor",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 3,
+            "bytes": 18966
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 127
+        },
+        {
+          "kind": "skill",
+          "name": "agent-decommissioning",
+          "path": "skills/agent-decommissioning/SKILL.md",
+          "version": "1.0.0",
+          "description": "This skill should be used when the user asks to \"retire an agent\", \"decommission an agent\", \"remove an agent from the team\", \"shut down a bot\", \"remove a bot\", \"sunset an agent\", or \"take an agent offline permanently\". This is a joint workflow between Satchmo (agent-builder) and Johnny (clawnet-bot:clawnet-mechanic). Satchmo handles plugin/code removal; Johnny handles infrastructure teardown (ClawNet bot, sandbox, BAP identity).",
+          "description_metrics": {
+            "chars": 432,
+            "bytes": 432,
+            "words": 62,
+            "lines": 1,
+            "estimated_tokens": 108
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6524,
+            "bytes": 6562,
+            "words": 931,
+            "lines": 187,
+            "estimated_tokens": 1641
+          },
+          "directory": "skills/agent-decommissioning",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 143
+        },
+        {
+          "kind": "skill",
+          "name": "agent-onboarding",
+          "path": "skills/agent-onboarding/SKILL.md",
+          "version": "1.1.2",
+          "description": "This skill should be used when the user asks to \"create a new agent\", \"onboard a new agent\", \"add an agent to the team\", \"deploy a new bot\", \"register an agent with Paperclip\", or \"add this agent to the roster\". Provides the complete end-to-end checklist for bringing a new agent onto the bOpen team \u2014 design, write, avatar, plugin, Paperclip registration, roster, and optional ClawNet bot deployment.",
+          "description_metrics": {
+            "chars": 401,
+            "bytes": 403,
+            "words": 67,
+            "lines": 1,
+            "estimated_tokens": 101
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 12340,
+            "bytes": 12416,
+            "words": 1847,
+            "lines": 266,
+            "estimated_tokens": 3104
+          },
+          "directory": "skills/agent-onboarding",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 133
+        },
+        {
+          "kind": "skill",
+          "name": "benchmark-skills",
+          "path": "skills/benchmark-skills/SKILL.md",
+          "version": "2.0.1",
+          "description": "Run skill benchmarks and write evals that score a skill against a no-skill baseline. Use for \"benchmark this skill\", \"run the skill evals\", \"write an eval for this skill\", or \"did this skill actually help?\".",
+          "description_metrics": {
+            "chars": 207,
+            "bytes": 207,
+            "words": 35,
+            "lines": 1,
+            "estimated_tokens": 52
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 11902,
+            "bytes": 11924,
+            "words": 1805,
+            "lines": 304,
+            "estimated_tokens": 2981
+          },
+          "directory": "skills/benchmark-skills",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 133
+        },
+        {
+          "kind": "skill",
+          "name": "npm-publish",
+          "path": "skills/npm-publish/SKILL.md",
+          "version": "3.1.3",
+          "description": "This skill should be used when the user wants to publish a package to npm, bump a version, release a new version, or mentions \"npm publish\", \"bun publish\", \"version bump\", or \"release to npm\". Handles version bumping, changelog updates, default-branch release delivery, browser-confirmed Bun publishing, and credential recovery only when publishing explicitly reports an authentication failure. Do not trigger for unrelated uses of \"release\" (e.g. GitHub releases, press releases).",
+          "description_metrics": {
+            "chars": 481,
+            "bytes": 481,
+            "words": 69,
+            "lines": 1,
+            "estimated_tokens": 121
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 5069,
+            "bytes": 5089,
+            "words": 729,
+            "lines": 107,
+            "estimated_tokens": 1273
+          },
+          "directory": "skills/npm-publish",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 7,
+            "bytes": 16320
+          },
+          "identity_path_bytes": 123
+        },
+        {
+          "kind": "skill",
+          "name": "plugin-module-split",
+          "path": "skills/plugin-module-split/SKILL.md",
+          "version": "1.0.1",
+          "description": "Split a large Claude Code or Codex plugin into a small core plus optional modules. Use for \"split this plugin\", \"my plugin is too big\", \"reduce startup context\", \"Codex is omitting my skills\", \"core plus optional packs\", or \"publish part of my plugin separately\". Covers marketplace subdirectory sourcing, the dependency field's silent-load behaviour, Codex adapter regeneration, and vendored-skill placement. Use agent-auditor to measure first and benchmark-skills to verify routing after.",
+          "description_metrics": {
+            "chars": 490,
+            "bytes": 490,
+            "words": 70,
+            "lines": 1,
+            "estimated_tokens": 123
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6516,
+            "bytes": 6524,
+            "words": 973,
+            "lines": 142,
+            "estimated_tokens": 1631
+          },
+          "directory": "skills/plugin-module-split",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 139
+        },
+        {
+          "kind": "skill",
+          "name": "plugin-settings",
+          "path": "skills/plugin-settings/SKILL.md",
+          "version": null,
+          "description": "This skill should be used when the user asks to \"add plugin settings\", \"make a plugin configurable\", \"store per-project plugin configuration\", \"use settings.local.json\", \"create a plugin state file\", \"expose skill settings in Agent Master\", or \"add a skill interface\". Distinguishes official Claude Code settings from project-owned configuration and documents bOpen Agent Master skill interface discovery.",
+          "description_metrics": {
+            "chars": 405,
+            "bytes": 405,
+            "words": 55,
+            "lines": 1,
+            "estimated_tokens": 102
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 10467,
+            "bytes": 10471,
+            "words": 1379,
+            "lines": 186,
+            "estimated_tokens": 2618
+          },
+          "directory": "skills/plugin-settings",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 131
+        },
+        {
+          "kind": "skill",
+          "name": "publish-request",
+          "path": "skills/publish-request/SKILL.md",
+          "version": null,
+          "description": "Use this skill when preparing to publish a package, plugin, or skill and you need human approval first. Invoked when the user says \"publish\", \"release\", \"ship\", or \"push to registry\" but no approved Linear ticket exists yet. Runs preflight checks, creates or updates a Linear ticket with a structured release plan, moves it to Ready for Review, then stops \u2014 it does NOT execute the publish command.",
+          "description_metrics": {
+            "chars": 398,
+            "bytes": 400,
+            "words": 67,
+            "lines": 1,
+            "estimated_tokens": 100
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 694,
+            "bytes": 694,
+            "words": 107,
+            "lines": 18,
+            "estimated_tokens": 174
+          },
+          "directory": "skills/publish-request",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": false,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 131
+        },
+        {
+          "kind": "skill",
+          "name": "skill-publish",
+          "path": "skills/skill-publish/SKILL.md",
+          "version": null,
+          "description": "This skill should be used when the user asks to \"publish a plugin\", \"release a plugin\", \"bump plugin version\", \"update a Claude Code plugin\", \"update a Codex plugin\", \"publish skills\", or mentions plugin publishing, plugin release, or skill distribution. Handles synchronized host manifests, changelog and README updates, git workflow, cache refresh, and standalone Agent Skills.",
+          "description_metrics": {
+            "chars": 379,
+            "bytes": 379,
+            "words": 55,
+            "lines": 1,
+            "estimated_tokens": 95
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6379,
+            "bytes": 6409,
+            "words": 870,
+            "lines": 210,
+            "estimated_tokens": 1603
+          },
+          "directory": "skills/skill-publish",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": false,
+          "codex_implicit": true,
+          "references": {
+            "files": 1,
+            "bytes": 3538
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 127
+        },
+        {
+          "kind": "skill",
+          "name": "statusline-setup",
+          "path": "skills/statusline-setup/SKILL.md",
+          "version": "0.0.3",
+          "description": "This skill should be used when the user asks to \"create a status line\", \"customize status line\", \"set up statusline\", \"configure Claude Code status bar\", \"install ccstatusline\", \"add project colors to status line\", \"show git branch in status\", \"display token usage\", or mentions Peacock colors, powerline, or status line configuration.",
+          "description_metrics": {
+            "chars": 335,
+            "bytes": 335,
+            "words": 50,
+            "lines": 1,
+            "estimated_tokens": 84
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4266,
+            "bytes": 4272,
+            "words": 532,
+            "lines": 141,
+            "estimated_tokens": 1068
+          },
+          "directory": "skills/statusline-setup",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": false,
+          "codex_implicit": true,
+          "references": {
+            "files": 3,
+            "bytes": 25568
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 9047
+          },
+          "identity_path_bytes": 133
+        }
+      ],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "prompt-engineer",
+          "path": "agents/prompt-engineer.md",
+          "version": "2.3.20",
+          "description": "Claude Code configuration and authoring agent. Use this agent when the user asks to \"create a slash command\", \"write a new skill\", \"fix this permission denied error\", or \"configure settings.json\". Covers YAML frontmatter, Bash permission scoping, hooks, and settings troubleshooting. Not for multi-agent architecture (use agent-builder) or auditing an existing skill's accuracy (use trainer).",
+          "description_metrics": {
+            "chars": 392,
+            "bytes": 392,
+            "words": 54,
+            "lines": 1,
+            "estimated_tokens": 98
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 42,
+            "bytes": 42,
+            "words": 7,
+            "lines": 1,
+            "estimated_tokens": 11
+          },
+          "body_metrics": {
+            "chars": 64367,
+            "bytes": 64991,
+            "words": 8713,
+            "lines": 2041,
+            "estimated_tokens": 16248
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "trainer",
+          "path": "agents/trainer.md",
+          "version": "1.0.7",
+          "description": "Skill maintenance and accuracy agent. Use this agent when the user asks to \"check if our skills are up to date\", \"this API changed and our skill is stale\", \"run the benchmark for X skill\", or \"audit the skill library for gaps\", or when skills need review after upstream doc changes. Not for authoring new skills from scratch (use prompt-engineer) or agent architecture (use agent-builder).",
+          "description_metrics": {
+            "chars": 389,
+            "bytes": 389,
+            "words": 65,
+            "lines": 1,
+            "estimated_tokens": 98
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 10389,
+            "bytes": 10463,
+            "words": 1622,
+            "lines": 242,
+            "estimated_tokens": 2616
+          }
+        }
+      ],
+      "commands": []
+    },
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker/modules/research",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "research",
+          "version": "0.1.4"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "research",
+          "version": "0.1.4"
+        }
+      },
+      "totals": {
+        "skill_count": 7,
+        "authored_skill_count": 7,
+        "third_party_skill_count": 0,
+        "claude_implicit_skill_count": 6,
+        "codex_implicit_skill_count": 7,
+        "skill_description_chars": 1961,
+        "skill_description_bytes": 1961,
+        "skill_description_estimated_tokens": 493,
+        "skill_body_bytes": 27543,
+        "skill_body_estimated_tokens": 6887,
+        "skill_identity_path_bytes": 857,
+        "agent_count": 3,
+        "agent_description_chars": 1077,
+        "agent_description_bytes": 1077,
+        "agent_description_estimated_tokens": 271,
+        "agent_tools_bytes": 213,
+        "agent_tools_estimated_tokens": 54,
+        "agent_example_count": 0,
+        "agent_body_bytes": 31946,
+        "command_count": 0,
+        "command_description_bytes": 0,
+        "command_body_bytes": 0,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 4108,
+        "model_visible_startup_estimated_tokens": 1027
+      },
+      "duplicate_skill_names": {},
+      "skills": [
+        {
+          "kind": "skill",
+          "name": "notebooklm",
+          "path": "skills/notebooklm/SKILL.md",
+          "version": "1.0.0",
+          "description": "This skill should be used when the user asks to \"query my NotebookLM notebook\", \"ask NotebookLM about these sources\", \"get a citation-backed answer from my documents\", or \"search my NotebookLM library\". Provides browser automation, library management, and persistent auth for querying Google NotebookLM notebooks directly from Claude Code, returning source-grounded answers from Gemini instead of general knowledge.",
+          "description_metrics": {
+            "chars": 415,
+            "bytes": 415,
+            "words": 57,
+            "lines": 1,
+            "estimated_tokens": 104
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4651,
+            "bytes": 4651,
+            "words": 597,
+            "lines": 146,
+            "estimated_tokens": 1163
+          },
+          "directory": "skills/notebooklm",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": false,
+          "codex_implicit": true,
+          "references": {
+            "files": 5,
+            "bytes": 39584
+          },
+          "scripts": {
+            "files": 10,
+            "bytes": 69137
+          },
+          "identity_path_bytes": 119
+        },
+        {
+          "kind": "skill",
+          "name": "persona",
+          "path": "skills/persona/SKILL.md",
+          "version": "1.0.3",
+          "description": "Capture writing style profiles, track a pool of users, scan social intelligence, and apply style-matching to draft content. Use when asked to \"capture my writing style\", \"draft a post in my voice\", \"scan what's trending\", \"add someone to the pool\", or \"track @username\".",
+          "description_metrics": {
+            "chars": 270,
+            "bytes": 270,
+            "words": 43,
+            "lines": 1,
+            "estimated_tokens": 68
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 9835,
+            "bytes": 9931,
+            "words": 1360,
+            "lines": 265,
+            "estimated_tokens": 2483
+          },
+          "directory": "skills/persona",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 1,
+            "bytes": 1827
+          },
+          "scripts": {
+            "files": 12,
+            "bytes": 143393
+          },
+          "identity_path_bytes": 113
+        },
+        {
+          "kind": "skill",
+          "name": "x-research",
+          "path": "skills/x-research/SKILL.md",
+          "version": "1.1.5",
+          "description": "This skill should be used for AI-powered X/Twitter research via xAI Grok when the user asks \"what's trending\", \"social sentiment\", \"summarize X discussion about\", \"analyze X conversation about\", or \"research topic on X\". Returns AI summaries with analysis, not raw tweets. For raw tweet data, use x-user-timeline, x-tweet-search, or x-tweet-fetch. Requires XAI_API_KEY.",
+          "description_metrics": {
+            "chars": 369,
+            "bytes": 369,
+            "words": 52,
+            "lines": 1,
+            "estimated_tokens": 93
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 9619,
+            "bytes": 9623,
+            "words": 1197,
+            "lines": 295,
+            "estimated_tokens": 2406
+          },
+          "directory": "skills/x-research",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 3328
+          },
+          "identity_path_bytes": 119
+        },
+        {
+          "kind": "skill",
+          "name": "x-tweet-fetch",
+          "path": "skills/x-tweet-fetch/SKILL.md",
+          "version": "1.0.1",
+          "description": "Fetch a specific tweet by URL or ID. Use when user shares an X/Twitter URL (https://x.com/... or https://twitter.com/...), asks \"get this tweet\", \"fetch tweet\", \"what does this tweet say\", \"read this X post\". Requires X_BEARER_TOKEN.",
+          "description_metrics": {
+            "chars": 233,
+            "bytes": 233,
+            "words": 35,
+            "lines": 1,
+            "estimated_tokens": 59
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 710,
+            "bytes": 710,
+            "words": 78,
+            "lines": 38,
+            "estimated_tokens": 178
+          },
+          "directory": "skills/x-tweet-fetch",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 2918
+          },
+          "identity_path_bytes": 125
+        },
+        {
+          "kind": "skill",
+          "name": "x-tweet-search",
+          "path": "skills/x-tweet-search/SKILL.md",
+          "version": "1.0.1",
+          "description": "Search recent X/Twitter posts by query. Returns RAW TWEETS (last 7 days). Use when user asks \"search X for\", \"find tweets about\", \"what are people saying about\", \"Twitter search\", \"raw tweets about\". For AI summaries/sentiment, use x-research instead. Requires X_BEARER_TOKEN.",
+          "description_metrics": {
+            "chars": 276,
+            "bytes": 276,
+            "words": 40,
+            "lines": 1,
+            "estimated_tokens": 69
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 1040,
+            "bytes": 1040,
+            "words": 123,
+            "lines": 48,
+            "estimated_tokens": 260
+          },
+          "directory": "skills/x-tweet-search",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 2825
+          },
+          "identity_path_bytes": 127
+        },
+        {
+          "kind": "skill",
+          "name": "x-user-lookup",
+          "path": "skills/x-user-lookup/SKILL.md",
+          "version": "1.0.1",
+          "description": "Get X/Twitter user profile by username. Use when user asks \"who is @username\", \"get X profile\", \"lookup Twitter user\", \"find X account\", \"user details\", \"follower count for\". Requires X_BEARER_TOKEN.",
+          "description_metrics": {
+            "chars": 199,
+            "bytes": 199,
+            "words": 29,
+            "lines": 1,
+            "estimated_tokens": 50
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 664,
+            "bytes": 664,
+            "words": 79,
+            "lines": 36,
+            "estimated_tokens": 166
+          },
+          "directory": "skills/x-user-lookup",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 2631
+          },
+          "identity_path_bytes": 125
+        },
+        {
+          "kind": "skill",
+          "name": "x-user-timeline",
+          "path": "skills/x-user-timeline/SKILL.md",
+          "version": "1.0.1",
+          "description": "Get recent tweets from an X/Twitter user. Use when user asks \"what has @username posted\", \"recent tweets from\", \"user's X posts\", \"show timeline for\", \"what is @user saying\". Requires X_BEARER_TOKEN.",
+          "description_metrics": {
+            "chars": 199,
+            "bytes": 199,
+            "words": 30,
+            "lines": 1,
+            "estimated_tokens": 50
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 924,
+            "bytes": 924,
+            "words": 110,
+            "lines": 43,
+            "estimated_tokens": 231
+          },
+          "directory": "skills/x-user-timeline",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 2993
+          },
+          "identity_path_bytes": 129
+        }
+      ],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "documentation-writer",
+          "path": "agents/documentation-writer.md",
+          "version": "1.2.7",
+          "description": "Technical writer for developer docs. Use this agent when the user asks to \"write a README\", \"document this API\", \"draft a PRD\", or \"write an integration guide\". Uses Shape Up and Amazon Working Backwards for PRDs, and example-first documentation. Not for Linear issue planning (use project-manager) or marketing copy (use the marketer agent).",
+          "description_metrics": {
+            "chars": 342,
+            "bytes": 342,
+            "words": 53,
+            "lines": 1,
+            "estimated_tokens": 86
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 89,
+            "bytes": 89,
+            "words": 11,
+            "lines": 1,
+            "estimated_tokens": 23
+          },
+          "body_metrics": {
+            "chars": 5562,
+            "bytes": 5574,
+            "words": 839,
+            "lines": 114,
+            "estimated_tokens": 1394
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "executive-assistant",
+          "path": "agents/executive-assistant.md",
+          "version": "1.0.8",
+          "description": "Google Workspace executive assistant for Gmail, Calendar, Drive, Docs, Sheets, Tasks, and Chat. Use this agent when the user asks \"what's on my agenda today\", \"triage my inbox\", \"prep me for my 2pm\", \"schedule this meeting\", or \"give me a weekly digest\". Not for Linear issue planning (use project-manager) or external research (use researcher).",
+          "description_metrics": {
+            "chars": 345,
+            "bytes": 345,
+            "words": 54,
+            "lines": 1,
+            "estimated_tokens": 87
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 24,
+            "bytes": 24,
+            "words": 4,
+            "lines": 1,
+            "estimated_tokens": 6
+          },
+          "body_metrics": {
+            "chars": 7201,
+            "bytes": 7264,
+            "words": 871,
+            "lines": 194,
+            "estimated_tokens": 1816
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "researcher",
+          "path": "agents/researcher.md",
+          "version": "1.2.14",
+          "description": "Multi-source research agent producing cited answers. Use this agent when the user asks to \"research this topic\", \"find sources on X\", \"summarize what people are saying about Y on X/Twitter\", or \"compare these competitors\". Gathers from docs, APIs, and web sources. Not for implementing changes based on the research (use the relevant specialist) or growth strategy (use the marketer agent).",
+          "description_metrics": {
+            "chars": 390,
+            "bytes": 390,
+            "words": 60,
+            "lines": 1,
+            "estimated_tokens": 98
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 100,
+            "bytes": 100,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 25
+          },
+          "body_metrics": {
+            "chars": 19061,
+            "bytes": 19108,
+            "words": 2522,
+            "lines": 537,
+            "estimated_tokens": 4777
+          }
+        }
+      ],
+      "commands": []
+    },
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker/modules/review",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "review",
+          "version": "0.1.15"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "review",
+          "version": "0.1.15"
+        }
+      },
+      "totals": {
+        "skill_count": 7,
+        "authored_skill_count": 6,
+        "third_party_skill_count": 1,
+        "claude_implicit_skill_count": 6,
+        "codex_implicit_skill_count": 6,
+        "skill_description_chars": 2573,
+        "skill_description_bytes": 2583,
+        "skill_description_estimated_tokens": 649,
+        "skill_body_bytes": 75144,
+        "skill_body_estimated_tokens": 18789,
+        "skill_identity_path_bytes": 903,
+        "agent_count": 5,
+        "agent_description_chars": 2126,
+        "agent_description_bytes": 2128,
+        "agent_description_estimated_tokens": 534,
+        "agent_tools_bytes": 1209,
+        "agent_tools_estimated_tokens": 304,
+        "agent_example_count": 0,
+        "agent_body_bytes": 67816,
+        "command_count": 0,
+        "command_description_bytes": 0,
+        "command_body_bytes": 0,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 6823,
+        "model_visible_startup_estimated_tokens": 1706
+      },
+      "duplicate_skill_names": {},
+      "skills": [
+        {
+          "kind": "skill",
+          "name": "code-audit-scripts",
+          "path": "skills/code-audit-scripts/SKILL.md",
+          "version": null,
+          "description": "Run deterministic code security and quality scans \u2014 secret detection, debug artifact cleanup, and TODO/FIXME tracking. Use this skill before any security review, code audit, PR review, or when the user says 'scan for secrets', 'find debug logs', 'check for TODOs', 'audit this code', 'security scan', or 'clean up before shipping'. Also use proactively before deployments or when reviewing unfamiliar codebases. Runs all scans in parallel for speed.",
+          "description_metrics": {
+            "chars": 449,
+            "bytes": 451,
+            "words": 68,
+            "lines": 1,
+            "estimated_tokens": 113
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 1960,
+            "bytes": 1970,
+            "words": 272,
+            "lines": 56,
+            "estimated_tokens": 493
+          },
+          "directory": "skills/code-audit-scripts",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 4,
+            "bytes": 7975
+          },
+          "identity_path_bytes": 133
+        },
+        {
+          "kind": "skill",
+          "name": "codex-security",
+          "path": "skills/codex-security/SKILL.md",
+          "version": null,
+          "description": "Run OpenAI's agentic security scanner (`@openai/codex-security`) over a repo, PR, or diff, then triage, patch, and gate on its findings. Use for 'run a codex security scan', 'find vulnerabilities in this PR', 'export findings as SARIF', 'fix that security finding', 'compare this scan to the last one', or when a pattern sweep came back thin. Not for dependency CVEs, secrets, or licenses (code-audit-scripts, bun audit).",
+          "description_metrics": {
+            "chars": 421,
+            "bytes": 421,
+            "words": 65,
+            "lines": 1,
+            "estimated_tokens": 106
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 10658,
+            "bytes": 10714,
+            "words": 1603,
+            "lines": 225,
+            "estimated_tokens": 2679
+          },
+          "directory": "skills/codex-security",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 2,
+            "bytes": 22388
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 7311
+          },
+          "identity_path_bytes": 125
+        },
+        {
+          "kind": "skill",
+          "name": "free-roam-testing",
+          "path": "skills/free-roam-testing/SKILL.md",
+          "version": "0.0.2",
+          "description": "Explore a running app on randomized unscripted paths to surface new bugs, broken flows, and confusing UX, then file deduplicated tickets. Use for \"free roam\", \"explore the app\", \"monkey test\", \"exploratory testing\", \"find issues I don't know about\", or \"discovery loop\". Respects a never-touch list and blast-radius boundary. Not for scripted regression tests.",
+          "description_metrics": {
+            "chars": 360,
+            "bytes": 360,
+            "words": 53,
+            "lines": 1,
+            "estimated_tokens": 90
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 5244,
+            "bytes": 5298,
+            "words": 790,
+            "lines": 74,
+            "estimated_tokens": 1325
+          },
+          "directory": "skills/free-roam-testing",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 1,
+            "bytes": 3433
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 131
+        },
+        {
+          "kind": "skill",
+          "name": "hunter-skeptic-referee",
+          "path": "skills/hunter-skeptic-referee/SKILL.md",
+          "version": "1.1.3",
+          "description": "This skill should be used when the user asks to 'find bugs', 'do a thorough code review', 'run a security audit', 'hunt for bugs', 'check for correctness issues', or 'review this code for edge cases'. Orchestrates a three-phase adversarial review using three isolated agents \u2014 Jerry (Hunter), Kayle (Skeptic), Jason (Referee) \u2014 to neutralize sycophancy and produce high-fidelity bug reports. User-facing command: /bug-hunt",
+          "description_metrics": {
+            "chars": 422,
+            "bytes": 426,
+            "words": 63,
+            "lines": 1,
+            "estimated_tokens": 107
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 5542,
+            "bytes": 5568,
+            "words": 825,
+            "lines": 144,
+            "estimated_tokens": 1392
+          },
+          "directory": "skills/hunter-skeptic-referee",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 141
+        },
+        {
+          "kind": "skill",
+          "name": "visual-proposal",
+          "path": "skills/visual-proposal/SKILL.md",
+          "version": "0.0.15",
+          "description": "Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has not been built. Use for \"make a visual proposal\", \"present these options visually\", \"diagram the trade-offs\", \"turn this plan into something reviewable\", or a shareable design pitch, RFC, or options comparison. Use visual-review for completed code changes.",
+          "description_metrics": {
+            "chars": 349,
+            "bytes": 349,
+            "words": 51,
+            "lines": 1,
+            "estimated_tokens": 88
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 27295,
+            "bytes": 27490,
+            "words": 4284,
+            "lines": 472,
+            "estimated_tokens": 6873
+          },
+          "directory": "skills/visual-proposal",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 3,
+            "bytes": 20397
+          },
+          "scripts": {
+            "files": 2,
+            "bytes": 5762
+          },
+          "identity_path_bytes": 127
+        },
+        {
+          "kind": "skill",
+          "name": "visual-review",
+          "path": "skills/visual-review/SKILL.md",
+          "version": "0.0.6",
+          "description": "Turn a PR, branch, commit, or working-tree diff into one self-contained HTML recap page with before/after wireframes, contract summaries, a file map, and annotated diffs. Use for \"recap this PR\", \"visual recap\", \"review this diff visually\", \"show me what this branch changed\", \"critique this change\", or before any large or UI-heavy review. Not for small single-file diffs.",
+          "description_metrics": {
+            "chars": 373,
+            "bytes": 373,
+            "words": 57,
+            "lines": 1,
+            "estimated_tokens": 94
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 12382,
+            "bytes": 12478,
+            "words": 1925,
+            "lines": 235,
+            "estimated_tokens": 3120
+          },
+          "directory": "skills/visual-review",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 1,
+            "bytes": 5563
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 123
+        },
+        {
+          "kind": "skill",
+          "name": "wayfinder",
+          "path": "skills/wayfinder/SKILL.md",
+          "version": null,
+          "description": "Plan a huge chunk of work \u2014 more than one agent session can hold \u2014 as a shared map of decision tickets on your issue tracker, and resolve them one at a time until the way to the destination is clear.",
+          "description_metrics": {
+            "chars": 199,
+            "bytes": 203,
+            "words": 41,
+            "lines": 1,
+            "estimated_tokens": 51
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 11520,
+            "bytes": 11626,
+            "words": 1975,
+            "lines": 122,
+            "estimated_tokens": 2907
+          },
+          "directory": "skills/wayfinder",
+          "source": "third-party",
+          "symlink_target": "../.agents/skills/wayfinder",
+          "claude_implicit": false,
+          "codex_implicit": false,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 123
+        }
+      ],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "architecture-reviewer",
+          "path": "agents/architecture-reviewer.md",
+          "version": "1.1.18",
+          "description": "System architecture and large-scale refactoring agent. Use this agent when the user asks to \"refactor our microservices architecture\", \"map the dependencies across our codebase\", \"review this system design\", or needs cross-file analysis spanning many services. Not for code-level security audits (use code-auditor) or single-module cleanup (use consolidator).",
+          "description_metrics": {
+            "chars": 359,
+            "bytes": 359,
+            "words": 47,
+            "lines": 1,
+            "estimated_tokens": 90
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 118,
+            "bytes": 118,
+            "words": 13,
+            "lines": 1,
+            "estimated_tokens": 30
+          },
+          "body_metrics": {
+            "chars": 8489,
+            "bytes": 8529,
+            "words": 1090,
+            "lines": 150,
+            "estimated_tokens": 2133
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "code-auditor",
+          "path": "agents/code-auditor.md",
+          "version": "1.4.13",
+          "description": "Code-level security auditor. Use this agent when the user asks to \"audit this code for security issues\", \"review this PR for vulnerabilities\", \"check for injection risks\", or \"run a security review before merge\", or asks whether a Vercel Security Dashboard finding reflects a code or configuration defect. Produces a severity-rated report with specific fixes using git diff review, Semgrep, CodeQL, and Trail of Bits patterns. Not for dashboard posture sweeps, runtime dependency/secrets scanning (use security-ops), or architecture tradeoffs (use architecture-reviewer).",
+          "description_metrics": {
+            "chars": 571,
+            "bytes": 571,
+            "words": 80,
+            "lines": 1,
+            "estimated_tokens": 143
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 391,
+            "bytes": 391,
+            "words": 23,
+            "lines": 1,
+            "estimated_tokens": 98
+          },
+          "body_metrics": {
+            "chars": 20020,
+            "bytes": 20175,
+            "words": 2738,
+            "lines": 476,
+            "estimated_tokens": 5044
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "consolidator",
+          "path": "agents/consolidator.md",
+          "version": "1.2.6",
+          "description": "Codebase cleanup specialist. Use this agent when the user asks to \"clean up this repo\", \"find and merge duplicate functions\", \"standardize file naming\", or \"reorganize this codebase\" \u2014 scattered files, inconsistent naming, or redundant utilities. Updates import paths when moving or renaming. Not for performance work (use optimizer) or security review (use code-auditor).",
+          "description_metrics": {
+            "chars": 372,
+            "bytes": 374,
+            "words": 53,
+            "lines": 1,
+            "estimated_tokens": 94
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 159,
+            "bytes": 159,
+            "words": 16,
+            "lines": 1,
+            "estimated_tokens": 40
+          },
+          "body_metrics": {
+            "chars": 6656,
+            "bytes": 6789,
+            "words": 905,
+            "lines": 215,
+            "estimated_tokens": 1698
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "security-ops",
+          "path": "agents/security-ops.md",
+          "version": "1.0.11",
+          "description": "Operational and runtime security agent. Use this agent when the user asks to \"scan our dependencies for CVEs\", \"check for leaked secrets\", \"is this OWASP compliant\", \"audit our Vercel security posture\", or \"run a supply chain audit\". Covers Vercel Security Dashboard triage, incident response, and SOC 2 technical control validation. Not for code-level audits (use code-auditor) or architectural review (use architecture-reviewer).",
+          "description_metrics": {
+            "chars": 431,
+            "bytes": 431,
+            "words": 61,
+            "lines": 1,
+            "estimated_tokens": 108
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 433,
+            "bytes": 433,
+            "words": 23,
+            "lines": 1,
+            "estimated_tokens": 109
+          },
+          "body_metrics": {
+            "chars": 21098,
+            "bytes": 21156,
+            "words": 2975,
+            "lines": 454,
+            "estimated_tokens": 5289
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "tester",
+          "path": "agents/tester.md",
+          "version": "1.3.18",
+          "description": "Test authorship and CI automation specialist. Use this agent when the user asks to \"write tests\", \"add test coverage\", \"set up e2e/Playwright tests\", \"fix failing tests\", or \"add a CI coverage gate\", or when a change needs tests before merging. Covers unit, integration, e2e, mocking, and coverage reporting. Not for performance profiling (use optimizer) or security review (use code-auditor).",
+          "description_metrics": {
+            "chars": 393,
+            "bytes": 393,
+            "words": 59,
+            "lines": 1,
+            "estimated_tokens": 99
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 108,
+            "bytes": 108,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 27
+          },
+          "body_metrics": {
+            "chars": 11103,
+            "bytes": 11167,
+            "words": 1495,
+            "lines": 210,
+            "estimated_tokens": 2792
+          }
+        }
+      ],
+      "commands": []
+    },
+    {
+      "schema_version": 1,
+      "root": "/Users/satchmo/code/worktrees/prompts-factory-worker/modules/web-dev",
+      "manifests": {
+        "claude": {
+          "path": ".claude-plugin/plugin.json",
+          "name": "web-dev",
+          "version": "0.1.5"
+        },
+        "codex": {
+          "path": ".codex-plugin/plugin.json",
+          "name": "web-dev",
+          "version": "0.1.5"
+        }
+      },
+      "totals": {
+        "skill_count": 9,
+        "authored_skill_count": 9,
+        "third_party_skill_count": 0,
+        "claude_implicit_skill_count": 9,
+        "codex_implicit_skill_count": 9,
+        "skill_description_chars": 3583,
+        "skill_description_bytes": 3593,
+        "skill_description_estimated_tokens": 902,
+        "skill_body_bytes": 51899,
+        "skill_body_estimated_tokens": 12979,
+        "skill_identity_path_bytes": 1110,
+        "agent_count": 4,
+        "agent_description_chars": 1550,
+        "agent_description_bytes": 1552,
+        "agent_description_estimated_tokens": 390,
+        "agent_tools_bytes": 829,
+        "agent_tools_estimated_tokens": 208,
+        "agent_example_count": 0,
+        "agent_body_bytes": 97180,
+        "command_count": 0,
+        "command_description_bytes": 0,
+        "command_body_bytes": 0,
+        "duplicate_skill_name_count": 0,
+        "model_visible_startup_bytes": 7084,
+        "model_visible_startup_estimated_tokens": 1771
+      },
+      "duplicate_skill_names": {},
+      "skills": [
+        {
+          "kind": "skill",
+          "name": "charting",
+          "path": "skills/charting/SKILL.md",
+          "version": "1.0.0",
+          "description": "Data visualization and charting. Use for \"create a chart\", \"visualize this data\", \"build a dashboard\", \"plot this\", \"graph these metrics\", \"make a bar chart\", \"build a heatmap\", or help choosing a chart type, picking a charting library by data scale, or building the pipeline from raw database state to rendered visualization.",
+          "description_metrics": {
+            "chars": 326,
+            "bytes": 326,
+            "words": 51,
+            "lines": 1,
+            "estimated_tokens": 82
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 5958,
+            "bytes": 5994,
+            "words": 973,
+            "lines": 135,
+            "estimated_tokens": 1499
+          },
+          "directory": "skills/charting",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 114
+        },
+        {
+          "kind": "skill",
+          "name": "chrome-cdp",
+          "path": "skills/chrome-cdp/SKILL.md",
+          "version": null,
+          "description": "This skill should be used when the user asks to \"inspect this page in Chrome\", \"debug what's happening in my browser\", \"read the browser console logs\", \"interact with the page open in Chrome\", or \"attach to my live Chrome session\". Interacts with the user's local Chrome browser session via Chrome DevTools Protocol \u2014 no extension, no Puppeteer \u2014 but only after explicit user approval to inspect, debug, or interact with an open tab.",
+          "description_metrics": {
+            "chars": 433,
+            "bytes": 437,
+            "words": 73,
+            "lines": 1,
+            "estimated_tokens": 110
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4178,
+            "bytes": 4194,
+            "words": 571,
+            "lines": 126,
+            "estimated_tokens": 1049
+          },
+          "directory": "skills/chrome-cdp",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 1,
+            "bytes": 22379
+          },
+          "identity_path_bytes": 118
+        },
+        {
+          "kind": "skill",
+          "name": "create-next-project",
+          "path": "skills/create-next-project/SKILL.md",
+          "version": "2.0.3",
+          "description": "This skill should be used when the user asks to \"create a new project\", \"scaffold a Next.js app\", \"initialize a new app\", \"start a new project\", \"set up a new Next.js project\", or mentions \"create-next-project\". Provides a guided, opinionated full-stack Next.js project initialization with Biome, Tailwind v4, shadcn/ui, better-auth, and Vercel deployment. Uses agent teams for parallel execution.",
+          "description_metrics": {
+            "chars": 397,
+            "bytes": 397,
+            "words": 58,
+            "lines": 1,
+            "estimated_tokens": 100
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 13567,
+            "bytes": 13567,
+            "words": 1902,
+            "lines": 260,
+            "estimated_tokens": 3392
+          },
+          "directory": "skills/create-next-project",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 7,
+            "bytes": 39211
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 136
+        },
+        {
+          "kind": "skill",
+          "name": "frontend-performance",
+          "path": "skills/frontend-performance/SKILL.md",
+          "version": "1.0.0",
+          "description": "This skill should be used when the user asks to \"optimize my Next.js app\", \"why is this page slow\", \"reduce my bundle size\", \"improve Core Web Vitals\", or \"run a Lighthouse audit\". Diagnoses and fixes Next.js frontend performance issues using Lighthouse, bundle analysis, and animation best practices \u2014 covering LCP, TBT, and CLS.",
+          "description_metrics": {
+            "chars": 330,
+            "bytes": 332,
+            "words": 53,
+            "lines": 1,
+            "estimated_tokens": 83
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4766,
+            "bytes": 4774,
+            "words": 619,
+            "lines": 205,
+            "estimated_tokens": 1194
+          },
+          "directory": "skills/frontend-performance",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 138
+        },
+        {
+          "kind": "skill",
+          "name": "generative-ui",
+          "path": "skills/generative-ui/SKILL.md",
+          "version": "0.2.4",
+          "description": "Decide between static components and AI-generated interfaces, and build the latter. Use for \"generative UI\", \"dynamic UI\", \"json-render\", \"render JSON as UI\", \"AI UI generation\", \"MCP App UI\", \"deliver UI in chat\", or \"interactive chat interface\". Covers the json-render framework, renderer and catalog selection, and MCP Apps delivery through ui:// resources.",
+          "description_metrics": {
+            "chars": 360,
+            "bytes": 360,
+            "words": 51,
+            "lines": 1,
+            "estimated_tokens": 90
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 7369,
+            "bytes": 7405,
+            "words": 991,
+            "lines": 128,
+            "estimated_tokens": 1852
+          },
+          "directory": "skills/generative-ui",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 2,
+            "bytes": 9682
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 124
+        },
+        {
+          "kind": "skill",
+          "name": "github-stars",
+          "path": "skills/github-stars/SKILL.md",
+          "version": "1.0.0",
+          "description": "This skill should be used when adding GitHub star counts, star buttons, star widgets, or GitHub social proof to a website or app. Applies when the user says \"add GitHub stars\", \"show star count\", \"add a star badge\", \"GitHub badge\", \"star widget\", \"GitHub social proof\", \"stargazer count\", or wants to display how many stars a repo has on a marketing page, header, or landing page. Also applies when integrating the GitHub API for repository metadata display.",
+          "description_metrics": {
+            "chars": 458,
+            "bytes": 458,
+            "words": 76,
+            "lines": 1,
+            "estimated_tokens": 115
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 2413,
+            "bytes": 2425,
+            "words": 333,
+            "lines": 70,
+            "estimated_tokens": 607
+          },
+          "directory": "skills/github-stars",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 1,
+            "bytes": 5718
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 122
+        },
+        {
+          "kind": "skill",
+          "name": "nextjs-upgrade",
+          "path": "skills/nextjs-upgrade/SKILL.md",
+          "version": "1.0.1",
+          "description": "Assess and upgrade a Next.js project after resolving the target release from current official documentation. Includes tested automation and breaking-change guidance for the Next.js 15 to 16 migration. Use when the user says 'upgrade Next.js', 'migrate to Next.js 16', 'update my Next.js app', 'run the Next.js codemod', 'my Next.js version is outdated', or when a migration plan or baseline build comparison is needed.",
+          "description_metrics": {
+            "chars": 418,
+            "bytes": 418,
+            "words": 63,
+            "lines": 1,
+            "estimated_tokens": 105
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 6801,
+            "bytes": 6842,
+            "words": 889,
+            "lines": 227,
+            "estimated_tokens": 1711
+          },
+          "directory": "skills/nextjs-upgrade",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 3,
+            "bytes": 23605
+          },
+          "identity_path_bytes": 126
+        },
+        {
+          "kind": "skill",
+          "name": "perf-audit",
+          "path": "skills/perf-audit/SKILL.md",
+          "version": null,
+          "description": "Run local performance audits on a project without network calls. This skill should be used when the user says 'audit performance', 'check bundle size', 'find large images', 'check for heavy dependencies', 'run a perf audit', 'how big is my bundle', 'optimize images', 'find oversized assets', or before any performance optimization work. Also use when an agent needs baseline metrics before making changes. All scripts output structured JSON to stdout.",
+          "description_metrics": {
+            "chars": 452,
+            "bytes": 452,
+            "words": 69,
+            "lines": 1,
+            "estimated_tokens": 113
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 1743,
+            "bytes": 1743,
+            "words": 239,
+            "lines": 61,
+            "estimated_tokens": 436
+          },
+          "directory": "skills/perf-audit",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 0,
+            "bytes": 0
+          },
+          "scripts": {
+            "files": 4,
+            "bytes": 13216
+          },
+          "identity_path_bytes": 118
+        },
+        {
+          "kind": "skill",
+          "name": "shadscan",
+          "path": "skills/shadscan/SKILL.md",
+          "version": "1.0.0",
+          "description": "This skill should be used when the user asks to \"audit my shadcn app\", \"run shadscan\", \"improve my shadscan score\", \"raise my shadscan grade\", \"fix accessibility/states/forms regressions in my shadcn components\", or \"add a shadscan CI gate\". Drives the shadscan static analyzer (`npx @shadscan/cli`) through an audit \u2192 fix \u2192 re-score loop against shadcn React components, and wires it into CI as a score gate.",
+          "description_metrics": {
+            "chars": 409,
+            "bytes": 413,
+            "words": 65,
+            "lines": 1,
+            "estimated_tokens": 104
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 0,
+            "bytes": 0,
+            "words": 0,
+            "lines": 0,
+            "estimated_tokens": 0
+          },
+          "body_metrics": {
+            "chars": 4915,
+            "bytes": 4955,
+            "words": 723,
+            "lines": 111,
+            "estimated_tokens": 1239
+          },
+          "directory": "skills/shadscan",
+          "source": "authored",
+          "symlink_target": null,
+          "claude_implicit": true,
+          "codex_implicit": true,
+          "references": {
+            "files": 1,
+            "bytes": 6784
+          },
+          "scripts": {
+            "files": 0,
+            "bytes": 0
+          },
+          "identity_path_bytes": 114
+        }
+      ],
+      "agents": [
+        {
+          "kind": "agent",
+          "name": "designer",
+          "path": "agents/designer.md",
+          "version": "1.0.23",
+          "description": "UI and interface design agent. Use this agent when the user asks to \"design a component\", \"create UI\", \"style a page\", \"set up shadcn\", \"implement dark mode\", \"review UI accessibility\", \"create a mockup\", \"design a game HUD\", \"build a TV app interface\", or \"add controller navigation\". Covers design systems, ten-foot UI, and Pencil mockups. Not for performance work (use optimizer) or 3D scenes (use creative-developer).",
+          "description_metrics": {
+            "chars": 421,
+            "bytes": 421,
+            "words": 65,
+            "lines": 1,
+            "estimated_tokens": 106
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 544,
+            "bytes": 544,
+            "words": 26,
+            "lines": 1,
+            "estimated_tokens": 136
+          },
+          "body_metrics": {
+            "chars": 33213,
+            "bytes": 33363,
+            "words": 4261,
+            "lines": 779,
+            "estimated_tokens": 8341
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "mobile",
+          "path": "agents/mobile.md",
+          "version": "1.1.15",
+          "description": "Mobile development specialist. Expo and React Native are the house default, with Swift, Kotlin, and Flutter expertise. Use this agent when the user asks to \"build an Expo app\", \"build a React Native screen\", \"add biometric login to my iOS app\", \"set up Flutter navigation\", or \"fix this Android performance issue\". Not for web frontend (use nextjs) or visual UI design (use designer).",
+          "description_metrics": {
+            "chars": 384,
+            "bytes": 384,
+            "words": 63,
+            "lines": 1,
+            "estimated_tokens": 96
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 10404,
+            "bytes": 10413,
+            "words": 1331,
+            "lines": 224,
+            "estimated_tokens": 2604
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "nextjs",
+          "path": "agents/nextjs.md",
+          "version": "1.1.12",
+          "description": "Next.js and React specialist following Vercel best practices with Bun and Biome. Use this agent when the user asks to \"build a Next.js page\", \"fix this React 19 issue\", \"set up Turbopack\", \"migrate to async APIs\", or \"upgrade to Next.js 16\". Not for React Native (use mobile) or visual component design (use designer).",
+          "description_metrics": {
+            "chars": 318,
+            "bytes": 318,
+            "words": 53,
+            "lines": 1,
+            "estimated_tokens": 80
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 39106,
+            "bytes": 39407,
+            "words": 5347,
+            "lines": 1144,
+            "estimated_tokens": 9852
+          }
+        },
+        {
+          "kind": "agent",
+          "name": "optimizer",
+          "path": "agents/optimizer.md",
+          "version": "1.2.22",
+          "description": "Performance specialist for profiling, bundle analysis, Core Web Vitals, and image optimization. Use this agent when the user asks to \"fix our LCP\", \"reduce bundle size\", \"profile this bottleneck\", \"make animations less janky\", \"optimize these images\", or \"run a full performance audit\" \u2014 especially with a constraint to preserve the existing design. Not for visual redesign (use designer) or security review (use code-auditor).",
+          "description_metrics": {
+            "chars": 427,
+            "bytes": 429,
+            "words": 63,
+            "lines": 1,
+            "estimated_tokens": 108
+          },
+          "example_count": 0,
+          "tools_metrics": {
+            "chars": 95,
+            "bytes": 95,
+            "words": 12,
+            "lines": 1,
+            "estimated_tokens": 24
+          },
+          "body_metrics": {
+            "chars": 13952,
+            "bytes": 13997,
+            "words": 1772,
+            "lines": 349,
+            "estimated_tokens": 3500
+          }
+        }
+      ],
+      "commands": []
+    }
+  ]
+}

@@ -1,7 +1,4 @@
 interface:
   display_name: "Orchestrator"
-  short_description: "Coordinate native agents, Grok workers, and Fable advice"
-  default_prompt: >-
-    Use $core:orchestrator to keep the current main agent in control
-    while routing specialist work, bounded implementation, and independent
-    advice.
+  short_description: "Wrap cheaper workers in visible native controllers"
+  default_prompt: "Use $orchestra:orchestrator to keep the current main agent in control, wrap cheaper implementation workers in visible native controllers, use native specialists for evidence and review, and add independent advice only when needed."

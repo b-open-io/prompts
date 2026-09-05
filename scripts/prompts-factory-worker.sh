@@ -2,18 +2,33 @@
 set -euo pipefail
 
 mode="${1:-exec}"
-# Required configuration. No defaults: a wrong checkout or reviewer must fail
-# here, not open a promotion PR against the wrong repository.
-repo_dir="${BOPEN_PROMPTS_FACTORY_REPO_DIR:?set BOPEN_PROMPTS_FACTORY_REPO_DIR to the worker checkout}"
-reviewer="${BOPEN_PROMPTS_FACTORY_REVIEWER:?set BOPEN_PROMPTS_FACTORY_REVIEWER to the GitHub login that approves promotion}"
-factory_state_dir="${BOPEN_PROMPTS_FACTORY_STATE_DIR:-${HOME}/.prompts-factory/loop}"
+# LoopTop registration (/factory-init) writes loop.json into the state dir.
+# Everything the worker needs comes from that manifest and from the gh login
+# that runs it, so there is nothing to configure by hand.
+factory_state_dir="${HOME}/.prompts-factory/loop"
+manifest_file="$factory_state_dir/loop.json"
 state_file="$factory_state_dir/state.json"
 ledger_file="$factory_state_dir/ledger.jsonl"
 ledger_written=no
 lock_created=no
 current_step="startup"
 
-mkdir -p "$factory_state_dir"
+if [[ ! -f "$manifest_file" ]]; then
+  echo "NOT_REGISTERED: $manifest_file is missing. Run /factory-init in the prompts checkout to register this loop with LoopTop." >&2
+  exit 2
+fi
+
+repo_dir="$(python3 - "$manifest_file" <<'PY'
+import json, sys
+manifest = json.load(open(sys.argv[1], encoding="utf-8"))
+repo_dir = manifest.get("repoDir")
+if not isinstance(repo_dir, str) or not repo_dir:
+    sys.exit("loop.json has no repoDir; re-run /factory-init")
+print(repo_dir)
+PY
+)"
+[[ -d "$repo_dir/.git" ]] || { echo "BAD_REPO_DIR: $repo_dir from loop.json is not a git checkout" >&2; exit 2; }
+reviewer="$(gh api user --jq .login)"
 
 ledger() {
   local rc="$1" result="$2" ref="$3" detail="$4"
@@ -92,7 +107,8 @@ echo "$$" > "$factory_state_dir/.lock/pid"
 current_step="repository sync"
 cd "$repo_dir"
 repo_slug="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
-git fetch origin dev master --quiet
+default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
+git fetch origin dev "$default_branch" --quiet
 
 if [[ "$mode" == "maintenance" ]]; then
   current_step="maintenance gate"
@@ -109,12 +125,12 @@ fi
 
 current_step="promotion PR"
 dev_sha="$(git rev-parse origin/dev)"
-number="$(gh pr list --repo "$repo_slug" --base master --head dev --state open --json number --jq '.[0].number // empty')"
+number="$(gh pr list --repo "$repo_slug" --base "$default_branch" --head dev --state open --json number --jq '.[0].number // empty')"
 if [[ -z "$number" ]]; then
-  gh pr create --repo "$repo_slug" --base master --head dev \
+  gh pr create --repo "$repo_slug" --base "$default_branch" --head dev \
     --title "Promote tested dev changes" \
     --body "This standing promotion PR contains changes that passed through dev. Every update resets the 24-hour cooling period and requires a fresh /approve comment. Required checks must be green before promotion."
-  number="$(gh pr list --repo "$repo_slug" --base master --head dev --state open --json number --jq '.[0].number')"
+  number="$(gh pr list --repo "$repo_slug" --base "$default_branch" --head dev --state open --json number --jq '.[0].number')"
 fi
 
 last_notified="$(python3 - "$state_file" <<'PY'

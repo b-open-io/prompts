@@ -53,6 +53,7 @@ function isPlanSelections(body: unknown): body is PlanSelections {
     return (
       typeof plugin.name === "string" &&
       typeof plugin.installPlugin === "boolean" &&
+      typeof plugin.uninstallPlugin === "boolean" &&
       Array.isArray(plugin.checks) &&
       plugin.checks.every((c) => typeof c === "string") &&
       typeof plugin.hooks === "object" &&
