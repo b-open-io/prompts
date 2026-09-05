@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.15
+version: 0.0.16
 description: >-
   Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has
   not been built. Use for "make a visual proposal", "present these options visually", "diagram
@@ -16,13 +16,15 @@ options space, or a plan that has NOT been built yet, so a reviewer — often
 someone with no prior context, sometimes a friend or an external maintainer —
 can understand it, weigh it, and decide. The deliverable is a **single
 self-contained, theme-aware HTML page**, published as an Artifact when the
-Artifact tool is available (default-private; the user shares it), otherwise
-written locally and opened in the browser.
+Artifact tool is available (default-private; the user shares it), or saved locally
+and delivered through BitPlan when a durable or shareable plan is wanted.
 
-When the optional `artifact-design` skill is installed, load it before writing
-the page for additional craft guidance. Do not block when it is unavailable;
-apply the self-contained, theme, layout, and accessibility requirements in this
-skill directly. This skill governs the *content and stance* of a proposal.
+Use this skill's bundled [design system](references/design-system.md) for every
+page, whether delivered locally, as an Artifact, or through BitPlan. It integrates
+BitPlan's reading layout and handoff conventions with this skill's advocacy,
+judging, CEO call, and decision tree. BitPlan owns plan discovery and organization;
+keep the proposal itself focused on one document, without a left proposals menu.
+Load the separate BitPlan skill only for wallet, hosting, and sharing operations.
 
 ## The three rules that make or break a proposal
 
@@ -119,11 +121,16 @@ per-role word budgets, and the drop-in agent brief live in
 [references/plain-language.md](references/plain-language.md) — read it before
 you dispatch any agent or write any page copy.
 
-### Every decision becomes a complete questionnaire
+### Every unresolved decision becomes a complete questionnaire
 
 Inventory every unresolved choice that changes scope, architecture, behavior,
 rollout, risk, or follow-up work. Give each one a selectable question in **Your
 call**. Do not leave a blocking choice only in prose or under Open questions.
+
+Offer two to four distinct substantive options plus **Unsure** for each real
+question, including the CEO selector. Keep option cards neutral; BitPlan's
+Recommended badge does not apply here. Attributed judge and CEO recommendations
+remain in their own sections. Do not preselect an answer.
 
 Each option explains, in 2–4 short sentences:
 
@@ -131,6 +138,16 @@ Each option explains, in 2–4 short sentences:
 2. what it enables;
 3. its cost or risk; and
 4. whether it is reversible and what follow-up it creates.
+
+For **Unsure**, name the next evidence check or clarification, who will do it,
+and which dependent work waits. Unsure is a request to resolve uncertainty, not
+agreement with the CEO or permission to pick silently. Distinguish it from an
+unanswered question in the response. Add optional notes for constraints or a
+choice the listed options miss.
+
+When all decisions are settled, replace the questionnaire with a copyable
+implementation brief: repository, agreed scope, constraints, ordered steps, and
+observable done conditions. Do not manufacture choices or reopen settled ones.
 
 Give enough detail for the reviewer to predict the consequence without a
 follow-up. Stop before restating the implementation. If a question is
@@ -163,7 +180,7 @@ statement.
 
 ## Multi-agent advocacy — opposing representatives (the DEFAULT for real decisions)
 
-When a proposal's core is a **key decision between competing options** (or a
+When a proposal's core is an **unresolved key decision between competing options** (or a
 series of them), a panel of advocates is the **default treatment, not an
 add-on** — do it automatically, without being asked. The strongest neutrality
 comes not from one author trying to be even-handed, but from **giving each
@@ -303,8 +320,9 @@ business's vantage, not the author editorializing, and the human still overrides
 Present his call as a distinct **final section** with his avatar, name, and role:
 his decision stated plainly, one or two sentences of business/user reasoning, and
 **the single thing that would change his mind.** The reviewer's Agree /
-Agree-with-caveats / Disagree control on this call is the required CEO selector in
-the interactive choices (below).
+Agree-with-caveats / Disagree / Unsure control is required while this call awaits
+the reviewer's decision. Record an already accepted call in the implementation
+brief instead of asking again.
 
 **Show the agents — avatar, name, role.** When advocates or judges appear, give
 each a real identity: their avatar, name, and one-line role on the card that
@@ -371,23 +389,34 @@ Adapt to the subject — not every section always applies — but the usual spin
    bench**, and **CEO's final call** live (the standard flow above).
 6. **Architecture** — how it's put together if adopted.
 7. **Evidence** — what's confirmed vs open (cite the sources).
-8. **Roadmap / plan** — sequenced steps, dependencies. Number only if it's a
-   real sequence.
+8. **Roadmap / plan** — sequenced steps, dependencies, where work happens,
+   and a concrete **Done when** check per step. Separate settled decisions,
+   unresolved choices, and deferred work with its tracking issue.
 9. **Open questions** — what still needs deciding, each with the trade-off.
 10. **Your call** — selectable option cards for every decision + a copy-response
     button, so the reviewer answers in-page and pastes a clean, versioned reply
     back to the agent. Each option states its outcome, benefit, cost or risk,
     reversibility, and follow-up. Always includes the Agree /
-    Agree-with-caveats / Disagree control on the CEO's final call. See
+    Agree-with-caveats / Disagree / Unsure control when a CEO call awaits a decision. See
     [references/interactive-choices.md](references/interactive-choices.md) for the
     drop-in component (CSS + markup + copy script).
-11. **Archive menu** — a left list of other proposals already on disk. Copy
-    [examples/archive-nav.html](examples/archive-nav.html). Fill `window.VP_ARCHIVE`
-    from `scripts/list-proposals.sh`. Local rows copy agent instructions.
-    published rows (`data-vp-url` https) are real links. See
-    [references/archive-nav.md](references/archive-nav.md).
 
-## Craft (via artifact-design)
+## Decision tree
+
+Show a compact decision tree when choices depend on earlier answers or a judge's
+flip-condition. Start with the upstream choice, label branches with the same
+question and option IDs used in **Your call**, and end with the resulting scope,
+cost or risk, and next action. Include an Unsure branch leading to a named
+check. A tree explains consequences; it does not choose for the reviewer.
+
+Keep independent questions separate instead of inventing a branching sequence.
+Mark conditional questions with their prerequisite. Inactive branches must emit
+“not applicable” with the reason, never a stale answer from another path. Keep
+conditions readable with scripts off; JavaScript can enhance the presentation.
+If selections conflict with each other or with agreement to the CEO's call,
+show that conflict in the response for resolution before dependent work begins.
+
+## Craft
 
 - Self-contained: inline all CSS/JS, embed assets as data URIs, no external
   requests (the Artifact CSP blocks them). Diagrams are SVG/Canvas, not `<img>`.
@@ -401,9 +430,13 @@ Adapt to the subject — not every section always applies — but the usual spin
   `data-theme` toggle that overrides both ways. **SVG paint via CSS classes or
   `style`, never `fill="var(--x)"` presentation attributes — `var()` does not
   resolve there** and the diagram renders black.
-- Type carries it: pair a display and a body/utility face; keep prose near 65ch;
-  a subject-true monospace for any code/technical material.
-- Ground the palette and vocabulary in the subject's own world.
+- Use the bundled [BitPlan-aligned design system](references/design-system.md):
+  a centered reading column, system sans typography, warm neutral surfaces,
+  restrained rust accent, thin rules, and compact cards. Use the same tokens
+  for diagrams, advocates, judges, the CEO, and questionnaire controls.
+- Keep required content and the response readable with scripts off. Use SVG for
+  diagrams that must remain visible without JavaScript. Copy buttons enhance a
+  visible, manually selectable response rather than being its only access.
 - Respect `prefers-reduced-motion`; give focus a visible state; no horizontal
   body scroll (wide diagrams/tables get their own `overflow-x: auto`).
 
@@ -417,20 +450,12 @@ document instead of the problem, and sentences that carry two ideas, hide their
 actor, or argue with an adjective. Fix what fails, then publish.
 
 Save the page at `docs/proposals/<slug>.html` in the project. Keep that slug
-stable across revisions of the same proposal. Then list every proposal this
-session can see and inline the archive menu:
-
-```bash
-bash scripts/list-proposals.sh --current <slug> [extra-workspace-root ...]
-```
-
-Pass Claude `--add-dir` folders, extra Grok/Codex workspace roots, or
-`BOPEN_PROPOSAL_ROOTS`. Paste the JSON into `window.VP_ARCHIVE`. Copy
-[examples/archive-nav.html](examples/archive-nav.html) into a `.vp-shell`
-wrapper. The browser cannot scan the disk. An Artifact also cannot open a
-sibling file. Local rows are copy buttons: they copy instructions that
-ask the agent to open that path. See
-[references/archive-nav.md](references/archive-nav.md).
+stable across revisions of the same proposal. Include the repository, relevant
+issue or project, intended reader, draft version, and date in compact metadata.
+Use repository-relative paths or source links in the document, not local absolute
+paths. Keep secrets and private reader links out of both the HTML and copied
+responses. Identify the response by title, version, and a non-secret plan ID or
+origin (or “unpublished”), rather than copying the browser URL.
 
 Choose the delivery surface deliberately:
 
@@ -454,15 +479,21 @@ Choose the delivery surface deliberately:
 - **Local file** — use when the page should not leave the machine.
 
 For an Artifact, use the same file path, a one-line `description`, a stable
-subject `favicon`, and a version `label`. After a host returns an `https://`
-URL, stamp it on the saved file as
-`data-vp-url="https://…"`, re-run `list-proposals.sh`, and replace
-`window.VP_ARCHIVE` so the menu can link that row. Redeploy the SAME file
-path to keep the URL stable across revisions; only mint a new URL for a
-genuinely different proposal. Remind the user it's private until they
-share it from the page's share menu.
+subject `favicon`, and a version `label`. Redeploy the same path across revisions;
+create a new URL only for a different proposal. Remind the user it is private
+until they share it. Keep plan lists and navigation in BitPlan rather than
+embedding other proposals or their locations into the document.
+
+Before delivery, verify both themes, a narrow viewport, keyboard selection,
+Unsure, unanswered and conditional responses, notes, clipboard failure, and the
+scripts-off response. Check that every plan step has a concrete “Done when”
+condition and every unresolved choice appears in the handoff.
 
 ## Iterating
+
+On later drafts, add a short **What changed since the last draft** section
+explaining the changes and why. Keep settled decisions visible and update the
+handoff, decision tree, and done conditions together.
 
 Proposals get revised as decisions settle. When the user changes an option's
 framing, flattens a decision, or adds facts, edit the same file and republish to
