@@ -12,6 +12,8 @@ Always capture the final message and structured events:
 - `--json` — emit JSONL events on stdout for monitoring
 - `codex exec resume <session>` — continue the same session with a follow-up
 
+For Coordinator’s one corrective re-dispatch, prefer `codex exec resume` with the same model pin and sandbox rather than starting a fresh session.
+
 Redirect the full stream to a log. Demand the shared final report. Verify the
 actual model and effort from runtime metadata, not the worker's self-description.
 

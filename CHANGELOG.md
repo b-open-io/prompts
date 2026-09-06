@@ -15,7 +15,6 @@ manifests share the same release version.
   work to Coordinator and stays read-only. Claude host guide notes auto-mode
   classifier blocks on Workflow-embedded `codex exec`.
 
-
 ### Added
 
 - `brand-rep:schedule-social-post` 1.0.0 teaches any agent harness without
