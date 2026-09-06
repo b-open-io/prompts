@@ -1,6 +1,6 @@
 ---
 name: advisor
-version: 0.0.8
+version: 0.0.10
 description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
@@ -12,13 +12,18 @@ description: >-
 
 Use an advisor for independent judgment. The advisor never edits, merges,
 commits, ships, or makes the final decision. Use Coordinator for implementation
-workers and Orchestrator when one task combines workers, specialists, and an
-advisor.
+workers; it also composes native specialists and this advisor into one
+workflow when a task needs all three.
 
 For a strong general-purpose advisor, recommend `gpt-6-astra` through the
 Codex CLI from any host with shell access, including Claude Code, Codex,
 Grok Build, and OpenCode. Honor an explicit model or channel preference. See
 [codex-cli.md](references/channels/codex-cli.md) for preflight and dispatch.
+
+If the user wants Astra or another Codex model to build rather than advise,
+route through Coordinator. Load
+[../coordinator/references/workers/codex.md](../coordinator/references/workers/codex.md).
+Advisor stays read-only; do not dump worker CLI recipes here.
 
 ## When to consult
 

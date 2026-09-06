@@ -138,6 +138,12 @@ post-merge cleanup belongs to the main alone.
 - The repository's build system is part of the product. A worker must not swap
   bundlers, replace libraries with shims, or remove fonts, telemetry, assets, or
   tests to make its sandbox green.
+- Preflight the worker sandbox against every path and command the spec names:
+  reference repositories the worker must read, temp directories it must write
+  to, `git branch --show-current` or other read-only git commands the contract
+  expects it to run, and package-manager caches. A spec that instructs a
+  command the sandbox denies produces a silent early exit on some lanes, not a
+  visible error.
 
 Keep useful main-seat work moving while workers run. A timeout, quota error, or
 dead process is infrastructure failure; retry or explicitly reroute the same
@@ -146,8 +152,10 @@ spec.
 ## Review adversarially
 
 The worker's final report is a claim, not proof. Review is independent and
-read-only: the reviewer inspects the diff and never edits. Inspect the actual
-diff and:
+read-only: the reviewer inspects the diff and never edits. An exit code of 0
+is not a terminal-success signal by itself; require the FINAL REPORT section
+in the captured log and check that same log for permission rejections before
+trusting a clean exit. Inspect the actual diff and:
 
 - confirm every edit is inside the allowed file set
 - inspect package scripts, lockfiles, build config, CI, containers, and
