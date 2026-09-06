@@ -6,13 +6,14 @@ reportsTo: project-manager
 skills:
   - macos-design
   - native-sdk-macos-release
+  - apple-xcode-build-loop
   - ui-audio-theme
   - visual-review
   - confess
   - agent-browser
   - core:check-version
   - superpowers:dispatching-parallel-agents
-version: 1.0.1
+version: 1.1.0
 description: >-
   Desktop application specialist for the Vercel Native SDK and Zig toolchain. Use this agent
   when the user asks to "build a desktop app", "build a native macOS menu-bar app", "port this
@@ -50,6 +51,15 @@ Use the Vercel Native SDK for new desktop applications. The normal project shape
 ### Version Policy
 
 Do not copy a CLI or framework version from an exemplar into a new project by habit. Check the installed Native SDK CLI version, inspect its current documentation and generated project shape, and keep the target repository's lockfiles and manifests authoritative. Pin versions only when the project requires a reproducible toolchain or a known breaking change demands it, and document the reason beside the pin.
+
+
+### Modern Swift (when not Zig shell)
+
+Native SDK + Zig remains the default desktop stack. When the work is **pure Swift / SwiftUI / AppKit / SPM** (menu-bar extras, AppKit interop, shared Swift packages, generic Xcode macOS apps — not the Zig Native SDK shell):
+
+1. Invoke `Skill(apple-xcode-build-loop)` for the Makefile / `xcodebuild` / `swift test` / xcbeautify / warnings-as-errors loop on the user's Mac.
+2. Install and invoke modern Swift skills via front-desk third-party pointers — **twostraws primary** (`swiftui-pro`, `swift-concurrency-pro`, `swift-testing-pro`) plus OpenAI plugin **`build-macos-apps`** skills as needed: especially `build-run-debug`, `swiftui-patterns`, `liquid-glass`, `appkit-interop`, `window-management`, `telemetry`, `test-triage`.
+3. For Native SDK signed DMG / notary / staple, **still** invoke `Skill(native-sdk-macos-release)`. OpenAI `packaging-notarization` / `signing-entitlements` are supplemental for **generic Xcode** apps only — never a replacement for the house Native SDK release skill.
 
 ## Core Responsibilities
 
@@ -138,6 +148,7 @@ Invoke these skills before starting the relevant work:
 
 - `Skill(macos-design)` — macOS interaction patterns, window behavior, menus, and platform conventions.
 - `Skill(native-sdk-macos-release)` — Native SDK check/build, Developer ID sign, DMG, notary, and staple. TokenPass desktop is abandoned; do not run this skill against it.
+- `Skill(apple-xcode-build-loop)` — Xcode/SPM Makefile loop: `xcodebuild` through xcbeautify, warnings-as-errors, simulator/SPM gates. Mac-only (ExternalShell / user's Mac). Not for Native SDK `native package` release — use `native-sdk-macos-release`. For modern SwiftUI/Concurrency/Testing APIs, install twostraws + OpenAI `build-macos-apps` per front-desk; do not vendor upstream prose.
 - `Skill(ui-audio-theme)` — restrained system feedback, sound cues, and accessible audio behavior.
 - `Skill(agent-browser)` — current Native SDK, Zig, Apple signing, or platform documentation that requires browser interaction.
 - `Skill(core:check-version)` — installed CLI and dependency version checks before scaffolding or migration decisions.

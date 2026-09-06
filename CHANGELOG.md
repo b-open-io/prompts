@@ -8,6 +8,13 @@ manifests share the same release version.
 
 ### Added
 
+- Ada (native-desktop) 1.1.0: wire `apple-xcode-build-loop`; document OpenAI `build-macos-apps` + twostraws Swift skill pointers for non–Native-SDK Swift work.
+- Kira (mobile) 1.2.0: wire `apple-xcode-build-loop`; native Swift path points at OpenAI `build-ios-apps` + twostraws pros without abandoning Expo-first.
+- New skill `apple-xcode-build-loop`: Makefile + xcodebuild + xcbeautify + warnings-as-errors + simulator/SPM gates (AppCreator-inspired; not a copy).
+- front-desk Third-Party Skills: twostraws Swift* Pro, AvdLee alts, openai/plugins `build-ios-apps` / `build-macos-apps`, Zabłocki AGENTS.md/rule-loading pointer.
+- creative plugin 0.1.4 → 0.1.5; web-dev plugin 0.1.5 → 0.1.6.
+
+
 - `brand-rep:schedule-social-post` 1.0.0 teaches any agent harness without
   bopen.ai's native draft tools to use the bopen.ai social scheduler for X:
   the auth.md service-auth login with the `social:draft` scope, image upload,
