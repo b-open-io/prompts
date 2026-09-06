@@ -14,7 +14,6 @@ manifests share the same release version.
 - front-desk Third-Party Skills: twostraws Swift* Pro, AvdLee alts, openai/plugins `build-ios-apps` / `build-macos-apps`, Zabłocki AGENTS.md/rule-loading pointer.
 - creative plugin 0.1.4 → 0.1.5; web-dev plugin 0.1.5 → 0.1.6.
 
-
 - `brand-rep:schedule-social-post` 1.0.0 teaches any agent harness without
   bopen.ai's native draft tools to use the bopen.ai social scheduler for X:
   the auth.md service-auth login with the `social:draft` scope, image upload,
@@ -1118,7 +1117,6 @@ Core 1.1.160, orchestra 0.1.22.
   for variance, and the three setups whose failures are indistinguishable from a
   routing miss.
 
-
 ## [1.1.123] - 2026-07-24
 
 ### Fixed
@@ -1138,7 +1136,6 @@ Core 1.1.160, orchestra 0.1.22.
   anything else here, no home in the sibling plugins, and no premium pack
   reference.
 
-
 ## [1.1.122] - 2026-07-24
 
 ### Changed
@@ -1146,7 +1143,6 @@ Core 1.1.160, orchestra 0.1.22.
 - Each module owns the routing cases that exercise it. Twelve cases covering
   relocated agents and skills moved out of the core suite into
   `modules/<name>/evals/`, leaving nine in core.
-
 
 ## [1.1.121] - 2026-07-24
 
@@ -1178,7 +1174,6 @@ Core 1.1.160, orchestra 0.1.22.
 `setup` and `visual-wayfinder` stay in core because Agent Master bundles both
 into the signed desktop app and resolves them at `skills/<name>`.
 
-
 ## [1.1.120] - 2026-07-24
 
 ### Fixed
@@ -1192,7 +1187,6 @@ into the signed desktop app and resolves them at `skills/<name>`.
 - Moved the five orchestration routing cases into the module, so each
   distribution owns the cases that exercise it.
 
-
 ## [1.1.119] - 2026-07-24
 
 ### Changed
@@ -1202,7 +1196,6 @@ into the signed desktop app and resolves them at `skills/<name>`.
   README, and the setup playground's pack catalog now name
   `bopen-orchestration`, `paperclip`, `product-skills`, or `clawnet` for the
   resources those plugins now own.
-
 
 ## [1.1.118] - 2026-07-24
 
@@ -1221,7 +1214,6 @@ into the signed desktop app and resolves them at `skills/<name>`.
 - Three agent-routing cases covering relocated agents are retired from the
   fixture, leaving 27.
 - Authored skills fall to 58 and agents to 28.
-
 
 ## [1.1.117] - 2026-07-24
 
@@ -1246,7 +1238,6 @@ into the signed desktop app and resolves them at `skills/<name>`.
 Plugin distributions are **modules**. `pack` stays reserved for the premium
 prompt packs sold on bopen.ai, which Agent Master manages.
 
-
 ## [1.1.116] - 2026-07-24
 
 ### Removed
@@ -1267,7 +1258,6 @@ prompt packs sold on bopen.ai, which Agent Master manages.
   through their new plugin prefixes.
 - Authored skills fall from 69 to 66; the model-visible startup surface reaches
   roughly 13,050 estimated tokens, down from ~25,705 before this work began.
-
 
 ## [1.1.115] - 2026-07-24
 
