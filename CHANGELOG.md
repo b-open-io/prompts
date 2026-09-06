@@ -6,7 +6,34 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Removed
+
+- Orchestra: removed the `orchestrator` skill. It had become a thin restatement
+  of `coordinator` (topology diagram, routing-decision framing, composition
+  pointers, and its two distinct failure rules — no silent CLI installs/global
+  config changes, and reconciling rather than ignoring advisor disagreement)
+  with no reference content of its own; every SKILL-MAP entry already routed
+  worker dispatch to `coordinator`. That content is now folded into
+  `coordinator/SKILL.md` and its eval suite, and `advisor/SKILL.md` no longer
+  points at `orchestrator`. README, the plugin-context architecture doc, and
+  the module inventory now point at `coordinator` instead.
+
 ### Changed
+
+- Orchestra 0.1.27 / Advisor 0.0.10 / Coordinator 0.0.19: fold verified
+  Muse-via-OpenCode dispatch lessons into
+  `coordinator/references/workers/opencode.md` (message positional must
+  precede `--file` or yargs swallows it as a path; non-interactive
+  `auto-rejecting` permission prompts end a run silently with exit 0 and no
+  FINAL REPORT; the verified `OPENCODE_CONFIG` permission block, including
+  keeping `git branch*` read access open; config is read only at process
+  start) and `coordinator/references/workers/muse.md` (OpenCode is the primary
+  route, not a fallback, when `muse` is not on PATH). Claude host guide adds
+  the auto-mode classifier's sensitivity to relaunch phrasing after a denied
+  permission, the `worktree` isolation git-repository requirement, and
+  `run_in_background` controller re-invocation. Dispatch contract adds
+  sandbox path/command preflight and treats a clean exit code as inconclusive
+  without a FINAL REPORT and a permission-rejection log check.
 
 - Orchestra 0.1.26 / Advisor 0.0.9 / Coordinator 0.0.18: add Astra
   (`gpt-6-astra`) as the Codex creative implementation worker (3D / animation /

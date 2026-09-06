@@ -147,7 +147,7 @@ front-desk agent.
 
 | Module | Contents |
 |---|---|
-| orchestration | coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, hammertime, claudex, codex-agent-setup; agent-builder |
+| orchestration | coordinator, advisor, wave-coordinator, software-factory, deploy-agent-team, hammertime, claudex, codex-agent-setup; agent-builder |
 | plugin-dev | agent-auditor, agent-onboarding, agent-decommissioning, benchmark-skills, plugin-settings, skill-publish, publish-request, npm-publish, statusline-setup; prompt-engineer, trainer |
 | review | visual-review, visual-proposal, visual-wayfinder, hunter-skeptic-referee, code-audit-scripts, free-roam-testing, wayfinder; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
 | web | frontend-performance, perf-audit, shadscan, create-next-project, nextjs-upgrade, charting, github-stars, generative-ui, chrome-cdp; designer, nextjs, optimizer, mobile |
@@ -157,9 +157,9 @@ front-desk agent.
 | research | x-research, x-tweet-fetch, x-tweet-search, x-user-lookup, x-user-timeline, persona, notebooklm; researcher, documentation-writer, executive-assistant |
 | public-agents | account-manager |
 
-`coordinator`, `advisor`, `orchestrator`, and `wave-coordinator` cite each other,
-which is the tightest cluster in the graph and makes orchestration the natural
-pilot. `design-game-ui` cites `ui-audio-theme`, keeping them together.
+`coordinator`, `advisor`, and `wave-coordinator` cite each other, which is the
+tightest cluster in the graph and makes orchestration the natural pilot.
+`design-game-ui` cites `ui-audio-theme`, keeping them together.
 
 **public-agents** is separated by audience rather than domain. Its personas
 answer strangers on a public surface, which justifies a tighter tool policy than

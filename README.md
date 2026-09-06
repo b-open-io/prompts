@@ -65,7 +65,7 @@ grok plugin install core@b-open-io --trust
 
 | Module | Contents |
 |---|---|
-| `orchestra` | coordinator, advisor, orchestrator, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
+| `orchestra` | coordinator, advisor, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
 | `plugin-kit` | agent lifecycle, benchmarks, plugin settings, publishing; prompt-engineer, trainer |
 | `review` | visual review and proposals, code audit scripts, Codex Security, Vercel Security Dashboard posture guidance, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
 | `web-dev` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection; designer, nextjs, optimizer, mobile |
@@ -839,21 +839,24 @@ Codex adapter IDs according to the current host:
 
 ### Orchestration: main seat, workers, advisor
 
-Use the `orchestrator` skill when the current Claude Code, Codex, Grok
+Use the `coordinator` skill when the current Claude Code, Codex, Grok
 Build, or OpenCode main should retain the plan, judgment, verification, and git ownership
 while other lanes do bounded work. Grok Build also ships a native `workflow`
 tool (Rhai scripts, `/workflows` dashboard). Codex and OpenCode do not — they
 sequence `codex exec` / `opencode run` dispatches from the caller.
 
 ```text
-Use $orchestra:orchestrator. Keep this session in the main seat, use native
+Use $orchestra:coordinator. Keep this session in the main seat, use native
 roster specialists for research and review, cheaper workers for bounded
 implementation, and an advisor only for read-only second opinions at
 commitment boundaries.
 ```
 
 The main model is always the model selected for the current session; the skill
-does not pin or rename it. The supporting skills divide responsibilities:
+does not pin or rename it. Invoking Coordinator is itself a routing decision —
+it composes native specialists, cheaper workers, and an optional advisor while
+leaving every final decision with the main session. The supporting skills
+divide responsibilities:
 
 - `coordinator` writes precise worker specs, assigns non-overlapping files,
   dispatches implementation, and requires acceptance reports. It loads one
@@ -863,6 +866,9 @@ does not pin or rename it. The supporting skills divide responsibilities:
   one corrective pass. The main runs the final checks and owns git. Bounded
   implementation defaults to the cheapest authorized capable lane; native
   specialists stay focused on evidence, review, testing, and domain judgment.
+  Advisor and Wave Coordinator are composed in place, only at a real decision
+  boundary or a fan-out that exceeds available host slots — Coordinator does
+  not duplicate their manuals.
 - `advisor` packages a narrow, read-only consult. It recommends `gpt-6-astra`
   through Codex CLI from Claude Code, Codex, Grok Build, OpenCode, or any host
   with shell access, with an explicit read-only sandbox and model pin. Override
@@ -872,10 +878,9 @@ does not pin or rename it. The supporting skills divide responsibilities:
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
   The skill loads only the selected channel guide and records the provider,
   model, authentication path, context sent, and proof that the intended
-  advisor ran. OpenCode consults use a permission-constrained child.
-- `orchestrator` composes native specialists, Coordinator, Advisor, and staged
-  waves while leaving final decisions with the main session. It delegates
-  harness-specific behavior to Coordinator's on-demand references.
+  advisor ran. OpenCode consults use a permission-constrained child. If the
+  user wants Astra (or another advisor model) to build rather than advise,
+  route to Coordinator's Codex worker guide instead.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
   edges, reject-back gates) before it runs. Staffing, isolation,
   concurrency, refusals, and the paste-back spec live on that canvas.

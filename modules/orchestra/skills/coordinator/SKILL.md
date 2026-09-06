@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.18
+version: 0.0.19
 description: Route bounded implementation from a capable main session to cheaper workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Astra, Muse, Grok, OpenCode, or native workflows.
 ---
 
@@ -10,9 +10,21 @@ Keep the current session in the main seat. The main owns the plan, interfaces,
 review, verification, and final decision. Workers implement bounded units; they
 do not own git or silently change the plan.
 
-For independent advice, use `advisor`. For a workflow that combines workers and
-an advisor, use `orchestrator`. For a fan-out larger than the available host
-slots, also load `wave-coordinator`.
+```text
+current main session
+├── native specialists: evidence, review, testing, domain expertise
+├── native worker-controllers: visible supervision in the host UI/workflow
+│   └── cheaper implementation workers: bounded code volume
+└── optional advisor: read-only opinion at a commitment boundary
+```
+
+Invoking Coordinator is itself a routing decision: spend the main model on
+judgment and route bounded implementation to the cheapest authorized worker
+without waiting for the user to say "cheap workers" or "model arbitrage."
+
+For independent advice at a real decision boundary, use `advisor`; do not
+consult by default. For a fan-out larger than the available host slots, also
+load `wave-coordinator`.
 
 ## Progressive loading
 
@@ -132,6 +144,10 @@ the provider.
 - Reject environment-driven workarounds such as replacing dependencies,
   changing bundlers, removing remote assets, or weakening tests.
 - Do not let a worker commit, push, or merge.
+- Do not install CLIs, change global configuration, or increase agent depth
+  without user authorization.
+- When an advisor was consulted, its disagreement with worker or review output
+  must be explained and reconciled with direct evidence, not ignored.
 
 ## Final report
 
