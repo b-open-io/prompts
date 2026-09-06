@@ -44,6 +44,12 @@ manifests share the same release version.
 
 ### Added
 
+- New skill `restraint` 0.1.0: YAGNI with a governor for any coding task — write
+  the least code that is still the right code. Ladder (required-or-speculative,
+  reuse, stdlib/native, installed dep, smallest correct change with the UI and
+  trust-boundary guard inside the rung), levels `off | lite | full (default) |
+  ultra` via `/restraint`, no in-code marker comments. Triggers on "restraint",
+  "don't over-build", "yagni", and bloat/boilerplate complaints.
 - Ada (native-desktop) 1.1.0: wire `apple-xcode-build-loop`; document OpenAI `build-macos-apps` + twostraws Swift skill pointers for non–Native-SDK Swift work.
 - Kira (mobile) 1.2.0: wire `apple-xcode-build-loop`; native Swift path points at OpenAI `build-ios-apps` + twostraws pros without abandoning Expo-first.
 - New skill `apple-xcode-build-loop`: Makefile + xcodebuild + xcbeautify + warnings-as-errors + simulator/SPM gates (AppCreator-inspired; not a copy).
