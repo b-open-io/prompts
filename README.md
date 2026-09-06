@@ -218,6 +218,7 @@ bunx skills add b-open-io/prompts --skill humanize
 bunx skills add b-open-io/prompts --skill linear-planning
 bunx skills add b-open-io/prompts --skill reinforce-skills
 bunx skills add b-open-io/prompts --skill remind
+bunx skills add b-open-io/prompts --skill restraint
 bunx skills add b-open-io/prompts --skill runtime-context
 bunx skills add b-open-io/prompts --skill setup
 bunx skills add b-open-io/prompts --skill visual-wayfinder
@@ -305,6 +306,7 @@ intentional.
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
 | `npm-publish` | Publish packages to npm from the synced default branch with changelog/version management and browser confirmation |
 | `perf-audit` | Run local performance audits without network calls |
+| `restraint` | Write the least code that is still the right code: YAGNI with a governor |
 | `shaders` | Custom shaders for Three.js and WebGL |
 | `shadscan` | Drive the shadscan analyzer to audit and raise a shadcn app's UI-fundamentals score, and gate it in CI |
 | `threejs-r3f` | Building Three.js and React Three Fiber projects |
