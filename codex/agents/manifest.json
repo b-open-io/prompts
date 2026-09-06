@@ -183,9 +183,9 @@
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
       "source_version": "1.1.15",
-      "source_hash": "sha256:52414cc3122a2bfa1c46fe8c4de818a3c63b9d45c88a4294ca3d085a6138d935",
+      "source_hash": "sha256:bbd45e8fba8c3943bb062d4ac5fc8c9372ec24bd51b8970530ede8b8feec0757",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:fb12dd64388dd1c5313e7ba4ff0c1d373fc81090b86e797e982b0a347a4921d9",
+      "generated_hash": "sha256:88db5bec9d17cea41f58ce61c0bd51d98039bf7f87168350dda55356a5989905",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true
@@ -215,10 +215,10 @@
     {
       "source_name": "mobile",
       "source_path": "modules/web-dev/agents/mobile.md",
-      "source_version": "1.1.15",
-      "source_hash": "sha256:b87a99639ea29d008a427266e21c8c7835215bd67df8b62518fa67d07cde3a18",
+      "source_version": "1.2.0",
+      "source_hash": "sha256:b33070d8021840c8cb14c9559e418089d039f1dd9f04e5b9cfda6e8da08ec28d",
       "generated_file": "bopen-mobile.toml",
-      "generated_hash": "sha256:6ad23bee13d1ff26a931a432df1c7ce8e270dee35625c623bcc7f0a6d3c858a7",
+      "generated_hash": "sha256:410ba52f61e36607948849eec7f0bc1edf41f63cefe623ef31518fc597783b8c",
       "agent_name": "bopen_mobile",
       "curated": false,
       "default_install": false
@@ -226,10 +226,10 @@
     {
       "source_name": "native-desktop",
       "source_path": "modules/creative/agents/native-desktop.md",
-      "source_version": "1.0.1",
-      "source_hash": "sha256:c497587f833b94b86d65bb17ce8e0108fe4544749abc75dcf7fc50a452ab4d3e",
+      "source_version": "1.1.0",
+      "source_hash": "sha256:d4bea2712ffb4b9bfcc7d2c75ee44845a0d02ba775278d87c5489d4da380c4d9",
       "generated_file": "bopen-native-desktop.toml",
-      "generated_hash": "sha256:3d12a75b3400c3f088f08bcf9ca2d0245ef570a3118005b9854b4c22336c27af",
+      "generated_hash": "sha256:d4272f1c5fe70ee889730017650afcf9382130684e7600ecc42eb1101edc5f89",
       "agent_name": "bopen_native_desktop",
       "curated": false,
       "default_install": false
