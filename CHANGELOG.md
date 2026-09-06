@@ -6,6 +6,27 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Added
+
+- `brand-rep:schedule-social-post` 1.0.0 teaches any agent harness without
+  bopen.ai's native draft tools to use the bopen.ai social scheduler for X:
+  the auth.md service-auth login with the `social:draft` scope, image upload,
+  thread creation as a `planned` post, the private review URL where the user
+  confirms, and the X split-carousel rules (two equal portrait tiles or three
+  1024×2048 slices, uploaded left to right). `scripts/bopen-social.sh` wraps
+  discovery, login, refresh, accounts, next-slot, upload, create, get, update,
+  delete, review-url, and open. `references/bopen-social-api.md` records the
+  endpoint contract and `references/x-carousel.md` the carousel brief for
+  Lisa. The skill icon is briefed in bopen-ai
+  (`docs/art-batches/2026-09-02-schedule-social-post.md`), Linear OPL-4363.
+
+### Changed
+
+- `social-media-manager` (Alex) 1.0.7 loads `brand-rep:schedule-social-post`
+  for harnesses outside bopen.ai chat, states the agent ceiling (`draft`,
+  `planned`) and the consent step before the login email, and points its
+  carousel section at the skill's reference. Bumped `brand-rep` to 0.1.9.
+
 ### Changed
 
 - Review plugin 0.1.16: updated `visual-proposal` to 0.0.16 with BitPlan's reading aesthetic, explicit
