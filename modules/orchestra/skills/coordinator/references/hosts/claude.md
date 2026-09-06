@@ -36,9 +36,18 @@ main is only the fallback when native child dispatch is unavailable.
 Load only the selected worker guide:
 
 - [Grok CLI](../workers/grok.md)
-- [Codex, Sol, or Luna](../workers/codex.md)
+- [Codex, Sol, Luna, or Astra](../workers/codex.md)
 - [Muse Code](../workers/muse.md)
 - [OpenCode CLI](../workers/opencode.md)
+
+### Auto-mode and Workflow embedding
+
+Claude Code's auto-mode classifier can block embedding `codex exec` (or other
+external CLI workers) inside Workflow scripts. When that happens, do not fight
+the classifier by encoding, renaming, or smuggling the command. Drive the Codex
+lane from the main session or from a native controller subagent that supervises
+the CLI outside the Workflow script body. Workflow remains fine for Claude-native
+agent/pipeline/parallel stages; external vendor CLIs stay supervised shell lanes.
 
 Do not assume an external CLI has the same tools, plugin context, filesystem
 permissions, or model as the Claude main. Apply the shared dispatch contract and

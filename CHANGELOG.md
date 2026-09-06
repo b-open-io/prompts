@@ -6,6 +6,16 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- Orchestra 0.1.26 / Advisor 0.0.9 / Coordinator 0.0.18: add Astra
+  (`gpt-6-astra`) as the Codex creative implementation worker (3D / animation /
+  gamification). Split raw `codex exec` recipes into
+  `coordinator/references/workers/cli-dispatch.md`. Advisor cross-links build
+  work to Coordinator and stays read-only. Claude host guide notes auto-mode
+  classifier blocks on Workflow-embedded `codex exec`.
+
+
 ### Added
 
 - `brand-rep:schedule-social-post` 1.0.0 teaches any agent harness without

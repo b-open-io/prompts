@@ -1,7 +1,7 @@
 ---
 name: coordinator
-version: 0.0.17
-description: Route bounded implementation from a capable main session to cheaper workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Muse, Grok, OpenCode, or native workflows.
+version: 0.0.18
+description: Route bounded implementation from a capable main session to cheaper workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Astra, Muse, Grok, OpenCode, or native workflows.
 ---
 
 # Coordinator
@@ -26,10 +26,12 @@ Do not read every harness guide. Load only the resources needed for this run:
    [Grok Build](references/hosts/grok.md), or
    [OpenCode](references/hosts/opencode.md).
 3. For each external worker actually selected, read only its guide:
-   [Codex / Sol / Luna](references/workers/codex.md),
+   [Codex / Sol / Luna / Astra](references/workers/codex.md),
    [Grok CLI](references/workers/grok.md),
    [Muse Code](references/workers/muse.md), or
    [OpenCode CLI](references/workers/opencode.md).
+   When dispatching raw Codex CLI, also load
+   [references/workers/cli-dispatch.md](references/workers/cli-dispatch.md).
 
 Example: a Claude main dispatching an OpenCode worker reads this file, the
 dispatch contract, the Claude host guide, and the OpenCode worker guide. It does
@@ -67,11 +69,12 @@ tool- or domain-bound judgment. Match that work against
 when no roster specialist fits. This native-first rule does not apply to routine
 implementation volume.
 
-External quality lanes are Grok and GPT-5.6 Sol. GPT-5.6 Luna at extra-high
-reasoning and Muse Spark 1.3 are cheap-volume choices. OpenCode is a portable
-lane whose provider and model must be pinned. Prefer an already authorized,
-configured cheap lane over a quality lane when both can satisfy the spec.
-Never infer or replace the user's current main model.
+External quality lanes are Grok, GPT-5.6 Sol, and GPT-6 Astra (3D / animation /
+gamification / creative implementation). GPT-5.6 Luna at extra-high reasoning
+and Muse Spark 1.3 are cheap-volume choices. OpenCode is a portable lane whose
+provider and model must be pinned. Prefer an already authorized, configured
+cheap lane over a quality lane when both can satisfy the spec. Never infer or
+replace the user's current main model.
 
 If the work has deterministic stages, loops, or voting, use a native workflow
 only when the current host guide says the primitive exists and the user opted
