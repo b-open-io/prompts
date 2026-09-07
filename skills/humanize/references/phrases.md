@@ -8,6 +8,9 @@
 - Sycophantic openers and collaborative closers
 - Decorative formatting and cutoff disclaimers
 
+Mannered flourish-for-statement substitutions are Core editorial check 5 in
+`SKILL.md`, not a phrase ban here.
+
 ## Throat-Clearing Openers
 
 These announce content instead of delivering it. Cut them when the next

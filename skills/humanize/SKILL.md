@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 1.0.12
+version: 1.0.13
 description: >-
   This skill should be used for human-facing prose — emails, docs, reports, posts, release notes,
   and commit messages — when the user asks to "humanize", "make this sound less AI", "de-AI
@@ -108,6 +108,12 @@ detail to satisfy a word count.
 For the full pattern catalog, read
 [references/structures.md](references/structures.md) when editing long-form,
 marketing, heavily formatted prose, or operational summaries.
+
+### 5. Reject mannered prose
+
+Apply this check to human-facing prose — marketing, social, articles, launch copy, and other reader-facing drafts. “A dial worth turning” and “earns its keep” illustrate the class; they are not an exhaustive ban list.
+
+> Mannered prose substitutes metaphor and flourish for direct statement. Instead of 'a parameter worth varying,' the mannered writer produces 'a dial worth turning.' Instead of 'this point still matters,' they write 'this point earns its keep.' The phrases exist to display the writer, not to convey the idea, and readers can tell. That is why mannered prose irritates: it makes the reader work harder so the writer can perform. It is also imprecise. Metaphors drag in connotations the writer did not choose and cannot control. The fix is to say what you mean. When a literal phrase is available, use it.
 
 ## Content-level checks
 
