@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 1.0.13
+version: 1.0.14
 description: >-
   This skill should be used for human-facing prose — emails, docs, reports, posts, release notes,
   and commit messages — when the user asks to "humanize", "make this sound less AI", "de-AI
@@ -109,7 +109,7 @@ For the full pattern catalog, read
 [references/structures.md](references/structures.md) when editing long-form,
 marketing, heavily formatted prose, or operational summaries.
 
-### 5. Reject mannered prose
+### 5. Mannered prose
 
 Apply this check to human-facing prose — marketing, social, articles, launch copy, and other reader-facing drafts. “A dial worth turning” and “earns its keep” illustrate the class; they are not an exhaustive ban list.
 
