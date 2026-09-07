@@ -6,6 +6,10 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- humanize 1.0.12 → **1.0.13**: Core editorial check **Reject mannered prose** (Anthropic block seated verbatim; no separate mannered-prose skill).
+
 ### Removed
 
 - Orchestra: removed the `orchestrator` skill. It had become a thin restatement
