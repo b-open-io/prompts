@@ -54,7 +54,7 @@ allow unrelated skills.
 The initial context snapshot is loaded once per session, with concurrent loads
 coalesced and failures retried. Browser intent and prompt routing remain per
 message. Disposal stops subsequent message hooks; tool safeguards continue to
-fail closed.
+deny unknown or malformed permissions.
 
 ## Update and uninstall
 
