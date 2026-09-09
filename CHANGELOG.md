@@ -8,6 +8,7 @@ manifests share the same release version.
 
 ### Changed
 
+- CLAUDE.md: mark **bsv-mcp** as shipped (npm `bsv-mcp`, https://bsvmcp.com/docs; wallet, explorer, ordinals via MCP Apps). `agent-master` and `gib` remain WIP.
 - humanize 1.0.13 → **1.0.14**: rename check 5 heading to **Mannered prose**.
 - humanize 1.0.12 → **1.0.13**: Core editorial check **Reject mannered prose** (Anthropic block seated verbatim; no separate mannered-prose skill).
 
