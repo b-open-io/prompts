@@ -69,7 +69,7 @@ seats and must not be silently omitted.
 | agent-builder | **Satchmo** | Agent architecture, multi-agent systems, AI SDKs | "build an agent", "agent workflow", "tool-calling" |
 | architecture-reviewer | **Kayle** | System design, large-scale refactoring | "review architecture", "refactor plan" |
 | audio-specialist | **Frames** | ElevenLabs audio, xAI image generation | "voiceover", "sound effects", "music" |
-| cartographer | **Leaf** | Maps, geospatial, MapLibre, deck.gl, tiles | "add a map", "marker clustering" |
+| cartographer | **Leaf** | Maps, geospatial, MapLibre, Google Maps, deck.gl, tiles | "add a map", "Places Autocomplete" |
 | code-auditor | **Jerry** | Security audits, vulnerability scanning | "security review", "audit code" |
 | consolidator | **Steve** | File cleanup, deduplication, organization | "clean up", "organize files", "consolidate" |
 | data | **Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |

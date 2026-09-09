@@ -17,6 +17,20 @@
       ]
     },
     {
+      "id": "direct-places-autocomplete",
+      "kind": "direct",
+      "prompt": "Add Places Autocomplete so the checkout address field suggests Google places as I type.",
+      "expected_skills": [
+        "cartographer"
+      ],
+      "acceptable_alternatives": [],
+      "forbidden_skills": [
+        "designer",
+        "nextjs",
+        "integration-expert"
+      ]
+    },
+    {
       "id": "direct-nextjs-page",
       "kind": "direct",
       "prompt": "Build a Next.js page for our pricing tiers using the existing layout.",

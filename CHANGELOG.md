@@ -6,6 +6,12 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Changed
+
+- Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
+  for Maps JS, Places, Routes, and Street View. Missing skill:
+  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.6.
+
 ### Removed
 
 - Orchestra: removed the `orchestrator` skill. It had become a thin restatement
