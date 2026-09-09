@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 1.0.14
+version: 1.0.15
 description: >-
   This skill should be used for human-facing prose — emails, docs, reports, posts, release notes,
   and commit messages — when the user asks to "humanize", "make this sound less AI", "de-AI
@@ -167,6 +167,10 @@ Describe the concrete edit: "Remove duplicate setup steps," "Correct the timeout
 default," or "Document the two supported authentication flows." Mention
 preservation only when it is itself the change being reviewed.
 
+Never write "fail closed", "fail-closed", "fail open", or "fail-open" in
+commits, PRs, or summaries. Say what happens: reject, deny, stop, treat as
+an error, allow, continue. See `references/phrases.md`.
+
 ## Modeling a named writer
 
 Model structure, never sentences. Extract a named concept, claim-shaped
@@ -205,7 +209,8 @@ annotations, or an edit summary.
 5. Remove unsupported significance, broader-trend claims, participial tails,
    invented consensus, and promotional praise.
 6. Replace inflated copulas and dense vocabulary clusters with plain language.
-   Retain exact technical uses and necessary hedges.
+   Retain exact technical uses and necessary hedges. Drop "fail closed" /
+   "fail open" slang; name the actual reject, deny, stop, allow, or continue.
 7. Check stable naming, false ranges, denigration, "nobody knows" claims, and
    hedged evaluation such as "worth noting."
 8. Read paragraph endings and sentence lengths as sequences. Break repetitive

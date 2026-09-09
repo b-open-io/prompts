@@ -467,7 +467,7 @@ clawnet publish without --on-chain can use a lighter gate: require a ticket in a
 ### 5.1 Linear as mandatory dependency
 
 If Linear is unavailable (network error, API outage, missing LINEAR_API_KEY):
-- Recommendation: fail closed for --on-chain publishes. Fail open (allow with warning) for git push to master. Rationale: git push to master is reversible via Vercel rollback; an unchecked on-chain BSV transaction is not.
+- Recommendation: deny `--on-chain` publishes. Allow `git push` to master with a warning. Rationale: git push to master is reversible via Vercel rollback; an unchecked on-chain BSV transaction is not.
 
 ### 5.2 Ticket lifecycle and hygiene
 

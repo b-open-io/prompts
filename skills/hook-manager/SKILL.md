@@ -98,9 +98,9 @@ for f in "$BOPEN_HOOKS_CONFIG" ./.claude/bopen-hooks.json ./.grok/bopen-hooks.js
 done
 
 # Prerequisites
-command -v jq || echo "jq missing — hooks fail open without it"
+command -v jq || echo "jq missing — hooks skip JSON parsing without it"
 command -v agent-browser || echo "agent-browser missing — agent-browser-solo falls back to native WebFetch"
-[ -n "$LINEAR_API_KEY" ] || echo "LINEAR_API_KEY unset — publish-gate fails closed on gated publishes"
+[ -n "$LINEAR_API_KEY" ] || echo "LINEAR_API_KEY unset — publish-gate denies gated publishes"
 command -v python3 || echo "python3 missing — hammertime and JSON escaping degrade"
 ```
 

@@ -191,8 +191,8 @@ Deep interprocedural analysis, runs as scheduled or on PRs. Invoke this skill fo
 
 Run `vercel security check --scope <TEAM> --project <PROJECT> --json
 --non-interactive --no-color`, keep the raw report private, and evaluate
-`.report` instead of the exit code because findings still exit 0. Fail closed
-on parse, permission, or unknown-check errors. Apply only approved Vercel
+`.report` instead of the exit code because findings still exit 0. Treat parse,
+permission, or unknown-check errors as a failed check. Apply only approved Vercel
 changes, then re-run the same scope. Paul owns triage and risk acceptance.
 
 ## Vercel Agent Resources
