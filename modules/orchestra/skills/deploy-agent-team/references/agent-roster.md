@@ -13,6 +13,7 @@ Full installed agent roster with `subagent_type` identifiers and the skills to m
 | **researcher** | `research:researcher` | sonnet | Libraries, APIs, docs, competitive analysis, web sources |
 | **nextjs** | `web-dev:nextjs` | sonnet | Next.js, React, Vercel, Turbopack, RSC, app router |
 | **native-desktop** | `creative:native-desktop` | sonnet | Native SDK, Zig, system WebViews, menu-bar apps, signed DMGs |
+| **cartographer** | `creative:cartographer` | sonnet | Maps, MapLibre, Google Maps Platform, geospatial |
 | **designer** | `web-dev:designer` | sonnet | UI components, game HUDs, TV shells, controller/remote focus, design systems, accessibility |
 | **agent-builder** | `orchestra:agent-builder` | opus | AI SDK v7 agents, tool-calling, durable runtime selection, conditional eve evaluation |
 | **database** | `dev-ops:database` | opus | Schema design, query optimization, PostgreSQL, Redis, Convex |
@@ -107,6 +108,15 @@ Always invoke `Skill(vercel-react-best-practices)` before writing any server com
 - `Skill(confess)` — invoke before completion to catch unsupported assumptions and missed release gates
 
 Use the Native SDK for new desktop applications. Treat Wails, Electron, and ElectroBun as migration sources only.
+```
+
+### cartographer
+
+```markdown
+## Your Available Skills
+- `Skill(google-maps-platform)` — Maps JS, Places, Routes, Street View. If missing: `npx skills add googlemaps/agent-skills`
+
+Default to MapLibre. Load the Google skill before writing Google Maps code.
 ```
 
 ### researcher

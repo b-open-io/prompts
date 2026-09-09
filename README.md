@@ -99,10 +99,11 @@ reaches the same scheduler through the auth.md API. Both ship here and need no
 extra install.
 | `core:front-desk` / `dev-ops:integration-expert` | Resend email | `npx skills add resend/resend-skills` |
 | `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
+| `creative:cartographer` (Leaf) | Google Maps Platform | `npx skills add googlemaps/agent-skills` |
 
 Those packages are not redistributed here. Corey Haines' `marketingskills` is
-MIT. Typefully and Resend publish their own skills — do not wrap their APIs
-in this repo.
+MIT. Typefully, Resend, and Google Maps Platform publish their own skills — do
+not wrap their APIs in this repo.
 
 ### Codex
 
