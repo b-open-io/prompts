@@ -146,7 +146,7 @@ assert_json "publish-gate comments request JSON" "$(cat "$CAPTURE_COMMENTS")"
 run_publish "claude" "clawnet publish --on-chain" "on_chain_ack"
 assert_exit "publish-gate on-chain ack allow" "0" "$HOOK_EXIT"
 
-# Missing API key on-chain fails closed
+# Missing API key on-chain denies the publish
 unset LINEAR_API_KEY
 input=$(jq -n --arg cwd "$ROOT" \
   '{tool_name:"Bash", tool_input:{command:"clawnet publish --on-chain"}, cwd:$cwd}')

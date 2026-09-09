@@ -147,7 +147,7 @@ def phase2_llm_evaluate(transcript_tail, rule):
     """Call Haiku to evaluate whether the rule actually triggered."""
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
-        return False  # No API key, can't evaluate — fail open
+        return False  # No API key, can't evaluate — do not block
 
     prompt = f"""You are a quality gate evaluating an AI assistant's response.
 
@@ -182,7 +182,7 @@ Answer with ONLY "yes" or "no". Nothing else."""
             answer = result["content"][0]["text"].strip().lower()
             return answer.startswith("yes")
     except Exception:
-        return False  # Fail open — don't block on API errors
+        return False  # don't block on API errors
 
 
 def main():

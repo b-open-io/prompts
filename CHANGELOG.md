@@ -8,6 +8,9 @@ manifests share the same release version.
 
 ### Changed
 
+- humanize 1.0.14 → **1.0.15**: never write "fail closed" / "fail open". Say
+  reject, deny, stop, allow, or continue. Removed that slang from the rest of
+  this repo.
 - CLAUDE.md: mark **bsv-mcp** as shipped (npm `bsv-mcp`, https://bsvmcp.com/docs; wallet, explorer, ordinals via MCP Apps). `agent-master` and `gib` remain WIP.
 - humanize 1.0.13 → **1.0.14**: rename check 5 heading to **Mannered prose**.
 - humanize 1.0.12 → **1.0.13**: Core editorial check **Reject mannered prose** (Anthropic block seated verbatim; no separate mannered-prose skill).

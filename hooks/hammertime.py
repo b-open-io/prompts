@@ -430,11 +430,11 @@ def phase2_haiku_evaluate(text, rule, pending_agents=0):
       - Sends a truncated slice of the assistant response (last 4000 chars) + rule text.
       - Does NOT recursively launch an advisor, subagent, or model loop.
       - Debug-logs when used so operators can audit verifier traffic.
-    Returns True if violated. Missing API key fails closed (treat as violated).
+    Returns True if violated. Missing API key is treated as a violation.
     """
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
-        debug_log("PHASE2: ANTHROPIC_API_KEY unset — failing closed (violated=True)")
+        debug_log("PHASE2: ANTHROPIC_API_KEY unset — treating as violated=True")
         return True
 
     debug_log(

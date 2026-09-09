@@ -5,6 +5,7 @@
 - Throat-clearing openers and filler transitions
 - Emphasis crutches and hollow qualifiers
 - Jargon substitutions and meta-commentary
+- Hard ban on fail-closed / fail-open slang
 - Sycophantic openers and collaborative closers
 - Decorative formatting and cutoff disclaimers
 
@@ -97,6 +98,23 @@ Replace with plain language.
 | Blue-sky thinking | Unconstrained ideas |
 | Synergize | Work together |
 | Boil the ocean | Do too much |
+
+## Hard ban: "fail closed" / "fail open"
+
+Never write these, including hyphenated and conjugated forms (`fail-closed`,
+`fails closed`, `failing closed`, `fail-open`, `fails open`). They hide
+whether the code stopped or continued. This is a ban, not a "review in
+context" item. The only allowed occurrence is this list.
+
+| Never write | Say what happens |
+|---|---|
+| fail closed / fail-closed / fails closed | reject, deny, stop, treat as an error, do not proceed |
+| fail open / fail-open / fails open | allow, continue, skip the check, do not block |
+
+- BAD: "Missing keys fail closed."
+- GOOD: "If the key is missing, treat the rule as violated."
+- BAD: "Hooks fail open without jq."
+- GOOD: "If jq is missing, the hook does not run."
 
 ## Filler Sentence Starters
 

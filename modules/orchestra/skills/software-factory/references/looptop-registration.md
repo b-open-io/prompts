@@ -62,7 +62,7 @@ loading the jobs, verify with `sfltool dumpbtm`: the `Name` and
 
 ## Runner obligations
 
-One pass per invocation; missing or malformed `state.json` fails closed. Check
+One pass per invocation; missing or malformed `state.json` is an error and the pass does not run. Check
 `paused` FIRST and exit 0 with a
 `"skipped"` ledger entry when paused; append a ledger line for every outcome
 (completed / error / skipped) with the real `rc`; append matching factory

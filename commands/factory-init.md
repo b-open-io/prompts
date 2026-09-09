@@ -81,7 +81,7 @@ Produce a written loop config (store it in the chosen state backend or a
   non-bypass worker credential is required before scheduling; otherwise leave
   the loop paused and manual. Do not create or change a repository rule without
   explaining it and getting authorization at the time of that mutation.
-- **Executable safety** — missing/malformed state fails closed; pin every model;
+- **Executable safety** — missing/malformed state is an error and the loop does not start; pin every model;
   enforce the configured iteration, retry, wall-clock, budget, and accept-rate
   breakers in code rather than merely writing them into config.
 - **Human artifacts** — if field 9 includes `gh pr create`, follow
