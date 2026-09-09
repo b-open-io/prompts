@@ -88,7 +88,7 @@ test('plain Bash and Skill stay broad while scoped disallowed rules remain narro
  expect(agent.permission.skill).toBeUndefined();
  expect(agent.permission.read).toBe('deny');
 });
-test('unsupported scoped metadata warns and fails closed',()=>{
+test('unsupported scoped metadata warns and denies unknown scopes',()=>{
  const root=fixture();
  writeFileSync(join(root,'agents/reviewer.md'),'---\ndescription: Unsupported scopes\ntools: Bash(git:legacy), Skill(), Read(./notes.md)\ndisallowedTools: Bash(git:legacy)\n---\nReview.');
  const catalog=loadCatalog([root]);

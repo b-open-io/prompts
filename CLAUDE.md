@@ -258,7 +258,7 @@ When users ask to see what changed, use `Skill(review:visual-review)` — it tur
 - **BigBlocks**: Bitcoin component library
 - **Sigma Identity**: OAuth 2.0 authentication system (auth.sigmaidentity.com)
 - **agent-master**: MCP server coordination (WIP)
-- **bsv-mcp**: Blockchain functionality exposure (WIP)  
+- **bsv-mcp**: Bitcoin SV MCP server (npm `bsv-mcp`, docs https://bsvmcp.com/docs) — wallet, explorer, ordinals via MCP Apps
 - **gib**: Git + blockchain version control (WIP)
 
 ## Command Management

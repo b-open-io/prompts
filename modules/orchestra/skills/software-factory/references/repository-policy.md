@@ -47,7 +47,7 @@ Factory initialization is complete only when the handoff records:
 
 - the bootstrap PR URL (never a direct default-branch commit)
 - live branch-policy check output and worker identity/capability
-- a valid paused `state.json` that the runner fails closed without
+- a valid paused `state.json`; without it the runner stops
 - explicit model pins for every lane
 - executable iteration, retry, wall-clock, budget, and accept-rate breakers
 - PR linter self-test and the repository's real required status names

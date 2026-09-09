@@ -18,8 +18,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 
 # Top-level error handling: never crash open on unexpected failures for gated cmds.
-# Non-gated commands always exit 0. Unexpected errors on gated paths fail closed
-# for on-chain and fail with deny for other publishes.
+# Non-gated commands always exit 0. Unexpected errors on gated paths deny
+# the publish for on-chain and for other publishes.
 # _PUBLISH_GATE_ACTIVE is set inside publish_gate_main(); as a `local` it is
 # still visible to this trap handler via bash's dynamic scoping whenever the
 # trap fires during that function's execution.
