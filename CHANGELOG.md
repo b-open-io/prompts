@@ -102,6 +102,14 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+## [1.1.164] - Pending production promotion
+
+### Changed
+
+- Moved `npm-publish` from plugin-kit to dev-ops (`dev-ops:npm-publish` 3.3.1).
+  Auth is `npm login --auth-type=web` plus bun's publish confirm URL. No OTP,
+  no `setup-token.sh`. Core 1.1.164, dev-ops 0.1.10, plugin-kit 0.1.9.
+
 ## [1.1.163] - Pending production promotion
 
 ### Fixed

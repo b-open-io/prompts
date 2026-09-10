@@ -1,7 +1,7 @@
 {
   "name": "plugin-kit",
-  "version": "0.1.8",
-  "description": "Authoring and releasing Claude Code and Codex plugins: agent lifecycle, skill benchmarks, settings, and publishing",
+  "version": "0.1.9",
+  "description": "Authoring and releasing Claude Code and Codex plugins: agent lifecycle, skill benchmarks, settings, and plugin publishing",
   "author": {
     "name": "b-open-io",
     "url": "https://github.com/b-open-io"

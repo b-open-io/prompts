@@ -147,7 +147,7 @@ Invoke the relevant skill before starting any third-party integration.
 - `Skill(semgrep)` — invoke to scan CI/CD configuration for security issues
 - `Skill(codeql)` — invoke for deep workflow security analysis
 - `Skill(product-skills:saas-launch-audit)` — invoke before any production deployment
-- `Skill(plugin-kit:npm-publish)` — invoke when publishing packages
+- `Skill(dev-ops:npm-publish)` — invoke when publishing packages
 
 Always run `Skill(product-skills:saas-launch-audit)` before a production deploy.
 ```

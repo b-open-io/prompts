@@ -66,12 +66,12 @@ grok plugin install core@b-open-io --trust
 | Module | Contents |
 |---|---|
 | `orchestra` | coordinator, advisor, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
-| `plugin-kit` | agent lifecycle, benchmarks, plugin settings, publishing; prompt-engineer, trainer |
+| `plugin-kit` | agent lifecycle, benchmarks, plugin settings, plugin publishing; prompt-engineer, trainer |
 | `review` | visual review and proposals, code audit scripts, Codex Security, Vercel Security Dashboard posture guidance, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
 | `web-dev` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection, Apple Xcode build loop for native Swift; designer, nextjs, optimizer, mobile |
 | `creative` | Three.js, shaders, game UI, macOS design, Native SDK macOS release, Apple Xcode build loop, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
 | `mcp-dev` | MCP Apps and the json-render framework; mcp |
-| `dev-ops` | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, payments; devops, database, data, integration-expert, payments |
+| `dev-ops` | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, npm publishing, payments; devops, database, data, integration-expert, payments |
 | `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
 | `brand-rep` | personas for public surfaces, bopen.ai social scheduling from any harness (`schedule-social-post`); account-manager, social-media-manager |
 
@@ -305,7 +305,7 @@ intentional.
 | `hunter-skeptic-referee` | Adversarial bug hunting with three isolated agents |
 | `native-sdk-macos-release` | Scaffold or ship a Vercel Native SDK macOS app: native check/build, Developer ID sign, DMG, notary, staple |
 | `nextjs-upgrade` | Upgrade Next.js to latest version with Turbopack |
-| `npm-publish` | Publish packages to npm from the synced default branch with changelog/version management and browser confirmation |
+| `npm-publish` | Publish packages to npm from the synced default branch with changelog/version management and npm web login (`dev-ops:npm-publish`) |
 | `perf-audit` | Run local performance audits without network calls |
 | `restraint` | Write the least code that is still the right code: YAGNI with a governor |
 | `shaders` | Custom shaders for Three.js and WebGL |

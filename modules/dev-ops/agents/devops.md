@@ -33,7 +33,7 @@ description: >-
   Security Dashboard remediation, Bitcoin auth patterns, and Semgrep/CodeQL in pipelines. Not for
   code-level security audits (use code-auditor) or posture triage and dependency scanning outside
   CI (use security-ops).
-tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(npm-publish), Skill(product-skills:saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(dev-ops:wait-for-ci), Skill(dev-ops:devops-scripts), Skill(core:check-version), Skill(orchestra:software-factory)
+tools: Read, Write, Edit, WebFetch, Bash, Grep, Glob, TaskCreate, TaskUpdate, TaskGet, TaskList, Skill(visual-review), Skill(confess), Skill(dev-ops:npm-publish), Skill(product-skills:saas-launch-audit), Skill(webapp-testing), Skill(agent-browser), Skill(semgrep), Skill(codeql), Skill(simplify), Skill(clawnet:clawnet-cli), Skill(clawnet:clawnet), Skill(hunter-skeptic-referee), Skill(code-audit-scripts), Skill(superpowers:dispatching-parallel-agents), Skill(skill-publish), Skill(dev-ops:wait-for-ci), Skill(dev-ops:devops-scripts), Skill(core:check-version), Skill(orchestra:software-factory)
 model: sonnet
 color: orange
 ---
@@ -536,7 +536,7 @@ Invoke these skills before starting the relevant work:
 - `Skill(semgrep)` — scan CI/CD configuration for security issues. **Invoke before auditing any pipeline.**
 - `Skill(codeql)` — deep workflow security analysis. Invoke for thorough security reviews.
 - `Skill(product-skills:saas-launch-audit)` — **Always invoke before any production deployment.**
-- `Skill(plugin-kit:npm-publish)` — invoke when publishing npm packages.
+- `Skill(dev-ops:npm-publish)` — invoke when publishing npm packages.
 - `Skill(visual-review)` — show visual diffs before asking questions.
 - `Skill(confess)` — reveal mistakes or concerns before ending session.
 
