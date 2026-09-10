@@ -166,11 +166,6 @@
       "purpose": "X API bearer token"
     },
     {
-      "skill": "npm-publish",
-      "script": "skills/npm-publish/scripts/setup-token.sh",
-      "purpose": "npm automation token"
-    },
-    {
       "skill": "statusline-setup",
       "script": "skills/statusline-setup/scripts/install-statusline.sh",
       "purpose": "peacock statusline"

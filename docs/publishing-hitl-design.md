@@ -28,7 +28,7 @@ Scope: All publishing flows in the bOpen / ClawNet ecosystem
 
 #### npm-publish (via `npm-publish` skill)
 
-Location: /Users/satchmo/code/prompts/skills/npm-publish/
+Location: /Users/satchmo/code/prompts/modules/dev-ops/skills/npm-publish/
 
 Command sequence:
 1. preflight.sh — checks npm registry version vs local package.json, auto-bumps version (patch by default), runs bun run build, emits commit log
@@ -504,7 +504,7 @@ Deferred. Requires webhook auth, secure inter-session state storage, and reliabl
 | /Users/satchmo/code/prompts/hooks/patterns.yaml | Modify | Add publishGate tier section |
 | /Users/satchmo/code/prompts/skills/publish-request/SKILL.md | Create | Skill: prepare release plan and move Linear ticket to "Ready for Review" |
 | /Users/satchmo/code/prompts/skills/publish-request/scripts/check-approval.sh | Create | Shared script to query Linear for approval status |
-| /Users/satchmo/code/prompts/skills/npm-publish/SKILL.md | Modify | Add Step 2.5: check approval before release.sh |
+| /Users/satchmo/code/prompts/modules/dev-ops/skills/npm-publish/SKILL.md | Modify | Add Step 2.5: check approval before release.sh |
 | /Users/satchmo/code/prompts/skills/skill-publish/SKILL.md | Modify | Add approval check before "Commit and Push" step |
 | /Users/satchmo/code/clawnet-bot/.agents/johnny/SOUL.md | Modify | Add constraint: fleet bots require human-initiated deploy |
 ```
