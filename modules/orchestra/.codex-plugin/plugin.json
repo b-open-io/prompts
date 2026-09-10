@@ -1,6 +1,6 @@
 {
   "name": "orchestra",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "Multi-agent orchestration for Claude Code, Grok, Codex, and OpenCode: worker dispatch, second opinions, wave fan-out, and autonomous loops",
   "author": {
     "name": "b-open-io",
@@ -16,7 +16,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "bOpen Orchestration",
+    "displayName": "Orchestration",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
     "shortDescription": "Worker dispatch, advisors, wave fan-out, and autonomous loops.",
     "longDescription": "Coordinate native specialists, external implementation workers, and independent advisors from a capable main session, and design agentic loops with real verification gates.",
     "developerName": "b-open-io",

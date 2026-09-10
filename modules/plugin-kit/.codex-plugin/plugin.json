@@ -1,6 +1,6 @@
 {
   "name": "plugin-kit",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Authoring and releasing Claude Code and Codex plugins: agent lifecycle, skill benchmarks, settings, and plugin publishing",
   "author": {
     "name": "b-open-io",
@@ -12,7 +12,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "bOpen Plugin Dev",
+    "displayName": "Plugin Dev",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
     "shortDescription": "Author, audit, benchmark, and publish plugin components.",
     "longDescription": "Authoring and releasing Claude Code and Codex plugins: agent lifecycle, skill benchmarks, settings, and plugin publishing",
     "developerName": "b-open-io",
