@@ -102,6 +102,19 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+## [1.1.165] - Pending production promotion
+
+### Changed
+
+- Codex module `displayName`s drop the `bOpen` prefix: Orchestration, Plugin
+  Dev, Review, Web, Creative, MCP, Ops, Research, Public Agents. `core` stays
+  `core`.
+- Codex plugins ship `./assets/logo.png` and `./assets/icon.png` (512×512
+  catalog emblems from bopen.ai) so installed plugins stop showing placeholder
+  icons. Module versions: orchestra 0.1.28, plugin-kit 0.1.10, review 0.1.17,
+  web-dev 0.1.7, creative 0.1.7, mcp-dev 0.1.5, dev-ops 0.1.11, research 0.1.5,
+  brand-rep 0.1.10.
+
 ## [1.1.164] - Pending production promotion
 
 ### Changed

@@ -1,6 +1,6 @@
 {
   "name": "core",
-  "version": "1.1.164",
+  "version": "1.1.165",
   "description": "Cross-agent development skills, hooks, orchestration, and native adapters for Claude Code, Codex, Grok Build, and OpenCode",
   "author": {
     "name": "b-open-io",
@@ -19,6 +19,8 @@
   "hooks": "./hooks/codex-hooks.json",
   "interface": {
     "displayName": "core",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
     "shortDescription": "Development agents, skills, hooks, and orchestration.",
     "longDescription": "A cross-agent toolkit for software development, specialist routing, multi-agent orchestration, safety hooks, and optional bOpen custom-agent adapters.",
     "developerName": "b-open-io",

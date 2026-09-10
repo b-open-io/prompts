@@ -63,17 +63,17 @@ grok plugin install core@b-open-io --trust
 
 ### Modules
 
-| Module | Contents |
-|---|---|
-| `orchestra` | coordinator, advisor, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
-| `plugin-kit` | agent lifecycle, benchmarks, plugin settings, plugin publishing; prompt-engineer, trainer |
-| `review` | visual review and proposals, code audit scripts, Codex Security, Vercel Security Dashboard posture guidance, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
-| `web-dev` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection, Apple Xcode build loop for native Swift; designer, nextjs, optimizer, mobile |
-| `creative` | Three.js, shaders, game UI, macOS design, Native SDK macOS release, Apple Xcode build loop, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
-| `mcp-dev` | MCP Apps and the json-render framework; mcp |
-| `dev-ops` | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, npm publishing, payments; devops, database, data, integration-expert, payments |
-| `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
-| `brand-rep` | personas for public surfaces, bopen.ai social scheduling from any harness (`schedule-social-post`); account-manager, social-media-manager |
+| Module | Codex name | Contents |
+|---|---|---|
+| `orchestra` | Orchestration | coordinator, advisor, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
+| `plugin-kit` | Plugin Dev | agent lifecycle, benchmarks, plugin settings, plugin publishing; prompt-engineer, trainer |
+| `review` | Review | visual review and proposals, code audit scripts, Codex Security, Vercel Security Dashboard posture guidance, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
+| `web-dev` | Web | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection, Apple Xcode build loop for native Swift; designer, nextjs, optimizer, mobile |
+| `creative` | Creative | Three.js, shaders, game UI, macOS design, Native SDK macOS release, Apple Xcode build loop, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
+| `mcp-dev` | MCP | MCP Apps and the json-render framework; mcp |
+| `dev-ops` | Ops | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, npm publishing, payments; devops, database, data, integration-expert, payments |
+| `research` | Research | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
+| `brand-rep` | Public Agents | personas for public surfaces, bopen.ai social scheduling from any harness (`schedule-social-post`); account-manager, social-media-manager |
 
 ```bash
 /plugin install orchestra@b-open-io
@@ -117,6 +117,11 @@ codex plugin add core@b-open-io
 The Codex plugin installs the shared skills and Codex-specific hooks. Codex
 custom-agent files are configured separately because Codex discovers them from
 project or user agent directories rather than from a plugin manifest.
+
+Installed Codex plugins use the catalog emblem at `./assets/logo.png` and
+`./assets/icon.png` (`interface.logo` / `interface.composerIcon`). Module
+`displayName`s omit the `bOpen` prefix (see the table above). `core` stays
+`core`.
 
 #### Install Codex custom agents
 
@@ -591,6 +596,7 @@ See the [claude-peacock plugin](https://github.com/b-open-io/claude-peacock) for
 prompts/
 ├── .claude-plugin/         # Claude Code plugin manifest
 ├── .codex-plugin/          # Codex plugin manifest
+├── assets/                 # README banner + Codex core logo/icon
 ├── .agents/plugins/        # Codex marketplace manifest
 ├── agents/                 # Canonical authored agent personas
 ├── bots/                   # ClawNet deployment metadata
