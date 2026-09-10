@@ -8,9 +8,6 @@ manifests share the same release version.
 
 ### Changed
 
-- Moved `npm-publish` from plugin-kit to dev-ops (`dev-ops:npm-publish` 3.3.1).
-  Auth is `npm login --auth-type=web` plus bun's publish confirm URL. No OTP,
-  no `setup-token.sh`. Core 1.1.164, dev-ops 0.1.10, plugin-kit 0.1.9.
 - Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
   for Maps JS, Places, Routes, and Street View. Missing skill:
   `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.6.
@@ -104,6 +101,14 @@ manifests share the same release version.
   Codex, Grok Build, OpenCode, and other shell-capable hosts. The shared lane
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
+
+## [1.1.164] - Pending production promotion
+
+### Changed
+
+- Moved `npm-publish` from plugin-kit to dev-ops (`dev-ops:npm-publish` 3.3.1).
+  Auth is `npm login --auth-type=web` plus bun's publish confirm URL. No OTP,
+  no `setup-token.sh`. Core 1.1.164, dev-ops 0.1.10, plugin-kit 0.1.9.
 
 ## [1.1.163] - Pending production promotion
 
