@@ -158,7 +158,7 @@ this explicitly rather than assuming silent consent.
 - **A specific plugin's own setup skill** (`gemskills:setup`,
   `sigma-auth:setup`, `codex:setup`) → the plan references
   `Skill(<plugin>:setup)` rather than duplicating that plugin's logic.
-- **Per-skill token/config scripts** (`x-tweet-search`, `npm-publish`,
+- **Per-skill token/config scripts** (`x-tweet-search`,
   `statusline-setup`, `persona`) → listed in each plugin's manifest as
   `skillSetupScripts`; the plan tells the agent when to run them, it doesn't
   run them itself.

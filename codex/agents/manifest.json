@@ -150,9 +150,9 @@
       "source_name": "devops",
       "source_path": "modules/dev-ops/agents/devops.md",
       "source_version": "1.3.14",
-      "source_hash": "sha256:9827eaf0d27a7bc200d302fa1775813812a2ca3cc3217aa96e40c42bff96c09b",
+      "source_hash": "sha256:89726386d422ada47728f163c6ba195b85fa932aa4cf7ba8e79e4239e8dc03f3",
       "generated_file": "bopen-devops.toml",
-      "generated_hash": "sha256:c5ee4e8e2df0ce82f899e2e08f4ad34ab17dd446e2d4878ed6f67446404c4ad6",
+      "generated_hash": "sha256:59f18bffe018615454418f6162db78992322cfc382d70eaf5bae1c579e0098a8",
       "agent_name": "bopen_devops",
       "curated": false,
       "default_install": false
@@ -205,9 +205,9 @@
       "source_name": "mcp",
       "source_path": "modules/mcp-dev/agents/mcp.md",
       "source_version": "3.0.27",
-      "source_hash": "sha256:efe76ee7dedf909c53b814c0b97b577d20bac678c1e9cac8a204c51ad8170ba7",
+      "source_hash": "sha256:bafebf5657fcce0483e9771e7f9630bd785b0a8e15c70913e0144a25e24a27f4",
       "generated_file": "bopen-mcp.toml",
-      "generated_hash": "sha256:1eb446261b2d2031c706ae3408a150ca43a391d7258f3049be12c2026e464c02",
+      "generated_hash": "sha256:d1e24b125adbc20c9a829025235a5b1234a4d32ba69156f28f4c7d22924d543d",
       "agent_name": "bopen_mcp",
       "curated": false,
       "default_install": false

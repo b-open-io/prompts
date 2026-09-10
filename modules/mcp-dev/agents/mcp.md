@@ -2904,7 +2904,7 @@ npx .
 
 ### Publishing
 
-Use the `Skill(npm-publish)` workflow — it handles login verification, version bumps, changelog, OTP, and post-publish verification. The key MCP-specific addition:
+Use the `Skill(dev-ops:npm-publish)` workflow — it handles login, version bumps, changelog, and post-publish verification. The key MCP-specific addition:
 
 ```bash
 # What users will run after you publish:
