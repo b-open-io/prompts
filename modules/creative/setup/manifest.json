@@ -1,0 +1,11 @@
+{
+  "plugin": "creative",
+  "thirdPartySkills": [
+    {
+      "name": "google-maps-platform",
+      "source": "googlemaps/agent-skills",
+      "check": "path:~/.claude/skills/google-maps-platform/SKILL.md",
+      "install": "npx skills add googlemaps/agent-skills"
+    }
+  ]
+}

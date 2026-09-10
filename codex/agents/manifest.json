@@ -61,10 +61,10 @@
     {
       "source_name": "cartographer",
       "source_path": "modules/creative/agents/cartographer.md",
-      "source_version": "1.0.5",
-      "source_hash": "sha256:d19573ead587b25dafff9d542c871c902f288296439f23edcb820ccdf138207f",
+      "source_version": "1.0.6",
+      "source_hash": "sha256:8fe379e89b0c9668d3fe7b20fb47c2715aca121bac420bab47a1f31a03c83e0f",
       "generated_file": "bopen-cartographer.toml",
-      "generated_hash": "sha256:46136bf10dc022a18104c4dbdbf189a38fd7e9bb8d4ff54e3141c3436caf6987",
+      "generated_hash": "sha256:53bb2e73a9607b22b8e90fc8a998764128ddebdc881db9262f465ff7f64705d1",
       "agent_name": "bopen_cartographer",
       "curated": false,
       "default_install": false
@@ -183,9 +183,9 @@
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
       "source_version": "1.1.15",
-      "source_hash": "sha256:bbd45e8fba8c3943bb062d4ac5fc8c9372ec24bd51b8970530ede8b8feec0757",
+      "source_hash": "sha256:d355fd1070ac0bee81cd06dc0e4646f03d0e97144fef35429e0302ed9b1d775f",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:88db5bec9d17cea41f58ce61c0bd51d98039bf7f87168350dda55356a5989905",
+      "generated_hash": "sha256:6ed43c4c06a6200e5a27ffe31fdc81ca4b0f6fa029b0009f44d1b974dc2c2ecb",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true

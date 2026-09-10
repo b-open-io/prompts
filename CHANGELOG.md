@@ -8,6 +8,9 @@ manifests share the same release version.
 
 ### Changed
 
+- Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
+  for Maps JS, Places, Routes, and Street View. Missing skill:
+  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.6.
 - humanize 1.0.14 → **1.0.15**: never write "fail closed" / "fail open". Say
   reject, deny, stop, allow, or continue. Removed that slang from the rest of
   this repo.
