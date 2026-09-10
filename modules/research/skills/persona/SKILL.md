@@ -17,7 +17,7 @@ allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts:*), Bash(bun:*), Read, Write
 
 **IMPORTANT:** If any script fails with `TOKEN_SETUP_NEEDED`, you MUST run this setup flow before retrying. Do not just report the error — fix it.
 
-Uses `agent-browser` for browser automation (same pattern as npm-publish skill).
+Uses `agent-browser` for browser automation.
 
 #### Step 1: Open the developer portal
 
