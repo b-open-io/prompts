@@ -11,7 +11,10 @@ The baseline catalog covers all ten shipped plugin roots: 84 skills, 30 agents,
 14 commands, and 186 supporting resources. The wider marketplace snapshot has
 27 plugins, 253 skills, and 41 agents. See [CATALOG.md](CATALOG.md),
 [resource-catalog.csv](resource-catalog.csv), [support-catalog.csv](support-catalog.csv),
-and [marketplace-catalog.csv](marketplace-catalog.csv). The baseline is prompts
+and [marketplace-catalog.csv](marketplace-catalog.csv). gemskills rows in that
+CSV are frozen at 0.0.68 / `OpenAI (gpt-image-2)`; current published gemskills
+is 0.0.70 Flare/Sunburst — see the currency note in [CATALOG.md](CATALOG.md).
+The baseline is prompts
 `6ba4688`; remediation was reconciled with dev `b086781` before release checks.
 Catalog coverage is not a claim of exhaustive semantic or live execution coverage.
 

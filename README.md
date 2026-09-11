@@ -253,7 +253,7 @@ core members.
 - 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
 
 ### Organization & Operations
-- 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup, and host install paths (Claude Code, Codex, Grok Build, Grok Bot)
+- 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup, host install paths (Claude Code, Codex, Grok Build, Grok Bot), and gemskills 0.0.70 Flare/Sunburst catalog
 - Third-party: `vercel-labs/is-agentic@is-agentic` — score a public site’s agent readiness. Install: `npx skills add vercel-labs/is-agentic`.
 
 **Usage:** In Claude Code, request the plugin agent by name (for example,
@@ -357,7 +357,7 @@ intentional.
 ### Organization
 | Skill | Description |
 |-------|-------------|
-| `front-desk` | Team directory, agent routing, and service provider lookup |
+| `front-desk` | Team directory, agent routing, service provider lookup, and gemskills 0.0.70 Flare/Sunburst catalog |
 
 ## Slash Commands
 
