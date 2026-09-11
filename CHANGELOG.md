@@ -8,6 +8,13 @@ manifests share the same release version.
 
 ### Changed
 
+- Companion copy: gemskills catalog is **0.0.70** (GPT Image 2.5 Flare
+  `gpt-image-2.5-flare` default / Sunburst `gpt-image-2.5-sunburst` opt-in).
+  Front-desk, setup pack catalog, Frames `gemskills:content` blurbs, and Ridd's
+  visual-generation heading no longer advertise bare `gpt-image-2`. The
+  2026-09-05 marketplace CSV stays a frozen snapshot; `CATALOG.md` notes the
+  currency. `kris-mcp-research.md` footnotes that Flux159's DALL·E tool label
+  is third-party MCP marketing.
 - Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
   for Maps JS, Places, Routes, and Street View. Missing skill:
   `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.6.
