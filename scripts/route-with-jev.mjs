@@ -23,10 +23,11 @@ try {
       entries.length === 0 || entries.length > 255 ||
       entries.some(e => !e || typeof e.id !== 'string' || !e.id || e.id === 'NONE' ||
         typeof e.kind !== 'string' || (e.hint != null && typeof e.hint !== 'string')) ||
-      new Set(entries.map(e => e.id)).size !== entries.length) {
+      new Set(entries.map(e => `${e.kind}:${e.id}`)).size !== entries.length) {
     throw new Error('Invalid input');
   }
-  const criteria = Object.fromEntries(entries.map(e => [e.id, `${e.kind}: ${e.hint || e.id}`]));
+  const choices = Object.fromEntries(entries.map(e => [`${e.kind}:${e.id}`, e]));
+  const criteria = Object.fromEntries(Object.entries(choices).map(([label, e]) => [label, `${e.kind}: ${e.hint || e.id}`]));
   criteria.NONE = 'No installed skill or agent is a good fit; handle in the main session.';
   let { experimental_evaluate: evaluate } = await import('ai').catch(() => ({}));
   if (typeof evaluate !== 'function') {
@@ -50,8 +51,9 @@ try {
   });
   const choice = result.answers?.route?.choice;
   if (typeof choice !== 'string' || !Object.hasOwn(criteria, choice)) throw new Error('Invalid answer');
-  const id = choice === 'NONE' ? null : choice;
-  process.stdout.write(JSON.stringify({ id, source: 'jev', choice }) + '\n');
+  const selected = choices[choice];
+  const id = selected?.id ?? null;
+  process.stdout.write(JSON.stringify({ id, ...(selected ? { kind: selected.kind } : {}), source: 'jev', choice }) + '\n');
 } catch {
   process.stdout.write(
     JSON.stringify({

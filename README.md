@@ -422,7 +422,15 @@ the submitted prompt and catalog hints to Vercel AI Gateway (`typesafe-ai/jev`);
 the lens helper sends the problem, options, and advocacy record. Calls can incur
 Gateway charges. Leave the key unset to keep routing local and use agent judges.
 Missing SDK, invalid responses, and timeouts use the existing local fallback.
-A valid Jev `NONE` decision produces no routing hint.
+A valid Jev `NONE` decision produces no routing hint. Skills and agents with the
+same qualified id are distinguished by resource kind.
+
+The [September 17 routing pilot](benchmarks/results/jev-routing-2026-09-17/REPORT.md)
+measured 97.9% first-choice accuracy for the corrected Jev-assisted hook versus
+71.9% for keywords on 32 synthetic prompts repeated three times. Median latency
+was 512 ms versus 102 ms; 8.3% of Jev attempts fell back, exceeding the predeclared
+5% reliability limit. This is pilot evidence, not production accuracy; keep Jev
+optional. Raw trials, frozen labels, and reproduction commands are included.
 
 ### HammerTime Stop Hook
 
