@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.17
+version: 0.0.18
 description: >-
   Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has
   not been built. Use for "make a visual proposal", "present these options visually", "diagram
@@ -305,17 +305,24 @@ the human reviewer still makes the final call.
 
 ### Optional jev lens scores (when AI Gateway is configured)
 
-If `AI_GATEWAY_API_KEY` is set, the host MAY run
+With Node.js 22 or newer, install the optional runtime once with
+`npm install --prefix "$HOME/.cache/bopen-jev" --no-save --ignore-scripts ai@7.0.105`.
+Plugin installation does not install this dependency. With the runtime installed
+and `AI_GATEWAY_API_KEY` set, the host MAY run
 `scripts/lens-score-jev.mjs` once per judging lens (efficiency/simplicity,
 ecosystem adoption/interop, correctness/robustness, risk, etc.) using Vercel AI
 Gateway model `typesafe-ai/jev` via the AI SDK `experimental_evaluate` API only.
-Never use BitPlan as an evaluator.
+Never use BitPlan as an evaluator. The helper sends the problem, option labels,
+and advocacy record to Vercel AI Gateway; use only material authorized for that
+provider.
 
-Use jev `choice` for the lens winner and optional `score` for decisiveness.
-Feed those values into the judging-bench cards. Prefer keeping a real roster
-judge’s avatar, name, and role on the card. If a lens has **no** roster judge
-(jev-only), still render the card with the lens name and label the attribution
-**“scored by jev”**.
+Use jev `choice` for the lens winner and optional numeric `score` for decisiveness
+(0–3: weak, lean, clear, decisive; fractional values are valid).
+Feed those values into the judging-bench cards. Keep a real roster judge’s avatar, name, and role on the card when present,
+and label any Jev-derived winner or strength **“scored by jev”** alongside them.
+For a Jev-only lens, use the lens name and the same attribution. Keep the roster
+judge’s reasoning distinct from Jev’s result; do not silently replace a judge’s
+verdict when they disagree.
 
 If the key is missing, evaluate fails, or the helper times out: keep today’s
 agent-only bench. Diagrams, advocates, cross-examination, and the CEO call are

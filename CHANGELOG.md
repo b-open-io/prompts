@@ -111,6 +111,19 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+## [1.1.167] - Pending production promotion
+
+### Fixed
+
+- Jev helpers can load an explicitly installed AI SDK from `~/.cache/bopen-jev`
+  after plugin extraction. Missing runtime, invalid responses, and timeouts
+  retain the local fallback without exposing provider error text.
+- Prompt routing respects Jev's `NONE` decision and handles malformed helper
+  JSON without losing the keyword fallback.
+- Visual proposal scores retain Jev attribution alongside roster judges.
+  Review plugin 0.1.19; visual-proposal 0.0.18.
+- Reconcile production's Codex display names and icons before promotion.
+
 ## [1.1.166] - Pending production promotion
 
 ### Changed

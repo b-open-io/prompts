@@ -290,7 +290,7 @@ intentional.
 | `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, Mannered prose (metaphor-for-statement substitutions), unsupported significance, vague attribution, promotional drift, canned change summaries, and template-like sales copy; never write fail-closed / fail-open slang (say reject, deny, stop, allow, or continue); outbound drafts use attributed examples and supplied account facts without inventing commercial claims |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
-| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. When `AI_GATEWAY_API_KEY` is set, a lens may also take an optional jev `score`/`choice` (attribution “scored by jev” if no roster judge). It names specifications, humanizes every voice, and uses a uniform BitPlan reading layout without an embedded proposals menu. Decision trees connect dependent choices; questionnaires include Unsure, consequences, and a copyable response that works with scripts off. Settled plans end with an implementation brief and done conditions. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
+| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. When `AI_GATEWAY_API_KEY` is set, a lens may also take an optional jev `score`/`choice` (attribution “scored by jev” alongside any roster judge). It names specifications, humanizes every voice, and uses a uniform BitPlan reading layout without an embedded proposals menu. Decision trees connect dependent choices; questionnaires include Unsure, consequences, and a copyable response that works with scripts off. Settled plans end with an implementation brief and done conditions. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
@@ -394,7 +394,7 @@ has replaced that versioned directory.
 |------|-------------|-------|-------------|
 | `session-context` | SessionStart | SessionStart | Injects bounded branch, history, and plugin context |
 | `repo-freshness` | SessionStart | SessionStart | Non-destructively fast-forwards the active repo's branch/default ref to its remote when strictly behind; warns on divergence, never touches a dirty tree, never prompts |
-| `prompt-router` | UserPromptSubmit | — | Injects concise skill and agent routing hints with session deduplication; optional jev choice over router-index ids when `AI_GATEWAY_API_KEY` is set, otherwise keyword/phrase scoring |
+| `prompt-router` | UserPromptSubmit | — | Injects concise skill and agent routing hints with session deduplication; optional jev choice after the SDK setup below with `AI_GATEWAY_API_KEY` set, otherwise keyword/phrase scoring |
 | `bouncer` | Bash PreToolUse | Shell PreToolUse | Validates commands against safety rules |
 | `damage-control` | Bash/write/edit PreToolUse | Shell/`apply_patch` PreToolUse | Protects sensitive paths and destructive operations |
 | `publish-gate` | Bash PreToolUse | Shell PreToolUse | Guards publish commands behind release checks |
@@ -406,6 +406,23 @@ has replaced that versioned directory.
 On first use, Codex may ask you to review and trust plugin hooks. Inspect the
 commands before approving them. Do not use hook-trust bypass flags for normal
 work; they exist for controlled diagnostics, not routine installation.
+
+
+### Optional Jev setup
+
+The core router and Review lens helper use the AI SDK evaluation API. Plugin
+installation does not install npm dependencies. With Node.js 22 or newer, install the optional runtime once:
+
+```bash
+npm install --prefix "$HOME/.cache/bopen-jev" --no-save --ignore-scripts ai@7.0.105
+```
+
+Set `AI_GATEWAY_API_KEY` in the host environment to enable calls. The router sends
+the submitted prompt and catalog hints to Vercel AI Gateway (`typesafe-ai/jev`);
+the lens helper sends the problem, options, and advocacy record. Calls can incur
+Gateway charges. Leave the key unset to keep routing local and use agent judges.
+Missing SDK, invalid responses, and timeouts use the existing local fallback.
+A valid Jev `NONE` decision produces no routing hint.
 
 ### HammerTime Stop Hook
 

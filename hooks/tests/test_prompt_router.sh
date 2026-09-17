@@ -136,6 +136,23 @@ unknown_input=$(jq -n '{prompt:"set up a factory worker loop for this repo", ses
 run_hook "prompt-router.sh" "claude" "$unknown_input"
 assert_contains "prompt-router unknown jev id uses keywords" "orchestra:software-factory" "$HOOK_STDOUT"
 
+# A valid NONE decision must not be replaced by a keyword false positive.
+cat > "$HELPER" <<'EOF'
+console.log(JSON.stringify({ id: null, source: "jev", choice: "NONE" }))
+EOF
+none_input=$(jq -n '{prompt:"set up a factory worker loop for this repo", session_id:"sess-jev-none"}')
+run_hook "prompt-router.sh" "claude" "$none_input"
+assert_eq "prompt-router respects jev NONE" "" "$HOOK_STDOUT"
+
+# Valid JSON of the wrong shape must still fall back without a traceback.
+for malformed in 'null' '[]' '"text"'; do
+  printf 'console.log(JSON.stringify(%s))\n' "$malformed" > "$HELPER"
+  malformed_input=$(jq -n --arg session "sess-jev-malformed-$malformed" '{prompt:"set up a factory worker loop for this repo", session_id:$session}')
+  run_hook "prompt-router.sh" "claude" "$malformed_input"
+  assert_contains "prompt-router malformed $malformed uses keywords" "orchestra:software-factory" "$HOOK_STDOUT"
+  assert_eq "prompt-router malformed $malformed has no error" "" "$HOOK_STDERR"
+done
+
 # --- helper timeout → keyword path ---
 cat > "$HELPER" <<'EOF'
 #!/usr/bin/env node
