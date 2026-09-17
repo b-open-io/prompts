@@ -5,6 +5,11 @@
 echo
 echo "--- prompt-router ---"
 
+# Key-absent path must match today's keyword scorer even if a key is in the
+# ambient environment. Jev cases below set the key + a mock helper explicitly.
+unset AI_GATEWAY_API_KEY
+unset BOPEN_JEV_ROUTER
+
 FIXTURE_DIR=$(mktemp -d)
 FIXTURE_INDEX="$FIXTURE_DIR/router-index.json"
 cat > "$FIXTURE_INDEX" <<'EOF'
@@ -87,5 +92,78 @@ run_hook "prompt-router.sh" "claude" "$factory_input"
 assert_eq "prompt-router disabled silent" "" "$HOOK_STDOUT"
 unset BOPEN_HOOKS_CONFIG
 
+# --- helper skip: no key → keyword path, even if BOPEN_JEV_ROUTER is set ---
+HELPER="$FIXTURE_DIR/fake-jev.mjs"
+cat > "$HELPER" <<'EOF'
+#!/usr/bin/env node
+console.log(JSON.stringify({ id: "research:researcher", source: "jev", choice: "research:researcher" }))
+EOF
+export BOPEN_JEV_ROUTER="$HELPER"
+nokey_input=$(jq -n '{prompt:"set up a factory worker loop for this repo", session_id:"sess-jev-nokey"}')
+run_hook "prompt-router.sh" "claude" "$nokey_input"
+assert_contains "prompt-router no-key ignores jev helper" "orchestra:software-factory" "$HOOK_STDOUT"
+assert_not_contains "prompt-router no-key does not take helper id" "research:researcher" "$HOOK_STDOUT"
+
+# --- jev path: key + helper pick wins over keyword match ---
+export AI_GATEWAY_API_KEY="test-key"
+jev_factory_input=$(jq -n '{prompt:"set up a factory worker loop for this repo", session_id:"sess-jev-override"}')
+run_hook "prompt-router.sh" "claude" "$jev_factory_input"
+assert_exit "prompt-router jev override exit" "0" "$HOOK_EXIT"
+assert_contains "prompt-router jev override marker" "[BOPEN-ROUTER]" "$HOOK_STDOUT"
+assert_contains "prompt-router jev override uses helper id" "research:researcher" "$HOOK_STDOUT"
+assert_not_contains "prompt-router jev override skips keyword winner" "orchestra:software-factory" "$HOOK_STDOUT"
+
+# --- jev can fire on a prompt that keywords would leave silent ---
+generic_jev_input=$(jq -n '{prompt:"what time is it where you are located", session_id:"sess-jev-generic"}')
+run_hook "prompt-router.sh" "claude" "$generic_jev_input"
+assert_contains "prompt-router jev semantic pick on generic prompt" "research:researcher" "$HOOK_STDOUT"
+
+# --- helper error → keyword path ---
+cat > "$HELPER" <<'EOF'
+#!/usr/bin/env node
+process.exit(1)
+EOF
+err_input=$(jq -n '{prompt:"set up a factory worker loop for this repo", session_id:"sess-jev-error"}')
+run_hook "prompt-router.sh" "claude" "$err_input"
+assert_contains "prompt-router helper error uses keywords" "orchestra:software-factory" "$HOOK_STDOUT"
+
+# --- unknown choice → keyword path ---
+cat > "$HELPER" <<'EOF'
+#!/usr/bin/env node
+console.log(JSON.stringify({ id: "nope:missing", source: "jev", choice: "nope:missing" }))
+EOF
+unknown_input=$(jq -n '{prompt:"set up a factory worker loop for this repo", session_id:"sess-jev-unknown"}')
+run_hook "prompt-router.sh" "claude" "$unknown_input"
+assert_contains "prompt-router unknown jev id uses keywords" "orchestra:software-factory" "$HOOK_STDOUT"
+
+# --- helper timeout → keyword path ---
+cat > "$HELPER" <<'EOF'
+#!/usr/bin/env node
+await new Promise((resolve) => setTimeout(resolve, 10000))
+console.log(JSON.stringify({ id: "research:researcher", source: "jev" }))
+EOF
+timeout_input=$(jq -n '{prompt:"set up a factory worker loop for this repo", session_id:"sess-jev-timeout"}')
+run_hook "prompt-router.sh" "claude" "$timeout_input"
+assert_contains "prompt-router helper timeout uses keywords" "orchestra:software-factory" "$HOOK_STDOUT"
+
+# --- real helper, no key: skipped JSON, hook still keywords ---
+unset AI_GATEWAY_API_KEY
+unset BOPEN_JEV_ROUTER
+REAL_HELPER="$(cd "$ROOT/.." && pwd)/scripts/route-with-jev.mjs"
+if [[ -f "$REAL_HELPER" ]] && { command -v bun >/dev/null 2>&1 || command -v node >/dev/null 2>&1; }; then
+  runner=node
+  command -v bun >/dev/null 2>&1 && runner=bun
+  helper_out=$(printf '%s' '{"prompt":"set up a factory worker loop for this repo","entries":[{"id":"orchestra:software-factory","kind":"skill","hint":"Design and harden an autonomous loop."}]}' | "$runner" "$REAL_HELPER")
+  assert_contains "route-with-jev.mjs no-key skipped" '"source":"skipped"' "$helper_out"
+fi
+
+LENS_HELPER="$(cd "$ROOT/.." && pwd)/modules/review/skills/visual-proposal/scripts/lens-score-jev.mjs"
+if [[ -f "$LENS_HELPER" ]] && { command -v bun >/dev/null 2>&1 || command -v node >/dev/null 2>&1; }; then
+  runner=node
+  command -v bun >/dev/null 2>&1 && runner=bun
+  lens_out=$(printf '%s' '{"lens":"risk","problem":"p","options":{"a":"A","b":"B"},"advocacy":"none"}' | "$runner" "$LENS_HELPER")
+  assert_contains "lens-score-jev.mjs no-key skipped" '"source":"skipped"' "$lens_out"
+fi
+
 rm -rf "$FIXTURE_DIR" "$CFG_DIR" "$BOPEN_ROUTER_STATE_DIR"
-unset BOPEN_ROUTER_INDEX BOPEN_ROUTER_STATE_DIR
+unset BOPEN_ROUTER_INDEX BOPEN_ROUTER_STATE_DIR AI_GATEWAY_API_KEY BOPEN_JEV_ROUTER

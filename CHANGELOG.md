@@ -8,6 +8,8 @@ manifests share the same release version.
 
 ### Changed
 
+- Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
+- `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench.
 - Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
   for Maps JS, Places, Routes, and Street View. Missing skill:
   `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.6.
@@ -101,6 +103,13 @@ manifests share the same release version.
   Codex, Grok Build, OpenCode, and other shell-capable hosts. The shared lane
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
+
+## [1.1.166] - Pending production promotion
+
+### Changed
+
+- Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
+- `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench. Review plugin 0.1.18.
 
 ## [1.1.164] - Pending production promotion
 
