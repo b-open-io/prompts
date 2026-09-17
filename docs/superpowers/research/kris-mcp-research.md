@@ -270,7 +270,7 @@ Has a companion Three.js demo project at https://github.com/Flux159/three-genera
 ### MCP Tools Exposed
 
 **Image generation:**
-- `openai_generate_image` — DALL-E image generation
+- `openai_generate_image` — DALL-E image generation[^openai-dalle-label]
 - `gemini_generate_image` — Google Gemini 2.5 Flash / 3 Pro image generation
 - `falai_generate_image` — FAL.ai Qwen image generation
 - `falai_edit_image` — FAL.ai image editing
@@ -411,3 +411,5 @@ Skip the doc lookup servers (ThreeJSMCP, locchung). Modern LLMs have Three.js in
 - [Three.js MCP servers — Glama](https://glama.ai/mcp/servers/integrations/threejs)
 - [three-js-mcp — Skywork deep dive article](https://skywork.ai/skypage/en/3d-worlds-ai-threejs-mcp-server/1980470680631943168)
 - [buryhuang/mcp-server-threejs — Docker Hub](https://hub.docker.com/r/buryhuang/mcp-server-threejs)
+
+[^openai-dalle-label]: Flux159's `openai_generate_image` DALL·E label is third-party MCP marketing. The Lisa / bOpen path is GPT Image 2.5 Flare (`gpt-image-2.5-flare`; Sunburst opt-in `gpt-image-2.5-sunburst`) via gemskills 0.0.70 — not this MCP tool, and never an `openai/` model prefix.

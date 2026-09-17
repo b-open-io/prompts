@@ -1,6 +1,6 @@
 {
   "name": "web-dev",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Frontend development for Next.js and React: performance, component design, and browser inspection",
   "author": {
     "name": "b-open-io",
@@ -12,7 +12,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "bOpen Web",
+    "displayName": "Web",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
     "shortDescription": "Build, tune, and inspect web frontends.",
     "longDescription": "Frontend development for Next.js and React: performance, component design, and browser inspection",
     "developerName": "b-open-io",

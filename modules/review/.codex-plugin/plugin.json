@@ -12,7 +12,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "bOpen Review",
+    "displayName": "Review",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
     "shortDescription": "Review diffs visually, audit code, and hunt bugs.",
     "longDescription": "Code review, security auditing, and exploratory testing with visual review artifacts",
     "developerName": "b-open-io",
