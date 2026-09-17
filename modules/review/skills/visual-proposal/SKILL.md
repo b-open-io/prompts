@@ -1,6 +1,6 @@
 ---
 name: visual-proposal
-version: 0.0.16
+version: 0.0.17
 description: >-
   Produce one self-contained, theme-aware HTML page led by grounded diagrams for work that has
   not been built. Use for "make a visual proposal", "present these options visually", "diagram
@@ -302,6 +302,24 @@ the advocacy record. Present every judge's verdict, including dissent; never
 collapse a tally into objective truth. This stays within Rule 1 because the
 *author* adds no verdict of their own — the split, attributed bench does, and
 the human reviewer still makes the final call.
+
+### Optional jev lens scores (when AI Gateway is configured)
+
+If `AI_GATEWAY_API_KEY` is set, the host MAY run
+`scripts/lens-score-jev.mjs` once per judging lens (efficiency/simplicity,
+ecosystem adoption/interop, correctness/robustness, risk, etc.) using Vercel AI
+Gateway model `typesafe-ai/jev` via the AI SDK `experimental_evaluate` API only.
+Never use BitPlan as an evaluator.
+
+Use jev `choice` for the lens winner and optional `score` for decisiveness.
+Feed those values into the judging-bench cards. Prefer keeping a real roster
+judge’s avatar, name, and role on the card. If a lens has **no** roster judge
+(jev-only), still render the card with the lens name and label the attribution
+**“scored by jev”**.
+
+If the key is missing, evaluate fails, or the helper times out: keep today’s
+agent-only bench. Diagrams, advocates, cross-examination, and the CEO call are
+unchanged — jev never replaces them.
 
 ### The CEO's final call (runs LAST, after everything else)
 
