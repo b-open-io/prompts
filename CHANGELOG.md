@@ -8,6 +8,8 @@ manifests share the same release version.
 
 ### Changed
 
+- Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
+- `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench.
 - Companion copy: gemskills catalog is **0.0.70** (GPT Image 2.5 Flare
   `gpt-image-2.5-flare` default / Sunburst `gpt-image-2.5-sunburst` opt-in).
   Front-desk, setup pack catalog, Frames `gemskills:content` blurbs, and Ridd's
@@ -109,6 +111,38 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+## [1.1.168] - Pending production promotion
+
+### Fixed
+
+- Jev accepts a skill and agent sharing a qualified id (such as
+  `core:front-desk`) by classifying with resource kind and preserving that kind
+  when selecting the hook hint. The previous validation rejected the installed
+  228-entry catalog before evaluation.
+- Add a reproducible live routing pilot with frozen cases and raw trials:
+  corrected assisted-hook accuracy 94/96 versus keyword accuracy 69/96.
+  Its 8/96 fallback rate exceeds the predeclared reliability gate; no production
+  accuracy or cost improvement is claimed. See the benchmark report.
+
+## [1.1.167] - Pending production promotion
+
+### Fixed
+
+- Jev helpers can load an explicitly installed AI SDK from `~/.cache/bopen-jev`
+  after plugin extraction. Missing runtime, invalid responses, and timeouts
+  retain the local fallback without exposing provider error text.
+- Prompt routing respects Jev's `NONE` decision and handles malformed helper
+  JSON without losing the keyword fallback.
+- Visual proposal scores retain Jev attribution alongside roster judges.
+  Review plugin 0.1.19; visual-proposal 0.0.18.
+- Reconcile production's Codex display names and icons before promotion.
+
+## [1.1.166] - Pending production promotion
+
+### Changed
+
+- Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
+- `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench. Review plugin 0.1.18.
 ## [1.1.165] - Pending production promotion
 
 ### Changed

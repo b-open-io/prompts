@@ -4,8 +4,11 @@
 #
 # Scores the submitted prompt against ~/.claude/core/router-index.json
 # (built by scripts/build-router-index.py) and — above threshold — injects a
-# short pointer at the best-matching Skill or roster subagent_type. Advisory
-# only: this hook only ever allows, it never blocks the prompt.
+# short pointer at the best-matching Skill or roster subagent_type. When
+# AI_GATEWAY_API_KEY is set, prefers one jev choice over index ids via
+# scripts/route-with-jev.mjs; missing key, timeout, or evaluate error keeps
+# the keyword/phrase scorer. Advisory only: this hook only ever allows, it
+# never blocks the prompt.
 #
 # Injection hygiene: the emitted additionalContext is built ONLY from
 # index-derived strings (id, hint) that were authored by us at build time —
@@ -70,11 +73,15 @@ INDEX_PATH="${BOPEN_ROUTER_INDEX:-${HOME}/.claude/core/router-index.json}"
 
 STATE_DIR="${BOPEN_ROUTER_STATE_DIR:-${HOME}/.claude/core/router-state}"
 
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
 PROMPT="$prompt" INDEX_PATH="$INDEX_PATH" SESSION_ID="$session_id" \
-  TRANSCRIPT_PATH="$transcript_path" STATE_DIR="$STATE_DIR" python3 - <<'PY'
+  TRANSCRIPT_PATH="$transcript_path" STATE_DIR="$STATE_DIR" \
+  PLUGIN_ROOT="$PLUGIN_ROOT" python3 - <<'PY'
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import time
 
@@ -150,6 +157,64 @@ word_re = re.compile(r"[a-z0-9']+")
 prompt_words = set(word_re.findall(prompt_lower))
 
 
+def eligible(entry_id):
+    rec = state["fires"].get(entry_id)
+    if not rec:
+        return True
+    count = rec.get("count", 0)
+    if count >= 2:
+        return False
+    if count == 1:
+        return (current_index - rec.get("last_fired_at", 0)) >= 10
+    return True
+
+
+def try_jev_route(prompt_text, entries_list):
+    if not os.environ.get("AI_GATEWAY_API_KEY"):
+        return None
+    helper = os.environ.get("BOPEN_JEV_ROUTER") or os.path.join(
+        os.environ.get("PLUGIN_ROOT", ""), "scripts", "route-with-jev.mjs"
+    )
+    if not helper or not os.path.isfile(helper):
+        return None
+    runner = "bun" if shutil.which("bun") else ("node" if shutil.which("node") else None)
+    if not runner:
+        return None
+    payload = json.dumps({
+        "prompt": prompt_text,
+        "entries": [
+            {"id": e.get("id"), "kind": e.get("kind"), "hint": e.get("hint", "")}
+            for e in entries_list
+            if e.get("id")
+        ],
+    })
+    try:
+        completed = subprocess.run(
+            [runner, helper],
+            input=payload,
+            capture_output=True,
+            text=True,
+            timeout=3.5,
+            env=os.environ.copy(),
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if completed.returncode != 0:
+        return None
+    try:
+        out = json.loads(completed.stdout.strip().splitlines()[-1])
+    except (json.JSONDecodeError, IndexError, AttributeError):
+        return None
+    if not isinstance(out, dict) or out.get("source") != "jev":
+        return None
+    if out.get("choice") == "NONE" and out.get("id") is None:
+        return []
+    eid = out.get("id")
+    entry = next((e for e in entries_list if e.get("id") == eid
+                  and e.get("kind") == out.get("kind", e.get("kind"))), None)
+    return [entry] if entry is not None else None
+
+
 def score_entry(entry):
     score = 0
     for trig in entry.get("triggers") or []:
@@ -165,37 +230,28 @@ def score_entry(entry):
     return score
 
 
-# Threshold: >=2 keyword hits OR >=1 phrase hit (a phrase alone scores 3).
-scored = []
-for entry in entries:
-    s = score_entry(entry)
-    if s >= 2:
-        scored.append((s, entry))
+def keyword_top():
+    # Threshold: >=2 keyword hits OR >=1 phrase hit (a phrase alone scores 3).
+    scored = []
+    for entry in entries:
+        s = score_entry(entry)
+        if s >= 2:
+            scored.append((s, entry))
+    scored = [(s, e) for s, e in scored if eligible(e["id"])]
+    if not scored:
+        return []
+    scored.sort(key=lambda x: (-x[0], x[1]["kind"], x[1]["id"]))
+    return scored[:2]
 
-if not scored:
+
+jev_entries = try_jev_route(prompt, entries)
+top = keyword_top() if jev_entries is None else [
+    (0, entry) for entry in jev_entries if eligible(entry["id"])
+]
+
+if not top:
     write_state()
     sys.exit(0)
-
-
-def eligible(entry_id):
-    rec = state["fires"].get(entry_id)
-    if not rec:
-        return True
-    count = rec.get("count", 0)
-    if count >= 2:
-        return False
-    if count == 1:
-        return (current_index - rec.get("last_fired_at", 0)) >= 10
-    return True
-
-
-scored = [(s, e) for s, e in scored if eligible(e["id"])]
-if not scored:
-    write_state()
-    sys.exit(0)
-
-scored.sort(key=lambda x: (-x[0], x[1]["kind"], x[1]["id"]))
-top = scored[:2]
 
 
 def describe(entry):
