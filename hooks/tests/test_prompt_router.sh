@@ -99,7 +99,8 @@ cat > "$HELPER" <<'EOF'
 console.log(JSON.stringify({ id: "research:researcher", source: "jev", choice: "research:researcher" }))
 EOF
 export BOPEN_JEV_ROUTER="$HELPER"
-run_hook "prompt-router.sh" "claude" "$factory_input"
+nokey_input=$(jq -n '{prompt:"set up a factory worker loop for this repo", session_id:"sess-jev-nokey"}')
+run_hook "prompt-router.sh" "claude" "$nokey_input"
 assert_contains "prompt-router no-key ignores jev helper" "orchestra:software-factory" "$HOOK_STDOUT"
 assert_not_contains "prompt-router no-key does not take helper id" "research:researcher" "$HOOK_STDOUT"
 
