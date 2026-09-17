@@ -111,6 +111,19 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+## [1.1.168] - Pending production promotion
+
+### Fixed
+
+- Jev accepts a skill and agent sharing a qualified id (such as
+  `core:front-desk`) by classifying with resource kind and preserving that kind
+  when selecting the hook hint. The previous validation rejected the installed
+  228-entry catalog before evaluation.
+- Add a reproducible live routing pilot with frozen cases and raw trials:
+  corrected assisted-hook accuracy 94/96 versus keyword accuracy 69/96.
+  Its 8/96 fallback rate exceeds the predeclared reliability gate; no production
+  accuracy or cost improvement is claimed. See the benchmark report.
+
 ## [1.1.167] - Pending production promotion
 
 ### Fixed

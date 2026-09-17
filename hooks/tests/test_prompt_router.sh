@@ -118,6 +118,18 @@ generic_jev_input=$(jq -n '{prompt:"what time is it where you are located", sess
 run_hook "prompt-router.sh" "claude" "$generic_jev_input"
 assert_contains "prompt-router jev semantic pick on generic prompt" "research:researcher" "$HOOK_STDOUT"
 
+# A skill and agent may legitimately share a qualified id.
+cp "$FIXTURE_INDEX" "$FIXTURE_INDEX.original"
+jq '.entries += [{id:"research:researcher",kind:"skill",hint:"Research skill",triggers:[]}]' "$FIXTURE_INDEX.original" > "$FIXTURE_INDEX"
+cat > "$HELPER" <<'EOF'
+console.log(JSON.stringify({ id: "research:researcher", kind: "skill", source: "jev", choice: "skill:research:researcher" }))
+EOF
+collision_input=$(jq -n '{prompt:"set up a factory worker loop for this repo", session_id:"sess-jev-kind-collision"}')
+run_hook "prompt-router.sh" "claude" "$collision_input"
+assert_contains "prompt-router preserves selected resource kind" "Skill(research:researcher)" "$HOOK_STDOUT"
+assert_not_contains "prompt-router does not select same-id agent" "subagent_type research:researcher" "$HOOK_STDOUT"
+mv "$FIXTURE_INDEX.original" "$FIXTURE_INDEX"
+
 # --- helper error → keyword path ---
 cat > "$HELPER" <<'EOF'
 #!/usr/bin/env node

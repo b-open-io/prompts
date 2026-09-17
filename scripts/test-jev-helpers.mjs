@@ -44,7 +44,7 @@ globalThis.fetch = async (url, request) => {
       request.signal.addEventListener('abort', () => { clearTimeout(timer); reject(request.signal.reason); }, { once: true });
     });
   }
-  let choice = mode === 'none' ? 'NONE' : mode === 'unknown' ? 'missing:id' : 'test:alpha';
+  let choice = mode === 'none' ? 'NONE' : mode === 'unknown' ? 'missing:id' : kind === 'route' ? 'skill:test:alpha' : 'test:alpha';
   const answer = { type: 'choice', choice };
   let answers = kind === 'route' ? { route: answer } : { winner: answer, strength: { type: 'score', score: mode === 'bad-score' ? 4 : 2.5 } };
   if (mode === 'missing') answers = {};
@@ -79,7 +79,15 @@ globalThis.fetch = async (url, request) => {
     assert.equal(success.source, 'jev', JSON.stringify(success));
     assert.equal(success[kind === 'route' ? 'id' : 'winner'], 'test:alpha');
     if (kind === 'lens') assert.equal(success.score, 2.5);
-    else assert.deepEqual(run('none'), { id: null, source: 'jev', choice: 'NONE' });
+    else {
+      assert.deepEqual(run('none'), { id: null, source: 'jev', choice: 'NONE' });
+      const collision = run('success', { ...inputs.route, entries: [
+        { id: 'test:alpha', kind: 'agent' }, ...inputs.route.entries,
+      ] });
+      assert.equal(collision.source, 'jev');
+      assert.equal(collision.kind, 'skill');
+      assert.equal(collision.id, 'test:alpha');
+    }
     for (const mode of ['unknown', 'missing', 'wrong-type', 'error', 'timeout', ...(kind === 'lens' ? ['bad-score'] : [])]) {
       assert.equal(run(mode).source, 'error', kind + ':' + mode);
     }

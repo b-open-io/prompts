@@ -210,7 +210,8 @@ def try_jev_route(prompt_text, entries_list):
     if out.get("choice") == "NONE" and out.get("id") is None:
         return []
     eid = out.get("id")
-    entry = next((e for e in entries_list if e.get("id") == eid), None)
+    entry = next((e for e in entries_list if e.get("id") == eid
+                  and e.get("kind") == out.get("kind", e.get("kind"))), None)
     return [entry] if entry is not None else None
 
 
