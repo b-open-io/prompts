@@ -63,17 +63,17 @@ grok plugin install core@b-open-io --trust
 
 ### Modules
 
-| Module | Contents |
-|---|---|
-| `orchestra` | coordinator, advisor, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
-| `plugin-kit` | agent lifecycle, benchmarks, plugin settings, plugin publishing; prompt-engineer, trainer |
-| `review` | visual review and proposals, code audit scripts, Codex Security, Vercel Security Dashboard posture guidance, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
-| `web-dev` | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection, Apple Xcode build loop for native Swift; designer, nextjs, optimizer, mobile |
-| `creative` | Three.js, shaders, game UI, macOS design, Native SDK macOS release, Apple Xcode build loop, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
-| `mcp-dev` | MCP Apps and the json-render framework; mcp |
-| `dev-ops` | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, npm publishing, payments; devops, database, data, integration-expert, payments |
-| `research` | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
-| `brand-rep` | personas for public surfaces, bopen.ai social scheduling from any harness (`schedule-social-post`); account-manager, social-media-manager |
+| Module | Codex name | Contents |
+|---|---|---|
+| `orchestra` | Orchestration | coordinator, advisor, wave-coordinator, software-factory, deploy-agent-team, claudex; agent-builder |
+| `plugin-kit` | Plugin Dev | agent lifecycle, benchmarks, plugin settings, plugin publishing; prompt-engineer, trainer |
+| `review` | Review | visual review and proposals, code audit scripts, Codex Security, Vercel Security Dashboard posture guidance, bug hunting, free-roam testing; code-auditor, security-ops, architecture-reviewer, consolidator, tester |
+| `web-dev` | Web | frontend performance, shadcn auditing, Next.js scaffolding and upgrades, charting, generative UI, Chrome inspection, Apple Xcode build loop for native Swift; designer, nextjs, optimizer, mobile |
+| `creative` | Creative | Three.js, shaders, game UI, macOS design, Native SDK macOS release, Apple Xcode build loop, UI audio themes, voice cloning, media; creative-developer, audio-specialist, native-desktop, cartographer |
+| `mcp-dev` | MCP | MCP Apps and the json-render framework; mcp |
+| `dev-ops` | Ops | deployment scripts, Vercel Security Dashboard CI guidance, CI waiting, process cleanup, cost tracking, npm publishing, payments; devops, database, data, integration-expert, payments |
+| `research` | Research | X research and lookups, persona capture, NotebookLM; researcher, documentation-writer, executive-assistant |
+| `brand-rep` | Public Agents | personas for public surfaces, bopen.ai social scheduling from any harness (`schedule-social-post`); account-manager, social-media-manager |
 
 ```bash
 /plugin install orchestra@b-open-io
@@ -117,6 +117,11 @@ codex plugin add core@b-open-io
 The Codex plugin installs the shared skills and Codex-specific hooks. Codex
 custom-agent files are configured separately because Codex discovers them from
 project or user agent directories rather than from a plugin manifest.
+
+Installed Codex plugins use the catalog emblem at `./assets/logo.png` and
+`./assets/icon.png` (`interface.logo` / `interface.composerIcon`). Module
+`displayName`s omit the `bOpen` prefix (see the table above). `core` stays
+`core`.
 
 #### Install Codex custom agents
 
@@ -248,7 +253,7 @@ core members.
 - 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
 
 ### Organization & Operations
-- 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup, and host install paths (Claude Code, Codex, Grok Build, Grok Bot)
+- 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup, host install paths (Claude Code, Codex, Grok Build, Grok Bot), and gemskills 0.0.70 Flare/Sunburst catalog
 - Third-party: `vercel-labs/is-agentic@is-agentic` — score a public site’s agent readiness. Install: `npx skills add vercel-labs/is-agentic`.
 
 **Usage:** In Claude Code, request the plugin agent by name (for example,
@@ -285,7 +290,7 @@ intentional.
 | `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, Mannered prose (metaphor-for-statement substitutions), unsupported significance, vague attribution, promotional drift, canned change summaries, and template-like sales copy; never write fail-closed / fail-open slang (say reject, deny, stop, allow, or continue); outbound drafts use attributed examples and supplied account facts without inventing commercial claims |
 | `persona` | Capture writing style profiles and social intelligence |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
-| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. When `AI_GATEWAY_API_KEY` is set, a lens may also take an optional jev `score`/`choice` (attribution “scored by jev” if no roster judge). It names specifications, humanizes every voice, and uses a uniform BitPlan reading layout without an embedded proposals menu. Decision trees connect dependent choices; questionnaires include Unsure, consequences, and a copyable response that works with scripts off. Settled plans end with an implementation brief and done conditions. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
+| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. When `AI_GATEWAY_API_KEY` is set, a lens may also take an optional jev `score`/`choice` (attribution “scored by jev” alongside any roster judge). It names specifications, humanizes every voice, and uses a uniform BitPlan reading layout without an embedded proposals menu. Decision trees connect dependent choices; questionnaires include Unsure, consequences, and a copyable response that works with scripts off. Settled plans end with an implementation brief and done conditions. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
@@ -352,7 +357,7 @@ intentional.
 ### Organization
 | Skill | Description |
 |-------|-------------|
-| `front-desk` | Team directory, agent routing, and service provider lookup |
+| `front-desk` | Team directory, agent routing, service provider lookup, and gemskills 0.0.70 Flare/Sunburst catalog |
 
 ## Slash Commands
 
@@ -389,7 +394,7 @@ has replaced that versioned directory.
 |------|-------------|-------|-------------|
 | `session-context` | SessionStart | SessionStart | Injects bounded branch, history, and plugin context |
 | `repo-freshness` | SessionStart | SessionStart | Non-destructively fast-forwards the active repo's branch/default ref to its remote when strictly behind; warns on divergence, never touches a dirty tree, never prompts |
-| `prompt-router` | UserPromptSubmit | — | Injects concise skill and agent routing hints with session deduplication; optional jev choice over router-index ids when `AI_GATEWAY_API_KEY` is set, otherwise keyword/phrase scoring |
+| `prompt-router` | UserPromptSubmit | — | Injects concise skill and agent routing hints with session deduplication; optional jev choice after the SDK setup below with `AI_GATEWAY_API_KEY` set, otherwise keyword/phrase scoring |
 | `bouncer` | Bash PreToolUse | Shell PreToolUse | Validates commands against safety rules |
 | `damage-control` | Bash/write/edit PreToolUse | Shell/`apply_patch` PreToolUse | Protects sensitive paths and destructive operations |
 | `publish-gate` | Bash PreToolUse | Shell PreToolUse | Guards publish commands behind release checks |
@@ -401,6 +406,23 @@ has replaced that versioned directory.
 On first use, Codex may ask you to review and trust plugin hooks. Inspect the
 commands before approving them. Do not use hook-trust bypass flags for normal
 work; they exist for controlled diagnostics, not routine installation.
+
+
+### Optional Jev setup
+
+The core router and Review lens helper use the AI SDK evaluation API. Plugin
+installation does not install npm dependencies. With Node.js 22 or newer, install the optional runtime once:
+
+```bash
+npm install --prefix "$HOME/.cache/bopen-jev" --no-save --ignore-scripts ai@7.0.105
+```
+
+Set `AI_GATEWAY_API_KEY` in the host environment to enable calls. The router sends
+the submitted prompt and catalog hints to Vercel AI Gateway (`typesafe-ai/jev`);
+the lens helper sends the problem, options, and advocacy record. Calls can incur
+Gateway charges. Leave the key unset to keep routing local and use agent judges.
+Missing SDK, invalid responses, and timeouts use the existing local fallback.
+A valid Jev `NONE` decision produces no routing hint.
 
 ### HammerTime Stop Hook
 
@@ -591,6 +613,7 @@ See the [claude-peacock plugin](https://github.com/b-open-io/claude-peacock) for
 prompts/
 ├── .claude-plugin/         # Claude Code plugin manifest
 ├── .codex-plugin/          # Codex plugin manifest
+├── assets/                 # README banner + Codex core logo/icon
 ├── .agents/plugins/        # Codex marketplace manifest
 ├── agents/                 # Canonical authored agent personas
 ├── bots/                   # ClawNet deployment metadata

@@ -10,6 +10,13 @@ manifests share the same release version.
 
 - Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
 - `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench.
+- Companion copy: gemskills catalog is **0.0.70** (GPT Image 2.5 Flare
+  `gpt-image-2.5-flare` default / Sunburst `gpt-image-2.5-sunburst` opt-in).
+  Front-desk, setup pack catalog, Frames `gemskills:content` blurbs, and Ridd's
+  visual-generation heading no longer advertise bare `gpt-image-2`. The
+  2026-09-05 marketplace CSV stays a frozen snapshot; `CATALOG.md` notes the
+  currency. `kris-mcp-research.md` footnotes that Flux159's DALL·E tool label
+  is third-party MCP marketing.
 - Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
   for Maps JS, Places, Routes, and Street View. Missing skill:
   `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.6.
@@ -104,12 +111,37 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+## [1.1.167] - Pending production promotion
+
+### Fixed
+
+- Jev helpers can load an explicitly installed AI SDK from `~/.cache/bopen-jev`
+  after plugin extraction. Missing runtime, invalid responses, and timeouts
+  retain the local fallback without exposing provider error text.
+- Prompt routing respects Jev's `NONE` decision and handles malformed helper
+  JSON without losing the keyword fallback.
+- Visual proposal scores retain Jev attribution alongside roster judges.
+  Review plugin 0.1.19; visual-proposal 0.0.18.
+- Reconcile production's Codex display names and icons before promotion.
+
 ## [1.1.166] - Pending production promotion
 
 ### Changed
 
 - Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
 - `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench. Review plugin 0.1.18.
+## [1.1.165] - Pending production promotion
+
+### Changed
+
+- Codex module `displayName`s drop the `bOpen` prefix: Orchestration, Plugin
+  Dev, Review, Web, Creative, MCP, Ops, Research, Public Agents. `core` stays
+  `core`.
+- Codex plugins ship `./assets/logo.png` and `./assets/icon.png` (512×512
+  catalog emblems from bopen.ai) so installed plugins stop showing placeholder
+  icons. Module versions: orchestra 0.1.28, plugin-kit 0.1.10, review 0.1.17,
+  web-dev 0.1.7, creative 0.1.7, mcp-dev 0.1.5, dev-ops 0.1.11, research 0.1.5,
+  brand-rep 0.1.10.
 
 ## [1.1.164] - Pending production promotion
 

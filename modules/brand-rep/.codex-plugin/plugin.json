@@ -1,6 +1,6 @@
 {
   "name": "brand-rep",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Personas for public-facing surfaces, intended for deployments that answer customers rather than developers",
   "author": {
     "name": "b-open-io",
@@ -11,7 +11,9 @@
     "public-agents"
   ],
   "interface": {
-    "displayName": "bOpen Public Agents",
+    "displayName": "Public Agents",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
     "shortDescription": "Personas that answer visitors on public surfaces.",
     "longDescription": "Personas for public-facing surfaces, intended for deployments that answer visitors rather than developers",
     "developerName": "b-open-io",

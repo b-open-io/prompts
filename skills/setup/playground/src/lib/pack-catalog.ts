@@ -1,5 +1,17 @@
 // Generated from bopen.ai content/packs ToCs + pack.json manifests on 2026-07-14.
 // Keep this snapshot aligned with the release manifests delivered to pack buyers.
+//
+// gemskills ships in b-open-io/gemskills, not this repo. Published catalog is
+// 0.0.70: OpenAI gpt-image-2.5-flare default, gpt-image-2.5-sunburst opt-in.
+// Never advertise bare gpt-image-2 or an openai/ model prefix.
+
+/** Living gemskills marketplace pin. Bump when gemskills ships a new catalog. */
+export const GEMSKILLS_CATALOG = {
+	version: "0.0.70",
+	openaiDefault: "gpt-image-2.5-flare",
+	openaiOptIn: "gpt-image-2.5-sunburst",
+	blurb: "OpenAI (GPT Image 2.5 Flare default / Sunburst opt-in)",
+} as const
 
 export type PlaybookClass = "blueprint" | "feature" | "task" | "chain" | "foundation"
 

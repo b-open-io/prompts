@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import type { PackCatalogEntry, PackPlugin } from "./pack-catalog"
+import { GEMSKILLS_CATALOG, type PackCatalogEntry, type PackPlugin } from "./pack-catalog"
 import { diffPackDependencies, installCommandForRuntime } from "./pack-dependencies"
 import type { HarnessState } from "./types"
 
@@ -47,6 +47,18 @@ const state: HarnessState = {
 	marketplace: { fetched: true, error: null, fetchedAt: "2026-07-14T00:00:00.000Z" },
 	pack: null,
 }
+
+describe("gemskills catalog pin", () => {
+	test("published gemskills is 0.0.70 Flare default / Sunburst opt-in", () => {
+		expect(GEMSKILLS_CATALOG.version).toBe("0.0.70")
+		expect(GEMSKILLS_CATALOG.openaiDefault).toBe("gpt-image-2.5-flare")
+		expect(GEMSKILLS_CATALOG.openaiOptIn).toBe("gpt-image-2.5-sunburst")
+		expect(GEMSKILLS_CATALOG.blurb).toContain("Flare")
+		expect(GEMSKILLS_CATALOG.blurb).toContain("Sunburst")
+		expect(GEMSKILLS_CATALOG.openaiDefault.startsWith("openai/")).toBe(false)
+		expect(GEMSKILLS_CATALOG.openaiOptIn.startsWith("openai/")).toBe(false)
+	})
+})
 
 describe("pack dependency diff", () => {
 	test("separates installed marketplace plugins, portable skills, and missing dependencies", () => {

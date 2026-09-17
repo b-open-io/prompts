@@ -194,7 +194,7 @@ Skills are distributed across plugin repos. Each plugin has a `skills/` director
 | core | b-open-io/prompts | visual-review, deploy-agent-team, benchmark-skills, wave-coordinator |
 | bsv-skills | b-open-io/bsv-skills | wallet-send-bsv, create-bap-identity, message-signing |
 | 1sat | b-open-io/1sat-sdk | collections, blockchain-media, ordinals-create, ordinals-marketplace |
-| gemskills | b-open-io/gemskills | generate-image, generate-svg, edit-image, pixel-avatar |
+| gemskills | b-open-io/gemskills | generate-image (0.0.70: `gpt-image-2.5-flare` default, `gpt-image-2.5-sunburst` opt-in), generate-svg, edit-image, pixel-avatar |
 | sigma-auth | b-open-io/better-auth-plugin | setup-nextjs, setup-convex, tokenpass |
 | product-skills | b-open-io/product-skills | legal-compliance, soc2-gap-analysis, soc2-evidence-collection, soc2-policy-drafting |
 | marketing-skills | coreyhaines31/marketingskills | copywriting, seo-audit, launch |

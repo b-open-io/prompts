@@ -1,6 +1,6 @@
 {
   "name": "creative",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "3D, shaders, game and desktop interfaces, UI audio themes, and generated media",
   "author": {
     "name": "b-open-io",
@@ -12,7 +12,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "bOpen Creative",
+    "displayName": "Creative",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
     "shortDescription": "Build 3D scenes, game UI, audio themes, and media.",
     "longDescription": "3D, shaders, game and desktop interfaces, UI audio themes, and generated media",
     "developerName": "b-open-io",

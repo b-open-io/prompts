@@ -205,10 +205,13 @@ def try_jev_route(prompt_text, entries_list):
         out = json.loads(completed.stdout.strip().splitlines()[-1])
     except (json.JSONDecodeError, IndexError, AttributeError):
         return None
-    eid = out.get("id")
-    if not eid:
+    if not isinstance(out, dict) or out.get("source") != "jev":
         return None
-    return next((e for e in entries_list if e.get("id") == eid), None)
+    if out.get("choice") == "NONE" and out.get("id") is None:
+        return []
+    eid = out.get("id")
+    entry = next((e for e in entries_list if e.get("id") == eid), None)
+    return [entry] if entry is not None else None
 
 
 def score_entry(entry):
@@ -240,11 +243,10 @@ def keyword_top():
     return scored[:2]
 
 
-jev_entry = try_jev_route(prompt, entries)
-if jev_entry is not None and eligible(jev_entry["id"]):
-    top = [(0, jev_entry)]
-else:
-    top = keyword_top()
+jev_entries = try_jev_route(prompt, entries)
+top = keyword_top() if jev_entries is None else [
+    (0, entry) for entry in jev_entries if eligible(entry["id"])
+]
 
 if not top:
     write_state()

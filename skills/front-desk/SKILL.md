@@ -139,7 +139,7 @@ command as though Codex can execute it.
 | core | b-open-io/prompts | `/plugin install core@b-open-io` |
 | bsv-skills | b-open-io/bsv-skills | `/plugin install bsv-skills@b-open-io` |
 | 1sat | b-open-io/1sat-sdk | `/plugin install 1sat@b-open-io` |
-| gemskills | b-open-io/gemskills | `/plugin install gemskills@b-open-io` |
+| gemskills | b-open-io/gemskills | `/plugin install gemskills@b-open-io` (0.0.70: Flare default / Sunburst opt-in) |
 | sigma-auth | b-open-io/better-auth-plugin | `/plugin install sigma-auth@b-open-io` |
 | product-skills | b-open-io/product-skills | `/plugin install product-skills@b-open-io` |
 | marketing-skills | coreyhaines31/marketingskills | `/plugin install marketing-skills@coreyhaines31` |

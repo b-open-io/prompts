@@ -1,6 +1,6 @@
 {
   "name": "dev-ops",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Deployment, CI, infrastructure health, npm publishing, spend tracking, and payment integrations",
   "author": {
     "name": "b-open-io",
@@ -12,7 +12,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "bOpen Ops",
+    "displayName": "Ops",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
     "shortDescription": "Deploy, watch CI, track spend, wire payments.",
     "longDescription": "Deployment, CI, infrastructure health, npm publishing, spend tracking, and payment integrations",
     "developerName": "b-open-io",
