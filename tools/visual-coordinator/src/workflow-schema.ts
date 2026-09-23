@@ -382,9 +382,11 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
       : `${node.title} needs a model: ${node.lane || "this lane"} does not offer ${SOL}; choose a lane that does or set a model explicitly.` });
     if (isSuperseded(model)) issues.push({ id: node.id, message: `${node.title} uses ${model}; coding uses GPT-6 models only (${SOL}).` });
     if (isGrokFamily(model) && !isApprovedGrok(model)) issues.push({ id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
+    if (isGrokFamily(model) && node.lane !== "grok") issues.push({ id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
+    // A Grok host's own native main session is an observed fact, not a dispatch; every other Grok use needs pressure.
+    const observedGrokMain = node.role === "coordinator" && node.lane === "grok" && node.provider === "native" && environment.hostLane === "grok";
+    if (isGrokFamily(model) && !observedGrokMain && !environment.creditPressure) issues.push({ id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
     if (node.role !== "coordinator") {
-      if (isGrokFamily(model) && !environment.creditPressure) issues.push({ id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
-      if (isGrokFamily(model) && node.lane !== "grok") issues.push({ id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok workers run only on the Grok lane.` });
       if (node.role !== "reviewer" && isOpus(model)) issues.push({ id: node.id, message: `${node.title} uses Claude Opus, which is the advisor, not a coding worker; use ${SOL}.` });
       else if (node.role !== "reviewer" && (node.lane === "claude" || isClaudeFamily(model))) issues.push({ id: node.id, message: `${node.title} uses Claude (${model || "no model"}), which is not a coding worker; use ${SOL}.` });
       if (node.role === "reviewer" && (!isSol(model) || node.effort !== "xhigh")) issues.push({ id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });

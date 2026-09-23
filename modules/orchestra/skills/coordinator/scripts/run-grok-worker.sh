@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 
 usage() {
-  echo "usage: $0 --auth grok.com|api --model ID --mode read|write --cwd DIR --prompt-file FILE --log FILE [--credit-pressure] [--branch NAME --base-ref REF --ownership TEXT] [--clean-home] [--disable-subagents] [--tools CSV] [--max-turns N]" >&2
+  echo "usage: $0 --auth grok.com|api --model ID --mode read|write --cwd DIR --prompt-file FILE --log FILE [--credit-pressure] [--effort none|minimal|low|medium|high|xhigh] [--branch NAME --base-ref REF --ownership TEXT] [--clean-home] [--disable-subagents] [--tools CSV] [--max-turns N]" >&2
 }
 
 auth=""
@@ -19,6 +19,7 @@ max_turns=20
 branch=""
 base_ref=""
 ownership=""
+effort=""
 credit_pressure=0
 case "${BOPEN_USAGE_CREDIT_PRESSURE:-}" in
   1|true|TRUE|yes|YES) credit_pressure=1 ;;
@@ -33,6 +34,7 @@ while (($#)); do
     --prompt-file) prompt_file="$2"; shift 2 ;;
     --log) log_file="$2"; shift 2 ;;
     --credit-pressure) credit_pressure=1; shift ;;
+    --effort) effort="$2"; shift 2 ;;
     --clean-home) clean_home=1; shift ;;
     --disable-subagents) disable_subagents=1; shift ;;
     --tools) tools="$2"; shift 2 ;;
@@ -49,6 +51,7 @@ done
 [[ "$mode" == "read" || "$mode" == "write" ]] || { usage; exit 2; }
 [[ -n "$model" && -d "$worker_cwd" && -r "$prompt_file" && -n "$log_file" ]] || { usage; exit 2; }
 [[ "$max_turns" =~ ^[1-9][0-9]*$ ]] || { echo "--max-turns must be positive" >&2; exit 2; }
+[[ -z "$effort" || "$effort" =~ ^(none|minimal|low|medium|high|xhigh)$ ]] || { echo "--effort must be none, minimal, low, medium, high, or xhigh" >&2; exit 2; }
 # Provider-qualified ids (xai/grok-4.6, openrouter/openai/gpt-5.6-luna) get the same policy as bare ids.
 case "$model" in
   gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is not allowed; coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
@@ -193,6 +196,7 @@ fi
 permission=plan
 [[ "$mode" == "write" ]] && permission=acceptEdits
 args=(grok --prompt-file "$dispatch_prompt" -m "$model" --permission-mode "$permission" --sandbox workspace --max-turns "$max_turns" --output-format plain --cwd "$worker_cwd")
+[[ -n "$effort" ]] && args+=(--reasoning-effort "$effort")
 ((disable_subagents)) && args+=(--no-subagents)
 [[ -n "$tools" ]] && args+=(--tools "$tools")
 

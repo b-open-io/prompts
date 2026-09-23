@@ -444,13 +444,35 @@ describe("workflow schema", () => {
         const environment = opencodeOnly(catalog, extra);
         const messages = validateWorkflow(parseSeed(seed, environment), environment).map((issue) => issue.message);
 
-        expect(messages).toContain("bare uses grok-4.7 on the opencode lane; Grok workers run only on the Grok lane.");
-        expect(messages).toContain("nested uses openrouter/xai/grok-4.7 on the opencode lane; Grok workers run only on the Grok lane.");
+        expect(messages).toContain("bare uses grok-4.7 on the opencode lane; Grok runs only on the Grok lane.");
+        expect(messages).toContain("nested uses openrouter/xai/grok-4.7 on the opencode lane; Grok runs only on the Grok lane.");
       }
 
       const pressured = opencodeOnly(catalog, { credit_pressure: true });
       const pinned = validateWorkflow(parseSeed(seed, pressured), pressured).filter((issue) => issue.id === "pinned");
       expect(pinned).toEqual([]);
+    });
+
+    it("applies the Grok lane and credit rules to coordinators, except a Grok host's own main", () => {
+      const catalog = ["openrouter/xai/grok-4.7", "openrouter/openai/gpt-6-sol"];
+      const seed = { nodes: [{ id: "main", role: "coordinator", lane: "opencode", model: "openrouter/xai/grok-4.7" }], edges: [] };
+
+      for (const extra of [{}, { credit_pressure: true }]) {
+        const environment = opencodeOnly(catalog, extra);
+        expect(validateWorkflow(parseSeed(seed, environment), environment).map((issue) => issue.message)).toContain(
+          "main uses openrouter/xai/grok-4.7 on the opencode lane; Grok runs only on the Grok lane.",
+        );
+      }
+
+      const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"] } });
+      const observed = defaultWorkflow(grokHost).nodes[0];
+      expect(observed).toMatchObject({ role: "coordinator", lane: "grok", provider: "native", model: "grok-4.7" });
+      expect(validateWorkflow({ title: "main", nodes: [observed], edges: [] }, grokHost)).toEqual([]);
+
+      const dispatched = parseSeed({ nodes: [{ id: "main", role: "coordinator", lane: "grok", model: "grok-4.7", provider: "external", disclosure: "Approved xAI" }], edges: [] }, opencodeOnly(catalog));
+      expect(validateWorkflow(dispatched, opencodeOnly(catalog)).map((issue) => issue.message)).toContain(
+        "main uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+      );
     });
 
     it("defaults a lane-pinned Grok builder to grok-4.7 only under credit pressure, never the reviewer", () => {

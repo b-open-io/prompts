@@ -177,12 +177,16 @@ piping through `tail` truncates the worker's final report irrecoverably.
 codex exec --sandbox workspace-write --cd <repo> "<one-line task>" \
   > /tmp/dispatch-<id>.log 2>&1 &
 
-grok --prompt-file <file> -m "<verified model id>" \
-  --permission-mode acceptEdits --sandbox workspace --cwd <repo>
+# Grok lane — always through the orchestra wrapper, which enforces the
+# grok-4.7 pin, the usage-credit gate (BOPEN_USAGE_CREDIT_PRESSURE=1), and the
+# GPT-6-only rule when the command runs. Never emit a raw `grok -m` dispatch.
+bash "$BOPEN_GROK_WORKER" --auth grok.com --model gpt-6-sol --effort medium \
+  --mode write --cwd <worktree> --branch <branch> --base-ref <ref> \
+  --ownership '<owned paths>' --prompt-file <file> --log <file>.log
 
-# read-only review — do not add acceptEdits
-grok --prompt-file <file> -m gpt-6-sol \
-  --permission-mode plan --sandbox workspace --output-format plain --verbatim
+# read-only review — the wrapper uses plan permissions in read mode
+bash "$BOPEN_GROK_WORKER" --auth grok.com --model gpt-6-sol --effort xhigh \
+  --mode read --cwd <repo> --prompt-file <file> --log <file>.log
 
 claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communication.md" \
   --model "${BOPEN_ADVISOR_MODEL:-claude-opus-5-5}" \

@@ -1,4 +1,4 @@
-import type { Workflow, WorkflowEnvironment, WorkflowNode } from "./workflow-schema";
+import { validateWorkflow, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
 
 /**
  * Inputs that are known by the host of the visual coordinator.  The
@@ -175,8 +175,18 @@ const externalCommand = (
   }
 
   if (lane === "grok") {
-    const args = ["grok", "--prompt-file", "/dev/stdin", "-m", model, "--reasoning-effort", node.effort, "--permission-mode", readOnly ? "plan" : "acceptEdits", "--sandbox", "workspace", "--output-format", "plain", "--cwd", repo];
-    return { command: `printf '%s\\n' ${promptArg} | ${args.map(shellQuote).join(" ")}` };
+    // Every Grok-lane dispatch goes through the orchestra wrapper so the model pin and the
+    // usage-credit gate (BOPEN_USAGE_CREDIT_PRESSURE) are enforced when the command runs.
+    const worktree = node.worktree!;
+    const args = ["--model", model, "--effort", node.effort, "--mode", readOnly ? "read" : "write", "--cwd", repo];
+    if (!readOnly) args.push("--branch", worktree.branch, "--base-ref", worktree.baseRef, "--ownership", node.ownedPaths.join(", ") || "none");
+    return {
+      command: [
+        `PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)`,
+        `printf '%s\\n' ${promptArg} > "$PROMPT_FILE"`,
+        `bash "\${BOPEN_GROK_WORKER:?set to orchestra coordinator/scripts/run-grok-worker.sh}" --auth "\${BOPEN_GROK_AUTH:-grok.com}" ${args.map(shellQuote).join(" ")} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
+      ].join(" && "),
+    };
   }
 
   if (lane === "opencode") {
@@ -310,6 +320,15 @@ export const serializeWorkflow = (
   const emitted: EmittedNodeSpec[] = [];
   const omissions: EmittedWorkflowSpec["omissions"] = [];
 
+  // The serializer enforces the same validation that gates Copy, so a failing canvas never yields a runnable record.
+  const nodeIds = new Set(workflow.nodes.map((node) => node.id));
+  const nodeIssues = new Map<string, string[]>();
+  const workflowIssues: string[] = [];
+  for (const issue of validateWorkflow(workflow, environment)) {
+    if (nodeIds.has(issue.id)) nodeIssues.set(issue.id, [...(nodeIssues.get(issue.id) ?? []), issue.message]);
+    else workflowIssues.push(issue.message);
+  }
+
   for (const original of workflow.nodes) {
     const converted = convertedGrokNode(original, environment);
     const node = converted ? { ...original, provider: "external" as const } : original;
@@ -322,6 +341,11 @@ export const serializeWorkflow = (
     }
     if (!generated.executable) {
       omissions.push({ id: original.id, kind: "node", label: original.title, reason: generated.reason ?? "The dispatch is not executable.", omit: true });
+      continue;
+    }
+    const blocking = workflowIssues.length ? [`Workflow validation failed: ${workflowIssues.join(" ")}`] : nodeIssues.get(original.id) ?? [];
+    if (blocking.length) {
+      omissions.push({ id: original.id, kind: "node", label: original.title, reason: blocking.join(" "), omit: true });
       continue;
     }
     emitted.push({

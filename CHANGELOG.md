@@ -167,6 +167,12 @@ manifests share the same release version.
   worker guide now requires the wrapper for every Grok model; its raw command
   shapes serve only non-Grok ids such as `gpt-6-sol` and run the wrapper's
   model gate before dispatch.
+- Coordinator nodes get the same Grok rules: Grok only on the Grok lane, and
+  only under credit pressure unless the node is the Grok host's own native main
+  session. The export serializer runs validation and withholds every invalid
+  node (and all nodes when the workflow itself is invalid), and Grok-lane
+  exports call `run-grok-worker.sh`, which gains `--effort`, instead of raw
+  `grok -m`.
 
 ## [1.1.168] - Pending production promotion
 

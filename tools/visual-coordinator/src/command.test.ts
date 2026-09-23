@@ -130,18 +130,60 @@ describe("versioned export contract", () => {
   });
 
   it("emits exact shell-out records and omits an unapproved boundary", () => {
-    const workflow = defaultWorkflow(environment);
+    const pressured = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true });
+    const workflow = defaultWorkflow(pressured);
     workflow.nodes[1] = { ...workflow.nodes[1], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "Approved external worker" };
     workflow.nodes[2] = { ...workflow.nodes[2], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "pending" };
 
-    const spec = serializeWorkflow(workflow, environment);
+    const spec = serializeWorkflow(workflow, pressured);
     expect(spec.nodes.find((node) => node.id === "build")).toMatchObject({ shell: true, nativeController: "codex", provider: "xai", disclosure: "Approved external worker" });
-    expect(spec.nodes.find((node) => node.id === "build")?.command).toContain("grok");
+    expect(spec.nodes.find((node) => node.id === "build")?.command).toContain("run-grok-worker.sh");
     expect(spec.nodes.find((node) => node.id === "review")).toBeUndefined();
     expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "review", kind: "node" }));
     expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "build-review", kind: "edge" }));
     expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "review-build", kind: "edge" }));
     expect(spec.edges.every((edge) => edge.from !== "review" && edge.to !== "review")).toBe(true);
+  });
+
+  it("routes Grok-lane dispatches through the policy wrapper, never a raw grok call", () => {
+    const writer = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", effort: "high", ownedPaths: ["src/a.ts"], disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex" });
+    const reviewer = generateNodeCommand(node("grok-review", { role: "reviewer", provider: "external", lane: "grok", model: "gpt-6-sol", effort: "xhigh", disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex" });
+
+    expect(writer.command).toContain('bash "${BOPEN_GROK_WORKER:?');
+    expect(writer.command).toContain("'--model' 'grok-4.7' '--effort' 'high' '--mode' 'write'");
+    expect(writer.command).toContain("'--branch' 'codex/build' '--base-ref' 'origin/dev' '--ownership' 'src/a.ts'");
+    expect(writer.command).toContain('--prompt-file "$PROMPT_FILE"');
+    expect(writer.command).not.toContain("--credit-pressure");
+    expect(writer.command).not.toMatch(/(^|\| )'?grok'? /);
+    expect(reviewer.command).toContain("'--mode' 'read'");
+    expect(reviewer.command).not.toContain("--branch");
+  });
+
+  it("withholds executable records for nodes that fail validation", () => {
+    const pressured = parseEnvironment({
+      harness: "claude-code",
+      lanes: { claude: "available", opencode: "available", codex: "unavailable" },
+      models: { claude: ["inherit"], opencode: ["openrouter/openai/gpt-6-sol", "openrouter/xai/grok-4.7"], opencode_effort: ["medium", "high", "xhigh"] },
+      credit_pressure: true,
+    });
+    const workflow = defaultWorkflow(pressured);
+    workflow.nodes[1] = { ...workflow.nodes[1], model: "openrouter/xai/grok-4.7", disclosure: "Approved OpenCode worker" };
+    expect(workflow.nodes[1]).toMatchObject({ lane: "opencode", provider: "external" });
+    expect(generateNodeCommand(workflow.nodes[1], { hostHarness: "claude-code", nativeController: "claude-code" }).command).toContain("'opencode' 'run'");
+
+    const spec = serializeWorkflow(workflow, pressured);
+    expect(spec.nodes.map((node) => node.id)).not.toContain("build");
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "build", kind: "node", reason: expect.stringContaining("Grok runs only on the Grok lane") }));
+    expect(toExportText(workflow, pressured)).not.toContain("'opencode' 'run'");
+  });
+
+  it("emits no executable nodes when the workflow itself is invalid", () => {
+    const workflow = defaultWorkflow(environment);
+    workflow.edges.push({ id: "cycle", source: "review", target: "coordinate", kind: "forward" });
+
+    const spec = serializeWorkflow(workflow, environment);
+    expect(spec.nodes).toEqual([]);
+    expect(spec.omissions.filter((item) => item.kind === "node").every((item) => item.reason.startsWith("Workflow validation failed:"))).toBe(true);
   });
 
   it("converts a detected native non-4.7 Grok model to an explicit shell-out", () => {

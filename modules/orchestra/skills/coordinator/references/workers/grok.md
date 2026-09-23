@@ -92,6 +92,8 @@ bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
   --log /tmp/dispatch-task.log
 ```
 
+Pass `--effort` (`none` through `xhigh`) to set Grok's reasoning effort; the
+visual coordinator's Grok-lane exports use this wrapper with that flag.
 Add `--clean-home` only for the task-specific cases described above. Use
 `--mode read --tools web_search,web_fetch` for focused web research. A native
 controller may run this script in the background and monitor its complete log.

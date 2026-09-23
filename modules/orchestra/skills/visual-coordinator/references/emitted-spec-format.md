@@ -189,6 +189,14 @@ listed in `omissions[]` together with every affected edge; the human plan
 repeats those refusals under `Not emitted`. A native Grok node whose model is detected but not `grok-4.7` is
 converted to a Grok CLI shell-out and marked `converted: true`.
 
+The serializer runs the same validation that gates Copy. A node with any
+validation issue is omitted with those issues as its reason, and a
+workflow-level issue (cycle, broken edge, live-child cap, simulation-only host)
+omits every node, so an invalid canvas never yields a runnable record. Grok-lane
+shell-outs are emitted as `run-grok-worker.sh` calls (`$BOPEN_GROK_WORKER`),
+never raw `grok -m`; the wrapper checks `BOPEN_USAGE_CREDIT_PRESSURE` when the
+command runs rather than baking the credit decision into the export.
+
 Generated commands encode task text before passing it through stdin or
 `--prompt-file`; never interpolate backticks, `$()`, backslashes, or newlines
 into shell quotes and never use `$(cat "$PROMPT_FILE")`.

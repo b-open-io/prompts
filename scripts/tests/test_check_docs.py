@@ -424,6 +424,7 @@ class GrokWrapperTests(unittest.TestCase):
                 (["--model", "xai/grok-4.6", "--credit-pressure"], {}, "pinned to grok-4.7"),
                 (["--model", "openrouter/x-ai/grok-4.6"], {}, "pinned to grok-4.7"),
                 (["--model", "openrouter/x-ai/grok-4.7"], {}, "usage-credit-pressure"),
+                (["--model", "gpt-6-sol", "--effort", "max"], {}, "--effort must be"),
             ]
             for extra, overrides, message in cases:
                 with self.subTest(extra=extra, overrides=overrides):
