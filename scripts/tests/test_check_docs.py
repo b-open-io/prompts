@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -432,6 +433,36 @@ class GrokWrapperTests(unittest.TestCase):
             partial[partial.index("grok-4.7")] = "grok-4"
             rejected = subprocess.run(partial, cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertNotEqual(rejected.returncode, 0)
+
+    def test_documented_grok_dispatch_uses_only_the_wrapper(self) -> None:
+        docs = self.ROOT / "modules/orchestra/skills/coordinator"
+        raw = re.compile(r"^\s*(?:env\s.*\s)?grok\s+(?:--prompt-file|--single|-p|-m)\b")
+        offenders = [
+            f"{path.relative_to(self.ROOT)}:{lineno}"
+            for path in docs.rglob("*.md")
+            for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1)
+            if raw.search(line)
+        ]
+        self.assertEqual(offenders, [])
+
+        guide = (docs / "references/workers/grok.md").read_text(encoding="utf-8")
+        block = re.search(r"^ {4}bash /absolute/path/to/coordinator/scripts/run-grok-worker\.sh \\\n(?: {6}.*\n)*?(?: {6}.*--mode read.*\n)(?: {6}.*\n)*", guide, re.M)
+        self.assertIsNotNone(block, "workers/grok.md must document a read-mode wrapper dispatch")
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            spec = temp / "spec.md"
+            spec.write_text("Research only.\n", encoding="utf-8")
+            command = (block.group(0).replace("\\\n", " ")
+                       .replace("/absolute/path/to/coordinator/scripts/run-grok-worker.sh", str(self.WRAPPER))
+                       .replace("<repo>", str(temp)).replace("<spec>", str(spec))
+                       .replace("/tmp/dispatch-<id>.log", str(temp / "run.log")))
+            for model in ("GPT-5.6-LUNA", "gpt-5.6-luna", "GROK-4.6", "grok-4.6"):
+                with self.subTest(model=model):
+                    env = {key: value for key, value in os.environ.items() if key != "BOPEN_USAGE_CREDIT_PRESSURE"}
+                    env["BOPEN_WORKER_MODEL"] = model
+                    rejected = subprocess.run(["bash", "-c", command], cwd=self.ROOT, env=env, capture_output=True, text=True)
+                    self.assertEqual(rejected.returncode, 2, rejected.stderr)
+                    self.assertRegex(rejected.stderr, "GPT-6 models only|pinned to grok-4.7")
 
     def test_write_mode_fails_closed_on_checkout_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

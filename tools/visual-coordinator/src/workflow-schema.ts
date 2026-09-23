@@ -444,7 +444,10 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
         : `${node.title} needs a model.`
       : `${node.title} needs a model: ${node.lane || "this lane"} does not offer ${SOL}; choose a lane that does or set a model explicitly.` });
     if (isSuperseded(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; coding uses GPT-6 models only (${SOL}).` });
-    if (isGrokFamily(model) && !isApprovedGrok(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
+    // The single observed native main keeps the model the detector saw it running, even an
+    // out-of-policy Grok id; every dispatch, edit, and inventory choice stays pinned.
+    const observedMainModel = node.id === mainId && model !== "" && model === environment.mainModels[node.lane];
+    if (isGrokFamily(model) && !isApprovedGrok(model) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
     if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
     // A Grok host's own main session is an observed fact, not a dispatch; every other Grok use needs pressure.
     const observedGrokMain = node.id === mainId && environment.hostLane === "grok";
@@ -462,10 +465,9 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
         && node.lane === "grok"
         && lane.models.includes(model);
       if (lane.availability !== "available") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
-      if (lane.inventory === "complete" && !lane.models.includes(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
+      if (lane.inventory === "complete" && !lane.models.includes(model) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
       if (lane.efforts.length > 0 && !lane.efforts.includes(node.effort)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses an effort unavailable on ${lane.label}: ${node.effort}.` });
       if (node.provider === "native" && environment.hostLane !== node.lane) issues.push({ scope: "node", id: node.id, message: `${node.title} marks ${lane.label} as native, but the current host is ${environment.hostLane ?? "unknown"}.` });
-      const observedMainModel = node.id === mainId && model === environment.mainModels[node.lane];
       if (node.provider === "native" && !observedMainModel && !detectedGrokShellOut && looksLikeForeignNativeModel(node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} pairs a native ${lane.label} lane with a foreign model: ${model}.` });
       if (detectedGrokShellOut && !hasApprovedDisclosure(node.disclosure)) issues.push({ scope: "node", id: node.id, message: `${node.title} needs an approved external-provider disclosure for this Grok CLI shell-out.` });
     }

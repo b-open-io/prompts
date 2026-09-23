@@ -347,6 +347,18 @@ describe("versioned export contract", () => {
     expect(serializeWorkflow(disclosed(configured), configured).nodes.find((node) => node.id === "coordinate")).toMatchObject({ actor: "main-controller" });
   });
 
+  it("exports the observed grok-4.6 main as native main-controller and nothing else on 4.6", () => {
+    const observed = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "grok-4.6"], grok_default: "grok-4.6" }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
+    const workflow = defaultWorkflow(observed);
+    const main = workflow.nodes[0];
+    workflow.nodes = [main, { ...main, id: "second", title: "Second", disclosure: "Approved xAI" }];
+    workflow.edges = [];
+
+    const spec = serializeWorkflow(workflow, observed);
+    expect(spec.nodes).toEqual([expect.objectContaining({ id: "coordinate", actor: "main-controller", execution: "native-agent", model: "grok-4.6" })]);
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "second", reason: expect.stringContaining("pinned to grok-4.7") }));
+  });
+
   it("withholds Grok shell-outs until the detector confirms a Grok auth lane", () => {
     const unconfirmed = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "token" });
     expect(unconfirmed.grokAuth).toBeNull();

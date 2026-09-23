@@ -204,6 +204,11 @@ manifests share the same release version.
   `base_url` (new detector field `grok_model_providers`) or `unknown`, never
   `xai`. `run-grok-worker.sh` applies its GPT-6-only and Grok pin rules to any
   casing, so `GPT-5.6-LUNA` and `GROK-4.6` are rejected like lowercase ids.
+- Every documented Grok-CLI dispatch (worker guide, persona passing, Grok host
+  guide) now goes through `run-grok-worker.sh`; the raw `grok` recipes and their
+  duplicate case-sensitive gate are gone. The observed native Grok main keeps a
+  detected `grok-4.6` default instead of failing validation; any other use of
+  4.6 is still rejected.
 
 ## [1.1.168] - Pending production promotion
 

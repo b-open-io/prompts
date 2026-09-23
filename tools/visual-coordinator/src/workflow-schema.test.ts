@@ -496,6 +496,30 @@ describe("workflow schema", () => {
       expect(messages.some((message) => message.startsWith("coordinate:"))).toBe(false);
     });
 
+    it("lets only the observed native main keep a detected grok-4.6 default", () => {
+      const grokHost = (grok_default: string) => parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "grok-4.6"], grok_default } });
+      const observed = grokHost("grok-4.6");
+      expect(observed.lanes.grok.models).toEqual(["grok-4.7"]);
+
+      const main = defaultWorkflow(observed).nodes[0];
+      expect(main).toMatchObject({ role: "coordinator", lane: "grok", provider: "native", model: "grok-4.6" });
+      expect(validateWorkflow({ title: "t", nodes: [main], edges: [] }, observed)).toEqual([]);
+
+      const second = { ...main, id: "second", title: "Second", disclosure: "Approved" };
+      const builder = { ...main, id: "build", title: "Build", role: "builder" as const, provider: "external" as const, disclosure: "Approved" };
+      const messages = validateWorkflow({ title: "t", nodes: [main, second, builder], edges: [] }, observed).map((issue) => `${issue.id}: ${issue.message}`);
+      expect(messages).toContain("second: Second uses grok-4.6; Grok is pinned to grok-4.7.");
+      expect(messages).toContain("second: Second uses a model not offered by Grok Build: grok-4.6.");
+      expect(messages).toContain("build: Build uses grok-4.6; Grok is pinned to grok-4.7.");
+      expect(messages.some((message) => message.startsWith("coordinate:"))).toBe(false);
+
+      const edited = grokHost("gpt-6-sol");
+      const editedMain = { ...defaultWorkflow(edited).nodes[0], model: "grok-4.6" };
+      expect(validateWorkflow({ title: "t", nodes: [editedMain], edges: [] }, edited).map((issue) => issue.message)).toContain(
+        "Coordinate uses grok-4.6; Grok is pinned to grok-4.7.",
+      );
+    });
+
     it("grants no pressure-free Grok main when the detector reported no default", () => {
       const noDefault = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"] } });
       expect(noDefault.mainModels).toEqual({});

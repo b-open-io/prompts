@@ -212,7 +212,9 @@ when reported. A Grok host has no main at all unless the detector reported
 stays empty and fails validation. Other hosts without a reported default use
 their first native host-lane coordinator. A Coordinate card edited away from
 the observed default is a dispatch: on the Grok lane it becomes a disclosed
-wrapper shell-out that needs credit pressure. The canvas's
+wrapper shell-out that needs credit pressure. The observed main alone keeps the
+model the detector saw, even `grok-4.6`; every dispatch, edited card, and
+inventory choice stays pinned to `grok-4.7`. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.
 
