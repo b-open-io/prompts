@@ -138,6 +138,10 @@ manifests share the same release version.
   Build card instead of from the host's first listed model, a seeded reviewer
   without an effort defaults to `xhigh`, and a seeded node without a provider
   takes the lane's real boundary instead of always `native`.
+- A seeded worker or reviewer with no `lane` is staffed on `gpt-6-sol` through
+  the first lane that offers it instead of the host's model; with no such lane
+  it stays on Codex and fails validation. Validation also rejects any Claude
+  model or Claude lane as a coding worker.
 
 ## [1.1.168] - Pending production promotion
 

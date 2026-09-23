@@ -183,6 +183,7 @@ const isSuperseded = (model: string) => /(?:^|\/)gpt-5\.6-sol$/i.test(model);
 const isGrokFamily = (model: string) => /^(?:xai\/)?grok-/i.test(model);
 const isApprovedGrok = (model: string) => /^(?:xai\/)?grok-4\.7$/i.test(model);
 const isOpus = (model: string) => /(?:^|\/)(?:claude-)?opus(?:$|-)/i.test(model);
+const isClaudeFamily = (model: string) => /^(?:anthropic\/)?(?:claude|opus|sonnet|haiku)(?:$|-)/i.test(model);
 
 const preferredLane = (environment: WorkflowEnvironment): WorkflowLane => environment.hostLane ?? "codex";
 const laneModels = (environment: WorkflowEnvironment, lane: WorkflowLane): string[] => environment.lanes[lane]?.models ?? fallbackModels[lane] ?? [];
@@ -292,12 +293,14 @@ export const parseSeed = (value: unknown, environment: WorkflowEnvironment = def
       const id = safeNodeId(originalId, `step-${usedIds.size + 1}`, usedIds);
       if (!idMap.has(originalId)) idMap.set(originalId, id);
       const suppliedWorktree = node.worktree && typeof node.worktree === "object" ? node.worktree : undefined;
-      const legacyLane = ["control", "delivery", "quality"].includes(text(node.lane).toLowerCase());
-      const legacyTarget = role === "coordinator"
+      const suppliedLane = text(node.lane).trim();
+      const legacyLane = ["control", "delivery", "quality"].includes(suppliedLane.toLowerCase());
+      const policyTarget = role === "coordinator"
         ? { lane: preferredLane(environment), model: mainModel(environment, preferredLane(environment)) }
         : codingTarget(environment);
-      const lane = legacyLane ? legacyTarget.lane : laneKey(text(node.lane, preferredLane(environment)));
-      const model = legacyLane ? legacyTarget.model : text(node.model, modelFor(environment, lane, role));
+      const staffFromPolicy = legacyLane || !suppliedLane;
+      const lane = staffFromPolicy ? policyTarget.lane : laneKey(suppliedLane);
+      const model = legacyLane ? policyTarget.model : text(node.model) || (staffFromPolicy ? policyTarget.model : modelFor(environment, lane, role));
       const provider = legacyLane ? providerFor(environment, lane, model) : member(node.provider, ["native", "external"] as const, providerFor(environment, lane, model));
       return [{
         id,
@@ -371,6 +374,7 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     if (node.role !== "coordinator") {
       if (isGrokFamily(model) && !environment.creditPressure) issues.push({ id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
       if (node.role !== "reviewer" && isOpus(model)) issues.push({ id: node.id, message: `${node.title} uses Claude Opus, which is the advisor, not a coding worker; use ${SOL}.` });
+      else if (node.role !== "reviewer" && (node.lane === "claude" || isClaudeFamily(model))) issues.push({ id: node.id, message: `${node.title} uses Claude (${model || "no model"}), which is not a coding worker; use ${SOL}.` });
       if (node.role === "reviewer" && (!isSol(model) || node.effort !== "xhigh")) issues.push({ id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });
     }
     const lane = environment.lanes[node.lane];

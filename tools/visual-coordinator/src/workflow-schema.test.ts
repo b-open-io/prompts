@@ -258,6 +258,46 @@ describe("workflow schema", () => {
     expect(validateWorkflow(workflow, environment)).toEqual([]);
   });
 
+  describe("bare seeds without a lane", () => {
+    const claudeHost = (codex: string, models: Record<string, unknown> = {}) => parseEnvironment({
+      harness: "claude-code",
+      lanes: { claude: "available", codex, opencode: "unavailable", grok: "unavailable" },
+      models: { claude: ["claude-opus-5-5", "sonnet", "haiku", "inherit"], codex: ["gpt-6-sol"], codex_effort: ["medium", "high", "xhigh"], ...models },
+    });
+    const bareSeed = { nodes: [{ id: "build", role: "builder" }, { id: "review", role: "reviewer" }], edges: [] };
+
+    it("staffs a bare builder and reviewer on GPT-6 Sol instead of the Claude host", () => {
+      const environment = claudeHost("available");
+      const workflow = parseSeed(bareSeed, environment);
+
+      expect(workflow.nodes[0]).toMatchObject({ lane: "codex", provider: "external", model: "gpt-6-sol", effort: "medium" });
+      expect(workflow.nodes[1]).toMatchObject({ lane: "codex", provider: "external", model: "gpt-6-sol", effort: "xhigh", execution: "read-only-review" });
+      expect(workflow.nodes.some((node) => node.lane === "claude" || /opus|sonnet|haiku/.test(node.model))).toBe(false);
+
+      workflow.nodes.forEach((node) => { node.disclosure = "Approved external Codex lane"; });
+      expect(validateWorkflow(workflow, environment)).toEqual([]);
+    });
+
+    it("fails closed when no lane offers GPT-6 Sol", () => {
+      const environment = claudeHost("unavailable");
+      const workflow = parseSeed(bareSeed, environment);
+      const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
+
+      expect(workflow.nodes.map((node) => node.model)).toEqual(["gpt-6-sol", "gpt-6-sol"]);
+      expect(messages).toContain("build uses Codex, which is unavailable.");
+      expect(messages).toContain("review uses Codex, which is unavailable.");
+    });
+
+    it("flags an explicit Claude coding worker instead of accepting it silently", () => {
+      const environment = claudeHost("available");
+      const workflow = parseSeed({ nodes: [{ id: "build", role: "builder", lane: "claude", model: "sonnet" }], edges: [] }, environment);
+
+      expect(validateWorkflow(workflow, environment).map((issue) => issue.message)).toContain(
+        "build uses Claude (sonnet), which is not a coding worker; use gpt-6-sol.",
+      );
+    });
+  });
+
   it("sanitizes node ids before using them in generated worktree metadata", () => {
     const workflow = parseSeed({
       nodes: [{ id: "../../escape", title: "Unsafe" }, { id: "../../escape", title: "Collision" }],
