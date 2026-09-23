@@ -123,7 +123,7 @@ describe("workflow schema", () => {
     workflow.nodes.slice(1).forEach((node) => {
       node.lane = "opencode";
       node.provider = "native";
-      node.model = "openai/gpt-5.6-luna";
+      node.model = "openai/gpt-6-sol";
     });
 
     expect(validateWorkflow(workflow, environment)).toEqual([]);
@@ -140,15 +140,103 @@ describe("workflow schema", () => {
   });
 
   it("requires disclosure before converting a detected non-4.7 native Grok model", () => {
-    const environment = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] } });
+    const environment = parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available", codex: "available" },
+      models: { grok: ["grok-4.7", "ox-alpha"], codex: ["gpt-6-sol"], codex_effort: ["medium", "high", "xhigh"] },
+    });
     const workflow = defaultWorkflow(environment);
     workflow.nodes[0].model = "ox-alpha";
+    workflow.nodes.slice(1).forEach((node) => { node.disclosure = "Approved GPT-6 Sol worker"; });
 
     expect(validateWorkflow(workflow, environment).map((issue) => issue.message)).toContain(
       "Coordinate needs an approved external-provider disclosure for this Grok CLI shell-out.",
     );
     workflow.nodes[0].disclosure = "Approved Grok CLI conversion";
     expect(validateWorkflow(workflow, environment)).toEqual([]);
+  });
+
+  describe("host-first worker defaults", () => {
+    const soloSolLast = { codex: ["gpt-5.6-sol", "gpt-6-sol"], codex_effort: ["medium", "high", "xhigh"] };
+    const workerNodes = (harness: string, lanes: Record<string, string>, models: Record<string, unknown>) =>
+      defaultWorkflow(parseEnvironment({ harness, lanes, models })).nodes;
+
+    it("routes a Claude host's build and review to GPT-6 Sol, not Opus", () => {
+      const nodes = workerNodes("claude-code", { claude: "available", codex: "available" }, {
+        claude: ["claude-opus-5-5", "opus", "sonnet", "inherit"],
+        ...soloSolLast,
+      });
+
+      expect(nodes[0]).toMatchObject({ lane: "claude", provider: "native", model: "inherit" });
+      expect(nodes[1]).toMatchObject({ lane: "codex", provider: "external", model: "gpt-6-sol" });
+      expect(nodes[2]).toMatchObject({ lane: "codex", provider: "external", model: "gpt-6-sol", effort: "xhigh" });
+      expect(nodes.some((node) => /opus|gpt-5\.6-sol/.test(node.model))).toBe(false);
+    });
+
+    it("keeps a Grok host's workers off Grok without usage-credit pressure", () => {
+      const nodes = workerNodes("grok", { grok: "available", codex: "available" }, { grok: ["grok-4.7"], ...soloSolLast });
+
+      expect(nodes[1]).toMatchObject({ lane: "codex", model: "gpt-6-sol" });
+      expect(nodes[2]).toMatchObject({ lane: "codex", model: "gpt-6-sol", effort: "xhigh" });
+    });
+
+    it("skips a superseded Sol that heads the Codex inventory", () => {
+      const nodes = workerNodes("codex", { codex: "available" }, soloSolLast);
+
+      expect(nodes.map((node) => node.model)).toEqual(["gpt-6-sol", "gpt-6-sol", "gpt-6-sol"]);
+      expect(nodes.every((node) => node.provider === "native")).toBe(true);
+    });
+
+    it("falls through to an OpenCode GPT-6 Sol lane when Codex is unavailable", () => {
+      const nodes = workerNodes("claude-code", { claude: "available", codex: "unavailable", opencode: "available" }, {
+        claude: ["inherit"],
+        opencode: ["openai/gpt-6-sol"],
+      });
+
+      expect(nodes[1]).toMatchObject({ lane: "opencode", model: "openai/gpt-6-sol" });
+    });
+
+    it("reports a missing GPT-6 Sol lane instead of substituting another model", () => {
+      const environment = parseEnvironment({ harness: "claude-code", lanes: { claude: "available", codex: "unavailable" }, models: { claude: ["claude-opus-5-5"] } });
+      const nodes = defaultWorkflow(environment).nodes;
+
+      expect(nodes[1]).toMatchObject({ lane: "codex", model: "gpt-6-sol" });
+      expect(validateWorkflow(defaultWorkflow(environment), environment).map((issue) => issue.message)).toContain("Build uses Codex, which is unavailable.");
+    });
+  });
+
+  it("rejects superseded, off-policy Grok, Opus, and non-xhigh review models", () => {
+    const environment = parseEnvironment({
+      harness: "codex",
+      lanes: { codex: "available", grok: "available", claude: "available" },
+      models: { codex: { models: ["gpt-6-sol"], complete: false }, grok: { models: ["grok-4.7"], complete: false }, claude: { models: [], complete: false } },
+    });
+    const workflow = defaultWorkflow(environment);
+    workflow.nodes[1] = { ...workflow.nodes[1], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "Approved" };
+    workflow.nodes[2] = { ...workflow.nodes[2], effort: "medium" };
+    workflow.nodes.push(
+      { ...workflow.nodes[1], id: "old-sol", title: "Old Sol", lane: "codex", provider: "native", model: "gpt-5.6-sol" },
+      { ...workflow.nodes[1], id: "old-grok", title: "Old Grok", model: "grok-4.6" },
+      { ...workflow.nodes[1], id: "opus", title: "Opus", lane: "claude", model: "claude-opus-5-5" },
+    );
+
+    const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
+    expect(messages).toContain("Build uses Grok without usage-credit pressure; route it to gpt-6-sol.");
+    expect(messages).toContain("Review must review on gpt-6-sol at xhigh.");
+    expect(messages).toContain("Old Sol uses superseded gpt-5.6-sol; use gpt-6-sol.");
+    expect(messages).toContain("Old Grok uses grok-4.6; Grok is pinned to grok-4.7.");
+    expect(messages).toContain("Opus uses Claude Opus, which is the advisor, not a coding worker; use gpt-6-sol.");
+
+    const pressured = parseEnvironment({
+      harness: "codex",
+      lanes: { codex: "available", grok: "available", claude: "available" },
+      models: { codex: { models: ["gpt-6-sol"], complete: false }, grok: { models: ["grok-4.7"], complete: false }, claude: { models: [], complete: false } },
+      credit_pressure: true,
+    });
+    expect(pressured.creditPressure).toBe(true);
+    expect(validateWorkflow(workflow, pressured).map((issue) => issue.message)).not.toContain(
+      "Build uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+    );
   });
 
   it("sanitizes node ids before using them in generated worktree metadata", () => {

@@ -199,6 +199,13 @@ class VisualWorkflowContractTests(unittest.TestCase):
             )
             detected = json.loads(output.stdout)
             self.assertEqual(detected["models"]["grok"], ["grok-4.7", "gpt-6-sol"])
+            self.assertIs(detected["credit_pressure"], False)
+            env["BOPEN_USAGE_CREDIT_PRESSURE"] = "1"
+            pressured = subprocess.run(
+                ["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env,
+                capture_output=True, text=True, check=True,
+            )
+            self.assertIs(json.loads(pressured.stdout)["credit_pressure"], True)
 
     def test_detector_queries_each_configured_opencode_provider(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -340,7 +347,7 @@ class GrokWrapperTests(unittest.TestCase):
             log = temp / "run.log"
             env = dict(os.environ)
             env["PATH"] = f"{temp}:/usr/bin:/bin"
-            command = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(log)]
+            command = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7", "--credit-pressure", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(log)]
             subprocess.run(command, cwd=self.ROOT, env=env, capture_output=True, text=True, check=True)
             inventory = Path(str(log) + ".inspect.json").read_text(encoding="utf-8")
             self.assertNotIn("do-not-log", inventory)
@@ -364,7 +371,7 @@ class GrokWrapperTests(unittest.TestCase):
             prompt = temp / "prompt.md"
             prompt.write_text("Implement the bounded change.\n", encoding="utf-8")
             command = [
-                "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7",
+                "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7", "--credit-pressure",
                 "--mode", "write", "--cwd", str(temp), "--prompt-file", str(prompt),
                 "--log", str(temp / "run.log"), "--branch", "codex/wrong",
                 "--base-ref", "HEAD", "--ownership", "README.md",
@@ -392,7 +399,7 @@ class GrokWrapperTests(unittest.TestCase):
             env = dict(os.environ)
             env["PATH"] = f"{temp}:/usr/bin:/bin"
             command = [
-                "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7",
+                "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7", "--credit-pressure",
                 "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt),
                 "--log", str(temp / "run.log"),
             ]
@@ -400,6 +407,25 @@ class GrokWrapperTests(unittest.TestCase):
             rejected = subprocess.run(command, cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertNotEqual(rejected.returncode, 0)
             self.assertIn("cwd mismatch", rejected.stderr)
+
+    def test_model_policy_rejects_off_policy_grok_and_superseded_sol(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            prompt = temp / "prompt.md"
+            prompt.write_text("Research only.\n", encoding="utf-8")
+            env = {key: value for key, value in os.environ.items() if key != "BOPEN_USAGE_CREDIT_PRESSURE"}
+            base = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(temp / "run.log")]
+            cases = [
+                (["--model", "grok-4.7"], {}, "usage-credit-pressure"),
+                (["--model", "grok-4.6", "--credit-pressure"], {}, "pinned to grok-4.7"),
+                (["--model", "grok-4.6"], {"BOPEN_USAGE_CREDIT_PRESSURE": "1"}, "pinned to grok-4.7"),
+                (["--model", "gpt-5.6-sol"], {}, "superseded"),
+            ]
+            for extra, overrides, message in cases:
+                with self.subTest(extra=extra, overrides=overrides):
+                    rejected = subprocess.run(base + extra, cwd=self.ROOT, env={**env, **overrides}, capture_output=True, text=True)
+                    self.assertEqual(rejected.returncode, 2)
+                    self.assertIn(message, rejected.stderr)
 
 
 class ModelDefaultTests(unittest.TestCase):

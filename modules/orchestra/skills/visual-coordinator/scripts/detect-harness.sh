@@ -209,6 +209,12 @@ case "$harness" in
   opencode)    native_workflow="false"; live_children="null"; agent_budget=0 ;;
 esac
 
+# Grok workers are allowed only when the operator declares usage-credit pressure.
+credit_pressure="false"
+case "${BOPEN_USAGE_CREDIT_PRESSURE:-}" in
+  1|true|TRUE|yes|YES) credit_pressure="true" ;;
+esac
+
 # --- Installed roster --------------------------------------------------------
 # Agents are the palette. Read display_name so the canvas can show a person
 # rather than a filename, and skip legacy caches so retired ids never appear.
@@ -335,6 +341,7 @@ cat <<JSON
 {
   "harness": "$harness",
   "native_workflow": $native_workflow,
+  "credit_pressure": $credit_pressure,
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget

@@ -30,6 +30,14 @@ Grok is a usage-credit-pressure fallback only. Pin Grok-family work to
 `grok-4.7`. Render Sol as a Grok-CLI shell-out node
 (`grok --single -m gpt-6-sol`), not as a native slug.
 
+The canvas never takes worker defaults from the host's first listed model.
+Build and Review default to `gpt-6-sol` (Review at `xhigh`) on the first lane
+that offers it — host, then Codex, OpenCode, Grok CLI — and report a missing
+lane rather than substituting Opus, GPT-5.6 Sol, or Grok. Only the coordinator
+node keeps the host's main model. The detector reports `credit_pressure: true`
+only when `BOPEN_USAGE_CREDIT_PRESSURE=1`; without it, Grok worker nodes fail
+validation.
+
 Therefore a cross-provider step is always one thing: **a shell-out to another
 vendor's CLI, wrapped in a step of the host harness.** Render those nodes
 visually distinct. They are subprocesses, not orchestrated peers.
@@ -76,7 +84,7 @@ and `~/.grok/docs/user-guide/`. That skill is not in this plugin.
 | Primitives | `agent(prompt, opts)`, `parallel(jobs)` (barrier), `phase(title)`, `log(msg)`, `complete(value)`, `budget()` |
 | No `pipeline()` | A later item cannot advance while an earlier one is still running. `parallel()` waits for the whole panel |
 | Fan-out | Default `agent_budget` 128 (1–1,024). Live children cap 32 by default; larger panels queue |
-| Per-step `agent().model` | Approved default `grok-4.7`; never offer Grok 4.6. Custom ids from `grok models` are Grok-CLI shell-outs |
+| Per-step `agent().model` | `grok-4.7` only, and only for worker nodes under usage-credit pressure (`credit_pressure: true`); never offer Grok 4.6. Custom ids from `grok models` are Grok-CLI shell-outs |
 | Structured output | `opts.output_schema` (JSON Schema map) — supported, same job as Claude `schema` |
 | Named agents | `opts.agent_type` is a roster `subagent_type`. Verified: `research:researcher` and `bopen-tools:researcher` both spawn |
 | Isolation | `opts.isolation_worktree` — private worktree, no automatic merge; preserve the caller's worktree cwd and clean up only after approved merge |

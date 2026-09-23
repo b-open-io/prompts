@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { DetectedLane, EdgeKind, WorkflowEdge, WorkflowEnvironment, WorkflowEffort, WorkflowNode } from "@/workflow-schema";
+import { modelFor, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
 
 type Props = {
   node?: WorkflowNode;
@@ -72,12 +72,15 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
   const efforts = lane.efforts.length > 0 ? lane.efforts : fallbackEfforts;
   const onLaneChange = (nextLane: string) => {
     const next = environment.lanes[nextLane] ?? missingLane(nextLane);
+    const model = modelFor(environment, nextLane, node.role);
+    const reviewEffort = node.role === "reviewer" && next.efforts.includes("xhigh") ? "xhigh" : undefined;
+    const requiresGrokShellOut = nextLane === "grok" && model !== "" && model !== "grok-4.7";
     onNodeChange({
       ...node,
       lane: nextLane,
-      model: next.models[0] ?? "",
-      effort: next.efforts[0] ?? "medium",
-      provider: environment.hostLane === nextLane ? "native" : "external",
+      model,
+      effort: reviewEffort ?? next.efforts[0] ?? "medium",
+      provider: environment.hostLane === nextLane && !requiresGrokShellOut ? "native" : "external",
     });
   };
   const onModelChange = (selected: string) => {

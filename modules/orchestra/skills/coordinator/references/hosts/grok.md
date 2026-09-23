@@ -4,12 +4,14 @@ Read this only when Grok Build is the current main session.
 
 ## Native agents
 
-Prefer roster agents on `grok-4.7` for evidence, testing, and specialist
-judgment when the current session is already on Grok. Routine bounded
-implementation follows Coordinator's preferred `gpt-6-sol` worker default,
-and code review uses that model at `xhigh`. Pass the named agent type;
-installed bOpen aliases may also resolve. Do not dispatch Grok 4.6. Native
-agent model fields accept Grok-native slugs, not arbitrary custom model ids.
+A Grok main session stays the main seat, but that does not make Grok the worker
+default. Route implementation to `gpt-6-sol` and code review to `gpt-6-sol`
+at `xhigh` through `grok --single -m gpt-6-sol` or the Codex CLI. Dispatch
+native Grok roster agents or Grok workers only under explicit usage-credit
+pressure (`BOPEN_USAGE_CREDIT_PRESSURE=1` or the user saying so), and then only
+on `grok-4.7`. Never dispatch Grok 4.6. Pass the named agent type; installed
+bOpen aliases may also resolve. Native agent model fields accept Grok-native
+slugs, not arbitrary custom model ids.
 
 ## Native workflows
 
@@ -25,8 +27,9 @@ isolation does not merge results; the main reviews and integrates them.
 
 Custom ids shown by `grok models` work with `grok --single`, but not as native
 workflow agent model values. To use GPT-6 Sol inside a Grok workflow, wrap
-`grok --single -m gpt-6-sol` in a `grok-4.7` supervisor after confirming the
-quoted model entry. An unquoted dotted TOML key creates the wrong nested id.
+`grok --single -m gpt-6-sol` in a thin supervisor after confirming the quoted
+model entry. The supervisor only relays; it does not implement. An unquoted
+dotted TOML key creates the wrong nested id.
 
 ## External workers
 

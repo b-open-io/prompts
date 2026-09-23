@@ -124,6 +124,16 @@ manifests share the same release version.
   GPT-5.6 Sol. CloudAgent is explicitly one coding lane: a catalog gap routes
   GPT-6 Sol through CLI-capable agent computers or desktop harnesses instead
   of substituting GPT-5.6 Sol or Opus as the coding worker.
+- The visual coordinator no longer takes Build and Review from the host's first
+  listed model. Both default to `gpt-6-sol` (Review at `xhigh`) on the first
+  lane that offers it, and validation rejects GPT-5.6 Sol, Grok models other
+  than `grok-4.7`, Grok workers without usage-credit pressure, Opus coding
+  workers, and reviews that are not GPT-6 Sol at `xhigh`. The detector reports
+  `credit_pressure` from `BOPEN_USAGE_CREDIT_PRESSURE`.
+- `run-grok-worker.sh` rejects every Grok model except `grok-4.7`, requires
+  `--credit-pressure` (or `BOPEN_USAGE_CREDIT_PRESSURE=1`) for it, and rejects
+  `gpt-5.6-sol`. The Grok host guide no longer defaults native roster agents
+  to Grok.
 
 ## [1.1.168] - Pending production promotion
 

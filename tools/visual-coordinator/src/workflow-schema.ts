@@ -20,6 +20,7 @@ export type WorkflowEnvironment = {
   hostLane: WorkflowLane | null;
   simulationOnly: boolean;
   nativeWorkflow: boolean;
+  creditPressure: boolean;
   caps: { liveChildren: number | null; agentBudgetDefault: number };
   lanes: Record<string, DetectedLane>;
   roster: unknown[];
@@ -164,6 +165,7 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
     hostLane,
     simulationOnly,
     nativeWorkflow: raw.native_workflow === true || raw.nativeWorkflow === true,
+    creditPressure: raw.credit_pressure === true || raw.creditPressure === true,
     caps: {
       liveChildren: safeNumber(rawCaps.live_children ?? rawCaps.liveChildren, null),
       agentBudgetDefault: safeNumber(rawCaps.agent_budget_default ?? rawCaps.agentBudgetDefault, 0) ?? 0,
@@ -175,9 +177,49 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
 
 export const defaultEnvironment = (): WorkflowEnvironment => parseEnvironment(undefined);
 
+export const SOL = "gpt-6-sol";
+const isSol = (model: string) => model === SOL || model.endsWith(`/${SOL}`);
+const isSuperseded = (model: string) => /(?:^|\/)gpt-5\.6-sol$/i.test(model);
+const isGrokFamily = (model: string) => /^(?:xai\/)?grok-/i.test(model);
+const isApprovedGrok = (model: string) => /^(?:xai\/)?grok-4\.7$/i.test(model);
+const isOpus = (model: string) => /(?:^|\/)(?:claude-)?opus(?:$|-)/i.test(model);
+
 const preferredLane = (environment: WorkflowEnvironment): WorkflowLane => environment.hostLane ?? "codex";
-const firstModel = (environment: WorkflowEnvironment, lane: WorkflowLane): string => environment.lanes[lane]?.models[0] ?? fallbackModels[lane]?.[0] ?? "";
-const providerFor = (environment: WorkflowEnvironment, lane: WorkflowLane): WorkflowNode["provider"] => environment.hostLane === lane || environment.simulationOnly ? "native" : "external";
+const laneModels = (environment: WorkflowEnvironment, lane: WorkflowLane): string[] => environment.lanes[lane]?.models ?? fallbackModels[lane] ?? [];
+
+// The coordinator is the current main session; it is never replaced with a worker default.
+const mainModel = (environment: WorkflowEnvironment, lane: WorkflowLane): string => {
+  const models = laneModels(environment, lane);
+  if (lane === "claude" && models.includes("inherit")) return "inherit";
+  return models.find((model) => !isSuperseded(model)) ?? "";
+};
+
+const solFor = (environment: WorkflowEnvironment, lane: WorkflowLane): string | null => {
+  if (environment.lanes[lane]?.availability === "unavailable") return null;
+  return laneModels(environment, lane).find(isSol) ?? null;
+};
+
+/** Pick the lane that runs GPT-6 Sol, independent of which model the host lists first. */
+export const codingTarget = (environment: WorkflowEnvironment): { lane: WorkflowLane; model: string } => {
+  const order = [...new Set([environment.hostLane, "codex", "opencode", "grok"].filter((lane): lane is string => Boolean(lane)))];
+  for (const lane of order) {
+    const model = solFor(environment, lane);
+    if (model) return { lane, model };
+  }
+  return { lane: "codex", model: SOL };
+};
+
+/** Default model for a node placed on a lane; worker and review roles prefer GPT-6 Sol. */
+export const modelFor = (environment: WorkflowEnvironment, lane: WorkflowLane, role: NodeRole): string => {
+  if (role === "coordinator") return mainModel(environment, lane);
+  const models = laneModels(environment, lane);
+  return models.find(isSol)
+    ?? models.find((model) => !isSuperseded(model) && !isOpus(model) && model !== "inherit" && (!isGrokFamily(model) || (environment.creditPressure && isApprovedGrok(model))))
+    ?? "";
+};
+
+const providerFor = (environment: WorkflowEnvironment, lane: WorkflowLane, model = ""): WorkflowNode["provider"] =>
+  environment.simulationOnly || (environment.hostLane === lane && !(lane === "grok" && !isGrokFamily(model))) ? "native" : "external";
 
 const looksLikeForeignNativeModel = (lane: string, model: string): boolean => {
   const foreignByLane: Record<string, RegExp> = {
@@ -202,20 +244,26 @@ const worktree = (id: string, owner: string) => ({
   cleanup: "Only after human-approved merge",
 });
 
-export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnvironment()): Workflow => ({
-  title: "Visual Coordinator plan",
-  nodes: [
-    { id: "coordinate", role: "coordinator", title: "Coordinate", task: "Resolve the plan and assign bounded work.", ownedPaths: ["tools/visual-coordinator"], lane: preferredLane(environment), provider: providerFor(environment, preferredLane(environment)), model: firstModel(environment, preferredLane(environment)), effort: "high", execution: "write", position: { x: 72, y: 74 }, worktree: worktree("coordinate", "coordinator") },
-    { id: "build", role: "builder", title: "Build", task: "Implement the visual coordinator surface.", ownedPaths: ["tools/visual-coordinator/src"], lane: preferredLane(environment), provider: providerFor(environment, preferredLane(environment)), model: firstModel(environment, preferredLane(environment)), effort: "medium", execution: "write", position: { x: 390, y: 212 }, worktree: worktree("build", "builder") },
-    { id: "review", role: "reviewer", title: "Review", task: "Check executable state and export readiness.", ownedPaths: ["tools/visual-coordinator/src/**/*.test.ts"], lane: preferredLane(environment), provider: providerFor(environment, preferredLane(environment)), model: firstModel(environment, preferredLane(environment)), effort: "xhigh", execution: "read-only-review", position: { x: 716, y: 74 }, worktree: worktree("review", "reviewer") },
-  ],
-  edges: [
-    { id: "coordinate-build", source: "coordinate", target: "build", kind: "forward", label: "assign" },
-    { id: "build-review", source: "build", target: "review", kind: "forward", label: "verify" },
-    { id: "review-build", source: "review", target: "build", kind: "reject", label: "revise" },
-    { id: "build-coordinate", source: "build", target: "coordinate", kind: "memory", label: "report" },
-  ],
-});
+export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnvironment()): Workflow => {
+  const host = preferredLane(environment);
+  const main = mainModel(environment, host);
+  const sol = codingTarget(environment);
+  const solProvider = providerFor(environment, sol.lane, sol.model);
+  return {
+    title: "Visual Coordinator plan",
+    nodes: [
+      { id: "coordinate", role: "coordinator", title: "Coordinate", task: "Resolve the plan and assign bounded work.", ownedPaths: ["tools/visual-coordinator"], lane: host, provider: providerFor(environment, host, main), model: main, effort: "high", execution: "write", position: { x: 72, y: 74 }, worktree: worktree("coordinate", "coordinator") },
+      { id: "build", role: "builder", title: "Build", task: "Implement the visual coordinator surface.", ownedPaths: ["tools/visual-coordinator/src"], lane: sol.lane, provider: solProvider, model: sol.model, effort: "medium", execution: "write", position: { x: 390, y: 212 }, worktree: worktree("build", "builder") },
+      { id: "review", role: "reviewer", title: "Review", task: "Check executable state and export readiness.", ownedPaths: ["tools/visual-coordinator/src/**/*.test.ts"], lane: sol.lane, provider: solProvider, model: sol.model, effort: "xhigh", execution: "read-only-review", position: { x: 716, y: 74 }, worktree: worktree("review", "reviewer") },
+    ],
+    edges: [
+      { id: "coordinate-build", source: "coordinate", target: "build", kind: "forward", label: "assign" },
+      { id: "build-review", source: "build", target: "review", kind: "forward", label: "verify" },
+      { id: "review-build", source: "review", target: "build", kind: "reject", label: "revise" },
+      { id: "build-coordinate", source: "build", target: "coordinate", kind: "memory", label: "report" },
+    ],
+  };
+};
 
 const safeNodeId = (value: unknown, fallback: string, used: Set<string>): string => {
   const raw = text(value).trim().toLowerCase();
@@ -245,9 +293,12 @@ export const parseSeed = (value: unknown, environment: WorkflowEnvironment = def
       if (!idMap.has(originalId)) idMap.set(originalId, id);
       const suppliedWorktree = node.worktree && typeof node.worktree === "object" ? node.worktree : undefined;
       const legacyLane = ["control", "delivery", "quality"].includes(text(node.lane).toLowerCase());
-      const lane = legacyLane ? preferredLane(environment) : laneKey(text(node.lane, preferredLane(environment)));
-      const model = legacyLane ? firstModel(environment, lane) : text(node.model, firstModel(environment, lane));
-      const provider = legacyLane ? providerFor(environment, lane) : member(node.provider, ["native", "external"] as const, "native");
+      const legacyTarget = role === "coordinator"
+        ? { lane: preferredLane(environment), model: mainModel(environment, preferredLane(environment)) }
+        : codingTarget(environment);
+      const lane = legacyLane ? legacyTarget.lane : laneKey(text(node.lane, preferredLane(environment)));
+      const model = legacyLane ? legacyTarget.model : text(node.model, modelFor(environment, lane, role));
+      const provider = legacyLane ? providerFor(environment, lane, model) : member(node.provider, ["native", "external"] as const, "native");
       return [{
         id,
         role,
@@ -315,6 +366,13 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
   for (const node of workflow.nodes) {
     const model = typeof node.model === "string" ? node.model.trim() : "";
     if (!model) issues.push({ id: node.id, message: `${node.title} needs a model.` });
+    if (isSuperseded(model)) issues.push({ id: node.id, message: `${node.title} uses superseded ${model}; use ${SOL}.` });
+    if (isGrokFamily(model) && !isApprovedGrok(model)) issues.push({ id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
+    if (node.role !== "coordinator") {
+      if (isGrokFamily(model) && !environment.creditPressure) issues.push({ id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
+      if (node.role !== "reviewer" && isOpus(model)) issues.push({ id: node.id, message: `${node.title} uses Claude Opus, which is the advisor, not a coding worker; use ${SOL}.` });
+      if (node.role === "reviewer" && (!isSol(model) || node.effort !== "xhigh")) issues.push({ id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });
+    }
     const lane = environment.lanes[node.lane];
     if (!lane) issues.push({ id: node.id, message: `${node.title} uses an undetected lane: ${node.lane}.` });
     else {

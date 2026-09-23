@@ -28,12 +28,14 @@ cleanup policy (after-approved-merge)
 - <from> —memory · carried forward→ <to>
 
 ## Nodes
-- **Work** — Display Name (`plugin:id`)
-  model: grok-4.7 · effort: medium
-- **Implement B** — SHELL-OUT to codex
-  controller: grok · provider/model: openai/gpt-6-sol
+- **Work** — SHELL-OUT to codex
+  controller: grok · provider/model: openai/gpt-6-sol · effort: medium
   disclosure: approved · context: brief, owned paths, test contract
   command: codex exec ...
+- **Review** — SHELL-OUT to codex (read-only)
+  controller: grok · provider/model: openai/gpt-6-sol · effort: xhigh
+  disclosure: approved · context: diff, worker report, claims
+  command: codex exec --sandbox read-only ...
 
 ## Verification gate
 <node id>: <command>
@@ -58,27 +60,32 @@ cleanup policy (after-approved-merge)
       "id": "n2",
       "kind": "process",
       "label": "Work",
-      "lane": "grok",
-      "model": "grok-4.7",
+      "lane": "codex",
+      "model": "gpt-6-sol",
       "effort": "medium",
       "actor": "maker",
-      "execution": "native-agent",
+      "execution": "external-provider",
       "agentType": null,
       "task": "<prompt>",
-      "shell": false,
-      "command": null
+      "shell": true,
+      "nativeController": "grok",
+      "provider": "openai",
+      "disclosure": "approved",
+      "context": "<exact shared context>",
+      "command": "<safe stdin/prompt-file dispatch>"
     },
     {
       "id": "n3",
       "kind": "process",
       "label": "Review",
-      "lane": "claude",
-      "model": "claude-opus-5-5",
+      "lane": "codex",
+      "model": "gpt-6-sol",
+      "effort": "xhigh",
       "actor": "reviewer",
       "execution": "read-only-review",
       "shell": true,
       "nativeController": "grok",
-      "provider": "anthropic",
+      "provider": "openai",
       "disclosure": "approved",
       "context": "<exact shared context>",
       "command": "<safe stdin/prompt-file dispatch>"
@@ -157,7 +164,9 @@ second dispatch after a failed gate, not a native loop. Never emit a native
 DAG, pipeline, or workflow-engine construct for OpenCode.
 
 **Grok**: emit a Rhai workflow. Follow the bundled `/create-workflow`
-skill. Native `agent().model` is pinned to `grok-4.7`; Grok 4.6 is forbidden.
+skill. Native `agent().model` is pinned to `grok-4.7` and allowed for worker
+nodes only under usage-credit pressure; Grok 4.6 is forbidden. Worker and
+review nodes default to `gpt-6-sol` shell-outs.
 A non-Grok lane is a
 Grok-CLI or Claude-CLI shell-out. `parallel(jobs)` is the barrier.
 Smoke-check with `{ validate_only: true }` before a real run.

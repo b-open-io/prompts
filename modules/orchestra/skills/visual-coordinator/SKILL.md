@@ -55,7 +55,10 @@ It reports the host harness, which other CLIs are reachable as shell-out lanes,
 the models each lane actually offers, and the installed agent roster with
 display names. Grok's model list is account-scoped. Codex has no enumeration
 command, so the detector reads its account-scoped local model cache and keeps
-the configured model as a fallback.
+the configured model as a fallback. Add `BOPEN_USAGE_CREDIT_PRESSURE=1` only
+when the user has declared usage-credit pressure; it is the only signal that
+permits Grok worker nodes. Build and Review default to `gpt-6-sol` regardless
+of which model the host lists first.
 
 The host harness is a **fact, not a choice** — it is decided by how the session
 was invoked. Render it as a fixed banner. Everything else is configurable.

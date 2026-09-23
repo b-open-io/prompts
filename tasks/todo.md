@@ -10,6 +10,9 @@
   `dev` with Luke as author and committer.
 - [x] Clarify that a CloudAgent catalog gap routes GPT-6 Sol through another
   CLI-capable lane rather than changing the coding-worker model.
+- [x] Fix Sol review blockers: host-independent GPT-6 Sol selection in the
+  visual coordinator, enforced Grok credit-pressure/4.7 policy in the wrapper
+  and host guide, and current defaults in the archival proposal.
 
 ## Review
 

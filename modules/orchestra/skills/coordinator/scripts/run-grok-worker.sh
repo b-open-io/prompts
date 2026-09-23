@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 
 usage() {
-  echo "usage: $0 --auth grok.com|api --model ID --mode read|write --cwd DIR --prompt-file FILE --log FILE [--branch NAME --base-ref REF --ownership TEXT] [--clean-home] [--disable-subagents] [--tools CSV] [--max-turns N]" >&2
+  echo "usage: $0 --auth grok.com|api --model ID --mode read|write --cwd DIR --prompt-file FILE --log FILE [--credit-pressure] [--branch NAME --base-ref REF --ownership TEXT] [--clean-home] [--disable-subagents] [--tools CSV] [--max-turns N]" >&2
 }
 
 auth=""
@@ -19,6 +19,10 @@ max_turns=20
 branch=""
 base_ref=""
 ownership=""
+credit_pressure=0
+case "${BOPEN_USAGE_CREDIT_PRESSURE:-}" in
+  1|true|TRUE|yes|YES) credit_pressure=1 ;;
+esac
 
 while (($#)); do
   case "$1" in
@@ -28,6 +32,7 @@ while (($#)); do
     --cwd) worker_cwd="$2"; shift 2 ;;
     --prompt-file) prompt_file="$2"; shift 2 ;;
     --log) log_file="$2"; shift 2 ;;
+    --credit-pressure) credit_pressure=1; shift ;;
     --clean-home) clean_home=1; shift ;;
     --disable-subagents) disable_subagents=1; shift ;;
     --tools) tools="$2"; shift 2 ;;
@@ -44,6 +49,12 @@ done
 [[ "$mode" == "read" || "$mode" == "write" ]] || { usage; exit 2; }
 [[ -n "$model" && -d "$worker_cwd" && -r "$prompt_file" && -n "$log_file" ]] || { usage; exit 2; }
 [[ "$max_turns" =~ ^[1-9][0-9]*$ ]] || { echo "--max-turns must be positive" >&2; exit 2; }
+case "$model" in
+  gpt-5.6-sol|*/gpt-5.6-sol) echo "model $model is superseded; use gpt-6-sol" >&2; exit 2 ;;
+  grok-4.7)
+    ((credit_pressure)) || { echo "grok-4.7 is a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
+  grok-*) echo "model $model is not allowed; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
+esac
 if [[ "$mode" == "write" ]]; then
   [[ -n "$branch" && -n "$base_ref" && -n "$ownership" ]] || { echo "write mode requires --branch, --base-ref, and --ownership" >&2; exit 2; }
 fi

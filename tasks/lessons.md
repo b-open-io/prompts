@@ -1,5 +1,13 @@
 # Lessons
 
+## Test the adversarial ordering, not the happy one (2026-09-23)
+
+A policy test that seeds the preferred model first proves nothing about a
+"pick the first listed model" implementation. When a default must hold
+regardless of inventory order, write fixtures where the superseded or
+disallowed model is listed first, and confirm the test fails on the old code
+before trusting it.
+
 ## Catalog availability is lane-scoped (2026-09-23)
 
 A model missing from Cursor CloudAgent's catalog is unavailable only in that

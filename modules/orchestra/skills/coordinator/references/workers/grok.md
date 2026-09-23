@@ -6,7 +6,9 @@ apply the Coordinator disclosure rule before first use.
 
 Grok is a usage-credit-pressure fallback, not the normal coding lane. Use it
 only when that pressure is explicit, pin `grok-4.7`, and never dispatch Grok
-4.6. Otherwise use the preferred `gpt-6-sol` coding worker.
+4.6. Otherwise use the preferred `gpt-6-sol` coding worker. The wrapper
+enforces this: it rejects every Grok model except `grok-4.7`, and rejects
+`grok-4.7` unless `--credit-pressure` or `BOPEN_USAGE_CREDIT_PRESSURE=1` is set.
 
 ## Choose and verify the auth lane
 
@@ -29,7 +31,9 @@ authorized sign-in. Never print, persist, or place a credential in a prompt or
 log.
 
 Capture the complete preflight output, then pin `BOPEN_WORKER_MODEL` to an
-exact listed id; never ride a changing CLI default. If authentication, model
+exact listed id; never ride a changing CLI default. Its default is `gpt-6-sol`
+through a quoted custom Grok model entry. Set it to `grok-4.7` only under
+usage-credit pressure; any other Grok id is out of policy. If authentication, model
 availability, or network access cannot be verified, report the lane as
 unavailable rather than silently implementing in the main.
 
@@ -77,6 +81,7 @@ Its inspection log is redacted and written with owner-only permissions.
 bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
   --auth grok.com \
   --model grok-4.7 \
+  --credit-pressure \
   --mode write \
   --cwd /absolute/path/to/worktree \
   --branch codex/example-task \
