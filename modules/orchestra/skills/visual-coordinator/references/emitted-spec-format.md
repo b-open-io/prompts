@@ -222,8 +222,10 @@ custom alias served by xAI, or pointing at a Grok model (`grok_model_targets`),
 is held to the same credit gate and `grok-4.7` pin as a `grok-*` id, checked
 against the model it points at; an alias for a `gpt-5.6` model is rejected,
 observed main included. The detector parses `config.toml` as real TOML, and a
-listed custom id is refused unless its entry names both a model and a
-`base_url` host. The observed main's pin exemption covers only a resolved
+listed custom id is refused unless its entry names both an explicit `model`
+and a `base_url` host; an entry is never assumed to serve its own id.
+Provider-qualified xAI ids (`xai/…`, `openrouter/x-ai/…`) are Grok: they run
+only on the Grok lane, under credit pressure, pinned to `grok-4.7`. The observed main's pin exemption covers only a resolved
 `grok-4.6`; any other off-pin Grok version is rejected like a dispatch. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.

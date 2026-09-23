@@ -233,6 +233,10 @@ manifests share the same release version.
   the wrapper exits instead of dispatching to an unknown provider. The observed
   main's pin exemption now covers only `grok-4.6`; other off-pin versions such
   as `grok-4.5` or `grok-5.0` are rejected.
+- A custom Grok id also needs an explicit `model` in its entry; the detector and
+  wrapper no longer assume it serves its own id. Provider-qualified xAI ids
+  (`xai/…`, `openrouter/x-ai/…`) are treated as Grok, so they cannot run on
+  OpenCode or skip the credit gate and `grok-4.7` pin.
 
 ## [1.1.168] - Pending production promotion
 

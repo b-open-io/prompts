@@ -62,7 +62,8 @@ fi
 # A custom Grok id (for example gpt-6-sol) is served from its [model."id"] base_url, not
 # necessarily by xAI. Map each listed custom id to the provider behind that URL so exports
 # report where content goes; ids without a recognizable base_url stay unresolved. Each id's
-# `model = "..."` is reported too, so an xAI-backed alias is held to the grok-4.7 pin.
+# explicit `model = "..."` is reported too, so an xAI-backed alias is held to the grok-4.7 pin;
+# an entry without one is never assumed to serve its own id.
 grok_model_providers_json="{}"
 grok_model_targets_json="{}"
 grok_config="${GROK_HOME:-$HOME/.grok}/config.toml"
@@ -92,7 +93,7 @@ for model_id in listed:
     entry = entries.get(model_id.lower())
     if entry is None:
         continue
-    target = entry.get("model", model_id)
+    target = entry.get("model")
     if isinstance(target, str) and re.fullmatch(r"[A-Za-z0-9._/:@-]+", target):
         targets[model_id] = target
     base_url = entry.get("base_url")

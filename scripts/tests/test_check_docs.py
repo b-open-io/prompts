@@ -282,6 +282,14 @@ class VisualWorkflowContractTests(unittest.TestCase):
         self.assertEqual(detected["grok_model_providers"], {"ox-alpha": "xai"})
         self.assertEqual(detected["grok_model_targets"], {"ox-alpha": "grok-4.6"})
 
+    def test_detector_never_assumes_a_custom_id_serves_itself(self) -> None:
+        detected = self._detect_grok(
+            "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)' '  - ox-alpha'; fi\n",
+            config='[model."ox-alpha"]\nbase_url = "https://openrouter.ai/api/v1"\n',
+        )
+        self.assertEqual(detected["grok_model_providers"], {"ox-alpha": "openrouter"})
+        self.assertEqual(detected["grok_model_targets"], {})
+
     def test_detector_never_adds_config_only_grok_ids(self) -> None:
         detected = self._detect_grok(
             "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)'; fi\n",
@@ -555,6 +563,15 @@ class GrokWrapperTests(unittest.TestCase):
             hostless = subprocess.run(base + ["--model", "gpt-6-sol"], cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertEqual(hostless.returncode, 2, hostless.stderr)
             self.assertIn("has no base_url", hostless.stderr)
+            config.write_text("[model.'ox-alpha']\nbase_url = 'https://openrouter.ai/api/v1'\n", encoding="utf-8")
+            modelless = subprocess.run(base + ["--model", "ox-alpha"], cwd=self.ROOT, env=env, capture_output=True, text=True)
+            self.assertEqual(modelless.returncode, 2, modelless.stderr)
+            self.assertIn("has no explicit model", modelless.stderr)
+            for qualified in ("xai/ox-alpha", "XAI/OX-ALPHA", "openrouter/x-ai/ox-alpha"):
+                config.write_text(f'[model."{qualified}"]\nmodel = "gpt-6-sol"\nbase_url = "https://openrouter.ai/api/v1"\n', encoding="utf-8")
+                offlane = subprocess.run(base + ["--model", qualified, "--credit-pressure"], cwd=self.ROOT, env=env, capture_output=True, text=True)
+                self.assertEqual(offlane.returncode, 2, offlane.stderr)
+                self.assertIn("pinned to grok-4.7", offlane.stderr)
             config.write_text("[model.'ox-alpha']\nmodel = 'ox-alpha'\nbase_url = ''\n", encoding="utf-8")
             empty_host = subprocess.run(base + ["--model", "ox-alpha"], cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertEqual(empty_host.returncode, 2, empty_host.stderr)
@@ -580,7 +597,7 @@ class GrokWrapperTests(unittest.TestCase):
                 (["--model", "ox-alpha"], "usage-credit-pressure"),
                 (["--model", "OX-ALPHA"], "usage-credit-pressure"),
                 (["--model", "ox-old", "--credit-pressure"], "pinned to grok-4.7"),
-                (["--model", "ox-blank", "--credit-pressure"], "an unreported model"),
+                (["--model", "ox-blank", "--credit-pressure"], "has no explicit model"),
                 (["--model", "or-grok", "--credit-pressure"], "pinned to grok-4.7"),
                 (["--model", "or-luna"], "GPT-6 models only"),
             ]

@@ -435,6 +435,63 @@ describe("versioned export contract", () => {
     expect(validateWorkflow({ title: "t", nodes: [main], edges: [] }, observed)).toEqual([]);
   });
 
+  it("keeps provider-qualified xAI ids on the Grok lane behind its gates", () => {
+    const host = (extra: Record<string, unknown> = {}) => parseEnvironment({
+      harness: "codex",
+      lanes: { codex: "available", opencode: "available", grok: "available" },
+      models: { codex: ["gpt-6-sol"], opencode: ["gpt-6-sol", "xai/ox-alpha"], grok: ["grok-4.7", "xai/ox-alpha"] },
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+      ...extra,
+    });
+    const builder = (environment: ReturnType<typeof host>, lane: string) => {
+      const workflow = defaultWorkflow(environment);
+      workflow.nodes = [{ ...workflow.nodes[1], lane, provider: "external", model: "xai/ox-alpha", disclosure: "Approved xAI dispatch" }];
+      workflow.edges = [];
+      return workflow;
+    };
+
+    for (const environment of [host(), host({ credit_pressure: true })]) {
+      const workflow = builder(environment, "opencode");
+      expect(validateWorkflow(workflow, environment).map((issue) => issue.message)).toContain("Build uses xai/ox-alpha on the opencode lane; Grok runs only on the Grok lane.");
+      expect(serializeWorkflow(workflow, environment).nodes).toEqual([]);
+      expect(toExportText(workflow, environment)).not.toContain("opencode run --model xai/");
+    }
+
+    const unverified = host({ credit_pressure: true });
+    expect(validateWorkflow(builder(unverified, "grok"), unverified).map((issue) => issue.message)).toContain("Build uses xai/ox-alpha; Grok is pinned to grok-4.7.");
+
+    const pinned = host({ credit_pressure: true, grok_model_providers: { "xai/ox-alpha": "xai" }, grok_model_targets: { "xai/ox-alpha": "grok-4.7" } });
+    expect(validateWorkflow(builder(pinned, "grok"), pinned)).toEqual([]);
+    expect(serializeWorkflow(builder(pinned, "grok"), pinned).nodes).toEqual([
+      expect.objectContaining({ id: "build", provider: "xai", shell: true, command: expect.stringContaining("run-grok-worker.sh") }),
+    ]);
+    expect(toExportText(builder(pinned, "grok"), pinned)).not.toContain("opencode run");
+
+    const unpressured = host({ grok_model_providers: { "xai/ox-alpha": "xai" }, grok_model_targets: { "xai/ox-alpha": "grok-4.7" } });
+    expect(validateWorkflow(builder(unpressured, "grok"), unpressured).map((issue) => issue.message)).toContain("Build uses Grok without usage-credit pressure; route it to gpt-6-sol.");
+  });
+
+  it("refuses a listed custom Grok id whose entry names a base_url but no model", () => {
+    const environment = parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available" },
+      models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" },
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+      credit_pressure: true,
+      grok_model_providers: { "ox-alpha": "openrouter" },
+    });
+    const workflow = defaultWorkflow(environment);
+    workflow.nodes = [workflow.nodes[0], { ...workflow.nodes[1], lane: "grok", provider: "external", model: "ox-alpha", disclosure: "Approved custom dispatch" }];
+    workflow.edges = [];
+    expect(validateWorkflow(workflow, environment).map((issue) => issue.message)).toContain(
+      "Build uses custom id ox-alpha, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.",
+    );
+    expect(serializeWorkflow(workflow, environment).nodes.map((node) => node.id)).toEqual(["coordinate"]);
+    expect(toExportText(workflow, environment)).not.toContain("run-grok-worker.sh");
+  });
+
   it("limits the observed-main Grok exemption to grok-4.6", () => {
     const observed = (grok_default: string, extra: Record<string, unknown> = {}) => {
       const environment = parseEnvironment({

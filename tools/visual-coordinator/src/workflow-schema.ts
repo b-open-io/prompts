@@ -211,7 +211,8 @@ const isSol = (model: string) => model === SOL || model.endsWith(`/${SOL}`);
 // Coding uses GPT-6 models only; the whole gpt-5.6 family is out of policy, even by explicit choice.
 function isSuperseded(model: string) { return /(?:^|\/)gpt-5\.6(?:$|-)/i.test(model); }
 // Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
-export const isGrokFamily = (model: string) => /(?:^|\/)grok-/i.test(model);
+// Provider-qualified xAI ids (xai/…, openrouter/x-ai/…) are Grok whatever the model name says.
+export const isGrokFamily = (model: string) => /(?:^|\/)(?:grok-|x-?ai\/)/i.test(model);
 const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
 // The only out-of-policy Grok version an observed main may keep is the legacy grok-4.6 session.
 const isObservedLegacyGrok = (model: string) => /(?:^|\/)grok-4\.6$/i.test(model);

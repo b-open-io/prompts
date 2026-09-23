@@ -10,7 +10,8 @@ only when that pressure is explicit, pin `grok-4.7`, and never dispatch Grok
 enforces this for any casing of the id, and for a custom id whose
 `config.toml` entry (parsed as real TOML, either quote style) is served by xAI
 or points at a Grok or `gpt-5.6` model; a non-Grok id with no parseable entry,
-or with no `base_url`, is refused. It
+no explicit `model`, or no `base_url` is refused. Provider-qualified xAI ids
+(`xai/…`, `openrouter/x-ai/…`) get the Grok pin and credit gate. It
 rejects every Grok model except `grok-4.7`, and rejects
 `grok-4.7` unless `--credit-pressure` or `BOPEN_USAGE_CREDIT_PRESSURE=1` is set.
 

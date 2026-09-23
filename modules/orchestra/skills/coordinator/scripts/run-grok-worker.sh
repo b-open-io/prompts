@@ -115,12 +115,17 @@ if [[ "$alias_status" == 0 ]]; then
       *) echo "custom model $model has no base_url in $alias_config, so its provider cannot be verified" >&2; exit 2 ;;
     esac
   fi
-  # An entry without `model` serves its own id, the same rule the detector reports.
+  if [[ -z "$alias_target" ]]; then
+    case "$model_policy" in
+      grok-*|*/grok-*) ;;
+      *) echo "custom model $model has no explicit model in $alias_config, so its target cannot be verified" >&2; exit 2 ;;
+    esac
+  fi
   alias_effective=${alias_target:-$model_policy}
   case "$alias_effective" in
     gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is an alias for $alias_effective; coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
   esac
-  if [[ "$alias_host" == "x.ai" || "$alias_host" == *.x.ai || "$alias_effective" == grok-* || "$alias_effective" == */grok-* ]]; then
+  if [[ "$alias_host" == "x.ai" || "$alias_host" == *.x.ai || "$alias_effective" == grok-* || "$alias_effective" == */grok-* || "$model_policy" =~ (^|/)x-?ai/ ]]; then
     case "$alias_effective" in
       grok-4.7|*/grok-4.7)
         ((credit_pressure)) || { echo "$model is an xAI alias for grok-4.7, a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
