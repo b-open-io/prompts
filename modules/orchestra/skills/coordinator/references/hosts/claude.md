@@ -37,7 +37,7 @@ main is only the fallback when native child dispatch is unavailable.
 Load only the selected worker guide:
 
 - [Grok CLI](../workers/grok.md)
-- [Codex, Sol, Luna, or Astra](../workers/codex.md)
+- [Codex, Sol, or Astra](../workers/codex.md)
 - [Muse Code](../workers/muse.md)
 - [OpenCode CLI](../workers/opencode.md)
 

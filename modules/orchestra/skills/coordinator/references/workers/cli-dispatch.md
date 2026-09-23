@@ -1,7 +1,6 @@
 # Codex CLI dispatch
 
-Load this only when dispatching raw `codex exec` for a Sol, Luna, or Astra
-worker. Prefer a Claude Code Codex plugin's resumable job interface when it is
+Load this only when dispatching raw `codex exec` for a Sol or Astra worker. Prefer a Claude Code Codex plugin's resumable job interface when it is
 installed and suitable.
 
 ## Capture and resume
@@ -45,17 +44,6 @@ Code review:
       "<review brief; details in SPEC file>" \
       > /tmp/review-<id>.log 2>&1 &
 
-Luna:
-
-    codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-luna \
-      -c model_reasoning_effort="xhigh" \
-      --json --output-last-message /tmp/dispatch-<id>-last.md \
-      "<imperative; details in SPEC file>" \
-      > /tmp/dispatch-<id>.log 2>&1 &
-
-If Luna rejects `xhigh`, try `max` once and report which effort actually ran.
-Luna without `xhigh` or `max` is not this lane.
-
 Astra:
 
     codex exec --sandbox workspace-write --cd <repo> -m gpt-6-astra \
@@ -67,7 +55,7 @@ Astra:
 Astra has no silent effort fallback. Raise to `xhigh` or `max` only when the
 user asks or the first `high` run fails; report the effort that actually ran.
 
-With network for installs (any of the three), insert before the prompt:
+With network for installs (any of these), insert before the prompt:
 
     -c sandbox_workspace_write.network_access=true
 

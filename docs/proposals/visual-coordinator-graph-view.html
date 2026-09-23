@@ -175,7 +175,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     return 6;
   }
   function modelsFor(lane){
-    return (MODELS[lane]||[]).filter(function(m){ return m && m!=="unknown" && (!/^grok-/.test(m) || m==="grok-4.7") && m!=="gpt-5.6-sol"; });
+    return (MODELS[lane]||[]).filter(function(m){ return m && m!=="unknown" && (!/^grok-/.test(m) || m==="grok-4.7") && !/(^|\/)gpt-5\.6(-|$)/.test(m); });
   }
   function effortsFor(lane){
     return (MODELS[lane+"_effort"]||["low","medium","high"]).filter(function(m){ return m && m!=="unknown"; });

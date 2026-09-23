@@ -165,7 +165,7 @@ main-known `BOPEN_HOST_HARNESS` value.
 - **Grok**: whatever `grok models` prints for the authenticated account, plus
   any custom `[model.<alias>]` the user registered.
 - **OpenCode**: whatever `opencode models <provider>` prints for the configured
-  providers, referenced as `provider/model`. Custom Muse Spark / Luna lanes are
+  providers, referenced as `provider/model`. Custom Muse Spark lanes are
   `provider:{}` blocks in `opencode.json` — never assume the id without listing it.
 
 ## Shell-out invocations for cross-provider nodes

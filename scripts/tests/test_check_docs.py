@@ -419,7 +419,11 @@ class GrokWrapperTests(unittest.TestCase):
                 (["--model", "grok-4.7"], {}, "usage-credit-pressure"),
                 (["--model", "grok-4.6", "--credit-pressure"], {}, "pinned to grok-4.7"),
                 (["--model", "grok-4.6"], {"BOPEN_USAGE_CREDIT_PRESSURE": "1"}, "pinned to grok-4.7"),
-                (["--model", "gpt-5.6-sol"], {}, "superseded"),
+                (["--model", "gpt-5.6-sol"], {}, "GPT-6 models only"),
+                (["--model", "openrouter/openai/gpt-5.6-luna"], {}, "GPT-6 models only"),
+                (["--model", "xai/grok-4.6", "--credit-pressure"], {}, "pinned to grok-4.7"),
+                (["--model", "openrouter/x-ai/grok-4.6"], {}, "pinned to grok-4.7"),
+                (["--model", "openrouter/x-ai/grok-4.7"], {}, "usage-credit-pressure"),
             ]
             for extra, overrides, message in cases:
                 with self.subTest(extra=extra, overrides=overrides):

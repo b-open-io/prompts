@@ -13,7 +13,8 @@ Full installed agent roster with `subagent_type` identifiers and the skills to m
 > `grok-4.7`; never use Grok 4.6. CloudAgent is only one coding lane: if its
 > catalog omits GPT-6 Sol, use `gpt-6-sol` through the CLI on an agent computer
 > or Luke's desktop harnesses. Do not treat that gap as unavailability or
-> substitute GPT-5.6 Sol or Opus as the coding worker.
+> substitute GPT-5.6 Sol or Opus as the coding worker. Coding uses GPT-6 models
+> only; no `gpt-5.6` model (Sol, Luna, Terra) is used, even by explicit choice.
 
 ## Roster
 

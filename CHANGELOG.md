@@ -149,8 +149,19 @@ manifests share the same release version.
 - An omitted worker or reviewer model defaults only to `gpt-6-sol` (or
   `grok-4.7` for a builder under usage-credit pressure). When the lane lacks
   Sol, the model stays empty and validation names the missing lane instead of
-  silently staffing Luna or another catalog entry; explicit model choices such
-  as Luna still validate.
+  silently staffing Luna or another catalog entry.
+- Coding uses GPT-6 models only. The visual coordinator drops every `gpt-5.6`
+  model (Sol, Luna, Terra) from lane inventories and rejects it on any node,
+  including explicit choices; `run-grok-worker.sh` rejects bare and
+  provider-qualified `gpt-5.6` ids. Coordinator, Codex worker, CLI dispatch,
+  and roster guidance no longer offer Luna as a lane.
+- The Coordinate card picks only an allowed main model (Claude `inherit`,
+  `grok-4.7` on a Grok host, otherwise `gpt-6-sol`) and stays empty rather than
+  drifting to the next catalog entry. `grok-4.7` is auto-staffed only for
+  builders pinned to the Grok lane under credit pressure, never from an
+  OpenCode, Codex, or Claude catalog. The Grok wrapper applies the 4.7 pin and
+  credit gate to provider-qualified ids such as `xai/grok-4.6`. OpenCode
+  commands pass `--variant xhigh` when the node's effort is `xhigh`.
 
 ## [1.1.168] - Pending production promotion
 

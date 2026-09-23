@@ -1,7 +1,7 @@
 ---
 name: coordinator
 version: 0.0.21
-description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Astra, Muse, Grok, OpenCode, or native workflows.
+description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Astra, Muse, Grok, OpenCode, or native workflows.
 ---
 
 # Coordinator
@@ -38,7 +38,7 @@ Do not read every harness guide. Load only the resources needed for this run:
    [Grok Build](references/hosts/grok.md), or
    [OpenCode](references/hosts/opencode.md).
 3. For each external worker actually selected, read only its guide:
-   [Codex / Sol / Luna / Astra](references/workers/codex.md),
+   [Codex / Sol / Astra](references/workers/codex.md),
    [Grok CLI](references/workers/grok.md),
    [Muse Code](references/workers/muse.md), or
    [OpenCode CLI](references/workers/opencode.md).
@@ -84,7 +84,9 @@ implementation volume.
 The preferred coding worker is GPT-6 Sol (`gpt-6-sol`). Use the same model at
 `xhigh` reasoning for independent code review. GPT-6 Astra remains a
 special-purpose 3D / animation / gamification / creative implementation lane;
-GPT-5.6 Luna and Muse Spark 1.3 remain explicit alternative lanes. OpenCode is
+Muse Spark 1.3 remains an explicit alternative lane. Coding uses GPT-6 models
+only: never dispatch a `gpt-5.6` model (Sol, Luna, Terra), not as a default,
+a CloudAgent fallback, or an explicit choice. OpenCode is
 a portable lane whose provider and model must be pinned. Grok is not a normal
 worker lane: use it only under usage-credit pressure, pin `grok-4.7`, and never
 use Grok 4.6. Never infer or replace the user's current main model. If the

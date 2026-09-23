@@ -40,7 +40,7 @@ from the main is only the fallback when native agent dispatch is unavailable.
 
 Load only the chosen guide:
 
-- [Codex, Sol, or Luna](../workers/codex.md)
+- [Codex, Sol, or Astra](../workers/codex.md)
 - [Muse Code](../workers/muse.md)
 - [OpenCode CLI](../workers/opencode.md)
 

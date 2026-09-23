@@ -28,7 +28,7 @@ describe("visual coordinator command generation", () => {
     const generated = generateNodeCommand(node("external-writer", {
       provider: "external",
       lane: "codex",
-      model: "openai/gpt-5.6-luna",
+      model: "gpt-6-sol",
       disclosure: "Approved external Codex worker",
       task: hostile,
     }), { hostHarness: "grok", nativeController: "grok" });
@@ -73,6 +73,19 @@ describe("visual coordinator command generation", () => {
     expect(opencode.permissions).toBe("read-only");
     expect(opencode.executable).toBe(false);
     expect(opencode.reason).toContain("no portable read-only CLI flag");
+
+    const variant = generateNodeCommand(
+      node("review-opencode", { role: "reviewer", provider: "external", lane: "opencode", model: "openrouter/openai/gpt-6-sol", effort: "xhigh", disclosure: "Approved" }),
+      { hostHarness: "grok", nativeController: "grok", readOnlyAgent: "review-readonly" },
+    );
+    expect(variant.command).toContain("'--variant' 'xhigh'");
+    expect(variant.command).toContain("'--agent' 'review-readonly'");
+
+    const medium = generateNodeCommand(
+      node("build-opencode", { provider: "external", lane: "opencode", model: "openrouter/openai/gpt-6-sol", effort: "medium", disclosure: "Approved" }),
+      { hostHarness: "grok", nativeController: "grok" },
+    );
+    expect(medium.command).not.toContain("--variant");
   });
 
   it("requires complete worktree metadata and never runs anything", () => {

@@ -49,11 +49,12 @@ done
 [[ "$mode" == "read" || "$mode" == "write" ]] || { usage; exit 2; }
 [[ -n "$model" && -d "$worker_cwd" && -r "$prompt_file" && -n "$log_file" ]] || { usage; exit 2; }
 [[ "$max_turns" =~ ^[1-9][0-9]*$ ]] || { echo "--max-turns must be positive" >&2; exit 2; }
+# Provider-qualified ids (xai/grok-4.6, openrouter/openai/gpt-5.6-luna) get the same policy as bare ids.
 case "$model" in
-  gpt-5.6-sol|*/gpt-5.6-sol) echo "model $model is superseded; use gpt-6-sol" >&2; exit 2 ;;
-  grok-4.7)
-    ((credit_pressure)) || { echo "grok-4.7 is a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
-  grok-*) echo "model $model is not allowed; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
+  gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is not allowed; coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
+  grok-4.7|*/grok-4.7)
+    ((credit_pressure)) || { echo "$model is a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
+  grok-*|*/grok-*) echo "model $model is not allowed; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
 esac
 if [[ "$mode" == "write" ]]; then
   [[ -n "$branch" && -n "$base_ref" && -n "$ownership" ]] || { echo "write mode requires --branch, --base-ref, and --ownership" >&2; exit 2; }

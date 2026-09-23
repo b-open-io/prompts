@@ -92,10 +92,8 @@ import re, sys
 default = sys.argv[1]
 preferred = {
     "gpt-6-sol": 1,
-    "gpt-5.6-luna": 2,
-    "muse-spark-1.3-contributor-free": 3,
-    "gpt-5.6-terra": 4,
-    "grok-4.7": 5,
+    "muse-spark-1.3-contributor-free": 2,
+    "grok-4.7": 3,
 }
 seen = set()
 models = []

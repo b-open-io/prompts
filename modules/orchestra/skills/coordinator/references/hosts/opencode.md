@@ -27,7 +27,7 @@ For an OpenCode worker, read [the OpenCode worker guide](../workers/opencode.md)
 For an external shell-out, read only the chosen guide:
 
 - [Grok CLI](../workers/grok.md)
-- [Codex, Sol, or Luna](../workers/codex.md)
+- [Codex, Sol, or Astra](../workers/codex.md)
 - [Muse Code](../workers/muse.md)
 
 Always resolve the provider behind a pinned provider/model before disclosing

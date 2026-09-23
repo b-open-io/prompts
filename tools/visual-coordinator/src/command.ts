@@ -184,6 +184,7 @@ const externalCommand = (
       return { command: null, reason: "OpenCode has no portable read-only CLI flag; configure a read-only agent before emitting this reviewer." };
     }
     const args = ["opencode", "run", "--model", model, "--dir", repo];
+    if (node.effort === "xhigh") args.push("--variant", "xhigh");
     if (readOnly) args.push("--agent", options.readOnlyAgent!);
     return { command: `${args.map(shellQuote).join(" ")} ${promptArg}` };
   }

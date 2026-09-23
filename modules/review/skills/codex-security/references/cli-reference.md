@@ -73,7 +73,7 @@ npx @openai/codex-security scan <path> [flags]
 | `--diff REF` | Scan committed changes against a ref (e.g. `origin/main`) |
 | `--working-tree` | Scan staged and unstaged changes |
 | `--mode standard\|deep` | Deep repeats discovery to reduce variance; supports repository and path targets, not diffs |
-| `--model MODEL` | Default `gpt-6-sol`; e.g. `gpt-5.6-terra` |
+| `--model MODEL` | Default `gpt-6-sol`; GPT-6 models only |
 | `--effort minimal\|low\|medium\|high\|xhigh` | Default `xhigh` |
 | `--knowledge-base PATH` (repeatable) | Architecture docs, threat models, policies. Directories are searched recursively for Markdown, text, PDF, and `.docx` |
 | `--output-dir DIR` | Artifact directory; must be outside the scanned directory and any enclosing Git worktree |
@@ -141,7 +141,7 @@ sandbox = "unelevated"
 
 ```bash
 npx @openai/codex-security scan . \
-  --model gpt-5.6-terra --effort high \
+  --model gpt-6-sol --effort high \
   --codex features.multi_agent_v2.max_concurrent_threads_per_session=4
 ```
 
@@ -242,7 +242,7 @@ reviewers.
 
 ```bash
 npx @openai/codex-security bulk-scan
-npx @openai/codex-security bulk-scan --model gpt-5.6-terra --effort high
+npx @openai/codex-security bulk-scan --model gpt-6-sol --effort high
 npx @openai/codex-security bulk-scan repositories.csv \
   --output-dir /path/outside/repos/security-scans --workers 4 --max-attempts 2
 ```

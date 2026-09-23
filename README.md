@@ -698,7 +698,7 @@ routing:
 python3 scripts/plugin-weight.py --format markdown
 
 # Host snapshots (exact Codex omission counts need a runtime JSONL event file)
-python3 scripts/capture-codex-context.py --model gpt-5.6-sol
+python3 scripts/capture-codex-context.py --model gpt-6-sol
 python3 scripts/capture-claude-context.py --source-root .
 
 # Source versus installed Claude/Codex inventories
@@ -924,7 +924,7 @@ divide responsibilities:
 
 External lanes cross provider boundaries. A Grok dispatch can send its prompt,
 specification, and selected repository content to xAI. A Muse dispatch can send
-the same class of content to Meta. A Codex / Sol / Luna dispatch can send it to
+the same class of content to Meta. A Codex / Sol / Astra dispatch can send it to
 OpenAI. A Claude Opus or legacy Fable consult can send its consult and files
 inspected by read-only tools to Anthropic. An `opencode run` dispatch can send its prompt and repository
 content to whichever provider backs the pinned `provider/model` — confirm the

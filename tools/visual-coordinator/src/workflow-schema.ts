@@ -72,7 +72,7 @@ const laneLabels: Record<string, string> = {
 };
 const fallbackModels: Record<string, string[]> = {
   claude: ["claude-opus-5-5", "opus", "sonnet", "haiku", "inherit"],
-  codex: ["gpt-6-sol", "gpt-5.6-luna"],
+  codex: ["gpt-6-sol"],
   grok: ["grok-4.7"],
   opencode: [],
 };
@@ -144,7 +144,7 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
     const id = laneKey(rawId);
     const modelInventory = inventoryValue(rawModels[id] ?? rawModels[rawId]);
     const detectedModels = modelInventory.values.filter((model) =>
-      id !== "grok" || !model.startsWith("grok-") || model === "grok-4.7"
+      !isSuperseded(model) && (id !== "grok" || !model.startsWith("grok-") || model === "grok-4.7")
     );
     const effortInventory = effortValues(rawModels[`${id}_effort`] ?? rawModels[`${rawId}_effort`]);
     const rawLane = rawLanes[id] ?? rawLanes[rawId];
@@ -179,7 +179,8 @@ export const defaultEnvironment = (): WorkflowEnvironment => parseEnvironment(un
 
 export const SOL = "gpt-6-sol";
 const isSol = (model: string) => model === SOL || model.endsWith(`/${SOL}`);
-const isSuperseded = (model: string) => /(?:^|\/)gpt-5\.6-sol$/i.test(model);
+// Coding uses GPT-6 models only; the whole gpt-5.6 family is out of policy, even by explicit choice.
+function isSuperseded(model: string) { return /(?:^|\/)gpt-5\.6(?:$|-)/i.test(model); }
 // Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
 const isGrokFamily = (model: string) => /(?:^|\/)grok-/i.test(model);
 const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
@@ -189,11 +190,13 @@ const isClaudeFamily = (model: string) => /(?:^|\/)(?:anthropic\/|(?:claude|opus
 const preferredLane = (environment: WorkflowEnvironment): WorkflowLane => environment.hostLane ?? "codex";
 const laneModels = (environment: WorkflowEnvironment, lane: WorkflowLane): string[] => environment.lanes[lane]?.models ?? fallbackModels[lane] ?? [];
 
-// The coordinator is the current main session; it is never replaced with a worker default.
+// The coordinator is the current main session. Only an allowed model is picked; otherwise it stays
+// empty so validation fails closed instead of drifting to the next catalog entry.
 const mainModel = (environment: WorkflowEnvironment, lane: WorkflowLane): string => {
   const models = laneModels(environment, lane);
-  if (lane === "claude" && models.includes("inherit")) return "inherit";
-  return models.find((model) => !isSuperseded(model)) ?? "";
+  if (lane === "claude") return models.includes("inherit") ? "inherit" : "";
+  if (lane === "grok") return models.find(isApprovedGrok) ?? "";
+  return models.find(isSol) ?? "";
 };
 
 const solFor = (environment: WorkflowEnvironment, lane: WorkflowLane): string | null => {
@@ -212,16 +215,16 @@ export const codingTarget = (environment: WorkflowEnvironment): { lane: Workflow
 };
 
 /**
- * Default model for a node placed on a lane. Workers get GPT-6 Sol, or grok-4.7 only for builders
- * under usage-credit pressure; otherwise the model stays empty so validation fails closed.
- * Alternatives such as Luna are explicit opt-ins, never defaults.
+ * Default model for a node placed on a lane. Workers get GPT-6 Sol, or grok-4.7 only for a builder
+ * pinned to the Grok lane under usage-credit pressure; otherwise the model stays empty so
+ * validation fails closed.
  */
 export const modelFor = (environment: WorkflowEnvironment, lane: WorkflowLane, role: NodeRole): string => {
   if (role === "coordinator") return mainModel(environment, lane);
   const models = laneModels(environment, lane);
   const sol = models.find(isSol);
   if (sol) return sol;
-  if (role !== "reviewer" && environment.creditPressure) return models.find(isApprovedGrok) ?? "";
+  if (lane === "grok" && role !== "reviewer" && environment.creditPressure) return models.find(isApprovedGrok) ?? "";
   return "";
 };
 
@@ -377,7 +380,7 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     if (!model) issues.push({ id: node.id, message: node.role === "coordinator"
       ? `${node.title} needs a model.`
       : `${node.title} needs a model: ${node.lane || "this lane"} does not offer ${SOL}; choose a lane that does or set a model explicitly.` });
-    if (isSuperseded(model)) issues.push({ id: node.id, message: `${node.title} uses superseded ${model}; use ${SOL}.` });
+    if (isSuperseded(model)) issues.push({ id: node.id, message: `${node.title} uses ${model}; coding uses GPT-6 models only (${SOL}).` });
     if (isGrokFamily(model) && !isApprovedGrok(model)) issues.push({ id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
     if (node.role !== "coordinator") {
       if (isGrokFamily(model) && !environment.creditPressure) issues.push({ id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });

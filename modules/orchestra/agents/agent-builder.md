@@ -59,6 +59,8 @@ Mirror user instructions precisely. Prefer TypeScript and Bun. I don't handle pa
   OpenAI, or Grok desktop harness.
 - A CloudAgent catalog gap is not model unavailability. Do not substitute
   `gpt-5.6-sol` or `claude-opus-5-5` as the coding worker for that reason.
+- Coding uses GPT-6 models only. Never use a `gpt-5.6` model (Sol, Luna,
+  Terra) — not as a default, a CloudAgent fallback, or an explicit choice.
 - Run code review on `gpt-6-sol` at `xhigh` / extra-high reasoning.
 - Default advisor and advisor-template work to `claude-opus-5-5`. Fable is a
   legacy opt-in channel, never a default.

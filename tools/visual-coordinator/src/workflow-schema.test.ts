@@ -118,7 +118,7 @@ describe("workflow schema", () => {
     const workflow = defaultWorkflow(environment);
     workflow.nodes[0].lane = "opencode";
     workflow.nodes[0].provider = "native";
-    workflow.nodes[0].model = "openai/gpt-5.6-luna";
+    workflow.nodes[0].model = "openai/gpt-6-astra";
     workflow.nodes[0].disclosure = undefined;
     workflow.nodes.slice(1).forEach((node) => {
       node.lane = "opencode";
@@ -223,7 +223,7 @@ describe("workflow schema", () => {
     const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
     expect(messages).toContain("Build uses Grok without usage-credit pressure; route it to gpt-6-sol.");
     expect(messages).toContain("Review must review on gpt-6-sol at xhigh.");
-    expect(messages).toContain("Old Sol uses superseded gpt-5.6-sol; use gpt-6-sol.");
+    expect(messages).toContain("Old Sol uses gpt-5.6-sol; coding uses GPT-6 models only (gpt-6-sol).");
     expect(messages).toContain("Old Grok uses grok-4.6; Grok is pinned to grok-4.7.");
     expect(messages).toContain("Opus uses Claude Opus, which is the advisor, not a coding worker; use gpt-6-sol.");
 
@@ -387,12 +387,46 @@ describe("workflow schema", () => {
       expect(validateWorkflow(workflow, environment)).toEqual([]);
     });
 
-    it("allows an explicit Luna builder", () => {
+    it("rejects explicit GPT-5.6 models on every role", () => {
       const environment = opencodeOnly(mixed);
-      const workflow = parseSeed({ nodes: [{ id: "build", role: "builder", lane: "opencode", model: luna }], edges: [] }, environment);
+      const workflow = parseSeed({
+        nodes: [
+          { id: "main", role: "coordinator", lane: "opencode", model: "openrouter/openai/gpt-5.6-sol" },
+          { id: "build", role: "builder", lane: "opencode", model: luna },
+          { id: "review", role: "reviewer", lane: "opencode", model: "openrouter/openai/gpt-5.6-sol", effort: "xhigh" },
+        ],
+        edges: [],
+      }, environment);
+      const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
 
-      expect(workflow.nodes[0].model).toBe(luna);
-      expect(validateWorkflow(workflow, environment)).toEqual([]);
+      expect(environment.lanes.opencode.models.some((model) => model.includes("gpt-5.6"))).toBe(false);
+      expect(messages).toContain("main uses openrouter/openai/gpt-5.6-sol; coding uses GPT-6 models only (gpt-6-sol).");
+      expect(messages).toContain(`build uses ${luna}; coding uses GPT-6 models only (gpt-6-sol).`);
+      expect(messages).toContain("review uses openrouter/openai/gpt-5.6-sol; coding uses GPT-6 models only (gpt-6-sol).");
+    });
+
+    it("never lets the OpenCode main drift to Luna or GPT-5.6 Sol", () => {
+      const fiveSixOnly = opencodeOnly(["openrouter/openai/gpt-5.6-sol", luna]);
+      const coordinate = defaultWorkflow(fiveSixOnly).nodes[0];
+
+      expect(coordinate).toMatchObject({ lane: "opencode", model: "" });
+      expect(validateWorkflow(defaultWorkflow(fiveSixOnly), fiveSixOnly).map((issue) => issue.message)).toContain("Coordinate needs a model.");
+
+      const withSol = opencodeOnly(["openrouter/openai/gpt-5.6-sol", luna, "openrouter/openai/gpt-6-sol"]);
+      expect(defaultWorkflow(withSol).nodes[0].model).toBe("openrouter/openai/gpt-6-sol");
+    });
+
+    it("never auto-staffs Grok on a non-Grok lane, even under credit pressure", () => {
+      const environment = opencodeOnly([luna, "openrouter/xai/grok-4.7"], { credit_pressure: true });
+      const workflow = parseSeed({
+        nodes: [{ id: "build", role: "builder", lane: "opencode" }, { id: "grok-build", role: "builder", lane: "grok" }],
+        edges: [],
+      }, environment);
+      const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
+
+      expect(workflow.nodes.map((node) => node.model)).toEqual(["", "grok-4.7"]);
+      expect(messages).toContain("build needs a model: opencode does not offer gpt-6-sol; choose a lane that does or set a model explicitly.");
+      expect(messages.filter((message) => message.startsWith("grok-build"))).toEqual(["grok-build needs an external-provider disclosure."]);
     });
 
     it("defaults a lane-pinned Grok builder to grok-4.7 only under credit pressure, never the reviewer", () => {

@@ -1,4 +1,4 @@
-# Codex, Sol, Luna, and Astra Worker
+# Codex, Sol, and Astra Worker
 
 Read this only when a separate Codex CLI process is the selected worker.
 Normally this is an external lane from Claude, Grok, or OpenCode. From a Codex
@@ -9,9 +9,6 @@ Codex process when it is the chosen coding or isolated implementation lane.
 
 - **Sol** (`gpt-6-sol`, reasoning `high`) — preferred coding worker. Use
   `xhigh` for independent code review.
-- **Luna** (`gpt-5.6-luna`, reasoning `xhigh`) — explicit cheap-volume
-  alternative. Do not select it over Sol unless the user or current policy
-  chooses that lane.
 - **Astra** (`gpt-6-astra`, recommended `high`) — 3D / animation / gamification /
   creative implementation lane. Use `xhigh` or `max` only if the user asks or
   the first `high` run fails.
@@ -19,7 +16,10 @@ Codex process when it is the chosen coding or isolated implementation lane.
 Read-only second opinions stay in Advisor; implementation stays here. The
 default advisor is Claude Opus 5.5 (`claude-opus-5-5`), not a Codex worker.
 
-All three send the prompt, spec, and selected repository content to OpenAI.
+Coding uses GPT-6 models only. Do not dispatch any `gpt-5.6` model (Sol, Luna,
+Terra), even when a user or catalog offers it.
+
+Both send the prompt, spec, and selected repository content to OpenAI.
 Apply the Coordinator disclosure rule before first use.
 
 ## Preflight
