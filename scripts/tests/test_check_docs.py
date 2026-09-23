@@ -253,6 +253,14 @@ class VisualWorkflowContractTests(unittest.TestCase):
         )
         self.assertEqual(detected["grok_model_providers"], {"gpt-6-sol": "openai"})
 
+    def test_detector_reports_custom_grok_alias_targets(self) -> None:
+        detected = self._detect_grok(
+            "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)' '  - ox-alpha'; fi\n",
+            config='[model."ox-alpha"]\nmodel = "grok-4.6"\nbase_url = "https://api.x.ai/v1"\n',
+        )
+        self.assertEqual(detected["grok_model_providers"], {"ox-alpha": "xai"})
+        self.assertEqual(detected["grok_model_targets"], {"ox-alpha": "grok-4.6"})
+
     def test_detector_never_adds_config_only_grok_ids(self) -> None:
         detected = self._detect_grok(
             "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)'; fi\n",
@@ -490,6 +498,43 @@ class GrokWrapperTests(unittest.TestCase):
                     rejected = subprocess.run(["bash", "-c", command], cwd=self.ROOT, env=env, capture_output=True, text=True)
                     self.assertEqual(rejected.returncode, 2, rejected.stderr)
                     self.assertRegex(rejected.stderr, "GPT-6 models only|pinned to grok-4.7")
+
+    def test_wrapper_applies_grok_rules_to_custom_aliases(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            (temp / ".grok").mkdir()
+            (temp / ".grok" / "config.toml").write_text(
+                '[model."ox-alpha"]\nmodel = "grok-4.7"\nbase_url = "https://api.x.ai/v1"\n\n'
+                '[model."ox-old"]\nmodel = "grok-4.6"\nbase_url = "https://api.x.ai/v1"\n\n'
+                '[model."ox-blank"]\nbase_url = "https://api.x.ai/v1"\n\n'
+                '[model."or-grok"]\nmodel = "x-ai/grok-4.6"\nbase_url = "https://openrouter.ai/api/v1"\n\n'
+                '[model."or-luna"]\nmodel = "gpt-5.6-luna"\nbase_url = "https://api.openai.com/v1"\n\n'
+                '[model."gpt-6-sol"]\nmodel = "gpt-6-sol"\nbase_url = "https://api.openai.com/v1"\n',
+                encoding="utf-8",
+            )
+            prompt = temp / "prompt.md"
+            prompt.write_text("Research only.\n", encoding="utf-8")
+            env = {key: value for key, value in os.environ.items() if key not in {"BOPEN_USAGE_CREDIT_PRESSURE", "GROK_HOME"}}
+            env.update({"HOME": str(temp), "PATH": "/usr/bin:/bin"})
+            base = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(temp / "run.log")]
+            rejected = [
+                (["--model", "ox-alpha"], "usage-credit-pressure"),
+                (["--model", "OX-ALPHA"], "usage-credit-pressure"),
+                (["--model", "ox-old", "--credit-pressure"], "pinned to grok-4.7"),
+                (["--model", "ox-blank", "--credit-pressure"], "an unreported model"),
+                (["--model", "or-grok", "--credit-pressure"], "pinned to grok-4.7"),
+                (["--model", "or-luna"], "GPT-6 models only"),
+            ]
+            for extra, message in rejected:
+                with self.subTest(extra=extra):
+                    result = subprocess.run(base + extra, cwd=self.ROOT, env=env, capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 2, result.stderr)
+                    self.assertIn(message, result.stderr)
+            for extra in (["--model", "ox-alpha", "--credit-pressure"], ["--model", "gpt-6-sol"]):
+                with self.subTest(extra=extra):
+                    result = subprocess.run(base + extra, cwd=self.ROOT, env=env, capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 1, result.stderr)
+                    self.assertIn("grok is not installed", result.stderr)
 
     def test_write_mode_fails_closed_on_checkout_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

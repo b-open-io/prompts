@@ -31,6 +31,8 @@ export type WorkflowEnvironment = {
   grokAuth: "grok.com" | "api" | null;
   /** Provider behind each listed custom Grok-CLI id, from its config.toml `base_url`. */
   grokModelProviders: Record<string, string>;
+  /** Underlying model each listed custom Grok-CLI id points at (config.toml `model`). */
+  grokModelTargets: Record<string, string>;
   caps: { liveChildren: number | null; agentBudgetDefault: number };
   lanes: Record<string, DetectedLane>;
   roster: unknown[];
@@ -188,6 +190,10 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
     grokModelProviders: raw.grok_model_providers && typeof raw.grok_model_providers === "object"
       ? Object.fromEntries(Object.entries(raw.grok_model_providers as Record<string, unknown>)
         .filter((entry): entry is [string, string] => typeof entry[1] === "string" && /^[a-z0-9.-]+$/.test(entry[1])))
+      : {},
+    grokModelTargets: raw.grok_model_targets && typeof raw.grok_model_targets === "object"
+      ? Object.fromEntries(Object.entries(raw.grok_model_targets as Record<string, unknown>)
+        .filter((entry): entry is [string, string] => typeof entry[1] === "string" && /^[A-Za-z0-9._/:@-]+$/.test(entry[1])))
       : {},
     caps: {
       liveChildren: safeNumber(rawCaps.live_children ?? rawCaps.liveChildren, null),
@@ -447,11 +453,19 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     // The single observed native main keeps the model the detector saw it running, even an
     // out-of-policy Grok id; every dispatch, edit, and inventory choice stays pinned.
     const observedMainModel = node.id === mainId && model !== "" && model === environment.mainModels[node.lane];
+    // A custom Grok-CLI alias whose base_url is xAI is a Grok model in disguise: it gets the same pin
+    // (checked against the model it points at) and credit gate as a grok-* id.
+    const aliasTarget = node.lane === "grok" && !isGrokFamily(model) ? environment.grokModelTargets[model] : undefined;
+    const xaiAlias = node.lane === "grok" && !isGrokFamily(model)
+      && (environment.grokModelProviders[model] === "xai" || (aliasTarget !== undefined && isGrokFamily(aliasTarget)));
+    const grokBacked = isGrokFamily(model) || xaiAlias;
+    if (aliasTarget && isSuperseded(aliasTarget) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, an alias for ${aliasTarget}; coding uses GPT-6 models only (${SOL}).` });
     if (isGrokFamily(model) && !isApprovedGrok(model) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
+    if (xaiAlias && !(aliasTarget && isApprovedGrok(aliasTarget)) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, an xAI alias for ${aliasTarget ?? "an unreported model"}; Grok is pinned to grok-4.7.` });
     if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
     // A Grok host's own main session is an observed fact, not a dispatch; every other Grok use needs pressure.
     const observedGrokMain = node.id === mainId && environment.hostLane === "grok";
-    if (isGrokFamily(model) && !observedGrokMain && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
+    if (grokBacked && !observedGrokMain && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
     if (node.role !== "coordinator") {
       if (node.role !== "reviewer" && isOpus(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Claude Opus, which is the advisor, not a coding worker; use ${SOL}.` });
       else if (node.role !== "reviewer" && (node.lane === "claude" || isClaudeFamily(model))) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Claude (${model || "no model"}), which is not a coding worker; use ${SOL}.` });

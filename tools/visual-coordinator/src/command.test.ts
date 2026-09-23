@@ -391,6 +391,51 @@ describe("versioned export contract", () => {
     expect(spec.nodes.some((node) => node.execution === "native-agent")).toBe(false);
   });
 
+  it("holds xAI-backed custom aliases to the Grok credit gate and grok-4.7 pin", () => {
+    const grokHost = (extra: Record<string, unknown> = {}) => parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available" },
+      models: { grok: ["grok-4.7", "ox-alpha", "or-grok", "or-luna"] },
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+      grok_model_providers: { "ox-alpha": "xai", "or-grok": "openrouter", "or-luna": "openai" },
+      ...extra,
+    });
+    const builder = (environment: ReturnType<typeof grokHost>, model: string) => {
+      const workflow = defaultWorkflow(environment);
+      workflow.nodes = [{ ...workflow.nodes[1], lane: "grok", provider: "external", model, disclosure: "Approved xAI dispatch" }];
+      workflow.edges = [];
+      return workflow;
+    };
+    const messages = (environment: ReturnType<typeof grokHost>, model: string) =>
+      validateWorkflow(builder(environment, model), environment).map((issue) => issue.message);
+
+    const unpressured = grokHost();
+    expect(messages(unpressured, "ox-alpha")).toEqual(expect.arrayContaining([
+      "Build uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+      "Build uses ox-alpha, an xAI alias for an unreported model; Grok is pinned to grok-4.7.",
+    ]));
+    expect(dispatchIssues(builder(unpressured, "ox-alpha"), unpressured)).toEqual([]);
+    expect(serializeWorkflow(builder(unpressured, "ox-alpha"), unpressured).nodes).toEqual([]);
+
+    const oldTarget = grokHost({ credit_pressure: true, grok_model_targets: { "ox-alpha": "grok-4.6", "or-grok": "x-ai/grok-4.6", "or-luna": "gpt-5.6-luna" } });
+    expect(messages(oldTarget, "ox-alpha")).toContain("Build uses ox-alpha, an xAI alias for grok-4.6; Grok is pinned to grok-4.7.");
+    expect(messages(oldTarget, "or-grok")).toContain("Build uses or-grok, an xAI alias for x-ai/grok-4.6; Grok is pinned to grok-4.7.");
+    expect(messages(oldTarget, "or-luna")).toContain("Build uses or-luna, an alias for gpt-5.6-luna; coding uses GPT-6 models only (gpt-6-sol).");
+    expect(serializeWorkflow(builder(oldTarget, "ox-alpha"), oldTarget).nodes).toEqual([]);
+
+    const pinned = grokHost({ credit_pressure: true, grok_model_targets: { "ox-alpha": "grok-4.7" } });
+    expect(messages(pinned, "ox-alpha")).toEqual([]);
+    expect(serializeWorkflow(builder(pinned, "ox-alpha"), pinned).nodes).toEqual([
+      expect.objectContaining({ id: "build", provider: "xai", shell: true, command: expect.stringContaining("run-grok-worker.sh") }),
+    ]);
+
+    const observed = grokHost({ models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "ox-alpha" }, grok_model_targets: { "ox-alpha": "grok-4.6" } });
+    const main = defaultWorkflow(observed).nodes[0];
+    expect(main).toMatchObject({ model: "ox-alpha", provider: "native" });
+    expect(validateWorkflow({ title: "t", nodes: [main], edges: [] }, observed)).toEqual([]);
+  });
+
   it("withholds Grok shell-outs until the detector confirms a Grok auth lane", () => {
     const unconfirmed = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "token" });
     expect(unconfirmed.grokAuth).toBeNull();

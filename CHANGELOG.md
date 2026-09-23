@@ -218,6 +218,11 @@ manifests share the same release version.
   its model is not in the inventory, and validation requires the detector's
   `grok models` listing to show a Grok dispatch's model, so an unlisted custom id
   on a Grok host can no longer export as a native-agent maker.
+- Custom Grok-CLI aliases served by xAI (or pointing at a Grok model) get the
+  Grok credit gate and `grok-4.7` pin, checked against the underlying model the
+  detector now reports as `grok_model_targets`; aliases for `gpt-5.6` models are
+  rejected. `run-grok-worker.sh` reads the same `config.toml` entry at run time
+  and applies the same rules case-insensitively.
 
 ## [1.1.168] - Pending production promotion
 

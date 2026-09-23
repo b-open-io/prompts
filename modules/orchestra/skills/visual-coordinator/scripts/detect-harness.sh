@@ -61,16 +61,18 @@ if [[ "$grok_bin" == "available" ]]; then
 fi
 # A custom Grok id (for example gpt-6-sol) is served from its [model."id"] base_url, not
 # necessarily by xAI. Map each listed custom id to the provider behind that URL so exports
-# report where content goes; ids without a recognizable base_url stay unresolved.
+# report where content goes; ids without a recognizable base_url stay unresolved. Each id's
+# `model = "..."` is reported too, so an xAI-backed alias is held to the grok-4.7 pin.
 grok_model_providers_json="{}"
+grok_model_targets_json="{}"
 grok_config="${GROK_HOME:-$HOME/.grok}/config.toml"
 if [[ -n "$grok_models" && -f "$grok_config" ]]; then
-  grok_model_providers_json=$(python3 - "$grok_config" "$grok_models" <<'PY_GROK_PROVIDERS' 2>/dev/null || printf '{}'
+  grok_alias_json=$(python3 - "$grok_config" "$grok_models" <<'PY_GROK_PROVIDERS' 2>/dev/null || printf '{}\n{}\n'
 import json, re, sys
 from urllib.parse import urlparse
 path, listed = sys.argv[1], {item for item in sys.argv[2].split(",") if item}
 known = (("openai.com", "openai"), ("x.ai", "xai"), ("anthropic.com", "anthropic"), ("openrouter.ai", "openrouter"))
-providers, current = {}, None
+providers, targets, current = {}, {}, None
 for raw in open(path, encoding="utf-8"):
     line = raw.strip()
     table = re.match(r'^\[model\."([^"]+)"\]$', line)
@@ -80,6 +82,9 @@ for raw in open(path, encoding="utf-8"):
     if line.startswith("["):
         current = None
         continue
+    target = re.match(r'^model\s*=\s*"([A-Za-z0-9._/:@-]+)"', line)
+    if current in listed and target:
+        targets[current] = target.group(1)
     url = re.match(r'^base_url\s*=\s*"([^"]*)"', line)
     if current in listed and url:
         host = (urlparse(url.group(1)).hostname or "").lower()
@@ -87,8 +92,13 @@ for raw in open(path, encoding="utf-8"):
         if re.fullmatch(r"[a-z0-9.-]+", label or ""):
             providers[current] = label
 print(json.dumps(providers))
+print(json.dumps(targets))
 PY_GROK_PROVIDERS
 )
+  grok_model_providers_json=$(printf '%s\n' "$grok_alias_json" | sed -n 1p)
+  grok_model_targets_json=$(printf '%s\n' "$grok_alias_json" | sed -n 2p)
+  [[ -n "$grok_model_providers_json" ]] || grok_model_providers_json="{}"
+  [[ -n "$grok_model_targets_json" ]] || grok_model_targets_json="{}"
 fi
 
 # Codex has no enumeration command. Its account-scoped model cache is the best
@@ -392,6 +402,7 @@ cat <<JSON
   "grok_worker": $grok_worker_json,
   "grok_auth": $grok_auth_json,
   "grok_model_providers": $grok_model_providers_json,
+  "grok_model_targets": $grok_model_targets_json,
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget

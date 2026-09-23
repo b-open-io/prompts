@@ -61,6 +61,48 @@ case "$model_policy" in
     ((credit_pressure)) || { echo "$model is a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
   grok-*|*/grok-*) echo "model $model is not allowed; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
 esac
+# A custom id is judged by its config.toml entry too: an alias served by xAI, or pointing at a Grok
+# or GPT-5.6 model, gets the same pin, credit gate, and GPT-6-only rule as the bare id would.
+alias_config="${GROK_HOME:-$HOME/.grok}/config.toml"
+if [[ -f "$alias_config" ]]; then
+  alias_info=$(python3 - "$alias_config" "$model_policy" <<'PY_ALIAS'
+import re, sys
+from urllib.parse import urlparse
+path, wanted = sys.argv[1], sys.argv[2]
+current, host, target = None, "", ""
+for raw in open(path, encoding="utf-8"):
+    line = raw.strip()
+    table = re.match(r'^\[model\."([^"]+)"\]$', line)
+    if table:
+        current = table.group(1).lower()
+        continue
+    if line.startswith("["):
+        current = None
+        continue
+    if current != wanted:
+        continue
+    url = re.match(r'^base_url\s*=\s*"([^"]*)"', line)
+    if url:
+        host = (urlparse(url.group(1)).hostname or "").lower()
+    alias = re.match(r'^model\s*=\s*"([^"]*)"', line)
+    if alias:
+        target = alias.group(1).lower()
+print(f"{host} {target}")
+PY_ALIAS
+) || { echo "could not read $alias_config to check $model" >&2; exit 2; }
+  alias_host=${alias_info%% *}
+  alias_target=${alias_info#* }
+  case "$alias_target" in
+    gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is an alias for $alias_target; coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
+  esac
+  if [[ "$alias_host" == "x.ai" || "$alias_host" == *.x.ai || "$alias_target" == grok-* || "$alias_target" == */grok-* ]]; then
+    case "$alias_target" in
+      grok-4.7|*/grok-4.7)
+        ((credit_pressure)) || { echo "$model is an xAI alias for grok-4.7, a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
+      *) echo "model $model is an xAI alias for ${alias_target:-an unreported model}; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
+    esac
+  fi
+fi
 if [[ "$mode" == "write" ]]; then
   [[ -n "$branch" && -n "$base_ref" && -n "$ownership" ]] || { echo "write mode requires --branch, --base-ref, and --ownership" >&2; exit 2; }
 fi

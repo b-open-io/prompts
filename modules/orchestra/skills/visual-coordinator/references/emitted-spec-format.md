@@ -216,7 +216,10 @@ wrapper shell-out that needs credit pressure. The observed main alone keeps the
 model the detector saw, even `grok-4.6`; every dispatch, edited card, and
 inventory choice stays pinned to `grok-4.7`. Every other native Grok-lane node
 converts to a shell-out whether or not its model is listed, and a Grok dispatch
-is never Ready unless the detector's `grok models` listing shows its model. The canvas's
+is never Ready unless the detector's `grok models` listing shows its model. A
+custom alias served by xAI, or pointing at a Grok model (`grok_model_targets`),
+is held to the same credit gate and `grok-4.7` pin as a `grok-*` id, checked
+against the model it points at; an alias for a `gpt-5.6` model is rejected. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.
 
