@@ -162,8 +162,12 @@ main-known `BOPEN_HOST_HARNESS` value.
 - **Codex**: whatever `model =` says in `~/.codex/config.toml`, plus
   `model_reasoning_effort`. There is no enumeration command; the config is the
   truth. The in-app picker has lagged behind what `-m` accepts.
-- **Grok**: whatever `grok models` prints for the authenticated account, plus
-  any custom `[model.<alias>]` the user registered.
+- **Grok**: exactly what `grok models` prints under the auth lane the wrapper
+  will use — signed-in grok.com first, then `XAI_API_KEY` — reported as
+  `grok_auth` with the `(default)` entry as `models.grok_default`. Registered
+  `[model."<id>"]` entries count only once that listing shows them; ids that
+  exist only in `config.toml` are not offered, because the wrapper's preflight
+  would reject them.
 - **OpenCode**: whatever `opencode models <provider>` prints for the configured
   providers, referenced as `provider/model`. Custom Muse Spark lanes are
   `provider:{}` blocks in `opencode.json` — never assume the id without listing it.

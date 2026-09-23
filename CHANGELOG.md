@@ -182,6 +182,12 @@ manifests share the same release version.
   prefer a lane whose Sol was actually detected over a fallback-only lane. The
   detector reports the installed `grok_worker` path; Grok-lane exports call it
   directly and are not executable when it is unresolved.
+- The Grok main session stays native `main-controller` through export: a
+  custom-model Grok coordinator ahead of it is a converted dispatch, and a Grok
+  host main on its configured default is never converted. The detector reports
+  `models.grok_default`, lists Grok models under the same auth lane the wrapper
+  uses (reported as `grok_auth` and passed as `--auth`), and no longer adds
+  `config.toml`-only ids the wrapper's preflight would reject.
 
 ## [1.1.168] - Pending production promotion
 

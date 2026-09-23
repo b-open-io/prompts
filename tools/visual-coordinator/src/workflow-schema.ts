@@ -27,6 +27,8 @@ export type WorkflowEnvironment = {
   mainModels: Record<string, string>;
   /** Absolute path of the installed run-grok-worker.sh, when the detector resolved it. */
   grokWorker: string | null;
+  /** Grok auth lane whose `grok models` listing produced the Grok inventory; the wrapper must use the same one. */
+  grokAuth: "grok.com" | "api" | null;
   caps: { liveChildren: number | null; agentBudgetDefault: number };
   lanes: Record<string, DetectedLane>;
   roster: unknown[];
@@ -180,6 +182,7 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
     creditPressure: raw.credit_pressure === true || raw.creditPressure === true,
     mainModels,
     grokWorker,
+    grokAuth: raw.grok_auth === "grok.com" || raw.grok_auth === "api" ? raw.grok_auth : null,
     caps: {
       liveChildren: safeNumber(rawCaps.live_children ?? rawCaps.liveChildren, null),
       agentBudgetDefault: safeNumber(rawCaps.agent_budget_default ?? rawCaps.agentBudgetDefault, 0) ?? 0,
@@ -238,9 +241,17 @@ export const codingTarget = (environment: WorkflowEnvironment): { lane: Workflow
   return { lane: "codex", model: SOL };
 };
 
-/** The single node that stands for the current main session: the first native coordinator on the host lane. */
+/**
+ * The single node that stands for the current main session: the first native coordinator on the host
+ * lane that stays native through export. On a Grok host that is a `grok-4.7` node or one on the
+ * detector's configured Grok default; any other native Grok-lane id becomes a Grok CLI shell-out,
+ * so it is a dispatch and never the main session.
+ */
 export const mainNodeId = (workflow: Workflow, environment: WorkflowEnvironment): string | null =>
-  workflow.nodes.find((node) => node.role === "coordinator" && node.provider === "native" && node.lane === environment.hostLane)?.id ?? null;
+  workflow.nodes.find((node) => node.role === "coordinator"
+    && node.provider === "native"
+    && node.lane === environment.hostLane
+    && (node.lane !== "grok" || isApprovedGrok(node.model) || node.model === environment.mainModels.grok))?.id ?? null;
 
 /**
  * Default model for a node placed on a lane. Workers get GPT-6 Sol, or grok-4.7 only for a builder
@@ -258,6 +269,10 @@ export const modelFor = (environment: WorkflowEnvironment, lane: WorkflowLane, r
 
 const providerFor = (environment: WorkflowEnvironment, lane: WorkflowLane, model = ""): WorkflowNode["provider"] =>
   environment.simulationOnly || (environment.hostLane === lane && !(lane === "grok" && !isGrokFamily(model))) ? "native" : "external";
+
+// A coordinator on the host lane is the running main session, so it is native whatever model it runs.
+const defaultProvider = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string, role: NodeRole): WorkflowNode["provider"] =>
+  role === "coordinator" && (environment.simulationOnly || environment.hostLane === lane) ? "native" : providerFor(environment, lane, model);
 
 const looksLikeForeignNativeModel = (lane: string, model: string): boolean => {
   const foreignByLane: Record<string, RegExp> = {
@@ -290,7 +305,7 @@ export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnviro
   return {
     title: "Visual Coordinator plan",
     nodes: [
-      { id: "coordinate", role: "coordinator", title: "Coordinate", task: "Resolve the plan and assign bounded work.", ownedPaths: ["tools/visual-coordinator"], lane: host, provider: providerFor(environment, host, main), model: main, effort: "high", execution: "write", position: { x: 72, y: 74 }, worktree: worktree("coordinate", "coordinator") },
+      { id: "coordinate", role: "coordinator", title: "Coordinate", task: "Resolve the plan and assign bounded work.", ownedPaths: ["tools/visual-coordinator"], lane: host, provider: defaultProvider(environment, host, main, "coordinator"), model: main, effort: "high", execution: "write", position: { x: 72, y: 74 }, worktree: worktree("coordinate", "coordinator") },
       { id: "build", role: "builder", title: "Build", task: "Implement the visual coordinator surface.", ownedPaths: ["tools/visual-coordinator/src"], lane: sol.lane, provider: solProvider, model: sol.model, effort: "medium", execution: "write", position: { x: 390, y: 212 }, worktree: worktree("build", "builder") },
       { id: "review", role: "reviewer", title: "Review", task: "Check executable state and export readiness.", ownedPaths: ["tools/visual-coordinator/src/**/*.test.ts"], lane: sol.lane, provider: solProvider, model: sol.model, effort: "xhigh", execution: "read-only-review", position: { x: 716, y: 74 }, worktree: worktree("review", "reviewer") },
     ],
@@ -338,7 +353,7 @@ export const parseSeed = (value: unknown, environment: WorkflowEnvironment = def
       const staffFromPolicy = legacyLane || !suppliedLane;
       const lane = staffFromPolicy ? policyTarget.lane : laneKey(suppliedLane);
       const model = legacyLane ? policyTarget.model : text(node.model) || (staffFromPolicy ? policyTarget.model : modelFor(environment, lane, role));
-      const provider = legacyLane ? providerFor(environment, lane, model) : member(node.provider, ["native", "external"] as const, providerFor(environment, lane, model));
+      const provider = legacyLane ? defaultProvider(environment, lane, model, role) : member(node.provider, ["native", "external"] as const, defaultProvider(environment, lane, model, role));
       return [{
         id,
         role,
@@ -423,7 +438,8 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     const lane = environment.lanes[node.lane];
     if (!lane) issues.push({ scope: "node", id: node.id, message: `${node.title} uses an undetected lane: ${node.lane}.` });
     else {
-      const detectedGrokShellOut = node.provider === "native"
+      const detectedGrokShellOut = node.id !== mainId
+        && node.provider === "native"
         && node.lane === "grok"
         && model !== "grok-4.7"
         && lane.models.includes(model);
@@ -431,7 +447,8 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
       if (lane.inventory === "complete" && !lane.models.includes(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
       if (lane.efforts.length > 0 && !lane.efforts.includes(node.effort)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses an effort unavailable on ${lane.label}: ${node.effort}.` });
       if (node.provider === "native" && environment.hostLane !== node.lane) issues.push({ scope: "node", id: node.id, message: `${node.title} marks ${lane.label} as native, but the current host is ${environment.hostLane ?? "unknown"}.` });
-      if (node.provider === "native" && !detectedGrokShellOut && looksLikeForeignNativeModel(node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} pairs a native ${lane.label} lane with a foreign model: ${model}.` });
+      const observedMainModel = node.id === mainId && model === environment.mainModels[node.lane];
+      if (node.provider === "native" && !observedMainModel && !detectedGrokShellOut && looksLikeForeignNativeModel(node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} pairs a native ${lane.label} lane with a foreign model: ${model}.` });
       if (detectedGrokShellOut && !hasApprovedDisclosure(node.disclosure)) issues.push({ scope: "node", id: node.id, message: `${node.title} needs an approved external-provider disclosure for this Grok CLI shell-out.` });
     }
     if (node.provider === "external" && !node.disclosure?.trim()) issues.push({ scope: "node", id: node.id, message: `${node.title} needs an external-provider disclosure.` });

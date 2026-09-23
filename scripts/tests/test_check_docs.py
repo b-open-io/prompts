@@ -207,6 +207,47 @@ class VisualWorkflowContractTests(unittest.TestCase):
             )
             self.assertIs(json.loads(pressured.stdout)["credit_pressure"], True)
 
+    def _detect_grok(self, script: str, extra_env: dict[str, str] | None = None, config: str | None = None) -> dict:
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            fake = temp / "grok"
+            fake.write_text("#!/usr/bin/env bash\n" + script, encoding="utf-8")
+            fake.chmod(0o755)
+            if config is not None:
+                (temp / ".grok").mkdir()
+                (temp / ".grok" / "config.toml").write_text(config, encoding="utf-8")
+            env = {key: value for key, value in os.environ.items() if key not in {"XAI_API_KEY", "GROK_API_KEY", "GROK_HOME"}}
+            env.update({"HOME": str(temp), "PATH": f"{temp}:/usr/bin:/bin", "BOPEN_HOST_HARNESS": "grok", **(extra_env or {})})
+            output = subprocess.run(["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env, capture_output=True, text=True, check=True)
+            self.assertNotIn("secret-key", output.stdout)
+            return json.loads(output.stdout)
+
+    def test_detector_reports_grok_default_and_signed_in_auth(self) -> None:
+        detected = self._detect_grok(
+            "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  - grok-4.7' '  * gpt-6-sol (default)'; fi\n"
+        )
+        self.assertEqual(detected["grok_auth"], "grok.com")
+        self.assertEqual(detected["models"]["grok"], ["grok-4.7", "gpt-6-sol"])
+        self.assertEqual(detected["models"]["grok_default"], "gpt-6-sol")
+
+    def test_detector_uses_api_catalog_when_not_signed_in(self) -> None:
+        detected = self._detect_grok(
+            "if [[ $1 != models ]]; then exit 0; fi\n"
+            "if [[ -n ${XAI_API_KEY:-} ]]; then printf '%s\\n' 'You are using XAI_API_KEY' '  * grok-4.7 (default)'; exit 0; fi\n"
+            "printf '%s\\n' 'You are not logged in.'\n",
+            {"XAI_API_KEY": "secret-key"},
+        )
+        self.assertEqual(detected["grok_auth"], "api")
+        self.assertEqual(detected["models"]["grok"], ["grok-4.7"])
+        self.assertEqual(detected["models"]["grok_default"], "grok-4.7")
+
+    def test_detector_never_adds_config_only_grok_ids(self) -> None:
+        detected = self._detect_grok(
+            "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)'; fi\n",
+            config='[model."gpt-6-sol"]\nmodel = "gpt-6-sol"\n',
+        )
+        self.assertEqual(detected["models"]["grok"], ["grok-4.7"])
+
     def test_detector_reports_wrapper_path_and_codex_main(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             temp = Path(directory)

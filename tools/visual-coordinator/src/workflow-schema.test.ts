@@ -496,6 +496,18 @@ describe("workflow schema", () => {
       expect(messages.some((message) => message.startsWith("coordinate:"))).toBe(false);
     });
 
+    it("labels a Grok host main with its configured default and keeps it the native main", () => {
+      const grokHost = parseEnvironment({
+        harness: "grok",
+        lanes: { grok: "available" },
+        models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "gpt-6-sol" },
+      });
+      const workflow = defaultWorkflow(grokHost);
+
+      expect(workflow.nodes[0]).toMatchObject({ lane: "grok", provider: "native", model: "gpt-6-sol" });
+      expect(validateWorkflow(workflow, grokHost).filter((issue) => issue.id === "coordinate")).toEqual([]);
+    });
+
     it("labels the OpenCode coordinator with the configured main model", () => {
       const configured = (models: string[], main: string) => parseEnvironment({
         harness: "opencode",

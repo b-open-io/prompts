@@ -66,6 +66,7 @@ function VisualCoordinator() {
     hostHarness: environment.simulationOnly ? undefined : environment.harness,
     nativeController: environment.simulationOnly ? undefined : environment.harness,
     grokWorker: environment.grokWorker ?? undefined,
+    grokAuth: environment.grokAuth ?? undefined,
   })), [environment, workflow]);
   const commandIssues = commands.filter((command) => !command.executable).map((command) => ({ scope: "node" as const, id: command.nodeId, message: command.reason ?? `${command.nodeId} is not executable.` }));
   const allIssues = [...issues, ...commandIssues];

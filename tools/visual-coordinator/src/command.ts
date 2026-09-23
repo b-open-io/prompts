@@ -13,6 +13,8 @@ export type CommandGenerationOptions = {
   readOnlyAgent?: string;
   /** Absolute path of the installed run-grok-worker.sh; Grok shell-outs are not executable without it. */
   grokWorker?: string;
+  /** Grok auth lane confirmed by the detector's `grok models` listing. */
+  grokAuth?: "grok.com" | "api";
 };
 
 export type CommandExecution = "native-agent" | "external-provider";
@@ -182,6 +184,9 @@ const externalCommand = (
     if (!options.grokWorker) {
       return { command: null, reason: "The Grok worker wrapper was not resolved; run detect-harness.sh from the installed orchestra plugin before exporting Grok work." };
     }
+    if (!options.grokAuth) {
+      return { command: null, reason: "No Grok auth lane was confirmed by detect-harness.sh; sign in to grok.com or provide XAI_API_KEY, then re-detect." };
+    }
     const worktree = node.worktree!;
     const args = ["--model", model, "--effort", node.effort, "--mode", readOnly ? "read" : "write", "--cwd", repo];
     if (!readOnly) args.push("--branch", worktree.branch, "--base-ref", worktree.baseRef, "--ownership", node.ownedPaths.join(", ") || "none");
@@ -189,7 +194,7 @@ const externalCommand = (
       command: [
         `PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)`,
         `printf '%s\\n' ${promptArg} > "$PROMPT_FILE"`,
-        `bash ${shellQuote(options.grokWorker)} --auth "\${BOPEN_GROK_AUTH:-grok.com}" ${args.map(shellQuote).join(" ")} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
+        `bash ${shellQuote(options.grokWorker)} --auth ${shellQuote(options.grokAuth)} ${args.map(shellQuote).join(" ")} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
       ].join(" && "),
     };
   }
@@ -322,6 +327,7 @@ export const serializeWorkflow = (
     hostHarness: options.hostHarness ?? (environment.simulationOnly ? undefined : environment.harness),
     nativeController: options.nativeController ?? (environment.simulationOnly ? undefined : environment.harness),
     grokWorker: options.grokWorker ?? environment.grokWorker ?? undefined,
+    grokAuth: options.grokAuth ?? environment.grokAuth ?? undefined,
   };
   const mainId = mainNodeId(workflow, environment);
   const emitted: EmittedNodeSpec[] = [];
@@ -337,7 +343,7 @@ export const serializeWorkflow = (
   }
 
   for (const original of workflow.nodes) {
-    const converted = convertedGrokNode(original, environment);
+    const converted = original.id !== mainId && convertedGrokNode(original, environment);
     const node = converted ? { ...original, provider: "external" as const } : original;
     const lane = environment.lanes[original.lane];
     const generated = generateNodeCommand(node, dispatchOptions);
@@ -362,7 +368,7 @@ export const serializeWorkflow = (
       lane: original.lane,
       model: original.model,
       effort: original.effort,
-      actor: actorForNode(original, mainId),
+      actor: actorForNode(original, converted ? null : mainId),
       execution: generated.execution,
       agentType: rosterId(environment, original),
       task: original.task,

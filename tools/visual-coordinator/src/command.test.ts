@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultWorkflow, parseEnvironment, type WorkflowNode } from "./workflow-schema";
+import { defaultWorkflow, parseEnvironment, validateWorkflow, type WorkflowNode } from "./workflow-schema";
 import { commandForNode, generateNodeCommand, serializeWorkflow, shellQuote, toExportText } from "./command";
 
 const node = (id: string, changes: Partial<WorkflowNode> = {}): WorkflowNode => ({
@@ -130,7 +130,7 @@ describe("versioned export contract", () => {
   });
 
   it("emits exact shell-out records and omits an unapproved boundary", () => {
-    const pressured = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
+    const pressured = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(pressured);
     workflow.nodes[1] = { ...workflow.nodes[1], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "Approved external worker" };
     workflow.nodes[2] = { ...workflow.nodes[2], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "pending" };
@@ -146,12 +146,13 @@ describe("versioned export contract", () => {
   });
 
   it("routes Grok-lane dispatches through the policy wrapper, never a raw grok call", () => {
-    const options = { hostHarness: "codex", nativeController: "codex", grokWorker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" };
+    const options = { hostHarness: "codex", nativeController: "codex", grokWorker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grokAuth: "api" as const };
     const writer = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", effort: "high", ownedPaths: ["src/a.ts"], disclosure: "Approved" }), options);
     const reviewer = generateNodeCommand(node("grok-review", { role: "reviewer", provider: "external", lane: "grok", model: "gpt-6-sol", effort: "xhigh", disclosure: "Approved" }), options);
     const unresolved = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex" });
 
-    expect(writer.command).toContain("bash '/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh'");
+    expect(writer.command).toContain("bash '/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh' --auth 'api'");
+    expect(writer.command).not.toContain("BOPEN_GROK_AUTH");
     expect(writer.command).not.toContain("BOPEN_GROK_WORKER");
     expect(unresolved).toMatchObject({ executable: false, command: null });
     expect(unresolved.reason).toContain("wrapper was not resolved");
@@ -226,8 +227,45 @@ describe("versioned export contract", () => {
     expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "build", reason: expect.stringContaining("wrapper was not resolved") }));
   });
 
+  it("keeps the Grok host main native and main-controller when a custom Grok coordinator comes first", () => {
+    const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
+    const workflow = defaultWorkflow(grokHost);
+    const main = workflow.nodes[0];
+    workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
+    workflow.edges = [];
+
+    expect(validateWorkflow(workflow, grokHost).filter((issue) => issue.id === "coordinate")).toEqual([]);
+    const spec = serializeWorkflow(workflow, grokHost);
+    expect(spec.nodes.map((node) => [node.id, node.actor, node.execution])).toEqual([
+      ["custom", "maker", "external-provider"],
+      ["coordinate", "main-controller", "native-agent"],
+    ]);
+  });
+
+  it("exports a Grok host main on its configured default as native main-controller", () => {
+    const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "gpt-6-sol" } });
+    const workflow = defaultWorkflow(grokHost);
+    workflow.nodes = [workflow.nodes[0]];
+    workflow.edges = [];
+
+    expect(serializeWorkflow(workflow, grokHost).nodes).toEqual([
+      expect.objectContaining({ id: "coordinate", actor: "main-controller", execution: "native-agent", model: "gpt-6-sol" }),
+    ]);
+  });
+
+  it("withholds Grok shell-outs until the detector confirms a Grok auth lane", () => {
+    const unconfirmed = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "token" });
+    expect(unconfirmed.grokAuth).toBeNull();
+    const workflow = defaultWorkflow(unconfirmed);
+    workflow.nodes[1] = { ...workflow.nodes[1], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "Approved external worker" };
+
+    const spec = serializeWorkflow(workflow, unconfirmed);
+    expect(spec.nodes.map((node) => node.id)).not.toContain("build");
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "build", reason: expect.stringContaining("No Grok auth lane was confirmed") }));
+  });
+
   it("converts a detected native non-4.7 Grok model to an explicit shell-out", () => {
-    const grok = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
+    const grok = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(grok);
     workflow.nodes[0] = { ...workflow.nodes[0], model: "ox-alpha", disclosure: "Approved Grok CLI conversion" };
 

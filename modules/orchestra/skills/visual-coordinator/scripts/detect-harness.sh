@@ -34,26 +34,31 @@ grok_bin=$(lane_status grok)
 opencode_bin=$(lane_status opencode)
 
 # --- Models actually offered, not models we assume ---------------------------
-# grok enumerates per authenticated account plus quoted [model."id"] blocks.
-# Lines look like "  * grok-4.7 (default)" and "  - gpt-6-sol".
+# grok enumerates per authenticated account plus registered quoted [model."id"]
+# blocks. Lines look like "  * grok-4.7 (default)" and "  - gpt-6-sol".
+# The listing is taken under the same auth lane run-grok-worker.sh will use
+# (signed-in grok.com first, then XAI_API_KEY), and config.toml is never merged
+# in: the wrapper's preflight accepts only ids this listing shows.
 grok_models=""
+grok_default=""
+grok_auth=""
 if [[ "$grok_bin" == "available" ]]; then
-  grok_models=$(grok models 2>/dev/null \
+  grok_listing=$(env -u XAI_API_KEY -u GROK_API_KEY grok models 2>/dev/null || true)
+  if grep -Fq "You are logged in with grok.com." <<<"$grok_listing"; then
+    grok_auth="grok.com"
+  else
+    grok_listing=$(grok models 2>/dev/null || true)
+    grep -Fq "You are using XAI_API_KEY" <<<"$grok_listing" && grok_auth="api"
+  fi
+  grok_models=$(printf '%s\n' "$grok_listing" \
     | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._-]*\).*/\1/p' \
-    | awk 'NF && !seen[$0]++' \
+    | awk 'NF && ($0 !~ /^grok-/ || $0 == "grok-4.7") && !seen[$0]++' \
     | head -40 \
     | paste -sd, -)
+  grok_default=$(printf '%s\n' "$grok_listing" \
+    | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._-]*\).*(default).*/\1/p' \
+    | head -1)
 fi
-# Merge quoted custom ids from config in case this process's grok models is stale.
-if [[ -f "$HOME/.grok/config.toml" ]]; then
-  extra=$(sed -n 's/^\[model\."\([^"]*\)"\].*/\1/p' "$HOME/.grok/config.toml" | tr '\n' ',')
-  if [[ -n "$extra" ]]; then
-    grok_models=$(printf '%s,%s' "$grok_models" "$extra" | tr ',' '\n' | awk 'NF && !seen[$0]++' | paste -sd, -)
-  fi
-fi
-grok_models=$(printf '%s' "$grok_models" | tr ',' '\n' \
-  | awk 'NF && ($0 !~ /^grok-/ || $0 == "grok-4.7") && !seen[$0]++' \
-  | paste -sd, -)
 
 # Codex has no enumeration command. Its account-scoped model cache is the best
 # local source of truth, with the configured model kept first as a fallback.
@@ -336,6 +341,10 @@ else
 fi
 codex_default_json="null"
 [[ -n "$codex_model" ]] && codex_default_json="\"$(json_escape "$codex_model")\""
+grok_default_json="null"
+[[ -n "$grok_default" ]] && grok_default_json="\"$(json_escape "$grok_default")\""
+grok_auth_json="null"
+[[ -n "$grok_auth" ]] && grok_auth_json="\"$grok_auth\""
 
 # Grok-lane exports call the orchestra wrapper by absolute path, so resolve the installed copy.
 grok_worker_json="null"
@@ -350,6 +359,7 @@ cat <<JSON
   "native_workflow": $native_workflow,
   "credit_pressure": $credit_pressure,
   "grok_worker": $grok_worker_json,
+  "grok_auth": $grok_auth_json,
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget
@@ -365,6 +375,7 @@ cat <<JSON
     "claude_effort": ["low", "medium", "high", "xhigh", "max"],
     "grok": [${grok_models_json}],
     "grok_effort": ["none", "minimal", "low", "medium", "high", "xhigh"],
+    "grok_default": ${grok_default_json},
     "codex": [${codex_models_json}],
     "codex_effort": ["minimal", "low", "medium", "high", "xhigh"],
     "codex_default": ${codex_default_json},
