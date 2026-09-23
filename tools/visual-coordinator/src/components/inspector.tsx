@@ -29,6 +29,7 @@ const missingLane = (id: string): DetectedLane => ({
   models: [],
   efforts: fallbackEfforts,
   inventory: "incomplete",
+  detected: false,
 });
 
 const availabilityLabel = (lane: DetectedLane) => {

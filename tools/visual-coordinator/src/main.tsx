@@ -65,8 +65,9 @@ function VisualCoordinator() {
   const commands = useMemo(() => workflow.nodes.map((node) => generateNodeCommand(node, {
     hostHarness: environment.simulationOnly ? undefined : environment.harness,
     nativeController: environment.simulationOnly ? undefined : environment.harness,
+    grokWorker: environment.grokWorker ?? undefined,
   })), [environment, workflow]);
-  const commandIssues = commands.filter((command) => !command.executable).map((command) => ({ id: command.nodeId, message: command.reason ?? `${command.nodeId} is not executable.` }));
+  const commandIssues = commands.filter((command) => !command.executable).map((command) => ({ scope: "node" as const, id: command.nodeId, message: command.reason ?? `${command.nodeId} is not executable.` }));
   const allIssues = [...issues, ...commandIssues];
   const exportText = useMemo(() => toExportText(workflow, environment), [environment, workflow]);
 

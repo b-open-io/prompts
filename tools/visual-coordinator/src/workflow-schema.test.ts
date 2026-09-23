@@ -43,6 +43,7 @@ describe("workflow schema", () => {
     workflow.edges.push({ id: "review-coordinate", source: "review", target: "coordinate", kind: "forward" });
 
     expect(validateWorkflow(workflow)).toContainEqual({
+      scope: "graph",
       id: "forward-cycle",
       message: "Forward handoffs form a cycle; use a reject or memory edge instead.",
     });
@@ -483,6 +484,44 @@ describe("workflow schema", () => {
     });
   });
 
+  describe("main session and lane evidence", () => {
+    it("exempts only the single Grok main session, not extra Grok coordinators", () => {
+      const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"] } });
+      const main = defaultWorkflow(grokHost).nodes[0];
+      const extra = { ...main, id: "second", title: "Second" };
+      const workflow = { title: "two mains", nodes: [main, extra], edges: [] };
+      const messages = validateWorkflow(workflow, grokHost).map((issue) => `${issue.id}: ${issue.message}`);
+
+      expect(messages).toContain("second: Second uses Grok without usage-credit pressure; route it to gpt-6-sol.");
+      expect(messages.some((message) => message.startsWith("coordinate:"))).toBe(false);
+    });
+
+    it("labels the OpenCode coordinator with the configured main model", () => {
+      const configured = (models: string[], main: string) => parseEnvironment({
+        harness: "opencode",
+        lanes: { opencode: "available" },
+        models: { opencode: models, opencode_default: main, opencode_effort: ["medium", "high", "xhigh"] },
+      });
+
+      expect(defaultWorkflow(configured(["x/gpt-6-astra", "x/gpt-6-sol"], "x/gpt-6-astra")).nodes[0].model).toBe("x/gpt-6-astra");
+      const astraOnly = configured(["x/gpt-6-astra"], "x/gpt-6-astra");
+      expect(defaultWorkflow(astraOnly).nodes[0].model).toBe("x/gpt-6-astra");
+      expect(validateWorkflow(defaultWorkflow(astraOnly), astraOnly).some((issue) => issue.id === "coordinate")).toBe(false);
+      expect(defaultWorkflow(configured(["x/gpt-6-sol"], "x/gpt-5.6-sol")).nodes[0].model).toBe("");
+    });
+
+    it("prefers a detected OpenCode Sol over a fallback-only Codex lane", () => {
+      const environment = parseEnvironment({
+        harness: "claude-code",
+        lanes: { claude: "available", codex: "available", opencode: "available" },
+        models: { claude: ["inherit"], codex: [], opencode: ["x/gpt-6-sol"] },
+      });
+
+      expect(environment.lanes.codex).toMatchObject({ detected: false, models: ["gpt-6-sol"] });
+      expect(defaultWorkflow(environment).nodes[1]).toMatchObject({ lane: "opencode", model: "x/gpt-6-sol" });
+    });
+  });
+
   it("sanitizes node ids before using them in generated worktree metadata", () => {
     const workflow = parseSeed({
       nodes: [{ id: "../../escape", title: "Unsafe" }, { id: "../../escape", title: "Collision" }],
@@ -510,6 +549,7 @@ describe("workflow schema", () => {
     environment.caps.liveChildren = 2;
 
     expect(validateWorkflow(defaultWorkflow(environment), environment)).toContainEqual({
+      scope: "graph",
       id: "live-children",
       message: "This plan has 3 steps, above the 2-child safety cap reported by codex.",
     });

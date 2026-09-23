@@ -180,12 +180,12 @@ codex exec --sandbox workspace-write --cd <repo> "<one-line task>" \
 # Grok lane — always through the orchestra wrapper, which enforces the
 # grok-4.7 pin, the usage-credit gate (BOPEN_USAGE_CREDIT_PRESSURE=1), and the
 # GPT-6-only rule when the command runs. Never emit a raw `grok -m` dispatch.
-bash "$BOPEN_GROK_WORKER" --auth grok.com --model gpt-6-sol --effort medium \
+bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model gpt-6-sol --effort medium \
   --mode write --cwd <worktree> --branch <branch> --base-ref <ref> \
   --ownership '<owned paths>' --prompt-file <file> --log <file>.log
 
 # read-only review — the wrapper uses plan permissions in read mode
-bash "$BOPEN_GROK_WORKER" --auth grok.com --model gpt-6-sol --effort xhigh \
+bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model gpt-6-sol --effort xhigh \
   --mode read --cwd <repo> --prompt-file <file> --log <file>.log
 
 claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communication.md" \

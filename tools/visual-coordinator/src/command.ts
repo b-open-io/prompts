@@ -1,4 +1,4 @@
-import { validateWorkflow, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
+import { mainNodeId, validateWorkflow, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
 
 /**
  * Inputs that are known by the host of the visual coordinator.  The
@@ -11,6 +11,8 @@ export type CommandGenerationOptions = {
   nativeController?: string;
   /** The configured read-only OpenCode agent, when one exists. */
   readOnlyAgent?: string;
+  /** Absolute path of the installed run-grok-worker.sh; Grok shell-outs are not executable without it. */
+  grokWorker?: string;
 };
 
 export type CommandExecution = "native-agent" | "external-provider";
@@ -177,6 +179,9 @@ const externalCommand = (
   if (lane === "grok") {
     // Every Grok-lane dispatch goes through the orchestra wrapper so the model pin and the
     // usage-credit gate (BOPEN_USAGE_CREDIT_PRESSURE) are enforced when the command runs.
+    if (!options.grokWorker) {
+      return { command: null, reason: "The Grok worker wrapper was not resolved; run detect-harness.sh from the installed orchestra plugin before exporting Grok work." };
+    }
     const worktree = node.worktree!;
     const args = ["--model", model, "--effort", node.effort, "--mode", readOnly ? "read" : "write", "--cwd", repo];
     if (!readOnly) args.push("--branch", worktree.branch, "--base-ref", worktree.baseRef, "--ownership", node.ownedPaths.join(", ") || "none");
@@ -184,7 +189,7 @@ const externalCommand = (
       command: [
         `PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)`,
         `printf '%s\\n' ${promptArg} > "$PROMPT_FILE"`,
-        `bash "\${BOPEN_GROK_WORKER:?set to orchestra coordinator/scripts/run-grok-worker.sh}" --auth "\${BOPEN_GROK_AUTH:-grok.com}" ${args.map(shellQuote).join(" ")} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
+        `bash ${shellQuote(options.grokWorker)} --auth "\${BOPEN_GROK_AUTH:-grok.com}" ${args.map(shellQuote).join(" ")} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
       ].join(" && "),
     };
   }
@@ -273,8 +278,8 @@ const providerForNode = (node: WorkflowNode): string => {
   return providerForLane[node.lane.toLowerCase()] ?? node.provider;
 };
 
-const actorForNode = (node: WorkflowNode): EmittedNodeSpec["actor"] =>
-  node.role === "reviewer" ? "reviewer" : node.role === "coordinator" ? "main-controller" : "maker";
+const actorForNode = (node: WorkflowNode, mainId: string | null): EmittedNodeSpec["actor"] =>
+  node.role === "reviewer" ? "reviewer" : node.id === mainId ? "main-controller" : "maker";
 
 const rosterId = (environment: WorkflowEnvironment, node: WorkflowNode): string | null => {
   const entry = environment.roster.find((candidate) => {
@@ -316,7 +321,9 @@ export const serializeWorkflow = (
     ...options,
     hostHarness: options.hostHarness ?? (environment.simulationOnly ? undefined : environment.harness),
     nativeController: options.nativeController ?? (environment.simulationOnly ? undefined : environment.harness),
+    grokWorker: options.grokWorker ?? environment.grokWorker ?? undefined,
   };
+  const mainId = mainNodeId(workflow, environment);
   const emitted: EmittedNodeSpec[] = [];
   const omissions: EmittedWorkflowSpec["omissions"] = [];
 
@@ -325,7 +332,7 @@ export const serializeWorkflow = (
   const nodeIssues = new Map<string, string[]>();
   const workflowIssues: string[] = [];
   for (const issue of validateWorkflow(workflow, environment)) {
-    if (nodeIds.has(issue.id)) nodeIssues.set(issue.id, [...(nodeIssues.get(issue.id) ?? []), issue.message]);
+    if (issue.scope === "node" && nodeIds.has(issue.id)) nodeIssues.set(issue.id, [...(nodeIssues.get(issue.id) ?? []), issue.message]);
     else workflowIssues.push(issue.message);
   }
 
@@ -355,7 +362,7 @@ export const serializeWorkflow = (
       lane: original.lane,
       model: original.model,
       effort: original.effort,
-      actor: actorForNode(original),
+      actor: actorForNode(original, mainId),
       execution: generated.execution,
       agentType: rosterId(environment, original),
       task: original.task,

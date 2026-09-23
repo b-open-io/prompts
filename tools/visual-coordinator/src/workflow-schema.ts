@@ -13,6 +13,8 @@ export type DetectedLane = {
   models: string[];
   efforts: WorkflowEffort[];
   inventory: InventoryCompleteness;
+  /** True when `models` came from the detector rather than the built-in fallback list. */
+  detected: boolean;
 };
 
 export type WorkflowEnvironment = {
@@ -21,6 +23,10 @@ export type WorkflowEnvironment = {
   simulationOnly: boolean;
   nativeWorkflow: boolean;
   creditPressure: boolean;
+  /** Main-session model each lane reports as configured (`models.<lane>_default`). */
+  mainModels: Record<string, string>;
+  /** Absolute path of the installed run-grok-worker.sh, when the detector resolved it. */
+  grokWorker: string | null;
   caps: { liveChildren: number | null; agentBudgetDefault: number };
   lanes: Record<string, DetectedLane>;
   roster: unknown[];
@@ -53,7 +59,8 @@ export type WorkflowNode = {
 export type WorkflowEdge = { id: string; source: string; target: string; kind: EdgeKind; label?: string };
 export type Workflow = { title: string; nodes: WorkflowNode[]; edges: WorkflowEdge[] };
 
-export type ValidationIssue = { id: string; message: string };
+/** `graph` issues invalidate the whole workflow; `node` issues invalidate only the node named by `id`. */
+export type ValidationIssue = { id: string; message: string; scope: "graph" | "node" };
 
 const roles: NodeRole[] = ["coordinator", "builder", "reviewer", "external"];
 const efforts: WorkflowNode["effort"][] = ["none", "minimal", "low", "medium", "high", "xhigh", "max"];
@@ -139,7 +146,7 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
   const simulationOnly = !hostLane;
   const rawLanes = raw.lanes && typeof raw.lanes === "object" ? raw.lanes as Record<string, unknown> : {};
   const rawModels = raw.models && typeof raw.models === "object" ? raw.models as Record<string, unknown> : {};
-  const ids = [...new Set([...knownLanes, ...Object.keys(rawLanes).map(laneKey), ...Object.keys(rawModels).filter((key) => !key.endsWith("_effort") && key !== "opencode_default").map(laneKey)])];
+  const ids = [...new Set([...knownLanes, ...Object.keys(rawLanes).map(laneKey), ...Object.keys(rawModels).filter((key) => !key.endsWith("_effort") && !key.endsWith("_default")).map(laneKey)])];
   const lanes = Object.fromEntries(ids.map((rawId) => {
     const id = laneKey(rawId);
     const modelInventory = inventoryValue(rawModels[id] ?? rawModels[rawId]);
@@ -157,8 +164,13 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
       models: detectedModels.length > 0 ? detectedModels : (modelInventory.complete ? [] : (fallbackModels[id] ?? [])),
       efforts: effortInventory.length > 0 ? effortInventory : fallbackEfforts,
       inventory: modelInventory.complete ? "complete" as const : "incomplete" as const,
+      detected: detectedModels.length > 0,
     } satisfies DetectedLane];
   }));
+  const mainModels = Object.fromEntries(Object.entries(rawModels)
+    .filter(([key, model]) => key.endsWith("_default") && typeof model === "string" && model.trim().length > 0)
+    .map(([key, model]) => [laneKey(key.slice(0, -"_default".length)), (model as string).trim()]));
+  const grokWorker = typeof raw.grok_worker === "string" && /^\/[^\0\n\r'"`$\\]*\/run-grok-worker\.sh$/.test(raw.grok_worker) ? raw.grok_worker : null;
   const rawCaps = raw.caps && typeof raw.caps === "object" ? raw.caps as Record<string, unknown> : {};
   return {
     harness: harness || "demo",
@@ -166,6 +178,8 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
     simulationOnly,
     nativeWorkflow: raw.native_workflow === true || raw.nativeWorkflow === true,
     creditPressure: raw.credit_pressure === true || raw.creditPressure === true,
+    mainModels,
+    grokWorker,
     caps: {
       liveChildren: safeNumber(rawCaps.live_children ?? rawCaps.liveChildren, null),
       agentBudgetDefault: safeNumber(rawCaps.agent_budget_default ?? rawCaps.agentBudgetDefault, 0) ?? 0,
@@ -193,6 +207,8 @@ const laneModels = (environment: WorkflowEnvironment, lane: WorkflowLane): strin
 // The coordinator is the current main session. Only an allowed model is picked; otherwise it stays
 // empty so validation fails closed instead of drifting to the next catalog entry.
 const mainModel = (environment: WorkflowEnvironment, lane: WorkflowLane): string => {
+  const configured = environment.mainModels[lane];
+  if (configured) return isSuperseded(configured) ? "" : configured;
   const models = laneModels(environment, lane);
   if (lane === "claude") return models.includes("inherit") ? "inherit" : "";
   if (lane === "grok") return models.find(isApprovedGrok) ?? "";
@@ -204,15 +220,27 @@ const solFor = (environment: WorkflowEnvironment, lane: WorkflowLane): string | 
   return laneModels(environment, lane).find(isSol) ?? null;
 };
 
-/** Pick the lane that runs GPT-6 Sol, independent of which model the host lists first. */
+/**
+ * Pick the lane that runs GPT-6 Sol, independent of which model the host lists first. A lane whose
+ * Sol was actually detected on an available CLI wins over a lane that only has the fallback list.
+ */
 export const codingTarget = (environment: WorkflowEnvironment): { lane: WorkflowLane; model: string } => {
   const order = [...new Set([environment.hostLane, "codex", "opencode", "grok"].filter((lane): lane is string => Boolean(lane)))];
+  for (const lane of order) {
+    const detected = environment.lanes[lane];
+    const model = detected?.detected && detected.availability === "available" ? solFor(environment, lane) : null;
+    if (model) return { lane, model };
+  }
   for (const lane of order) {
     const model = solFor(environment, lane);
     if (model) return { lane, model };
   }
   return { lane: "codex", model: SOL };
 };
+
+/** The single node that stands for the current main session: the first native coordinator on the host lane. */
+export const mainNodeId = (workflow: Workflow, environment: WorkflowEnvironment): string | null =>
+  workflow.nodes.find((node) => node.role === "coordinator" && node.provider === "native" && node.lane === environment.hostLane)?.id ?? null;
 
 /**
  * Default model for a node placed on a lane. Workers get GPT-6 Sol, or grok-4.7 only for a builder
@@ -352,17 +380,17 @@ export const nextNodeId = (nodes: Pick<WorkflowNode, "id">[], prefix = "step") =
 
 export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnvironment = defaultEnvironment()): ValidationIssue[] => {
   const issues: ValidationIssue[] = [];
-  if (environment.simulationOnly) issues.push({ id: "environment", message: "Simulation only: attach a detected host environment before exporting or dispatching." });
+  if (environment.simulationOnly) issues.push({ scope: "graph", id: "environment", message: "Simulation only: attach a detected host environment before exporting or dispatching." });
   if (environment.caps.liveChildren !== null && workflow.nodes.length > environment.caps.liveChildren) {
-    issues.push({ id: "live-children", message: `This plan has ${workflow.nodes.length} steps, above the ${environment.caps.liveChildren}-child safety cap reported by ${environment.harness}.` });
+    issues.push({ scope: "graph", id: "live-children", message: `This plan has ${workflow.nodes.length} steps, above the ${environment.caps.liveChildren}-child safety cap reported by ${environment.harness}.` });
   }
   const nodes = new Map(workflow.nodes.map((node) => [node.id, node]));
   const knownEdges = new Set<string>();
   const forward = new Map<string, string[]>();
   for (const edge of workflow.edges) {
-    if (!nodes.has(edge.source) || !nodes.has(edge.target)) issues.push({ id: edge.id, message: `Edge ${edge.id} points to a missing node.` });
+    if (!nodes.has(edge.source) || !nodes.has(edge.target)) issues.push({ scope: "graph", id: edge.id, message: `Edge ${edge.id} points to a missing node.` });
     const fingerprint = `${edge.source}:${edge.target}:${edge.kind}`;
-    if (knownEdges.has(fingerprint)) issues.push({ id: edge.id, message: `Duplicate ${edge.kind} edge from ${edge.source} to ${edge.target}.` });
+    if (knownEdges.has(fingerprint)) issues.push({ scope: "graph", id: edge.id, message: `Duplicate ${edge.kind} edge from ${edge.source} to ${edge.target}.` });
     knownEdges.add(fingerprint);
     if (edge.kind === "forward") forward.set(edge.source, [...(forward.get(edge.source) ?? []), edge.target]);
   }
@@ -374,50 +402,51 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     const cyclical = (forward.get(id) ?? []).some(walk);
     visiting.delete(id); visited.add(id); return cyclical;
   };
-  if (workflow.nodes.some((node) => walk(node.id))) issues.push({ id: "forward-cycle", message: "Forward handoffs form a cycle; use a reject or memory edge instead." });
+  const mainId = mainNodeId(workflow, environment);
+  if (workflow.nodes.some((node) => walk(node.id))) issues.push({ scope: "graph", id: "forward-cycle", message: "Forward handoffs form a cycle; use a reject or memory edge instead." });
   for (const node of workflow.nodes) {
     const model = typeof node.model === "string" ? node.model.trim() : "";
-    if (!model) issues.push({ id: node.id, message: node.role === "coordinator"
+    if (!model) issues.push({ scope: "node", id: node.id, message: node.role === "coordinator"
       ? `${node.title} needs a model.`
       : `${node.title} needs a model: ${node.lane || "this lane"} does not offer ${SOL}; choose a lane that does or set a model explicitly.` });
-    if (isSuperseded(model)) issues.push({ id: node.id, message: `${node.title} uses ${model}; coding uses GPT-6 models only (${SOL}).` });
-    if (isGrokFamily(model) && !isApprovedGrok(model)) issues.push({ id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
-    if (isGrokFamily(model) && node.lane !== "grok") issues.push({ id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
-    // A Grok host's own native main session is an observed fact, not a dispatch; every other Grok use needs pressure.
-    const observedGrokMain = node.role === "coordinator" && node.lane === "grok" && node.provider === "native" && environment.hostLane === "grok";
-    if (isGrokFamily(model) && !observedGrokMain && !environment.creditPressure) issues.push({ id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
+    if (isSuperseded(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; coding uses GPT-6 models only (${SOL}).` });
+    if (isGrokFamily(model) && !isApprovedGrok(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
+    if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
+    // A Grok host's own main session is an observed fact, not a dispatch; every other Grok use needs pressure.
+    const observedGrokMain = node.id === mainId && environment.hostLane === "grok";
+    if (isGrokFamily(model) && !observedGrokMain && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
     if (node.role !== "coordinator") {
-      if (node.role !== "reviewer" && isOpus(model)) issues.push({ id: node.id, message: `${node.title} uses Claude Opus, which is the advisor, not a coding worker; use ${SOL}.` });
-      else if (node.role !== "reviewer" && (node.lane === "claude" || isClaudeFamily(model))) issues.push({ id: node.id, message: `${node.title} uses Claude (${model || "no model"}), which is not a coding worker; use ${SOL}.` });
-      if (node.role === "reviewer" && (!isSol(model) || node.effort !== "xhigh")) issues.push({ id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });
+      if (node.role !== "reviewer" && isOpus(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Claude Opus, which is the advisor, not a coding worker; use ${SOL}.` });
+      else if (node.role !== "reviewer" && (node.lane === "claude" || isClaudeFamily(model))) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Claude (${model || "no model"}), which is not a coding worker; use ${SOL}.` });
+      if (node.role === "reviewer" && (!isSol(model) || node.effort !== "xhigh")) issues.push({ scope: "node", id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });
     }
     const lane = environment.lanes[node.lane];
-    if (!lane) issues.push({ id: node.id, message: `${node.title} uses an undetected lane: ${node.lane}.` });
+    if (!lane) issues.push({ scope: "node", id: node.id, message: `${node.title} uses an undetected lane: ${node.lane}.` });
     else {
       const detectedGrokShellOut = node.provider === "native"
         && node.lane === "grok"
         && model !== "grok-4.7"
         && lane.models.includes(model);
-      if (lane.availability !== "available") issues.push({ id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
-      if (lane.inventory === "complete" && !lane.models.includes(model)) issues.push({ id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
-      if (lane.efforts.length > 0 && !lane.efforts.includes(node.effort)) issues.push({ id: node.id, message: `${node.title} uses an effort unavailable on ${lane.label}: ${node.effort}.` });
-      if (node.provider === "native" && environment.hostLane !== node.lane) issues.push({ id: node.id, message: `${node.title} marks ${lane.label} as native, but the current host is ${environment.hostLane ?? "unknown"}.` });
-      if (node.provider === "native" && !detectedGrokShellOut && looksLikeForeignNativeModel(node.lane, model)) issues.push({ id: node.id, message: `${node.title} pairs a native ${lane.label} lane with a foreign model: ${model}.` });
-      if (detectedGrokShellOut && !hasApprovedDisclosure(node.disclosure)) issues.push({ id: node.id, message: `${node.title} needs an approved external-provider disclosure for this Grok CLI shell-out.` });
+      if (lane.availability !== "available") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
+      if (lane.inventory === "complete" && !lane.models.includes(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
+      if (lane.efforts.length > 0 && !lane.efforts.includes(node.effort)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses an effort unavailable on ${lane.label}: ${node.effort}.` });
+      if (node.provider === "native" && environment.hostLane !== node.lane) issues.push({ scope: "node", id: node.id, message: `${node.title} marks ${lane.label} as native, but the current host is ${environment.hostLane ?? "unknown"}.` });
+      if (node.provider === "native" && !detectedGrokShellOut && looksLikeForeignNativeModel(node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} pairs a native ${lane.label} lane with a foreign model: ${model}.` });
+      if (detectedGrokShellOut && !hasApprovedDisclosure(node.disclosure)) issues.push({ scope: "node", id: node.id, message: `${node.title} needs an approved external-provider disclosure for this Grok CLI shell-out.` });
     }
-    if (node.provider === "external" && !node.disclosure?.trim()) issues.push({ id: node.id, message: `${node.title} needs an external-provider disclosure.` });
-    if (node.role === "reviewer" && node.execution !== "read-only-review") issues.push({ id: node.id, message: `${node.title} must use read-only review execution.` });
+    if (node.provider === "external" && !node.disclosure?.trim()) issues.push({ scope: "node", id: node.id, message: `${node.title} needs an external-provider disclosure.` });
+    if (node.role === "reviewer" && node.execution !== "read-only-review") issues.push({ scope: "node", id: node.id, message: `${node.title} must use read-only review execution.` });
     if (!node.worktree || [node.worktree.root, node.worktree.repoPath, node.worktree.taskPath, node.worktree.baseRef, node.worktree.branch, node.worktree.owner, node.worktree.cleanup].some((value) => !value?.trim())) {
-      issues.push({ id: node.id, message: `${node.title} has incomplete worktree metadata.` });
+      issues.push({ scope: "node", id: node.id, message: `${node.title} has incomplete worktree metadata.` });
     } else {
       const root = node.worktree.root.replace(/\/$/, "");
       const taskPath = node.worktree.taskPath.replace(/\/$/, "");
       const hasTraversal = (value: string) => /(?:^|\/)\.\.(?:\/|$)/.test(value) || value.includes("\\");
       if (["/", "~"].includes(root) || hasTraversal(root) || hasTraversal(taskPath) || !taskPath.startsWith(`${root}/`)) {
-        issues.push({ id: node.id, message: `${node.title} needs a task worktree inside its declared worktree root.` });
+        issues.push({ scope: "node", id: node.id, message: `${node.title} needs a task worktree inside its declared worktree root.` });
       }
       if (!/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(node.worktree.branch) || hasTraversal(node.worktree.branch) || node.worktree.branch.includes("//")) {
-        issues.push({ id: node.id, message: `${node.title} has an unsafe worktree branch name.` });
+        issues.push({ scope: "node", id: node.id, message: `${node.title} has an unsafe worktree branch name.` });
       }
     }
   }

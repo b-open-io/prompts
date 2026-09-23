@@ -173,6 +173,15 @@ manifests share the same release version.
   node (and all nodes when the workflow itself is invalid), and Grok-lane
   exports call `run-grok-worker.sh`, which gains `--effort`, instead of raw
   `grok -m`.
+- Only the first native coordinator on the host lane counts as the main
+  session; a second Grok coordinator needs credit pressure and exports as a
+  dispatch, not `main-controller`. Validation issues carry a `graph`/`node`
+  scope, so a graph-wide error withholds every node even when its id matches a
+  node id. The Coordinate card shows the detector's configured main model
+  (`models.<lane>_default`, now also reported for Codex), and Build/Review
+  prefer a lane whose Sol was actually detected over a fallback-only lane. The
+  detector reports the installed `grok_worker` path; Grok-lane exports call it
+  directly and are not executable when it is unresolved.
 
 ## [1.1.168] - Pending production promotion
 

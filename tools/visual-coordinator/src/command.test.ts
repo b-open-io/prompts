@@ -130,7 +130,7 @@ describe("versioned export contract", () => {
   });
 
   it("emits exact shell-out records and omits an unapproved boundary", () => {
-    const pressured = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true });
+    const pressured = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
     const workflow = defaultWorkflow(pressured);
     workflow.nodes[1] = { ...workflow.nodes[1], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "Approved external worker" };
     workflow.nodes[2] = { ...workflow.nodes[2], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "pending" };
@@ -146,10 +146,15 @@ describe("versioned export contract", () => {
   });
 
   it("routes Grok-lane dispatches through the policy wrapper, never a raw grok call", () => {
-    const writer = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", effort: "high", ownedPaths: ["src/a.ts"], disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex" });
-    const reviewer = generateNodeCommand(node("grok-review", { role: "reviewer", provider: "external", lane: "grok", model: "gpt-6-sol", effort: "xhigh", disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex" });
+    const options = { hostHarness: "codex", nativeController: "codex", grokWorker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" };
+    const writer = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", effort: "high", ownedPaths: ["src/a.ts"], disclosure: "Approved" }), options);
+    const reviewer = generateNodeCommand(node("grok-review", { role: "reviewer", provider: "external", lane: "grok", model: "gpt-6-sol", effort: "xhigh", disclosure: "Approved" }), options);
+    const unresolved = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex" });
 
-    expect(writer.command).toContain('bash "${BOPEN_GROK_WORKER:?');
+    expect(writer.command).toContain("bash '/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh'");
+    expect(writer.command).not.toContain("BOPEN_GROK_WORKER");
+    expect(unresolved).toMatchObject({ executable: false, command: null });
+    expect(unresolved.reason).toContain("wrapper was not resolved");
     expect(writer.command).toContain("'--model' 'grok-4.7' '--effort' 'high' '--mode' 'write'");
     expect(writer.command).toContain("'--branch' 'codex/build' '--base-ref' 'origin/dev' '--ownership' 'src/a.ts'");
     expect(writer.command).toContain('--prompt-file "$PROMPT_FILE"');
@@ -186,8 +191,43 @@ describe("versioned export contract", () => {
     expect(spec.omissions.filter((item) => item.kind === "node").every((item) => item.reason.startsWith("Workflow validation failed:"))).toBe(true);
   });
 
+  it("treats graph-wide issues as graph-wide even when an id collides with a node id", () => {
+    const cycle = defaultWorkflow(environment);
+    cycle.nodes[0] = { ...cycle.nodes[0], id: "forward-cycle" };
+    cycle.edges = [
+      { id: "a", source: "forward-cycle", target: "build", kind: "forward" },
+      { id: "b", source: "build", target: "forward-cycle", kind: "forward" },
+    ];
+    expect(serializeWorkflow(cycle, environment).nodes).toEqual([]);
+
+    const brokenEdge = defaultWorkflow(environment);
+    brokenEdge.edges.push({ id: "build", source: "build", target: "nowhere", kind: "forward" });
+    expect(serializeWorkflow(brokenEdge, environment).nodes).toEqual([]);
+  });
+
+  it("exports only the single main session as main-controller", () => {
+    const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
+    const workflow = defaultWorkflow(grokHost);
+    const main = workflow.nodes[0];
+    workflow.nodes = [main, { ...main, id: "second", title: "Second" }];
+    workflow.edges = [];
+
+    const spec = serializeWorkflow(workflow, grokHost);
+    expect(spec.nodes.map((node) => [node.id, node.actor])).toEqual([["coordinate", "main-controller"], ["second", "maker"]]);
+  });
+
+  it("withholds Grok shell-outs when the detector did not resolve the wrapper", () => {
+    const unresolved = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true });
+    const workflow = defaultWorkflow(unresolved);
+    workflow.nodes[1] = { ...workflow.nodes[1], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "Approved external worker" };
+
+    const spec = serializeWorkflow(workflow, unresolved);
+    expect(spec.nodes.map((node) => node.id)).not.toContain("build");
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "build", reason: expect.stringContaining("wrapper was not resolved") }));
+  });
+
   it("converts a detected native non-4.7 Grok model to an explicit shell-out", () => {
-    const grok = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] } });
+    const grok = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
     const workflow = defaultWorkflow(grok);
     workflow.nodes[0] = { ...workflow.nodes[0], model: "ox-alpha", disclosure: "Approved Grok CLI conversion" };
 

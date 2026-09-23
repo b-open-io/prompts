@@ -207,6 +207,28 @@ class VisualWorkflowContractTests(unittest.TestCase):
             )
             self.assertIs(json.loads(pressured.stdout)["credit_pressure"], True)
 
+    def test_detector_reports_wrapper_path_and_codex_main(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            codex_home = temp / "codex"
+            codex_home.mkdir()
+            (codex_home / "config.toml").write_text('model = "gpt-6-astra"\n', encoding="utf-8")
+            env = {key: value for key, value in os.environ.items() if key != "BOPEN_GROK_WORKER"}
+            env.update({"HOME": str(temp), "PATH": "/usr/bin:/bin", "CODEX_HOME": str(codex_home), "BOPEN_HOST_HARNESS": "codex"})
+            detected = json.loads(subprocess.run(
+                ["bash", str(self.DETECTOR)], cwd=temp, env=env, capture_output=True, text=True, check=True,
+            ).stdout)
+            wrapper = Path(detected["grok_worker"])
+            self.assertTrue(wrapper.is_absolute())
+            self.assertEqual(wrapper.resolve(), (self.ROOT / "modules/orchestra/skills/coordinator/scripts/run-grok-worker.sh").resolve())
+            self.assertEqual(detected["models"]["codex_default"], "gpt-6-astra")
+
+            env["BOPEN_GROK_WORKER"] = str(temp / "missing/run-grok-worker.sh")
+            missing = json.loads(subprocess.run(
+                ["bash", str(self.DETECTOR)], cwd=temp, env=env, capture_output=True, text=True, check=True,
+            ).stdout)
+            self.assertIsNone(missing["grok_worker"])
+
     def test_detector_queries_each_configured_opencode_provider(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             temp = Path(directory)

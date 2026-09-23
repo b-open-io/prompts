@@ -334,12 +334,22 @@ if [[ -n "$opencode_model" ]]; then
 else
   opencode_default_json="null"
 fi
+codex_default_json="null"
+[[ -n "$codex_model" ]] && codex_default_json="\"$(json_escape "$codex_model")\""
+
+# Grok-lane exports call the orchestra wrapper by absolute path, so resolve the installed copy.
+grok_worker_json="null"
+grok_worker="${BOPEN_GROK_WORKER:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../coordinator/scripts" 2>/dev/null && pwd -P)/run-grok-worker.sh}"
+if [[ -f "$grok_worker" && "$grok_worker" == /* ]]; then
+  grok_worker_json="\"$(json_escape "$grok_worker")\""
+fi
 
 cat <<JSON
 {
   "harness": "$harness",
   "native_workflow": $native_workflow,
   "credit_pressure": $credit_pressure,
+  "grok_worker": $grok_worker_json,
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget
@@ -357,6 +367,7 @@ cat <<JSON
     "grok_effort": ["none", "minimal", "low", "medium", "high", "xhigh"],
     "codex": [${codex_models_json}],
     "codex_effort": ["minimal", "low", "medium", "high", "xhigh"],
+    "codex_default": ${codex_default_json},
     "opencode": [${opencode_models_json}],
     "opencode_default": ${opencode_default_json}
   },
