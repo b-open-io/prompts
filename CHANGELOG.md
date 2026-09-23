@@ -195,6 +195,10 @@ manifests share the same release version.
   canvas's Ready/Copy gate now uses the serializer's own dispatch plan, so a
   converted Grok node the export would drop (for example, with no confirmed
   `grok_auth`) blocks Copy.
+- A Grok host has a pressure-free main only when the detector reported
+  `models.grok_default`; bare `grok-4.7` is never assumed. Every other native
+  Grok-lane node, `grok-4.7` included, exports as a disclosed wrapper
+  shell-out, and the inspector and default staffing mark it external.
 
 ## [1.1.168] - Pending production promotion
 

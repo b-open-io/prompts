@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { modelFor, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
+import { modelFor, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
 
 type Props = {
   node?: WorkflowNode;
@@ -75,22 +75,20 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
     const next = environment.lanes[nextLane] ?? missingLane(nextLane);
     const model = modelFor(environment, nextLane, node.role);
     const reviewEffort = node.role === "reviewer" && next.efforts.includes("xhigh") ? "xhigh" : undefined;
-    const requiresGrokShellOut = nextLane === "grok" && model !== "" && model !== "grok-4.7";
     onNodeChange({
       ...node,
       lane: nextLane,
       model,
       effort: reviewEffort ?? next.efforts[0] ?? "medium",
-      provider: environment.hostLane === nextLane && !requiresGrokShellOut ? "native" : "external",
+      provider: runsNatively(environment, nextLane, model, node.role) ? "native" : "external",
     });
   };
   const onModelChange = (selected: string) => {
     const model = selected === CUSTOM_MODEL ? "" : selected;
-    const requiresGrokShellOut = node.lane === "grok" && model !== "" && model !== "grok-4.7";
     onNodeChange({
       ...node,
       model,
-      provider: requiresGrokShellOut || environment.hostLane !== node.lane ? "external" : "native",
+      provider: runsNatively(environment, node.lane, model, node.role) ? "native" : "external",
     });
   };
 

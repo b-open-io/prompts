@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, toPlan, validateWorkflow } from "./workflow-schema";
+import { defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
 
 const liveCodexEnvironment = () => parseEnvironment({
   harness: "codex",
@@ -465,7 +465,7 @@ describe("workflow schema", () => {
         );
       }
 
-      const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"] } });
+      const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"], grok_default: "grok-4.7" } });
       const observed = defaultWorkflow(grokHost).nodes[0];
       expect(observed).toMatchObject({ role: "coordinator", lane: "grok", provider: "native", model: "grok-4.7" });
       expect(validateWorkflow({ title: "main", nodes: [observed], edges: [] }, grokHost)).toEqual([]);
@@ -486,7 +486,7 @@ describe("workflow schema", () => {
 
   describe("main session and lane evidence", () => {
     it("exempts only the single Grok main session, not extra Grok coordinators", () => {
-      const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"] } });
+      const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"], grok_default: "grok-4.7" } });
       const main = defaultWorkflow(grokHost).nodes[0];
       const extra = { ...main, id: "second", title: "Second" };
       const workflow = { title: "two mains", nodes: [main, extra], edges: [] };
@@ -494,6 +494,31 @@ describe("workflow schema", () => {
 
       expect(messages).toContain("second: Second uses Grok without usage-credit pressure; route it to gpt-6-sol.");
       expect(messages.some((message) => message.startsWith("coordinate:"))).toBe(false);
+    });
+
+    it("grants no pressure-free Grok main when the detector reported no default", () => {
+      const noDefault = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"] } });
+      expect(noDefault.mainModels).toEqual({});
+
+      const card = defaultWorkflow(noDefault).nodes[0];
+      expect(card).toMatchObject({ role: "coordinator", lane: "grok", model: "" });
+      expect(validateWorkflow({ title: "t", nodes: [card], edges: [] }, noDefault).map((issue) => issue.message)).toContain(
+        "Coordinate needs a model: detect-harness.sh did not report the Grok host's default model; re-run it before planning.",
+      );
+
+      const explicit = { ...card, model: "grok-4.7" };
+      const messages = validateWorkflow({ title: "t", nodes: [explicit], edges: [] }, noDefault).map((issue) => issue.message);
+      expect(messages).toContain("Coordinate uses Grok without usage-credit pressure; route it to gpt-6-sol.");
+    });
+
+    it("runs natively on the Grok lane only for a coordinator on the observed default", () => {
+      const grokHost = (grok_default?: string) => parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "gpt-6-sol"], ...(grok_default ? { grok_default } : {}) } });
+
+      expect(runsNatively(grokHost("gpt-6-sol"), "grok", "grok-4.7", "coordinator")).toBe(false);
+      expect(runsNatively(grokHost("gpt-6-sol"), "grok", "gpt-6-sol", "coordinator")).toBe(true);
+      expect(runsNatively(grokHost("grok-4.7"), "grok", "grok-4.7", "builder")).toBe(false);
+      expect(runsNatively(grokHost(), "grok", "grok-4.7", "coordinator")).toBe(false);
+      expect(parseSeed({ nodes: [{ id: "main", role: "coordinator", model: "grok-4.7" }], edges: [] }, grokHost("gpt-6-sol")).nodes[0].provider).toBe("external");
     });
 
     it("labels a Grok host main with its configured default and keeps it the native main", () => {

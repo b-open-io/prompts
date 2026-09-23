@@ -207,14 +207,14 @@ describe("versioned export contract", () => {
   });
 
   it("exports only the single main session as main-controller", () => {
-    const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
+    const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"], grok_default: "grok-4.7" }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(grokHost);
     const main = workflow.nodes[0];
-    workflow.nodes = [main, { ...main, id: "second", title: "Second" }];
+    workflow.nodes = [main, { ...main, id: "second", title: "Second", disclosure: "Approved xAI dispatch" }];
     workflow.edges = [];
 
     const spec = serializeWorkflow(workflow, grokHost);
-    expect(spec.nodes.map((node) => [node.id, node.actor])).toEqual([["coordinate", "main-controller"], ["second", "maker"]]);
+    expect(spec.nodes.map((node) => [node.id, node.actor, node.shell])).toEqual([["coordinate", "main-controller", false], ["second", "maker", true]]);
   });
 
   it("withholds Grok shell-outs when the detector did not resolve the wrapper", () => {
@@ -228,7 +228,7 @@ describe("versioned export contract", () => {
   });
 
   it("keeps the Grok host main native and main-controller when a custom Grok coordinator comes first", () => {
-    const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
+    const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(grokHost);
     const main = workflow.nodes[0];
     workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
@@ -276,13 +276,19 @@ describe("versioned export contract", () => {
     expect(serializeWorkflow(edited(unpressured), unpressured).nodes).toEqual([]);
 
     const pressured = detected({ credit_pressure: true });
-    expect(serializeWorkflow(edited(pressured), pressured).nodes).toEqual([
-      expect.objectContaining({ id: "coordinate", actor: "maker", model: "grok-4.7" }),
-    ]);
+    const undisclosed = serializeWorkflow(edited(pressured), pressured);
+    expect(undisclosed.nodes).toEqual([]);
+    expect(undisclosed.omissions).toContainEqual(expect.objectContaining({ id: "coordinate", kind: "node" }));
+
+    const disclosed = edited(pressured);
+    disclosed.nodes[0] = { ...disclosed.nodes[0], disclosure: "Approved xAI dispatch" };
+    const [node] = serializeWorkflow(disclosed, pressured).nodes;
+    expect(node).toMatchObject({ id: "coordinate", actor: "maker", model: "grok-4.7", shell: true, execution: "external-provider" });
+    expect(node.command).toContain("bash '/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh' --auth 'grok.com'");
   });
 
   it("gates Ready and Copy on the converted dispatch the export would emit", () => {
-    const unconfirmed = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
+    const unconfirmed = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
     const workflow = defaultWorkflow(unconfirmed);
     const main = workflow.nodes[0];
     workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
@@ -299,6 +305,17 @@ describe("versioned export contract", () => {
     for (const node of workflow.nodes) {
       expect(spec.nodes.some((emitted) => emitted.id === node.id)).toBe(!gated.has(node.id));
     }
+  });
+
+  it("exports no pressure-free main-controller on a Grok host without an observed default", () => {
+    const noDefault = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
+    const workflow = defaultWorkflow(noDefault);
+    workflow.nodes = [{ ...workflow.nodes[0], model: "grok-4.7" }];
+    workflow.edges = [];
+
+    const spec = serializeWorkflow(workflow, noDefault);
+    expect(spec.nodes).toEqual([]);
+    expect(spec.nodes.some((node) => node.actor === "main-controller")).toBe(false);
   });
 
   it("withholds Grok shell-outs until the detector confirms a Grok auth lane", () => {

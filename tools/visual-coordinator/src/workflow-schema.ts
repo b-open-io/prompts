@@ -214,7 +214,8 @@ const mainModel = (environment: WorkflowEnvironment, lane: WorkflowLane): string
   if (configured) return isSuperseded(configured) ? "" : configured;
   const models = laneModels(environment, lane);
   if (lane === "claude") return models.includes("inherit") ? "inherit" : "";
-  if (lane === "grok") return models.find(isApprovedGrok) ?? "";
+  // A Grok main is only ever the detector-reported default; never assume grok-4.7.
+  if (lane === "grok") return "";
   return models.find(isSol) ?? "";
 };
 
@@ -250,10 +251,12 @@ export const codingTarget = (environment: WorkflowEnvironment): { lane: Workflow
 export const mainNodeId = (workflow: Workflow, environment: WorkflowEnvironment): string | null => {
   const host = environment.hostLane;
   const observed = host ? environment.mainModels[host] : undefined;
+  // A Grok host has no pressure-free main unless the detector observed its default model.
+  if (host === "grok" && !observed) return null;
   return workflow.nodes.find((node) => node.role === "coordinator"
     && node.provider === "native"
     && node.lane === host
-    && (observed ? node.model === observed : node.lane !== "grok" || isApprovedGrok(node.model)))?.id ?? null;
+    && (observed ? node.model === observed : true))?.id ?? null;
 };
 
 /**
@@ -270,12 +273,17 @@ export const modelFor = (environment: WorkflowEnvironment, lane: WorkflowLane, r
   return "";
 };
 
-const providerFor = (environment: WorkflowEnvironment, lane: WorkflowLane, model = ""): WorkflowNode["provider"] =>
-  environment.simulationOnly || (environment.hostLane === lane && !(lane === "grok" && !isGrokFamily(model))) ? "native" : "external";
+/**
+ * Whether a node on this lane runs natively in the host. On the Grok lane only the observed main
+ * session (a coordinator on the detector's `grok_default`) is native; every other Grok-lane node is
+ * dispatched through the wrapper so its model pin and credit gate apply at run time.
+ */
+export const runsNatively = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string, role: NodeRole): boolean =>
+  environment.simulationOnly || (environment.hostLane === lane && (lane !== "grok"
+    || (role === "coordinator" && (model === "" || model === environment.mainModels.grok))));
 
-// A coordinator on the host lane is the running main session, so it is native whatever model it runs.
 const defaultProvider = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string, role: NodeRole): WorkflowNode["provider"] =>
-  role === "coordinator" && (environment.simulationOnly || environment.hostLane === lane) ? "native" : providerFor(environment, lane, model);
+  runsNatively(environment, lane, model, role) ? "native" : "external";
 
 const looksLikeForeignNativeModel = (lane: string, model: string): boolean => {
   const foreignByLane: Record<string, RegExp> = {
@@ -304,7 +312,7 @@ export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnviro
   const host = preferredLane(environment);
   const main = mainModel(environment, host);
   const sol = codingTarget(environment);
-  const solProvider = providerFor(environment, sol.lane, sol.model);
+  const solProvider = defaultProvider(environment, sol.lane, sol.model, "builder");
   return {
     title: "Visual Coordinator plan",
     nodes: [
@@ -425,7 +433,9 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
   for (const node of workflow.nodes) {
     const model = typeof node.model === "string" ? node.model.trim() : "";
     if (!model) issues.push({ scope: "node", id: node.id, message: node.role === "coordinator"
-      ? `${node.title} needs a model.`
+      ? node.lane === "grok" && environment.hostLane === "grok" && !environment.mainModels.grok
+        ? `${node.title} needs a model: detect-harness.sh did not report the Grok host's default model; re-run it before planning.`
+        : `${node.title} needs a model.`
       : `${node.title} needs a model: ${node.lane || "this lane"} does not offer ${SOL}; choose a lane that does or set a model explicitly.` });
     if (isSuperseded(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; coding uses GPT-6 models only (${SOL}).` });
     if (isGrokFamily(model) && !isApprovedGrok(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
@@ -444,7 +454,6 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
       const detectedGrokShellOut = node.id !== mainId
         && node.provider === "native"
         && node.lane === "grok"
-        && model !== "grok-4.7"
         && lane.models.includes(model);
       if (lane.availability !== "available") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
       if (lane.inventory === "complete" && !lane.models.includes(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });

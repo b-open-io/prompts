@@ -107,9 +107,10 @@ cleanup policy (after-approved-merge)
 The current canvas emits executable agent steps as `kind: "process"`.
 Node `lane` is `grok` | `claude` | `codex` | `opencode`.
 A process or gate with `lane` not equal to the host is a shell-out (`shell:
-true`). A shell-out is a subprocess of another vendor's CLI. A Grok native
-node whose detected model is not `grok-4.7` is converted (`converted: true`)
-to a shell-out. A model on no detected lane, or a shell-out whose CLI is not
+true`). A shell-out is a subprocess of another vendor's CLI. Every native
+Grok-lane node except the observed main session — `grok-4.7` included — is
+converted (`converted: true`) to a wrapper shell-out and needs an approved
+disclosure. A model on no detected lane, or a shell-out whose CLI is not
 installed, is omitted from executable `nodes[]` and named under `Not emitted`
 with `kind: "node"` and `omit: true` in `omissions[]`. Every incident handoff is
 also recorded there with `kind: "edge"`, so removing an unavailable reviewer,
@@ -186,8 +187,9 @@ shell-out node and say so, or drop it. Never leave it looking configured.
 The Visual Coordinator's version-2 serializer emits this shape from the live
 canvas. Nodes without an executable boundary are omitted from `nodes[]` and
 listed in `omissions[]` together with every affected edge; the human plan
-repeats those refusals under `Not emitted`. A native Grok node whose model is detected but not `grok-4.7` is
-converted to a Grok CLI shell-out and marked `converted: true`.
+repeats those refusals under `Not emitted`. Every native Grok-lane node other
+than the observed main session is converted to a wrapper shell-out and marked
+`converted: true`.
 
 The serializer runs the same validation that gates Copy. Every validation
 issue carries a `scope`: a `node` issue omits that node with the issues as its
@@ -201,8 +203,12 @@ The wrapper checks `BOPEN_USAGE_CREDIT_PRESSURE` when the command runs rather
 than baking the credit decision into the export. The main session
 (`actor: "main-controller"`) is the first native coordinator on the host lane
 whose model is the observed host main: the detector's `models.<lane>_default`
-when reported, otherwise `grok-4.7` on a Grok host. A Coordinate card edited to
-another model is a dispatch and follows the worker Grok rules. The canvas's
+when reported. A Grok host has no main at all unless the detector reported
+`models.grok_default`; bare `grok-4.7` is never assumed, so the Coordinate card
+stays empty and fails validation. Other hosts without a reported default use
+their first native host-lane coordinator. A Coordinate card edited away from
+the observed default is a dispatch: on the Grok lane it becomes a disclosed
+wrapper shell-out that needs credit pressure. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.
 

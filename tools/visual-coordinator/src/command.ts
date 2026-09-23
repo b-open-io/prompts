@@ -297,10 +297,11 @@ const rosterId = (environment: WorkflowEnvironment, node: WorkflowNode): string 
   return typeof id === "string" && id.trim() ? id : null;
 };
 
+// Every native Grok-lane node except the observed main session becomes a wrapper shell-out,
+// grok-4.7 included, so the credit gate and model pin are enforced when it runs.
 const convertedGrokNode = (node: WorkflowNode, environment: WorkflowEnvironment): boolean =>
   node.provider === "native"
   && node.lane.toLowerCase() === "grok"
-  && node.model !== "grok-4.7"
   && environment.lanes.grok?.models.includes(node.model) === true;
 
 const worktreePolicy = (workflow: Workflow) => {

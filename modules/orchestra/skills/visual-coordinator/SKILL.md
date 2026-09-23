@@ -116,8 +116,9 @@ Required on the page:
   provider/model, command), and exact CLI for each shell-out node. Every
   shell-out includes native controller identity, actual provider/model,
   disclosure state, and exact context shared. Copy is disabled while unresolved
-  validation/refusal items remain. A Grok native node whose model is not
-  `grok-4.7` emits as a shell-out.
+  validation/refusal items remain. Every native Grok-lane node except the
+  observed main session (a coordinator on `models.grok_default`) emits as a
+  wrapper shell-out.
 
 ### 3b. Deliver the page
 
