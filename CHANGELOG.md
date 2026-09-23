@@ -209,6 +209,11 @@ manifests share the same release version.
   duplicate case-sensitive gate are gone. The observed native Grok main keeps a
   detected `grok-4.6` default instead of failing validation; any other use of
   4.6 is still rejected.
+- Wave Coordinator and the visual-coordinator docs also route Grok-CLI Sol
+  dispatch through `run-grok-worker.sh`; a docs test now fails on any
+  non-negated raw `grok --single`/`-m`/`-p`/`--prompt-file` line across
+  orchestra skills and agents. The inspector lists the observed main's model
+  (such as `grok-4.6`) instead of warning that it was not detected.
 
 ## [1.1.168] - Pending production promotion
 

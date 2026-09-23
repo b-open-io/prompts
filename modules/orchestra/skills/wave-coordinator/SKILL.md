@@ -147,8 +147,9 @@ Use `spawn_subagent` with the installed roster `subagent_type` (e.g.
 also resolve when that plugin is installed. Confirm the current model name
 and budget defaults in the live configuration before dispatching. Grok is a
 usage-credit-pressure fallback only; pin native Grok work to `grok-4.7` and
-never dispatch Grok 4.6. The preferred coding lane is GPT-6 Sol:
-`grok --single -m gpt-6-sol` inside a supervisor, or `codex exec`.
+never dispatch Grok 4.6. The preferred coding lane is GPT-6 Sol: a supervisor
+that calls `run-grok-worker.sh --model gpt-6-sol` (see the coordinator's Grok
+worker guide), or `codex exec`. Never a raw `grok` CLI dispatch.
 Prefer the native `workflow` tool over hand waves when the fan-out has
 shape and the host guide confirms the primitive exists. Live children default
 to 32; `agent_budget` defaults to 128.

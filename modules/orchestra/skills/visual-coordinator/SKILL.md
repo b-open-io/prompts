@@ -29,8 +29,8 @@ when the user has asked to see or change the plan first.
 **No host `agent().model` slug is a foreign vendor.** Claude workflow
 models stay Claude. Codex stays OpenAI-family. The approved native Grok model
 is `grok-4.7`; never offer Grok 4.6. A quoted `[model."gpt-6-sol"]` makes
-`grok --single -m gpt-6-sol` a cross-provider Grok-CLI shell-out node, not a
-native slug. Never render a dropdown that implies otherwise. Grok is a
+`gpt-6-sol` a cross-provider Grok-CLI shell-out node, dispatched through
+`run-grok-worker.sh`, not a native slug. Never render a dropdown that implies otherwise. Grok is a
 usage-credit-pressure fallback, not the default coding lane.
 
 Never render a dropdown implying otherwise. A control offering an impossible

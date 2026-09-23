@@ -63,7 +63,11 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
   const hostLanes = lanes.filter((candidate) => candidate.isHost);
   const availableLanes = lanes.filter((candidate) => !candidate.isHost && candidate.availability === "available");
   const unavailableLanes = lanes.filter((candidate) => !candidate.isHost && candidate.availability !== "available");
-  const modelIsPreset = lane.models.includes(node.model);
+  // The observed main keeps the model the detector saw even when it is not a dispatch choice (e.g. grok-4.6).
+  const observedMain = node.role === "coordinator" && node.provider === "native" && node.lane === environment.hostLane
+    && node.model !== "" && node.model === environment.mainModels[node.lane];
+  const showObserved = observedMain && !lane.models.includes(node.model);
+  const modelIsPreset = lane.models.includes(node.model) || observedMain;
   const modelValue = modelIsPreset ? node.model : lane.inventory === "incomplete" ? CUSTOM_MODEL : UNKNOWN_MODEL;
   const modelGroups = Object.entries(lane.models.reduce<Record<string, string[]>>((groups, model) => {
     const provider = lane.id === "opencode" && model.includes("/") ? model.split("/", 1)[0] : lane.label;
@@ -111,6 +115,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
     </SelectContent></Select></label>
     <label>Model<Select value={modelValue} onValueChange={onModelChange}><SelectTrigger><SelectValue placeholder="Choose a model" /></SelectTrigger><SelectContent>
       {modelGroups.map(([provider, models]) => <SelectGroup key={provider}><SelectLabel>{lane.id === "opencode" ? `${provider} provider` : `Detected ${provider} models`}</SelectLabel>{models?.map((model) => <SelectItem key={model} value={model}>{model}</SelectItem>)}</SelectGroup>)}
+      {showObserved && <SelectGroup><SelectLabel>Observed main session</SelectLabel><SelectItem value={node.model}>{node.model}</SelectItem></SelectGroup>}
       {lane.inventory === "incomplete" && <SelectGroup><SelectLabel>Fallback</SelectLabel><SelectItem value={CUSTOM_MODEL}>Custom model…</SelectItem></SelectGroup>}
       {lane.inventory === "complete" && !modelIsPreset && <SelectItem value={UNKNOWN_MODEL} disabled>Current model not detected</SelectItem>}
     </SelectContent></Select></label>

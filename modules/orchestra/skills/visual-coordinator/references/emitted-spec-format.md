@@ -197,8 +197,8 @@ reason, and a `graph` issue (cycle, broken edge, live-child cap,
 simulation-only host) omits every node, whatever the ids are, so an invalid
 canvas never yields a runnable record. Grok-lane shell-outs call the installed
 `run-grok-worker.sh` by the absolute path the detector reports as
-`grok_worker`, with `--auth` set to the detected `grok_auth`, never raw
-`grok -m`; without both they are not executable.
+`grok_worker`, with `--auth` set to the detected `grok_auth`. They
+never emit a raw `grok -m` dispatch, and without both they are not executable.
 The wrapper checks `BOPEN_USAGE_CREDIT_PRESSURE` when the command runs rather
 than baking the credit decision into the export. A node's `provider` is where
 its content goes, not which CLI carries it: a Grok-lane shell-out is `xai` only

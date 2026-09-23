@@ -11,8 +11,8 @@ it and the emitted spec fails.
 
 **No host `agent().model` slug is a foreign vendor.** Claude stays Claude.
 Codex stays OpenAI-family. The approved Grok task slug is `grok-4.7`; Grok 4.6
-must not be offered. Custom ids run through `grok --single -m`, which is a
-shell-out node on the canvas.
+must not be offered. Custom ids run through the Grok CLI via
+`run-grok-worker.sh`, which is a shell-out node on the canvas.
 
 Claude Code's workflow harness runs Claude agents only. The `Agent` tool's
 `model` parameter and subagent `model:` frontmatter accept Claude aliases, full
@@ -21,14 +21,15 @@ Claude ids, or `inherit` — nothing else. Codex's non-OpenAI escape hatch
 
 Grok Build's `~/.grok/config.toml` supports `[model."<id>"]` blocks with
 `model`, `base_url`, and `env_key`. Quote the table key when the id contains
-dots. After `grok models` lists that id, `grok --single -m <id>` runs it.
+dots. After `grok models` lists that id, the Grok CLI can run it; dispatch it
+through `run-grok-worker.sh --model <id>`.
 `workflow` `agent().model` and `spawn_subagent` still reject foreign ids. A
 quoted `[model."gpt-6-sol"]` keeps the identifier intact; an unquoted dotted
 TOML key becomes a nested id.
 
 Grok is a usage-credit-pressure fallback only. Pin Grok-family work to
 `grok-4.7`. Render Sol as a Grok-CLI shell-out node
-(`grok --single -m gpt-6-sol`), not as a native slug.
+(`run-grok-worker.sh --model gpt-6-sol`), not as a native slug.
 
 The canvas never takes worker defaults from the host's first listed model.
 Build and Review default to `gpt-6-sol` (Review at `xhigh`) on the first lane

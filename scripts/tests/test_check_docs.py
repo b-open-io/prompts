@@ -434,16 +434,43 @@ class GrokWrapperTests(unittest.TestCase):
             rejected = subprocess.run(partial, cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertNotEqual(rejected.returncode, 0)
 
+    RAW_GROK_COMMAND = re.compile(r"^\s*(?:env\s.*\s)?grok\s+(?:--prompt-file|--single|-p|-m)\b")
+    RAW_GROK_INLINE = re.compile(r"`grok\s+(?:--prompt-file|--single|-p|-m)\b")
+    # Only a negation within three words before the command ("never a raw `grok --single`") exempts it.
+    RAW_GROK_NEGATED = re.compile(r"(?i)\b(?:never|not|no|hand-roll)\b(?:\W+\w+){0,3}\W*$")
+
+    def raw_grok_dispatches(self, text: str) -> list[int]:
+        return [
+            lineno
+            for lineno, line in enumerate(text.splitlines(), start=1)
+            if self.RAW_GROK_COMMAND.search(line)
+            or any(not self.RAW_GROK_NEGATED.search(line[:match.start()]) for match in self.RAW_GROK_INLINE.finditer(line))
+        ]
+
+    def test_raw_grok_detector_flags_the_old_wave_instruction(self) -> None:
+        flagged = [
+            "`grok --single -m gpt-6-sol` inside a supervisor, or `codex exec`.",
+            "must not be offered. Custom ids run through `grok --single -m`, which is a",
+            "(`grok --single -m gpt-6-sol`), not as a native slug.",
+        ]
+        for line in flagged:
+            with self.subTest(line=line):
+                self.assertEqual(self.raw_grok_dispatches(line), [1])
+        for line in ("confirming the entry; never a raw `grok --single` dispatch.", "hand-roll a `grok --prompt-file` call.", "Never emit a raw `grok -m` dispatch."):
+            with self.subTest(line=line):
+                self.assertEqual(self.raw_grok_dispatches(line), [])
+
     def test_documented_grok_dispatch_uses_only_the_wrapper(self) -> None:
-        docs = self.ROOT / "modules/orchestra/skills/coordinator"
-        raw = re.compile(r"^\s*(?:env\s.*\s)?grok\s+(?:--prompt-file|--single|-p|-m)\b")
+        docs = [self.ROOT / "modules/orchestra/skills", self.ROOT / "modules/orchestra/agents"]
         offenders = [
             f"{path.relative_to(self.ROOT)}:{lineno}"
-            for path in docs.rglob("*.md")
-            for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1)
-            if raw.search(line)
+            for root in docs
+            for path in root.rglob("*.md")
+            for lineno in self.raw_grok_dispatches(path.read_text(encoding="utf-8"))
         ]
         self.assertEqual(offenders, [])
+
+        docs = self.ROOT / "modules/orchestra/skills/coordinator"
 
         guide = (docs / "references/workers/grok.md").read_text(encoding="utf-8")
         block = re.search(r"^ {4}bash /absolute/path/to/coordinator/scripts/run-grok-worker\.sh \\\n(?: {6}.*\n)*?(?: {6}.*--mode read.*\n)(?: {6}.*\n)*", guide, re.M)
