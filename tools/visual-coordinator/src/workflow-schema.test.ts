@@ -429,6 +429,30 @@ describe("workflow schema", () => {
       expect(messages.filter((message) => message.startsWith("grok-build"))).toEqual(["grok-build needs an external-provider disclosure."]);
     });
 
+    it("rejects an explicit Grok model on a non-Grok lane, with or without credit pressure", () => {
+      const catalog = [luna, "openrouter/xai/grok-4.7", "grok-4.7", "openrouter/openai/gpt-6-sol"];
+      const seed = {
+        nodes: [
+          { id: "bare", role: "builder", lane: "opencode", model: "grok-4.7" },
+          { id: "nested", role: "builder", lane: "opencode", model: "openrouter/xai/grok-4.7" },
+          { id: "pinned", role: "builder", lane: "grok", model: "grok-4.7", disclosure: "Approved xAI worker" },
+        ],
+        edges: [],
+      };
+
+      for (const extra of [{}, { credit_pressure: true }]) {
+        const environment = opencodeOnly(catalog, extra);
+        const messages = validateWorkflow(parseSeed(seed, environment), environment).map((issue) => issue.message);
+
+        expect(messages).toContain("bare uses grok-4.7 on the opencode lane; Grok workers run only on the Grok lane.");
+        expect(messages).toContain("nested uses openrouter/xai/grok-4.7 on the opencode lane; Grok workers run only on the Grok lane.");
+      }
+
+      const pressured = opencodeOnly(catalog, { credit_pressure: true });
+      const pinned = validateWorkflow(parseSeed(seed, pressured), pressured).filter((issue) => issue.id === "pinned");
+      expect(pinned).toEqual([]);
+    });
+
     it("defaults a lane-pinned Grok builder to grok-4.7 only under credit pressure, never the reviewer", () => {
       const grokSeed = { nodes: [{ id: "build", role: "builder", lane: "grok" }, { id: "review", role: "reviewer", lane: "grok" }], edges: [] };
 

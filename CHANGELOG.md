@@ -162,6 +162,11 @@ manifests share the same release version.
   OpenCode, Codex, or Claude catalog. The Grok wrapper applies the 4.7 pin and
   credit gate to provider-qualified ids such as `xai/grok-4.6`. OpenCode
   commands pass `--variant xhigh` when the node's effort is `xhigh`.
+- Validation rejects an explicit Grok-family worker on any lane other than
+  Grok, with or without credit pressure, so it cannot be exported. The Grok
+  worker guide now requires the wrapper for every Grok model; its raw command
+  shapes serve only non-Grok ids such as `gpt-6-sol` and run the wrapper's
+  model gate before dispatch.
 
 ## [1.1.168] - Pending production promotion
 

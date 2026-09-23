@@ -384,6 +384,7 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     if (isGrokFamily(model) && !isApprovedGrok(model)) issues.push({ id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
     if (node.role !== "coordinator") {
       if (isGrokFamily(model) && !environment.creditPressure) issues.push({ id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
+      if (isGrokFamily(model) && node.lane !== "grok") issues.push({ id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok workers run only on the Grok lane.` });
       if (node.role !== "reviewer" && isOpus(model)) issues.push({ id: node.id, message: `${node.title} uses Claude Opus, which is the advisor, not a coding worker; use ${SOL}.` });
       else if (node.role !== "reviewer" && (node.lane === "claude" || isClaudeFamily(model))) issues.push({ id: node.id, message: `${node.title} uses Claude (${model || "no model"}), which is not a coding worker; use ${SOL}.` });
       if (node.role === "reviewer" && (!isSol(model) || node.effort !== "xhigh")) issues.push({ id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });

@@ -32,8 +32,9 @@ log.
 
 Capture the complete preflight output, then pin `BOPEN_WORKER_MODEL` to an
 exact listed id; never ride a changing CLI default. Its default is `gpt-6-sol`
-through a quoted custom Grok model entry. Set it to `grok-4.7` only under
-usage-credit pressure; any other Grok id is out of policy. If authentication, model
+through a quoted custom Grok model entry. Use `grok-4.7` only under
+usage-credit pressure and only through the wrapper below; any other Grok id is
+out of policy. If authentication, model
 availability, or network access cannot be verified, report the lane as
 unavailable rather than silently implementing in the main.
 
@@ -95,15 +96,27 @@ Add `--clean-home` only for the task-specific cases described above. Use
 `--mode read --tools web_search,web_fetch` for focused web research. A native
 controller may run this script in the background and monitor its complete log.
 
-The raw command shapes below remain useful when the extracted module script is
-unavailable.
+A Grok-family model (`grok-*`, including provider-qualified ids) runs only
+through that wrapper. If the wrapper is unavailable, the Grok lane is
+unavailable for that run; do not hand-roll a Grok dispatch.
+
+The raw command shapes below are only for a non-Grok custom id served by the
+Grok CLI, such as `gpt-6-sol`. They must apply the wrapper's model gate first,
+so a `gpt-5.6` id, any Grok id, or an unset model stops before dispatch:
+
+    : "${BOPEN_WORKER_MODEL:?Select an id listed by grok models}"
+    case "$BOPEN_WORKER_MODEL" in
+      gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*)
+        echo "coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
+      grok-*|*/grok-*)
+        echo "Grok models run only through run-grok-worker.sh" >&2; exit 2 ;;
+    esac
 
 Use a unique prompt file for every parallel run. Research/review (read-only):
 
     PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
     GROK_RUN_HOME="${BOPEN_GROK_HOME:-$HOME/.grok}"
     env -u XAI_API_KEY -u GROK_API_KEY GROK_HOME="$GROK_RUN_HOME" grok models
-    : "${BOPEN_WORKER_MODEL:?Select an id listed by grok models}"
     printf '%s\n' "<imperative; details in SPEC file>" > "$PROMPT_FILE"
     env -u XAI_API_KEY -u GROK_API_KEY GROK_HOME="$GROK_RUN_HOME" \
       grok --prompt-file "$PROMPT_FILE" -m "$BOPEN_WORKER_MODEL" \
@@ -119,7 +132,6 @@ worktrees, branches, commits, pushes, merges, or cleanup itself:
     PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
     GROK_RUN_HOME="${BOPEN_GROK_HOME:-$HOME/.grok}"
     env -u XAI_API_KEY -u GROK_API_KEY GROK_HOME="$GROK_RUN_HOME" grok models
-    : "${BOPEN_WORKER_MODEL:?Select an id listed by grok models}"
     printf '%s\n' "<imperative; details in SPEC file>" > "$PROMPT_FILE"
     env -u XAI_API_KEY -u GROK_API_KEY GROK_HOME="$GROK_RUN_HOME" \
       grok --prompt-file "$PROMPT_FILE" -m "$BOPEN_WORKER_MODEL" \
