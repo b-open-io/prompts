@@ -134,6 +134,10 @@ manifests share the same release version.
   `--credit-pressure` (or `BOPEN_USAGE_CREDIT_PRESSURE=1`) for it, and rejects
   `gpt-5.6-sol`. The Grok host guide no longer defaults native roster agents
   to Grok.
+- Visual coordinator follow-up: a new canvas step is staffed like the default
+  Build card instead of from the host's first listed model, a seeded reviewer
+  without an effort defaults to `xhigh`, and a seeded node without a provider
+  takes the lane's real boundary instead of always `native`.
 
 ## [1.1.168] - Pending production promotion
 

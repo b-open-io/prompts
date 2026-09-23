@@ -298,7 +298,7 @@ export const parseSeed = (value: unknown, environment: WorkflowEnvironment = def
         : codingTarget(environment);
       const lane = legacyLane ? legacyTarget.lane : laneKey(text(node.lane, preferredLane(environment)));
       const model = legacyLane ? legacyTarget.model : text(node.model, modelFor(environment, lane, role));
-      const provider = legacyLane ? providerFor(environment, lane, model) : member(node.provider, ["native", "external"] as const, "native");
+      const provider = legacyLane ? providerFor(environment, lane, model) : member(node.provider, ["native", "external"] as const, providerFor(environment, lane, model));
       return [{
         id,
         role,
@@ -308,7 +308,7 @@ export const parseSeed = (value: unknown, environment: WorkflowEnvironment = def
         lane,
         provider,
         model,
-        effort: member(node.effort, efforts, "medium"),
+        effort: member(node.effort, efforts, role === "reviewer" ? "xhigh" : "medium"),
         execution: member(node.execution, executions, role === "reviewer" ? "read-only-review" : "write"),
         position: {
           x: typeof node.position?.x === "number" && Number.isFinite(node.position.x) ? node.position.x : 120,

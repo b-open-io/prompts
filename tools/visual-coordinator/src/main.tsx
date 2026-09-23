@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { generateNodeCommand, toExportText } from "@/command";
-import { defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, validateWorkflow, type EdgeKind, type Workflow, type WorkflowEdge, type WorkflowNode as WorkflowNodeData } from "@/workflow-schema";
+import { codingTarget, defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, validateWorkflow, type EdgeKind, type Workflow, type WorkflowEdge, type WorkflowNode as WorkflowNodeData } from "@/workflow-schema";
 import "./styles.css";
 
 declare global { interface Window { VC_ENV?: unknown; VC_SEED?: unknown } }
@@ -76,9 +76,10 @@ function VisualCoordinator() {
 
   const addNode = () => {
     const id = nextNodeId(workflow.nodes);
-    const lane = environment.hostLane ?? "codex";
+    // A new step is a worker: staff it like the default Build card, not from the host's first listed model.
+    const { lane, model } = codingTarget(environment);
     const detectedLane = environment.lanes[lane];
-    const node: WorkflowNodeData = { id, role: "builder", title: "New step", task: "Describe the bounded outcome.", ownedPaths: [], lane, provider: environment.hostLane === lane || environment.simulationOnly ? "native" : "external", model: detectedLane?.models[0] ?? "", effort: detectedLane?.efforts[0] ?? "medium", execution: "write", position: { x: 180 + nodes.length * 36, y: 180 + nodes.length * 28 }, worktree: { root: "~/code/worktrees", repoPath: "{repo}", taskPath: `~/code/worktrees/{repo}-${id}`, baseRef: "origin/dev", branch: `codex/${id}`, owner: id, cleanup: "Only after human-approved merge" } };
+    const node: WorkflowNodeData = { id, role: "builder", title: "New step", task: "Describe the bounded outcome.", ownedPaths: [], lane, provider: environment.simulationOnly || (environment.hostLane === lane && lane !== "grok") ? "native" : "external", model, effort: detectedLane?.efforts.includes("medium") ? "medium" : detectedLane?.efforts[0] ?? "medium", execution: "write", position: { x: 180 + nodes.length * 36, y: 180 + nodes.length * 28 }, worktree: { root: "~/code/worktrees", repoPath: "{repo}", taskPath: `~/code/worktrees/{repo}-${id}`, baseRef: "origin/dev", branch: `codex/${id}`, owner: id, cleanup: "Only after human-approved merge" } };
     setNodes((current) => [...current, { id, type: "workflow", position: node.position, data: { ...node, onDelete: deleteNode } }]);
     setSelectedId(id); setInspectorOpen(true);
   };

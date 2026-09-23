@@ -239,6 +239,25 @@ describe("workflow schema", () => {
     );
   });
 
+  it("fills omitted seed staffing from policy so the seed validates on a foreign host", () => {
+    const environment = parseEnvironment({
+      harness: "claude-code",
+      lanes: { claude: "available", codex: "available" },
+      models: { claude: ["claude-opus-5-5", "inherit"], codex: ["gpt-5.6-sol", "gpt-6-sol"], codex_effort: ["medium", "high", "xhigh"] },
+    });
+    const workflow = parseSeed({
+      nodes: [
+        { id: "build", role: "builder", lane: "codex", disclosure: "Approved external Codex worker" },
+        { id: "review", role: "reviewer", lane: "codex", disclosure: "Approved external Codex reviewer" },
+      ],
+      edges: [{ id: "build-review", source: "build", target: "review", kind: "forward" }],
+    }, environment);
+
+    expect(workflow.nodes[0]).toMatchObject({ lane: "codex", provider: "external", model: "gpt-6-sol", effort: "medium" });
+    expect(workflow.nodes[1]).toMatchObject({ lane: "codex", provider: "external", model: "gpt-6-sol", effort: "xhigh", execution: "read-only-review" });
+    expect(validateWorkflow(workflow, environment)).toEqual([]);
+  });
+
   it("sanitizes node ids before using them in generated worktree metadata", () => {
     const workflow = parseSeed({
       nodes: [{ id: "../../escape", title: "Unsafe" }, { id: "../../escape", title: "Collision" }],
