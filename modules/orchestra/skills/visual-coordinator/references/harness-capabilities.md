@@ -10,9 +10,9 @@ it and the emitted spec fails.
 ## The single most important constraint
 
 **No host `agent().model` slug is a foreign vendor.** Claude stays Claude.
-Codex stays OpenAI-family. Grok 1.0.13 task slugs are `grok-4.6` and
-`grok-4.5` only. Custom ids run through `grok --single -m`, which is a
-shell-out node on the canvas.
+Codex stays OpenAI-family. The approved Grok task slug is `grok-4.7`; Grok 4.6
+must not be offered. Custom ids run through the Grok CLI via
+`run-grok-worker.sh`, which is a shell-out node on the canvas.
 
 Claude Code's workflow harness runs Claude agents only. The `Agent` tool's
 `model` parameter and subagent `model:` frontmatter accept Claude aliases, full
@@ -21,18 +21,23 @@ Claude ids, or `inherit` — nothing else. Codex's non-OpenAI escape hatch
 
 Grok Build's `~/.grok/config.toml` supports `[model."<id>"]` blocks with
 `model`, `base_url`, and `env_key`. Quote the table key when the id contains
-dots. After `grok models` lists that id, `grok --single -m <id>` runs it.
-`workflow` `agent().model` and `spawn_subagent` still reject it. Verified
-2026-08-13: quoted `[model."gpt-5.6-sol"]` with `OPENAI_API_KEY` /
-`api_backend = "responses"` made `grok --single -m gpt-5.6-sol` return
-`native-sol-ok`. A live `workflow` `agent({ model: "gpt-5.6-sol" })` failed
-with `Unknown Task.model slug 'gpt-5.6-sol'. Valid model slugs: grok-4.5, grok-4.6.`
-An unquoted `[model.gpt-5.6-sol]` becomes nested TOML and Grok offers a
-bogus `gpt-5`.
+dots. After `grok models` lists that id, the Grok CLI can run it; dispatch it
+through `run-grok-worker.sh --model <id>`.
+`workflow` `agent().model` and `spawn_subagent` still reject foreign ids. A
+quoted `[model."gpt-6-sol"]` keeps the identifier intact; an unquoted dotted
+TOML key becomes a nested id.
 
-Do not dispatch `grok-4.5`. Inherit `grok-4.6` for Grok-family work. Render
-Sol as a Grok-CLI shell-out node (`grok --single -m gpt-5.6-sol`), not as a
-native slug.
+Grok is a usage-credit-pressure fallback only. Pin Grok-family work to
+`grok-4.7`. Render Sol as a Grok-CLI shell-out node
+(`run-grok-worker.sh --model gpt-6-sol`), not as a native slug.
+
+The canvas never takes worker defaults from the host's first listed model.
+Build and Review default to `gpt-6-sol` (Review at `xhigh`) on the first lane
+that offers it — host, then Codex, OpenCode, Grok CLI — and report a missing
+lane rather than substituting Opus, GPT-5.6 Sol, or Grok. Only the coordinator
+node keeps the host's main model. The detector reports `credit_pressure: true`
+only when `BOPEN_USAGE_CREDIT_PRESSURE=1`; without it, Grok worker nodes fail
+validation.
 
 Therefore a cross-provider step is always one thing: **a shell-out to another
 vendor's CLI, wrapped in a step of the host harness.** Render those nodes
@@ -80,7 +85,7 @@ and `~/.grok/docs/user-guide/`. That skill is not in this plugin.
 | Primitives | `agent(prompt, opts)`, `parallel(jobs)` (barrier), `phase(title)`, `log(msg)`, `complete(value)`, `budget()` |
 | No `pipeline()` | A later item cannot advance while an earlier one is still running. `parallel()` waits for the whole panel |
 | Fan-out | Default `agent_budget` 128 (1–1,024). Live children cap 32 by default; larger panels queue |
-| Per-step `agent().model` | `grok-4.6` only. Do not offer `grok-4.5`. Custom ids from `grok models` are Grok-CLI shell-outs |
+| Per-step `agent().model` | `grok-4.7` only, and only for worker nodes under usage-credit pressure (`credit_pressure: true`); never offer Grok 4.6. Custom ids from `grok models` are Grok-CLI shell-outs |
 | Structured output | `opts.output_schema` (JSON Schema map) — supported, same job as Claude `schema` |
 | Named agents | `opts.agent_type` is a roster `subagent_type`. Verified: `research:researcher` and `bopen-tools:researcher` both spawn |
 | Isolation | `opts.isolation_worktree` — private worktree, no automatic merge; preserve the caller's worktree cwd and clean up only after approved merge |
@@ -152,15 +157,20 @@ The main passes its known host as `BOPEN_HOST_HARNESS=opencode`. Inherited
 Discover rather than assume; invoke `scripts/detect-harness.sh` with the
 main-known `BOPEN_HOST_HARNESS` value.
 
-- **Claude**: `opus`, `sonnet`, `haiku`, `fable`, `inherit`, or full ids like
-  `claude-opus-5`. Effort `low|medium|high|xhigh|max`.
+- **Claude**: default advisor `claude-opus-5-5`; native aliases include
+  `opus`, `sonnet`, `haiku`, and `inherit`. `fable` is legacy opt-in only.
+  Effort `low|medium|high|xhigh|max`.
 - **Codex**: whatever `model =` says in `~/.codex/config.toml`, plus
   `model_reasoning_effort`. There is no enumeration command; the config is the
   truth. The in-app picker has lagged behind what `-m` accepts.
-- **Grok**: whatever `grok models` prints for the authenticated account, plus
-  any custom `[model.<alias>]` the user registered.
+- **Grok**: exactly what `grok models` prints under the auth lane the wrapper
+  will use — signed-in grok.com first, then `XAI_API_KEY` — reported as
+  `grok_auth` with the `(default)` entry as `models.grok_default`. Registered
+  `[model."<id>"]` entries count only once that listing shows them; ids that
+  exist only in `config.toml` are not offered, because the wrapper's preflight
+  would reject them.
 - **OpenCode**: whatever `opencode models <provider>` prints for the configured
-  providers, referenced as `provider/model`. Custom Muse Spark / Luna lanes are
+  providers, referenced as `provider/model`. Custom Muse Spark lanes are
   `provider:{}` blocks in `opencode.json` — never assume the id without listing it.
 
 ## Shell-out invocations for cross-provider nodes
@@ -172,15 +182,19 @@ piping through `tail` truncates the worker's final report irrecoverably.
 codex exec --sandbox workspace-write --cd <repo> "<one-line task>" \
   > /tmp/dispatch-<id>.log 2>&1 &
 
-grok --prompt-file <file> -m "<verified model id>" \
-  --permission-mode acceptEdits --sandbox workspace --cwd <repo>
+# Grok lane — always through the orchestra wrapper, which enforces the
+# grok-4.7 pin, the usage-credit gate (BOPEN_USAGE_CREDIT_PRESSURE=1), and the
+# GPT-6-only rule when the command runs. Never emit a raw `grok -m` dispatch.
+bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model gpt-6-sol --effort medium \
+  --mode write --cwd <worktree> --branch <branch> --base-ref <ref> \
+  --ownership '<owned paths>' --prompt-file <file> --log <file>.log
 
-# read-only review — do not add acceptEdits
-grok --prompt-file <file> -m gpt-5.6-sol \
-  --permission-mode plan --sandbox workspace --output-format plain --verbatim
+# read-only review — the wrapper uses plan permissions in read mode
+bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model gpt-6-sol --effort xhigh \
+  --mode read --cwd <repo> --prompt-file <file> --log <file>.log
 
 claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communication.md" \
-  --model "${BOPEN_ADVISOR_MODEL:-fable}" \
+  --model "${BOPEN_ADVISOR_MODEL:-claude-opus-5-5}" \
   --permission-mode plan --tools "Read,Grep,Glob" --no-session-persistence
 
 # opencode worker — no `opencode exec` exists; `opencode run` is the entrypoint.

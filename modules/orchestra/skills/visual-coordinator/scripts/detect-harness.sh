@@ -34,22 +34,82 @@ grok_bin=$(lane_status grok)
 opencode_bin=$(lane_status opencode)
 
 # --- Models actually offered, not models we assume ---------------------------
-# grok enumerates per authenticated account plus quoted [model."id"] blocks.
-# Lines look like "  * grok-4.6 (default)" and "  - gpt-5.6-sol".
+# grok enumerates per authenticated account plus registered quoted [model."id"]
+# blocks. Lines look like "  * grok-4.7 (default)" and "  - gpt-6-sol".
+# The listing is taken under the same auth lane run-grok-worker.sh will use
+# (signed-in grok.com first, then XAI_API_KEY), and config.toml is never merged
+# in: the wrapper's preflight accepts only ids this listing shows.
 grok_models=""
+grok_default=""
+grok_auth=""
 if [[ "$grok_bin" == "available" ]]; then
-  grok_models=$(grok models 2>/dev/null \
-    | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._-]*\).*/\1/p' \
-    | awk 'NF && !seen[$0]++' \
+  grok_listing=$(env -u XAI_API_KEY -u GROK_API_KEY grok models 2>/dev/null || true)
+  if grep -Fq "You are logged in with grok.com." <<<"$grok_listing"; then
+    grok_auth="grok.com"
+  else
+    grok_listing=$(grok models 2>/dev/null || true)
+    grep -Fq "You are using XAI_API_KEY" <<<"$grok_listing" && grok_auth="api"
+  fi
+  grok_models=$(printf '%s\n' "$grok_listing" \
+    | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._/:@-]*\).*/\1/p' \
+    | awk 'NF { id = tolower($0) } NF && (id !~ /(^|\/)grok-/ || id ~ /(^|\/)grok-4\.7$/) && !seen[$0]++' \
     | head -40 \
     | paste -sd, -)
+  grok_default=$(printf '%s\n' "$grok_listing" \
+    | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._/:@-]*\).*(default).*/\1/p' \
+    | head -1)
 fi
-# Merge quoted custom ids from config in case this process's grok models is stale.
-if [[ -f "$HOME/.grok/config.toml" ]]; then
-  extra=$(sed -n 's/^\[model\."\([^"]*\)"\].*/\1/p' "$HOME/.grok/config.toml" | tr '\n' ',')
-  if [[ -n "$extra" ]]; then
-    grok_models=$(printf '%s,%s' "$grok_models" "$extra" | tr ',' '\n' | awk 'NF && !seen[$0]++' | paste -sd, -)
-  fi
+# A custom Grok id (for example gpt-6-sol) is served from its [model."id"] base_url, not
+# necessarily by xAI. Map each listed custom id to the provider behind that URL so exports
+# report where content goes; ids without a recognizable base_url stay unresolved. Each id's
+# explicit `model = "..."` is reported too, so an xAI-backed alias is held to the grok-4.7 pin;
+# an entry without one is never assumed to serve its own id.
+grok_model_providers_json="{}"
+grok_model_targets_json="{}"
+grok_config="${GROK_HOME:-$HOME/.grok}/config.toml"
+if [[ -n "$grok_models" && -f "$grok_config" ]]; then
+  grok_alias_json=$(python3 - "$grok_config" "$grok_models" <<'PY_GROK_PROVIDERS' 2>/dev/null || printf '{}\n{}\n'
+import json, re, sys
+from urllib.parse import urlparse
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:
+        # Without a real TOML parser no alias is resolved, so validation rejects every custom id.
+        print("{}\n{}")
+        sys.exit(0)
+path, listed = sys.argv[1], [item for item in sys.argv[2].split(",") if item]
+known = (("openai.com", "openai"), ("x.ai", "xai"), ("anthropic.com", "anthropic"), ("openrouter.ai", "openrouter"))
+try:
+    with open(path, "rb") as handle:
+        tables = tomllib.load(handle).get("model", {})
+except (OSError, ValueError):
+    tables = {}
+entries = {key.lower(): value for key, value in tables.items() if isinstance(value, dict)} if isinstance(tables, dict) else {}
+providers, targets = {}, {}
+for model_id in listed:
+    entry = entries.get(model_id.lower())
+    if entry is None:
+        continue
+    target = entry.get("model")
+    if isinstance(target, str) and re.fullmatch(r"[A-Za-z0-9._/:@-]+", target):
+        targets[model_id] = target
+    base_url = entry.get("base_url")
+    if isinstance(base_url, str):
+        host = (urlparse(base_url).hostname or "").lower()
+        label = next((name for suffix, name in known if host == suffix or host.endswith("." + suffix)), host)
+        if re.fullmatch(r"[a-z0-9.-]+", label or ""):
+            providers[model_id] = label
+print(json.dumps(providers))
+print(json.dumps(targets))
+PY_GROK_PROVIDERS
+)
+  grok_model_providers_json=$(printf '%s\n' "$grok_alias_json" | sed -n 1p)
+  grok_model_targets_json=$(printf '%s\n' "$grok_alias_json" | sed -n 2p)
+  [[ -n "$grok_model_providers_json" ]] || grok_model_providers_json="{}"
+  [[ -n "$grok_model_targets_json" ]] || grok_model_targets_json="{}"
 fi
 
 # Codex has no enumeration command. Its account-scoped model cache is the best
@@ -88,12 +148,9 @@ rank_opencode_models() {
 import re, sys
 default = sys.argv[1]
 preferred = {
-    "muse-spark-1.3-contributor-free": 1,
-    "gpt-5.6-luna": 2,
-    "grok-4.6": 3,
-    "gpt-5.6-sol": 4,
-    "gpt-5.6-terra": 5,
-    "claude-fable-5": 6,
+    "gpt-6-sol": 1,
+    "muse-spark-1.3-contributor-free": 2,
+    "grok-4.7": 3,
 }
 seen = set()
 models = []
@@ -205,6 +262,12 @@ case "$harness" in
   grok)        native_workflow="true"; live_children=32; agent_budget=128 ;;
   codex)       native_workflow="false"; live_children="null"; agent_budget=0 ;;
   opencode)    native_workflow="false"; live_children="null"; agent_budget=0 ;;
+esac
+
+# Grok workers are allowed only when the operator declares usage-credit pressure.
+credit_pressure="false"
+case "${BOPEN_USAGE_CREDIT_PRESSURE:-}" in
+  1|true|TRUE|yes|YES) credit_pressure="true" ;;
 esac
 
 # --- Installed roster --------------------------------------------------------
@@ -328,11 +391,29 @@ if [[ -n "$opencode_model" ]]; then
 else
   opencode_default_json="null"
 fi
+codex_default_json="null"
+[[ -n "$codex_model" ]] && codex_default_json="\"$(json_escape "$codex_model")\""
+grok_default_json="null"
+[[ -n "$grok_default" ]] && grok_default_json="\"$(json_escape "$grok_default")\""
+grok_auth_json="null"
+[[ -n "$grok_auth" ]] && grok_auth_json="\"$grok_auth\""
+
+# Grok-lane exports call the orchestra wrapper by absolute path, so resolve the installed copy.
+grok_worker_json="null"
+grok_worker="${BOPEN_GROK_WORKER:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../coordinator/scripts" 2>/dev/null && pwd -P)/run-grok-worker.sh}"
+if [[ -f "$grok_worker" && "$grok_worker" == /* ]]; then
+  grok_worker_json="\"$(json_escape "$grok_worker")\""
+fi
 
 cat <<JSON
 {
   "harness": "$harness",
   "native_workflow": $native_workflow,
+  "credit_pressure": $credit_pressure,
+  "grok_worker": $grok_worker_json,
+  "grok_auth": $grok_auth_json,
+  "grok_model_providers": $grok_model_providers_json,
+  "grok_model_targets": $grok_model_targets_json,
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget
@@ -344,12 +425,14 @@ cat <<JSON
     "opencode": "$opencode_bin"
   },
   "models": {
-    "claude": ["opus", "sonnet", "haiku", "fable", "inherit"],
+    "claude": ["claude-opus-5-5", "opus", "sonnet", "haiku", "inherit"],
     "claude_effort": ["low", "medium", "high", "xhigh", "max"],
     "grok": [${grok_models_json}],
     "grok_effort": ["none", "minimal", "low", "medium", "high", "xhigh"],
+    "grok_default": ${grok_default_json},
     "codex": [${codex_models_json}],
     "codex_effort": ["minimal", "low", "medium", "high", "xhigh"],
+    "codex_default": ${codex_default_json},
     "opencode": [${opencode_models_json}],
     "opencode_default": ${opencode_default_json}
   },

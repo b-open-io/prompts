@@ -1,7 +1,8 @@
-# Codex CLI as advisor
+# Codex CLI as an optional advisor
 
-Recommend `gpt-6-astra` for a strong, context-clean second opinion on difficult
-decisions and repository reviews. This lane works from Claude Code, Codex,
+Use this channel only when the user explicitly selects a Codex advisor model
+instead of the default `claude-opus-5-5`. It provides a context-clean second
+opinion on difficult decisions and repository reviews from Claude Code, Codex,
 Grok Build, OpenCode, or any other framework that can run a shell command.
 A Codex main can launch a separate Codex CLI consult; it need not switch to
 Claude or use its own session model. No Codex plugin or OpenCode provider
@@ -11,10 +12,10 @@ configuration is required for this CLI lane.
 
 Check `command -v codex`, `codex --version`, `codex exec --help`, and
 `codex login status`. Confirm the selected authentication/provider path and
-that `gpt-6-astra` is available to that account. An installed CLI alone proves
-neither. Follow the skill's context disclosure rules before sending the consult.
-If authentication or model selection fails, report the failure; never silently
-substitute another model, provider, or billing lane.
+that the explicitly selected model is available to that account. An installed
+CLI alone proves neither. Follow the skill's context disclosure rules before
+sending the consult. If authentication or model selection fails, report the
+failure; never silently substitute another model, provider, or billing lane.
 
 ## Dispatch
 
@@ -24,7 +25,8 @@ absolute paths with the prepared consult, repository, and output locations:
 
 ```bash
 set -o pipefail
-CODEX_ADVISOR_MODEL="${BOPEN_CODEX_ADVISOR_MODEL:-gpt-6-astra}"
+: "${BOPEN_CODEX_ADVISOR_MODEL:?Set the explicitly selected Codex advisor model}"
+CODEX_ADVISOR_MODEL="$BOPEN_CODEX_ADVISOR_MODEL"
 PROMPT_FILE="/absolute/path/to/prepared-advisor-consult.md"
 REPO_DIR="/absolute/path/to/repo-or-worktree"
 LOG_FILE="/absolute/path/to/advisor.log"
@@ -38,10 +40,10 @@ codex exec \
   - < "$PROMPT_FILE" 2>&1 | tee "$LOG_FILE"
 ```
 
-Set `BOPEN_CODEX_ADVISOR_MODEL` only when another Codex model is selected;
-`BOPEN_ADVISOR_MODEL` belongs to the separate Fable lane. Let the selected
-model use its default reasoning effort unless the task or user calls for an
-override supported by the installed CLI and model.
+`BOPEN_ADVISOR_MODEL` remains the general advisor default and resolves to
+`claude-opus-5-5`; this optional channel uses its separate explicit
+`BOPEN_CODEX_ADVISOR_MODEL` selection. Let that model use its default reasoning
+effort unless the task or user calls for a supported override.
 
 Keep `--sandbox read-only` explicit so a user's write-capable configuration
 does not determine the consult's filesystem permissions. Do not add write or

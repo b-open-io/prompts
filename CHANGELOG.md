@@ -111,6 +111,147 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+## [1.1.169] - Pending production promotion
+
+### Changed
+
+- Orchestra 0.1.30 / Review 0.1.20: make `gpt-6-sol` the preferred coding
+  worker and `xhigh` code-review model, set `claude-opus-5-5` as the advisor
+  default, and demote Fable to an explicit legacy channel. Grok is now a
+  usage-credit-pressure fallback only and must use `grok-4.7`; active worker
+  guides, roster policy, visual-workflow templates, claudex, settings
+  injection, and Codex Security guidance no longer default to Grok 4.6 or
+  GPT-5.6 Sol. CloudAgent is explicitly one coding lane: a catalog gap routes
+  GPT-6 Sol through CLI-capable agent computers or desktop harnesses instead
+  of substituting GPT-5.6 Sol or Opus as the coding worker.
+- The visual coordinator no longer takes Build and Review from the host's first
+  listed model. Both default to `gpt-6-sol` (Review at `xhigh`) on the first
+  lane that offers it, and validation rejects GPT-5.6 Sol, Grok models other
+  than `grok-4.7`, Grok workers without usage-credit pressure, Opus coding
+  workers, and reviews that are not GPT-6 Sol at `xhigh`. The detector reports
+  `credit_pressure` from `BOPEN_USAGE_CREDIT_PRESSURE`.
+- `run-grok-worker.sh` rejects every Grok model except `grok-4.7`, requires
+  `--credit-pressure` (or `BOPEN_USAGE_CREDIT_PRESSURE=1`) for it, and rejects
+  `gpt-5.6-sol`. The Grok host guide no longer defaults native roster agents
+  to Grok.
+- Visual coordinator follow-up: a new canvas step is staffed like the default
+  Build card instead of from the host's first listed model, a seeded reviewer
+  without an effort defaults to `xhigh`, and a seeded node without a provider
+  takes the lane's real boundary instead of always `native`.
+- A seeded worker or reviewer with no `lane` is staffed on `gpt-6-sol` through
+  the first lane that offers it instead of the host's model; with no such lane
+  it stays on Codex and fails validation. Validation also rejects any Claude
+  model or Claude lane as a coding worker.
+- Claude and Grok detection now match provider-nested ids such as
+  `openrouter/anthropic/claude-sonnet-4.5` and `openrouter/x-ai/grok-4.6`.
+  OpenCode worker defaults never pick a Claude id, so a Claude-only OpenCode
+  inventory leaves the worker unstaffed and fails validation.
+- An omitted worker or reviewer model defaults only to `gpt-6-sol` (or
+  `grok-4.7` for a builder under usage-credit pressure). When the lane lacks
+  Sol, the model stays empty and validation names the missing lane instead of
+  silently staffing Luna or another catalog entry.
+- Coding uses GPT-6 models only. The visual coordinator drops every `gpt-5.6`
+  model (Sol, Luna, Terra) from lane inventories and rejects it on any node,
+  including explicit choices; `run-grok-worker.sh` rejects bare and
+  provider-qualified `gpt-5.6` ids. Coordinator, Codex worker, CLI dispatch,
+  and roster guidance no longer offer Luna as a lane.
+- The Coordinate card picks only an allowed main model (Claude `inherit`,
+  `grok-4.7` on a Grok host, otherwise `gpt-6-sol`) and stays empty rather than
+  drifting to the next catalog entry. `grok-4.7` is auto-staffed only for
+  builders pinned to the Grok lane under credit pressure, never from an
+  OpenCode, Codex, or Claude catalog. The Grok wrapper applies the 4.7 pin and
+  credit gate to provider-qualified ids such as `xai/grok-4.6`. OpenCode
+  commands pass `--variant xhigh` when the node's effort is `xhigh`.
+- Validation rejects an explicit Grok-family worker on any lane other than
+  Grok, with or without credit pressure, so it cannot be exported. The Grok
+  worker guide now requires the wrapper for every Grok model; its raw command
+  shapes serve only non-Grok ids such as `gpt-6-sol` and run the wrapper's
+  model gate before dispatch.
+- Coordinator nodes get the same Grok rules: Grok only on the Grok lane, and
+  only under credit pressure unless the node is the Grok host's own native main
+  session. The export serializer runs validation and withholds every invalid
+  node (and all nodes when the workflow itself is invalid), and Grok-lane
+  exports call `run-grok-worker.sh`, which gains `--effort`, instead of raw
+  `grok -m`.
+- Only the first native coordinator on the host lane counts as the main
+  session; a second Grok coordinator needs credit pressure and exports as a
+  dispatch, not `main-controller`. Validation issues carry a `graph`/`node`
+  scope, so a graph-wide error withholds every node even when its id matches a
+  node id. The Coordinate card shows the detector's configured main model
+  (`models.<lane>_default`, now also reported for Codex), and Build/Review
+  prefer a lane whose Sol was actually detected over a fallback-only lane. The
+  detector reports the installed `grok_worker` path; Grok-lane exports call it
+  directly and are not executable when it is unresolved.
+- The Grok main session stays native `main-controller` through export: a
+  custom-model Grok coordinator ahead of it is a converted dispatch, and a Grok
+  host main on its configured default is never converted. The detector reports
+  `models.grok_default`, lists Grok models under the same auth lane the wrapper
+  uses (reported as `grok_auth` and passed as `--auth`), and no longer adds
+  `config.toml`-only ids the wrapper's preflight would reject.
+- The main session is bound to the observed host main model: when the detector
+  reports `models.<lane>_default`, only a coordinator on that model is the
+  pressure-free native main, so editing Coordinate to `grok-4.7` on a Grok host
+  whose default differs makes it a dispatch that needs credit pressure. The
+  canvas's Ready/Copy gate now uses the serializer's own dispatch plan, so a
+  converted Grok node the export would drop (for example, with no confirmed
+  `grok_auth`) blocks Copy.
+- A Grok host has a pressure-free main only when the detector reported
+  `models.grok_default`; bare `grok-4.7` is never assumed. Every other native
+  Grok-lane node, `grok-4.7` included, exports as a disclosed wrapper
+  shell-out, and the inspector and default staffing mark it external.
+- Exported `provider` reflects the model's real destination: a custom
+  `gpt-6-sol` on the Grok CLI reports the provider behind its `config.toml`
+  `base_url` (new detector field `grok_model_providers`) or `unknown`, never
+  `xai`. `run-grok-worker.sh` applies its GPT-6-only and Grok pin rules to any
+  casing, so `GPT-5.6-LUNA` and `GROK-4.6` are rejected like lowercase ids.
+- Every documented Grok-CLI dispatch (worker guide, persona passing, Grok host
+  guide) now goes through `run-grok-worker.sh`; the raw `grok` recipes and their
+  duplicate case-sensitive gate are gone. The observed native Grok main keeps a
+  detected `grok-4.6` default instead of failing validation; any other use of
+  4.6 is still rejected.
+- Wave Coordinator and the visual-coordinator docs also route Grok-CLI Sol
+  dispatch through `run-grok-worker.sh`; a docs test now fails on any
+  non-negated raw `grok --single`/`-m`/`-p`/`--prompt-file` line across
+  orchestra skills and agents. The inspector lists the observed main's model
+  (such as `grok-4.6`) instead of warning that it was not detected.
+- Every non-main native Grok-lane node converts to a wrapper shell-out even when
+  its model is not in the inventory, and validation requires the detector's
+  `grok models` listing to show a Grok dispatch's model, so an unlisted custom id
+  on a Grok host can no longer export as a native-agent maker.
+- Custom Grok-CLI aliases served by xAI (or pointing at a Grok model) get the
+  Grok credit gate and `grok-4.7` pin, checked against the underlying model the
+  detector now reports as `grok_model_targets`; aliases for `gpt-5.6` models are
+  rejected. `run-grok-worker.sh` reads the same `config.toml` entry at run time
+  and applies the same rules case-insensitively.
+- The detector and wrapper parse Grok `config.toml` with a real TOML parser,
+  so single-quoted entries get the same alias rules; an unparseable file or a
+  listed custom id with no resolvable entry fails closed. The GPT-5.6 target
+  ban now also applies to the observed Grok main; only its Grok pin exemption
+  remains.
+- A listed custom Grok id counts as resolved only when its `config.toml` entry
+  has both a model and a `base_url` host; otherwise validation rejects it and
+  the wrapper exits instead of dispatching to an unknown provider. The observed
+  main's pin exemption now covers only `grok-4.6`; other off-pin versions such
+  as `grok-4.5` or `grok-5.0` are rejected.
+- A custom Grok id also needs an explicit `model` in its entry; the detector and
+  wrapper no longer assume it serves its own id. Provider-qualified xAI ids
+  (`xai/…`, `openrouter/x-ai/…`) are treated as Grok, so they cannot run on
+  OpenCode or skip the credit gate and `grok-4.7` pin. The wrapper applies the
+  detector's bar to `model` (a blank or padded value is no model) and holds a
+  custom id whose target is a nested xAI id to the same gate.
+- The canvas judges a Grok CLI `gpt-6-sol` alias by the model its entry really
+  runs: one that resolves elsewhere, or through xAI, is never staffed or
+  exported as Sol. The detector keeps slash-qualified Grok ids such as
+  `xai/ox-alpha` whole, and environment maps ignore `Object.prototype` keys.
+- Exports report a Grok CLI id's configured provider first, so an
+  OpenRouter-backed `openrouter/x-ai/grok-4.7` exports as `openrouter`; `xai` is
+  only the fallback for Grok models with none configured. The model picker no
+  longer crashes on OpenCode provider names such as `__proto__`.
+- An observed Grok host main needs usage-credit pressure like any other Grok
+  use, so an on-pin `grok-4.7` main no longer validates or exports without it.
+  Only a host already running the legacy `grok-4.6` main keeps that session
+  without pressure. This supersedes the earlier pressure-free main notes above.
+
 ## [1.1.168] - Pending production promotion
 
 ### Fixed

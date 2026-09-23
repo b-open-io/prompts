@@ -23,9 +23,9 @@ This repository provides:
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
 - **Orchestration patterns** that keep a strong main model on judgment, wrap
-  cheaper implementation workers in visible native controllers, support a
-  read-only Fable advisor, and let humans edit the plan on an AI Elements
-  workflow canvas before execution
+  GPT-6 Sol implementation workers in visible native controllers, support a
+  read-only Claude Opus 5.5 advisor, and let humans edit the plan on an AI
+  Elements workflow canvas before execution
 - **Slash commands** for common workflows, including native OpenCode command registration
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
@@ -698,7 +698,7 @@ routing:
 python3 scripts/plugin-weight.py --format markdown
 
 # Host snapshots (exact Codex omission counts need a runtime JSONL event file)
-python3 scripts/capture-codex-context.py --model gpt-5.6-sol
+python3 scripts/capture-codex-context.py --model gpt-6-sol
 python3 scripts/capture-claude-context.py --source-root .
 
 # Source versus installed Claude/Codex inventories
@@ -881,7 +881,7 @@ sequence `codex exec` / `opencode run` dispatches from the caller.
 
 ```text
 Use $orchestra:coordinator. Keep this session in the main seat, use native
-roster specialists for research and review, cheaper workers for bounded
+roster specialists for research and review, coding workers for bounded
 implementation, and an advisor only for read-only second opinions at
 commitment boundaries.
 ```
@@ -898,23 +898,22 @@ divide responsibilities:
   worker guide. Non-trivial writes use isolated worktrees, all makers stop at
   a barrier before an independent read-only review, and review plus tests share
   one corrective pass. The main runs the final checks and owns git. Bounded
-  implementation defaults to the cheapest authorized capable lane; native
-  specialists stay focused on evidence, review, testing, and domain judgment.
+  implementation defaults to `gpt-6-sol`; independent code review uses the
+  same model at `xhigh`. Grok is used only under usage-credit pressure and is
+  pinned to `grok-4.7`, never Grok 4.6. Native specialists stay focused on
+  evidence, review, testing, and domain judgment.
   Advisor and Wave Coordinator are composed in place, only at a real decision
   boundary or a fan-out that exceeds available host slots — Coordinator does
   not duplicate their manuals.
-- `advisor` packages a narrow, read-only consult. It recommends `gpt-6-astra`
-  through Codex CLI from Claude Code, Codex, Grok Build, OpenCode, or any host
-  with shell access, with an explicit read-only sandbox and model pin. Override
-  the Codex model with `BOPEN_CODEX_ADVISOR_MODEL`. From a Codex main it can use
-  the Claude CLI with the `fable` model-family alias. Override it with
-  `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
+- `advisor` packages a narrow, read-only consult and defaults to
+  `claude-opus-5-5`. From a Codex main it can use the Claude CLI in read-only
+  mode; override the model with `BOPEN_ADVISOR_MODEL`. Fable remains an
+  explicit legacy opt-in, not a default. Claude CLI `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
   The skill loads only the selected channel guide and records the provider,
   model, authentication path, context sent, and proof that the intended
-  advisor ran. OpenCode consults use a permission-constrained child. If the
-  user wants Astra (or another advisor model) to build rather than advise,
-  route to Coordinator's Codex worker guide instead.
+  advisor ran. OpenCode consults use a permission-constrained child. Optional
+  Codex-model consults require an explicit `BOPEN_CODEX_ADVISOR_MODEL`.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
   edges, reject-back gates) before it runs. Staffing, isolation,
   concurrency, refusals, and the paste-back spec live on that canvas.
@@ -925,9 +924,9 @@ divide responsibilities:
 
 External lanes cross provider boundaries. A Grok dispatch can send its prompt,
 specification, and selected repository content to xAI. A Muse dispatch can send
-the same class of content to Meta. A Codex / Sol / Luna dispatch can send it to
-OpenAI. A Fable consult can send its consult and files inspected by read-only
-tools to Anthropic. An `opencode run` dispatch can send its prompt and repository
+the same class of content to Meta. A Codex / Sol / Astra dispatch can send it to
+OpenAI. A Claude Opus or legacy Fable consult can send its consult and files
+inspected by read-only tools to Anthropic. An `opencode run` dispatch can send its prompt and repository
 content to whichever provider backs the pinned `provider/model` — confirm the
 `opencode.json` provider block first so the destination is known. State what will be shared before first use, obtain approval
 unless the user already authorized that lane, and never send secrets or

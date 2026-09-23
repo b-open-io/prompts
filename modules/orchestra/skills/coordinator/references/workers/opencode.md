@@ -161,6 +161,6 @@ OpenCode has no native multi-stage workflow engine. The caller owns sequencing
 and barriers. Skills are drop-in and may be discovered from .claude/skills/;
 hooks are plugin event handlers, not a portable hooks file.
 
-Custom providers can expose Muse or Luna through OpenCode. Verify the provider
+Custom providers can expose Muse or GPT-6 Sol through OpenCode; never select a `gpt-5.6` model. Verify the provider
 block and model list, then apply this guide; do not also load the direct Muse or
 Codex CLI guide unless that CLI is separately selected.

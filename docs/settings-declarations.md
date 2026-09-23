@@ -17,6 +17,16 @@ SessionStart hook only injects settings with `sessionContext: true`, skips every
 `sensitive: true` declaration, accepts scalar values matching the declaration,
 and caps its output.
 
+Core currently declares these model defaults:
+
+| Environment key | Session context | Default |
+|---|---|---|
+| `BOPEN_WORKER_MODEL` | `models.worker` | `gpt-6-sol` |
+| `BOPEN_ADVISOR_MODEL` | `models.advisor` | `claude-opus-5-5` |
+
+Code review uses `gpt-6-sol` at `xhigh` reasoning. Grok is not a normal worker
+default; use it only under usage-credit pressure, pinning `grok-4.7`.
+
 New declarations should include `label`, `description`, `options` for enums,
 and a short `contextKey` when the value belongs in session context. Secrets and
 credentials must be marked sensitive and must not opt into session context.

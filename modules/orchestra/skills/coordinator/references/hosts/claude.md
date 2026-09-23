@@ -8,7 +8,8 @@ Prefer plugin-qualified Claude agents for specialist work that needs the
 session's tools, browser, MCP servers, or plugin context. Pass the specific
 subagent type from the installed roster. Use a generic agent only when no
 specialist fits. This applies to specialist judgment, not routine bounded
-implementation, which follows Coordinator's cheaper-worker default.
+implementation, which follows Coordinator's preferred `gpt-6-sol` worker
+default. Independent code review uses that model at `xhigh`.
 
 Claude's native Workflow tool is appropriate for deterministic staged fan-outs,
 loop-until-dry discovery, verification panels, or jobs large enough that manual
@@ -36,7 +37,7 @@ main is only the fallback when native child dispatch is unavailable.
 Load only the selected worker guide:
 
 - [Grok CLI](../workers/grok.md)
-- [Codex, Sol, Luna, or Astra](../workers/codex.md)
+- [Codex, Sol, or Astra](../workers/codex.md)
 - [Muse Code](../workers/muse.md)
 - [OpenCode CLI](../workers/opencode.md)
 

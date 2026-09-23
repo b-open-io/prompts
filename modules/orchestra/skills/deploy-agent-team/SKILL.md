@@ -1,6 +1,6 @@
 ---
 name: deploy-agent-team
-version: 1.0.7
+version: 1.0.9
 description: This skill should be used when the user says "deploy a team", "spin up agents to work on this", "use all our agents", "coordinate specialists", or wants to break a large task into parallel sub-tasks handled by multiple domain experts simultaneously. Orchestrates Claude Code's experimental agent team system using the full installed specialist roster.
 disable-model-invocation: true
 ---

@@ -1,4 +1,4 @@
-import type { Workflow, WorkflowEnvironment, WorkflowNode } from "./workflow-schema";
+import { isGrokFamily, mainNodeId, own, validateWorkflow, type ValidationIssue, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
 
 /**
  * Inputs that are known by the host of the visual coordinator.  The
@@ -11,6 +11,10 @@ export type CommandGenerationOptions = {
   nativeController?: string;
   /** The configured read-only OpenCode agent, when one exists. */
   readOnlyAgent?: string;
+  /** Absolute path of the installed run-grok-worker.sh; Grok shell-outs are not executable without it. */
+  grokWorker?: string;
+  /** Grok auth lane confirmed by the detector's `grok models` listing. */
+  grokAuth?: "grok.com" | "api";
 };
 
 export type CommandExecution = "native-agent" | "external-provider";
@@ -164,19 +168,35 @@ const externalCommand = (
   const repoArg = shellQuote(repo);
 
   if (lane === "codex") {
-    const args = ["codex", "exec", "--sandbox", readOnly ? "read-only" : "workspace-write", "--ask-for-approval", "never", "--cd", repo, "--model", model];
+    const args = ["codex", "exec", "--sandbox", readOnly ? "read-only" : "workspace-write", "--ask-for-approval", "never", "--cd", repo, "--model", model, "-c", `model_reasoning_effort=${node.effort}`];
     return { command: `printf '%s\\n' ${promptArg} | ${args.map(shellQuote).join(" ")}` };
   }
 
   if (lane === "claude") {
-    const args = ["claude", "--print", "--permission-mode", readOnly ? "plan" : "acceptEdits", "--model", model];
+    const args = ["claude", "--print", "--permission-mode", readOnly ? "plan" : "acceptEdits", "--model", model, "--effort", node.effort];
     if (readOnly) args.push("--tools", "Read,Grep,Glob");
     return { command: `cd ${repoArg} && printf '%s\\n' ${promptArg} | ${args.map(shellQuote).join(" ")}` };
   }
 
   if (lane === "grok") {
-    const args = ["grok", "--prompt-file", "/dev/stdin", "-m", model, "--permission-mode", readOnly ? "plan" : "acceptEdits", "--sandbox", "workspace", "--output-format", "plain", "--cwd", repo];
-    return { command: `printf '%s\\n' ${promptArg} | ${args.map(shellQuote).join(" ")}` };
+    // Every Grok-lane dispatch goes through the orchestra wrapper so the model pin and the
+    // usage-credit gate (BOPEN_USAGE_CREDIT_PRESSURE) are enforced when the command runs.
+    if (!options.grokWorker) {
+      return { command: null, reason: "The Grok worker wrapper was not resolved; run detect-harness.sh from the installed orchestra plugin before exporting Grok work." };
+    }
+    if (!options.grokAuth) {
+      return { command: null, reason: "No Grok auth lane was confirmed by detect-harness.sh; sign in to grok.com or provide XAI_API_KEY, then re-detect." };
+    }
+    const worktree = node.worktree!;
+    const args = ["--model", model, "--effort", node.effort, "--mode", readOnly ? "read" : "write", "--cwd", repo];
+    if (!readOnly) args.push("--branch", worktree.branch, "--base-ref", worktree.baseRef, "--ownership", node.ownedPaths.join(", ") || "none");
+    return {
+      command: [
+        `PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)`,
+        `printf '%s\\n' ${promptArg} > "$PROMPT_FILE"`,
+        `bash ${shellQuote(options.grokWorker)} --auth ${shellQuote(options.grokAuth)} ${args.map(shellQuote).join(" ")} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
+      ].join(" && "),
+    };
   }
 
   if (lane === "opencode") {
@@ -184,6 +204,7 @@ const externalCommand = (
       return { command: null, reason: "OpenCode has no portable read-only CLI flag; configure a read-only agent before emitting this reviewer." };
     }
     const args = ["opencode", "run", "--model", model, "--dir", repo];
+    if (node.effort === "xhigh") args.push("--variant", "xhigh");
     if (readOnly) args.push("--agent", options.readOnlyAgent!);
     return { command: `${args.map(shellQuote).join(" ")} ${promptArg}` };
   }
@@ -255,15 +276,19 @@ const providerForLane: Record<string, string> = {
   opencode: "opencode",
 };
 
-const providerForNode = (node: WorkflowNode): string => {
-  if (node.lane.toLowerCase() === "opencode" && node.model.includes("/")) {
+// The provider is where the model's content goes, not which CLI carries it: a Grok CLI id reports
+// its configured base_url first, and falls back to xAI only for a Grok model with none configured.
+const providerForNode = (node: WorkflowNode, environment: WorkflowEnvironment): string => {
+  const lane = node.lane.toLowerCase();
+  if (lane === "opencode" && node.model.includes("/")) {
     return node.model.split("/", 1)[0] || "opencode";
   }
-  return providerForLane[node.lane.toLowerCase()] ?? node.provider;
+  if (lane === "grok") return own(environment.grokModelProviders, node.model) ?? (isGrokFamily(node.model) ? "xai" : "unknown");
+  return own(providerForLane, lane) ?? node.provider;
 };
 
-const actorForNode = (node: WorkflowNode): EmittedNodeSpec["actor"] =>
-  node.role === "reviewer" ? "reviewer" : node.role === "coordinator" ? "main-controller" : "maker";
+const actorForNode = (node: WorkflowNode, mainId: string | null): EmittedNodeSpec["actor"] =>
+  node.role === "reviewer" ? "reviewer" : node.id === mainId ? "main-controller" : "maker";
 
 const rosterId = (environment: WorkflowEnvironment, node: WorkflowNode): string | null => {
   const entry = environment.roster.find((candidate) => {
@@ -276,11 +301,10 @@ const rosterId = (environment: WorkflowEnvironment, node: WorkflowNode): string 
   return typeof id === "string" && id.trim() ? id : null;
 };
 
-const convertedGrokNode = (node: WorkflowNode, environment: WorkflowEnvironment): boolean =>
-  node.provider === "native"
-  && node.lane.toLowerCase() === "grok"
-  && node.model !== "grok-4.6"
-  && environment.lanes.grok?.models.includes(node.model) === true;
+// Every native Grok-lane node except the observed main session becomes a wrapper shell-out,
+// grok-4.7 included, so the credit gate and model pin are enforced when it runs.
+const convertedGrokNode = (node: WorkflowNode): boolean =>
+  node.provider === "native" && node.lane.toLowerCase() === "grok";
 
 const worktreePolicy = (workflow: Workflow) => {
   const first = workflow.nodes.find((node) => node.worktree)?.worktree;
@@ -295,32 +319,68 @@ const worktreePolicy = (workflow: Workflow) => {
   };
 };
 
+type NodeDispatch = {
+  original: WorkflowNode;
+  converted: boolean;
+  generated: NodeCommandSpec;
+  /** Why this node cannot be dispatched as exported, or undefined when it can. */
+  blocked?: string;
+};
+
+/** One dispatch decision per node, shared by the serializer and the UI's Ready/Copy gate. */
+const planDispatch = (workflow: Workflow, environment: WorkflowEnvironment, options: CommandGenerationOptions) => {
+  const dispatchOptions = {
+    ...options,
+    hostHarness: options.hostHarness ?? (environment.simulationOnly ? undefined : environment.harness),
+    nativeController: options.nativeController ?? (environment.simulationOnly ? undefined : environment.harness),
+    grokWorker: options.grokWorker ?? environment.grokWorker ?? undefined,
+    grokAuth: options.grokAuth ?? environment.grokAuth ?? undefined,
+  };
+  const mainId = mainNodeId(workflow, environment);
+  const nodes: NodeDispatch[] = workflow.nodes.map((original) => {
+    const converted = original.id !== mainId && convertedGrokNode(original);
+    const generated = generateNodeCommand(converted ? { ...original, provider: "external" } : original, dispatchOptions);
+    const lane = own(environment.lanes, original.lane);
+    const blocked = lane && lane.availability !== "available"
+      ? `${lane.label} is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.`
+      : generated.executable ? undefined : generated.reason ?? "The dispatch is not executable.";
+    return { original, converted, generated, blocked };
+  });
+  return { mainId, nodes };
+};
+
+/** Node-scoped reasons the exported dispatch would drop a node, after Grok conversion. */
+export const dispatchIssues = (workflow: Workflow, environment: WorkflowEnvironment, options: CommandGenerationOptions = {}): ValidationIssue[] =>
+  planDispatch(workflow, environment, options).nodes.flatMap(({ original, blocked }) =>
+    blocked ? [{ scope: "node" as const, id: original.id, message: `${original.title}: ${blocked}` }] : []);
+
 /** Serialize the live canvas into the versioned paste-back contract. */
 export const serializeWorkflow = (
   workflow: Workflow,
   environment: WorkflowEnvironment,
   options: CommandGenerationOptions = {},
 ): EmittedWorkflowSpec => {
-  const dispatchOptions = {
-    ...options,
-    hostHarness: options.hostHarness ?? (environment.simulationOnly ? undefined : environment.harness),
-    nativeController: options.nativeController ?? (environment.simulationOnly ? undefined : environment.harness),
-  };
+  const { mainId, nodes: plan } = planDispatch(workflow, environment, options);
   const emitted: EmittedNodeSpec[] = [];
   const omissions: EmittedWorkflowSpec["omissions"] = [];
 
-  for (const original of workflow.nodes) {
-    const converted = convertedGrokNode(original, environment);
-    const node = converted ? { ...original, provider: "external" as const } : original;
-    const lane = environment.lanes[original.lane];
-    const generated = generateNodeCommand(node, dispatchOptions);
-    const unavailable = lane && lane.availability !== "available";
-    if (unavailable) {
-      omissions.push({ id: original.id, kind: "node", label: original.title, reason: `${lane.label} is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.`, omit: true });
+  // The serializer enforces the same validation that gates Copy, so a failing canvas never yields a runnable record.
+  const nodeIds = new Set(workflow.nodes.map((node) => node.id));
+  const nodeIssues = new Map<string, string[]>();
+  const workflowIssues: string[] = [];
+  for (const issue of validateWorkflow(workflow, environment)) {
+    if (issue.scope === "node" && nodeIds.has(issue.id)) nodeIssues.set(issue.id, [...(nodeIssues.get(issue.id) ?? []), issue.message]);
+    else workflowIssues.push(issue.message);
+  }
+
+  for (const { original, converted, generated, blocked } of plan) {
+    if (blocked) {
+      omissions.push({ id: original.id, kind: "node", label: original.title, reason: blocked, omit: true });
       continue;
     }
-    if (!generated.executable) {
-      omissions.push({ id: original.id, kind: "node", label: original.title, reason: generated.reason ?? "The dispatch is not executable.", omit: true });
+    const blocking = workflowIssues.length ? [`Workflow validation failed: ${workflowIssues.join(" ")}`] : nodeIssues.get(original.id) ?? [];
+    if (blocking.length) {
+      omissions.push({ id: original.id, kind: "node", label: original.title, reason: blocking.join(" "), omit: true });
       continue;
     }
     emitted.push({
@@ -330,14 +390,14 @@ export const serializeWorkflow = (
       lane: original.lane,
       model: original.model,
       effort: original.effort,
-      actor: actorForNode(original),
+      actor: actorForNode(original, converted ? null : mainId),
       execution: generated.execution,
       agentType: rosterId(environment, original),
       task: original.task,
       shell: generated.command !== null,
       command: generated.command,
       nativeController: generated.nativeController,
-      provider: providerForNode(original),
+      provider: providerForNode(original, environment),
       disclosure: generated.disclosure,
       context: generated.prompt,
       ...(converted ? { converted: true } : {}),

@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.11
+version: 0.0.12
 description: >-
   Design or harden a software factory: an agentic loop that iterates toward a goal with a
   verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic
@@ -94,9 +94,9 @@ actual models in the loop config and verify each at preflight.
 
 | Stage | Model / lane | Invocation (verified) | What it guards |
 |---|---|---|---|
-| **Plan** | strongest planner (e.g. fable) | native `Workflow` `agent(..., { model: 'fable', schema })` | Premise verification BEFORE decomposition; routes each item to a lane + named roster agent |
-| **Implement** | cheap workers: external CLI (e.g. `grok -m grok-4.6 --permission-mode acceptEdits`) or named roster agents (`agentType`) | supervisor-agent pattern: a thin workflow agent writes the spec file, drives the CLI via Bash, relays the report + `git diff --stat` | Volume off the main seat; disjoint file partitions per item |
-| **Review** | independent CROSS-VENDOR checker (e.g. `codex exec -m gpt-5.6-sol --sandbox read-only`) | supervisor agent builds a review brief (diff + every claim), demands a schema verdict | The missing gate: adversarial review of the diff AND the claims; one corrective round max |
+| **Plan** | Claude Opus 5.5 (`claude-opus-5-5`) | native `Workflow` `agent(..., { model: 'claude-opus-5-5', schema })` | Premise verification BEFORE decomposition; routes each item to a lane + named roster agent |
+| **Implement** | preferred coding worker: `codex exec -m gpt-6-sol`; named roster agents (`agentType`) remain available for specialist work | supervisor-agent pattern: a thin workflow agent writes the spec file, drives the CLI via Bash, relays the report + `git diff --stat` | Volume off the main seat; disjoint file partitions per item |
+| **Review** | independent `gpt-6-sol` checker at `xhigh` (`codex exec -m gpt-6-sol --sandbox read-only -c model_reasoning_effort="xhigh"`) | supervisor agent builds a review brief (diff + every claim), demands a schema verdict | The missing gate: adversarial review of the diff AND the claims; one corrective round max |
 | **Gate + ship** | main seat, model PINNED in loop config | mechanical gate unpiped, then `lint-pr.sh` if opening a PR, then git | Merge requires gate green **AND** `verdict.approved`. Auto-merged PRs also require the human-artifact linter green |
 
 Non-negotiables learned the hard way:
@@ -109,6 +109,8 @@ Non-negotiables learned the hard way:
 - **Pin every model explicitly — the loop config, the workflow stages, the CLI dispatches.** A loop
   that inherits a mutable CLI default silently runs on whatever model the maintainer's interactive
   sessions last saved; a real loop ran weeks on a stale model this way and nobody knew.
+- **Grok is credit-pressure-only.** When usage-credit pressure requires the
+  fallback, pin `grok-4.7`; never route factory work to Grok 4.6.
 - **The checker reviews CLAIMS, not just diffs.** Any diagnosis, decline rationale, or "X is broken
   because Y" that will be written to a ticket must carry evidence and pass the checker first.
   Unverifiable ⇒ label it "unverified hypothesis" or write nothing. Claims-only tickets route through
