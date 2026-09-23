@@ -1,5 +1,12 @@
 # Lessons
 
+## Catalog availability is lane-scoped (2026-09-23)
+
+A model missing from Cursor CloudAgent's catalog is unavailable only in that
+lane. Before declaring the model unavailable or changing the worker family,
+check CLI-capable agent computers and desktop harnesses. Do not let one
+product's catalog silently rewrite the repository-wide model policy.
+
 ## Apply the latest model-policy correction everywhere (2026-09-23)
 
 When an operator corrects a model ID during a routing-policy change, treat the

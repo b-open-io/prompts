@@ -28,10 +28,10 @@
     {
       "source_name": "agent-builder",
       "source_path": "modules/orchestra/agents/agent-builder.md",
-      "source_version": "1.7.17",
-      "source_hash": "sha256:b95d98b3e6dfd100392bd02648d18ead1dd12025fe607ea9a4aef787e8aefcaf",
+      "source_version": "1.7.18",
+      "source_hash": "sha256:f8b8b5d2b73d48173a1f88bdb51d2f3e69690e6fe7ecb30b2477c695cd47bf0e",
       "generated_file": "bopen-agent-builder.toml",
-      "generated_hash": "sha256:429b3710d77099e1d2b056f2d1de62fe6dc20c3564effc868fe51d60bfe50967",
+      "generated_hash": "sha256:cd9a76a3ca620edbdd63767d4bd76aed6b9d9db369106e9f693e5efcc2951c0d",
       "agent_name": "bopen_agent_builder",
       "curated": true,
       "default_install": true

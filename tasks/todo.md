@@ -8,6 +8,8 @@
 - [x] Update public docs, tests, generated artifacts, versions, and manifests.
 - [x] Run focused and release validation, review the diff, and ship a PR to
   `dev` with Luke as author and committer.
+- [x] Clarify that a CloudAgent catalog gap routes GPT-6 Sol through another
+  CLI-capable lane rather than changing the coding-worker model.
 
 ## Review
 
@@ -15,13 +17,16 @@
   `claude-opus-5-5` for advisors. Agent-builder, roster, Coordinator,
   Advisor, software-factory, wave/visual coordination, claudex, and Codex
   Security carry the same policy.
+- Agent-builder, the roster, and Coordinator now treat CloudAgent as one lane:
+  a missing GPT-6 Sol catalog entry routes work through CLI-capable agent
+  computers or desktop harnesses without changing the coding-worker model.
 - Visual workflow commands preserve each selected effort and default review to
   `gpt-6-sol` at `xhigh`; detector and schema tests reject Grok 4.6 while
   preserving `grok-4.7` and cross-provider GPT-6 Sol shell-outs.
 - Final verification: 402 hook checks, 23 visual-coordinator tests, 20
   documentation/orchestration unit tests, manifest parity, generated-adapter
   parity, docs validation, and isolated plugin installation all pass.
-- PR #96 targets `dev`. Core 1.1.169, Orchestra 0.1.29, and Review 0.1.20 are
+- PR #96 targets `dev`. Core 1.1.169, Orchestra 0.1.30, and Review 0.1.20 are
   staged there and are not released until the standing `dev` promotion merges.
 - Every branch commit has Luke Rohenaz as both author and committer.
 

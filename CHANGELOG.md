@@ -115,13 +115,15 @@ manifests share the same release version.
 
 ### Changed
 
-- Orchestra 0.1.29 / Review 0.1.20: make `gpt-6-sol` the preferred coding
+- Orchestra 0.1.30 / Review 0.1.20: make `gpt-6-sol` the preferred coding
   worker and `xhigh` code-review model, set `claude-opus-5-5` as the advisor
   default, and demote Fable to an explicit legacy channel. Grok is now a
   usage-credit-pressure fallback only and must use `grok-4.7`; active worker
   guides, roster policy, visual-workflow templates, claudex, settings
   injection, and Codex Security guidance no longer default to Grok 4.6 or
-  GPT-5.6 Sol.
+  GPT-5.6 Sol. CloudAgent is explicitly one coding lane: a catalog gap routes
+  GPT-6 Sol through CLI-capable agent computers or desktop harnesses instead
+  of substituting GPT-5.6 Sol or Opus as the coding worker.
 
 ## [1.1.168] - Pending production promotion
 

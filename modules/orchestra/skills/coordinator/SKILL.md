@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.20
+version: 0.0.21
 description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Astra, Muse, Grok, OpenCode, or native workflows.
 ---
 
@@ -90,6 +90,11 @@ worker lane: use it only under usage-credit pressure, pin `grok-4.7`, and never
 use Grok 4.6. Never infer or replace the user's current main model. If the
 required default is unavailable, report that boundary instead of silently
 substituting a superseded model.
+
+CloudAgent is only one coding lane. Its catalog omitting `gpt-6-sol` does not
+make the model unavailable: use the GPT-6 Sol CLI lane on an agent computer or
+Luke's Claude Code, OpenAI, or Grok desktop harness instead. Do not fall back
+to `gpt-5.6-sol` or Claude Opus solely because CloudAgent lacks the model.
 
 If the work has deterministic stages, loops, or voting, use a native workflow
 only when the current host guide says the primitive exists and the user opted

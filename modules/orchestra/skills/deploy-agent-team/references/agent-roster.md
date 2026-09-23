@@ -10,7 +10,10 @@ Full installed agent roster with `subagent_type` identifiers and the skills to m
 > persona tiers, not coding-worker defaults. Use `gpt-6-sol` for coding workers
 > and `gpt-6-sol` at `xhigh` for code review. Use `claude-opus-5-5` for the
 > advisor. Grok is a usage-credit-pressure fallback only, pinned to
-> `grok-4.7`; never use Grok 4.6.
+> `grok-4.7`; never use Grok 4.6. CloudAgent is only one coding lane: if its
+> catalog omits GPT-6 Sol, use `gpt-6-sol` through the CLI on an agent computer
+> or Luke's desktop harnesses. Do not treat that gap as unavailability or
+> substitute GPT-5.6 Sol or Opus as the coding worker.
 
 ## Roster
 

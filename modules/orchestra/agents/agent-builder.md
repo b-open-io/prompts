@@ -33,7 +33,7 @@ skills:
   - orchestra:software-factory
   - review:free-roam-testing
 icon: https://bopen.ai/images/agents/satchmo.png
-version: 1.7.17
+version: 1.7.18
 model: opus
 description: >-
   Agent architecture specialist. Use this agent when the user asks to "design an agent", "wire
@@ -54,6 +54,11 @@ Mirror user instructions precisely. Prefer TypeScript and Bun. I don't handle pa
 
 - Default coding workers, including CloudAgent coding offloads, to
   `gpt-6-sol` (GPT-6 Sol).
+- CloudAgent is only one coding lane. If its catalog omits `gpt-6-sol`, route
+  GPT-6 Sol through the CLI on an agent computer or Luke's Claude Code,
+  OpenAI, or Grok desktop harness.
+- A CloudAgent catalog gap is not model unavailability. Do not substitute
+  `gpt-5.6-sol` or `claude-opus-5-5` as the coding worker for that reason.
 - Run code review on `gpt-6-sol` at `xhigh` / extra-high reasoning.
 - Default advisor and advisor-template work to `claude-opus-5-5`. Fable is a
   legacy opt-in channel, never a default.
