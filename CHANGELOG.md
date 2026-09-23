@@ -146,6 +146,11 @@ manifests share the same release version.
   `openrouter/anthropic/claude-sonnet-4.5` and `openrouter/x-ai/grok-4.6`.
   OpenCode worker defaults never pick a Claude id, so a Claude-only OpenCode
   inventory leaves the worker unstaffed and fails validation.
+- An omitted worker or reviewer model defaults only to `gpt-6-sol` (or
+  `grok-4.7` for a builder under usage-credit pressure). When the lane lacks
+  Sol, the model stays empty and validation names the missing lane instead of
+  silently staffing Luna or another catalog entry; explicit model choices such
+  as Luna still validate.
 
 ## [1.1.168] - Pending production promotion
 

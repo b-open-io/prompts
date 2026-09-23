@@ -211,13 +211,18 @@ export const codingTarget = (environment: WorkflowEnvironment): { lane: Workflow
   return { lane: "codex", model: SOL };
 };
 
-/** Default model for a node placed on a lane; worker and review roles prefer GPT-6 Sol. */
+/**
+ * Default model for a node placed on a lane. Workers get GPT-6 Sol, or grok-4.7 only for builders
+ * under usage-credit pressure; otherwise the model stays empty so validation fails closed.
+ * Alternatives such as Luna are explicit opt-ins, never defaults.
+ */
 export const modelFor = (environment: WorkflowEnvironment, lane: WorkflowLane, role: NodeRole): string => {
   if (role === "coordinator") return mainModel(environment, lane);
   const models = laneModels(environment, lane);
-  return models.find(isSol)
-    ?? models.find((model) => !isSuperseded(model) && !isClaudeFamily(model) && model !== "inherit" && (!isGrokFamily(model) || (environment.creditPressure && isApprovedGrok(model))))
-    ?? "";
+  const sol = models.find(isSol);
+  if (sol) return sol;
+  if (role !== "reviewer" && environment.creditPressure) return models.find(isApprovedGrok) ?? "";
+  return "";
 };
 
 const providerFor = (environment: WorkflowEnvironment, lane: WorkflowLane, model = ""): WorkflowNode["provider"] =>
@@ -369,7 +374,9 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
   if (workflow.nodes.some((node) => walk(node.id))) issues.push({ id: "forward-cycle", message: "Forward handoffs form a cycle; use a reject or memory edge instead." });
   for (const node of workflow.nodes) {
     const model = typeof node.model === "string" ? node.model.trim() : "";
-    if (!model) issues.push({ id: node.id, message: `${node.title} needs a model.` });
+    if (!model) issues.push({ id: node.id, message: node.role === "coordinator"
+      ? `${node.title} needs a model.`
+      : `${node.title} needs a model: ${node.lane || "this lane"} does not offer ${SOL}; choose a lane that does or set a model explicitly.` });
     if (isSuperseded(model)) issues.push({ id: node.id, message: `${node.title} uses superseded ${model}; use ${SOL}.` });
     if (isGrokFamily(model) && !isApprovedGrok(model)) issues.push({ id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
     if (node.role !== "coordinator") {

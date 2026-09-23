@@ -321,7 +321,7 @@ describe("workflow schema", () => {
       const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
 
       expect(workflow.nodes[0].model).toBe("");
-      expect(messages).toContain("build needs a model.");
+      expect(messages).toContain("build needs a model: opencode does not offer gpt-6-sol; choose a lane that does or set a model explicitly.");
     });
 
     it("rejects explicit nested Claude and Grok ids on coding workers and reviewers", () => {
@@ -342,6 +342,64 @@ describe("workflow schema", () => {
       expect(messages).toContain("grok uses openrouter/x-ai/grok-4.6; Grok is pinned to grok-4.7.");
       expect(messages).toContain("grok uses Grok without usage-credit pressure; route it to gpt-6-sol.");
       expect(messages).toContain("review must review on gpt-6-sol at xhigh.");
+    });
+  });
+
+  describe("worker defaults without GPT-6 Sol", () => {
+    const luna = "openrouter/openai/gpt-5.6-luna";
+    const mixed = [luna, "openrouter/openai/gpt-5.6-sol", "openrouter/anthropic/claude-sonnet-4.5", "openrouter/meta/muse-spark-1.3"];
+    const opencodeOnly = (models: string[], extra: Record<string, unknown> = {}) => parseEnvironment({
+      harness: "opencode",
+      lanes: { opencode: "available", codex: "unavailable", grok: "available", claude: "unavailable" },
+      models: { opencode: models, opencode_effort: ["medium", "high", "xhigh"], grok: ["grok-4.7"] },
+      ...extra,
+    });
+    const laneSeed = { nodes: [{ id: "build", role: "builder", lane: "opencode" }, { id: "review", role: "reviewer", lane: "opencode" }], edges: [] };
+    const noSol = (lane: string) => `needs a model: ${lane} does not offer gpt-6-sol; choose a lane that does or set a model explicitly.`;
+
+    it("leaves lane-pinned workers unstaffed and fails validation instead of picking Luna", () => {
+      const environment = opencodeOnly(mixed);
+      const workflow = parseSeed(laneSeed, environment);
+      const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
+
+      expect(workflow.nodes.map((node) => node.model)).toEqual(["", ""]);
+      expect(messages).toContain(`build ${noSol("opencode")}`);
+      expect(messages).toContain(`review ${noSol("opencode")}`);
+    });
+
+    it("fails closed on bare seeds and default cards when no lane offers GPT-6 Sol", () => {
+      const environment = opencodeOnly(mixed);
+      const bare = parseSeed({ nodes: [{ id: "build", role: "builder" }, { id: "review", role: "reviewer" }], edges: [] }, environment);
+      const cards = defaultWorkflow(environment);
+
+      for (const workflow of [bare, cards]) {
+        const workers = workflow.nodes.filter((node) => node.role !== "coordinator");
+        expect(workers.every((node) => node.model === "gpt-6-sol" && node.lane === "codex")).toBe(true);
+        expect(validateWorkflow(workflow, environment).map((issue) => issue.message).filter((message) => message.includes("Codex, which is unavailable"))).toHaveLength(workers.length);
+      }
+    });
+
+    it("still picks GPT-6 Sol when the same catalog also lists it", () => {
+      const environment = opencodeOnly([...mixed, "openrouter/openai/gpt-6-sol"]);
+      const workflow = parseSeed(laneSeed, environment);
+
+      expect(workflow.nodes.map((node) => node.model)).toEqual(["openrouter/openai/gpt-6-sol", "openrouter/openai/gpt-6-sol"]);
+      expect(validateWorkflow(workflow, environment)).toEqual([]);
+    });
+
+    it("allows an explicit Luna builder", () => {
+      const environment = opencodeOnly(mixed);
+      const workflow = parseSeed({ nodes: [{ id: "build", role: "builder", lane: "opencode", model: luna }], edges: [] }, environment);
+
+      expect(workflow.nodes[0].model).toBe(luna);
+      expect(validateWorkflow(workflow, environment)).toEqual([]);
+    });
+
+    it("defaults a lane-pinned Grok builder to grok-4.7 only under credit pressure, never the reviewer", () => {
+      const grokSeed = { nodes: [{ id: "build", role: "builder", lane: "grok" }, { id: "review", role: "reviewer", lane: "grok" }], edges: [] };
+
+      expect(parseSeed(grokSeed, opencodeOnly(mixed)).nodes.map((node) => node.model)).toEqual(["", ""]);
+      expect(parseSeed(grokSeed, opencodeOnly(mixed, { credit_pressure: true })).nodes.map((node) => node.model)).toEqual(["grok-4.7", ""]);
     });
   });
 
