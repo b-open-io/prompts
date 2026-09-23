@@ -247,6 +247,10 @@ manifests share the same release version.
   OpenRouter-backed `openrouter/x-ai/grok-4.7` exports as `openrouter`; `xai` is
   only the fallback for Grok models with none configured. The model picker no
   longer crashes on OpenCode provider names such as `__proto__`.
+- An observed Grok host main needs usage-credit pressure like any other Grok
+  use, so an on-pin `grok-4.7` main no longer validates or exports without it.
+  Only a host already running the legacy `grok-4.6` main keeps that session
+  without pressure. This supersedes the earlier pressure-free main notes above.
 
 ## [1.1.168] - Pending production promotion
 

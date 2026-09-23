@@ -454,7 +454,7 @@ describe("workflow schema", () => {
       expect(pinned).toEqual([]);
     });
 
-    it("applies the Grok lane and credit rules to coordinators, except a Grok host's own main", () => {
+    it("applies the Grok lane and credit rules to coordinators, observed on-pin main included", () => {
       const catalog = ["openrouter/xai/grok-4.7", "openrouter/openai/gpt-6-sol"];
       const seed = { nodes: [{ id: "main", role: "coordinator", lane: "opencode", model: "openrouter/xai/grok-4.7" }], edges: [] };
 
@@ -465,10 +465,13 @@ describe("workflow schema", () => {
         );
       }
 
-      const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"], grok_default: "grok-4.7" } });
-      const observed = defaultWorkflow(grokHost).nodes[0];
+      const grokHost = (extra: Record<string, unknown> = {}) => parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"], grok_default: "grok-4.7" }, ...extra });
+      const observed = defaultWorkflow(grokHost()).nodes[0];
       expect(observed).toMatchObject({ role: "coordinator", lane: "grok", provider: "native", model: "grok-4.7" });
-      expect(validateWorkflow({ title: "main", nodes: [observed], edges: [] }, grokHost)).toEqual([]);
+      expect(validateWorkflow({ title: "main", nodes: [observed], edges: [] }, grokHost()).map((issue) => issue.message)).toEqual([
+        "Coordinate uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+      ]);
+      expect(validateWorkflow({ title: "main", nodes: [observed], edges: [] }, grokHost({ credit_pressure: true }))).toEqual([]);
 
       const dispatched = parseSeed({ nodes: [{ id: "main", role: "coordinator", lane: "grok", model: "grok-4.7", provider: "external", disclosure: "Approved xAI" }], edges: [] }, opencodeOnly(catalog));
       expect(validateWorkflow(dispatched, opencodeOnly(catalog)).map((issue) => issue.message)).toContain(
@@ -485,8 +488,8 @@ describe("workflow schema", () => {
   });
 
   describe("main session and lane evidence", () => {
-    it("exempts only the single Grok main session, not extra Grok coordinators", () => {
-      const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"], grok_default: "grok-4.7" } });
+    it("exempts only the single legacy Grok main session, not extra Grok coordinators", () => {
+      const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7"], grok_default: "grok-4.6" } });
       const main = defaultWorkflow(grokHost).nodes[0];
       const extra = { ...main, id: "second", title: "Second" };
       const workflow = { title: "two mains", nodes: [main, extra], edges: [] };

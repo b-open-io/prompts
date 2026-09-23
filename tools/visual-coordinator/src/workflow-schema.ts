@@ -281,13 +281,13 @@ export const codingTarget = (environment: WorkflowEnvironment): { lane: Workflow
 /**
  * The single node that stands for the current main session: the first native coordinator on the host
  * lane whose model is the observed host main: the detector's configured default for that lane when
- * it reports one, otherwise `grok-4.7` on a Grok host or any model elsewhere. An edited model is a
- * dispatch, never the pressure-free main session.
+ * it reports one; a Grok host has no main without one. An edited model is a dispatch, never the main
+ * session. A Grok main still needs credit pressure unless it is the legacy grok-4.6 session.
  */
 export const mainNodeId = (workflow: Workflow, environment: WorkflowEnvironment): string | null => {
   const host = environment.hostLane;
   const observed = host ? own(environment.mainModels, host) : undefined;
-  // A Grok host has no pressure-free main unless the detector observed its default model.
+  // A Grok host has no main session unless the detector observed its default model.
   if (host === "grok" && !observed) return null;
   return workflow.nodes.find((node) => node.role === "coordinator"
     && node.provider === "native"
@@ -497,9 +497,9 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     if (node.lane === "grok" && model !== "" && !isGrokFamily(model) && (aliasTarget === undefined || aliasProvider === undefined)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses custom id ${model}, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.` });
     if (node.lane === "grok" && isSol(model) && aliasTarget !== undefined && !isSol(aliasTarget)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry runs ${aliasTarget}, not ${SOL}.` });
     if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
-    // A Grok host's own main session is an observed fact, not a dispatch; every other Grok use needs pressure.
-    const observedGrokMain = node.id === mainId && environment.hostLane === "grok";
-    if (grokBacked && !observedGrokMain && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
+    // Grok needs usage-credit pressure, observed on-pin main included. Only a host already running the
+    // legacy grok-4.6 main is exempt: that session is an observed fact, not a new dispatch.
+    if (grokBacked && !(observedLegacyGrokMain && environment.hostLane === "grok") && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${SOL}.` });
     if (node.role !== "coordinator") {
       if (node.role !== "reviewer" && isOpus(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Claude Opus, which is the advisor, not a coding worker; use ${SOL}.` });
       else if (node.role !== "reviewer" && (node.lane === "claude" || isClaudeFamily(model))) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Claude (${model || "no model"}), which is not a coding worker; use ${SOL}.` });

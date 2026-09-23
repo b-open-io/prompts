@@ -215,7 +215,9 @@ the observed default is a dispatch: on the Grok lane it becomes a disclosed
 wrapper shell-out that needs credit pressure. The observed main alone keeps the
 model the detector saw only when that is `grok-4.6` (or an alias resolving to
 it); every other version, dispatch, edited card, and inventory choice stays
-pinned to `grok-4.7`. Every other native Grok-lane node
+pinned to `grok-4.7`. That legacy `grok-4.6` main is also the only Grok use
+exempt from credit pressure: an observed `grok-4.7` main validates and exports
+only under credit pressure. Every other native Grok-lane node
 converts to a shell-out whether or not its model is listed, and a Grok dispatch
 is never Ready unless the detector's `grok models` listing shows its model. A
 custom alias served by xAI, or pointing at a Grok model (`grok_model_targets`),
