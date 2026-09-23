@@ -225,7 +225,10 @@ observed main included. The detector parses `config.toml` as real TOML, and a
 listed custom id is refused unless its entry names both an explicit `model`
 and a `base_url` host; an entry is never assumed to serve its own id.
 Provider-qualified xAI ids (`xai/…`, `openrouter/x-ai/…`) are Grok: they run
-only on the Grok lane, under credit pressure, pinned to `grok-4.7`. The observed main's pin exemption covers only a resolved
+only on the Grok lane, under credit pressure, pinned to `grok-4.7`. The
+detector keeps these ids whole. A Grok CLI id named `gpt-6-sol` counts as Sol
+only when its entry resolves to `gpt-6-sol` behind a non-xAI host; otherwise it
+is never staffed as Sol and is rejected as a Build or Review model. The observed main's pin exemption covers only a resolved
 `grok-4.6`; any other off-pin Grok version is rejected like a dispatch. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.

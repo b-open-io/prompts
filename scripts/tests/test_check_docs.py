@@ -282,6 +282,50 @@ class VisualWorkflowContractTests(unittest.TestCase):
         self.assertEqual(detected["grok_model_providers"], {"ox-alpha": "xai"})
         self.assertEqual(detected["grok_model_targets"], {"ox-alpha": "grok-4.6"})
 
+    SLASHY_LISTING = (
+        "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' "
+        "'  * xai/grok-4.6 (default)' '  - xai/ox-alpha' '  - openrouter/x-ai/grok-4.7' '  - openrouter/x-ai/grok-4.6' '  - XAI/GROK-4.5'; fi\n"
+    )
+    SLASHY_CONFIG = '[model."xai/ox-alpha"]\nmodel = "grok-4.7"\nbase_url = "https://api.x.ai/v1"\n'
+
+    def test_detector_keeps_slash_qualified_grok_ids_whole(self) -> None:
+        detected = self._detect_grok(self.SLASHY_LISTING, config=self.SLASHY_CONFIG)
+        self.assertEqual(detected["models"]["grok"], ["xai/ox-alpha", "openrouter/x-ai/grok-4.7"])
+        self.assertEqual(detected["models"]["grok_default"], "xai/grok-4.6")
+        self.assertEqual(detected["grok_model_targets"], {"xai/ox-alpha": "grok-4.7"})
+        self.assertEqual(detected["grok_model_providers"], {"xai/ox-alpha": "xai"})
+
+    def test_slash_qualified_grok_ids_round_trip_into_the_canvas(self) -> None:
+        if shutil.which("bun") is None:
+            self.skipTest("Bun is not installed in the isolated Python runner")
+        detected = self._detect_grok(self.SLASHY_LISTING, extra_env={"BOPEN_USAGE_CREDIT_PRESSURE": "1"}, config=self.SLASHY_CONFIG)
+        probe = """
+import { defaultWorkflow, parseEnvironment, validateWorkflow, mainNodeId } from "./src/workflow-schema";
+const environment = parseEnvironment(JSON.parse(process.argv[2]));
+const workflow = defaultWorkflow(environment);
+workflow.nodes = [workflow.nodes[0], ...["xai/ox-alpha", "openrouter/x-ai/grok-4.7"].map((model, index) => ({
+  ...workflow.nodes[1], id: `build-${index}`, title: `Build ${index}`, lane: "grok", provider: "external", model, disclosure: "Approved xAI dispatch",
+}))];
+workflow.edges = [];
+console.log(JSON.stringify({
+  models: environment.lanes.grok.models,
+  main: mainNodeId(workflow, environment),
+  coordinator: workflow.nodes[0].model,
+  issues: validateWorkflow(workflow, environment).map((issue) => issue.message),
+}));
+"""
+        with tempfile.NamedTemporaryFile("w", suffix=".ts", dir=self.TOOL, delete=False) as handle:
+            handle.write(probe)
+        try:
+            result = subprocess.run(["bun", handle.name, json.dumps(detected)], cwd=self.TOOL, capture_output=True, text=True, check=True)
+        finally:
+            Path(handle.name).unlink()
+        observed = json.loads(result.stdout.strip().splitlines()[-1])
+        self.assertEqual(observed["models"], ["xai/ox-alpha", "openrouter/x-ai/grok-4.7"])
+        self.assertEqual(observed["main"], "coordinate")
+        self.assertEqual(observed["coordinator"], "xai/grok-4.6")
+        self.assertEqual(observed["issues"], [])
+
     def test_detector_never_assumes_a_custom_id_serves_itself(self) -> None:
         detected = self._detect_grok(
             "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)' '  - ox-alpha'; fi\n",

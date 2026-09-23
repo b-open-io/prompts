@@ -1,4 +1,4 @@
-import { isGrokFamily, mainNodeId, validateWorkflow, type ValidationIssue, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
+import { isGrokFamily, mainNodeId, own, validateWorkflow, type ValidationIssue, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
 
 /**
  * Inputs that are known by the host of the visual coordinator.  The
@@ -283,7 +283,7 @@ const providerForNode = (node: WorkflowNode, environment: WorkflowEnvironment): 
   if (lane === "opencode" && node.model.includes("/")) {
     return node.model.split("/", 1)[0] || "opencode";
   }
-  if (lane === "grok" && !isGrokFamily(node.model)) return environment.grokModelProviders[node.model] ?? "unknown";
+  if (lane === "grok" && !isGrokFamily(node.model)) return own(environment.grokModelProviders, node.model) ?? "unknown";
   return providerForLane[lane] ?? node.provider;
 };
 
@@ -340,7 +340,7 @@ const planDispatch = (workflow: Workflow, environment: WorkflowEnvironment, opti
   const nodes: NodeDispatch[] = workflow.nodes.map((original) => {
     const converted = original.id !== mainId && convertedGrokNode(original);
     const generated = generateNodeCommand(converted ? { ...original, provider: "external" } : original, dispatchOptions);
-    const lane = environment.lanes[original.lane];
+    const lane = own(environment.lanes, original.lane);
     const blocked = lane && lane.availability !== "available"
       ? `${lane.label} is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.`
       : generated.executable ? undefined : generated.reason ?? "The dispatch is not executable.";

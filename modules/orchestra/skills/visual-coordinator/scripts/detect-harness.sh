@@ -51,12 +51,12 @@ if [[ "$grok_bin" == "available" ]]; then
     grep -Fq "You are using XAI_API_KEY" <<<"$grok_listing" && grok_auth="api"
   fi
   grok_models=$(printf '%s\n' "$grok_listing" \
-    | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._-]*\).*/\1/p' \
-    | awk 'NF && ($0 !~ /^grok-/ || $0 == "grok-4.7") && !seen[$0]++' \
+    | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._/:@-]*\).*/\1/p' \
+    | awk 'NF { id = tolower($0) } NF && (id !~ /(^|\/)grok-/ || id ~ /(^|\/)grok-4\.7$/) && !seen[$0]++' \
     | head -40 \
     | paste -sd, -)
   grok_default=$(printf '%s\n' "$grok_listing" \
-    | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._-]*\).*(default).*/\1/p' \
+    | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._/:@-]*\).*(default).*/\1/p' \
     | head -1)
 fi
 # A custom Grok id (for example gpt-6-sol) is served from its [model."id"] base_url, not

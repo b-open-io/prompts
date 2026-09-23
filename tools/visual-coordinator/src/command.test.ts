@@ -334,12 +334,18 @@ describe("versioned export contract", () => {
     };
 
     const noBaseUrl = grokHost({ grok_model_providers: {} });
-    expect(validateWorkflow(disclosed(noBaseUrl), noBaseUrl).map((issue) => issue.message)).toContain(
+    expect(defaultWorkflow(noBaseUrl).nodes.filter((node) => node.lane === "grok" && node.id !== "coordinate")).toEqual([]);
+    const pinnedToGrok = (environment: ReturnType<typeof grokHost>) => {
+      const workflow = disclosed(environment);
+      workflow.nodes.slice(1).forEach((node) => { node.lane = "grok"; node.model = "gpt-6-sol"; node.provider = "external"; });
+      return workflow;
+    };
+    expect(validateWorkflow(pinnedToGrok(noBaseUrl), noBaseUrl).map((issue) => issue.message)).toContain(
       "Build uses custom id gpt-6-sol, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.",
     );
-    const spec = serializeWorkflow(disclosed(noBaseUrl), noBaseUrl);
+    const spec = serializeWorkflow(pinnedToGrok(noBaseUrl), noBaseUrl);
     expect(spec.nodes.filter((node) => node.id !== "coordinate")).toEqual([]);
-    expect(toExportText(disclosed(noBaseUrl), noBaseUrl)).not.toContain("run-grok-worker.sh");
+    expect(toExportText(pinnedToGrok(noBaseUrl), noBaseUrl)).not.toContain("run-grok-worker.sh");
 
     const configured = grokHost({ grok_model_providers: { "gpt-6-sol": "openai" } });
     expect(serializeWorkflow(disclosed(configured), configured).nodes.filter((node) => node.id !== "coordinate").map((node) => node.provider)).toEqual(["openai", "openai"]);
@@ -490,6 +496,69 @@ describe("versioned export contract", () => {
     );
     expect(serializeWorkflow(workflow, environment).nodes.map((node) => node.id)).toEqual(["coordinate"]);
     expect(toExportText(workflow, environment)).not.toContain("run-grok-worker.sh");
+  });
+
+  it("judges a Grok CLI Sol alias by the model its entry really runs", () => {
+    const host = (targets: Record<string, string>, providers: Record<string, string>, extra: Record<string, unknown> = {}) => parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available", codex: "available" },
+      models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "grok-4.7", codex: ["gpt-6-sol"] },
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+      grok_model_targets: targets,
+      grok_model_providers: providers,
+      ...extra,
+    });
+    const onGrok = (environment: ReturnType<typeof host>) => {
+      const workflow = defaultWorkflow(environment);
+      workflow.nodes.slice(1).forEach((node) => { node.lane = "grok"; node.model = "gpt-6-sol"; node.provider = "external"; node.disclosure = "Approved custom dispatch"; });
+      return workflow;
+    };
+
+    const muse = host({ "gpt-6-sol": "openrouter/muse-spark-1.3" }, { "gpt-6-sol": "openrouter" });
+    expect(defaultWorkflow(muse).nodes.slice(1).map((node) => [node.id, node.lane, node.model])).toEqual([["build", "codex", "gpt-6-sol"], ["review", "codex", "gpt-6-sol"]]);
+    const museMessages = validateWorkflow(onGrok(muse), muse).map((issue) => issue.message);
+    expect(museMessages).toEqual(expect.arrayContaining([
+      "Build uses gpt-6-sol, but its Grok CLI entry runs openrouter/muse-spark-1.3, not gpt-6-sol.",
+      "Review must review on gpt-6-sol at xhigh.",
+    ]));
+    expect(serializeWorkflow(onGrok(muse), muse).nodes.map((node) => node.id)).toEqual(["coordinate"]);
+
+    const xai = host({ "gpt-6-sol": "gpt-6-sol" }, { "gpt-6-sol": "xai" });
+    expect(defaultWorkflow(xai).nodes.slice(1).map((node) => node.lane)).toEqual(["codex", "codex"]);
+    expect(validateWorkflow(onGrok(xai), xai).map((issue) => issue.message)).toEqual(expect.arrayContaining([
+      "Build uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+      "Review must review on gpt-6-sol at xhigh.",
+    ]));
+
+    const real = host({ "gpt-6-sol": "gpt-6-sol" }, { "gpt-6-sol": "openai" });
+    expect(validateWorkflow(onGrok(real), real)).toEqual([]);
+    expect(serializeWorkflow(onGrok(real), real).nodes.filter((node) => node.id !== "coordinate").map((node) => node.provider)).toEqual(["openai", "openai"]);
+  });
+
+  it("never resolves models or lanes through Object.prototype", () => {
+    const environment = parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available" },
+      models: { grok: ["grok-4.7", "constructor", "toString"], grok_default: "grok-4.7" },
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+      credit_pressure: true,
+    });
+    const workflow = defaultWorkflow(environment);
+    workflow.nodes = [workflow.nodes[0], ...["constructor", "toString"].map((model) => ({
+      ...workflow.nodes[1], id: model, title: model, lane: "grok", provider: "external" as const, model, disclosure: "Approved custom dispatch",
+    })), { ...workflow.nodes[1], id: "odd-lane", title: "Odd lane", lane: "constructor", model: "gpt-6-sol" }];
+    workflow.edges = [];
+    const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
+    expect(messages).toEqual(expect.arrayContaining([
+      "constructor uses custom id constructor, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.",
+      "toString uses custom id toString, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.",
+      "Odd lane uses an undetected lane: constructor.",
+    ]));
+    const spec = serializeWorkflow(workflow, environment);
+    expect(spec.nodes.map((node) => node.id)).toEqual(["coordinate"]);
+    expect(spec.nodes.every((node) => typeof node.provider === "string")).toBe(true);
   });
 
   it("limits the observed-main Grok exemption to grok-4.6", () => {

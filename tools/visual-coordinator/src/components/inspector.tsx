@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { modelFor, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
+import { modelFor, own, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
 
 type Props = {
   node?: WorkflowNode;
@@ -58,14 +58,14 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
 
   const update = <K extends keyof WorkflowNode>(key: K, value: WorkflowNode[K]) => onNodeChange({ ...node, [key]: value });
   const updateWorktree = (key: keyof NonNullable<WorkflowNode["worktree"]>, value: string) => onNodeChange({ ...node, worktree: { ...node.worktree!, [key]: value } });
-  const lane = environment.lanes[node.lane] ?? missingLane(node.lane);
+  const lane = own(environment.lanes, node.lane) ?? missingLane(node.lane);
   const lanes = Object.values(environment.lanes);
   const hostLanes = lanes.filter((candidate) => candidate.isHost);
   const availableLanes = lanes.filter((candidate) => !candidate.isHost && candidate.availability === "available");
   const unavailableLanes = lanes.filter((candidate) => !candidate.isHost && candidate.availability !== "available");
   // The observed main keeps the model the detector saw even when it is not a dispatch choice (e.g. grok-4.6).
   const observedMain = node.role === "coordinator" && node.provider === "native" && node.lane === environment.hostLane
-    && node.model !== "" && node.model === environment.mainModels[node.lane];
+    && node.model !== "" && node.model === own(environment.mainModels, node.lane);
   const showObserved = observedMain && !lane.models.includes(node.model);
   const modelIsPreset = lane.models.includes(node.model) || observedMain;
   const modelValue = modelIsPreset ? node.model : lane.inventory === "incomplete" ? CUSTOM_MODEL : UNKNOWN_MODEL;
@@ -76,7 +76,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
   }, {}));
   const efforts = lane.efforts.length > 0 ? lane.efforts : fallbackEfforts;
   const onLaneChange = (nextLane: string) => {
-    const next = environment.lanes[nextLane] ?? missingLane(nextLane);
+    const next = own(environment.lanes, nextLane) ?? missingLane(nextLane);
     const model = modelFor(environment, nextLane, node.role);
     const reviewEffort = node.role === "reviewer" && next.efforts.includes("xhigh") ? "xhigh" : undefined;
     onNodeChange({
@@ -111,7 +111,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
       {hostLanes.length > 0 && <SelectGroup><SelectLabel>Current host</SelectLabel>{hostLanes.map((candidate) => <LaneItem key={candidate.id} lane={candidate} />)}</SelectGroup>}
       {availableLanes.length > 0 && <SelectGroup><SelectLabel>Available shell-out lanes</SelectLabel>{availableLanes.map((candidate) => <LaneItem key={candidate.id} lane={candidate} />)}</SelectGroup>}
       {unavailableLanes.length > 0 && <SelectGroup><SelectLabel>Unavailable or not detected</SelectLabel>{unavailableLanes.map((candidate) => <LaneItem key={candidate.id} lane={candidate} />)}</SelectGroup>}
-      {!environment.lanes[node.lane] && node.lane && <SelectItem value={node.lane} disabled>{node.lane} · not detected</SelectItem>}
+      {!own(environment.lanes, node.lane) && node.lane && <SelectItem value={node.lane} disabled>{node.lane} · not detected</SelectItem>}
     </SelectContent></Select></label>
     <label>Model<Select value={modelValue} onValueChange={onModelChange}><SelectTrigger><SelectValue placeholder="Choose a model" /></SelectTrigger><SelectContent>
       {modelGroups.map(([provider, models]) => <SelectGroup key={provider}><SelectLabel>{lane.id === "opencode" ? `${provider} provider` : `Detected ${provider} models`}</SelectLabel>{models?.map((model) => <SelectItem key={model} value={model}>{model}</SelectItem>)}</SelectGroup>)}

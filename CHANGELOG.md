@@ -239,6 +239,10 @@ manifests share the same release version.
   OpenCode or skip the credit gate and `grok-4.7` pin. The wrapper applies the
   detector's bar to `model` (a blank or padded value is no model) and holds a
   custom id whose target is a nested xAI id to the same gate.
+- The canvas judges a Grok CLI `gpt-6-sol` alias by the model its entry really
+  runs: one that resolves elsewhere, or through xAI, is never staffed or
+  exported as Sol. The detector keeps slash-qualified Grok ids such as
+  `xai/ox-alpha` whole, and environment maps ignore `Object.prototype` keys.
 
 ## [1.1.168] - Pending production promotion
 
