@@ -70,12 +70,12 @@ const laneLabels: Record<string, string> = {
   opencode: "OpenCode",
 };
 const fallbackModels: Record<string, string[]> = {
-  claude: ["sonnet", "haiku", "opus", "fable", "inherit"],
-  codex: ["gpt-5.6-luna", "gpt-5.6-sol"],
-  grok: ["grok-4.6"],
+  claude: ["claude-opus-5-5", "opus", "sonnet", "haiku", "inherit"],
+  codex: ["gpt-6-sol", "gpt-5.6-luna"],
+  grok: ["grok-4.7"],
   opencode: [],
 };
-const fallbackEfforts: WorkflowEffort[] = ["low", "medium", "high"];
+const fallbackEfforts: WorkflowEffort[] = ["low", "medium", "high", "xhigh"];
 
 const safeStrings = (value: unknown): string[] => {
   if (!Array.isArray(value)) return [];
@@ -142,7 +142,9 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
   const lanes = Object.fromEntries(ids.map((rawId) => {
     const id = laneKey(rawId);
     const modelInventory = inventoryValue(rawModels[id] ?? rawModels[rawId]);
-    const detectedModels = modelInventory.values.filter((model) => !(id === "grok" && model === "grok-4.5"));
+    const detectedModels = modelInventory.values.filter((model) =>
+      id !== "grok" || !model.startsWith("grok-") || model === "grok-4.7"
+    );
     const effortInventory = effortValues(rawModels[`${id}_effort`] ?? rawModels[`${rawId}_effort`]);
     const rawLane = rawLanes[id] ?? rawLanes[rawId];
     const availability = statusOf(rawLane);
@@ -205,7 +207,7 @@ export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnviro
   nodes: [
     { id: "coordinate", role: "coordinator", title: "Coordinate", task: "Resolve the plan and assign bounded work.", ownedPaths: ["tools/visual-coordinator"], lane: preferredLane(environment), provider: providerFor(environment, preferredLane(environment)), model: firstModel(environment, preferredLane(environment)), effort: "high", execution: "write", position: { x: 72, y: 74 }, worktree: worktree("coordinate", "coordinator") },
     { id: "build", role: "builder", title: "Build", task: "Implement the visual coordinator surface.", ownedPaths: ["tools/visual-coordinator/src"], lane: preferredLane(environment), provider: providerFor(environment, preferredLane(environment)), model: firstModel(environment, preferredLane(environment)), effort: "medium", execution: "write", position: { x: 390, y: 212 }, worktree: worktree("build", "builder") },
-    { id: "review", role: "reviewer", title: "Review", task: "Check executable state and export readiness.", ownedPaths: ["tools/visual-coordinator/src/**/*.test.ts"], lane: preferredLane(environment), provider: providerFor(environment, preferredLane(environment)), model: firstModel(environment, preferredLane(environment)), effort: "medium", execution: "read-only-review", position: { x: 716, y: 74 }, worktree: worktree("review", "reviewer") },
+    { id: "review", role: "reviewer", title: "Review", task: "Check executable state and export readiness.", ownedPaths: ["tools/visual-coordinator/src/**/*.test.ts"], lane: preferredLane(environment), provider: providerFor(environment, preferredLane(environment)), model: firstModel(environment, preferredLane(environment)), effort: "xhigh", execution: "read-only-review", position: { x: 716, y: 74 }, worktree: worktree("review", "reviewer") },
   ],
   edges: [
     { id: "coordinate-build", source: "coordinate", target: "build", kind: "forward", label: "assign" },
@@ -318,7 +320,7 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     else {
       const detectedGrokShellOut = node.provider === "native"
         && node.lane === "grok"
-        && model !== "grok-4.6"
+        && model !== "grok-4.7"
         && lane.models.includes(model);
       if (lane.availability !== "available") issues.push({ id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
       if (lane.inventory === "complete" && !lane.models.includes(model)) issues.push({ id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });

@@ -1,11 +1,11 @@
 ---
 name: claudex
 description: >-
-  Run the Claude Code harness on GPT-5.6 Sol through a local CLIProxyAPI proxy when Anthropic
+  Run the Claude Code harness on GPT-6 Sol through a local CLIProxyAPI proxy when Anthropic
   usage runs out, and diagnose that setup when it drifts. Use for "my Anthropic usage ran out",
-  "keep working on another model", "run Claude Code on GPT-5.6 Sol", "set up claudex", "claudex
+  "keep working on another model", "run Claude Code on GPT-6 Sol", "set up claudex", "claudex
   isn't working", or "bill against my Codex subscription". macOS + Homebrew.
-version: 0.0.2
+version: 0.0.3
 user-invocable: true
 ---
 
@@ -16,7 +16,7 @@ Sol. It is not [l3tchupkt/Claudex](https://github.com/l3tchupkt/Claudex)
 (a leaked Claude Code fork). Do not install that repo.
 
 `claudex` runs the **Claude Code harness — same tools, skills, UI, and session —
-driven by OpenAI's GPT-5.6 Sol**, billed against an existing ChatGPT/Codex
+driven by OpenAI's GPT-6 Sol**, billed against an existing ChatGPT/Codex
 subscription. It is a deliberate **escape hatch for when Anthropic usage runs
 out**: the normal `claude` command stays untouched, and `claudex` is a separate
 zsh alias that reroutes one invocation through a local proxy.
@@ -59,7 +59,7 @@ load it and walk the user through, in order:
    cliproxyapi` after any conf edit.
 5. **Connect OpenAI** — `cliproxyapi --codex-login` opens a browser OAuth tab;
    credentials land in `~/.cli-proxy-api/` and self-refresh.
-6. **Verify** — `curl` the proxy's `/v1/models` and confirm `gpt-5.6-sol` is
+6. **Verify** — `curl` the proxy's `/v1/models` and confirm `gpt-6-sol` is
    listed.
 7. **Add the alias** — append the `claudex` alias to `~/.zshrc`, `source` it.
 8. **Smoke test** — `claudex -p "Reply with exactly: claudex works."`
@@ -79,7 +79,7 @@ After setup, type **`claudex`** instead of `claude`. Because the environment
 variables are inline in the alias, they apply to that one invocation only —
 plain `claude` keeps using the Anthropic login. Extra arguments pass through:
 `claudex --continue`, `claudex -p "…"` all work. The startup banner reads
-`gpt-5.6-sol · API Usage Billing`, and a "claude.ai connectors disabled" warning
+`gpt-6-sol · API Usage Billing`, and a "claude.ai connectors disabled" warning
 is expected (the auth token overrides the claude.ai login for that session).
 
 ## Troubleshooting
@@ -88,7 +88,7 @@ When `claudex` breaks, load **[references/troubleshooting.md](references/trouble
 and match the symptom — empty model list, 401, connection refused on 8317, or
 `claudex` answering as Claude. It maps each to the underlying drift (incomplete
 OAuth, key mismatch, dead launchd service, unloaded alias) and the fix. This is
-the volatile surface — proxy config, the `gpt-5.6-sol` model ID, and the OAuth
+the volatile surface — proxy config, the `gpt-6-sol` model ID, and the OAuth
 flow all live upstream and can change; keep this reference current when they do.
 
 ## Relationship to `setup`

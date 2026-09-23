@@ -7,9 +7,9 @@ const liveCodexEnvironment = () => parseEnvironment({
   models: {
     claude: ["sonnet", "haiku"],
     claude_effort: ["low", "medium", "high", "max"],
-    codex: ["gpt-5.6-luna", "gpt-5.6-sol"],
+    codex: ["gpt-6-sol", "gpt-5.6-luna"],
     codex_effort: ["minimal", "low", "medium", "high", "xhigh"],
-    grok: ["grok-4.6", "grok-4.5"],
+    grok: ["grok-4.7", "grok-4.6"],
     grok_effort: ["minimal", "low", "medium", "high", "xhigh"],
     opencode: [],
   },
@@ -22,6 +22,10 @@ describe("workflow schema", () => {
     expect(validateWorkflow(workflow, liveCodexEnvironment())).toEqual([]);
     expect(workflow.nodes.every((node) => node.worktree?.root === "~/code/worktrees")).toBe(true);
     expect(workflow.nodes.every((node) => node.worktree?.taskPath.startsWith("~/code/worktrees/"))).toBe(true);
+    expect(workflow.nodes.find((node) => node.role === "reviewer")).toMatchObject({
+      model: "gpt-6-sol",
+      effort: "xhigh",
+    });
   });
 
   it("detects missing targets and duplicate handoffs", () => {
@@ -76,7 +80,7 @@ describe("workflow schema", () => {
       models: {
         claude: { models: [" sonnet ", 42, "sonnet"], complete: true },
         claude_effort: ["low", "not-an-effort", "max"],
-        grok: ["grok-4.5", "grok-4.6"],
+        grok: ["grok-4.6", "grok-4.7"],
       },
       caps: { live_children: -1, agent_budget_default: "not-a-number" },
       roster: [null, { id: "reviewer" }, "ignored"],
@@ -87,7 +91,7 @@ describe("workflow schema", () => {
     expect(environment.simulationOnly).toBe(false);
     expect(environment.lanes.claude.models).toEqual(["sonnet"]);
     expect(environment.lanes.claude.efforts).toEqual(["low", "max"]);
-    expect(environment.lanes.grok.models).toEqual(["grok-4.6"]);
+    expect(environment.lanes.grok.models).toEqual(["grok-4.7"]);
     expect(environment.caps).toEqual({ liveChildren: null, agentBudgetDefault: 0 });
     expect(environment.roster).toEqual([{ id: "reviewer" }]);
   });
@@ -135,8 +139,8 @@ describe("workflow schema", () => {
     );
   });
 
-  it("requires disclosure before converting a detected non-4.6 native Grok model", () => {
-    const environment = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.6", "ox-alpha"] } });
+  it("requires disclosure before converting a detected non-4.7 native Grok model", () => {
+    const environment = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] } });
     const workflow = defaultWorkflow(environment);
     workflow.nodes[0].model = "ox-alpha";
 

@@ -6,6 +6,12 @@ Full installed agent roster with `subagent_type` identifiers and the skills to m
 
 > **Some of these skills are external.** `semgrep`, `codeql`, `differential-review`, and `secure-workflow-guide` come from the `trailofbits/skills` marketplace (plugins `static-analysis`, `differential-review`, `building-secure-contracts`). They resolve by bare name when installed and are simply absent when not — no error. Naming an uninstalled skill in a spawn prompt is worse than omitting it, because the agent reports against a pass it never ran. Add one line to any prompt naming them: *"If a skill isn't available, say which one and what you did instead."*
 
+> **HARD RULE — dispatch models.** Roster `Model` values below are native
+> persona tiers, not coding-worker defaults. Use `gpt-6-sol` for coding workers
+> and `gpt-6-sol` at `xhigh` for code review. Use `claude-opus-5-5` for the
+> advisor. Grok is a usage-credit-pressure fallback only, pinned to
+> `grok-4.7`; never use Grok 4.6.
+
 ## Roster
 
 | Agent | subagent_type | Model | Best for |

@@ -82,7 +82,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
   };
   const onModelChange = (selected: string) => {
     const model = selected === CUSTOM_MODEL ? "" : selected;
-    const requiresGrokShellOut = node.lane === "grok" && model !== "" && model !== "grok-4.6";
+    const requiresGrokShellOut = node.lane === "grok" && model !== "" && model !== "grok-4.7";
     onNodeChange({
       ...node,
       model,

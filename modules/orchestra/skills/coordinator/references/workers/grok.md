@@ -4,6 +4,10 @@ Read this only when the Grok Build CLI is the selected external worker. A
 dispatch can send the prompt, spec, and selected repository content to xAI;
 apply the Coordinator disclosure rule before first use.
 
+Grok is a usage-credit-pressure fallback, not the normal coding lane. Use it
+only when that pressure is explicit, pin `grok-4.7`, and never dispatch Grok
+4.6. Otherwise use the preferred `gpt-6-sol` coding worker.
+
 ## Choose and verify the auth lane
 
 Grok Build can use ambient `XAI_API_KEY` / `GROK_API_KEY` credentials or the
@@ -72,7 +76,7 @@ Its inspection log is redacted and written with owner-only permissions.
 ```bash
 bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
   --auth grok.com \
-  --model grok-4.6 \
+  --model grok-4.7 \
   --mode write \
   --cwd /absolute/path/to/worktree \
   --branch codex/example-task \

@@ -1,3 +1,18 @@
+# 2026-09-23 — Model routing defaults
+
+- [x] Audit active settings, roster, advisor, worker, review, and generated
+  workflow surfaces.
+- [x] Set GPT-6 Sol as the preferred coding worker and xhigh reviewer.
+- [x] Set Claude Opus 5.5 as the advisor default and demote Fable to legacy.
+- [x] Restrict Grok fallback guidance to usage-credit pressure and Grok 4.7.
+- [x] Update public docs, tests, generated artifacts, versions, and manifests.
+- [ ] Run focused and release validation, review the diff, and ship a PR to
+  `dev` with Luke as author and committer.
+
+## Review
+
+- Pending.
+
 # OPL-3821 — Vercel Security Dashboard agent guidance
 
 - [x] Remove the unnecessary tool-specific skills, references, eval cases, and

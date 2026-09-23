@@ -145,7 +145,7 @@ assert_eq "session-context settings stderr" "" "$settings_err"
 ctx=$(printf '%s' "$settings_out" | jq -r '.hookSpecificOutput.additionalContext')
 assert_contains "session-context settings marker" "[BOPEN-SETTINGS]" "$ctx"
 assert_contains "session-context worker env" "models.worker=worker-test-model [model; configured]" "$ctx"
-assert_contains "session-context advisor default" "models.advisor=fable [model; default]" "$ctx"
+assert_contains "session-context advisor default" "models.advisor=claude-opus-5-5 [model; default]" "$ctx"
 assert_contains "session-context workflow json" "coordinator.workflow=manual [workflow; configured]" "$ctx"
 assert_contains "session-context orchestration json" "coordinator.orchestration=single-agent" "$ctx"
 assert_contains "session-context subagents json" "coordinator.subagents=off" "$ctx"

@@ -29,9 +29,9 @@ cleanup policy (after-approved-merge)
 
 ## Nodes
 - **Work** — Display Name (`plugin:id`)
-  model: grok-4.6 · effort: medium
+  model: grok-4.7 · effort: medium
 - **Implement B** — SHELL-OUT to codex
-  controller: grok · provider/model: openai/gpt-5.6-sol
+  controller: grok · provider/model: openai/gpt-6-sol
   disclosure: approved · context: brief, owned paths, test contract
   command: codex exec ...
 
@@ -59,7 +59,7 @@ cleanup policy (after-approved-merge)
       "kind": "process",
       "label": "Work",
       "lane": "grok",
-      "model": "grok-4.6",
+      "model": "grok-4.7",
       "effort": "medium",
       "actor": "maker",
       "execution": "native-agent",
@@ -73,7 +73,7 @@ cleanup policy (after-approved-merge)
       "kind": "process",
       "label": "Review",
       "lane": "claude",
-      "model": "fable",
+      "model": "claude-opus-5-5",
       "actor": "reviewer",
       "execution": "read-only-review",
       "shell": true,
@@ -101,7 +101,7 @@ The current canvas emits executable agent steps as `kind: "process"`.
 Node `lane` is `grok` | `claude` | `codex` | `opencode`.
 A process or gate with `lane` not equal to the host is a shell-out (`shell:
 true`). A shell-out is a subprocess of another vendor's CLI. A Grok native
-node whose detected model is not `grok-4.6` is converted (`converted: true`)
+node whose detected model is not `grok-4.7` is converted (`converted: true`)
 to a shell-out. A model on no detected lane, or a shell-out whose CLI is not
 installed, is omitted from executable `nodes[]` and named under `Not emitted`
 with `kind: "node"` and `omit: true` in `omissions[]`. Every incident handoff is
@@ -157,7 +157,8 @@ second dispatch after a failed gate, not a native loop. Never emit a native
 DAG, pipeline, or workflow-engine construct for OpenCode.
 
 **Grok**: emit a Rhai workflow. Follow the bundled `/create-workflow`
-skill. Native `agent().model` is `grok-4.6` only. A non-Grok lane is a
+skill. Native `agent().model` is pinned to `grok-4.7`; Grok 4.6 is forbidden.
+A non-Grok lane is a
 Grok-CLI or Claude-CLI shell-out. `parallel(jobs)` is the barrier.
 Smoke-check with `{ validate_only: true }` before a real run.
 
@@ -176,7 +177,7 @@ shell-out node and say so, or drop it. Never leave it looking configured.
 The Visual Coordinator's version-2 serializer emits this shape from the live
 canvas. Nodes without an executable boundary are omitted from `nodes[]` and
 listed in `omissions[]` together with every affected edge; the human plan
-repeats those refusals under `Not emitted`. A native Grok node whose model is detected but not `grok-4.6` is
+repeats those refusals under `Not emitted`. A native Grok node whose model is detected but not `grok-4.7` is
 converted to a Grok CLI shell-out and marked `converted: true`.
 
 Generated commands encode task text before passing it through stdin or

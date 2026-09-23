@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.10
+version: 0.1.11
 ---
 
 # Visual Coordinator
@@ -27,11 +27,11 @@ when the user has asked to see or change the plan first.
 ## The rule that governs every control
 
 **No host `agent().model` slug is a foreign vendor.** Claude workflow
-models stay Claude. Codex stays OpenAI-family. Grok 1.0.13 accepts only
-`grok-4.6` (use it) and `grok-4.5` (do not offer it) as `agent().model`.
-A quoted `[model."gpt-5.6-sol"]` makes `grok --single -m gpt-5.6-sol`
-work; that is a Grok-CLI shell-out node, not a native slug. Never render
-a dropdown that implies otherwise.
+models stay Claude. Codex stays OpenAI-family. The approved native Grok model
+is `grok-4.7`; never offer Grok 4.6. A quoted `[model."gpt-6-sol"]` makes
+`grok --single -m gpt-6-sol` a cross-provider Grok-CLI shell-out node, not a
+native slug. Never render a dropdown that implies otherwise. Grok is a
+usage-credit-pressure fallback, not the default coding lane.
 
 Never render a dropdown implying otherwise. A control offering an impossible
 combination is worse than no control, because the user configures around it and
@@ -110,7 +110,7 @@ Required on the page:
   shell-out includes native controller identity, actual provider/model,
   disclosure state, and exact context shared. Copy is disabled while unresolved
   validation/refusal items remain. A Grok native node whose model is not
-  `grok-4.6` emits as a shell-out.
+  `grok-4.7` emits as a shell-out.
 
 ### 3b. Deliver the page
 

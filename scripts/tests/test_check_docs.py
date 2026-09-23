@@ -175,6 +175,31 @@ class VisualWorkflowContractTests(unittest.TestCase):
         refused = subprocess.run(["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env, capture_output=True, text=True, check=True)
         self.assertEqual(json.loads(refused.stdout)["harness"], "unknown")
 
+    def test_detector_rejects_superseded_grok_models(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            fake = temp / "grok"
+            fake.write_text(
+                "#!/usr/bin/env bash\n"
+                "if [[ $1 == models ]]; then\n"
+                "  printf '%s\\n' '  - grok-4.6' '  * grok-4.7 (default)' '  - gpt-6-sol'\n"
+                "fi\n",
+                encoding="utf-8",
+            )
+            fake.chmod(0o755)
+            env = dict(os.environ)
+            env.update({
+                "HOME": str(temp),
+                "PATH": f"{temp}:/usr/bin:/bin",
+                "BOPEN_HOST_HARNESS": "grok",
+            })
+            output = subprocess.run(
+                ["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env,
+                capture_output=True, text=True, check=True,
+            )
+            detected = json.loads(output.stdout)
+            self.assertEqual(detected["models"]["grok"], ["grok-4.7", "gpt-6-sol"])
+
     def test_detector_queries_each_configured_opencode_provider(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             temp = Path(directory)
@@ -304,7 +329,7 @@ class GrokWrapperTests(unittest.TestCase):
             fake.write_text(
                 "#!/usr/bin/env bash\n"
                 "if [[ $1 == --sandbox ]]; then [[ $2 == workspace ]] || exit 9; shift 2; fi\n"
-                "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.6 (default)'; exit 0; fi\n"
+                "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)'; exit 0; fi\n"
                 "if [[ $1 == inspect ]]; then printf '%s\\n' \"{\\\"grokVersion\\\":\\\"1.0.13\\\",\\\"cwd\\\":\\\"$PWD\\\",\\\"mcpServers\\\":[{\\\"env\\\":[{\\\"name\\\":\\\"API_KEY\\\",\\\"value\\\":\\\"do-not-log\\\"}]}],\\\"token\\\":\\\"do-not-log\\\",\\\"safe\\\":\\\"ok\\\"}\"; exit 0; fi\n"
                 "printf '%s\\n' done\n",
                 encoding="utf-8",
@@ -315,7 +340,7 @@ class GrokWrapperTests(unittest.TestCase):
             log = temp / "run.log"
             env = dict(os.environ)
             env["PATH"] = f"{temp}:/usr/bin:/bin"
-            command = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.6", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(log)]
+            command = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(log)]
             subprocess.run(command, cwd=self.ROOT, env=env, capture_output=True, text=True, check=True)
             inventory = Path(str(log) + ".inspect.json").read_text(encoding="utf-8")
             self.assertNotIn("do-not-log", inventory)
@@ -323,7 +348,7 @@ class GrokWrapperTests(unittest.TestCase):
             self.assertIn("bopenSandboxProbe", inventory)
             self.assertIn("effectiveContainment", inventory)
             partial = command.copy()
-            partial[partial.index("grok-4.6")] = "grok-4"
+            partial[partial.index("grok-4.7")] = "grok-4"
             rejected = subprocess.run(partial, cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertNotEqual(rejected.returncode, 0)
 
@@ -339,7 +364,7 @@ class GrokWrapperTests(unittest.TestCase):
             prompt = temp / "prompt.md"
             prompt.write_text("Implement the bounded change.\n", encoding="utf-8")
             command = [
-                "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.6",
+                "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7",
                 "--mode", "write", "--cwd", str(temp), "--prompt-file", str(prompt),
                 "--log", str(temp / "run.log"), "--branch", "codex/wrong",
                 "--base-ref", "HEAD", "--ownership", "README.md",
@@ -356,7 +381,7 @@ class GrokWrapperTests(unittest.TestCase):
             fake.write_text(
                 "#!/usr/bin/env bash\n"
                 "if [[ $1 == --sandbox ]]; then shift 2; fi\n"
-                "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.6 (default)'; exit 0; fi\n"
+                "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)'; exit 0; fi\n"
                 "if [[ $1 == inspect ]]; then printf '%s\\n' '{\"grokVersion\":\"1.0.13\",\"cwd\":\"/tmp/not-the-worker\"}'; exit 0; fi\n"
                 "printf '%s\\n' done\n",
                 encoding="utf-8",
@@ -367,7 +392,7 @@ class GrokWrapperTests(unittest.TestCase):
             env = dict(os.environ)
             env["PATH"] = f"{temp}:/usr/bin:/bin"
             command = [
-                "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.6",
+                "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7",
                 "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt),
                 "--log", str(temp / "run.log"),
             ]
@@ -375,6 +400,16 @@ class GrokWrapperTests(unittest.TestCase):
             rejected = subprocess.run(command, cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertNotEqual(rejected.returncode, 0)
             self.assertIn("cwd mismatch", rejected.stderr)
+
+
+class ModelDefaultTests(unittest.TestCase):
+    ROOT = Path(__file__).resolve().parents[2]
+
+    def test_root_model_defaults_match_dispatch_policy(self) -> None:
+        data = json.loads((self.ROOT / "settings.json").read_text(encoding="utf-8"))
+        settings = {entry["key"]: entry["default"] for entry in data["settings"]}
+        self.assertEqual(settings["BOPEN_WORKER_MODEL"], "gpt-6-sol")
+        self.assertEqual(settings["BOPEN_ADVISOR_MODEL"], "claude-opus-5-5")
 
 
 if __name__ == "__main__":

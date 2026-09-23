@@ -96,7 +96,7 @@ npx @openai/codex-security scan . --mode deep --max-cost 20
 npx @openai/codex-security scan . --dry-run
 ```
 
-Scans default to `gpt-5.6-sol` at `xhigh` reasoning effort. `--model` and
+Scans default to `gpt-6-sol` at `xhigh` reasoning effort. `--model` and
 `--effort minimal|low|medium|high|xhigh` change that; drop the effort before you
 drop the model when trimming cost.
 

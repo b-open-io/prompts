@@ -73,7 +73,7 @@ npx @openai/codex-security scan <path> [flags]
 | `--diff REF` | Scan committed changes against a ref (e.g. `origin/main`) |
 | `--working-tree` | Scan staged and unstaged changes |
 | `--mode standard\|deep` | Deep repeats discovery to reduce variance; supports repository and path targets, not diffs |
-| `--model MODEL` | Default `gpt-5.6-sol`; e.g. `gpt-5.6-terra` |
+| `--model MODEL` | Default `gpt-6-sol`; e.g. `gpt-5.6-terra` |
 | `--effort minimal\|low\|medium\|high\|xhigh` | Default `xhigh` |
 | `--knowledge-base PATH` (repeatable) | Architecture docs, threat models, policies. Directories are searched recursively for Markdown, text, PDF, and `.docx` |
 | `--output-dir DIR` | Artifact directory; must be outside the scanned directory and any enclosing Git worktree |
@@ -122,7 +122,7 @@ configuration. Each scan starts a private runtime with these defaults:
 
 ```toml
 cli_auth_credentials_store = "file"
-model = "gpt-5.6-sol"
+model = "gpt-6-sol"
 model_reasoning_effort = "xhigh"
 
 [features]

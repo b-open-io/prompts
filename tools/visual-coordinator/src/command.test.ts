@@ -58,12 +58,14 @@ describe("visual coordinator command generation", () => {
   });
 
   it("forces reviewer nodes into a read-only boundary", () => {
-    const codex = generateNodeCommand(node("review", { role: "reviewer", provider: "external", lane: "codex", disclosure: "Approved" }), { hostHarness: "grok", nativeController: "grok" });
+    const codex = generateNodeCommand(node("review", { role: "reviewer", provider: "external", lane: "codex", model: "gpt-6-sol", effort: "xhigh", disclosure: "Approved" }), { hostHarness: "grok", nativeController: "grok" });
     expect(codex.readOnly).toBe(true);
     expect(codex.permissions).toBe("read-only");
     expect(codex.prompt).toContain("Do not edit files, run write-capable commands, or alter git state.");
     expect(codex.command).toContain("--sandbox");
     expect(codex.command).toContain("read-only");
+    expect(codex.command).toContain("gpt-6-sol");
+    expect(codex.command).toContain("model_reasoning_effort=xhigh");
     expect(codex.command).not.toContain("workspace-write");
 
     const opencode = generateNodeCommand(node("review-opencode", { role: "reviewer", provider: "external", lane: "opencode", disclosure: "Approved" }), { hostHarness: "grok", nativeController: "grok" });
@@ -96,7 +98,7 @@ describe("versioned export contract", () => {
   const environment = parseEnvironment({
     harness: "codex",
     lanes: { codex: "available", grok: "available" },
-    models: { codex: ["gpt-5.6-luna"], grok: ["grok-4.6"] },
+    models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] },
   });
 
   it("serializes metadata, actors, graph edges, and lifecycle from the live workflow", () => {
@@ -116,8 +118,8 @@ describe("versioned export contract", () => {
 
   it("emits exact shell-out records and omits an unapproved boundary", () => {
     const workflow = defaultWorkflow(environment);
-    workflow.nodes[1] = { ...workflow.nodes[1], lane: "grok", provider: "external", model: "grok-4.6", disclosure: "Approved external worker" };
-    workflow.nodes[2] = { ...workflow.nodes[2], lane: "grok", provider: "external", model: "grok-4.6", disclosure: "pending" };
+    workflow.nodes[1] = { ...workflow.nodes[1], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "Approved external worker" };
+    workflow.nodes[2] = { ...workflow.nodes[2], lane: "grok", provider: "external", model: "grok-4.7", disclosure: "pending" };
 
     const spec = serializeWorkflow(workflow, environment);
     expect(spec.nodes.find((node) => node.id === "build")).toMatchObject({ shell: true, nativeController: "codex", provider: "xai", disclosure: "Approved external worker" });
@@ -129,8 +131,8 @@ describe("versioned export contract", () => {
     expect(spec.edges.every((edge) => edge.from !== "review" && edge.to !== "review")).toBe(true);
   });
 
-  it("converts a detected native non-4.6 Grok model to an explicit shell-out", () => {
-    const grok = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.6", "ox-alpha"] } });
+  it("converts a detected native non-4.7 Grok model to an explicit shell-out", () => {
+    const grok = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] } });
     const workflow = defaultWorkflow(grok);
     workflow.nodes[0] = { ...workflow.nodes[0], model: "ox-alpha", disclosure: "Approved Grok CLI conversion" };
 

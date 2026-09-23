@@ -1,5 +1,12 @@
 # Lessons
 
+## Apply the latest model-policy correction everywhere (2026-09-23)
+
+When an operator corrects a model ID during a routing-policy change, treat the
+new ID as the only current default before editing, testing, or generating
+artifacts. Search active settings, worker guides, review defaults, templates,
+and generated outputs for both the superseded policy and the superseded ID.
+
 ## Finish by shipping (2026-09-05)
 
 The user expects completed changes to be validated, committed, pushed, and

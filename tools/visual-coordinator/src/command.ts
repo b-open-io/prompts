@@ -164,18 +164,18 @@ const externalCommand = (
   const repoArg = shellQuote(repo);
 
   if (lane === "codex") {
-    const args = ["codex", "exec", "--sandbox", readOnly ? "read-only" : "workspace-write", "--ask-for-approval", "never", "--cd", repo, "--model", model];
+    const args = ["codex", "exec", "--sandbox", readOnly ? "read-only" : "workspace-write", "--ask-for-approval", "never", "--cd", repo, "--model", model, "-c", `model_reasoning_effort=${node.effort}`];
     return { command: `printf '%s\\n' ${promptArg} | ${args.map(shellQuote).join(" ")}` };
   }
 
   if (lane === "claude") {
-    const args = ["claude", "--print", "--permission-mode", readOnly ? "plan" : "acceptEdits", "--model", model];
+    const args = ["claude", "--print", "--permission-mode", readOnly ? "plan" : "acceptEdits", "--model", model, "--effort", node.effort];
     if (readOnly) args.push("--tools", "Read,Grep,Glob");
     return { command: `cd ${repoArg} && printf '%s\\n' ${promptArg} | ${args.map(shellQuote).join(" ")}` };
   }
 
   if (lane === "grok") {
-    const args = ["grok", "--prompt-file", "/dev/stdin", "-m", model, "--permission-mode", readOnly ? "plan" : "acceptEdits", "--sandbox", "workspace", "--output-format", "plain", "--cwd", repo];
+    const args = ["grok", "--prompt-file", "/dev/stdin", "-m", model, "--reasoning-effort", node.effort, "--permission-mode", readOnly ? "plan" : "acceptEdits", "--sandbox", "workspace", "--output-format", "plain", "--cwd", repo];
     return { command: `printf '%s\\n' ${promptArg} | ${args.map(shellQuote).join(" ")}` };
   }
 
@@ -279,7 +279,7 @@ const rosterId = (environment: WorkflowEnvironment, node: WorkflowNode): string 
 const convertedGrokNode = (node: WorkflowNode, environment: WorkflowEnvironment): boolean =>
   node.provider === "native"
   && node.lane.toLowerCase() === "grok"
-  && node.model !== "grok-4.6"
+  && node.model !== "grok-4.7"
   && environment.lanes.grok?.models.includes(node.model) === true;
 
 const worktreePolicy = (workflow: Workflow) => {

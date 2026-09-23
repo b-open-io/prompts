@@ -35,7 +35,7 @@ opencode_bin=$(lane_status opencode)
 
 # --- Models actually offered, not models we assume ---------------------------
 # grok enumerates per authenticated account plus quoted [model."id"] blocks.
-# Lines look like "  * grok-4.6 (default)" and "  - gpt-5.6-sol".
+# Lines look like "  * grok-4.7 (default)" and "  - gpt-6-sol".
 grok_models=""
 if [[ "$grok_bin" == "available" ]]; then
   grok_models=$(grok models 2>/dev/null \
@@ -51,6 +51,9 @@ if [[ -f "$HOME/.grok/config.toml" ]]; then
     grok_models=$(printf '%s,%s' "$grok_models" "$extra" | tr ',' '\n' | awk 'NF && !seen[$0]++' | paste -sd, -)
   fi
 fi
+grok_models=$(printf '%s' "$grok_models" | tr ',' '\n' \
+  | awk 'NF && ($0 !~ /^grok-/ || $0 == "grok-4.7") && !seen[$0]++' \
+  | paste -sd, -)
 
 # Codex has no enumeration command. Its account-scoped model cache is the best
 # local source of truth, with the configured model kept first as a fallback.
@@ -88,12 +91,11 @@ rank_opencode_models() {
 import re, sys
 default = sys.argv[1]
 preferred = {
-    "muse-spark-1.3-contributor-free": 1,
+    "gpt-6-sol": 1,
     "gpt-5.6-luna": 2,
-    "grok-4.6": 3,
-    "gpt-5.6-sol": 4,
-    "gpt-5.6-terra": 5,
-    "claude-fable-5": 6,
+    "muse-spark-1.3-contributor-free": 3,
+    "gpt-5.6-terra": 4,
+    "grok-4.7": 5,
 }
 seen = set()
 models = []
@@ -344,7 +346,7 @@ cat <<JSON
     "opencode": "$opencode_bin"
   },
   "models": {
-    "claude": ["opus", "sonnet", "haiku", "fable", "inherit"],
+    "claude": ["claude-opus-5-5", "opus", "sonnet", "haiku", "inherit"],
     "claude_effort": ["low", "medium", "high", "xhigh", "max"],
     "grok": [${grok_models_json}],
     "grok_effort": ["none", "minimal", "low", "medium", "high", "xhigh"],

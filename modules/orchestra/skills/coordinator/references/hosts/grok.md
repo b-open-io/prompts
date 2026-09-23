@@ -4,11 +4,12 @@ Read this only when Grok Build is the current main session.
 
 ## Native agents
 
-Prefer roster agents on grok-4.6 for evidence, review, testing, and specialist
-judgment. Routine bounded implementation follows Coordinator's cheaper-worker
-default. Pass the named agent type; installed bOpen aliases may also resolve.
-Do not dispatch grok-4.5. Native agent model fields accept Grok-native slugs,
-not arbitrary custom model ids.
+Prefer roster agents on `grok-4.7` for evidence, testing, and specialist
+judgment when the current session is already on Grok. Routine bounded
+implementation follows Coordinator's preferred `gpt-6-sol` worker default,
+and code review uses that model at `xhigh`. Pass the named agent type;
+installed bOpen aliases may also resolve. Do not dispatch Grok 4.6. Native
+agent model fields accept Grok-native slugs, not arbitrary custom model ids.
 
 ## Native workflows
 
@@ -22,9 +23,9 @@ part of Orchestra. Save project workflows under .grok/workflows/ and smoke
 check with representative validation arguments before a real run. Worktree
 isolation does not merge results; the main reviews and integrates them.
 
-Custom ids shown by grok models work with grok --single, but not as native
-workflow agent model values. To use GPT-5.6 Sol inside a Grok workflow, wrap
-grok --single -m gpt-5.6-sol in a grok-4.6 supervisor after confirming the
+Custom ids shown by `grok models` work with `grok --single`, but not as native
+workflow agent model values. To use GPT-6 Sol inside a Grok workflow, wrap
+`grok --single -m gpt-6-sol` in a `grok-4.7` supervisor after confirming the
 quoted model entry. An unquoted dotted TOML key creates the wrong nested id.
 
 ## External workers
@@ -40,5 +41,5 @@ Load only the chosen guide:
 - [Muse Code](../workers/muse.md)
 - [OpenCode CLI](../workers/opencode.md)
 
-If a custom Sol id is absent from Grok, use the Codex CLI guide instead. Fable
-is an Advisor channel, not a native Grok model slug.
+If a custom Sol id is absent from Grok, use the Codex CLI guide instead. The
+default advisor is `claude-opus-5-5`, not a native Grok model slug.

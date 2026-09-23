@@ -1,7 +1,7 @@
 ---
 name: coordinator
-version: 0.0.19
-description: Route bounded implementation from a capable main session to cheaper workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Astra, Muse, Grok, OpenCode, or native workflows.
+version: 0.0.20
+description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Luna, Astra, Muse, Grok, OpenCode, or native workflows.
 ---
 
 # Coordinator
@@ -14,13 +14,13 @@ do not own git or silently change the plan.
 current main session
 ├── native specialists: evidence, review, testing, domain expertise
 ├── native worker-controllers: visible supervision in the host UI/workflow
-│   └── cheaper implementation workers: bounded code volume
+│   └── coding workers: bounded code volume
 └── optional advisor: read-only opinion at a commitment boundary
 ```
 
 Invoking Coordinator is itself a routing decision: spend the main model on
-judgment and route bounded implementation to the cheapest authorized worker
-without waiting for the user to say "cheap workers" or "model arbitrage."
+judgment and route bounded implementation to the preferred authorized coding
+worker without waiting for the user to say "workers" or "model arbitrage."
 
 For independent advice at a real decision boundary, use `advisor`; do not
 consult by default. For a fan-out larger than the available host slots, also
@@ -55,20 +55,20 @@ not load Grok, Codex, or Muse instructions.
 |---|---|
 | Plan, architecture, interfaces, and acceptance criteria | Main |
 | External-worker launch, monitoring, and complete report | Native worker-controller when supported |
-| Bounded implementation | Selected cheaper worker |
+| Bounded implementation | Selected coding worker |
 | Hard debugging analysis and visual judgment | Main, then dispatch the fix |
 | Diff review, final verification, commits, pushes, and PRs | Main |
 | One-line edits found during review | Main when dispatch overhead is larger |
 
-Use a worker only when it is materially cheaper or better for the bounded unit.
+Use a worker only when it is materially useful for the bounded unit.
 Every dispatch has a context, specification, and review cost. Split at coherent
 API or file-ownership boundaries, not into tiny tasks merely to create a graph.
 
 ## Select a lane
 
-Choose implementation lanes by economics first. Preserve a user-selected cheap
-lane; otherwise use the cheapest authorized, preflighted worker that can meet
-the acceptance criteria. A user may attach an expiry or another stop condition
+Default implementation to the authorized, preflighted `gpt-6-sol` lane.
+Preserve an explicit user-selected alternative lane. A user may attach an
+expiry or another stop condition
 to that preference. Record it, honor the override while it is active, then run
 normal lane selection again when it expires; do not bake a session-specific
 deadline into the reusable skill. If provider authorization or preference is
@@ -81,12 +81,15 @@ tool- or domain-bound judgment. Match that work against
 when no roster specialist fits. This native-first rule does not apply to routine
 implementation volume.
 
-External quality lanes are Grok, GPT-5.6 Sol, and GPT-6 Astra (3D / animation /
-gamification / creative implementation). GPT-5.6 Luna at extra-high reasoning
-and Muse Spark 1.3 are cheap-volume choices. OpenCode is a portable lane whose
-provider and model must be pinned. Prefer an already authorized, configured
-cheap lane over a quality lane when both can satisfy the spec. Never infer or
-replace the user's current main model.
+The preferred coding worker is GPT-6 Sol (`gpt-6-sol`). Use the same model at
+`xhigh` reasoning for independent code review. GPT-6 Astra remains a
+special-purpose 3D / animation / gamification / creative implementation lane;
+GPT-5.6 Luna and Muse Spark 1.3 remain explicit alternative lanes. OpenCode is
+a portable lane whose provider and model must be pinned. Grok is not a normal
+worker lane: use it only under usage-credit pressure, pin `grok-4.7`, and never
+use Grok 4.6. Never infer or replace the user's current main model. If the
+required default is unavailable, report that boundary instead of silently
+substituting a superseded model.
 
 If the work has deterministic stages, loops, or voting, use a native workflow
 only when the current host guide says the primitive exists and the user opted
@@ -100,7 +103,7 @@ worker-controller per independent implementation unit. Give it the spec and
 the selected worker guide; instruct it to preflight, launch, monitor, and report
 the external worker without writing the implementation itself. This keeps the
 cheap worker visible in the host's subagent panel and lets native workflows own
-its lifecycle. The wrapper is control plane; the cheaper model remains the
+its lifecycle. The wrapper is control plane; the selected model remains the
 implementation plane.
 
 Use direct external dispatch from the main only when the host has no usable

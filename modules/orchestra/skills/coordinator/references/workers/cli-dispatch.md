@@ -31,11 +31,19 @@ possible.
 
 Sol:
 
-    codex exec --sandbox workspace-write --cd <repo> -m gpt-5.6-sol \
+    codex exec --sandbox workspace-write --cd <repo> -m gpt-6-sol \
       -c model_reasoning_effort="high" \
       --json --output-last-message /tmp/dispatch-<id>-last.md \
       "<imperative; details in SPEC file>" \
       > /tmp/dispatch-<id>.log 2>&1 &
+
+Code review:
+
+    codex exec --sandbox read-only --cd <repo> -m gpt-6-sol \
+      -c model_reasoning_effort="xhigh" \
+      --json --output-last-message /tmp/review-<id>-last.md \
+      "<review brief; details in SPEC file>" \
+      > /tmp/review-<id>.log 2>&1 &
 
 Luna:
 
