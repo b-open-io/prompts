@@ -113,7 +113,7 @@ describe("workflow schema", () => {
     const environment = parseEnvironment({
       harness: "opencode",
       lanes: { opencode: "available" },
-      models: { opencode: [], opencode_effort: ["low", "medium", "high"] },
+      models: { opencode: [], opencode_effort: ["low", "medium", "high", "xhigh"] },
     });
     const workflow = defaultWorkflow(environment);
     workflow.nodes[0].lane = "opencode";
