@@ -228,6 +228,11 @@ manifests share the same release version.
   listed custom id with no resolvable entry fails closed. The GPT-5.6 target
   ban now also applies to the observed Grok main; only its Grok pin exemption
   remains.
+- A listed custom Grok id counts as resolved only when its `config.toml` entry
+  has both a model and a `base_url` host; otherwise validation rejects it and
+  the wrapper exits instead of dispatching to an unknown provider. The observed
+  main's pin exemption now covers only `grok-4.6`; other off-pin versions such
+  as `grok-4.5` or `grok-5.0` are rejected.
 
 ## [1.1.168] - Pending production promotion
 

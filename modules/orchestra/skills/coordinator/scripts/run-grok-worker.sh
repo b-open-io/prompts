@@ -109,6 +109,12 @@ esac
 if [[ "$alias_status" == 0 ]]; then
   alias_host=${alias_info%% *}
   alias_target=${alias_info#* }
+  if [[ -z "$alias_host" ]]; then
+    case "$model_policy" in
+      grok-*|*/grok-*) ;;
+      *) echo "custom model $model has no base_url in $alias_config, so its provider cannot be verified" >&2; exit 2 ;;
+    esac
+  fi
   # An entry without `model` serves its own id, the same rule the detector reports.
   alias_effective=${alias_target:-$model_policy}
   case "$alias_effective" in

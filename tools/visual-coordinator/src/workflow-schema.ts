@@ -213,6 +213,8 @@ function isSuperseded(model: string) { return /(?:^|\/)gpt-5\.6(?:$|-)/i.test(mo
 // Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
 export const isGrokFamily = (model: string) => /(?:^|\/)grok-/i.test(model);
 const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
+// The only out-of-policy Grok version an observed main may keep is the legacy grok-4.6 session.
+const isObservedLegacyGrok = (model: string) => /(?:^|\/)grok-4\.6$/i.test(model);
 const isOpus = (model: string) => /(?:^|\/)(?:claude-)?opus(?:$|[-.:@\d])/i.test(model);
 const isClaudeFamily = (model: string) => /(?:^|\/)(?:anthropic\/|(?:claude|opus|sonnet|haiku)(?:$|[-.:@\d]))/i.test(model);
 
@@ -463,10 +465,13 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
       && (environment.grokModelProviders[model] === "xai" || (aliasTarget !== undefined && isGrokFamily(aliasTarget)));
     const grokBacked = isGrokFamily(model) || xaiAlias;
     if (effectiveModel !== model && isSuperseded(effectiveModel)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, an alias for ${effectiveModel}; coding uses GPT-6 models only (${SOL}).` });
-    if (grokBacked && !isApprovedGrok(effectiveModel) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: isGrokFamily(model) && effectiveModel === model
+    const observedLegacyGrokMain = observedMainModel && isObservedLegacyGrok(effectiveModel);
+    if (grokBacked && !isApprovedGrok(effectiveModel) && !observedLegacyGrokMain) issues.push({ scope: "node", id: node.id, message: isGrokFamily(model) && effectiveModel === model
       ? `${node.title} uses ${model}; Grok is pinned to grok-4.7.`
       : `${node.title} uses ${model}, an xAI alias for ${aliasTarget && aliasTarget !== model ? aliasTarget : "an unreported model"}; Grok is pinned to grok-4.7.` });
-    if (node.lane === "grok" && model !== "" && !isGrokFamily(model) && aliasTarget === undefined) issues.push({ scope: "node", id: node.id, message: `${node.title} uses custom id ${model}, but detect-harness.sh could not resolve its config.toml entry; re-run it before planning.` });
+    // A custom id is resolved only when its entry names both the model and a base_url host, so the
+    // export can say where content goes; anything less is refused rather than shipped as "unknown".
+    if (node.lane === "grok" && model !== "" && !isGrokFamily(model) && (aliasTarget === undefined || environment.grokModelProviders[model] === undefined)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses custom id ${model}, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.` });
     if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
     // A Grok host's own main session is an observed fact, not a dispatch; every other Grok use needs pressure.
     const observedGrokMain = node.id === mainId && environment.hostLane === "grok";
@@ -483,7 +488,7 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
         && node.provider === "native"
         && node.lane === "grok";
       if (lane.availability !== "available") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
-      if (lane.inventory === "complete" && !lane.models.includes(model) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
+      if (lane.inventory === "complete" && !lane.models.includes(model) && !(observedMainModel && (node.lane !== "grok" || observedLegacyGrokMain))) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
       // The wrapper's preflight dispatches only ids its fresh `grok models` listing shows, so every Grok
       // dispatch needs that listing as evidence; an unlisted or fallback-only id is never Ready.
       if (node.lane === "grok" && node.id !== mainId && lane.inventory !== "complete" && !(lane.detected && lane.models.includes(model))) {

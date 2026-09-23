@@ -213,15 +213,18 @@ stays empty and fails validation. Other hosts without a reported default use
 their first native host-lane coordinator. A Coordinate card edited away from
 the observed default is a dispatch: on the Grok lane it becomes a disclosed
 wrapper shell-out that needs credit pressure. The observed main alone keeps the
-model the detector saw, even `grok-4.6`; every dispatch, edited card, and
-inventory choice stays pinned to `grok-4.7`. Every other native Grok-lane node
+model the detector saw only when that is `grok-4.6` (or an alias resolving to
+it); every other version, dispatch, edited card, and inventory choice stays
+pinned to `grok-4.7`. Every other native Grok-lane node
 converts to a shell-out whether or not its model is listed, and a Grok dispatch
 is never Ready unless the detector's `grok models` listing shows its model. A
 custom alias served by xAI, or pointing at a Grok model (`grok_model_targets`),
 is held to the same credit gate and `grok-4.7` pin as a `grok-*` id, checked
 against the model it points at; an alias for a `gpt-5.6` model is rejected,
 observed main included. The detector parses `config.toml` as real TOML, and a
-listed custom id whose entry it could not resolve is refused. The canvas's
+listed custom id is refused unless its entry names both a model and a
+`base_url` host. The observed main's pin exemption covers only a resolved
+`grok-4.6`; any other off-pin Grok version is rejected like a dispatch. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.
 
