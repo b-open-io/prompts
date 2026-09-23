@@ -142,6 +142,10 @@ manifests share the same release version.
   the first lane that offers it instead of the host's model; with no such lane
   it stays on Codex and fails validation. Validation also rejects any Claude
   model or Claude lane as a coding worker.
+- Claude and Grok detection now match provider-nested ids such as
+  `openrouter/anthropic/claude-sonnet-4.5` and `openrouter/x-ai/grok-4.6`.
+  OpenCode worker defaults never pick a Claude id, so a Claude-only OpenCode
+  inventory leaves the worker unstaffed and fails validation.
 
 ## [1.1.168] - Pending production promotion
 

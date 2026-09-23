@@ -180,10 +180,11 @@ export const defaultEnvironment = (): WorkflowEnvironment => parseEnvironment(un
 export const SOL = "gpt-6-sol";
 const isSol = (model: string) => model === SOL || model.endsWith(`/${SOL}`);
 const isSuperseded = (model: string) => /(?:^|\/)gpt-5\.6-sol$/i.test(model);
-const isGrokFamily = (model: string) => /^(?:xai\/)?grok-/i.test(model);
-const isApprovedGrok = (model: string) => /^(?:xai\/)?grok-4\.7$/i.test(model);
-const isOpus = (model: string) => /(?:^|\/)(?:claude-)?opus(?:$|-)/i.test(model);
-const isClaudeFamily = (model: string) => /^(?:anthropic\/)?(?:claude|opus|sonnet|haiku)(?:$|-)/i.test(model);
+// Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
+const isGrokFamily = (model: string) => /(?:^|\/)grok-/i.test(model);
+const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
+const isOpus = (model: string) => /(?:^|\/)(?:claude-)?opus(?:$|[-.:@\d])/i.test(model);
+const isClaudeFamily = (model: string) => /(?:^|\/)(?:anthropic\/|(?:claude|opus|sonnet|haiku)(?:$|[-.:@\d]))/i.test(model);
 
 const preferredLane = (environment: WorkflowEnvironment): WorkflowLane => environment.hostLane ?? "codex";
 const laneModels = (environment: WorkflowEnvironment, lane: WorkflowLane): string[] => environment.lanes[lane]?.models ?? fallbackModels[lane] ?? [];
@@ -215,7 +216,7 @@ export const modelFor = (environment: WorkflowEnvironment, lane: WorkflowLane, r
   if (role === "coordinator") return mainModel(environment, lane);
   const models = laneModels(environment, lane);
   return models.find(isSol)
-    ?? models.find((model) => !isSuperseded(model) && !isOpus(model) && model !== "inherit" && (!isGrokFamily(model) || (environment.creditPressure && isApprovedGrok(model))))
+    ?? models.find((model) => !isSuperseded(model) && !isClaudeFamily(model) && model !== "inherit" && (!isGrokFamily(model) || (environment.creditPressure && isApprovedGrok(model))))
     ?? "";
 };
 

@@ -298,6 +298,53 @@ describe("workflow schema", () => {
     });
   });
 
+  describe("provider-nested model ids on OpenCode", () => {
+    const nestedClaude = ["openrouter/anthropic/claude-sonnet-4.5", "anthropic/claude-opus-4", "openrouter/anthropic/claude-haiku-4"];
+    const opencodeHost = (models: string[]) => parseEnvironment({
+      harness: "opencode",
+      lanes: { opencode: "available", codex: "unavailable", grok: "unavailable", claude: "unavailable" },
+      models: { opencode: models, opencode_effort: ["medium", "high", "xhigh"] },
+    });
+
+    it("never staffs a nested Claude id on a bare OpenCode builder or reviewer", () => {
+      const environment = opencodeHost([...nestedClaude, "openrouter/openai/gpt-6-sol"]);
+      const workflow = parseSeed({ nodes: [{ id: "build", role: "builder", lane: "opencode" }, { id: "review", role: "reviewer", lane: "opencode" }], edges: [] }, environment);
+
+      expect(workflow.nodes.map((node) => node.model)).toEqual(["openrouter/openai/gpt-6-sol", "openrouter/openai/gpt-6-sol"]);
+      expect(defaultWorkflow(environment).nodes.slice(1).map((node) => node.model)).toEqual(["openrouter/openai/gpt-6-sol", "openrouter/openai/gpt-6-sol"]);
+      expect(validateWorkflow(workflow, environment)).toEqual([]);
+    });
+
+    it("fails closed when OpenCode offers only nested Claude ids", () => {
+      const environment = opencodeHost(nestedClaude);
+      const workflow = parseSeed({ nodes: [{ id: "build", role: "builder", lane: "opencode" }], edges: [] }, environment);
+      const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
+
+      expect(workflow.nodes[0].model).toBe("");
+      expect(messages).toContain("build needs a model.");
+    });
+
+    it("rejects explicit nested Claude and Grok ids on coding workers and reviewers", () => {
+      const environment = opencodeHost([...nestedClaude, "openrouter/x-ai/grok-4.6", "openrouter/openai/gpt-6-sol"]);
+      const workflow = parseSeed({
+        nodes: [
+          { id: "sonnet", role: "builder", lane: "opencode", model: "openrouter/anthropic/claude-sonnet-4.5" },
+          { id: "opus", role: "builder", lane: "opencode", model: "anthropic/claude-opus-4" },
+          { id: "grok", role: "builder", lane: "opencode", model: "openrouter/x-ai/grok-4.6" },
+          { id: "review", role: "reviewer", lane: "opencode", model: "openrouter/anthropic/claude-haiku-4" },
+        ],
+        edges: [],
+      }, environment);
+      const messages = validateWorkflow(workflow, environment).map((issue) => issue.message);
+
+      expect(messages).toContain("sonnet uses Claude (openrouter/anthropic/claude-sonnet-4.5), which is not a coding worker; use gpt-6-sol.");
+      expect(messages).toContain("opus uses Claude Opus, which is the advisor, not a coding worker; use gpt-6-sol.");
+      expect(messages).toContain("grok uses openrouter/x-ai/grok-4.6; Grok is pinned to grok-4.7.");
+      expect(messages).toContain("grok uses Grok without usage-credit pressure; route it to gpt-6-sol.");
+      expect(messages).toContain("review must review on gpt-6-sol at xhigh.");
+    });
+  });
+
   it("sanitizes node ids before using them in generated worktree metadata", () => {
     const workflow = parseSeed({
       nodes: [{ id: "../../escape", title: "Unsafe" }, { id: "../../escape", title: "Collision" }],
