@@ -214,7 +214,9 @@ their first native host-lane coordinator. A Coordinate card edited away from
 the observed default is a dispatch: on the Grok lane it becomes a disclosed
 wrapper shell-out that needs credit pressure. The observed main alone keeps the
 model the detector saw, even `grok-4.6`; every dispatch, edited card, and
-inventory choice stays pinned to `grok-4.7`. The canvas's
+inventory choice stays pinned to `grok-4.7`. Every other native Grok-lane node
+converts to a shell-out whether or not its model is listed, and a Grok dispatch
+is never Ready unless the detector's `grok models` listing shows its model. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.
 

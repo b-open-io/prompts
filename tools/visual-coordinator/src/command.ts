@@ -303,10 +303,8 @@ const rosterId = (environment: WorkflowEnvironment, node: WorkflowNode): string 
 
 // Every native Grok-lane node except the observed main session becomes a wrapper shell-out,
 // grok-4.7 included, so the credit gate and model pin are enforced when it runs.
-const convertedGrokNode = (node: WorkflowNode, environment: WorkflowEnvironment): boolean =>
-  node.provider === "native"
-  && node.lane.toLowerCase() === "grok"
-  && environment.lanes.grok?.models.includes(node.model) === true;
+const convertedGrokNode = (node: WorkflowNode): boolean =>
+  node.provider === "native" && node.lane.toLowerCase() === "grok";
 
 const worktreePolicy = (workflow: Workflow) => {
   const first = workflow.nodes.find((node) => node.worktree)?.worktree;
@@ -340,7 +338,7 @@ const planDispatch = (workflow: Workflow, environment: WorkflowEnvironment, opti
   };
   const mainId = mainNodeId(workflow, environment);
   const nodes: NodeDispatch[] = workflow.nodes.map((original) => {
-    const converted = original.id !== mainId && convertedGrokNode(original, environment);
+    const converted = original.id !== mainId && convertedGrokNode(original);
     const generated = generateNodeCommand(converted ? { ...original, provider: "external" } : original, dispatchOptions);
     const lane = environment.lanes[original.lane];
     const blocked = lane && lane.availability !== "available"

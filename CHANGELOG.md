@@ -214,6 +214,10 @@ manifests share the same release version.
   non-negated raw `grok --single`/`-m`/`-p`/`--prompt-file` line across
   orchestra skills and agents. The inspector lists the observed main's model
   (such as `grok-4.6`) instead of warning that it was not detected.
+- Every non-main native Grok-lane node converts to a wrapper shell-out even when
+  its model is not in the inventory, and validation requires the detector's
+  `grok models` listing to show a Grok dispatch's model, so an unlisted custom id
+  on a Grok host can no longer export as a native-agent maker.
 
 ## [1.1.168] - Pending production promotion
 

@@ -462,10 +462,14 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     else {
       const detectedGrokShellOut = node.id !== mainId
         && node.provider === "native"
-        && node.lane === "grok"
-        && lane.models.includes(model);
+        && node.lane === "grok";
       if (lane.availability !== "available") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
       if (lane.inventory === "complete" && !lane.models.includes(model) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
+      // The wrapper's preflight dispatches only ids its fresh `grok models` listing shows, so every Grok
+      // dispatch needs that listing as evidence; an unlisted or fallback-only id is never Ready.
+      if (node.lane === "grok" && node.id !== mainId && lane.inventory !== "complete" && !(lane.detected && lane.models.includes(model))) {
+        issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model || "no model"} on the Grok lane, but the detector's grok models listing does not show it; re-run detect-harness.sh or choose a listed model.` });
+      }
       if (lane.efforts.length > 0 && !lane.efforts.includes(node.effort)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses an effort unavailable on ${lane.label}: ${node.effort}.` });
       if (node.provider === "native" && environment.hostLane !== node.lane) issues.push({ scope: "node", id: node.id, message: `${node.title} marks ${lane.label} as native, but the current host is ${environment.hostLane ?? "unknown"}.` });
       if (node.provider === "native" && !observedMainModel && !detectedGrokShellOut && looksLikeForeignNativeModel(node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} pairs a native ${lane.label} lane with a foreign model: ${model}.` });

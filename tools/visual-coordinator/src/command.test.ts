@@ -359,6 +359,38 @@ describe("versioned export contract", () => {
     expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "second", reason: expect.stringContaining("pinned to grok-4.7") }));
   });
 
+  it("never exports an unlisted Grok-host model as a native-agent dispatch", () => {
+    const empty = (extra: Record<string, unknown> = {}) => parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available" },
+      models: { grok: [] },
+      ...extra,
+    });
+    const custom = (environment: ReturnType<typeof empty>, changes: Partial<WorkflowNode> = {}) => {
+      const workflow = defaultWorkflow(environment);
+      workflow.nodes = [{ ...workflow.nodes[0], model: "ox-alpha", provider: "native", ...changes }];
+      workflow.edges = [];
+      return workflow;
+    };
+
+    const bare = empty();
+    const workflow = custom(bare);
+    const messages = validateWorkflow(workflow, bare).map((issue) => issue.message);
+    expect(messages).toContain("Coordinate uses ox-alpha on the Grok lane, but the detector's grok models listing does not show it; re-run detect-harness.sh or choose a listed model.");
+    expect(messages).toContain("Coordinate needs an approved external-provider disclosure for this Grok CLI shell-out.");
+    expect(dispatchIssues(workflow, bare)).toContainEqual(expect.objectContaining({ id: "coordinate" }));
+    expect(serializeWorkflow(workflow, bare).nodes).toEqual([]);
+
+    const ready = empty({ credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
+    const disclosed = custom(ready, { disclosure: "Approved Grok CLI dispatch" });
+    expect(validateWorkflow(disclosed, ready).map((issue) => issue.message)).toContain(
+      "Coordinate uses ox-alpha on the Grok lane, but the detector's grok models listing does not show it; re-run detect-harness.sh or choose a listed model.",
+    );
+    const spec = serializeWorkflow(disclosed, ready);
+    expect(spec.nodes).toEqual([]);
+    expect(spec.nodes.some((node) => node.execution === "native-agent")).toBe(false);
+  });
+
   it("withholds Grok shell-outs until the detector confirms a Grok auth lane", () => {
     const unconfirmed = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "token" });
     expect(unconfirmed.grokAuth).toBeNull();
