@@ -223,6 +223,11 @@ manifests share the same release version.
   detector now reports as `grok_model_targets`; aliases for `gpt-5.6` models are
   rejected. `run-grok-worker.sh` reads the same `config.toml` entry at run time
   and applies the same rules case-insensitively.
+- The detector and wrapper parse Grok `config.toml` with a real TOML parser,
+  so single-quoted entries get the same alias rules; an unparseable file or a
+  listed custom id with no resolvable entry fails closed. The GPT-5.6 target
+  ban now also applies to the observed Grok main; only its Grok pin exemption
+  remains.
 
 ## [1.1.168] - Pending production promotion
 

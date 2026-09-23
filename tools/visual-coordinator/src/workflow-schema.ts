@@ -453,15 +453,20 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     // The single observed native main keeps the model the detector saw it running, even an
     // out-of-policy Grok id; every dispatch, edit, and inventory choice stays pinned.
     const observedMainModel = node.id === mainId && model !== "" && model === environment.mainModels[node.lane];
-    // A custom Grok-CLI alias whose base_url is xAI is a Grok model in disguise: it gets the same pin
-    // (checked against the model it points at) and credit gate as a grok-* id.
-    const aliasTarget = node.lane === "grok" && !isGrokFamily(model) ? environment.grokModelTargets[model] : undefined;
+    // A Grok-CLI id is judged by the model its config.toml entry points at (grok_model_targets). An alias
+    // served by xAI, or aimed at a Grok model, gets the Grok pin and credit gate; one aimed at a GPT-5.6
+    // model is always rejected, observed main included. A custom id the detector could not resolve is
+    // refused rather than trusted.
+    const aliasTarget = node.lane === "grok" ? environment.grokModelTargets[model] : undefined;
+    const effectiveModel = aliasTarget ?? model;
     const xaiAlias = node.lane === "grok" && !isGrokFamily(model)
       && (environment.grokModelProviders[model] === "xai" || (aliasTarget !== undefined && isGrokFamily(aliasTarget)));
     const grokBacked = isGrokFamily(model) || xaiAlias;
-    if (aliasTarget && isSuperseded(aliasTarget) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, an alias for ${aliasTarget}; coding uses GPT-6 models only (${SOL}).` });
-    if (isGrokFamily(model) && !isApprovedGrok(model) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; Grok is pinned to grok-4.7.` });
-    if (xaiAlias && !(aliasTarget && isApprovedGrok(aliasTarget)) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, an xAI alias for ${aliasTarget ?? "an unreported model"}; Grok is pinned to grok-4.7.` });
+    if (effectiveModel !== model && isSuperseded(effectiveModel)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, an alias for ${effectiveModel}; coding uses GPT-6 models only (${SOL}).` });
+    if (grokBacked && !isApprovedGrok(effectiveModel) && !observedMainModel) issues.push({ scope: "node", id: node.id, message: isGrokFamily(model) && effectiveModel === model
+      ? `${node.title} uses ${model}; Grok is pinned to grok-4.7.`
+      : `${node.title} uses ${model}, an xAI alias for ${aliasTarget && aliasTarget !== model ? aliasTarget : "an unreported model"}; Grok is pinned to grok-4.7.` });
+    if (node.lane === "grok" && model !== "" && !isGrokFamily(model) && aliasTarget === undefined) issues.push({ scope: "node", id: node.id, message: `${node.title} uses custom id ${model}, but detect-harness.sh could not resolve its config.toml entry; re-run it before planning.` });
     if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
     // A Grok host's own main session is an observed fact, not a dispatch; every other Grok use needs pressure.
     const observedGrokMain = node.id === mainId && environment.hostLane === "grok";

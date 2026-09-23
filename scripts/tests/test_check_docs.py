@@ -253,6 +253,27 @@ class VisualWorkflowContractTests(unittest.TestCase):
         )
         self.assertEqual(detected["grok_model_providers"], {"gpt-6-sol": "openai"})
 
+    def test_detector_parses_single_quoted_toml_like_double_quoted(self) -> None:
+        listing = "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)' '  - ox-alpha' '  - gpt-6-sol'; fi\n"
+        config = (
+            '[model."ox-alpha"]\nmodel = "grok-4.6"\nbase_url = "https://api.x.ai/v1"\n\n'
+            '[model."gpt-6-sol"]\nmodel = "gpt-6-sol"\nbase_url = "https://api.openai.com/v1"\n'
+        )
+        double = self._detect_grok(listing, config=config)
+        single = self._detect_grok(listing, config=config.replace('"', "'"))
+        for detected in (double, single):
+            self.assertEqual(detected["grok_model_providers"], {"ox-alpha": "xai", "gpt-6-sol": "openai"})
+            self.assertEqual(detected["grok_model_targets"], {"ox-alpha": "grok-4.6", "gpt-6-sol": "gpt-6-sol"})
+
+    def test_detector_resolves_nothing_from_unparseable_toml(self) -> None:
+        detected = self._detect_grok(
+            "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)' '  - ox-alpha'; fi\n",
+            config='[model."ox-alpha"\nmodel = grok-4.6\n',
+        )
+        self.assertEqual(detected["models"]["grok"], ["grok-4.7", "ox-alpha"])
+        self.assertEqual(detected["grok_model_providers"], {})
+        self.assertEqual(detected["grok_model_targets"], {})
+
     def test_detector_reports_custom_grok_alias_targets(self) -> None:
         detected = self._detect_grok(
             "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)' '  - ox-alpha'; fi\n",
@@ -499,19 +520,50 @@ class GrokWrapperTests(unittest.TestCase):
                     self.assertEqual(rejected.returncode, 2, rejected.stderr)
                     self.assertRegex(rejected.stderr, "GPT-6 models only|pinned to grok-4.7")
 
+    ALIAS_CONFIG = (
+        '[model."ox-alpha"]\nmodel = "grok-4.7"\nbase_url = "https://api.x.ai/v1"\n\n'
+        '[model."ox-old"]\nmodel = "grok-4.6"\nbase_url = "https://api.x.ai/v1"\n\n'
+        '[model."ox-blank"]\nbase_url = "https://api.x.ai/v1"\n\n'
+        '[model."or-grok"]\nmodel = "x-ai/grok-4.6"\nbase_url = "https://openrouter.ai/api/v1"\n\n'
+        '[model."or-luna"]\nmodel = "gpt-5.6-luna"\nbase_url = "https://api.openai.com/v1"\n\n'
+        '[model."gpt-6-sol"]\nmodel = "gpt-6-sol"\nbase_url = "https://api.openai.com/v1"\n'
+    )
+
     def test_wrapper_applies_grok_rules_to_custom_aliases(self) -> None:
+        for quote in ('"', "'"):
+            with self.subTest(quote=quote):
+                self._check_alias_rules(self.ALIAS_CONFIG.replace('"', quote))
+
+    def test_wrapper_fails_closed_on_unparseable_or_missing_alias_entries(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             temp = Path(directory)
             (temp / ".grok").mkdir()
-            (temp / ".grok" / "config.toml").write_text(
-                '[model."ox-alpha"]\nmodel = "grok-4.7"\nbase_url = "https://api.x.ai/v1"\n\n'
-                '[model."ox-old"]\nmodel = "grok-4.6"\nbase_url = "https://api.x.ai/v1"\n\n'
-                '[model."ox-blank"]\nbase_url = "https://api.x.ai/v1"\n\n'
-                '[model."or-grok"]\nmodel = "x-ai/grok-4.6"\nbase_url = "https://openrouter.ai/api/v1"\n\n'
-                '[model."or-luna"]\nmodel = "gpt-5.6-luna"\nbase_url = "https://api.openai.com/v1"\n\n'
-                '[model."gpt-6-sol"]\nmodel = "gpt-6-sol"\nbase_url = "https://api.openai.com/v1"\n',
-                encoding="utf-8",
-            )
+            config = temp / ".grok" / "config.toml"
+            prompt = temp / "prompt.md"
+            prompt.write_text("Research only.\n", encoding="utf-8")
+            env = {key: value for key, value in os.environ.items() if key not in {"BOPEN_USAGE_CREDIT_PRESSURE", "GROK_HOME"}}
+            env.update({"HOME": str(temp), "PATH": "/usr/bin:/bin"})
+            base = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(temp / "run.log")]
+            config.write_text('[model."ox-alpha"\nmodel = grok-4.7\n', encoding="utf-8")
+            broken = subprocess.run(base + ["--model", "ox-alpha", "--credit-pressure"], cwd=self.ROOT, env=env, capture_output=True, text=True)
+            self.assertEqual(broken.returncode, 2, broken.stderr)
+            self.assertIn("could not parse", broken.stderr)
+            config.write_text('[model."gpt-6-sol"]\nmodel = "gpt-6-sol"\n', encoding="utf-8")
+            missing = subprocess.run(base + ["--model", "ox-alpha", "--credit-pressure"], cwd=self.ROOT, env=env, capture_output=True, text=True)
+            self.assertEqual(missing.returncode, 2, missing.stderr)
+            self.assertIn("no resolvable [model] entry", missing.stderr)
+            config.unlink()
+            absent = subprocess.run(base + ["--model", "gpt-6-sol"], cwd=self.ROOT, env=env, capture_output=True, text=True)
+            self.assertEqual(absent.returncode, 2, absent.stderr)
+            builtin = subprocess.run(base + ["--model", "grok-4.7", "--credit-pressure"], cwd=self.ROOT, env=env, capture_output=True, text=True)
+            self.assertEqual(builtin.returncode, 1, builtin.stderr)
+            self.assertIn("grok is not installed", builtin.stderr)
+
+    def _check_alias_rules(self, config_text: str) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temp = Path(directory)
+            (temp / ".grok").mkdir()
+            (temp / ".grok" / "config.toml").write_text(config_text, encoding="utf-8")
             prompt = temp / "prompt.md"
             prompt.write_text("Research only.\n", encoding="utf-8")
             env = {key: value for key, value in os.environ.items() if key not in {"BOPEN_USAGE_CREDIT_PRESSURE", "GROK_HOME"}}

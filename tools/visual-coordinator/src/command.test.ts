@@ -228,7 +228,7 @@ describe("versioned export contract", () => {
   });
 
   it("keeps the Grok host main native and main-controller when a custom Grok coordinator comes first", () => {
-    const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
+    const grokHost = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(grokHost);
     const main = workflow.nodes[0];
     workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
@@ -243,7 +243,7 @@ describe("versioned export contract", () => {
   });
 
   it("exports a Grok host main on its configured default as native main-controller", () => {
-    const grokHost = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "gpt-6-sol" } });
+    const grokHost = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "gpt-6-sol" } });
     const workflow = defaultWorkflow(grokHost);
     workflow.nodes = [workflow.nodes[0]];
     workflow.edges = [];
@@ -254,7 +254,7 @@ describe("versioned export contract", () => {
   });
 
   it("never treats an edited Coordinate model as the pressure-free Grok main", () => {
-    const detected = (extra: Record<string, unknown> = {}) => parseEnvironment({
+    const detected = (extra: Record<string, unknown> = {}) => parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" },
       harness: "grok",
       lanes: { grok: "available" },
       models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "gpt-6-sol" },
@@ -288,7 +288,7 @@ describe("versioned export contract", () => {
   });
 
   it("gates Ready and Copy on the converted dispatch the export would emit", () => {
-    const unconfirmed = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
+    const unconfirmed = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
     const workflow = defaultWorkflow(unconfirmed);
     const main = workflow.nodes[0];
     workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
@@ -319,7 +319,7 @@ describe("versioned export contract", () => {
   });
 
   it("labels a custom GPT-6 Sol on the Grok CLI by its real provider, never xAI", () => {
-    const grokHost = (extra: Record<string, unknown> = {}) => parseEnvironment({
+    const grokHost = (extra: Record<string, unknown> = {}) => parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" },
       harness: "grok",
       lanes: { grok: "available" },
       models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "grok-4.7" },
@@ -436,6 +436,46 @@ describe("versioned export contract", () => {
     expect(validateWorkflow({ title: "t", nodes: [main], edges: [] }, observed)).toEqual([]);
   });
 
+  it("rejects an observed main whose alias points at a GPT-5.6 model", () => {
+    const observed = parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available" },
+      models: { grok: ["grok-4.7", "ox-luna"], grok_default: "ox-luna" },
+      grok_model_providers: { "ox-luna": "openai" },
+      grok_model_targets: { "ox-luna": "gpt-5.6-luna" },
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+    });
+    const workflow = defaultWorkflow(observed);
+    workflow.nodes = [workflow.nodes[0]];
+    workflow.edges = [];
+
+    expect(workflow.nodes[0]).toMatchObject({ model: "ox-luna", provider: "native" });
+    expect(validateWorkflow(workflow, observed).map((issue) => issue.message)).toContain(
+      "Coordinate uses ox-luna, an alias for gpt-5.6-luna; coding uses GPT-6 models only (gpt-6-sol).",
+    );
+    expect(serializeWorkflow(workflow, observed).nodes).toEqual([]);
+  });
+
+  it("refuses a listed custom Grok id whose config entry the detector could not resolve", () => {
+    const unresolved = parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available" },
+      models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" },
+      credit_pressure: true,
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+    });
+    const workflow = defaultWorkflow(unresolved);
+    workflow.nodes = [workflow.nodes[0], { ...workflow.nodes[1], lane: "grok", provider: "external", model: "ox-alpha", disclosure: "Approved" }];
+    workflow.edges = [];
+
+    expect(validateWorkflow(workflow, unresolved).map((issue) => issue.message)).toContain(
+      "Build uses custom id ox-alpha, but detect-harness.sh could not resolve its config.toml entry; re-run it before planning.",
+    );
+    expect(serializeWorkflow(workflow, unresolved).nodes.map((node) => node.id)).toEqual(["coordinate"]);
+  });
+
   it("withholds Grok shell-outs until the detector confirms a Grok auth lane", () => {
     const unconfirmed = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "token" });
     expect(unconfirmed.grokAuth).toBeNull();
@@ -448,7 +488,7 @@ describe("versioned export contract", () => {
   });
 
   it("converts a detected native non-4.7 Grok model to an explicit shell-out", () => {
-    const grok = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
+    const grok = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(grok);
     workflow.nodes[0] = { ...workflow.nodes[0], model: "ox-alpha", disclosure: "Approved Grok CLI conversion" };
 

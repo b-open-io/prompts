@@ -61,42 +61,61 @@ case "$model_policy" in
     ((credit_pressure)) || { echo "$model is a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
   grok-*|*/grok-*) echo "model $model is not allowed; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
 esac
-# A custom id is judged by its config.toml entry too: an alias served by xAI, or pointing at a Grok
-# or GPT-5.6 model, gets the same pin, credit gate, and GPT-6-only rule as the bare id would.
+# A custom id is judged by its config.toml entry too (parsed as real TOML, so either quote style):
+# an alias served by xAI, or pointing at a Grok or GPT-5.6 model, gets the same pin, credit gate, and
+# GPT-6-only rule as the bare id would. A non-Grok id with no resolvable entry is refused.
 alias_config="${GROK_HOME:-$HOME/.grok}/config.toml"
+alias_info=""
+alias_status=4
 if [[ -f "$alias_config" ]]; then
+  set +e
   alias_info=$(python3 - "$alias_config" "$model_policy" <<'PY_ALIAS'
-import re, sys
+import sys
 from urllib.parse import urlparse
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:
+        sys.exit(3)
 path, wanted = sys.argv[1], sys.argv[2]
-current, host, target = None, "", ""
-for raw in open(path, encoding="utf-8"):
-    line = raw.strip()
-    table = re.match(r'^\[model\."([^"]+)"\]$', line)
-    if table:
-        current = table.group(1).lower()
-        continue
-    if line.startswith("["):
-        current = None
-        continue
-    if current != wanted:
-        continue
-    url = re.match(r'^base_url\s*=\s*"([^"]*)"', line)
-    if url:
-        host = (urlparse(url.group(1)).hostname or "").lower()
-    alias = re.match(r'^model\s*=\s*"([^"]*)"', line)
-    if alias:
-        target = alias.group(1).lower()
-print(f"{host} {target}")
+try:
+    with open(path, "rb") as handle:
+        tables = tomllib.load(handle).get("model", {})
+except (OSError, ValueError):
+    sys.exit(3)
+entry = next((value for key, value in tables.items() if isinstance(value, dict) and key.lower() == wanted), None) if isinstance(tables, dict) else None
+if entry is None:
+    sys.exit(4)
+base_url = entry.get("base_url")
+host = (urlparse(base_url).hostname or "").lower() if isinstance(base_url, str) else ""
+target = entry.get("model")
+print(f"{host} {target.lower() if isinstance(target, str) else ''}")
 PY_ALIAS
-) || { echo "could not read $alias_config to check $model" >&2; exit 2; }
+)
+  alias_status=$?
+  set -e
+fi
+case "$alias_status" in
+  0) ;;
+  3) echo "could not parse $alias_config as TOML to check $model" >&2; exit 2 ;;
+  *)
+    case "$model_policy" in
+      grok-*|*/grok-*) ;;
+      *) echo "custom model $model has no resolvable [model] entry in $alias_config" >&2; exit 2 ;;
+    esac ;;
+esac
+if [[ "$alias_status" == 0 ]]; then
   alias_host=${alias_info%% *}
   alias_target=${alias_info#* }
-  case "$alias_target" in
-    gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is an alias for $alias_target; coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
+  # An entry without `model` serves its own id, the same rule the detector reports.
+  alias_effective=${alias_target:-$model_policy}
+  case "$alias_effective" in
+    gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is an alias for $alias_effective; coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
   esac
-  if [[ "$alias_host" == "x.ai" || "$alias_host" == *.x.ai || "$alias_target" == grok-* || "$alias_target" == */grok-* ]]; then
-    case "$alias_target" in
+  if [[ "$alias_host" == "x.ai" || "$alias_host" == *.x.ai || "$alias_effective" == grok-* || "$alias_effective" == */grok-* ]]; then
+    case "$alias_effective" in
       grok-4.7|*/grok-4.7)
         ((credit_pressure)) || { echo "$model is an xAI alias for grok-4.7, a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
       *) echo "model $model is an xAI alias for ${alias_target:-an unreported model}; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;

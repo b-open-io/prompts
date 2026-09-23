@@ -70,27 +70,37 @@ if [[ -n "$grok_models" && -f "$grok_config" ]]; then
   grok_alias_json=$(python3 - "$grok_config" "$grok_models" <<'PY_GROK_PROVIDERS' 2>/dev/null || printf '{}\n{}\n'
 import json, re, sys
 from urllib.parse import urlparse
-path, listed = sys.argv[1], {item for item in sys.argv[2].split(",") if item}
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:
+        # Without a real TOML parser no alias is resolved, so validation rejects every custom id.
+        print("{}\n{}")
+        sys.exit(0)
+path, listed = sys.argv[1], [item for item in sys.argv[2].split(",") if item]
 known = (("openai.com", "openai"), ("x.ai", "xai"), ("anthropic.com", "anthropic"), ("openrouter.ai", "openrouter"))
-providers, targets, current = {}, {}, None
-for raw in open(path, encoding="utf-8"):
-    line = raw.strip()
-    table = re.match(r'^\[model\."([^"]+)"\]$', line)
-    if table:
-        current = table.group(1)
+try:
+    with open(path, "rb") as handle:
+        tables = tomllib.load(handle).get("model", {})
+except (OSError, ValueError):
+    tables = {}
+entries = {key.lower(): value for key, value in tables.items() if isinstance(value, dict)} if isinstance(tables, dict) else {}
+providers, targets = {}, {}
+for model_id in listed:
+    entry = entries.get(model_id.lower())
+    if entry is None:
         continue
-    if line.startswith("["):
-        current = None
-        continue
-    target = re.match(r'^model\s*=\s*"([A-Za-z0-9._/:@-]+)"', line)
-    if current in listed and target:
-        targets[current] = target.group(1)
-    url = re.match(r'^base_url\s*=\s*"([^"]*)"', line)
-    if current in listed and url:
-        host = (urlparse(url.group(1)).hostname or "").lower()
+    target = entry.get("model", model_id)
+    if isinstance(target, str) and re.fullmatch(r"[A-Za-z0-9._/:@-]+", target):
+        targets[model_id] = target
+    base_url = entry.get("base_url")
+    if isinstance(base_url, str):
+        host = (urlparse(base_url).hostname or "").lower()
         label = next((name for suffix, name in known if host == suffix or host.endswith("." + suffix)), host)
         if re.fullmatch(r"[a-z0-9.-]+", label or ""):
-            providers[current] = label
+            providers[model_id] = label
 print(json.dumps(providers))
 print(json.dumps(targets))
 PY_GROK_PROVIDERS

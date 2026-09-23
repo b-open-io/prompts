@@ -8,7 +8,9 @@ Grok is a usage-credit-pressure fallback, not the normal coding lane. Use it
 only when that pressure is explicit, pin `grok-4.7`, and never dispatch Grok
 4.6. Otherwise use the preferred `gpt-6-sol` coding worker. The wrapper
 enforces this for any casing of the id, and for a custom id whose
-`config.toml` entry is served by xAI or points at a Grok or `gpt-5.6` model: it
+`config.toml` entry (parsed as real TOML, either quote style) is served by xAI
+or points at a Grok or `gpt-5.6` model; a non-Grok id with no parseable entry
+is refused. It
 rejects every Grok model except `grok-4.7`, and rejects
 `grok-4.7` unless `--credit-pressure` or `BOPEN_USAGE_CREDIT_PRESSURE=1` is set.
 

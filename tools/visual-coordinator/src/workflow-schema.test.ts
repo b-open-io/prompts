@@ -141,7 +141,7 @@ describe("workflow schema", () => {
   });
 
   it("requires disclosure before converting a detected non-4.7 native Grok model", () => {
-    const environment = parseEnvironment({
+    const environment = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" },
       harness: "grok",
       lanes: { grok: "available", codex: "available" },
       models: { grok: ["grok-4.7", "ox-alpha"], codex: ["gpt-6-sol"], codex_effort: ["medium", "high", "xhigh"] },
@@ -536,7 +536,7 @@ describe("workflow schema", () => {
     });
 
     it("runs natively on the Grok lane only for a coordinator on the observed default", () => {
-      const grokHost = (grok_default?: string) => parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "gpt-6-sol"], ...(grok_default ? { grok_default } : {}) } });
+      const grokHost = (grok_default?: string) => parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "gpt-6-sol"], ...(grok_default ? { grok_default } : {}) } });
 
       expect(runsNatively(grokHost("gpt-6-sol"), "grok", "grok-4.7", "coordinator")).toBe(false);
       expect(runsNatively(grokHost("gpt-6-sol"), "grok", "gpt-6-sol", "coordinator")).toBe(true);
@@ -546,7 +546,7 @@ describe("workflow schema", () => {
     });
 
     it("labels a Grok host main with its configured default and keeps it the native main", () => {
-      const grokHost = parseEnvironment({
+      const grokHost = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" },
         harness: "grok",
         lanes: { grok: "available" },
         models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "gpt-6-sol" },
