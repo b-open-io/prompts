@@ -70,7 +70,7 @@ alias_status=4
 if [[ -f "$alias_config" ]]; then
   set +e
   alias_info=$(python3 - "$alias_config" "$model_policy" <<'PY_ALIAS'
-import sys
+import re, sys
 from urllib.parse import urlparse
 try:
     import tomllib
@@ -91,7 +91,9 @@ if entry is None:
 base_url = entry.get("base_url")
 host = (urlparse(base_url).hostname or "").lower() if isinstance(base_url, str) else ""
 target = entry.get("model")
-print(f"{host} {target.lower() if isinstance(target, str) else ''}")
+# Same bar as the detector: a blank, padded, or otherwise malformed model is no model at all.
+target = target.lower() if isinstance(target, str) and re.fullmatch(r"[A-Za-z0-9._/:@-]+", target) else ""
+print(f"{host} {target}")
 PY_ALIAS
 )
   alias_status=$?
@@ -125,7 +127,7 @@ if [[ "$alias_status" == 0 ]]; then
   case "$alias_effective" in
     gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is an alias for $alias_effective; coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
   esac
-  if [[ "$alias_host" == "x.ai" || "$alias_host" == *.x.ai || "$alias_effective" == grok-* || "$alias_effective" == */grok-* || "$model_policy" =~ (^|/)x-?ai/ ]]; then
+  if [[ "$alias_host" == "x.ai" || "$alias_host" == *.x.ai || "$alias_effective" == grok-* || "$alias_effective" == */grok-* || "$model_policy" =~ (^|/)x-?ai/ || "$alias_effective" =~ (^|/)x-?ai/ ]]; then
     case "$alias_effective" in
       grok-4.7|*/grok-4.7)
         ((credit_pressure)) || { echo "$model is an xAI alias for grok-4.7, a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;

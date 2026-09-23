@@ -572,6 +572,22 @@ class GrokWrapperTests(unittest.TestCase):
                 offlane = subprocess.run(base + ["--model", qualified, "--credit-pressure"], cwd=self.ROOT, env=env, capture_output=True, text=True)
                 self.assertEqual(offlane.returncode, 2, offlane.stderr)
                 self.assertIn("pinned to grok-4.7", offlane.stderr)
+            for blank in ("   ", "", " grok-4.7 "):
+                config.write_text(f'[model."ox-alpha"]\nmodel = "{blank}"\nbase_url = "https://openrouter.ai/api/v1"\n', encoding="utf-8")
+                padded = subprocess.run(base + ["--model", "ox-alpha", "--credit-pressure"], cwd=self.ROOT, env=env, capture_output=True, text=True)
+                self.assertEqual(padded.returncode, 2, padded.stderr)
+                self.assertIn("has no explicit model", padded.stderr)
+            for target, pressure, expected in (
+                ("openrouter/x-ai/ox-alpha", False, "pinned to grok-4.7"),
+                ("openrouter/x-ai/ox-alpha", True, "pinned to grok-4.7"),
+                ("xai/ox-alpha", True, "pinned to grok-4.7"),
+                ("openrouter/x-ai/grok-4.7", False, "usage-credit-pressure fallback"),
+                ("openrouter/x-ai/grok-4.7", True, "grok is not installed"),
+            ):
+                config.write_text(f'[model."ox-alpha"]\nmodel = "{target}"\nbase_url = "https://openrouter.ai/api/v1"\n', encoding="utf-8")
+                nested = subprocess.run(base + ["--model", "ox-alpha"] + (["--credit-pressure"] if pressure else []), cwd=self.ROOT, env=env, capture_output=True, text=True)
+                self.assertEqual(nested.returncode, 1 if expected == "grok is not installed" else 2, (target, pressure, nested.stderr))
+                self.assertIn(expected, nested.stderr)
             config.write_text("[model.'ox-alpha']\nmodel = 'ox-alpha'\nbase_url = ''\n", encoding="utf-8")
             empty_host = subprocess.run(base + ["--model", "ox-alpha"], cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertEqual(empty_host.returncode, 2, empty_host.stderr)

@@ -236,7 +236,9 @@ manifests share the same release version.
 - A custom Grok id also needs an explicit `model` in its entry; the detector and
   wrapper no longer assume it serves its own id. Provider-qualified xAI ids
   (`xai/…`, `openrouter/x-ai/…`) are treated as Grok, so they cannot run on
-  OpenCode or skip the credit gate and `grok-4.7` pin.
+  OpenCode or skip the credit gate and `grok-4.7` pin. The wrapper applies the
+  detector's bar to `model` (a blank or padded value is no model) and holds a
+  custom id whose target is a nested xAI id to the same gate.
 
 ## [1.1.168] - Pending production promotion
 
