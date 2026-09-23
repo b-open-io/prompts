@@ -1,4 +1,4 @@
-import { mainNodeId, validateWorkflow, type ValidationIssue, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
+import { isGrokFamily, mainNodeId, validateWorkflow, type ValidationIssue, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
 
 /**
  * Inputs that are known by the host of the visual coordinator.  The
@@ -276,11 +276,15 @@ const providerForLane: Record<string, string> = {
   opencode: "opencode",
 };
 
-const providerForNode = (node: WorkflowNode): string => {
-  if (node.lane.toLowerCase() === "opencode" && node.model.includes("/")) {
+// The provider is where the model's content goes, not which CLI carries it: a custom id on the
+// Grok CLI is xAI only when it is a Grok model; otherwise it is its configured base_url or unknown.
+const providerForNode = (node: WorkflowNode, environment: WorkflowEnvironment): string => {
+  const lane = node.lane.toLowerCase();
+  if (lane === "opencode" && node.model.includes("/")) {
     return node.model.split("/", 1)[0] || "opencode";
   }
-  return providerForLane[node.lane.toLowerCase()] ?? node.provider;
+  if (lane === "grok" && !isGrokFamily(node.model)) return environment.grokModelProviders[node.model] ?? "unknown";
+  return providerForLane[lane] ?? node.provider;
 };
 
 const actorForNode = (node: WorkflowNode, mainId: string | null): EmittedNodeSpec["actor"] =>
@@ -395,7 +399,7 @@ export const serializeWorkflow = (
       shell: generated.command !== null,
       command: generated.command,
       nativeController: generated.nativeController,
-      provider: providerForNode(original),
+      provider: providerForNode(original, environment),
       disclosure: generated.disclosure,
       context: generated.prompt,
       ...(converted ? { converted: true } : {}),

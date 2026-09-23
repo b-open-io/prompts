@@ -7,7 +7,7 @@ apply the Coordinator disclosure rule before first use.
 Grok is a usage-credit-pressure fallback, not the normal coding lane. Use it
 only when that pressure is explicit, pin `grok-4.7`, and never dispatch Grok
 4.6. Otherwise use the preferred `gpt-6-sol` coding worker. The wrapper
-enforces this: it rejects every Grok model except `grok-4.7`, and rejects
+enforces this for any casing of the id: it rejects every Grok model except `grok-4.7`, and rejects
 `grok-4.7` unless `--credit-pressure` or `BOPEN_USAGE_CREDIT_PRESSURE=1` is set.
 
 ## Choose and verify the auth lane

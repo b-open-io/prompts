@@ -29,6 +29,8 @@ export type WorkflowEnvironment = {
   grokWorker: string | null;
   /** Grok auth lane whose `grok models` listing produced the Grok inventory; the wrapper must use the same one. */
   grokAuth: "grok.com" | "api" | null;
+  /** Provider behind each listed custom Grok-CLI id, from its config.toml `base_url`. */
+  grokModelProviders: Record<string, string>;
   caps: { liveChildren: number | null; agentBudgetDefault: number };
   lanes: Record<string, DetectedLane>;
   roster: unknown[];
@@ -183,6 +185,10 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
     mainModels,
     grokWorker,
     grokAuth: raw.grok_auth === "grok.com" || raw.grok_auth === "api" ? raw.grok_auth : null,
+    grokModelProviders: raw.grok_model_providers && typeof raw.grok_model_providers === "object"
+      ? Object.fromEntries(Object.entries(raw.grok_model_providers as Record<string, unknown>)
+        .filter((entry): entry is [string, string] => typeof entry[1] === "string" && /^[a-z0-9.-]+$/.test(entry[1])))
+      : {},
     caps: {
       liveChildren: safeNumber(rawCaps.live_children ?? rawCaps.liveChildren, null),
       agentBudgetDefault: safeNumber(rawCaps.agent_budget_default ?? rawCaps.agentBudgetDefault, 0) ?? 0,
@@ -199,7 +205,7 @@ const isSol = (model: string) => model === SOL || model.endsWith(`/${SOL}`);
 // Coding uses GPT-6 models only; the whole gpt-5.6 family is out of policy, even by explicit choice.
 function isSuperseded(model: string) { return /(?:^|\/)gpt-5\.6(?:$|-)/i.test(model); }
 // Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
-const isGrokFamily = (model: string) => /(?:^|\/)grok-/i.test(model);
+export const isGrokFamily = (model: string) => /(?:^|\/)grok-/i.test(model);
 const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
 const isOpus = (model: string) => /(?:^|\/)(?:claude-)?opus(?:$|[-.:@\d])/i.test(model);
 const isClaudeFamily = (model: string) => /(?:^|\/)(?:anthropic\/|(?:claude|opus|sonnet|haiku)(?:$|[-.:@\d]))/i.test(model);

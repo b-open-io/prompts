@@ -318,6 +318,35 @@ describe("versioned export contract", () => {
     expect(spec.nodes.some((node) => node.actor === "main-controller")).toBe(false);
   });
 
+  it("labels a custom GPT-6 Sol on the Grok CLI by its real provider, never xAI", () => {
+    const grokHost = (extra: Record<string, unknown> = {}) => parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available" },
+      models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "grok-4.7" },
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+      ...extra,
+    });
+    const disclosed = (environment: ReturnType<typeof grokHost>) => {
+      const workflow = defaultWorkflow(environment);
+      workflow.nodes.slice(1).forEach((node) => { node.disclosure = "Approved custom Sol dispatch"; });
+      return workflow;
+    };
+
+    const unresolved = grokHost();
+    const spec = serializeWorkflow(disclosed(unresolved), unresolved);
+    const workers = spec.nodes.filter((node) => node.id !== "coordinate");
+    expect(workers.map((node) => [node.id, node.model, node.shell, node.provider])).toEqual([
+      ["build", "gpt-6-sol", true, "unknown"],
+      ["review", "gpt-6-sol", true, "unknown"],
+    ]);
+    expect(toExportText(disclosed(unresolved), unresolved)).not.toContain("xai/gpt-6-sol");
+
+    const configured = grokHost({ grok_model_providers: { "gpt-6-sol": "openai" } });
+    expect(serializeWorkflow(disclosed(configured), configured).nodes.filter((node) => node.id !== "coordinate").map((node) => node.provider)).toEqual(["openai", "openai"]);
+    expect(serializeWorkflow(disclosed(configured), configured).nodes.find((node) => node.id === "coordinate")).toMatchObject({ actor: "main-controller" });
+  });
+
   it("withholds Grok shell-outs until the detector confirms a Grok auth lane", () => {
     const unconfirmed = parseEnvironment({ harness: "codex", lanes: { codex: "available", grok: "available" }, models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "token" });
     expect(unconfirmed.grokAuth).toBeNull();

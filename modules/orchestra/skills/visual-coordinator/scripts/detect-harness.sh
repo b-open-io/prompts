@@ -59,6 +59,37 @@ if [[ "$grok_bin" == "available" ]]; then
     | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._-]*\).*(default).*/\1/p' \
     | head -1)
 fi
+# A custom Grok id (for example gpt-6-sol) is served from its [model."id"] base_url, not
+# necessarily by xAI. Map each listed custom id to the provider behind that URL so exports
+# report where content goes; ids without a recognizable base_url stay unresolved.
+grok_model_providers_json="{}"
+grok_config="${GROK_HOME:-$HOME/.grok}/config.toml"
+if [[ -n "$grok_models" && -f "$grok_config" ]]; then
+  grok_model_providers_json=$(python3 - "$grok_config" "$grok_models" <<'PY_GROK_PROVIDERS' 2>/dev/null || printf '{}'
+import json, re, sys
+from urllib.parse import urlparse
+path, listed = sys.argv[1], {item for item in sys.argv[2].split(",") if item}
+known = (("openai.com", "openai"), ("x.ai", "xai"), ("anthropic.com", "anthropic"), ("openrouter.ai", "openrouter"))
+providers, current = {}, None
+for raw in open(path, encoding="utf-8"):
+    line = raw.strip()
+    table = re.match(r'^\[model\."([^"]+)"\]$', line)
+    if table:
+        current = table.group(1)
+        continue
+    if line.startswith("["):
+        current = None
+        continue
+    url = re.match(r'^base_url\s*=\s*"([^"]*)"', line)
+    if current in listed and url:
+        host = (urlparse(url.group(1)).hostname or "").lower()
+        label = next((name for suffix, name in known if host == suffix or host.endswith("." + suffix)), host)
+        if re.fullmatch(r"[a-z0-9.-]+", label or ""):
+            providers[current] = label
+print(json.dumps(providers))
+PY_GROK_PROVIDERS
+)
+fi
 
 # Codex has no enumeration command. Its account-scoped model cache is the best
 # local source of truth, with the configured model kept first as a fallback.
@@ -360,6 +391,7 @@ cat <<JSON
   "credit_pressure": $credit_pressure,
   "grok_worker": $grok_worker_json,
   "grok_auth": $grok_auth_json,
+  "grok_model_providers": $grok_model_providers_json,
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget

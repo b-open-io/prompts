@@ -241,6 +241,17 @@ class VisualWorkflowContractTests(unittest.TestCase):
         self.assertEqual(detected["models"]["grok"], ["grok-4.7"])
         self.assertEqual(detected["models"]["grok_default"], "grok-4.7")
 
+    def test_detector_maps_custom_grok_ids_to_their_base_url_provider(self) -> None:
+        detected = self._detect_grok(
+            "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)' '  - gpt-6-sol' '  - house-model'; fi\n",
+            config=(
+                '[model."gpt-6-sol"]\nmodel = "gpt-6-sol"\nbase_url = "https://api.openai.com/v1"\nenv_key = "OPENAI_API_KEY"\n\n'
+                '[model."house-model"]\nmodel = "house"\n\n'
+                '[model."unlisted"]\nbase_url = "https://api.anthropic.com/v1"\n'
+            ),
+        )
+        self.assertEqual(detected["grok_model_providers"], {"gpt-6-sol": "openai"})
+
     def test_detector_never_adds_config_only_grok_ids(self) -> None:
         detected = self._detect_grok(
             "if [[ $1 == models ]]; then printf '%s\\n' 'You are logged in with grok.com.' '  * grok-4.7 (default)'; fi\n",
@@ -488,6 +499,11 @@ class GrokWrapperTests(unittest.TestCase):
                 (["--model", "openrouter/x-ai/grok-4.6"], {}, "pinned to grok-4.7"),
                 (["--model", "openrouter/x-ai/grok-4.7"], {}, "usage-credit-pressure"),
                 (["--model", "gpt-6-sol", "--effort", "max"], {}, "--effort must be"),
+                (["--model", "GPT-5.6-LUNA"], {}, "GPT-6 models only"),
+                (["--model", "OpenRouter/OpenAI/GPT-5.6-Sol"], {}, "GPT-6 models only"),
+                (["--model", "GROK-4.6", "--credit-pressure"], {}, "pinned to grok-4.7"),
+                (["--model", "XAI/Grok-4.6"], {}, "pinned to grok-4.7"),
+                (["--model", "GROK-4.7"], {}, "usage-credit-pressure"),
             ]
             for extra, overrides, message in cases:
                 with self.subTest(extra=extra, overrides=overrides):

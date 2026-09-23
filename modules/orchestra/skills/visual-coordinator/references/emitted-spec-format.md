@@ -200,7 +200,11 @@ canvas never yields a runnable record. Grok-lane shell-outs call the installed
 `grok_worker`, with `--auth` set to the detected `grok_auth`, never raw
 `grok -m`; without both they are not executable.
 The wrapper checks `BOPEN_USAGE_CREDIT_PRESSURE` when the command runs rather
-than baking the credit decision into the export. The main session
+than baking the credit decision into the export. A node's `provider` is where
+its content goes, not which CLI carries it: a Grok-lane shell-out is `xai` only
+for a Grok model; a custom id such as `gpt-6-sol` reports the provider behind
+its `config.toml` `base_url` (the detector's `grok_model_providers`) or
+`unknown`, and its disclosure must name the real destination. The main session
 (`actor: "main-controller"`) is the first native coordinator on the host lane
 whose model is the observed host main: the detector's `models.<lane>_default`
 when reported. A Grok host has no main at all unless the detector reported

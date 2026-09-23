@@ -199,6 +199,11 @@ manifests share the same release version.
   `models.grok_default`; bare `grok-4.7` is never assumed. Every other native
   Grok-lane node, `grok-4.7` included, exports as a disclosed wrapper
   shell-out, and the inspector and default staffing mark it external.
+- Exported `provider` reflects the model's real destination: a custom
+  `gpt-6-sol` on the Grok CLI reports the provider behind its `config.toml`
+  `base_url` (new detector field `grok_model_providers`) or `unknown`, never
+  `xai`. `run-grok-worker.sh` applies its GPT-6-only and Grok pin rules to any
+  casing, so `GPT-5.6-LUNA` and `GROK-4.6` are rejected like lowercase ids.
 
 ## [1.1.168] - Pending production promotion
 
