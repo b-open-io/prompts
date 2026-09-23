@@ -1,4 +1,4 @@
-import { mainNodeId, validateWorkflow, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
+import { mainNodeId, validateWorkflow, type ValidationIssue, type Workflow, type WorkflowEnvironment, type WorkflowNode } from "./workflow-schema";
 
 /**
  * Inputs that are known by the host of the visual coordinator.  The
@@ -316,12 +316,16 @@ const worktreePolicy = (workflow: Workflow) => {
   };
 };
 
-/** Serialize the live canvas into the versioned paste-back contract. */
-export const serializeWorkflow = (
-  workflow: Workflow,
-  environment: WorkflowEnvironment,
-  options: CommandGenerationOptions = {},
-): EmittedWorkflowSpec => {
+type NodeDispatch = {
+  original: WorkflowNode;
+  converted: boolean;
+  generated: NodeCommandSpec;
+  /** Why this node cannot be dispatched as exported, or undefined when it can. */
+  blocked?: string;
+};
+
+/** One dispatch decision per node, shared by the serializer and the UI's Ready/Copy gate. */
+const planDispatch = (workflow: Workflow, environment: WorkflowEnvironment, options: CommandGenerationOptions) => {
   const dispatchOptions = {
     ...options,
     hostHarness: options.hostHarness ?? (environment.simulationOnly ? undefined : environment.harness),
@@ -330,6 +334,30 @@ export const serializeWorkflow = (
     grokAuth: options.grokAuth ?? environment.grokAuth ?? undefined,
   };
   const mainId = mainNodeId(workflow, environment);
+  const nodes: NodeDispatch[] = workflow.nodes.map((original) => {
+    const converted = original.id !== mainId && convertedGrokNode(original, environment);
+    const generated = generateNodeCommand(converted ? { ...original, provider: "external" } : original, dispatchOptions);
+    const lane = environment.lanes[original.lane];
+    const blocked = lane && lane.availability !== "available"
+      ? `${lane.label} is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.`
+      : generated.executable ? undefined : generated.reason ?? "The dispatch is not executable.";
+    return { original, converted, generated, blocked };
+  });
+  return { mainId, nodes };
+};
+
+/** Node-scoped reasons the exported dispatch would drop a node, after Grok conversion. */
+export const dispatchIssues = (workflow: Workflow, environment: WorkflowEnvironment, options: CommandGenerationOptions = {}): ValidationIssue[] =>
+  planDispatch(workflow, environment, options).nodes.flatMap(({ original, blocked }) =>
+    blocked ? [{ scope: "node" as const, id: original.id, message: `${original.title}: ${blocked}` }] : []);
+
+/** Serialize the live canvas into the versioned paste-back contract. */
+export const serializeWorkflow = (
+  workflow: Workflow,
+  environment: WorkflowEnvironment,
+  options: CommandGenerationOptions = {},
+): EmittedWorkflowSpec => {
+  const { mainId, nodes: plan } = planDispatch(workflow, environment, options);
   const emitted: EmittedNodeSpec[] = [];
   const omissions: EmittedWorkflowSpec["omissions"] = [];
 
@@ -342,18 +370,9 @@ export const serializeWorkflow = (
     else workflowIssues.push(issue.message);
   }
 
-  for (const original of workflow.nodes) {
-    const converted = original.id !== mainId && convertedGrokNode(original, environment);
-    const node = converted ? { ...original, provider: "external" as const } : original;
-    const lane = environment.lanes[original.lane];
-    const generated = generateNodeCommand(node, dispatchOptions);
-    const unavailable = lane && lane.availability !== "available";
-    if (unavailable) {
-      omissions.push({ id: original.id, kind: "node", label: original.title, reason: `${lane.label} is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.`, omit: true });
-      continue;
-    }
-    if (!generated.executable) {
-      omissions.push({ id: original.id, kind: "node", label: original.title, reason: generated.reason ?? "The dispatch is not executable.", omit: true });
+  for (const { original, converted, generated, blocked } of plan) {
+    if (blocked) {
+      omissions.push({ id: original.id, kind: "node", label: original.title, reason: blocked, omit: true });
       continue;
     }
     const blocking = workflowIssues.length ? [`Workflow validation failed: ${workflowIssues.join(" ")}`] : nodeIssues.get(original.id) ?? [];

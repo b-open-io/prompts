@@ -11,7 +11,7 @@ import { WorkflowNode } from "@/components/workflow-node";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { generateNodeCommand, toExportText } from "@/command";
+import { dispatchIssues, toExportText } from "@/command";
 import { codingTarget, defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, validateWorkflow, type EdgeKind, type Workflow, type WorkflowEdge, type WorkflowNode as WorkflowNodeData } from "@/workflow-schema";
 import "./styles.css";
 
@@ -62,14 +62,12 @@ function VisualCoordinator() {
   const issues = useMemo(() => validateWorkflow(workflow, environment), [environment, workflow]);
   const selected = nodes.find((node) => node.id === selectedId)?.data;
   const selectedEdge = workflow.edges.find((edge) => edge.id === selectedEdgeId);
-  const commands = useMemo(() => workflow.nodes.map((node) => generateNodeCommand(node, {
-    hostHarness: environment.simulationOnly ? undefined : environment.harness,
-    nativeController: environment.simulationOnly ? undefined : environment.harness,
-    grokWorker: environment.grokWorker ?? undefined,
-    grokAuth: environment.grokAuth ?? undefined,
-  })), [environment, workflow]);
-  const commandIssues = commands.filter((command) => !command.executable).map((command) => ({ scope: "node" as const, id: command.nodeId, message: command.reason ?? `${command.nodeId} is not executable.` }));
-  const allIssues = [...issues, ...commandIssues];
+  // Ready/Copy use the serializer's own dispatch plan, so a node the export would drop is never "Ready".
+  const exportIssues = useMemo(() => {
+    const flagged = new Set(issues.map((issue) => issue.id));
+    return dispatchIssues(workflow, environment).filter((issue) => !flagged.has(issue.id));
+  }, [environment, issues, workflow]);
+  const allIssues = [...issues, ...exportIssues];
   const exportText = useMemo(() => toExportText(workflow, environment), [environment, workflow]);
 
   const onNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => setNodes((current) => applyNodeChanges(changes, current)), []);

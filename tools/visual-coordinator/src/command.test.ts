@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { defaultWorkflow, parseEnvironment, validateWorkflow, type WorkflowNode } from "./workflow-schema";
-import { commandForNode, generateNodeCommand, serializeWorkflow, shellQuote, toExportText } from "./command";
+import { commandForNode, dispatchIssues, generateNodeCommand, serializeWorkflow, shellQuote, toExportText } from "./command";
 
 const node = (id: string, changes: Partial<WorkflowNode> = {}): WorkflowNode => ({
   ...defaultWorkflow().nodes[1],
@@ -251,6 +251,54 @@ describe("versioned export contract", () => {
     expect(serializeWorkflow(workflow, grokHost).nodes).toEqual([
       expect.objectContaining({ id: "coordinate", actor: "main-controller", execution: "native-agent", model: "gpt-6-sol" }),
     ]);
+  });
+
+  it("never treats an edited Coordinate model as the pressure-free Grok main", () => {
+    const detected = (extra: Record<string, unknown> = {}) => parseEnvironment({
+      harness: "grok",
+      lanes: { grok: "available" },
+      models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "gpt-6-sol" },
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+      ...extra,
+    });
+    const edited = (environment: ReturnType<typeof detected>) => {
+      const workflow = defaultWorkflow(environment);
+      workflow.nodes = [{ ...workflow.nodes[0], model: "grok-4.7" }];
+      workflow.edges = [];
+      return workflow;
+    };
+
+    const unpressured = detected();
+    expect(validateWorkflow(edited(unpressured), unpressured).map((issue) => issue.message)).toContain(
+      "Coordinate uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+    );
+    expect(serializeWorkflow(edited(unpressured), unpressured).nodes).toEqual([]);
+
+    const pressured = detected({ credit_pressure: true });
+    expect(serializeWorkflow(edited(pressured), pressured).nodes).toEqual([
+      expect.objectContaining({ id: "coordinate", actor: "maker", model: "grok-4.7" }),
+    ]);
+  });
+
+  it("gates Ready and Copy on the converted dispatch the export would emit", () => {
+    const unconfirmed = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh" });
+    const workflow = defaultWorkflow(unconfirmed);
+    const main = workflow.nodes[0];
+    workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
+    workflow.edges = [];
+
+    expect(validateWorkflow(workflow, unconfirmed)).toEqual([]);
+    expect(generateNodeCommand(workflow.nodes[0], { hostHarness: "grok", nativeController: "grok" }).executable).toBe(true);
+    expect(dispatchIssues(workflow, unconfirmed)).toEqual([
+      expect.objectContaining({ id: "custom", scope: "node", message: expect.stringContaining("No Grok auth lane was confirmed") }),
+    ]);
+
+    const spec = serializeWorkflow(workflow, unconfirmed);
+    const gated = new Set([...validateWorkflow(workflow, unconfirmed), ...dispatchIssues(workflow, unconfirmed)].map((issue) => issue.id));
+    for (const node of workflow.nodes) {
+      expect(spec.nodes.some((emitted) => emitted.id === node.id)).toBe(!gated.has(node.id));
+    }
   });
 
   it("withholds Grok shell-outs until the detector confirms a Grok auth lane", () => {

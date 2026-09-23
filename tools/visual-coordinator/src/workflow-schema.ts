@@ -243,15 +243,18 @@ export const codingTarget = (environment: WorkflowEnvironment): { lane: Workflow
 
 /**
  * The single node that stands for the current main session: the first native coordinator on the host
- * lane that stays native through export. On a Grok host that is a `grok-4.7` node or one on the
- * detector's configured Grok default; any other native Grok-lane id becomes a Grok CLI shell-out,
- * so it is a dispatch and never the main session.
+ * lane whose model is the observed host main: the detector's configured default for that lane when
+ * it reports one, otherwise `grok-4.7` on a Grok host or any model elsewhere. An edited model is a
+ * dispatch, never the pressure-free main session.
  */
-export const mainNodeId = (workflow: Workflow, environment: WorkflowEnvironment): string | null =>
-  workflow.nodes.find((node) => node.role === "coordinator"
+export const mainNodeId = (workflow: Workflow, environment: WorkflowEnvironment): string | null => {
+  const host = environment.hostLane;
+  const observed = host ? environment.mainModels[host] : undefined;
+  return workflow.nodes.find((node) => node.role === "coordinator"
     && node.provider === "native"
-    && node.lane === environment.hostLane
-    && (node.lane !== "grok" || isApprovedGrok(node.model) || node.model === environment.mainModels.grok))?.id ?? null;
+    && node.lane === host
+    && (observed ? node.model === observed : node.lane !== "grok" || isApprovedGrok(node.model)))?.id ?? null;
+};
 
 /**
  * Default model for a node placed on a lane. Workers get GPT-6 Sol, or grok-4.7 only for a builder

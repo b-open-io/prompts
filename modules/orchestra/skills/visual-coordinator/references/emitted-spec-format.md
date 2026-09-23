@@ -198,9 +198,13 @@ canvas never yields a runnable record. Grok-lane shell-outs call the installed
 `grok_worker`, with `--auth` set to the detected `grok_auth`, never raw
 `grok -m`; without both they are not executable.
 The wrapper checks `BOPEN_USAGE_CREDIT_PRESSURE` when the command runs rather
-than baking the credit decision into the export. Only the first native
-coordinator on the host lane is the main session (`actor: "main-controller"`);
-any other coordinator is a dispatch and follows the worker Grok rules.
+than baking the credit decision into the export. The main session
+(`actor: "main-controller"`) is the first native coordinator on the host lane
+whose model is the observed host main: the detector's `models.<lane>_default`
+when reported, otherwise `grok-4.7` on a Grok host. A Coordinate card edited to
+another model is a dispatch and follows the worker Grok rules. The canvas's
+Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
+never reports Ready while the export would drop a node.
 
 Generated commands encode task text before passing it through stdin or
 `--prompt-file`; never interpolate backticks, `$()`, backslashes, or newlines

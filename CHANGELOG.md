@@ -188,6 +188,13 @@ manifests share the same release version.
   `models.grok_default`, lists Grok models under the same auth lane the wrapper
   uses (reported as `grok_auth` and passed as `--auth`), and no longer adds
   `config.toml`-only ids the wrapper's preflight would reject.
+- The main session is bound to the observed host main model: when the detector
+  reports `models.<lane>_default`, only a coordinator on that model is the
+  pressure-free native main, so editing Coordinate to `grok-4.7` on a Grok host
+  whose default differs makes it a dispatch that needs credit pressure. The
+  canvas's Ready/Copy gate now uses the serializer's own dispatch plan, so a
+  converted Grok node the export would drop (for example, with no confirmed
+  `grok_auth`) blocks Copy.
 
 ## [1.1.168] - Pending production promotion
 
