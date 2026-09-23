@@ -243,6 +243,10 @@ manifests share the same release version.
   runs: one that resolves elsewhere, or through xAI, is never staffed or
   exported as Sol. The detector keeps slash-qualified Grok ids such as
   `xai/ox-alpha` whole, and environment maps ignore `Object.prototype` keys.
+- Exports report a Grok CLI id's configured provider first, so an
+  OpenRouter-backed `openrouter/x-ai/grok-4.7` exports as `openrouter`; `xai` is
+  only the fallback for Grok models with none configured. The model picker no
+  longer crashes on OpenCode provider names such as `__proto__`.
 
 ## [1.1.168] - Pending production promotion
 

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { modelFor, own, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
+import { groupModels, modelFor, own, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
 
 type Props = {
   node?: WorkflowNode;
@@ -69,11 +69,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
   const showObserved = observedMain && !lane.models.includes(node.model);
   const modelIsPreset = lane.models.includes(node.model) || observedMain;
   const modelValue = modelIsPreset ? node.model : lane.inventory === "incomplete" ? CUSTOM_MODEL : UNKNOWN_MODEL;
-  const modelGroups = Object.entries(lane.models.reduce<Record<string, string[]>>((groups, model) => {
-    const provider = lane.id === "opencode" && model.includes("/") ? model.split("/", 1)[0] : lane.label;
-    groups[provider] = [...(groups[provider] ?? []), model];
-    return groups;
-  }, {}));
+  const modelGroups = groupModels(lane);
   const efforts = lane.efforts.length > 0 ? lane.efforts : fallbackEfforts;
   const onLaneChange = (nextLane: string) => {
     const next = own(environment.lanes, nextLane) ?? missingLane(nextLane);

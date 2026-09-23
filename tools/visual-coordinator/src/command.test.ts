@@ -561,6 +561,37 @@ describe("versioned export contract", () => {
     expect(spec.nodes.every((node) => typeof node.provider === "string")).toBe(true);
   });
 
+  it("exports a Grok CLI id's configured provider before assuming xAI", () => {
+    const host = (providers: Record<string, string>) => parseEnvironment({
+      harness: "codex",
+      lanes: { codex: "available", grok: "available" },
+      models: { codex: ["gpt-6-sol"], grok: ["grok-4.7", "openrouter/x-ai/grok-4.7"] },
+      grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
+      grok_auth: "grok.com",
+      credit_pressure: true,
+      grok_model_targets: { "openrouter/x-ai/grok-4.7": "openrouter/x-ai/grok-4.7" },
+      grok_model_providers: providers,
+    });
+    const builder = (environment: ReturnType<typeof host>, model: string) => {
+      const workflow = defaultWorkflow(environment);
+      workflow.nodes = [{ ...workflow.nodes[1], lane: "grok", provider: "external", model, disclosure: "Approved xAI dispatch" }];
+      workflow.edges = [];
+      return workflow;
+    };
+
+    const routed = host({ "openrouter/x-ai/grok-4.7": "openrouter" });
+    expect(validateWorkflow(builder(routed, "openrouter/x-ai/grok-4.7"), routed)).toEqual([]);
+    expect(serializeWorkflow(builder(routed, "openrouter/x-ai/grok-4.7"), routed).nodes).toEqual([
+      expect.objectContaining({ id: "build", provider: "openrouter", shell: true, command: expect.stringContaining("run-grok-worker.sh") }),
+    ]);
+    const text = toExportText(builder(routed, "openrouter/x-ai/grok-4.7"), routed);
+    expect(text).toContain("SHELL-OUT · openrouter/openrouter/x-ai/grok-4.7");
+    expect(text).not.toContain("xai/openrouter/x-ai/grok-4.7");
+
+    const bare = host({});
+    expect(serializeWorkflow(builder(bare, "grok-4.7"), bare).nodes).toEqual([expect.objectContaining({ id: "build", provider: "xai" })]);
+  });
+
   it("limits the observed-main Grok exemption to grok-4.6", () => {
     const observed = (grok_default: string, extra: Record<string, unknown> = {}) => {
       const environment = parseEnvironment({

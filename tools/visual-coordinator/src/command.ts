@@ -276,15 +276,15 @@ const providerForLane: Record<string, string> = {
   opencode: "opencode",
 };
 
-// The provider is where the model's content goes, not which CLI carries it: a custom id on the
-// Grok CLI is xAI only when it is a Grok model; otherwise it is its configured base_url or unknown.
+// The provider is where the model's content goes, not which CLI carries it: a Grok CLI id reports
+// its configured base_url first, and falls back to xAI only for a Grok model with none configured.
 const providerForNode = (node: WorkflowNode, environment: WorkflowEnvironment): string => {
   const lane = node.lane.toLowerCase();
   if (lane === "opencode" && node.model.includes("/")) {
     return node.model.split("/", 1)[0] || "opencode";
   }
-  if (lane === "grok" && !isGrokFamily(node.model)) return own(environment.grokModelProviders, node.model) ?? "unknown";
-  return providerForLane[lane] ?? node.provider;
+  if (lane === "grok") return own(environment.grokModelProviders, node.model) ?? (isGrokFamily(node.model) ? "xai" : "unknown");
+  return own(providerForLane, lane) ?? node.provider;
 };
 
 const actorForNode = (node: WorkflowNode, mainId: string | null): EmittedNodeSpec["actor"] =>

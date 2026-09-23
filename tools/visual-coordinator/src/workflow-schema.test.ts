@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
+import { defaultWorkflow, groupModels, nextNodeId, parseEnvironment, parseSeed, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
 
 const liveCodexEnvironment = () => parseEnvironment({
   harness: "codex",
@@ -614,5 +614,20 @@ describe("workflow schema", () => {
       id: "live-children",
       message: "This plan has 3 steps, above the 2-child safety cap reported by codex.",
     });
+  });
+});
+
+describe("model picker groups", () => {
+  it("groups OpenCode providers named after Object.prototype keys without throwing", () => {
+    const environment = parseEnvironment({
+      harness: "opencode",
+      lanes: { opencode: "available" },
+      models: { opencode: ["__proto__/gpt-6-sol", "constructor/gpt-6-sol", "openai/gpt-6-sol", "openai/gpt-6-astra"] },
+    });
+    expect(groupModels(environment.lanes.opencode)).toEqual([
+      ["__proto__", ["__proto__/gpt-6-sol"]],
+      ["constructor", ["constructor/gpt-6-sol"]],
+      ["openai", ["openai/gpt-6-sol", "openai/gpt-6-astra"]],
+    ]);
   });
 });

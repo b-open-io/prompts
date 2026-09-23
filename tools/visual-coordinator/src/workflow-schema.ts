@@ -211,6 +211,12 @@ export const defaultEnvironment = (): WorkflowEnvironment => parseEnvironment(un
 function ownOnly<T>(map: Record<string, T>): Record<string, T> { return Object.assign(Object.create(null) as Record<string, T>, map); }
 export function own<T>(map: Record<string, T>, key: string): T | undefined { return Object.hasOwn(map, key) ? map[key] : undefined; }
 
+/** Picker groups for a lane's models: OpenCode groups by provider prefix, which may be any string. */
+export const groupModels = (lane: DetectedLane): [string, string[]][] => [...lane.models.reduce((groups, model) => {
+  const provider = lane.id === "opencode" && model.includes("/") ? model.split("/", 1)[0] : lane.label;
+  return groups.set(provider, [...(groups.get(provider) ?? []), model]);
+}, new Map<string, string[]>())];
+
 export const SOL = "gpt-6-sol";
 const isSol = (model: string) => model === SOL || model.endsWith(`/${SOL}`);
 /**
