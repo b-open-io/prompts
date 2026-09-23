@@ -8,13 +8,6 @@ manifests share the same release version.
 
 ### Changed
 
-- Core 1.1.169 / Orchestra 0.1.29 / Review 0.1.20: make `gpt-6-sol`
-  the preferred coding worker and `xhigh` code-review model, set
-  `claude-opus-5-5` as the advisor default, and demote Fable to an explicit
-  legacy channel. Grok is now a usage-credit-pressure fallback only and must
-  use `grok-4.7`; active worker guides, roster policy, visual-workflow
-  templates, claudex, settings injection, and Codex Security guidance no
-  longer default to Grok 4.6 or GPT-5.6 Sol.
 - Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
 - `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench.
 - Companion copy: gemskills catalog is **0.0.70** (GPT Image 2.5 Flare
@@ -117,6 +110,18 @@ manifests share the same release version.
   Codex, Grok Build, OpenCode, and other shell-capable hosts. The shared lane
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
+
+## [1.1.169] - Pending production promotion
+
+### Changed
+
+- Orchestra 0.1.29 / Review 0.1.20: make `gpt-6-sol` the preferred coding
+  worker and `xhigh` code-review model, set `claude-opus-5-5` as the advisor
+  default, and demote Fable to an explicit legacy channel. Grok is now a
+  usage-credit-pressure fallback only and must use `grok-4.7`; active worker
+  guides, roster policy, visual-workflow templates, claudex, settings
+  injection, and Codex Security guidance no longer default to Grok 4.6 or
+  GPT-5.6 Sol.
 
 ## [1.1.168] - Pending production promotion
 
