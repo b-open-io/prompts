@@ -111,6 +111,31 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+## [1.1.170] - Pending production promotion
+
+### Changed
+
+- Orchestra 0.1.31 / Review 0.1.21: `claude-opus-5-5` replaces `gpt-6-sol`
+  as the preferred coding worker (Luke's Sep 26 rule supersedes the Sep 23
+  one). Code review stays on `gpt-6-sol` or `gpt-6-astra` at `xhigh`, never at
+  default reasoning. Coordinator, its host and worker guides, agent-builder,
+  the roster policy, software-factory, wave-coordinator, the
+  visual-coordinator docs, `BOPEN_WORKER_MODEL`, and the settings docs
+  follow the new split. A CloudAgent catalog gap now routes Claude Opus 5.5
+  through the Claude Code CLI or Luke's Claude Code desktop harness instead
+  of substituting Sol, GPT-5.6, or Grok. The CLI dispatch guide gains a
+  `claude -p --model claude-opus-5-5` recipe. Advisor defaults are unchanged.
+- Visual coordinator: Build, new, and lane-less worker steps default to
+  `claude-opus-5-5` on the first lane that runs it (host, then Claude Code,
+  OpenCode, Grok CLI). Review steps default to `gpt-6-sol` at `xhigh` on the
+  first lane that runs it (host, then Codex, OpenCode, Grok CLI). Validation
+  now rejects any other worker model, Sol included, and accepts Claude Opus
+  5.5 builders. The detector ranks OpenCode `claude-opus-5-5` ids with Sol.
+- `run-grok-worker.sh` and visual-coordinator messages now describe GPT-5.6
+  as out of policy and point credit-gated Grok work at `claude-opus-5-5`.
+- Codex Security examples run `gpt-6-sol` at `xhigh`, and the guide no longer
+  suggests lowering review effort to save cost.
+
 ## [1.1.169] - Pending production promotion
 
 ### Changed
