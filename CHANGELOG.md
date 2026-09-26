@@ -6,6 +6,13 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Fixed
+
+- `creative:promo-video-pipeline` 0.0.2: include the original dynamic
+  15-second showreel direction as a reusable base prompt, with the subject
+  supplied per request. Preserve a user's full prompt when one exists.
+  Creative plugin 0.1.9.
+
 ### Added
 
 - `creative:promo-video-pipeline` 0.0.1: motion-graphics promo and showreel
