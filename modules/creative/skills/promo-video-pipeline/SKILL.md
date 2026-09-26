@@ -1,6 +1,6 @@
 ---
 name: promo-video-pipeline
-version: 0.0.1
+version: 0.0.2
 description: >-
   Use this when making a motion-graphics promo or showreel, a short social cut or a
   longer commercial cut, from the user's prompt plus optional music. Covers
@@ -69,7 +69,13 @@ No approval, no Step 2.
 
 Run Claude Opus 5.5 headless on the machine that has `hf-api`.
 
-**Prompt.** Pass the user's prompt verbatim. Only adapt length or purpose if the user asked. Add, as separate inputs: the approved keyframe paths, reusable clips from earlier runs, the music track if supplied, and hard constraints (exact CTA text, locked narration, which shots must be real captures). Put run rules in an appended system prompt so the user's text stays untouched:
+**Prompt.** Pass the user's prompt verbatim. Only adapt length or purpose if the user asked. For a 15-second motion reel when the user supplies a subject but no fuller creative brief, use this reusable base prompt with their subject filled in:
+
+> make a dynamic 15-second motion graphics video that shows what an incredible motion designer you are, like it's your showreel for a résumé. go all out
+>
+> subject: <the user's subject>
+
+Keep the subject specific to the current request; never bake an example brand, website, protocol, or app into the skill. When the user has already supplied their own prompt, including this motion-reel direction, preserve their wording instead of replacing it with the template. Add, as separate inputs: the approved keyframe paths, reusable clips from earlier runs, the music track if supplied, and hard constraints (exact CTA text, locked narration, which shots must be real captures). Put run rules in an appended system prompt so the user's text stays untouched:
 
 - Generate video only through `hf-api`. Stay under the budget cap.
 - Render in the foreground and wait for each render to finish. Background renders die when the headless turn ends.
