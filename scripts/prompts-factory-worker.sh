@@ -27,7 +27,16 @@ if not isinstance(repo_dir, str) or not repo_dir:
 print(repo_dir)
 PY
 )"
-[[ -d "$repo_dir/.git" ]] || { echo "BAD_REPO_DIR: $repo_dir from loop.json is not a git checkout" >&2; exit 2; }
+# A worktree has a .git file, not a directory, so ask git instead of testing
+# the path. pwd -P resolves symlinks the same way --show-toplevel does.
+is_checkout() {
+  local dir="$1" top real
+  [[ "$(git -C "$dir" rev-parse --is-inside-work-tree 2>/dev/null)" == "true" ]] || return 1
+  top="$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null)" || return 1
+  real="$(cd "$dir" && pwd -P)" || return 1
+  [[ "$(cd "$top" && pwd -P)" == "$real" ]]
+}
+is_checkout "$repo_dir" || { echo "BAD_REPO_DIR: $repo_dir from loop.json is not a git checkout" >&2; exit 2; }
 reviewer="$(gh api user --jq .login)"
 
 ledger() {
