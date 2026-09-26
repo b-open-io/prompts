@@ -27,14 +27,23 @@ if not isinstance(repo_dir, str) or not repo_dir:
 print(repo_dir)
 PY
 )"
-# A worktree has a .git file, not a directory, so ask git instead of testing
-# the path. pwd -P resolves symlinks the same way --show-toplevel does.
+# Unset for the whole worker, not just the check: every later git command
+# (cd "$repo_dir"; git fetch ...) and gh also honor these, so an inherited
+# GIT_DIR or GIT_WORK_TREE would point them at a different repo than repoDir.
+unset GIT_DIR GIT_WORK_TREE GIT_COMMON_DIR GIT_INDEX_FILE GIT_OBJECT_DIRECTORY \
+  GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_CEILING_DIRECTORIES \
+  GIT_DISCOVERY_ACROSS_FILESYSTEM GIT_NAMESPACE
+
+# A worktree or submodule has a .git file, not a directory, so accept either
+# and let git confirm repoDir is the top of a work tree. pwd -P resolves
+# symlinks the same way --show-toplevel does; CDPATH='' keeps cd from echoing.
 is_checkout() {
   local dir="$1" top real
+  [[ -e "$dir/.git" ]] || return 1
   [[ "$(git -C "$dir" rev-parse --is-inside-work-tree 2>/dev/null)" == "true" ]] || return 1
   top="$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null)" || return 1
-  real="$(cd "$dir" && pwd -P)" || return 1
-  [[ "$(cd "$top" && pwd -P)" == "$real" ]]
+  real="$(CDPATH='' cd -- "$dir" && pwd -P)" || return 1
+  [[ "$(CDPATH='' cd -- "$top" && pwd -P)" == "$real" ]]
 }
 is_checkout "$repo_dir" || { echo "BAD_REPO_DIR: $repo_dir from loop.json is not a git checkout" >&2; exit 2; }
 reviewer="$(gh api user --jq .login)"
@@ -114,7 +123,7 @@ lock_created=yes
 echo "$$" > "$factory_state_dir/.lock/pid"
 
 current_step="repository sync"
-cd "$repo_dir"
+CDPATH='' cd -- "$repo_dir"
 repo_slug="$(gh repo view --json nameWithOwner --jq .nameWithOwner)"
 default_branch="$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)"
 git fetch origin dev "$default_branch" --quiet
