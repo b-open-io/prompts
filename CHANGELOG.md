@@ -6,6 +6,15 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Added
+
+- `creative:promo-video-pipeline` 0.0.1: motion-graphics promo and showreel
+  pipeline. gpt-image-2.5-flare keyframes via `gemskills:generate-image`, an
+  approval gate before video spend, a budget-capped headless Claude Opus 5.5
+  (`claude-opus-5-5`) edit through the Higgsfield REST API, Suno scoring, beat
+  alignment, -14 LUFS loudness, and QuickTime/Discord-safe H.264 exports.
+  Creative plugin 0.1.8.
+
 ### Changed
 
 - Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
@@ -19,7 +28,7 @@ manifests share the same release version.
   is third-party MCP marketing.
 - Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
   for Maps JS, Places, Routes, and Street View. Missing skill:
-  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.6.
+  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.8.
 - humanize 1.0.14 → **1.0.15**: never write "fail closed" / "fail open". Say
   reject, deny, stop, allow, or continue. Removed that slang from the rest of
   this repo.
