@@ -1,7 +1,7 @@
 ---
 name: hunter-skeptic-referee
 description: "This skill should be used when the user asks to 'find bugs', 'do a thorough code review', 'run a security audit', 'hunt for bugs', 'check for correctness issues', or 'review this code for edge cases'. Orchestrates a three-phase adversarial review using three isolated agents — Jerry (Hunter), Kayle (Skeptic), Jason (Referee) — to neutralize sycophancy and produce high-fidelity bug reports. User-facing command: /bug-hunt"
-version: 1.1.3
+version: 1.1.4
 user-invocable: false
 ---
 
@@ -99,6 +99,25 @@ All three agents use a consistent BUG-ID format for cross-phase traceability:
 ```
 
 ## Execution Protocol
+
+### Review model (every stage)
+
+Plugin agent `model` fields accept only Claude models, and the Hunter, Skeptic,
+and Referee agents declare Claude tiers. Each stage agent therefore acts as a
+controller: it reads the code, builds its stage brief, and takes its verdict
+from an explicit read-only GPT-6 Sol reviewer with effort pinned to `xhigh`:
+
+```bash
+codex exec --sandbox read-only --cd <repo> -m gpt-6-sol \
+  -c model_reasoning_effort="xhigh" \
+  --output-last-message /tmp/hsr-<stage>-verdict.md \
+  < /tmp/hsr-<stage>-brief.md > /tmp/hsr-<stage>.log 2>&1
+```
+
+`-m gpt-6-astra` is the only alternative model. Never lower the effort or move
+a stage to another model, Grok included; under usage-credit pressure, narrow
+the scope or queue the review. If `codex` is unavailable, report the review
+lane unavailable.
 
 ### Step 1 — Resolve target
 

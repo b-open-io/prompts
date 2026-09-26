@@ -135,7 +135,60 @@ manifests share the same release version.
   can be pointed at a different repo. Paths are resolved with `CDPATH=''`,
   so a relative `repoDir` is not redirected or rejected when `CDPATH` is set.
   Covered by `scripts/tests/test_factory_worker_repo_dir.py`, which runs with
-  the user's git config isolated.
+  the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
+  `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
+
+## [1.1.170] - Pending production promotion
+
+### Changed
+
+- Orchestra 0.1.31 / Review 0.1.21: `claude-opus-5-5` replaces `gpt-6-sol`
+  as the preferred coding worker (Luke's Sep 26 rule supersedes the Sep 23
+  one). Code review stays on `gpt-6-sol` or `gpt-6-astra` at `xhigh`, never at
+  default reasoning. Coordinator, its host and worker guides, agent-builder,
+  the roster policy, software-factory, wave-coordinator, the
+  visual-coordinator docs, `BOPEN_WORKER_MODEL`, and the settings docs
+  follow the new split. A CloudAgent catalog gap now routes Claude Opus 5.5
+  through the Claude Code CLI or Luke's Claude Code desktop harness instead
+  of substituting Sol, GPT-5.6, or Grok. The CLI dispatch guide gains a
+  `claude -p --model claude-opus-5-5` recipe. Advisor defaults are unchanged.
+- Visual coordinator: Build, new, and lane-less worker steps default to
+  `claude-opus-5-5` on the first lane that runs it (host, then Claude Code,
+  OpenCode, Grok CLI). Review steps default to `gpt-6-sol` at `xhigh` on the
+  first lane that runs it (host, then Codex, OpenCode, Grok CLI). Validation
+  now rejects any other worker model, Sol included, and accepts Claude Opus
+  5.5 builders. The detector ranks OpenCode `claude-opus-5-5` ids with Sol.
+- `run-grok-worker.sh` and visual-coordinator messages now describe GPT-5.6
+  as out of policy and point credit-gated Grok work at `claude-opus-5-5`.
+- Codex Security examples (`scan`, `bulk-scan`, `validate`, `--codex` effort
+  override) run at `xhigh`. The cost guidance no longer suggests lowering
+  review effort: narrow scope instead (fewer files, a focused diff, fewer
+  passes), and under usage-credit pressure narrow further or queue it.
+- The Grok worker guide splits read-only research (worker model) from code
+  review, which gets its own `gpt-6-sol --effort xhigh` recipe instead of
+  inheriting `BOPEN_WORKER_MODEL` at default effort.
+- Visual coordinator: changing a step's role in the inspector re-staffs its
+  lane, model, provider, effort, and execution from policy (`restaff`),
+  clears its disclosure approval, and never gives a former review step write
+  access. Changing a step's provider also clears its approval. The detector
+  reports `lane_access.claude: "unverified"` because the Claude CLI has no
+  offline account check for `claude-opus-5-5`; the lane picker and inspector
+  show that state.
+- Review never switches models or lowers effort: every review, validate, and
+  CI-scan recipe pins `--effort xhigh`, and credit pressure narrows scope or
+  queues the review instead of moving it to Grok. The Grok persona guide gets
+  a separate `gpt-6-sol --effort xhigh` review lane.
+- Visual coordinator: any node with `read-only-review` execution, whatever its
+  role, is restaffed onto the review target (`gpt-6-sol` at `xhigh`) and must
+  validate as a Sol `xhigh` reviewer.
+- Review 0.1.21: `code-auditor` 1.4.15 drops its direct xAI review route
+  (`XAI_REVIEW_MODEL`) and takes its verdict from a read-only
+  `codex exec -m gpt-6-sol` pass at `xhigh` on every review; large diffs are
+  scoped into slices, never skipped. Plugin agent `model` fields
+  accept only Claude models, so Coordinator and `hunter-skeptic-referee`
+  1.1.4 route review verdicts through that explicit Sol reviewer rather than
+  the agents' declared Claude tiers. `security-ops` 1.0.12 pins its scan and
+  validate recipes to `xhigh`.
 
 ## [1.1.169] - Pending production promotion
 

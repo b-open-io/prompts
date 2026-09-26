@@ -28,13 +28,16 @@ quoted `[model."gpt-6-sol"]` keeps the identifier intact; an unquoted dotted
 TOML key becomes a nested id.
 
 Grok is a usage-credit-pressure fallback only. Pin Grok-family work to
-`grok-4.7`. Render Sol as a Grok-CLI shell-out node
-(`run-grok-worker.sh --model gpt-6-sol`), not as a native slug.
+`grok-4.7`. Render a Claude Opus worker or Sol reviewer on the Grok lane as a
+Grok-CLI shell-out node (`run-grok-worker.sh --model claude-opus-5-5` or
+`--model gpt-6-sol`), not as a native slug.
 
 The canvas never takes worker defaults from the host's first listed model.
-Build and Review default to `gpt-6-sol` (Review at `xhigh`) on the first lane
-that offers it — host, then Codex, OpenCode, Grok CLI — and report a missing
-lane rather than substituting Opus, GPT-5.6 Sol, or Grok. Only the coordinator
+Build and new or lane-less steps default to `claude-opus-5-5` on the first lane
+that offers it — host, then Claude Code, OpenCode, Grok CLI. Review defaults to
+`gpt-6-sol` at `xhigh` on the first lane that offers it — host, then Codex,
+OpenCode, Grok CLI. Report a missing lane rather than substituting Sol for a
+build, GPT-5.6, or Grok. Only the coordinator
 node keeps the host's main model. The detector reports `credit_pressure: true`
 only when `BOPEN_USAGE_CREDIT_PRESSURE=1`; without it, Grok worker nodes fail
 validation.
@@ -159,7 +162,10 @@ main-known `BOPEN_HOST_HARNESS` value.
 
 - **Claude**: default advisor `claude-opus-5-5`; native aliases include
   `opus`, `sonnet`, `haiku`, and `inherit`. `fable` is legacy opt-in only.
-  Effort `low|medium|high|xhigh|max`.
+  Effort `low|medium|high|xhigh|max`. The detector lists these whenever the
+  `claude` CLI exists and reports `lane_access.claude: "unverified"`: there is
+  no offline account check, so a failed Opus dispatch reports the lane
+  unavailable.
 - **Codex**: whatever `model =` says in `~/.codex/config.toml`, plus
   `model_reasoning_effort`. There is no enumeration command; the config is the
   truth. The in-app picker has lagged behind what `-m` accepts.
@@ -182,10 +188,15 @@ piping through `tail` truncates the worker's final report irrecoverably.
 codex exec --sandbox workspace-write --cd <repo> "<one-line task>" \
   > /tmp/dispatch-<id>.log 2>&1 &
 
+# Claude Opus worker from a non-Claude host
+cd <worktree> && claude --print --permission-mode acceptEdits \
+  --model claude-opus-5-5 --effort medium < <file> > <file>.log 2>&1 &
+
 # Grok lane — always through the orchestra wrapper, which enforces the
 # grok-4.7 pin, the usage-credit gate (BOPEN_USAGE_CREDIT_PRESSURE=1), and the
-# GPT-6-only rule when the command runs. Never emit a raw `grok -m` dispatch.
-bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model gpt-6-sol --effort medium \
+# GPT-5.6 ban when the command runs. Never emit a raw `grok -m` dispatch.
+# Custom ids need a quoted [model."<id>"] entry that `grok models` lists.
+bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model claude-opus-5-5 --effort medium \
   --mode write --cwd <worktree> --branch <branch> --base-ref <ref> \
   --ownership '<owned paths>' --prompt-file <file> --log <file>.log
 
