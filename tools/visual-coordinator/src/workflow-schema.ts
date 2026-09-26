@@ -401,8 +401,10 @@ export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnviro
 /** Re-staff a step whose role changed, the same way a lane-less seed node is staffed. */
 export const restaff = (node: WorkflowNode, role: NodeRole, environment: WorkflowEnvironment): WorkflowNode => {
   if (role === node.role) return node;
-  const target = role === "coordinator"
-    ? { lane: preferredLane(environment), model: mainModel(environment, preferredLane(environment)) }
+  // A former review step never gains write access by changing role; only builders are restaffed to write.
+  const reviewing = role === "reviewer" || (node.execution === "read-only-review" && role !== "builder");
+  const target = reviewing ? reviewTarget(environment)
+    : role === "coordinator" ? { lane: preferredLane(environment), model: mainModel(environment, preferredLane(environment)) }
     : targetForRole(environment, role);
   return {
     ...node,
@@ -410,9 +412,8 @@ export const restaff = (node: WorkflowNode, role: NodeRole, environment: Workflo
     lane: target.lane,
     model: target.model,
     provider: defaultProvider(environment, target.lane, target.model, role),
-    effort: role === "reviewer" ? "xhigh" : "medium",
-    // A former review step never gains write access by changing role; only builders are restaffed to write.
-    execution: role === "reviewer" || (node.execution === "read-only-review" && role !== "builder") ? "read-only-review" : "write",
+    effort: reviewing ? "xhigh" : "medium",
+    execution: reviewing ? "read-only-review" : "write",
     // An approval covers one provider and role, so a restaffed step must be approved again.
     disclosure: undefined,
   };
@@ -553,10 +554,12 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     // Grok needs usage-credit pressure, observed on-pin main included. Only a host already running the
     // legacy grok-4.6 main is exempt: that session is an observed fact, not a new dispatch.
     if (grokBacked && !(observedLegacyGrokMain && environment.hostLane === "grok") && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${node.role === "reviewer" ? SOL : OPUS}.` });
+    // Any node that executes a review is a reviewer for model policy, whatever its role.
+    const reviewing = node.role === "reviewer" || node.execution === "read-only-review";
     if (node.role !== "coordinator") {
-      if (node.role !== "reviewer" && model !== "" && !grokBacked && !isSuperseded(effectiveModel) && !runsOpus(environment, node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, which is not the coding worker; build on ${OPUS}.` });
-      if (node.role === "reviewer" && (!runsSol(environment, node.lane, model) || node.effort !== "xhigh")) issues.push({ scope: "node", id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });
+      if (!reviewing && model !== "" && !grokBacked && !isSuperseded(effectiveModel) && !runsOpus(environment, node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, which is not the coding worker; build on ${OPUS}.` });
     }
+    if (reviewing && (!runsSol(environment, node.lane, model) || node.effort !== "xhigh")) issues.push({ scope: "node", id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });
     const lane = own(environment.lanes, node.lane);
     if (!lane) issues.push({ scope: "node", id: node.id, message: `${node.title} uses an undetected lane: ${node.lane}.` });
     else {

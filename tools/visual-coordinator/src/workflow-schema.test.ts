@@ -618,8 +618,20 @@ describe("workflow schema", () => {
     const review = { ...defaultWorkflow(environment).nodes[2], disclosure: "Approved OpenAI reviewer" };
 
     const external = restaff(review, "external", environment);
-    expect(external).toMatchObject({ role: "external", execution: "read-only-review", disclosure: undefined });
-    expect(restaff(review, "builder", environment)).toMatchObject({ execution: "write", disclosure: undefined });
+    expect(external).toMatchObject({ role: "external", lane: "codex", model: "gpt-6-sol", effort: "xhigh", execution: "read-only-review", disclosure: undefined });
+    expect(validateWorkflow({ title: "t", nodes: [external], edges: [] }, environment)).toEqual([]);
+    expect(restaff(review, "builder", environment)).toMatchObject({ lane: "claude", model: "claude-opus-5-5", effort: "medium", execution: "write", disclosure: undefined });
+  });
+
+  it("holds every review-executing node to Sol at xhigh, whatever its role", () => {
+    const environment = liveCodexEnvironment();
+    const build = defaultWorkflow(environment).nodes[1];
+    const reviewer = { ...build, id: "ext", title: "External review", role: "external" as const, execution: "read-only-review" as const, disclosure: "Approved Claude" };
+
+    expect(reviewer).toMatchObject({ model: "claude-opus-5-5", effort: "medium" });
+    expect(validateWorkflow({ title: "t", nodes: [reviewer], edges: [] }, environment).map((issue) => issue.message)).toContain("External review must review on gpt-6-sol at xhigh.");
+    const solMedium = { ...reviewer, lane: "codex", provider: "native" as const, model: "gpt-6-sol" };
+    expect(validateWorkflow({ title: "t", nodes: [solMedium], edges: [] }, environment).map((issue) => issue.message)).toEqual(["External review must review on gpt-6-sol at xhigh."]);
   });
 
   it("marks a lane the detector could not verify as unverified", () => {

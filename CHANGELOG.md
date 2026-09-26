@@ -135,7 +135,8 @@ manifests share the same release version.
   can be pointed at a different repo. Paths are resolved with `CDPATH=''`,
   so a relative `repoDir` is not redirected or rejected when `CDPATH` is set.
   Covered by `scripts/tests/test_factory_worker_repo_dir.py`, which runs with
-  the user's git config isolated.
+  the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
+  `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
 
 ## [1.1.170] - Pending production promotion
 
@@ -177,9 +178,13 @@ manifests share the same release version.
   CI-scan recipe pins `--effort xhigh`, and credit pressure narrows scope or
   queues the review instead of moving it to Grok. The Grok persona guide gets
   a separate `gpt-6-sol --effort xhigh` review lane.
-- Review 0.1.21: `code-auditor` 1.4.14 drops its direct xAI review route
+- Visual coordinator: any node with `read-only-review` execution, whatever its
+  role, is restaffed onto the review target (`gpt-6-sol` at `xhigh`) and must
+  validate as a Sol `xhigh` reviewer.
+- Review 0.1.21: `code-auditor` 1.4.15 drops its direct xAI review route
   (`XAI_REVIEW_MODEL`) and takes its verdict from a read-only
-  `codex exec -m gpt-6-sol` pass at `xhigh`. Plugin agent `model` fields
+  `codex exec -m gpt-6-sol` pass at `xhigh` on every review; large diffs are
+  scoped into slices, never skipped. Plugin agent `model` fields
   accept only Claude models, so Coordinator and `hunter-skeptic-referee`
   1.1.4 route review verdicts through that explicit Sol reviewer rather than
   the agents' declared Claude tiers. `security-ops` 1.0.12 pins its scan and

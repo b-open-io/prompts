@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.14
+version: 1.4.15
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -248,23 +248,17 @@ codex --version
 If `codex` is unavailable, report the review lane as unavailable rather than
 substituting another model.
 
-### When to Use a Sol Second Pass
-Use a separate Sol pass when the surface area is too large to observe
-thoroughly in a single pass.
+### Scoping the Sol Pass
+Every review ends with the Sol `xhigh` verdict — small diffs included. What
+varies is the brief you send, never whether the pass runs or its effort:
 
-✅ **USE SOL FOR:**
-- Large diffs requiring holistic observation
-- Architecture and design pattern documentation
-- Security property mapping across a large surface area
-- Data flow tracing and trust boundary documentation
-- Pattern analysis across files
-- Refactoring opportunities
-
-❌ **DON'T USE SOL FOR:**
-- Simple syntax issues
-- Basic linting
-- Well-documented security rules already caught by static analysis
-- Standard formatting problems
+- **Small or focused diffs**: send the full diff plus the files it touches.
+- **Large diffs**: split by subsystem or trust boundary and run one pass per
+  slice, each with the relevant static-analysis output.
+- **Always include**: your observations, Semgrep/CodeQL results, and every
+  claim the author made, so Sol checks claims as well as code.
+- **Leave out**: lint and formatting noise already caught by tooling; it
+  dilutes the brief without changing the verdict.
 
 ### Code Pattern Observation
 
@@ -420,11 +414,8 @@ echo "Scans complete. Reviewing results..."
 git diff
 # ... perform regular checks ...
 
-# 2. For complex changes, add a Sol xhigh pass
-if [ $(git diff --numstat | wc -l) -gt 20 ]; then
-  echo "Large changeset detected, adding a GPT-6 Sol xhigh review pass..."
-  # Run the codex exec review above
-fi
+# 2. Always run the GPT-6 Sol xhigh verdict pass (the codex exec review above),
+#    one pass per slice when the diff is large
 
 # 3. Combine findings into comprehensive report
 ```
