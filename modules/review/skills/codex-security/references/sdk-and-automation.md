@@ -197,8 +197,10 @@ Ordered by how much they save per unit of lost signal:
    biggest lever.
 2. `--max-cost` on every invocation. Partial results are preserved, so a
    ceiling costs coverage, never the whole run.
-3. `--effort high` (or lower) before dropping to a cheaper model — effort is the
-   more granular dial, and `xhigh` is the default.
+3. Keep `--effort xhigh`; never lower review effort to save cost. Cut cost by
+   narrowing scope instead: fewer files, a focused diff, fewer passes. Only
+   under explicit usage-credit pressure, move the review off Codex Security to
+   the coordinator's Grok lane pinned to `grok-4.7`.
 4. `--dry-run` to confirm effective model, effort, and destination for free
    before starting an expensive configuration.
 5. Reserve `--mode deep` for scheduled sweeps of security-critical code, not

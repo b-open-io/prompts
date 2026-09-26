@@ -150,7 +150,7 @@ Rules that will otherwise bite:
 - The thread limit **includes the parent agent** — the default 9 gives up to 8
   delegated workers. A configured limit is a maximum, not proof workers started.
 - Separate from `bulk-scan --workers`, which controls concurrent repositories.
-- Quote strings as TOML: `--codex 'model_reasoning_effort="high"'`.
+- Quote strings as TOML: `--codex 'model_reasoning_effort="xhigh"'`.
 - Do not pass both `--model` and `--codex 'model="..."'` (same for effort);
   conflicting or repeated keys are rejected.
 - Overrides of `plugins`, `marketplaces`, or `features.plugins` — including
@@ -212,7 +212,7 @@ npx @openai/codex-security findings false-positive OCCURRENCE_ID \
   --reason "The route already checks permissions"
 
 npx @openai/codex-security validate FINDINGS_JSON "Possible SQL injection in src/query.ts:42"
-npx @openai/codex-security validate "Possible SQL injection" --effort high
+npx @openai/codex-security validate "Possible SQL injection" --effort xhigh
 
 npx @openai/codex-security patch FINDINGS_JSON "Missing authorization check in src/routes.ts:18"
 npx @openai/codex-security patch "Missing authorization check" --effort high

@@ -113,12 +113,19 @@ matching live, so there is no raw `grok` dispatch recipe to keep in sync. If the
 wrapper is unavailable, the Grok lane is unavailable for that run; do not
 hand-roll a `grok --prompt-file` call.
 
-Use a unique prompt file and log for every parallel run. Research or review
+Use a unique prompt file and log for every parallel run. Research
 (read-only):
 
     bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
       --auth grok.com --model "$BOPEN_WORKER_MODEL" --mode read \
       --cwd <repo> --prompt-file <spec> --log /tmp/dispatch-<id>.log
+
+Code review (read-only) never inherits the worker model or default effort. It
+runs on a quoted `gpt-6-sol` entry at `xhigh`:
+
+    bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
+      --auth grok.com --model gpt-6-sol --effort xhigh --mode read \
+      --cwd <repo> --prompt-file <review-brief> --log /tmp/review-<id>.log
 
 Implementation in an explicitly isolated worktree. The wrapper verifies the
 cwd, branch, and base ref and prepends the prepared-worktree handoff block; the
