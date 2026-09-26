@@ -111,6 +111,23 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+### Fixed
+
+- `scripts/prompts-factory-worker.sh` accepts a git worktree as `repoDir`.
+  It tested `[[ -d "$repo_dir/.git" ]]`, but a worktree's `.git` is a file, so
+  every run stopped with `BAD_REPO_DIR`. It now requires `.git` to exist as a
+  file or directory and asks git (`rev-parse --is-inside-work-tree`, then
+  `--show-toplevel` compared with symlinks resolved). A normal checkout, a
+  worktree, a submodule, a nested repo, and a symlink to any of them pass. A
+  plain or missing directory, a subdirectory of a checkout, a `.git`
+  directory, or a bare repo still exits 2 with `BAD_REPO_DIR`. The worker
+  unsets inherited `GIT_DIR`, `GIT_WORK_TREE`, and the other git location
+  variables at startup, so neither the check nor later git and gh commands
+  can be pointed at a different repo. Paths are resolved with `CDPATH=''`,
+  so a relative `repoDir` is not redirected or rejected when `CDPATH` is set.
+  Covered by `scripts/tests/test_factory_worker_repo_dir.py`, which runs with
+  the user's git config isolated.
+
 ## [1.1.169] - Pending production promotion
 
 ### Changed
