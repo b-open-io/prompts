@@ -28,12 +28,14 @@ cleanup policy (after-approved-merge)
 - <from> —memory · carried forward→ <to>
 
 ## Nodes
-- **Work** — Display Name (`plugin:id`)
-  model: grok-4.6 · effort: medium
-- **Implement B** — SHELL-OUT to codex
-  controller: grok · provider/model: openai/gpt-5.6-sol
+- **Work** — SHELL-OUT to codex
+  controller: grok · provider/model: openai/gpt-6-sol · effort: medium
   disclosure: approved · context: brief, owned paths, test contract
   command: codex exec ...
+- **Review** — SHELL-OUT to codex (read-only)
+  controller: grok · provider/model: openai/gpt-6-sol · effort: xhigh
+  disclosure: approved · context: diff, worker report, claims
+  command: codex exec --sandbox read-only ...
 
 ## Verification gate
 <node id>: <command>
@@ -58,27 +60,32 @@ cleanup policy (after-approved-merge)
       "id": "n2",
       "kind": "process",
       "label": "Work",
-      "lane": "grok",
-      "model": "grok-4.6",
+      "lane": "codex",
+      "model": "gpt-6-sol",
       "effort": "medium",
       "actor": "maker",
-      "execution": "native-agent",
+      "execution": "external-provider",
       "agentType": null,
       "task": "<prompt>",
-      "shell": false,
-      "command": null
+      "shell": true,
+      "nativeController": "grok",
+      "provider": "openai",
+      "disclosure": "approved",
+      "context": "<exact shared context>",
+      "command": "<safe stdin/prompt-file dispatch>"
     },
     {
       "id": "n3",
       "kind": "process",
       "label": "Review",
-      "lane": "claude",
-      "model": "fable",
+      "lane": "codex",
+      "model": "gpt-6-sol",
+      "effort": "xhigh",
       "actor": "reviewer",
       "execution": "read-only-review",
       "shell": true,
       "nativeController": "grok",
-      "provider": "anthropic",
+      "provider": "openai",
       "disclosure": "approved",
       "context": "<exact shared context>",
       "command": "<safe stdin/prompt-file dispatch>"
@@ -100,9 +107,10 @@ cleanup policy (after-approved-merge)
 The current canvas emits executable agent steps as `kind: "process"`.
 Node `lane` is `grok` | `claude` | `codex` | `opencode`.
 A process or gate with `lane` not equal to the host is a shell-out (`shell:
-true`). A shell-out is a subprocess of another vendor's CLI. A Grok native
-node whose detected model is not `grok-4.6` is converted (`converted: true`)
-to a shell-out. A model on no detected lane, or a shell-out whose CLI is not
+true`). A shell-out is a subprocess of another vendor's CLI. Every native
+Grok-lane node except the observed main session — `grok-4.7` included — is
+converted (`converted: true`) to a wrapper shell-out and needs an approved
+disclosure. A model on no detected lane, or a shell-out whose CLI is not
 installed, is omitted from executable `nodes[]` and named under `Not emitted`
 with `kind: "node"` and `omit: true` in `omissions[]`. Every incident handoff is
 also recorded there with `kind: "edge"`, so removing an unavailable reviewer,
@@ -157,7 +165,10 @@ second dispatch after a failed gate, not a native loop. Never emit a native
 DAG, pipeline, or workflow-engine construct for OpenCode.
 
 **Grok**: emit a Rhai workflow. Follow the bundled `/create-workflow`
-skill. Native `agent().model` is `grok-4.6` only. A non-Grok lane is a
+skill. Native `agent().model` is pinned to `grok-4.7` and allowed for worker
+nodes only under usage-credit pressure; Grok 4.6 is forbidden. Worker and
+review nodes default to `gpt-6-sol` shell-outs.
+A non-Grok lane is a
 Grok-CLI or Claude-CLI shell-out. `parallel(jobs)` is the barrier.
 Smoke-check with `{ validate_only: true }` before a real run.
 
@@ -176,8 +187,53 @@ shell-out node and say so, or drop it. Never leave it looking configured.
 The Visual Coordinator's version-2 serializer emits this shape from the live
 canvas. Nodes without an executable boundary are omitted from `nodes[]` and
 listed in `omissions[]` together with every affected edge; the human plan
-repeats those refusals under `Not emitted`. A native Grok node whose model is detected but not `grok-4.6` is
-converted to a Grok CLI shell-out and marked `converted: true`.
+repeats those refusals under `Not emitted`. Every native Grok-lane node other
+than the observed main session is converted to a wrapper shell-out and marked
+`converted: true`.
+
+The serializer runs the same validation that gates Copy. Every validation
+issue carries a `scope`: a `node` issue omits that node with the issues as its
+reason, and a `graph` issue (cycle, broken edge, live-child cap,
+simulation-only host) omits every node, whatever the ids are, so an invalid
+canvas never yields a runnable record. Grok-lane shell-outs call the installed
+`run-grok-worker.sh` by the absolute path the detector reports as
+`grok_worker`, with `--auth` set to the detected `grok_auth`. They
+never emit a raw `grok -m` dispatch, and without both they are not executable.
+The wrapper checks `BOPEN_USAGE_CREDIT_PRESSURE` when the command runs rather
+than baking the credit decision into the export. A node's `provider` is where
+its content goes, not which CLI carries it: a Grok-lane shell-out is `xai` only
+for a Grok model; a custom id such as `gpt-6-sol` reports the provider behind
+its `config.toml` `base_url` (the detector's `grok_model_providers`) or
+`unknown`, and its disclosure must name the real destination. The main session
+(`actor: "main-controller"`) is the first native coordinator on the host lane
+whose model is the observed host main: the detector's `models.<lane>_default`
+when reported. A Grok host has no main at all unless the detector reported
+`models.grok_default`; bare `grok-4.7` is never assumed, so the Coordinate card
+stays empty and fails validation. Other hosts without a reported default use
+their first native host-lane coordinator. A Coordinate card edited away from
+the observed default is a dispatch: on the Grok lane it becomes a disclosed
+wrapper shell-out that needs credit pressure. The observed main alone keeps the
+model the detector saw only when that is `grok-4.6` (or an alias resolving to
+it); every other version, dispatch, edited card, and inventory choice stays
+pinned to `grok-4.7`. That legacy `grok-4.6` main is also the only Grok use
+exempt from credit pressure: an observed `grok-4.7` main validates and exports
+only under credit pressure. Every other native Grok-lane node
+converts to a shell-out whether or not its model is listed, and a Grok dispatch
+is never Ready unless the detector's `grok models` listing shows its model. A
+custom alias served by xAI, or pointing at a Grok model (`grok_model_targets`),
+is held to the same credit gate and `grok-4.7` pin as a `grok-*` id, checked
+against the model it points at; an alias for a `gpt-5.6` model is rejected,
+observed main included. The detector parses `config.toml` as real TOML, and a
+listed custom id is refused unless its entry names both an explicit `model`
+and a `base_url` host; an entry is never assumed to serve its own id.
+Provider-qualified xAI ids (`xai/…`, `openrouter/x-ai/…`) are Grok: they run
+only on the Grok lane, under credit pressure, pinned to `grok-4.7`. The
+detector keeps these ids whole. A Grok CLI id named `gpt-6-sol` counts as Sol
+only when its entry resolves to `gpt-6-sol` behind a non-xAI host; otherwise it
+is never staffed as Sol and is rejected as a Build or Review model. The observed main's pin exemption covers only a resolved
+`grok-4.6`; any other off-pin Grok version is rejected like a dispatch. The canvas's
+Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
+never reports Ready while the export would drop a node.
 
 Generated commands encode task text before passing it through stdin or
 `--prompt-file`; never interpolate backticks, `$()`, backslashes, or newlines

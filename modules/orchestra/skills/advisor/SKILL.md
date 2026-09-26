@@ -1,10 +1,11 @@
 ---
 name: advisor
-version: 0.0.10
+version: 0.0.11
 description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
-  the advisor", "get a second opinion", "ask codex", "ask Astra", "ask gpt-6-astra", "ask Fable", "ask opencode", or "ask a bigger model". The
+  the advisor", "get a second opinion", "ask Claude Opus", "ask claude-opus-5-5",
+  "ask codex", "ask Fable", "ask opencode", or "ask a bigger model". The
   advisor returns guidance; the main session keeps execution and decision ownership.
 ---
 
@@ -15,13 +16,14 @@ commits, ships, or makes the final decision. Use Coordinator for implementation
 workers; it also composes native specialists and this advisor into one
 workflow when a task needs all three.
 
-For a strong general-purpose advisor, recommend `gpt-6-astra` through the
-Codex CLI from any host with shell access, including Claude Code, Codex,
-Grok Build, and OpenCode. Honor an explicit model or channel preference. See
-[codex-cli.md](references/channels/codex-cli.md) for preflight and dispatch.
+The default advisor is Claude Opus 5.5 (`claude-opus-5-5`). Use Claude's native
+advisor or the clean Claude CLI channel according to the current host. Fable is
+a legacy opt-in channel, never a default. Honor an explicit model or channel
+preference. See [channels/README.md](references/channels/README.md) for channel
+selection and preflight.
 
-If the user wants Astra or another Codex model to build rather than advise,
-route through Coordinator. Load
+If the user wants another advisor model to build rather than advise, route
+through Coordinator. Load
 [../coordinator/references/workers/codex.md](../coordinator/references/workers/codex.md).
 Advisor stays read-only; do not dump worker CLI recipes here.
 

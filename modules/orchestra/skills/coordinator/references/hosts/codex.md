@@ -4,15 +4,16 @@ Read this only when Codex is the current main session.
 
 Prefer installed bopen specialist agents, then built-in worker or explorer
 roles, for evidence, investigation, review, testing, and tool-bound judgment.
-That preference does not override Coordinator's cheaper-worker default for
-routine implementation. Never claim a named persona ran unless that adapter
-was actually spawned. Keep orchestration in the main task; the safe default
+That preference does not override Coordinator's preferred `gpt-6-sol` worker
+default for routine implementation or its `xhigh` code-review default. Never
+claim a named persona ran unless that adapter was actually spawned. Keep
+orchestration in the main task; the safe default
 depth prevents children from recursively creating an uncontrolled tree.
 
 Codex has native subagent coordination but no first-class workflow script
 engine. The main sequences stages and barriers. For every external
 implementation unit, spawn a native `worker` as its controller so progress is
-visible in the subagent panel. Tell that controller to run the selected cheaper
+visible in the subagent panel. Tell that controller to run the selected coding
 worker guide, monitor it, and return its report—not to write the implementation
 with its own model. Use native specialists directly for judgment that should
 stay inside the current runtime.

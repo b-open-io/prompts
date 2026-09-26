@@ -1,7 +1,7 @@
 # claudex setup — macOS · ~10 minutes
 
-`claudex` = Claude Code harness × GPT-5.6 Sol. Run the Claude Code CLI — same
-tools, skills, and UI — with OpenAI's GPT-5.6 Sol as the model, billed against
+`claudex` = Claude Code harness × GPT-6 Sol. Run the Claude Code CLI — same
+tools, skills, and UI — with OpenAI's GPT-6 Sol as the model, billed against
 an existing ChatGPT/Codex subscription. The normal `claude` command stays
 untouched; `claudex` is a separate escape hatch for when Anthropic usage runs
 out.
@@ -93,23 +93,23 @@ curl -s http://127.0.0.1:8317/v1/models \
   -H "Authorization: Bearer <your-generated-key>" | python3 -m json.tool
 ```
 
-`gpt-5.6-sol` should appear in the list (plus `gpt-5.6-luna`, `gpt-5.5`, and
-friends). An empty `data: []` means step 04 did not complete.
+`gpt-6-sol` should appear in the list. An empty `data: []` means step 04 did
+not complete.
 
 ## 06 · Add the alias
 
 Append to `~/.zshrc`, substituting the generated key:
 
 ```bash
-# claudex — Claude Code harness driving GPT-5.6 Sol via CLIProxyAPI
+# claudex — Claude Code harness driving GPT-6 Sol via CLIProxyAPI
 alias claudex='ANTHROPIC_BASE_URL=http://127.0.0.1:8317 \
 ANTHROPIC_AUTH_TOKEN=<your-generated-key> \
-ANTHROPIC_DEFAULT_HAIKU_MODEL=gpt-5.6-sol \
-CLAUDE_CODE_SUBAGENT_MODEL=gpt-5.6-sol \
+ANTHROPIC_DEFAULT_HAIKU_MODEL=gpt-6-sol \
+CLAUDE_CODE_SUBAGENT_MODEL=gpt-6-sol \
 CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 \
 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 \
 ENABLE_TOOL_SEARCH=false \
-claude --model gpt-5.6-sol'
+claude --model gpt-6-sol'
 ```
 
 Then `source ~/.zshrc`. What each variable does:
@@ -118,7 +118,7 @@ Then `source ~/.zshrc`. What each variable does:
 |---|---|
 | `ANTHROPIC_BASE_URL` | Points Claude Code at the local proxy instead of Anthropic. |
 | `ANTHROPIC_AUTH_TOKEN` | Authenticates to the proxy with the generated key. |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Routes Claude Code's small/background-model calls to GPT-5.6 Sol too, so nothing tries to reach Anthropic. |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Routes Claude Code's small/background-model calls to GPT-6 Sol too, so nothing tries to reach Anthropic. |
 | `CLAUDE_CODE_SUBAGENT_MODEL` | Spawned subagents use the same model. |
 | `CLAUDE_CODE_ALWAYS_ENABLE_EFFORT` | Enables reasoning-effort controls for non-Anthropic models. |
 | `CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY` | Caps parallel tool calls at 3 — the Codex backend handles bursts poorly. |
@@ -135,7 +135,7 @@ claudex -p "Reply with exactly: claudex works."
 ```
 
 A reply means the whole chain works. The startup banner reads
-`gpt-5.6-sol · API Usage Billing`, and a warning that claude.ai connectors are
+`gpt-6-sol · API Usage Billing`, and a warning that claude.ai connectors are
 disabled is expected — the auth token overrides the claude.ai login for that
 session.
 

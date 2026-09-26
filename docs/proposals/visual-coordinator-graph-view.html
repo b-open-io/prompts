@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Visual coordinator — graph builder</title>
 <!--
+  ARCHIVAL PROPOSAL: superseded by tools/visual-coordinator and
+  modules/orchestra/skills/visual-coordinator/examples/graph-builder.html.
+  Model defaults below follow current policy: workers gpt-6-sol, review
+  gpt-6-sol at xhigh, advisor claude-opus-5-5, Grok only under usage-credit
+  pressure and only grok-4.7.
   Copy this file into the artifact. Replace window.VC_SEED with the graph
   for THIS job (nodes + edges). Do not leave the untitled Start/Work/Gate
   template on a real dispatch. The graph is the workflow; the inspector
@@ -139,9 +144,9 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
 (function(){
   var ENV = window.VC_ENV || {};
   var MODELS = ENV.models || {
-    grok:["grok-4.6"], grok_effort:["none","minimal","low","medium","high","xhigh"],
-    claude:["fable","sonnet","opus"], claude_effort:["low","medium","high","xhigh","max"],
-    codex:["gpt-5.6-sol"], codex_effort:["minimal","low","medium","high","xhigh"]
+    grok:["grok-4.7"], grok_effort:["none","minimal","low","medium","high","xhigh"],
+    claude:["claude-opus-5-5","sonnet","inherit"], claude_effort:["low","medium","high","xhigh","max"],
+    codex:["gpt-6-sol"], codex_effort:["minimal","low","medium","high","xhigh"]
   };
   var LANES = ENV.lanes || { grok:"available", claude:"available", codex:"available" };
   var ROSTER = ENV.roster || ["","orchestra:coordinator","orchestra:agent-builder","review:tester"];
@@ -154,7 +159,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   var hist = [], hpos = -1;
 
   function uid(p){ return p + (p==="n"? nid++ : eid++); }
-  function node(o){ return Object.assign({ id:uid("n"), kind:"process", x:80, y:160, label:"Step", detail:"", lane:hostLane(), model:(modelsFor(hostLane())[0]||"grok-4.6"), effort:"medium", agentType:"", task:"", gateCmd:"", schema:"", paths:"", command:"" }, o); }
+  function node(o){ return Object.assign({ id:uid("n"), kind:"process", x:80, y:160, label:"Step", detail:"", lane:hostLane(), model:(modelsFor(hostLane())[0]||"gpt-6-sol"), effort:"medium", agentType:"", task:"", gateCmd:"", schema:"", paths:"", command:"" }, o); }
   function edge(o){ return Object.assign({ id:uid("e"), from:"", to:"", label:"", kind:"forward" }, o); }
   function hostLane(){
     if(HARNESS==="claude-code") return "claude";
@@ -170,7 +175,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     return 6;
   }
   function modelsFor(lane){
-    return (MODELS[lane]||[]).filter(function(m){ return m && m!=="unknown" && m!=="grok-4.5"; });
+    return (MODELS[lane]||[]).filter(function(m){ return m && m!=="unknown" && (!/^grok-/.test(m) || m==="grok-4.7") && !/(^|\/)gpt-5\.6(-|$)/.test(m); });
   }
   function effortsFor(lane){
     return (MODELS[lane+"_effort"]||["low","medium","high"]).filter(function(m){ return m && m!=="unknown"; });
@@ -211,14 +216,13 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   function seedMinimal(){
     nid=1; eid=1;
     var native=hostLane();
-    var nativeModel=modelsFor(native)[0]||"grok-4.6";
-    var gateLane=modelsFor("claude").length && laneAvailable("claude") ? "claude" : native;
-    var gateModel=gateLane==="claude" && modelsFor("claude").indexOf("fable")>=0 ? "fable" : (modelsFor(gateLane)[0]||nativeModel);
+    var nativeModel=modelsFor(native)[0]||"gpt-6-sol";
+    var solLane=laneAvailable("codex") ? "codex" : native;
     S.name = "untitled";
     S.nodes = [
       node({id:"n1", kind:"source", x:36, y:188, label:"Start", detail:"brief in"}),
-      node({id:"n2", kind:"process", x:280, y:178, label:"Work", detail:"do the job", lane:native, model:nativeModel, effort:"medium"}),
-      node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:gateLane, model:gateModel, effort:"high", gateCmd:"bun test"}),
+      node({id:"n2", kind:"process", x:280, y:178, label:"Work", detail:"do the job", lane:solLane, model:"gpt-6-sol", effort:"medium"}),
+      node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:solLane, model:"gpt-6-sol", effort:"xhigh", gateCmd:"bun test"}),
       node({id:"n4", kind:"process", x:780, y:178, label:"Done", detail:"ship or complete", lane:native, model:nativeModel, effort:"low"})
     ];
     nid=5;
@@ -237,12 +241,12 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     S.name = "maker-checker-factory";
     S.nodes = [
       node({id:"n1", kind:"source", x:36, y:188, label:"Intake", detail:"user brief and repo"}),
-      node({id:"n2", kind:"process", x:268, y:178, label:"Decompose", detail:"owned paths", lane:"grok", model:"grok-4.6", effort:"high", agentType:"orchestra:coordinator"}),
-      node({id:"n3", kind:"process", x:508, y:36, label:"Implement A", detail:"tests", lane:"grok", model:"grok-4.6", effort:"low"}),
-      node({id:"n4", kind:"process", x:508, y:178, label:"Implement B", detail:"pages", lane:"codex", model:"gpt-5.6-sol", effort:"medium"}),
-      node({id:"n5", kind:"process", x:508, y:320, label:"Implement C", detail:"API", lane:"grok", model:"grok-4.6", effort:"low"}),
-      node({id:"n6", kind:"gate", x:748, y:178, label:"Verify", detail:"checker + bun test", lane:"claude", model:"fable", effort:"high", gateCmd:"bun test"}),
-      node({id:"n7", kind:"process", x:988, y:178, label:"Ship", detail:"git stays here", lane:"grok", model:"grok-4.6", effort:"medium", agentType:"orchestra:coordinator"}),
+      node({id:"n2", kind:"process", x:268, y:178, label:"Decompose", detail:"owned paths", lane:"grok", model:"grok-4.7", effort:"high", agentType:"orchestra:coordinator"}),
+      node({id:"n3", kind:"process", x:508, y:36, label:"Implement A", detail:"tests", lane:"codex", model:"gpt-6-sol", effort:"medium"}),
+      node({id:"n4", kind:"process", x:508, y:178, label:"Implement B", detail:"pages", lane:"codex", model:"gpt-6-sol", effort:"medium"}),
+      node({id:"n5", kind:"process", x:508, y:320, label:"Implement C", detail:"API", lane:"codex", model:"gpt-6-sol", effort:"medium"}),
+      node({id:"n6", kind:"gate", x:748, y:178, label:"Verify", detail:"checker + bun test", lane:"codex", model:"gpt-6-sol", effort:"xhigh", gateCmd:"bun test"}),
+      node({id:"n7", kind:"process", x:988, y:178, label:"Ship", detail:"git stays here", lane:"grok", model:"grok-4.7", effort:"medium", agentType:"orchestra:coordinator"}),
       node({id:"n8", kind:"artifact", x:988, y:36, label:"Diff", detail:"what workers wrote"}),
       node({id:"n9", kind:"artifact", x:988, y:320, label:"Gate log", detail:"pass or findings"}),
       node({id:"n10", kind:"memory", x:60, y:580, label:"Last run journal", detail:"previous findings"})
@@ -489,8 +493,9 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     var n=node({ kind:kind, x:x, y:y,
       label: kind==="gate"?"Gate": kind==="source"?"Source": kind==="artifact"?"Artifact": kind==="memory"?"Memory":"Step",
       detail: kind==="gate"?"prove the work":"",
-      lane: kind==="gate" && laneAvailable("claude")?"claude":hostLane(),
-      model: kind==="gate" && modelsFor("claude").length? (modelsFor("claude").indexOf("fable")>=0?"fable":modelsFor("claude")[0]) : (modelsFor(hostLane())[0]||"grok-4.6"),
+      lane: laneAvailable("codex")?"codex":hostLane(),
+      model: "gpt-6-sol",
+      effort: kind==="gate"?"xhigh":"medium",
       gateCmd: kind==="gate"?"bun test":"" });
     S.nodes.push(n);
     if(sel&&sel.k==="node"&&byId(sel.id)&&sel.id!==n.id){
@@ -570,7 +575,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     if(isShell(n)){
       row.shell=true; row.command=composeCommand(n); return row;
     }
-    if(HARNESS==="grok" && n.model && n.model!=="grok-4.6"){
+    if(HARNESS==="grok" && n.model && n.model!=="grok-4.7"){
       var lane=null;
       if(modelsFor("grok").indexOf(n.model)>=0) lane="grok";
       else if(modelsFor("codex").indexOf(n.model)>=0) lane="codex";
@@ -602,8 +607,8 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       var ms=modelsFor(n.lane);
       if(n.model && ms.length && ms.indexOf(n.model)<0) out.push(n.label+": "+n.model+" is not on the "+n.lane+" lane.");
       if(isShell(n) && !laneAvailable(n.lane)) out.push(n.label+": the "+n.lane+" CLI is not installed, so this shell-out cannot run here.");
-      if(HARNESS==="grok" && !isShell(n) && n.model && n.model!=="grok-4.6")
-        out.push(n.label+": Grok agent().model accepts grok-4.6 only; "+n.model+" will emit as a shell-out.");
+      if(HARNESS==="grok" && !isShell(n) && n.model && n.model!=="grok-4.7")
+        out.push(n.label+": Grok agent().model accepts grok-4.7 only; "+n.model+" will emit as a shell-out.");
       if(n.schema && isShell(n)) out.push(n.label+": structured output is native-only; schema will not be emitted.");
       if(n.agentType && isShell(n)) out.push(n.label+": roster agentType is native-only; it will not be emitted.");
     });

@@ -4,11 +4,14 @@ Read this only when Grok Build is the current main session.
 
 ## Native agents
 
-Prefer roster agents on grok-4.6 for evidence, review, testing, and specialist
-judgment. Routine bounded implementation follows Coordinator's cheaper-worker
-default. Pass the named agent type; installed bOpen aliases may also resolve.
-Do not dispatch grok-4.5. Native agent model fields accept Grok-native slugs,
-not arbitrary custom model ids.
+A Grok main session stays the main seat, but that does not make Grok the worker
+default. Route implementation to `gpt-6-sol` and code review to `gpt-6-sol`
+at `xhigh` through `run-grok-worker.sh --model gpt-6-sol` or the Codex CLI. Dispatch
+native Grok roster agents or Grok workers only under explicit usage-credit
+pressure (`BOPEN_USAGE_CREDIT_PRESSURE=1` or the user saying so), and then only
+on `grok-4.7`. Never dispatch Grok 4.6. Pass the named agent type; installed
+bOpen aliases may also resolve. Native agent model fields accept Grok-native
+slugs, not arbitrary custom model ids.
 
 ## Native workflows
 
@@ -22,10 +25,11 @@ part of Orchestra. Save project workflows under .grok/workflows/ and smoke
 check with representative validation arguments before a real run. Worktree
 isolation does not merge results; the main reviews and integrates them.
 
-Custom ids shown by grok models work with grok --single, but not as native
-workflow agent model values. To use GPT-5.6 Sol inside a Grok workflow, wrap
-grok --single -m gpt-5.6-sol in a grok-4.6 supervisor after confirming the
-quoted model entry. An unquoted dotted TOML key creates the wrong nested id.
+Custom ids shown by `grok models` work through the Grok CLI, but not as native
+workflow agent model values. To use GPT-6 Sol inside a Grok workflow, wrap a
+`run-grok-worker.sh --model gpt-6-sol` call in a thin supervisor after
+confirming the quoted model entry; never a raw `grok --single` dispatch. The supervisor only relays; it does not implement. An unquoted
+dotted TOML key creates the wrong nested id.
 
 ## External workers
 
@@ -36,9 +40,9 @@ from the main is only the fallback when native agent dispatch is unavailable.
 
 Load only the chosen guide:
 
-- [Codex, Sol, or Luna](../workers/codex.md)
+- [Codex, Sol, or Astra](../workers/codex.md)
 - [Muse Code](../workers/muse.md)
 - [OpenCode CLI](../workers/opencode.md)
 
-If a custom Sol id is absent from Grok, use the Codex CLI guide instead. Fable
-is an Advisor channel, not a native Grok model slug.
+If a custom Sol id is absent from Grok, use the Codex CLI guide instead. The
+default advisor is `claude-opus-5-5`, not a native Grok model slug.

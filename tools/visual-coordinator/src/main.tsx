@@ -11,8 +11,8 @@ import { WorkflowNode } from "@/components/workflow-node";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { generateNodeCommand, toExportText } from "@/command";
-import { defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, validateWorkflow, type EdgeKind, type Workflow, type WorkflowEdge, type WorkflowNode as WorkflowNodeData } from "@/workflow-schema";
+import { dispatchIssues, toExportText } from "@/command";
+import { codingTarget, defaultWorkflow, nextNodeId, parseEnvironment, parseSeed, validateWorkflow, type EdgeKind, type Workflow, type WorkflowEdge, type WorkflowNode as WorkflowNodeData } from "@/workflow-schema";
 import "./styles.css";
 
 declare global { interface Window { VC_ENV?: unknown; VC_SEED?: unknown } }
@@ -62,12 +62,12 @@ function VisualCoordinator() {
   const issues = useMemo(() => validateWorkflow(workflow, environment), [environment, workflow]);
   const selected = nodes.find((node) => node.id === selectedId)?.data;
   const selectedEdge = workflow.edges.find((edge) => edge.id === selectedEdgeId);
-  const commands = useMemo(() => workflow.nodes.map((node) => generateNodeCommand(node, {
-    hostHarness: environment.simulationOnly ? undefined : environment.harness,
-    nativeController: environment.simulationOnly ? undefined : environment.harness,
-  })), [environment, workflow]);
-  const commandIssues = commands.filter((command) => !command.executable).map((command) => ({ id: command.nodeId, message: command.reason ?? `${command.nodeId} is not executable.` }));
-  const allIssues = [...issues, ...commandIssues];
+  // Ready/Copy use the serializer's own dispatch plan, so a node the export would drop is never "Ready".
+  const exportIssues = useMemo(() => {
+    const flagged = new Set(issues.map((issue) => issue.id));
+    return dispatchIssues(workflow, environment).filter((issue) => !flagged.has(issue.id));
+  }, [environment, issues, workflow]);
+  const allIssues = [...issues, ...exportIssues];
   const exportText = useMemo(() => toExportText(workflow, environment), [environment, workflow]);
 
   const onNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => setNodes((current) => applyNodeChanges(changes, current)), []);
@@ -76,9 +76,10 @@ function VisualCoordinator() {
 
   const addNode = () => {
     const id = nextNodeId(workflow.nodes);
-    const lane = environment.hostLane ?? "codex";
+    // A new step is a worker: staff it like the default Build card, not from the host's first listed model.
+    const { lane, model } = codingTarget(environment);
     const detectedLane = environment.lanes[lane];
-    const node: WorkflowNodeData = { id, role: "builder", title: "New step", task: "Describe the bounded outcome.", ownedPaths: [], lane, provider: environment.hostLane === lane || environment.simulationOnly ? "native" : "external", model: detectedLane?.models[0] ?? "", effort: detectedLane?.efforts[0] ?? "medium", execution: "write", position: { x: 180 + nodes.length * 36, y: 180 + nodes.length * 28 }, worktree: { root: "~/code/worktrees", repoPath: "{repo}", taskPath: `~/code/worktrees/{repo}-${id}`, baseRef: "origin/dev", branch: `codex/${id}`, owner: id, cleanup: "Only after human-approved merge" } };
+    const node: WorkflowNodeData = { id, role: "builder", title: "New step", task: "Describe the bounded outcome.", ownedPaths: [], lane, provider: environment.simulationOnly || (environment.hostLane === lane && lane !== "grok") ? "native" : "external", model, effort: detectedLane?.efforts.includes("medium") ? "medium" : detectedLane?.efforts[0] ?? "medium", execution: "write", position: { x: 180 + nodes.length * 36, y: 180 + nodes.length * 28 }, worktree: { root: "~/code/worktrees", repoPath: "{repo}", taskPath: `~/code/worktrees/{repo}-${id}`, baseRef: "origin/dev", branch: `codex/${id}`, owner: id, cleanup: "Only after human-approved merge" } };
     setNodes((current) => [...current, { id, type: "workflow", position: node.position, data: { ...node, onDelete: deleteNode } }]);
     setSelectedId(id); setInspectorOpen(true);
   };

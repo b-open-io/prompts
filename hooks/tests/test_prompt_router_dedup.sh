@@ -6,6 +6,9 @@
 echo
 echo "--- prompt-router dedup (OPL-2883 amendment) ---"
 
+unset AI_GATEWAY_API_KEY
+unset BOPEN_JEV_ROUTER
+
 FIXTURE_DIR=$(mktemp -d)
 FIXTURE_INDEX="$FIXTURE_DIR/router-index.json"
 cat > "$FIXTURE_INDEX" <<'EOF'

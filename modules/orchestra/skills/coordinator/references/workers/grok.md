@@ -4,6 +4,17 @@ Read this only when the Grok Build CLI is the selected external worker. A
 dispatch can send the prompt, spec, and selected repository content to xAI;
 apply the Coordinator disclosure rule before first use.
 
+Grok is a usage-credit-pressure fallback, not the normal coding lane. Use it
+only when that pressure is explicit, pin `grok-4.7`, and never dispatch Grok
+4.6. Otherwise use the preferred `gpt-6-sol` coding worker. The wrapper
+enforces this for any casing of the id, and for a custom id whose
+`config.toml` entry (parsed as real TOML, either quote style) is served by xAI
+or points at a Grok or `gpt-5.6` model; a non-Grok id with no parseable entry,
+no explicit `model`, or no `base_url` is refused. Provider-qualified xAI ids
+(`xai/…`, `openrouter/x-ai/…`) get the Grok pin and credit gate. It
+rejects every Grok model except `grok-4.7`, and rejects
+`grok-4.7` unless `--credit-pressure` or `BOPEN_USAGE_CREDIT_PRESSURE=1` is set.
+
 ## Choose and verify the auth lane
 
 Grok Build can use ambient `XAI_API_KEY` / `GROK_API_KEY` credentials or the
@@ -25,7 +36,10 @@ authorized sign-in. Never print, persist, or place a credential in a prompt or
 log.
 
 Capture the complete preflight output, then pin `BOPEN_WORKER_MODEL` to an
-exact listed id; never ride a changing CLI default. If authentication, model
+exact listed id; never ride a changing CLI default. Its default is `gpt-6-sol`
+through a quoted custom Grok model entry. Use `grok-4.7` only under
+usage-credit pressure and only through the wrapper below; any other Grok id is
+out of policy. If authentication, model
 availability, or network access cannot be verified, report the lane as
 unavailable rather than silently implementing in the main.
 
@@ -72,7 +86,8 @@ Its inspection log is redacted and written with owner-only permissions.
 ```bash
 bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
   --auth grok.com \
-  --model grok-4.6 \
+  --model grok-4.7 \
+  --credit-pressure \
   --mode write \
   --cwd /absolute/path/to/worktree \
   --branch codex/example-task \
@@ -82,50 +97,43 @@ bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
   --log /tmp/dispatch-task.log
 ```
 
+Pass `--effort` (`none` through `xhigh`) to set Grok's reasoning effort; the
+visual coordinator's Grok-lane exports use this wrapper with that flag.
 Add `--clean-home` only for the task-specific cases described above. Use
 `--mode read --tools web_search,web_fetch` for focused web research. A native
 controller may run this script in the background and monitor its complete log.
 
-The raw command shapes below remain useful when the extracted module script is
-unavailable.
+Every Grok-CLI dispatch runs through that wrapper — Grok models and non-Grok
+custom ids such as `gpt-6-sol` alike. The wrapper is the only place the
+GPT-6-only rule, the `grok-4.7` pin, the credit gate, and their case-insensitive
+matching live, so there is no raw `grok` dispatch recipe to keep in sync. If the
+wrapper is unavailable, the Grok lane is unavailable for that run; do not
+hand-roll a `grok --prompt-file` call.
 
-Use a unique prompt file for every parallel run. Research/review (read-only):
+Use a unique prompt file and log for every parallel run. Research or review
+(read-only):
 
-    PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
-    GROK_RUN_HOME="${BOPEN_GROK_HOME:-$HOME/.grok}"
-    env -u XAI_API_KEY -u GROK_API_KEY GROK_HOME="$GROK_RUN_HOME" grok models
-    : "${BOPEN_WORKER_MODEL:?Select an id listed by grok models}"
-    printf '%s\n' "<imperative; details in SPEC file>" > "$PROMPT_FILE"
-    env -u XAI_API_KEY -u GROK_API_KEY GROK_HOME="$GROK_RUN_HOME" \
-      grok --prompt-file "$PROMPT_FILE" -m "$BOPEN_WORKER_MODEL" \
-      --permission-mode plan --sandbox workspace \
-      --no-subagents --output-format plain --cwd <repo> \
-      > /tmp/dispatch-<id>.log 2>&1 &
+    bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
+      --auth grok.com --model "$BOPEN_WORKER_MODEL" --mode read \
+      --cwd <repo> --prompt-file <spec> --log /tmp/dispatch-<id>.log
 
-Implementation (edits the repo, in an explicitly isolated worktree) must also
-carry the prepared-worktree handoff block from the shared dispatch contract.
-The worker verifies cwd and branch before editing and never creates or manages
-worktrees, branches, commits, pushes, merges, or cleanup itself:
+Implementation in an explicitly isolated worktree. The wrapper verifies the
+cwd, branch, and base ref and prepends the prepared-worktree handoff block; the
+worker never creates or manages worktrees, branches, commits, pushes, merges,
+or cleanup itself:
 
-    PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
-    GROK_RUN_HOME="${BOPEN_GROK_HOME:-$HOME/.grok}"
-    env -u XAI_API_KEY -u GROK_API_KEY GROK_HOME="$GROK_RUN_HOME" grok models
-    : "${BOPEN_WORKER_MODEL:?Select an id listed by grok models}"
-    printf '%s\n' "<imperative; details in SPEC file>" > "$PROMPT_FILE"
-    env -u XAI_API_KEY -u GROK_API_KEY GROK_HOME="$GROK_RUN_HOME" \
-      grok --prompt-file "$PROMPT_FILE" -m "$BOPEN_WORKER_MODEL" \
-      --permission-mode acceptEdits --sandbox workspace \
-      --output-format plain --cwd <worktree> \
-      > /tmp/dispatch-<id>.log 2>&1 &
+    bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
+      --auth grok.com --model "$BOPEN_WORKER_MODEL" --mode write \
+      --cwd <worktree> --branch <branch> --base-ref <ref> \
+      --ownership '<owned paths>' --prompt-file <spec> --log /tmp/dispatch-<id>.log
 
-The examples show the signed-in grok.com lane by removing both supported API
-credential variables. For API-key billing, run the same shapes with the
-selected credential available and without the prefix. The preflight and
-dispatch must use the same auth lane.
+`--auth grok.com` removes both supported API credential variables for the
+signed-in account; `--auth api` keeps `XAI_API_KEY` for API billing. The
+wrapper's preflight and dispatch always use the same auth lane.
 
-For read-only research, use `--permission-mode plan`. Use `acceptEdits`
-only for isolated implementation worktrees, never an unrestricted approval
-mode. Always retain `--sandbox workspace`. On a Codex macOS host, its outer
+The wrapper uses `--permission-mode plan` in read mode and `acceptEdits` only
+in write mode for isolated worktrees, never an unrestricted approval mode, and
+always retains `--sandbox workspace`. On a Codex macOS host, its outer
 filesystem sandbox can prevent Grok from installing this inner sandbox and
 return `Operation not permitted`; request host execution escalation for the
 exact process while retaining Grok's sandbox. The host may require explicit

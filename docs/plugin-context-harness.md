@@ -83,7 +83,7 @@ Capture the current Codex startup prompt and model budget:
 
 ```bash
 python3 scripts/capture-codex-context.py \
-  --model gpt-5.6-sol \
+  --model gpt-6-sol \
   --output /tmp/codex-context.json
 ```
 

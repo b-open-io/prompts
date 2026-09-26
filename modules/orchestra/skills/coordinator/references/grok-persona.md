@@ -1,8 +1,8 @@
 # Grok Persona-Passing
 
 **Why:** Codex gets personas automatically — installed `bopen_*` agents are
-generated adapters carrying the persona body. Grok has no such adapter; a raw
-`grok --prompt-file` dispatch is persona-less unless the prompt supplies one.
+generated adapters carrying the persona body. Grok has no such adapter; a Grok
+dispatch is persona-less unless the prompt file supplies one.
 `scripts/grok-persona.sh` closes that gap by prefixing the task with an
 agent's system-prompt body (frontmatter stripped).
 
@@ -13,28 +13,36 @@ grok.com login from `XAI_API_KEY` billing and requires the preflight and worker
 command to use the same lane. Pin the verified model ID; do not inherit a
 changing CLI default.
 
-## Usage with the grok dispatch shape
+## Usage with the Grok worker wrapper
+
+Write the persona-prefixed prompt to a file, then dispatch it through
+`run-grok-worker.sh` like any other Grok-CLI worker, so the model, casing,
+credit, auth, and sandbox checks still apply. Never pass the persona file to a
+raw `grok` command.
 
 Code-writing lane (agent edits the repo in an explicitly isolated worktree):
 
 ```bash
 PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
 bash scripts/grok-persona.sh code-auditor "$(cat SPEC-x.md)" > "$PROMPT_FILE"
-grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" --permission-mode acceptEdits \
-  --sandbox workspace --output-format plain --cwd <repo>
+bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
+  --auth grok.com --model "$WORKER_MODEL" --mode write \
+  --cwd <worktree> --branch <branch> --base-ref <ref> --ownership '<owned paths>' \
+  --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"
 ```
 
-Read-only lane (research, summaries, reviews — no edits): use plan permission
-mode and retain the workspace sandbox. Keep the task and allowed repository
-scope narrow so headless operation does not stall on unrelated approvals:
+Read-only lane (research, summaries, reviews — no edits). The wrapper uses plan
+permission mode and keeps the workspace sandbox. Keep the task and allowed
+repository scope narrow so headless operation does not stall on unrelated
+approvals:
 
 ```bash
 PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
 bash scripts/grok-persona.sh researcher "Summarize this README:
 $(head -60 README.md)" > "$PROMPT_FILE"
-grok --prompt-file "$PROMPT_FILE" -m "$WORKER_MODEL" \
-  --output-format plain --permission-mode plan \
-  --sandbox workspace --cwd "$(pwd)"
+bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
+  --auth grok.com --model "$WORKER_MODEL" --mode read \
+  --cwd "$(pwd)" --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"
 ```
 
 Persona activation shows up in the output shape: a `researcher` dispatch

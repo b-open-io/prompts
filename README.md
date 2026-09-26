@@ -23,9 +23,9 @@ This repository provides:
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
 - **Orchestration patterns** that keep a strong main model on judgment, wrap
-  cheaper implementation workers in visible native controllers, support a
-  read-only Fable advisor, and let humans edit the plan on an AI Elements
-  workflow canvas before execution
+  GPT-6 Sol implementation workers in visible native controllers, support a
+  read-only Claude Opus 5.5 advisor, and let humans edit the plan on an AI
+  Elements workflow canvas before execution
 - **Slash commands** for common workflows, including native OpenCode command registration
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
@@ -289,8 +289,9 @@ intentional.
 | `html-to-pdf` | Design print-ready collateral and render it through a Playwright PDF pipeline |
 | `humanize` | Preserve facts and house style while removing clustered AI-writing patterns, Mannered prose (metaphor-for-statement substitutions), unsupported significance, vague attribution, promotional drift, canned change summaries, and template-like sales copy; never write fail-closed / fail-open slang (say reject, deny, stop, allow, or continue); outbound drafts use attributed examples and supplied account facts without inventing commercial claims |
 | `persona` | Capture writing style profiles and social intelligence |
+| `promo-video-pipeline` | Produce motion-graphics promos and showreels: approved flare keyframes, a budget-capped headless Opus 5.5 edit through Higgsfield, Suno scoring, -14 LUFS loudness, and QuickTime/Discord-safe H.264 exports |
 | `ui-audio-theme` | Audit and wire existing products, then generate, visually edit, reassign, and audition cohesive app, game HUD, and TV navigation sound themes — via ElevenLabs samples or a synthesized cuelume web micro-interaction path, guided by a production-agnostic interaction taxonomy |
-| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. It names specifications, humanizes every voice, and uses a uniform BitPlan reading layout without an embedded proposals menu. Decision trees connect dependent choices; questionnaires include Unsure, consequences, and a copyable response that works with scripts off. Settled plans end with an implementation brief and done conditions. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
+| `visual-proposal` | Present an unbuilt design, RFC, roadmap, or options space as a grounded, diagram-led HTML proposal. For real decisions it runs named roster-agent advocates → cross-examination → a judging bench → the CEO's final call. When `AI_GATEWAY_API_KEY` is set, a lens may also take an optional jev `score`/`choice` (attribution “scored by jev” alongside any roster judge). It names specifications, humanizes every voice, and uses a uniform BitPlan reading layout without an embedded proposals menu. Decision trees connect dependent choices; questionnaires include Unsure, consequences, and a copyable response that works with scripts off. Settled plans end with an implementation brief and done conditions. Plans can stay local, use an Artifact, or publish through the external BitPlan provider with explicit wallet approval. |
 | `visual-wayfinder` | Turn one active Wayfinder decision into a build-free visual workbench with structured controls and consequence previews |
 | `voice-clone` | Clone voices using ElevenLabs Instant Voice Cloning |
 
@@ -394,7 +395,7 @@ has replaced that versioned directory.
 |------|-------------|-------|-------------|
 | `session-context` | SessionStart | SessionStart | Injects bounded branch, history, and plugin context |
 | `repo-freshness` | SessionStart | SessionStart | Non-destructively fast-forwards the active repo's branch/default ref to its remote when strictly behind; warns on divergence, never touches a dirty tree, never prompts |
-| `prompt-router` | UserPromptSubmit | — | Injects concise skill and agent routing hints with session deduplication |
+| `prompt-router` | UserPromptSubmit | — | Injects concise skill and agent routing hints with session deduplication; optional jev choice after the SDK setup below with `AI_GATEWAY_API_KEY` set, otherwise keyword/phrase scoring |
 | `bouncer` | Bash PreToolUse | Shell PreToolUse | Validates commands against safety rules |
 | `damage-control` | Bash/write/edit PreToolUse | Shell/`apply_patch` PreToolUse | Protects sensitive paths and destructive operations |
 | `publish-gate` | Bash PreToolUse | Shell PreToolUse | Guards publish commands behind release checks |
@@ -406,6 +407,31 @@ has replaced that versioned directory.
 On first use, Codex may ask you to review and trust plugin hooks. Inspect the
 commands before approving them. Do not use hook-trust bypass flags for normal
 work; they exist for controlled diagnostics, not routine installation.
+
+
+### Optional Jev setup
+
+The core router and Review lens helper use the AI SDK evaluation API. Plugin
+installation does not install npm dependencies. With Node.js 22 or newer, install the optional runtime once:
+
+```bash
+npm install --prefix "$HOME/.cache/bopen-jev" --no-save --ignore-scripts ai@7.0.105
+```
+
+Set `AI_GATEWAY_API_KEY` in the host environment to enable calls. The router sends
+the submitted prompt and catalog hints to Vercel AI Gateway (`typesafe-ai/jev`);
+the lens helper sends the problem, options, and advocacy record. Calls can incur
+Gateway charges. Leave the key unset to keep routing local and use agent judges.
+Missing SDK, invalid responses, and timeouts use the existing local fallback.
+A valid Jev `NONE` decision produces no routing hint. Skills and agents with the
+same qualified id are distinguished by resource kind.
+
+The [September 17 routing pilot](benchmarks/results/jev-routing-2026-09-17/REPORT.md)
+measured 97.9% first-choice accuracy for the corrected Jev-assisted hook versus
+71.9% for keywords on 32 synthetic prompts repeated three times. Median latency
+was 512 ms versus 102 ms; 8.3% of Jev attempts fell back, exceeding the predeclared
+5% reliability limit. This is pilot evidence, not production accuracy; keep Jev
+optional. Raw trials, frozen labels, and reproduction commands are included.
 
 ### HammerTime Stop Hook
 
@@ -673,7 +699,7 @@ routing:
 python3 scripts/plugin-weight.py --format markdown
 
 # Host snapshots (exact Codex omission counts need a runtime JSONL event file)
-python3 scripts/capture-codex-context.py --model gpt-5.6-sol
+python3 scripts/capture-codex-context.py --model gpt-6-sol
 python3 scripts/capture-claude-context.py --source-root .
 
 # Source versus installed Claude/Codex inventories
@@ -856,7 +882,7 @@ sequence `codex exec` / `opencode run` dispatches from the caller.
 
 ```text
 Use $orchestra:coordinator. Keep this session in the main seat, use native
-roster specialists for research and review, cheaper workers for bounded
+roster specialists for research and review, coding workers for bounded
 implementation, and an advisor only for read-only second opinions at
 commitment boundaries.
 ```
@@ -873,23 +899,22 @@ divide responsibilities:
   worker guide. Non-trivial writes use isolated worktrees, all makers stop at
   a barrier before an independent read-only review, and review plus tests share
   one corrective pass. The main runs the final checks and owns git. Bounded
-  implementation defaults to the cheapest authorized capable lane; native
-  specialists stay focused on evidence, review, testing, and domain judgment.
+  implementation defaults to `gpt-6-sol`; independent code review uses the
+  same model at `xhigh`. Grok is used only under usage-credit pressure and is
+  pinned to `grok-4.7`, never Grok 4.6. Native specialists stay focused on
+  evidence, review, testing, and domain judgment.
   Advisor and Wave Coordinator are composed in place, only at a real decision
   boundary or a fan-out that exceeds available host slots — Coordinator does
   not duplicate their manuals.
-- `advisor` packages a narrow, read-only consult. It recommends `gpt-6-astra`
-  through Codex CLI from Claude Code, Codex, Grok Build, OpenCode, or any host
-  with shell access, with an explicit read-only sandbox and model pin. Override
-  the Codex model with `BOPEN_CODEX_ADVISOR_MODEL`. From a Codex main it can use
-  the Claude CLI with the `fable` model-family alias. Override it with
-  `BOPEN_ADVISOR_MODEL`. Fable `--safe-mode` appends
+- `advisor` packages a narrow, read-only consult and defaults to
+  `claude-opus-5-5`. From a Codex main it can use the Claude CLI in read-only
+  mode; override the model with `BOPEN_ADVISOR_MODEL`. Fable remains an
+  explicit legacy opt-in, not a default. Claude CLI `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
   The skill loads only the selected channel guide and records the provider,
   model, authentication path, context sent, and proof that the intended
-  advisor ran. OpenCode consults use a permission-constrained child. If the
-  user wants Astra (or another advisor model) to build rather than advise,
-  route to Coordinator's Codex worker guide instead.
+  advisor ran. OpenCode consults use a permission-constrained child. Optional
+  Codex-model consults require an explicit `BOPEN_CODEX_ADVISOR_MODEL`.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
   edges, reject-back gates) before it runs. Staffing, isolation,
   concurrency, refusals, and the paste-back spec live on that canvas.
@@ -900,9 +925,9 @@ divide responsibilities:
 
 External lanes cross provider boundaries. A Grok dispatch can send its prompt,
 specification, and selected repository content to xAI. A Muse dispatch can send
-the same class of content to Meta. A Codex / Sol / Luna dispatch can send it to
-OpenAI. A Fable consult can send its consult and files inspected by read-only
-tools to Anthropic. An `opencode run` dispatch can send its prompt and repository
+the same class of content to Meta. A Codex / Sol / Astra dispatch can send it to
+OpenAI. A Claude Opus or legacy Fable consult can send its consult and files
+inspected by read-only tools to Anthropic. An `opencode run` dispatch can send its prompt and repository
 content to whichever provider backs the pinned `provider/model` — confirm the
 `opencode.json` provider block first so the destination is known. State what will be shared before first use, obtain approval
 unless the user already authorized that lane, and never send secrets or
