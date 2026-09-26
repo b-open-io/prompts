@@ -6,6 +6,15 @@ manifests share the same release version.
 
 ## Unreleased
 
+### Added
+
+- `creative:promo-video-pipeline` 0.0.1: motion-graphics promo and showreel
+  pipeline. gpt-image-2.5-flare keyframes via `gemskills:generate-image`, an
+  approval gate before video spend, a budget-capped headless Claude Opus 5.5
+  (`claude-opus-5-5`) edit through the Higgsfield REST API, Suno scoring, beat
+  alignment, -14 LUFS loudness, and QuickTime/Discord-safe H.264 exports.
+  Creative plugin 0.1.8.
+
 ### Changed
 
 - Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
@@ -19,7 +28,7 @@ manifests share the same release version.
   is third-party MCP marketing.
 - Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
   for Maps JS, Places, Routes, and Street View. Missing skill:
-  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.6.
+  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.8.
 - humanize 1.0.14 → **1.0.15**: never write "fail closed" / "fail open". Say
   reject, deny, stop, allow, or continue. Removed that slang from the rest of
   this repo.
@@ -111,6 +120,23 @@ manifests share the same release version.
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
 
+### Fixed
+
+- `scripts/prompts-factory-worker.sh` accepts a git worktree as `repoDir`.
+  It tested `[[ -d "$repo_dir/.git" ]]`, but a worktree's `.git` is a file, so
+  every run stopped with `BAD_REPO_DIR`. It now requires `.git` to exist as a
+  file or directory and asks git (`rev-parse --is-inside-work-tree`, then
+  `--show-toplevel` compared with symlinks resolved). A normal checkout, a
+  worktree, a submodule, a nested repo, and a symlink to any of them pass. A
+  plain or missing directory, a subdirectory of a checkout, a `.git`
+  directory, or a bare repo still exits 2 with `BAD_REPO_DIR`. The worker
+  unsets inherited `GIT_DIR`, `GIT_WORK_TREE`, and the other git location
+  variables at startup, so neither the check nor later git and gh commands
+  can be pointed at a different repo. Paths are resolved with `CDPATH=''`,
+  so a relative `repoDir` is not redirected or rejected when `CDPATH` is set.
+  Covered by `scripts/tests/test_factory_worker_repo_dir.py`, which runs with
+  the user's git config isolated.
+
 ## [1.1.170] - Pending production promotion
 
 ### Changed
@@ -136,7 +162,7 @@ manifests share the same release version.
 - Codex Security examples (`scan`, `bulk-scan`, `validate`, `--codex` effort
   override) run at `xhigh`. The cost guidance no longer suggests lowering
   review effort: narrow scope instead (fewer files, a focused diff, fewer
-  passes), or move to `grok-4.7` only under usage-credit pressure.
+  passes), and under usage-credit pressure narrow further or queue it.
 - The Grok worker guide splits read-only research (worker model) from code
   review, which gets its own `gpt-6-sol --effort xhigh` recipe instead of
   inheriting `BOPEN_WORKER_MODEL` at default effort.
