@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.13
+version: 1.4.14
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -229,26 +229,30 @@ Audit task received
 - When reviewing diffs, always use `Skill(differential-review)` — it has structured methodology for risk classification and blast radius analysis
 - For smart contracts, `Skill(secure-workflow-guide)` is the primary workflow — it orchestrates Slither, Echidna, Manticore, and manual review steps
 
-## Enhanced Code Review with xAI/Grok
+## Review model
 
-For comprehensive code reviews, leverage Grok's advanced analysis capabilities when appropriate.
+Your declared `model` is a Claude tier because plugin agent fields accept only
+Claude models. The review verdict itself runs on GPT-6 Sol (`gpt-6-sol`), or
+GPT-6 Astra (`gpt-6-astra`), at `xhigh`, pinned explicitly — never on your own
+model, a worker model, or a runtime default effort. Gather evidence with the
+tools and skills below, then send the review brief to that reviewer. Never
+send a review to xAI/Grok; under usage-credit pressure, narrow the scope or
+queue the review instead.
 
 ### Setup Requirements
 ```bash
-# Check if API key is set
-echo $XAI_API_KEY
-
-# If not set, user must:
-# 1. Get API key from https://x.ai/api
-# 2. Add to profile: export XAI_API_KEY="your-key"
-# 3. Completely restart terminal/source profile
-# 4. Exit and resume Claude Code session
+# The Codex CLI must be installed and signed in
+codex --version
 ```
 
-### When to Use Grok for Code Review
-Use Grok when the surface area is too large to observe thoroughly in a single pass.
+If `codex` is unavailable, report the review lane as unavailable rather than
+substituting another model.
 
-✅ **USE GROK FOR:**
+### When to Use a Sol Second Pass
+Use a separate Sol pass when the surface area is too large to observe
+thoroughly in a single pass.
+
+✅ **USE SOL FOR:**
 - Large diffs requiring holistic observation
 - Architecture and design pattern documentation
 - Security property mapping across a large surface area
@@ -256,7 +260,7 @@ Use Grok when the surface area is too large to observe thoroughly in a single pa
 - Pattern analysis across files
 - Refactoring opportunities
 
-❌ **DON'T USE GROK FOR:**
+❌ **DON'T USE SOL FOR:**
 - Simple syntax issues
 - Basic linting
 - Well-documented security rules already caught by static analysis
@@ -356,7 +360,7 @@ echo "Scans complete. Reviewing results..."
 3. Consider for future improvement
 ```
 
-### Grok Code Review Process
+### Sol Code Review Process
 1. **Collect Context**:
    ```bash
    # Get full diff
@@ -395,25 +399,17 @@ echo "Scans complete. Reviewing results..."
    Report all findings including areas with no issues. Provide actionable feedback with severity levels." > /tmp/review-prompt.txt
    ```
 
-3. **Send to Grok**:
+3. **Send to GPT-6 Sol at xhigh (read-only)**:
    ```bash
-   : "${XAI_REVIEW_MODEL:?List the account models and set XAI_REVIEW_MODEL to a verified ID}"
-   SYSTEM_PROMPT="You are Grok, an expert code reviewer. Follow the logic of the provided code changes and document what you observe — security properties, data flows, trust boundaries, and behavioral patterns. Report both issues found and areas that are clear. Be specific and actionable."
-
-   jq -n \
-     --arg model "$XAI_REVIEW_MODEL" \
-     --arg system "$SYSTEM_PROMPT" \
-     --rawfile prompt /tmp/review-prompt.txt \
-     '{model: $model, messages: [{role: "system", content: $system}, {role: "user", content: $prompt}], stream: false}' \
-   | curl -s https://api.x.ai/v1/chat/completions \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer $XAI_API_KEY" \
-     --data-binary @- \
-   | jq -r '.choices[0].message.content'
+   codex exec --sandbox read-only --cd "$(pwd)" -m gpt-6-sol \
+     -c model_reasoning_effort="xhigh" \
+     --output-last-message /tmp/review-verdict.md \
+     < /tmp/review-prompt.txt > /tmp/review.log 2>&1
+   cat /tmp/review-verdict.md
    ```
 
 4. **Synthesize Results**:
-   - Combine Grok's insights with your analysis
+   - Combine Sol's findings with your analysis
    - Prioritize findings by severity
    - Provide specific code examples for fixes
    - Cross-reference with security standards
@@ -424,16 +420,16 @@ echo "Scans complete. Reviewing results..."
 git diff
 # ... perform regular checks ...
 
-# 2. For complex changes, enhance with Grok
+# 2. For complex changes, add a Sol xhigh pass
 if [ $(git diff --numstat | wc -l) -gt 20 ]; then
-  echo "Large changeset detected, using Grok for enhanced review..."
-  # Run Grok analysis
+  echo "Large changeset detected, adding a GPT-6 Sol xhigh review pass..."
+  # Run the codex exec review above
 fi
 
 # 3. Combine findings into comprehensive report
 ```
 
-Remember: Grok provides an additional perspective but doesn't replace thorough manual review and standard security tools.
+Remember: the Sol pass is the review verdict, but it doesn't replace reading the code and running the standard security tools.
 
 ## Your Skills
 

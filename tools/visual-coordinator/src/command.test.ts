@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultWorkflow, parseEnvironment, validateWorkflow, type WorkflowNode } from "./workflow-schema";
+import { defaultWorkflow, parseEnvironment, restaff, validateWorkflow, type WorkflowNode } from "./workflow-schema";
 import { commandForNode, dispatchIssues, generateNodeCommand, serializeWorkflow, shellQuote, toExportText } from "./command";
 
 const node = (id: string, changes: Partial<WorkflowNode> = {}): WorkflowNode => ({
@@ -188,6 +188,21 @@ describe("versioned export contract", () => {
     expect(spec.nodes.map((node) => node.id)).not.toContain("build");
     expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "build", kind: "node", reason: expect.stringContaining("Grok runs only on the Grok lane") }));
     expect(toExportText(workflow, pressured)).not.toContain("'opencode' 'run'");
+  });
+
+  it("withholds a restaffed step from export until its new provider is approved", () => {
+    const build = approvedDefault().nodes[1];
+    const options = { hostHarness: "codex", nativeController: "codex" };
+    expect(generateNodeCommand(build, options).executable).toBe(true);
+
+    const review = restaff(build, "reviewer", environment);
+    const external = { ...review, provider: "external" as const };
+    expect(generateNodeCommand(external, options)).toMatchObject({ executable: false, disclosure: null });
+    expect(generateNodeCommand(external, options).reason).toContain("disclosure must be approved");
+
+    const approved = generateNodeCommand({ ...external, disclosure: "Approved OpenAI reviewer" }, options);
+    expect(approved).toMatchObject({ executable: true, readOnly: true, permissions: "read-only" });
+    expect(approved.command).toContain("'--sandbox' 'read-only'");
   });
 
   it("emits no executable nodes when the workflow itself is invalid", () => {

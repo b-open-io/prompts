@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { groupModels, modelFor, own, restaff, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
+import { groupModels, laneStatus, modelFor, own, restaff, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
 
 type Props = {
   node?: WorkflowNode;
@@ -25,6 +25,7 @@ const missingLane = (id: string): DetectedLane => ({
   id,
   label: id || "Unknown lane",
   availability: "unknown",
+  access: "unverified",
   isHost: false,
   models: [],
   efforts: fallbackEfforts,
@@ -32,16 +33,9 @@ const missingLane = (id: string): DetectedLane => ({
   detected: false,
 });
 
-const availabilityLabel = (lane: DetectedLane) => {
-  if (lane.isHost) return "current host";
-  if (lane.availability === "available") return "available shell-out";
-  if (lane.availability === "unavailable") return "unavailable";
-  return "not detected";
-};
-
 const LaneItem = ({ lane }: { lane: DetectedLane }) => (
   <SelectItem value={lane.id} disabled={lane.availability !== "available"}>
-    {lane.label} · {availabilityLabel(lane)}
+    {lane.label} · {laneStatus(lane)}
   </SelectItem>
 );
 
@@ -81,14 +75,17 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
       model,
       effort: reviewEffort ?? next.efforts[0] ?? "medium",
       provider: runsNatively(environment, nextLane, model, node.role) ? "native" : "external",
+      disclosure: undefined,
     });
   };
   const onModelChange = (selected: string) => {
     const model = selected === CUSTOM_MODEL ? "" : selected;
+    const provider = runsNatively(environment, node.lane, model, node.role) ? "native" : "external";
     onNodeChange({
       ...node,
       model,
-      provider: runsNatively(environment, node.lane, model, node.role) ? "native" : "external",
+      provider,
+      disclosure: provider === node.provider ? node.disclosure : undefined,
     });
   };
 
@@ -100,7 +97,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
     <div className="field-grid">
       <label>Role<Select value={node.role} onValueChange={(role) => onNodeChange(restaff(node, role as WorkflowNode["role"], environment))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{options(["coordinator", "builder", "reviewer", "external"] as const)}</SelectContent></Select></label>
       <label>Execution<Select value={node.execution} onValueChange={(execution) => update("execution", execution as WorkflowNode["execution"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{options(["write", "read-only-review"] as const)}</SelectContent></Select></label>
-      <label>Provider<Select value={node.provider} onValueChange={(provider) => update("provider", provider as WorkflowNode["provider"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="native" disabled={environment.hostLane !== node.lane}>native · current host only</SelectItem><SelectItem value="external">external · shell-out</SelectItem></SelectContent></Select></label>
+      <label>Provider<Select value={node.provider} onValueChange={(provider) => onNodeChange({ ...node, provider: provider as WorkflowNode["provider"], disclosure: provider === node.provider ? node.disclosure : undefined })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="native" disabled={environment.hostLane !== node.lane}>native · current host only</SelectItem><SelectItem value="external">external · shell-out</SelectItem></SelectContent></Select></label>
       <label>Effort<Select value={node.effort} onValueChange={(effort) => update("effort", effort as WorkflowNode["effort"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectGroup><SelectLabel>{lane.label} presets</SelectLabel>{options(efforts)}</SelectGroup></SelectContent></Select></label>
     </div>
     <label>Lane<Select value={node.lane || UNKNOWN_MODEL} onValueChange={onLaneChange}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
@@ -116,6 +113,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
       {lane.inventory === "complete" && !modelIsPreset && <SelectItem value={UNKNOWN_MODEL} disabled>Current model not detected</SelectItem>}
     </SelectContent></Select></label>
     {lane.inventory === "incomplete" && modelValue === CUSTOM_MODEL && <label>Custom model id<Input value={node.model} placeholder="provider/model or harness alias" onChange={(event) => update("model", event.target.value)} /></label>}
+    {lane.access === "unverified" && <p className="field-warning">{lane.label} access is unverified: the detector cannot prove this account can run {node.model || "the model"}; a failed dispatch marks the lane unavailable.</p>}
     {lane.inventory === "complete" && !modelIsPreset && <p className="field-warning">Choose one of the detected {lane.label} models before exporting.</p>}
     {node.provider === "external" && <label>Disclosure<Textarea value={node.disclosure ?? ""} placeholder="What leaves the host, where it goes, and user approval." onChange={(event) => update("disclosure", event.target.value)} /></label>}
     <button className="disclosure" aria-expanded={worktreeOpen} aria-controls="worktree-fields" onClick={() => setWorktreeOpen((open) => !open)}>{worktreeOpen ? <ChevronUp /> : <ChevronDown />} Worktree metadata</button>

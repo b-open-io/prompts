@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultWorkflow, groupModels, nextNodeId, parseEnvironment, parseSeed, restaff, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
+import { defaultWorkflow, groupModels, laneStatus, nextNodeId, parseEnvironment, parseSeed, restaff, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
 
 const liveCodexEnvironment = () => parseEnvironment({
   harness: "codex",
@@ -611,6 +611,30 @@ describe("workflow schema", () => {
     expect(rebuilt).toMatchObject({ role: "builder", lane: "claude", provider: "external", model: "claude-opus-5-5", effort: "medium", execution: "write" });
     expect(restaff(rebuilt, "builder", environment)).toBe(rebuilt);
     expect(validateWorkflow({ title: "t", nodes: [review], edges: [] }, environment)).toEqual([]);
+  });
+
+  it("keeps a former review step read-only when it becomes external and drops its approval", () => {
+    const environment = liveCodexEnvironment();
+    const review = { ...defaultWorkflow(environment).nodes[2], disclosure: "Approved OpenAI reviewer" };
+
+    const external = restaff(review, "external", environment);
+    expect(external).toMatchObject({ role: "external", execution: "read-only-review", disclosure: undefined });
+    expect(restaff(review, "builder", environment)).toMatchObject({ execution: "write", disclosure: undefined });
+  });
+
+  it("marks a lane the detector could not verify as unverified", () => {
+    const environment = parseEnvironment({
+      harness: "codex",
+      lanes: { claude: "available", codex: "available" },
+      lane_access: { claude: "unverified" },
+      models: { claude: ["claude-opus-5-5"], codex: ["gpt-6-sol"] },
+    });
+
+    expect(environment.lanes.claude.access).toBe("unverified");
+    expect(environment.lanes.codex.access).toBe("verified");
+    expect(laneStatus(environment.lanes.claude)).toBe("available shell-out · access unverified");
+    expect(laneStatus(environment.lanes.codex)).toBe("current host");
+    expect(laneStatus(liveCodexEnvironment().lanes.claude)).toBe("available shell-out");
   });
 
   it("sanitizes node ids before using them in generated worktree metadata", () => {

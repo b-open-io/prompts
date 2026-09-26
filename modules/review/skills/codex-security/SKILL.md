@@ -77,23 +77,23 @@ sign-in and an API key exist, an interactive scan asks which to use — pass
 
 ```bash
 # Whole repository, report-only, with a spend ceiling
-npx @openai/codex-security scan . --max-cost 5
+npx @openai/codex-security scan . --effort xhigh --max-cost 5
 
 # Scope to the code that matters — cheaper and sharper than a full sweep
-npx @openai/codex-security scan . --path src/auth --path src/api --max-cost 3
+npx @openai/codex-security scan . --effort xhigh --path src/auth --path src/api --max-cost 3
 
 # Review a change rather than a codebase
-npx @openai/codex-security scan . --diff origin/main --max-cost 3
-npx @openai/codex-security scan . --working-tree --max-cost 2
+npx @openai/codex-security scan . --effort xhigh --diff origin/main --max-cost 3
+npx @openai/codex-security scan . --effort xhigh --working-tree --max-cost 2
 
 # Feed it the context a reviewer would have
-npx @openai/codex-security scan . --knowledge-base docs/threat-model.md
+npx @openai/codex-security scan . --effort xhigh --knowledge-base docs/threat-model.md
 
 # Exhaustive multi-pass discovery — reduces variance, costs proportionally more
-npx @openai/codex-security scan . --mode deep --max-cost 20
+npx @openai/codex-security scan . --effort xhigh --mode deep --max-cost 20
 
 # See the plan, the model, and the effort without spending anything
-npx @openai/codex-security scan . --dry-run
+npx @openai/codex-security scan . --effort xhigh --dry-run
 ```
 
 Scans default to `gpt-6-sol` at `xhigh` reasoning effort. `--model` and
@@ -151,13 +151,13 @@ closure, so run the loop rather than handing the user a list:
 
 ```bash
 # 1. Is it real? Re-check one finding on its own before spending effort on it.
-npx @openai/codex-security validate FINDINGS_JSON "Missing authz in src/routes.ts:18"
+npx @openai/codex-security validate FINDINGS_JSON "Missing authz in src/routes.ts:18" --effort xhigh
 
 # 2. Minimal repository-native fix that closes the boundary.
 npx @openai/codex-security patch FINDINGS_JSON "Missing authz in src/routes.ts:18"
 
 # 3. Prove it closed — re-scan the same scope, then compare by root cause.
-npx @openai/codex-security scan . --path src/routes.ts --max-cost 2
+npx @openai/codex-security scan . --path src/routes.ts --effort xhigh --max-cost 2
 npx @openai/codex-security scans compare "$BEFORE_ID" "$AFTER_ID"
 
 # Not a bug? Record it, so the dismissal survives the next scan.

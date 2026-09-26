@@ -3,12 +3,15 @@ export type EdgeKind = "forward" | "reject" | "memory";
 export type WorkflowEffort = "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
 export type WorkflowLane = "claude" | "codex" | "grok" | "opencode" | (string & {});
 export type LaneAvailability = "available" | "unavailable" | "unknown";
+/** Whether the detector proved the account can run the lane's models (`lane_access`). */
+export type LaneAccess = "verified" | "unverified";
 export type InventoryCompleteness = "complete" | "incomplete";
 
 export type DetectedLane = {
   id: WorkflowLane;
   label: string;
   availability: LaneAvailability;
+  access: LaneAccess;
   isHost: boolean;
   models: string[];
   efforts: WorkflowEffort[];
@@ -152,6 +155,7 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
   const simulationOnly = !hostLane;
   const rawLanes = raw.lanes && typeof raw.lanes === "object" ? raw.lanes as Record<string, unknown> : {};
   const rawModels = raw.models && typeof raw.models === "object" ? raw.models as Record<string, unknown> : {};
+  const rawAccess = raw.lane_access && typeof raw.lane_access === "object" ? raw.lane_access as Record<string, unknown> : {};
   const ids = [...new Set([...knownLanes, ...Object.keys(rawLanes).map(laneKey), ...Object.keys(rawModels).filter((key) => !key.endsWith("_effort") && !key.endsWith("_default")).map(laneKey)])];
   const lanes = ownOnly(Object.fromEntries(ids.map((rawId) => {
     const id = laneKey(rawId);
@@ -166,6 +170,7 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
       id,
       label: own(laneLabels, id) ?? id.replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
       availability,
+      access: (own(rawAccess, id) ?? own(rawAccess, rawId)) === "unverified" ? "unverified" as const : "verified" as const,
       isHost: id === hostLane,
       models: detectedModels.length > 0 ? detectedModels : (modelInventory.complete ? [] : (own(fallbackModels, id) ?? [])),
       efforts: effortInventory.length > 0 ? effortInventory : fallbackEfforts,
@@ -202,6 +207,14 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
     lanes,
     roster: Array.isArray(raw.roster) ? raw.roster.filter((entry) => entry && typeof entry === "object") : [],
   };
+};
+
+/** Picker label for a lane: host or shell-out status, plus unverified account access. */
+export const laneStatus = (lane: DetectedLane): string => {
+  const base = lane.isHost ? "current host"
+    : lane.availability === "available" ? "available shell-out"
+    : lane.availability === "unavailable" ? "unavailable" : "not detected";
+  return lane.access === "unverified" && (lane.isHost || lane.availability === "available") ? `${base} · access unverified` : base;
 };
 
 export const defaultEnvironment = (): WorkflowEnvironment => parseEnvironment(undefined);
@@ -398,7 +411,10 @@ export const restaff = (node: WorkflowNode, role: NodeRole, environment: Workflo
     model: target.model,
     provider: defaultProvider(environment, target.lane, target.model, role),
     effort: role === "reviewer" ? "xhigh" : "medium",
-    execution: role === "reviewer" ? "read-only-review" : "write",
+    // A former review step never gains write access by changing role; only builders are restaffed to write.
+    execution: role === "reviewer" || (node.execution === "read-only-review" && role !== "builder") ? "read-only-review" : "write",
+    // An approval covers one provider and role, so a restaffed step must be approved again.
+    disclosure: undefined,
   };
 };
 

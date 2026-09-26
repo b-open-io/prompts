@@ -211,7 +211,7 @@ state and results outside the scanned repository.
 npx @openai/codex-security findings false-positive OCCURRENCE_ID \
   --reason "The route already checks permissions"
 
-npx @openai/codex-security validate FINDINGS_JSON "Possible SQL injection in src/query.ts:42"
+npx @openai/codex-security validate FINDINGS_JSON "Possible SQL injection in src/query.ts:42" --effort xhigh
 npx @openai/codex-security validate "Possible SQL injection" --effort xhigh
 
 npx @openai/codex-security patch FINDINGS_JSON "Missing authorization check in src/routes.ts:18"
@@ -241,9 +241,9 @@ reviewers.
 ## 9. `bulk-scan`
 
 ```bash
-npx @openai/codex-security bulk-scan
+npx @openai/codex-security bulk-scan --effort xhigh
 npx @openai/codex-security bulk-scan --model gpt-6-sol --effort xhigh
-npx @openai/codex-security bulk-scan repositories.csv \
+npx @openai/codex-security bulk-scan repositories.csv --effort xhigh \
   --output-dir /path/outside/repos/security-scans --workers 4 --max-attempts 2
 ```
 

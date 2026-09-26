@@ -78,7 +78,11 @@ Prefer native specialists for evidence, investigation, review, testing, and
 tool- or domain-bound judgment. Match that work against
 `../deploy-agent-team/references/agent-roster.md`; use a generic specialist only
 when no roster specialist fits. This native-first rule does not apply to routine
-implementation volume.
+implementation volume. Specialists may gather review evidence, but plugin agent
+`model` fields accept only Claude models (`review:code-auditor` declares
+`opus`), so the review verdict itself comes from an explicit read-only
+`codex exec -m gpt-6-sol -c model_reasoning_effort="xhigh"` (or `gpt-6-astra`)
+pass, never from the specialist's declared model.
 
 The preferred coding worker is Claude Opus 5.5 (`claude-opus-5-5`). Independent
 code review runs on GPT-6 Sol (`gpt-6-sol`) or GPT-6 Astra (`gpt-6-astra`) at

@@ -141,9 +141,23 @@ manifests share the same release version.
   review, which gets its own `gpt-6-sol --effort xhigh` recipe instead of
   inheriting `BOPEN_WORKER_MODEL` at default effort.
 - Visual coordinator: changing a step's role in the inspector re-staffs its
-  lane, model, provider, effort, and execution from policy (`restaff`). The
-  detector reports `lane_access.claude: "unverified"` because the Claude CLI
-  has no offline account check for `claude-opus-5-5`.
+  lane, model, provider, effort, and execution from policy (`restaff`),
+  clears its disclosure approval, and never gives a former review step write
+  access. Changing a step's provider also clears its approval. The detector
+  reports `lane_access.claude: "unverified"` because the Claude CLI has no
+  offline account check for `claude-opus-5-5`; the lane picker and inspector
+  show that state.
+- Review never switches models or lowers effort: every review, validate, and
+  CI-scan recipe pins `--effort xhigh`, and credit pressure narrows scope or
+  queues the review instead of moving it to Grok. The Grok persona guide gets
+  a separate `gpt-6-sol --effort xhigh` review lane.
+- Review 0.1.21: `code-auditor` 1.4.14 drops its direct xAI review route
+  (`XAI_REVIEW_MODEL`) and takes its verdict from a read-only
+  `codex exec -m gpt-6-sol` pass at `xhigh`. Plugin agent `model` fields
+  accept only Claude models, so Coordinator and `hunter-skeptic-referee`
+  1.1.4 route review verdicts through that explicit Sol reviewer rather than
+  the agents' declared Claude tiers. `security-ops` 1.0.12 pins its scan and
+  validate recipes to `xhigh`.
 
 ## [1.1.169] - Pending production promotion
 

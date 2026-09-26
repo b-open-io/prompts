@@ -88,6 +88,7 @@ export OPENAI_API_KEY="$CODEX_SECURITY_KEY"
 
 npx @openai/codex-security scan . \
   --diff "origin/${GITHUB_BASE_REF:-main}" \
+  --effort xhigh \
   --output-dir "$RUNNER_TEMP/security-results" \
   --fail-on-severity high \
   --max-cost 5 \
@@ -160,7 +161,7 @@ wallet,https://github.com/acme/wallet.git,89abcdef0123456789abcdef0123456789abcd
 ```
 
 ```bash
-npx @openai/codex-security bulk-scan repositories.csv \
+npx @openai/codex-security bulk-scan repositories.csv --effort xhigh \
   --output-dir /path/outside/repos/security-scans \
   --workers 4 --max-attempts 2
 ```
@@ -197,10 +198,10 @@ Ordered by how much they save per unit of lost signal:
    biggest lever.
 2. `--max-cost` on every invocation. Partial results are preserved, so a
    ceiling costs coverage, never the whole run.
-3. Keep `--effort xhigh`; never lower review effort to save cost. Cut cost by
-   narrowing scope instead: fewer files, a focused diff, fewer passes. Only
-   under explicit usage-credit pressure, move the review off Codex Security to
-   the coordinator's Grok lane pinned to `grok-4.7`.
+3. Keep `--effort xhigh`; never lower review effort or switch the review to
+   another model to save cost. Cut cost by narrowing scope instead: fewer
+   files, a focused diff, fewer passes. Under usage-credit pressure, narrow
+   further or queue the review.
 4. `--dry-run` to confirm effective model, effort, and destination for free
    before starting an expensive configuration.
 5. Reserve `--mode deep` for scheduled sweeps of security-critical code, not
