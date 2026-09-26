@@ -133,8 +133,17 @@ manifests share the same release version.
   5.5 builders. The detector ranks OpenCode `claude-opus-5-5` ids with Sol.
 - `run-grok-worker.sh` and visual-coordinator messages now describe GPT-5.6
   as out of policy and point credit-gated Grok work at `claude-opus-5-5`.
-- Codex Security examples run `gpt-6-sol` at `xhigh`, and the guide no longer
-  suggests lowering review effort to save cost.
+- Codex Security examples (`scan`, `bulk-scan`, `validate`, `--codex` effort
+  override) run at `xhigh`. The cost guidance no longer suggests lowering
+  review effort: narrow scope instead (fewer files, a focused diff, fewer
+  passes), or move to `grok-4.7` only under usage-credit pressure.
+- The Grok worker guide splits read-only research (worker model) from code
+  review, which gets its own `gpt-6-sol --effort xhigh` recipe instead of
+  inheriting `BOPEN_WORKER_MODEL` at default effort.
+- Visual coordinator: changing a step's role in the inspector re-staffs its
+  lane, model, provider, effort, and execution from policy (`restaff`). The
+  detector reports `lane_access.claude: "unverified"` because the Claude CLI
+  has no offline account check for `claude-opus-5-5`.
 
 ## [1.1.169] - Pending production promotion
 

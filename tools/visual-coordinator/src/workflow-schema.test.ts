@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultWorkflow, groupModels, nextNodeId, parseEnvironment, parseSeed, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
+import { defaultWorkflow, groupModels, nextNodeId, parseEnvironment, parseSeed, restaff, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
 
 const liveCodexEnvironment = () => parseEnvironment({
   harness: "codex",
@@ -598,6 +598,19 @@ describe("workflow schema", () => {
       expect(environment.lanes.codex).toMatchObject({ detected: false, models: ["gpt-6-sol"] });
       expect(defaultWorkflow(environment).nodes[2]).toMatchObject({ lane: "opencode", model: "x/gpt-6-sol" });
     });
+  });
+
+  it("restaffs a step when its role changes between builder and reviewer", () => {
+    const environment = liveCodexEnvironment();
+    const build = defaultWorkflow(environment).nodes[1];
+
+    const review = restaff(build, "reviewer", environment);
+    expect(review).toMatchObject({ role: "reviewer", lane: "codex", provider: "native", model: "gpt-6-sol", effort: "xhigh", execution: "read-only-review" });
+
+    const rebuilt = restaff(review, "builder", environment);
+    expect(rebuilt).toMatchObject({ role: "builder", lane: "claude", provider: "external", model: "claude-opus-5-5", effort: "medium", execution: "write" });
+    expect(restaff(rebuilt, "builder", environment)).toBe(rebuilt);
+    expect(validateWorkflow({ title: "t", nodes: [review], edges: [] }, environment)).toEqual([]);
   });
 
   it("sanitizes node ids before using them in generated worktree metadata", () => {

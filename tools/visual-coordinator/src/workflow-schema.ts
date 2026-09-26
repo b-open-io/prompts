@@ -385,6 +385,23 @@ export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnviro
   };
 };
 
+/** Re-staff a step whose role changed, the same way a lane-less seed node is staffed. */
+export const restaff = (node: WorkflowNode, role: NodeRole, environment: WorkflowEnvironment): WorkflowNode => {
+  if (role === node.role) return node;
+  const target = role === "coordinator"
+    ? { lane: preferredLane(environment), model: mainModel(environment, preferredLane(environment)) }
+    : targetForRole(environment, role);
+  return {
+    ...node,
+    role,
+    lane: target.lane,
+    model: target.model,
+    provider: defaultProvider(environment, target.lane, target.model, role),
+    effort: role === "reviewer" ? "xhigh" : "medium",
+    execution: role === "reviewer" ? "read-only-review" : "write",
+  };
+};
+
 const safeNodeId = (value: unknown, fallback: string, used: Set<string>): string => {
   const raw = text(value).trim().toLowerCase();
   const normalized = raw.replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 63);

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { groupModels, modelFor, own, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
+import { groupModels, modelFor, own, restaff, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
 
 type Props = {
   node?: WorkflowNode;
@@ -98,7 +98,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
     <label>Task<Textarea value={node.task} onChange={(event) => update("task", event.target.value)} /></label>
     <label>Owned paths<Input value={node.ownedPaths.join(", ")} onChange={(event) => update("ownedPaths", event.target.value.split(",").map((path) => path.trim()).filter(Boolean))} /></label>
     <div className="field-grid">
-      <label>Role<Select value={node.role} onValueChange={(role) => update("role", role as WorkflowNode["role"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{options(["coordinator", "builder", "reviewer", "external"] as const)}</SelectContent></Select></label>
+      <label>Role<Select value={node.role} onValueChange={(role) => onNodeChange(restaff(node, role as WorkflowNode["role"], environment))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{options(["coordinator", "builder", "reviewer", "external"] as const)}</SelectContent></Select></label>
       <label>Execution<Select value={node.execution} onValueChange={(execution) => update("execution", execution as WorkflowNode["execution"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{options(["write", "read-only-review"] as const)}</SelectContent></Select></label>
       <label>Provider<Select value={node.provider} onValueChange={(provider) => update("provider", provider as WorkflowNode["provider"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="native" disabled={environment.hostLane !== node.lane}>native · current host only</SelectItem><SelectItem value="external">external · shell-out</SelectItem></SelectContent></Select></label>
       <label>Effort<Select value={node.effort} onValueChange={(effort) => update("effort", effort as WorkflowNode["effort"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectGroup><SelectLabel>{lane.label} presets</SelectLabel>{options(efforts)}</SelectGroup></SelectContent></Select></label>

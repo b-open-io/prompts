@@ -162,7 +162,10 @@ main-known `BOPEN_HOST_HARNESS` value.
 
 - **Claude**: default advisor `claude-opus-5-5`; native aliases include
   `opus`, `sonnet`, `haiku`, and `inherit`. `fable` is legacy opt-in only.
-  Effort `low|medium|high|xhigh|max`.
+  Effort `low|medium|high|xhigh|max`. The detector lists these whenever the
+  `claude` CLI exists and reports `lane_access.claude: "unverified"`: there is
+  no offline account check, so a failed Opus dispatch reports the lane
+  unavailable.
 - **Codex**: whatever `model =` says in `~/.codex/config.toml`, plus
   `model_reasoning_effort`. There is no enumeration command; the config is the
   truth. The in-app picker has lagged behind what `-m` accepts.
