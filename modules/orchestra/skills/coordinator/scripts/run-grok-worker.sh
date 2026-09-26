@@ -56,14 +56,14 @@ done
 # ids, and so does any casing; the original id is still used for the listing check and dispatch.
 model_policy=$(printf '%s' "$model" | tr '[:upper:]' '[:lower:]')
 case "$model_policy" in
-  gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is not allowed; coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
+  gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is not allowed; GPT-5.6 models are out of policy" >&2; exit 2 ;;
   grok-4.7|*/grok-4.7)
-    ((credit_pressure)) || { echo "$model is a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
+    ((credit_pressure)) || { echo "$model is a usage-credit-pressure fallback; pass --credit-pressure or route the work to claude-opus-5-5" >&2; exit 2; } ;;
   grok-*|*/grok-*) echo "model $model is not allowed; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
 esac
 # A custom id is judged by its config.toml entry too (parsed as real TOML, so either quote style):
 # an alias served by xAI, or pointing at a Grok or GPT-5.6 model, gets the same pin, credit gate, and
-# GPT-6-only rule as the bare id would. A non-Grok id with no resolvable entry is refused.
+# GPT-5.6 ban as the bare id would. A non-Grok id with no resolvable entry is refused.
 alias_config="${GROK_HOME:-$HOME/.grok}/config.toml"
 alias_info=""
 alias_status=4
@@ -125,12 +125,12 @@ if [[ "$alias_status" == 0 ]]; then
   fi
   alias_effective=${alias_target:-$model_policy}
   case "$alias_effective" in
-    gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is an alias for $alias_effective; coding uses GPT-6 models only (gpt-6-sol)" >&2; exit 2 ;;
+    gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is an alias for $alias_effective; GPT-5.6 models are out of policy" >&2; exit 2 ;;
   esac
   if [[ "$alias_host" == "x.ai" || "$alias_host" == *.x.ai || "$alias_effective" == grok-* || "$alias_effective" == */grok-* || "$model_policy" =~ (^|/)x-?ai/ || "$alias_effective" =~ (^|/)x-?ai/ ]]; then
     case "$alias_effective" in
       grok-4.7|*/grok-4.7)
-        ((credit_pressure)) || { echo "$model is an xAI alias for grok-4.7, a usage-credit-pressure fallback; pass --credit-pressure or route the work to gpt-6-sol" >&2; exit 2; } ;;
+        ((credit_pressure)) || { echo "$model is an xAI alias for grok-4.7, a usage-credit-pressure fallback; pass --credit-pressure or route the work to claude-opus-5-5" >&2; exit 2; } ;;
       *) echo "model $model is an xAI alias for ${alias_target:-an unreported model}; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
     esac
   fi

@@ -21,11 +21,12 @@ Core currently declares these model defaults:
 
 | Environment key | Session context | Default |
 |---|---|---|
-| `BOPEN_WORKER_MODEL` | `models.worker` | `gpt-6-sol` |
+| `BOPEN_WORKER_MODEL` | `models.worker` | `claude-opus-5-5` |
 | `BOPEN_ADVISOR_MODEL` | `models.advisor` | `claude-opus-5-5` |
 
-Code review uses `gpt-6-sol` at `xhigh` reasoning. Grok is not a normal worker
-default; use it only under usage-credit pressure, pinning `grok-4.7`.
+Code review uses `gpt-6-sol` or `gpt-6-astra` at `xhigh` reasoning, never the
+default effort. Grok is not a normal worker default; use it only under
+usage-credit pressure, pinning `grok-4.7`.
 
 New declarations should include `label`, `description`, `options` for enums,
 and a short `contextKey` when the value belongs in session context. Secrets and

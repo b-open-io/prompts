@@ -141,7 +141,7 @@ sandbox = "unelevated"
 
 ```bash
 npx @openai/codex-security scan . \
-  --model gpt-6-sol --effort high \
+  --model gpt-6-sol --effort xhigh \
   --codex features.multi_agent_v2.max_concurrent_threads_per_session=4
 ```
 
@@ -242,7 +242,7 @@ reviewers.
 
 ```bash
 npx @openai/codex-security bulk-scan
-npx @openai/codex-security bulk-scan --model gpt-6-sol --effort high
+npx @openai/codex-security bulk-scan --model gpt-6-sol --effort xhigh
 npx @openai/codex-security bulk-scan repositories.csv \
   --output-dir /path/outside/repos/security-scans --workers 4 --max-attempts 2
 ```

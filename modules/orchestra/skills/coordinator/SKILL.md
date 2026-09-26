@@ -1,7 +1,7 @@
 ---
 name: coordinator
-version: 0.0.21
-description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Sol, Astra, Muse, Grok, OpenCode, or native workflows.
+version: 0.0.22
+description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Opus, Sol, Astra, Muse, Grok, OpenCode, or native workflows.
 ---
 
 # Coordinator
@@ -42,7 +42,7 @@ Do not read every harness guide. Load only the resources needed for this run:
    [Grok CLI](references/workers/grok.md),
    [Muse Code](references/workers/muse.md), or
    [OpenCode CLI](references/workers/opencode.md).
-   When dispatching raw Codex CLI, also load
+   When dispatching the Claude Opus worker or raw Codex CLI, also load
    [references/workers/cli-dispatch.md](references/workers/cli-dispatch.md).
 
 Example: a Claude main dispatching an OpenCode worker reads this file, the
@@ -66,14 +66,13 @@ API or file-ownership boundaries, not into tiny tasks merely to create a graph.
 
 ## Select a lane
 
-Default implementation to the authorized, preflighted `gpt-6-sol` lane.
+Default implementation to the authorized, preflighted `claude-opus-5-5` lane.
 Preserve an explicit user-selected alternative lane. A user may attach an
 expiry or another stop condition
 to that preference. Record it, honor the override while it is active, then run
 normal lane selection again when it expires; do not bake a session-specific
 deadline into the reusable skill. If provider authorization or preference is
-unresolved, ask once. Do not silently implement on the premium main or native
-lane.
+unresolved, ask once. Do not silently implement in the main session.
 
 Prefer native specialists for evidence, investigation, review, testing, and
 tool- or domain-bound judgment. Match that work against
@@ -81,22 +80,24 @@ tool- or domain-bound judgment. Match that work against
 when no roster specialist fits. This native-first rule does not apply to routine
 implementation volume.
 
-The preferred coding worker is GPT-6 Sol (`gpt-6-sol`). Use the same model at
-`xhigh` reasoning for independent code review. GPT-6 Astra remains a
+The preferred coding worker is Claude Opus 5.5 (`claude-opus-5-5`). Independent
+code review runs on GPT-6 Sol (`gpt-6-sol`) or GPT-6 Astra (`gpt-6-astra`) at
+`xhigh` reasoning, never at default effort. GPT-6 Astra also remains a
 special-purpose 3D / animation / gamification / creative implementation lane;
-Muse Spark 1.3 remains an explicit alternative lane. Coding uses GPT-6 models
-only: never dispatch a `gpt-5.6` model (Sol, Luna, Terra), not as a default,
-a CloudAgent fallback, or an explicit choice. OpenCode is
+Muse Spark 1.3 remains an explicit alternative lane. Never dispatch a `gpt-5.6`
+model (Sol, Luna, Terra), not as a default, a CloudAgent fallback, or an
+explicit choice. OpenCode is
 a portable lane whose provider and model must be pinned. Grok is not a normal
 worker lane: use it only under usage-credit pressure, pin `grok-4.7`, and never
 use Grok 4.6. Never infer or replace the user's current main model. If the
 required default is unavailable, report that boundary instead of silently
 substituting a superseded model.
 
-CloudAgent is only one coding lane. Its catalog omitting `gpt-6-sol` does not
-make the model unavailable: use the GPT-6 Sol CLI lane on an agent computer or
-Luke's Claude Code, OpenAI, or Grok desktop harness instead. Do not fall back
-to `gpt-5.6-sol` or Claude Opus solely because CloudAgent lacks the model.
+CloudAgent is only one coding lane. Its catalog omitting `claude-opus-5-5` does
+not make the model unavailable: use the Claude Code CLI lane
+(`claude -p --model claude-opus-5-5`) on an agent computer or Luke's Claude
+Code desktop harness instead. Do not fall back to `gpt-6-sol`, a `gpt-5.6`
+model, or Grok solely because CloudAgent lacks the model.
 
 If the work has deterministic stages, loops, or voting, use a native workflow
 only when the current host guide says the primitive exists and the user opted

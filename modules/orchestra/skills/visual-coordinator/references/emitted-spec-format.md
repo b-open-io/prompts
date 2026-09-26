@@ -28,10 +28,10 @@ cleanup policy (after-approved-merge)
 - <from> —memory · carried forward→ <to>
 
 ## Nodes
-- **Work** — SHELL-OUT to codex
-  controller: grok · provider/model: openai/gpt-6-sol · effort: medium
+- **Work** — SHELL-OUT to claude
+  controller: grok · provider/model: anthropic/claude-opus-5-5 · effort: medium
   disclosure: approved · context: brief, owned paths, test contract
-  command: codex exec ...
+  command: claude --print ...
 - **Review** — SHELL-OUT to codex (read-only)
   controller: grok · provider/model: openai/gpt-6-sol · effort: xhigh
   disclosure: approved · context: diff, worker report, claims
@@ -60,8 +60,8 @@ cleanup policy (after-approved-merge)
       "id": "n2",
       "kind": "process",
       "label": "Work",
-      "lane": "codex",
-      "model": "gpt-6-sol",
+      "lane": "claude",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "actor": "maker",
       "execution": "external-provider",
@@ -69,7 +69,7 @@ cleanup policy (after-approved-merge)
       "task": "<prompt>",
       "shell": true,
       "nativeController": "grok",
-      "provider": "openai",
+      "provider": "anthropic",
       "disclosure": "approved",
       "context": "<exact shared context>",
       "command": "<safe stdin/prompt-file dispatch>"
@@ -166,8 +166,9 @@ DAG, pipeline, or workflow-engine construct for OpenCode.
 
 **Grok**: emit a Rhai workflow. Follow the bundled `/create-workflow`
 skill. Native `agent().model` is pinned to `grok-4.7` and allowed for worker
-nodes only under usage-credit pressure; Grok 4.6 is forbidden. Worker and
-review nodes default to `gpt-6-sol` shell-outs.
+nodes only under usage-credit pressure; Grok 4.6 is forbidden. Worker nodes
+default to `claude-opus-5-5` shell-outs and review nodes to `gpt-6-sol`
+shell-outs at `xhigh`.
 A non-Grok lane is a
 Grok-CLI or Claude-CLI shell-out. `parallel(jobs)` is the barrier.
 Smoke-check with `{ validate_only: true }` before a real run.
@@ -230,7 +231,9 @@ Provider-qualified xAI ids (`xai/…`, `openrouter/x-ai/…`) are Grok: they run
 only on the Grok lane, under credit pressure, pinned to `grok-4.7`. The
 detector keeps these ids whole. A Grok CLI id named `gpt-6-sol` counts as Sol
 only when its entry resolves to `gpt-6-sol` behind a non-xAI host; otherwise it
-is never staffed as Sol and is rejected as a Build or Review model. The observed main's pin exemption covers only a resolved
+is never staffed as Sol and is rejected as a Review model; a Grok CLI id is
+likewise staffed as a Build model only when its entry resolves to
+`claude-opus-5-5` behind a non-xAI host. The observed main's pin exemption covers only a resolved
 `grok-4.6`; any other off-pin Grok version is rejected like a dispatch. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.

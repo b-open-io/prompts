@@ -23,9 +23,9 @@ This repository provides:
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
 - **Orchestration patterns** that keep a strong main model on judgment, wrap
-  GPT-6 Sol implementation workers in visible native controllers, support a
-  read-only Claude Opus 5.5 advisor, and let humans edit the plan on an AI
-  Elements workflow canvas before execution
+  Claude Opus 5.5 implementation workers in visible native controllers, review
+  on GPT-6 Sol at xhigh, support a read-only Claude Opus 5.5 advisor, and let
+  humans edit the plan on an AI Elements workflow canvas before execution
 - **Slash commands** for common workflows, including native OpenCode command registration
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
@@ -898,9 +898,10 @@ divide responsibilities:
   worker guide. Non-trivial writes use isolated worktrees, all makers stop at
   a barrier before an independent read-only review, and review plus tests share
   one corrective pass. The main runs the final checks and owns git. Bounded
-  implementation defaults to `gpt-6-sol`; independent code review uses the
-  same model at `xhigh`. Grok is used only under usage-credit pressure and is
-  pinned to `grok-4.7`, never Grok 4.6. Native specialists stay focused on
+  implementation defaults to `claude-opus-5-5`; independent code review uses
+  `gpt-6-sol` or `gpt-6-astra` at `xhigh`, never default reasoning. Grok is
+  used only under usage-credit pressure and is pinned to `grok-4.7`, never
+  Grok 4.6. Native specialists stay focused on
   evidence, review, testing, and domain judgment.
   Advisor and Wave Coordinator are composed in place, only at a real decision
   boundary or a fan-out that exceeds available host slots — Coordinator does

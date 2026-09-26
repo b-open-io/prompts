@@ -570,7 +570,7 @@ class GrokWrapperTests(unittest.TestCase):
                     env["BOPEN_WORKER_MODEL"] = model
                     rejected = subprocess.run(["bash", "-c", command], cwd=self.ROOT, env=env, capture_output=True, text=True)
                     self.assertEqual(rejected.returncode, 2, rejected.stderr)
-                    self.assertRegex(rejected.stderr, "GPT-6 models only|pinned to grok-4.7")
+                    self.assertRegex(rejected.stderr, "GPT-5.6 models are out of policy|pinned to grok-4.7")
 
     ALIAS_CONFIG = (
         '[model."ox-alpha"]\nmodel = "grok-4.7"\nbase_url = "https://api.x.ai/v1"\n\n'
@@ -659,7 +659,7 @@ class GrokWrapperTests(unittest.TestCase):
                 (["--model", "ox-old", "--credit-pressure"], "pinned to grok-4.7"),
                 (["--model", "ox-blank", "--credit-pressure"], "has no explicit model"),
                 (["--model", "or-grok", "--credit-pressure"], "pinned to grok-4.7"),
-                (["--model", "or-luna"], "GPT-6 models only"),
+                (["--model", "or-luna"], "GPT-5.6 models are out of policy"),
             ]
             for extra, message in rejected:
                 with self.subTest(extra=extra):
@@ -732,14 +732,14 @@ class GrokWrapperTests(unittest.TestCase):
                 (["--model", "grok-4.7"], {}, "usage-credit-pressure"),
                 (["--model", "grok-4.6", "--credit-pressure"], {}, "pinned to grok-4.7"),
                 (["--model", "grok-4.6"], {"BOPEN_USAGE_CREDIT_PRESSURE": "1"}, "pinned to grok-4.7"),
-                (["--model", "gpt-5.6-sol"], {}, "GPT-6 models only"),
-                (["--model", "openrouter/openai/gpt-5.6-luna"], {}, "GPT-6 models only"),
+                (["--model", "gpt-5.6-sol"], {}, "GPT-5.6 models are out of policy"),
+                (["--model", "openrouter/openai/gpt-5.6-luna"], {}, "GPT-5.6 models are out of policy"),
                 (["--model", "xai/grok-4.6", "--credit-pressure"], {}, "pinned to grok-4.7"),
                 (["--model", "openrouter/x-ai/grok-4.6"], {}, "pinned to grok-4.7"),
                 (["--model", "openrouter/x-ai/grok-4.7"], {}, "usage-credit-pressure"),
                 (["--model", "gpt-6-sol", "--effort", "max"], {}, "--effort must be"),
-                (["--model", "GPT-5.6-LUNA"], {}, "GPT-6 models only"),
-                (["--model", "OpenRouter/OpenAI/GPT-5.6-Sol"], {}, "GPT-6 models only"),
+                (["--model", "GPT-5.6-LUNA"], {}, "GPT-5.6 models are out of policy"),
+                (["--model", "OpenRouter/OpenAI/GPT-5.6-Sol"], {}, "GPT-5.6 models are out of policy"),
                 (["--model", "GROK-4.6", "--credit-pressure"], {}, "pinned to grok-4.7"),
                 (["--model", "XAI/Grok-4.6"], {}, "pinned to grok-4.7"),
                 (["--model", "GROK-4.7"], {}, "usage-credit-pressure"),
@@ -757,7 +757,7 @@ class ModelDefaultTests(unittest.TestCase):
     def test_root_model_defaults_match_dispatch_policy(self) -> None:
         data = json.loads((self.ROOT / "settings.json").read_text(encoding="utf-8"))
         settings = {entry["key"]: entry["default"] for entry in data["settings"]}
-        self.assertEqual(settings["BOPEN_WORKER_MODEL"], "gpt-6-sol")
+        self.assertEqual(settings["BOPEN_WORKER_MODEL"], "claude-opus-5-5")
         self.assertEqual(settings["BOPEN_ADVISOR_MODEL"], "claude-opus-5-5")
 
 

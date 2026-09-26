@@ -1,9 +1,24 @@
-# Codex CLI dispatch
+# CLI dispatch
 
-Load this only when dispatching raw `codex exec` for a Sol or Astra worker. Prefer a Claude Code Codex plugin's resumable job interface when it is
-installed and suitable.
+Load this only when dispatching the Claude Opus worker through `claude -p`, or
+raw `codex exec` for a Sol reviewer or Astra worker. Prefer a Claude Code Codex
+plugin's resumable job interface when it is installed and suitable.
 
-## Capture and resume
+## Claude Opus worker
+
+On a Claude Code host, dispatch the worker as a native subagent with
+`model: claude-opus-5-5`. From any other host, or when CloudAgent's catalog
+omits the model, run the Claude Code CLI:
+
+    cd <repo> && claude -p --model claude-opus-5-5 --effort high \
+      --permission-mode acceptEdits --output-format stream-json --verbose \
+      "<imperative; details in SPEC file>" \
+      > /tmp/dispatch-<id>.log 2>&1 &
+
+The prompt, spec, and selected repository content go to Anthropic. Verify the
+model that ran from the stream's `init` event, not the worker's self-report.
+
+## Codex capture and resume
 
 Always capture the final message and structured events:
 
@@ -26,17 +41,9 @@ similar package installs) inside `workspace-write`, add:
 Do not make that the default. Prefer specs that avoid in-sandbox installs when
 possible.
 
-## Example commands
+## Example Codex commands
 
-Sol:
-
-    codex exec --sandbox workspace-write --cd <repo> -m gpt-6-sol \
-      -c model_reasoning_effort="high" \
-      --json --output-last-message /tmp/dispatch-<id>-last.md \
-      "<imperative; details in SPEC file>" \
-      > /tmp/dispatch-<id>.log 2>&1 &
-
-Code review:
+Code review (Sol, or `-m gpt-6-astra`; always at `xhigh`, never default effort):
 
     codex exec --sandbox read-only --cd <repo> -m gpt-6-sol \
       -c model_reasoning_effort="xhigh" \

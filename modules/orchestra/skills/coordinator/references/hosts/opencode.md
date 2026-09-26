@@ -7,7 +7,7 @@ that require an explicit host marker. Do not infer the host from inherited
 `OPENCODE` variables. Prefer native OpenCode agents
 from .opencode/agent/, .opencode/agents/, or opencode.json for specialist
 judgment and context-bound work. For routine bounded implementation, follow
-Coordinator's preferred `gpt-6-sol` worker default and pin the selected
+Coordinator's preferred `claude-opus-5-5` worker default and pin the selected
 provider/model. Independent code review uses `gpt-6-sol` at `xhigh`.
 Skills may be discovered from native locations and .claude/skills/.
 

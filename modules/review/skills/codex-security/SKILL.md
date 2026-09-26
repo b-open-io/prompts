@@ -97,8 +97,8 @@ npx @openai/codex-security scan . --dry-run
 ```
 
 Scans default to `gpt-6-sol` at `xhigh` reasoning effort. `--model` and
-`--effort minimal|low|medium|high|xhigh` change that; drop the effort before you
-drop the model when trimming cost.
+`--effort minimal|low|medium|high|xhigh` change that, but security review stays
+at `xhigh`; never lower the effort to trim cost.
 
 Results land in `--output-dir` (required to be outside the repo). If that
 directory already holds a prior scan, add `--archive-existing` rather than

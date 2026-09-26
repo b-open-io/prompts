@@ -6,7 +6,8 @@ apply the Coordinator disclosure rule before first use.
 
 Grok is a usage-credit-pressure fallback, not the normal coding lane. Use it
 only when that pressure is explicit, pin `grok-4.7`, and never dispatch Grok
-4.6. Otherwise use the preferred `gpt-6-sol` coding worker. The wrapper
+4.6. Otherwise use the preferred `claude-opus-5-5` coding worker through the
+Claude Code CLI. The wrapper
 enforces this for any casing of the id, and for a custom id whose
 `config.toml` entry (parsed as real TOML, either quote style) is served by xAI
 or points at a Grok or `gpt-5.6` model; a non-Grok id with no parseable entry,
@@ -36,8 +37,10 @@ authorized sign-in. Never print, persist, or place a credential in a prompt or
 log.
 
 Capture the complete preflight output, then pin `BOPEN_WORKER_MODEL` to an
-exact listed id; never ride a changing CLI default. Its default is `gpt-6-sol`
-through a quoted custom Grok model entry. Use `grok-4.7` only under
+exact listed id; never ride a changing CLI default. Its default,
+`claude-opus-5-5`, runs on this lane only through a quoted custom Grok model
+entry; when none is listed, dispatch it through the Claude Code CLI instead.
+Reviews use a quoted `gpt-6-sol` entry at `--effort xhigh`. Use `grok-4.7` only under
 usage-credit pressure and only through the wrapper below; any other Grok id is
 out of policy. If authentication, model
 availability, or network access cannot be verified, report the lane as
@@ -105,7 +108,7 @@ controller may run this script in the background and monitor its complete log.
 
 Every Grok-CLI dispatch runs through that wrapper — Grok models and non-Grok
 custom ids such as `gpt-6-sol` alike. The wrapper is the only place the
-GPT-6-only rule, the `grok-4.7` pin, the credit gate, and their case-insensitive
+GPT-5.6 ban, the `grok-4.7` pin, the credit gate, and their case-insensitive
 matching live, so there is no raw `grok` dispatch recipe to keep in sync. If the
 wrapper is unavailable, the Grok lane is unavailable for that run; do not
 hand-roll a `grok --prompt-file` call.
