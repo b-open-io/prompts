@@ -148,6 +148,7 @@ rank_opencode_models() {
 import re, sys
 default = sys.argv[1]
 preferred = {
+    "claude-opus-5-5": 1,
     "gpt-6-sol": 1,
     "muse-spark-1.3-contributor-free": 2,
     "grok-4.7": 3,

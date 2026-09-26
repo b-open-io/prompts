@@ -110,12 +110,17 @@ describe("visual coordinator command generation", () => {
 describe("versioned export contract", () => {
   const environment = parseEnvironment({
     harness: "codex",
-    lanes: { codex: "available", grok: "available" },
-    models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"] },
+    lanes: { codex: "available", grok: "available", claude: "available" },
+    models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"], claude: ["claude-opus-5-5"] },
   });
+  const approvedDefault = () => {
+    const workflow = defaultWorkflow(environment);
+    workflow.nodes[1].disclosure = "Approved Claude Opus worker";
+    return workflow;
+  };
 
   it("serializes metadata, actors, graph edges, and lifecycle from the live workflow", () => {
-    const spec = serializeWorkflow(defaultWorkflow(environment), environment);
+    const spec = serializeWorkflow(approvedDefault(), environment);
 
     expect(spec.version).toBe(2);
     expect(spec.harness).toBe("codex");
@@ -123,6 +128,8 @@ describe("versioned export contract", () => {
     expect(spec.isolationPolicy).toMatchObject({ worktreeRoot: "~/code/worktrees", baseRef: "origin/dev" });
     expect(spec.nodes.map((node) => node.id)).toEqual(["coordinate", "build", "review"]);
     expect(spec.nodes[0]).toMatchObject({ kind: "process", actor: "main-controller", execution: "native-agent", shell: false, command: null });
+    expect(spec.nodes[1]).toMatchObject({ lane: "claude", model: "claude-opus-5-5", provider: "anthropic", actor: "maker", shell: true });
+    expect(spec.nodes[2]).toMatchObject({ lane: "codex", model: "gpt-6-sol", effort: "xhigh", actor: "reviewer" });
     expect(spec.edges.find((edge) => edge.kind === "reject")).toMatchObject({ failureOwner: "review", failureCondition: "revise", correctionBudget: "workflow", onExhausted: "return-to-main" });
     expect(spec.gates).toEqual([]);
     expect(spec.worktreeLifecycle).toContain("human-approves");
@@ -169,7 +176,7 @@ describe("versioned export contract", () => {
     const pressured = parseEnvironment({
       harness: "claude-code",
       lanes: { claude: "available", opencode: "available", codex: "unavailable" },
-      models: { claude: ["inherit"], opencode: ["openrouter/openai/gpt-6-sol", "openrouter/xai/grok-4.7"], opencode_effort: ["medium", "high", "xhigh"] },
+      models: { claude: ["inherit"], opencode: ["openrouter/anthropic/claude-opus-5-5", "openrouter/openai/gpt-6-sol", "openrouter/xai/grok-4.7"], opencode_effort: ["medium", "high", "xhigh"] },
       credit_pressure: true,
     });
     const workflow = defaultWorkflow(pressured);
@@ -184,7 +191,7 @@ describe("versioned export contract", () => {
   });
 
   it("emits no executable nodes when the workflow itself is invalid", () => {
-    const workflow = defaultWorkflow(environment);
+    const workflow = approvedDefault();
     workflow.edges.push({ id: "cycle", source: "review", target: "coordinate", kind: "forward" });
 
     const spec = serializeWorkflow(workflow, environment);
@@ -271,7 +278,7 @@ describe("versioned export contract", () => {
 
     const unpressured = detected();
     expect(validateWorkflow(edited(unpressured), unpressured).map((issue) => issue.message)).toContain(
-      "Coordinate uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+      "Coordinate uses Grok without usage-credit pressure; route it to claude-opus-5-5.",
     );
     expect(serializeWorkflow(edited(unpressured), unpressured).nodes).toEqual([]);
 
@@ -318,18 +325,18 @@ describe("versioned export contract", () => {
     expect(spec.nodes.some((node) => node.actor === "main-controller")).toBe(false);
   });
 
-  it("labels a custom GPT-6 Sol on the Grok CLI by its real provider, never xAI", () => {
-    const grokHost = (extra: Record<string, unknown> = {}) => parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" },
+  it("labels custom Opus and Sol ids on the Grok CLI by their real provider, never xAI", () => {
+    const grokHost = (extra: Record<string, unknown> = {}) => parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol", "claude-opus-5-5": "claude-opus-5-5" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai", "claude-opus-5-5": "anthropic" },
       harness: "grok",
       lanes: { grok: "available" },
-      models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "grok-4.7" },
+      models: { grok: ["grok-4.7", "gpt-6-sol", "claude-opus-5-5"], grok_default: "grok-4.7" },
       grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
       grok_auth: "grok.com",
       ...extra,
     });
     const disclosed = (environment: ReturnType<typeof grokHost>) => {
       const workflow = defaultWorkflow(environment);
-      workflow.nodes.slice(1).forEach((node) => { node.disclosure = "Approved custom Sol dispatch"; });
+      workflow.nodes.slice(1).forEach((node) => { node.disclosure = "Approved custom dispatch"; });
       return workflow;
     };
 
@@ -347,8 +354,8 @@ describe("versioned export contract", () => {
     expect(spec.nodes.filter((node) => node.id !== "coordinate")).toEqual([]);
     expect(toExportText(pinnedToGrok(noBaseUrl), noBaseUrl)).not.toContain("run-grok-worker.sh");
 
-    const configured = grokHost({ grok_model_providers: { "gpt-6-sol": "openai" }, credit_pressure: true });
-    expect(serializeWorkflow(disclosed(configured), configured).nodes.filter((node) => node.id !== "coordinate").map((node) => node.provider)).toEqual(["openai", "openai"]);
+    const configured = grokHost({ grok_model_providers: { "gpt-6-sol": "openai", "claude-opus-5-5": "anthropic" }, credit_pressure: true });
+    expect(serializeWorkflow(disclosed(configured), configured).nodes.filter((node) => node.id !== "coordinate").map((node) => [node.model, node.provider])).toEqual([["claude-opus-5-5", "anthropic"], ["gpt-6-sol", "openai"]]);
     expect(serializeWorkflow(disclosed(configured), configured).nodes.find((node) => node.id === "coordinate")).toMatchObject({ actor: "main-controller" });
   });
 
@@ -417,7 +424,7 @@ describe("versioned export contract", () => {
 
     const unpressured = grokHost();
     expect(messages(unpressured, "ox-alpha")).toEqual(expect.arrayContaining([
-      "Build uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+      "Build uses Grok without usage-credit pressure; route it to claude-opus-5-5.",
       "Build uses ox-alpha, an xAI alias for an unreported model; Grok is pinned to grok-4.7.",
     ]));
     expect(dispatchIssues(builder(unpressured, "ox-alpha"), unpressured)).toEqual([]);
@@ -426,7 +433,7 @@ describe("versioned export contract", () => {
     const oldTarget = grokHost({ credit_pressure: true, grok_model_targets: { "ox-alpha": "grok-4.6", "or-grok": "x-ai/grok-4.6", "or-luna": "gpt-5.6-luna" } });
     expect(messages(oldTarget, "ox-alpha")).toContain("Build uses ox-alpha, an xAI alias for grok-4.6; Grok is pinned to grok-4.7.");
     expect(messages(oldTarget, "or-grok")).toContain("Build uses or-grok, an xAI alias for x-ai/grok-4.6; Grok is pinned to grok-4.7.");
-    expect(messages(oldTarget, "or-luna")).toContain("Build uses or-luna, an alias for gpt-5.6-luna; coding uses GPT-6 models only (gpt-6-sol).");
+    expect(messages(oldTarget, "or-luna")).toContain("Build uses or-luna, an alias for gpt-5.6-luna; GPT-5.6 models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).");
     expect(serializeWorkflow(builder(oldTarget, "ox-alpha"), oldTarget).nodes).toEqual([]);
 
     const pinned = grokHost({ credit_pressure: true, grok_model_targets: { "ox-alpha": "grok-4.7" } });
@@ -475,7 +482,7 @@ describe("versioned export contract", () => {
     expect(toExportText(builder(pinned, "grok"), pinned)).not.toContain("opencode run");
 
     const unpressured = host({ grok_model_providers: { "xai/ox-alpha": "xai" }, grok_model_targets: { "xai/ox-alpha": "grok-4.7" } });
-    expect(validateWorkflow(builder(unpressured, "grok"), unpressured).map((issue) => issue.message)).toContain("Build uses Grok without usage-credit pressure; route it to gpt-6-sol.");
+    expect(validateWorkflow(builder(unpressured, "grok"), unpressured).map((issue) => issue.message)).toContain("Build uses Grok without usage-credit pressure; route it to claude-opus-5-5.");
   });
 
   it("refuses a listed custom Grok id whose entry names a base_url but no model", () => {
@@ -501,8 +508,8 @@ describe("versioned export contract", () => {
   it("judges a Grok CLI Sol alias by the model its entry really runs", () => {
     const host = (targets: Record<string, string>, providers: Record<string, string>, extra: Record<string, unknown> = {}) => parseEnvironment({
       harness: "grok",
-      lanes: { grok: "available", codex: "available" },
-      models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "grok-4.7", codex: ["gpt-6-sol"] },
+      lanes: { grok: "available", codex: "available", claude: "available" },
+      models: { grok: ["grok-4.7", "gpt-6-sol"], grok_default: "grok-4.7", codex: ["gpt-6-sol"], claude: ["claude-opus-5-5"] },
       grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh",
       grok_auth: "grok.com",
       grok_model_targets: targets,
@@ -511,29 +518,30 @@ describe("versioned export contract", () => {
     });
     const onGrok = (environment: ReturnType<typeof host>) => {
       const workflow = defaultWorkflow(environment);
-      workflow.nodes.slice(1).forEach((node) => { node.lane = "grok"; node.model = "gpt-6-sol"; node.provider = "external"; node.disclosure = "Approved custom dispatch"; });
+      workflow.nodes.slice(1).forEach((node) => { node.disclosure = "Approved custom dispatch"; });
+      workflow.nodes[2] = { ...workflow.nodes[2], lane: "grok", model: "gpt-6-sol", provider: "external" };
       return workflow;
     };
 
     const muse = host({ "gpt-6-sol": "openrouter/muse-spark-1.3" }, { "gpt-6-sol": "openrouter" }, { credit_pressure: true });
-    expect(defaultWorkflow(muse).nodes.slice(1).map((node) => [node.id, node.lane, node.model])).toEqual([["build", "codex", "gpt-6-sol"], ["review", "codex", "gpt-6-sol"]]);
+    expect(defaultWorkflow(muse).nodes.slice(1).map((node) => [node.id, node.lane, node.model])).toEqual([["build", "claude", "claude-opus-5-5"], ["review", "codex", "gpt-6-sol"]]);
     const museMessages = validateWorkflow(onGrok(muse), muse).map((issue) => issue.message);
     expect(museMessages).toEqual(expect.arrayContaining([
-      "Build uses gpt-6-sol, but its Grok CLI entry runs openrouter/muse-spark-1.3, not gpt-6-sol.",
+      "Review uses gpt-6-sol, but its Grok CLI entry runs openrouter/muse-spark-1.3, not gpt-6-sol.",
       "Review must review on gpt-6-sol at xhigh.",
     ]));
-    expect(serializeWorkflow(onGrok(muse), muse).nodes.map((node) => node.id)).toEqual(["coordinate"]);
+    expect(serializeWorkflow(onGrok(muse), muse).nodes.map((node) => node.id)).toEqual(["coordinate", "build"]);
 
     const xai = host({ "gpt-6-sol": "gpt-6-sol" }, { "gpt-6-sol": "xai" });
-    expect(defaultWorkflow(xai).nodes.slice(1).map((node) => node.lane)).toEqual(["codex", "codex"]);
+    expect(defaultWorkflow(xai).nodes.slice(1).map((node) => node.lane)).toEqual(["claude", "codex"]);
     expect(validateWorkflow(onGrok(xai), xai).map((issue) => issue.message)).toEqual(expect.arrayContaining([
-      "Build uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+      "Review uses Grok without usage-credit pressure; route it to gpt-6-sol.",
       "Review must review on gpt-6-sol at xhigh.",
     ]));
 
     const real = host({ "gpt-6-sol": "gpt-6-sol" }, { "gpt-6-sol": "openai" }, { credit_pressure: true });
     expect(validateWorkflow(onGrok(real), real)).toEqual([]);
-    expect(serializeWorkflow(onGrok(real), real).nodes.filter((node) => node.id !== "coordinate").map((node) => node.provider)).toEqual(["openai", "openai"]);
+    expect(serializeWorkflow(onGrok(real), real).nodes.filter((node) => node.id !== "coordinate").map((node) => node.provider)).toEqual(["anthropic", "openai"]);
   });
 
   it("never resolves models or lanes through Object.prototype", () => {
@@ -622,7 +630,7 @@ describe("versioned export contract", () => {
 
     const unpressured = observed("grok-4.7");
     expect(validateWorkflow(unpressured.workflow, unpressured.environment).map((issue) => issue.message)).toEqual([
-      "Coordinate uses Grok without usage-credit pressure; route it to gpt-6-sol.",
+      "Coordinate uses Grok without usage-credit pressure; route it to claude-opus-5-5.",
     ]);
     expect(serializeWorkflow(unpressured.workflow, unpressured.environment).nodes).toEqual([]);
 
@@ -650,7 +658,7 @@ describe("versioned export contract", () => {
 
     expect(workflow.nodes[0]).toMatchObject({ model: "ox-luna", provider: "native" });
     expect(validateWorkflow(workflow, observed).map((issue) => issue.message)).toContain(
-      "Coordinate uses ox-luna, an alias for gpt-5.6-luna; coding uses GPT-6 models only (gpt-6-sol).",
+      "Coordinate uses ox-luna, an alias for gpt-5.6-luna; GPT-5.6 models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).",
     );
     expect(serializeWorkflow(workflow, observed).nodes).toEqual([]);
   });
