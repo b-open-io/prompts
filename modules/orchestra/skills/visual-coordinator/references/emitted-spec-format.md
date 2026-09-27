@@ -129,6 +129,8 @@ must come from the detected lists for that lane.
 
 `actor` / `execution` are required to distinguish maker/reviewer agents from
 main-controller, deterministic-gate, human-approval, and main-ship actions.
+`actor` is `reviewer` for every node whose canvas execution is
+`read-only-review`, whatever its role.
 Main-only actions never shell out. `gates[]` and `gateNode` are reserved for a
 future deterministic-gate editor and remain empty/null in this release. The
 single workflow-level `correctionBudget` covers

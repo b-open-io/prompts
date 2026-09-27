@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.15
+version: 1.4.16
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -355,67 +355,85 @@ echo "Scans complete. Reviewing results..."
 ```
 
 ### Sol Code Review Process
-1. **Collect Context**:
+1. **Collect context against the PR base** (a plain `git diff` is empty on a
+   clean PR checkout):
    ```bash
-   # Get full diff
-   git diff > /tmp/code-changes.diff
-   
-   # Get file list
-   git diff --name-only > /tmp/changed-files.txt
-   
-   # Get commit history
-   git log --oneline -10 > /tmp/recent-commits.txt
+   BASE=$(git merge-base "${BASE_REF:-origin/dev}" HEAD)
+   git diff --name-only "$BASE"...HEAD > /tmp/changed-files.txt
+   git log --oneline "$BASE"..HEAD > /tmp/recent-commits.txt
+
+   # Author claims: the PR description plus every commit message
+   gh pr view --json body -q .body > /tmp/author-claims.md 2>/dev/null || : > /tmp/author-claims.md
+   git log --format='%B' "$BASE"..HEAD >> /tmp/author-claims.md
+
+   # Scan evidence: the Semgrep, CodeQL, Codex Security, and pattern-scan
+   # output you saved earlier in this audit
+   cat /tmp/semgrep*.json /tmp/codeql*.sarif /tmp/codex-security*.json /tmp/audit-*.txt \
+     > /tmp/scan-evidence.txt 2>/dev/null || true
    ```
 
-2. **Prepare Comprehensive Prompt**:
+2. **Slice the whole diff** so every line lands in exactly one slice. Files
+   are grouped up to `MAX` diff lines; a single larger file is split into
+   `MAX`-line parts rather than truncated:
    ```bash
-   # Create detailed context
-   echo "## Code Review Request
-   
-   ### Recent Commits:
-   $(cat /tmp/recent-commits.txt)
-   
-   ### Changed Files:
-   $(cat /tmp/changed-files.txt)
-   
-   ### Full Diff:
-   \`\`\`diff
-   $(cat /tmp/code-changes.diff | head -5000)
-   \`\`\`
-   
-   Please observe and document:
-   1. Security properties and any deviations from expected behavior
-   2. Performance characteristics and data flow patterns
-   3. Code quality observations
-   4. Architecture decisions and their implications
-   5. Adherence to or deviation from best practices
-
-   Report all findings including areas with no issues. Provide actionable feedback with severity levels." > /tmp/review-prompt.txt
+   MAX=4000
+   rm -rf /tmp/review-slices && mkdir -p /tmp/review-slices
+   n=0; lines=0
+   while IFS= read -r file; do
+     git diff "$BASE"...HEAD -- "$file" > /tmp/review-file.diff
+     size=$(wc -l < /tmp/review-file.diff)
+     if (( size > MAX )); then
+       split -l "$MAX" -d -a 3 /tmp/review-file.diff "/tmp/review-slices/big-$(printf %03d "$n")-"
+       n=$((n + 1)); lines=0; continue
+     fi
+     if (( lines > 0 && lines + size > MAX )); then n=$((n + 1)); lines=0; fi
+     cat /tmp/review-file.diff >> "/tmp/review-slices/slice-$(printf %03d "$n").diff"
+     lines=$((lines + size))
+   done < /tmp/changed-files.txt
    ```
 
-3. **Send to GPT-6 Sol at xhigh (read-only)**:
+3. **Run one GPT-6 Sol `xhigh` pass per slice (read-only)**. Every pass gets
+   the author claims and scan evidence alongside its slice:
    ```bash
-   codex exec --sandbox read-only --cd "$(pwd)" -m gpt-6-sol \
-     -c model_reasoning_effort="xhigh" \
-     --output-last-message /tmp/review-verdict.md \
-     < /tmp/review-prompt.txt > /tmp/review.log 2>&1
-   cat /tmp/review-verdict.md
+   total=$(ls /tmp/review-slices | wc -l)
+   for slice in /tmp/review-slices/*; do
+     id=$(basename "$slice")
+     {
+       echo "## Code Review Request — slice $id of $total"
+       echo "### Recent commits"; cat /tmp/recent-commits.txt
+       echo "### All changed files"; cat /tmp/changed-files.txt
+       echo "### Author claims (verify each against the code)"; cat /tmp/author-claims.md
+       echo "### Scan evidence"; cat /tmp/scan-evidence.txt
+       echo "### Diff slice"; echo '```diff'; cat "$slice"; echo '```'
+       echo "Observe and document security properties, data flows, trust boundaries,"
+       echo "code quality, and architecture implications in this slice. Check every"
+       echo "author claim it touches. Report findings with severity, and areas with no issues."
+     } > "/tmp/review-prompt-$id.txt"
+     codex exec --sandbox read-only --cd "$(pwd)" -m gpt-6-sol \
+       -c model_reasoning_effort="xhigh" \
+       --output-last-message "/tmp/review-verdict-$id.md" \
+       < "/tmp/review-prompt-$id.txt" > "/tmp/review-$id.log" 2>&1 \
+       || echo "Sol pass failed for $id; rerun it before reporting" >&2
+   done
+   cat /tmp/review-verdict-*.md
    ```
+   A failed or missing slice verdict leaves the review incomplete; rerun it
+   rather than reporting on partial coverage.
 
 4. **Synthesize Results**:
-   - Combine Sol's findings with your analysis
+   - Combine every slice's Sol findings with your analysis
    - Prioritize findings by severity
    - Provide specific code examples for fixes
    - Cross-reference with security standards
 
 ### Example Integration Workflow
 ```bash
-# 1. Run standard audit first
-git diff
-# ... perform regular checks ...
+# 1. Run the standard audit against the PR base and save its output
+BASE=$(git merge-base "${BASE_REF:-origin/dev}" HEAD)
+git diff "$BASE"...HEAD
+# ... Semgrep, CodeQL, pattern scans -> /tmp/semgrep*.json, /tmp/codeql*.sarif, /tmp/audit-*.txt
 
-# 2. Always run the GPT-6 Sol xhigh verdict pass (the codex exec review above),
-#    one pass per slice when the diff is large
+# 2. Always run the Sol xhigh process above: every slice, with claims and scan evidence
 
 # 3. Combine findings into comprehensive report
 ```

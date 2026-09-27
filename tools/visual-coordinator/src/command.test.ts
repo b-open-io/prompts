@@ -205,6 +205,17 @@ describe("versioned export contract", () => {
     expect(approved.command).toContain("'--sandbox' 'read-only'");
   });
 
+  it("exports a restaffed read-only-review step as a reviewer", () => {
+    const workflow = approvedDefault();
+    const external = { ...restaff(workflow.nodes[2], "external", environment), disclosure: undefined };
+    expect(external).toMatchObject({ role: "external", execution: "read-only-review", model: "gpt-6-sol", effort: "xhigh", provider: "native" });
+    workflow.nodes[2] = external;
+
+    const spec = serializeWorkflow(workflow, environment);
+    expect(spec.nodes.find((node) => node.id === "review")).toMatchObject({ actor: "reviewer", model: "gpt-6-sol", effort: "xhigh" });
+    expect(spec.nodes.find((node) => node.id === "build")).toMatchObject({ actor: "maker" });
+  });
+
   it("emits no executable nodes when the workflow itself is invalid", () => {
     const workflow = approvedDefault();
     workflow.edges.push({ id: "cycle", source: "review", target: "coordinate", kind: "forward" });

@@ -179,12 +179,14 @@ manifests share the same release version.
   queues the review instead of moving it to Grok. The Grok persona guide gets
   a separate `gpt-6-sol --effort xhigh` review lane.
 - Visual coordinator: any node with `read-only-review` execution, whatever its
-  role, is restaffed onto the review target (`gpt-6-sol` at `xhigh`) and must
-  validate as a Sol `xhigh` reviewer.
-- Review 0.1.21: `code-auditor` 1.4.15 drops its direct xAI review route
-  (`XAI_REVIEW_MODEL`) and takes its verdict from a read-only
-  `codex exec -m gpt-6-sol` pass at `xhigh` on every review; large diffs are
-  scoped into slices, never skipped. Plugin agent `model` fields
+  role, is restaffed onto the review target (`gpt-6-sol` at `xhigh`), must
+  validate as a Sol `xhigh` reviewer, and exports as `actor: "reviewer"`.
+- Review 0.1.21: `code-auditor` 1.4.16 drops its direct xAI review route
+  (`XAI_REVIEW_MODEL`) and takes its verdict from read-only
+  `codex exec -m gpt-6-sol` passes at `xhigh` on every review. Its recipe
+  diffs against the PR merge-base, slices the whole diff (nothing is
+  truncated), and runs one Sol pass per slice, each with the author claims
+  and saved scan evidence. Plugin agent `model` fields
   accept only Claude models, so Coordinator and `hunter-skeptic-referee`
   1.1.4 route review verdicts through that explicit Sol reviewer rather than
   the agents' declared Claude tiers. `security-ops` 1.0.12 pins its scan and
