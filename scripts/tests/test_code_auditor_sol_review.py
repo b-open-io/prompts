@@ -344,6 +344,78 @@ class SolReviewScriptTest(Fixture):
         self.assertIn("custom/data.json +1 -0", summary)
         self.assertNotIn("CUSTOM_DATA", text)
 
+    def test_lockfiles_and_source_maps_are_reviewed(self) -> None:
+        (self.repo / "fixtures").mkdir()
+        self.commit({
+            "fixtures/package-lock.json": json.dumps({"lockfileVersion": 3, "packages": {
+                "node_modules/x": {"resolved": "https://evil.example/LOCK_URL.tgz", "integrity": "sha512-LOCK_SUM"}}}) + "\n",
+            "Cargo.lock": "# @generated\n[[package]]\nname = \"CARGO_PKG\"\n",
+            "fixtures/app.js.map": json.dumps({"version": 3, "mappings": "AAAA", "sourcesContent": ["MAP_SRC()"]}) + "\n",
+        })
+        result = self.run_script(MAX="100000", GENERATED="*.lock:*.json:*.map")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        text = self.prompt_text()
+        summary = text.split("### Generated files", 1)[1].split("###", 1)[0]
+        for marker in ("LOCK_URL", "LOCK_SUM", "CARGO_PKG", "MAP_SRC"):
+            self.assertRegex(text, r"(?m)^\+.*" + marker)
+        self.assertIn("(none)", summary)
+
+    def lock_pair(self, old: list[str], new: list[str]) -> None:
+        self.commit({"yarn.lock": "".join(old)})
+        self.commit({"yarn.lock": "".join(new)})
+        self.git("branch", "-f", "dev", "HEAD~1")
+
+    def assert_exact(self, new: list[str], tag: str) -> None:
+        rx = re.compile(r"(?m)^@@ -(\d+),(\d+) \+(\d+),(\d+) @@ " + tag + r"\n((?:[+\-\\].*\n?)*)")
+        found = [m for p in sorted(self.prompts.iterdir()) for m in rx.finditer(p.read_text())]
+        self.assertTrue(found)
+        for m in found:
+            body = [l for l in m[5].splitlines() if l and not l.startswith("```")]
+            self.assertEqual((int(m[2]), int(m[4])), (sum(l[0] == "-" for l in body), sum(l[0] == "+" for l in body)))
+            n = int(m[3])
+            for k, l in enumerate(x for x in body if x[0] == "+"):
+                self.assertEqual(new[n - 1 + k].rstrip("\n"), l[1:])
+
+    def test_large_lockfile_drops_context_first(self) -> None:
+        pad = "  # " + "p" * 3000 + "\n"
+        old, new = [], []
+        for i in range(120):
+            block = [f"pkg{i}@^1:\n", pad, pad, pad, f'  resolved "https://r.example/pkg{i}-1.tgz"\n', pad, pad, pad]
+            old += block
+            new += block[:4] + [f'  resolved "https://evil.example/pkg{i}-2.tgz"\n'] + block[5:]
+        self.lock_pair(old, new)
+        result = self.run_script(MAX="100000", CAP="200000")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        text = self.prompt_text()
+        self.assertNotIn("ppppp", text)
+        for i in range(120):
+            self.assertIn(f'+  resolved "https://evil.example/pkg{i}-2.tgz"', text)
+            self.assertIn(f'-  resolved "https://r.example/pkg{i}-1.tgz"', text)
+        self.assert_exact(new, "lockfile: context dropped")
+
+    def test_huge_lockfile_keeps_key_lines(self) -> None:
+        old, new = [], []
+        for i in range(120):
+            old += [f"pkg{i}@^1:\n", f"  # {'a' * 3000}\n", f'  integrity "sha512-old{i}"\n']
+            new += [f"pkg{i}@^1:\n", f"  # {'b' * 3000}\n", f'  integrity "sha512-new{i}"\n']
+        self.lock_pair(old, new)
+        result = self.run_script(MAX="100000", CAP="200000")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        text = self.prompt_text()
+        self.assertNotIn("bbbbb", text)
+        for i in range(120):
+            self.assertIn(f'+  integrity "sha512-new{i}"', text)
+        self.assert_exact(new, "lockfile: key lines only")
+
+    def test_lockfile_over_budget_even_filtered_stops(self) -> None:
+        old = [f'  resolved "https://r.example/{"o" * 3000}{i}"\n' for i in range(120)]
+        new = [f'  resolved "https://r.example/{"n" * 3000}{i}"\n' for i in range(120)]
+        self.lock_pair(old, new)
+        result = self.run_script(MAX="100000", CAP="200000")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("even as key lines only", result.stderr)
+        self.assertEqual(list(self.prompts.iterdir()), [])
+
     def test_oversized_minified_code_stops(self) -> None:
         (self.repo / "dist").mkdir()
         self.commit({"dist/app.min.js": "x" * 300000 + "\n"})

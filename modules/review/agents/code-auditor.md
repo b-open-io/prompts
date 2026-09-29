@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.23
+version: 1.4.24
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -373,19 +373,28 @@ sent, which keeps passes under codex's `input_too_large` limit.
 Only data files that pass a content check are summarized instead of sliced;
 every pass gets a summary line for each (path, added and deleted lines, blob
 id). The data files are: `*.jsonl`/`*.ndjson` where every non-empty line
-parses as a JSON object or array; known lockfiles (`package-lock.json`,
-`npm-shrinkwrap.json`, `composer.lock`, and `flake.lock` must parse as JSON;
-`bun.lock`, `pnpm-lock.yaml`, `yarn.lock`, `Cargo.lock`, and `poetry.lock`
-must carry their generator's marker); source maps (`*.map` that parse as JSON
-with a `mappings` string); and `*.json` that parses as an object or array and
-sits under a `benchmarks/`, `fixtures/`, `results/`, or `baselines/`
-directory or matches a colon-separated glob in `GENERATED`. Config JSON such
-as `package.json`, `tsconfig*.json`, `plugin.json`, `marketplace.json`,
-`hooks*.json`, and `settings*.json` is always reviewed. `GENERATED` globs never
-widen this to other extensions: code, scripts, and prose (`*.js`, `*.min.js`,
-`*.ts`, `*.tsx`, `*.sh`, `*.py`, `*.md`, and so on) are always sliced and
-reviewed, and one that does not fit the budget stops the run with exit 2.
-Every pass gets the author claims and scan evidence.
+parses as a JSON object or array, and `*.json` that parses as an object or
+array and sits under a `benchmarks/`, `fixtures/`, `results/`, or
+`baselines/` directory or matches a colon-separated glob in `GENERATED`.
+Config JSON such as `package.json`, `tsconfig*.json`, `plugin.json`,
+`marketplace.json`, `hooks*.json`, and `settings*.json` is always reviewed.
+`GENERATED` globs never widen this to other extensions: code, scripts, prose,
+and source maps (`*.js`, `*.min.js`, `*.map`, `*.ts`, `*.tsx`, `*.sh`, `*.py`,
+`*.md`, and so on) are always sliced and reviewed, and one that does not fit
+the budget stops the run with exit 2.
+
+Lockfiles (`package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock`,
+`pnpm-lock.yaml`, `bun.lock`, `Cargo.lock`, `poetry.lock`, `uv.lock`,
+`composer.lock`, `Gemfile.lock`, `go.sum`, and any other `*.lock` or
+`*-lock.*` file) are never summarized, wherever they sit. A lockfile diff that
+fits the slice budget is reviewed whole. A larger one is reviewed as a
+filtered diff: first every changed line with context dropped, and if that is
+still over budget, every changed line that names a package, `resolved`,
+`integrity`, `version`, `source`, `checksum`, or a URL. Each run of kept lines
+carries its own exact `@@` range and a `lockfile: context dropped` or
+`lockfile: key lines only` tag. If the key lines alone are over budget, or the
+lockfile is binary (`bun.lockb`), the run stops with exit 2. Every pass gets
+the author claims and scan evidence.
 
 Each pass runs `codex exec --output-schema` against a JSON Schema written to
 the run directory, so Sol's final message must be
@@ -475,12 +484,11 @@ CUSTOM = [g for g in os.environ.get("GENERATED", "").split(":") if g]
 DATA_DIRS = {"benchmarks", "fixtures", "results", "baselines"}
 CONFIG = re.compile(r"^(package|composer|tsconfig.*|jsconfig.*|plugin|marketplace|hooks.*|settings.*"
                     r"|\.mcp|mcp|manifest|app|vercel|turbo|biome|deno|components)\.json$", re.I)
-LOCKS = {
-    "package-lock.json": "json", "npm-shrinkwrap.json": "json", "composer.lock": "json",
-    "flake.lock": "json", "bun.lock": b'"lockfileVersion"', "pnpm-lock.yaml": b"lockfileVersion:",
-    "yarn.lock": (b"# yarn lockfile", b"__metadata:"), "Cargo.lock": b"@generated",
-    "poetry.lock": b"@generated",
-}
+# Lockfiles are never summarized: a changed resolved URL or integrity hash must reach Sol.
+LOCK = re.compile(r"^(.+[.-]lock(\.json|\.ya?ml)?|.+\.lockb|go\.sum|gradle\.lockfile"
+                  r"|npm-shrinkwrap\.json)$", re.I)
+KEY = re.compile(rb"^\S|node_modules/|\b(resolved|integrity|version|source|checksum|tarball"
+                 rb"|registry|url|git|hash|sha\d*|name)\b|://", re.I)
 HUNK = re.compile(rb"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(.*)$", re.S)
 
 
@@ -508,26 +516,17 @@ def container(text):
 def data(path):
     name, parts = os.path.basename(path), path.split("/")[:-1]
     ext = os.path.splitext(name)[1].lower()
+    if LOCK.match(name) or ext not in (".json", ".jsonl", ".ndjson"):
+        return False
     body = show("HEAD", path)
     if body is None:
         body = show(base, path)
     if body is None:
         return False
-    if name in LOCKS:
-        mark = LOCKS[name]
-        if mark == "json":
-            return container(body)
-        return any(m in body[:4096] for m in (mark if isinstance(mark, tuple) else (mark,)))
     if ext in (".jsonl", ".ndjson"):
         rows = [r for r in body.splitlines() if r.strip()]
         return bool(rows) and all(container(r) for r in rows)
-    if ext == ".map":
-        try:
-            doc = json.loads(body)
-        except (ValueError, UnicodeDecodeError, RecursionError):
-            return False
-        return isinstance(doc, dict) and isinstance(doc.get("mappings"), str)
-    if ext != ".json" or CONFIG.match(name):
+    if CONFIG.match(name):
         return False
     placed = (any(p.lower() in DATA_DIRS for p in parts)
               or any(fnmatch.fnmatch(path, g) for g in CUSTOM))
@@ -576,11 +575,89 @@ def add(chunk, what, ctx=0):
     cur[0].extend(chunk); cur[1] += n; cur[2] += size
 
 
+def runs(hunks, keep):
+    """Kept lines grouped into runs that are contiguous in the original hunk, as (old, new, line)."""
+    out = []
+    for hunk in hunks:
+        m = HUNK.match(hunk[0])
+        if not m:
+            die("cannot parse a hunk header")
+        o, n = int(m[1]) + (m[2] == b"0"), int(m[3]) + (m[4] == b"0")
+        run, prev = [], False
+        for line in hunk[1:]:
+            if line.startswith(b"\\"):
+                if prev:
+                    run.append((o, n, line))
+                continue
+            prev = bool(keep(line))
+            if prev:
+                run.append((o, n, line))
+            elif run:
+                out.append(run); run = []
+            o += line[:1] in (b" ", b"-")
+            n += line[:1] in (b" ", b"+")
+        if run:
+            out.append(run)
+    return out
+
+
+def pieces(run):
+    out, cur = [], []
+    for j, entry in enumerate(run):
+        if entry[2].startswith(b"\\"):
+            cur.append(entry)
+            continue
+        want = 1 + (j + 1 < len(run) and run[j + 1][2].startswith(b"\\"))
+        if cur and len(cur) + want > max_lines:
+            out.append(cur); cur = []
+        cur.append(entry)
+    return out + [cur]
+
+
+def at(piece, tag):
+    o, n = piece[0][0], piece[0][1]
+    oc = sum(1 for e in piece if e[2][:1] in (b" ", b"-"))
+    nc = sum(1 for e in piece if e[2][:1] in (b" ", b"+"))
+    return b"@@ -%d,%d +%d,%d @@ %s\n" % (o if oc else o - 1, oc, n if nc else n - 1, nc, tag)
+
+
+def changed(line):
+    return line[:1] in (b"+", b"-")
+
+
+# A lockfile over the budget loses context lines first, then every changed line that
+# names no package, URL, version, or hash; past that the run stops.
+def lock(path, lines, start):
+    if any(l.startswith(b"Binary files ") for l in lines[:start]):
+        die("%s is a binary lockfile and cannot be reviewed" % path)
+    if sum(map(len, lines)) <= budget:
+        return False
+    head, hunks = lines[:start], []
+    for line in lines[start:]:
+        if line.startswith(b"@@"):
+            hunks.append([line])
+        else:
+            hunks[-1].append(line)
+    for tag, keep in ((b"lockfile: context dropped", changed),
+                      (b"lockfile: key lines only", lambda l: changed(l) and KEY.search(l[1:]))):
+        chunks = [p for r in runs(hunks, keep) for p in pieces(r)]
+        heads = [at(p, tag) for p in chunks]
+        if sum(len(h) + sum(len(e[2]) for e in p) for h, p in zip(heads, chunks)) <= budget:
+            flush()
+            for h, p in zip(heads, chunks):
+                add(head + [h] + [e[2] for e in p], path, len(head) + 1)
+            flush()
+            return True
+    die("%s changes are over the %d-byte slice budget even as key lines only" % (path, budget))
+
+
 for path, spec in reviewed:
     lines = git("diff", "--no-renames", base + "...HEAD", "--", spec).splitlines(keepends=True)
     if not lines:
         die("empty diff for %s" % path)
     start = next((i for i, l in enumerate(lines) if l.startswith(b"@@")), len(lines))
+    if LOCK.match(os.path.basename(path)) and lock(path, lines, start):
+        continue
     if len(lines) - start <= max_lines and sum(map(len, lines)) <= budget:
         add(lines, path, start)
         continue
