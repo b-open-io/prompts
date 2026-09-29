@@ -67,8 +67,9 @@ fi
 grok_model_providers_json="{}"
 grok_model_targets_json="{}"
 grok_config="${GROK_HOME:-$HOME/.grok}/config.toml"
-if [[ -n "$grok_models" && -f "$grok_config" ]]; then
-  grok_alias_json=$(python3 - "$grok_config" "$grok_models" <<'PY_GROK_PROVIDERS' 2>/dev/null || printf '{}\n{}\n'
+if [[ -n "$grok_models$grok_default" && -f "$grok_config" ]]; then
+  # The default is resolved too: a qualified default (xai/grok-4.6) is an alias like any other.
+  grok_alias_json=$(python3 - "$grok_config" "$grok_models,$grok_default" <<'PY_GROK_PROVIDERS' 2>/dev/null || printf '{}\n{}\n'
 import json, re, sys
 from urllib.parse import urlparse
 try:

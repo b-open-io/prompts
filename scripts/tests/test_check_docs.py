@@ -298,7 +298,15 @@ class VisualWorkflowContractTests(unittest.TestCase):
     def test_slash_qualified_grok_ids_round_trip_into_the_canvas(self) -> None:
         if shutil.which("bun") is None:
             self.skipTest("Bun is not installed in the isolated Python runner")
-        detected = self._detect_grok(self.SLASHY_LISTING, extra_env={"BOPEN_USAGE_CREDIT_PRESSURE": "1"}, config=self.SLASHY_CONFIG)
+        config = self.SLASHY_CONFIG + (
+            '[model."xai/grok-4.6"]\nmodel = "grok-4.6"\nbase_url = "https://api.x.ai/v1"\n'
+            '[model."openrouter/x-ai/grok-4.7"]\nmodel = "x-ai/grok-4.7"\nbase_url = "https://openrouter.ai/api/v1"\n'
+        )
+        detected = self._detect_grok(
+            self.SLASHY_LISTING,
+            extra_env={"BOPEN_USAGE_CREDIT_PRESSURE": "1"},
+            config=config,
+        )
         probe = """
 import { defaultWorkflow, parseEnvironment, validateWorkflow, mainNodeId } from "./src/workflow-schema";
 const environment = parseEnvironment(JSON.parse(process.argv[2]));
