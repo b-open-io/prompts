@@ -19,7 +19,7 @@
 # Ledger contract: JSONL, one object per hf-api call, with a numeric
 # cost_usd (the estimate for a generate, negative for a refunded cancel).
 
-set -uo pipefail
+set -euo pipefail
 
 usage() {
   echo "usage: gate-logger.sh --dir DIR --hf-api PATH --ledger PATH --key PATH --budget USD --stream PATH [--model ID]" >&2
@@ -42,7 +42,7 @@ while [[ $# -gt 0 ]]; do
   shift 2
 done
 
-fail() { echo "gate-logger: $*" >&2; exit 2; }
+fail() { trap - EXIT; echo "gate-logger: $*" >&2; exit 2; }
 for v in GATE HF LEDGER KEY BUDGET STREAM; do [[ -n ${!v} ]] || usage; done
 for p in "$GATE" "$HF" "$LEDGER" "$KEY" "$STREAM"; do [[ $p == /* ]] || fail "$p must be an absolute path"; done
 command -v jq >/dev/null || fail "jq is required"
@@ -63,17 +63,34 @@ log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >> "$LOG"; }
 
 spent() { jq -en '[inputs | .cost_usd | if type == "number" then . else error("cost_usd") end] | add // 0' "$LEDGER" 2>/dev/null; }
 
-trip() {
-  rm -f "$GATE/armed"
-  printf '%s\n' "$*" > "$GATE/tripped"
-  log "TRIP: $*"
+stop_run() {
   local pid
   pid=$(cat "$GATE/run.pid" 2>/dev/null || true)
   if [[ $pid =~ ^[0-9]+$ ]]; then
-    kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null
+    kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
   fi
+}
+
+trip() {
+  trap - EXIT
+  rm -f "$GATE/armed"
+  printf '%s\n' "$*" > "$GATE/tripped" || true
+  log "TRIP: $*" || true
+  stop_run
   exit 3
 }
+
+# Any exit other than a clean "run ended" (an unexpected error under set -e,
+# or a signal) disarms spend and kills the run.
+on_exit() {
+  local rc=$?
+  rm -f "$GATE/armed"
+  [[ -f $GATE/tripped ]] || printf 'gate exited unexpectedly (status %s)\n' "$rc" > "$GATE/tripped" || true
+  log "TRIP: gate exited unexpectedly (status $rc)" || true
+  stop_run
+}
+trap on_exit EXIT
+trap 'trip "gate stopped by a signal"' INT TERM HUP
 
 hf_hash=$(hash_of < "$HF")
 ledger_off=$(wc -c < "$LEDGER" | tr -d ' ')
@@ -101,12 +118,26 @@ take() {
   echo "$((size - partial))"
 }
 
+# Protected names match only as whole path tokens: "key" matches `cat key` or
+# `~/.hf-api/key` but not `keyframes/`.
+quote_re() { printf '%s' "$1" | sed 's/[][\.*^$+?(){}|]/\\&/g'; }
+protected=()
+for p in "$KEY" "$LEDGER" "$HF" "$GATE"; do
+  protected+=("$p" "$(basename "$p")")
+  real=$(realpath -m -- "$p" 2>/dev/null || true)
+  [[ -n $real ]] && protected+=("$real")
+  if [[ -n ${HOME:-} && $p == "$HOME"/* ]]; then
+    protected+=("~/${p#"$HOME"/}" "\$HOME/${p#"$HOME"/}" "\${HOME}/${p#"$HOME"/}")
+  fi
+done
+edge='[^A-Za-z0-9._-]'
+forbidden_re=""
+for p in "${protected[@]}"; do
+  forbidden_re+="${forbidden_re:+|}(^|$edge)$(quote_re "$p")(\$|$edge)"
+done
+
 names_forbidden() {
-  local p
-  for p in "$KEY" "$LEDGER" "$HF" "$GATE" "$(basename "$KEY")" "$(basename "$LEDGER")"; do
-    [[ $1 == *"$p"* ]] && return 0
-  done
-  [[ $1 == *api.higgsfield.ai* || $1 == *"Authorization: Key"* ]]
+  [[ $1 =~ $forbidden_re ]] || [[ $1 == *api.higgsfield.ai* || $1 == *"Authorization: Key"* ]]
 }
 
 while :; do
@@ -156,6 +187,7 @@ while :; do
     # One more pass picks up ledger and stream lines written just before the exit.
     (( ending == 1 )) || { ending=1; continue; }
     (( armed == 1 )) || trip "run ended before the init check"
+    trap - EXIT
     rm -f "$GATE/armed"
     log "run ended; spent=$total"
     exit 0

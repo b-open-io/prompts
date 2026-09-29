@@ -1,6 +1,6 @@
 ---
 name: promo-video-pipeline
-version: 0.0.3
+version: 0.0.4
 description: >-
   Use this when making a motion-graphics promo or showreel, a short social cut or a
   longer commercial cut, from the user's prompt plus optional music. Covers
@@ -29,7 +29,7 @@ Not for: a single generated clip (use `gemskills:generate-video`), a single imag
 
 - The `gemskills` plugin (`b-open-io/gemskills`) for keyframes. This skill does not duplicate its generation logic.
 - Claude Code CLI with access to Claude Opus 5.5.
-- Higgsfield API credentials (key ID and secret) and the `hf-api` wrapper described below.
+- Higgsfield API credentials (key ID and secret) and an `hf-api` wrapper that implements the contract below, including `capabilities` and `generate --probe`.
 - ffmpeg 5.1 or newer (`-fps_mode` replaced the deprecated `-vsync`), ffprobe, `jq`, and `setsid` (util-linux; `brew install util-linux` on macOS).
 - The spend and tamper gate shipped with this skill: `scripts/gate-logger.sh` (in Claude Code, `${CLAUDE_SKILL_DIR}/scripts/gate-logger.sh`).
 - The user's own Suno account if they want a scored track.
@@ -40,7 +40,8 @@ The coding model calls Higgsfield only through a CLI wrapper named `hf-api`. It 
 
 | Command | Contract |
 |---------|----------|
-| `generate` | Submit a generation request. Refuse unless `~/.hf-api/gate/armed` exists and names a live process (the gate). Refuse if the ledger total plus the estimate would exceed the cap in `~/.hf-api/budget`. Read both from those files, never from the caller's environment. Append the request ID, model, parameters, and estimated cost to the ledger. |
+| `capabilities` | Print one JSON object and exit 0: `{"contract": "hf-api/1", "state_dir": "<absolute path of ~/.hf-api>", "gate_file": "<state_dir>/gate/armed", "budget_file": "<state_dir>/budget", "ledger": "<state_dir>/ledger.jsonl", "probe": true}`. The launcher refuses to run a wrapper that prints anything else. |
+| `generate` | Submit a generation request. Refuse unless `~/.hf-api/gate/armed` exists and names a live process (the gate). Refuse if the ledger total plus the estimate would exceed the cap in `~/.hf-api/budget`. Read both from those files, never from the caller's environment. Append the request ID, model, parameters, and estimated cost to the ledger. `generate --probe` runs only these checks, never contacts Higgsfield or writes the ledger, and exits 0 when it would submit or 4 when it refuses. |
 | `status` | Poll a request by ID and download finished output right away; do not rely on Higgsfield keeping it. |
 | `estimate` | Price a request before submitting it (Higgsfield exposes an estimate endpoint). |
 | `balance` | Report spend and remaining budget from the ledger. The REST API has no balance endpoint, so the ledger is the only record. |
@@ -91,18 +92,39 @@ Keep the subject specific to the current request; never bake an example brand, w
 - File tools scoped to the working directory, with the wrapper's state directory denied, so the model cannot read the key or edit the wrapper or ledger.
 - Two separate caps. `HF_BUDGET_USD` (written to `~/.hf-api/budget`) caps Higgsfield spend: `hf-api` refuses past it and the gate kills the run if the ledger goes over it. `--max-budget-usd` caps only model spend.
 
-**Gate (hard precondition).** No spend-capable step runs until the gate is up and verified; any failed check stops the run. The gate (`scripts/gate-logger.sh`) runs detached with `setsid nohup` so it outlives the shell that started it. It writes `ready` once its preconditions hold, writes `armed` only after the run's `system`/`init` event shows `claude-opus-5-5` with 0 MCP servers and 0 skills, and `hf-api generate` refuses without `armed`. Every ledger entry goes to `gate.log`. It removes `armed`, writes the reason to `tripped`, and kills the run's process group on any of these: a tool call before the init check, a changed `hf-api` binary, a rewritten or malformed ledger, Higgsfield spend over `HF_BUDGET_USD`, or a tool call that names the key, ledger, wrapper, gate directory, or the Higgsfield API host.
+**Gate (hard precondition).** No spend-capable step runs until the gate is up and verified; any failed check stops the run. The gate (`scripts/gate-logger.sh`) runs detached with `setsid nohup` so it outlives the shell that started it. It writes `ready` once its preconditions hold, writes `armed` only after the run's `system`/`init` event shows `claude-opus-5-5` with 0 MCP servers and 0 skills, and `hf-api generate` refuses without `armed`. Every ledger entry goes to `gate.log`. It removes `armed`, writes the reason to `tripped`, and kills the run's process group on any of these: a tool call before the init check, a changed `hf-api` binary, a rewritten or malformed ledger, Higgsfield spend over `HF_BUDGET_USD`, or a tool call that names the key, ledger, wrapper, gate directory, or the Higgsfield API host. Protected names match only as whole path tokens, so a key file named `key` stops `cat key` but not `ls keyframes/`. The gate also stops the run whenever it exits any other way than a clean end of the run: an unexpected command failure (it runs under `set -e`) or an INT, TERM, or HUP signal. Before the gate starts, the launcher checks `hf-api capabilities` against the contract above and requires `hf-api generate --probe` to refuse (exit 4) while no gate is armed; a wrapper that is merely executable is not enough. The launcher's own exit and signal traps kill the run and the gate.
 
 ```bash
 set -euo pipefail
+no_run() { echo "$*; no run" >&2; exit 1; }
 GATE_BIN="${CLAUDE_SKILL_DIR:?run from the skill}/scripts/gate-logger.sh"
 HF_STATE="$HOME/.hf-api"                  # hf-api wrapper, key, ledger
 HF_GATE_DIR="$HF_STATE/gate" HF_BUDGET_USD=15
+[[ -x $GATE_BIN ]] || no_run "gate-logger missing"
+for tool in hf-api setsid jq claude uuidgen; do command -v "$tool" >/dev/null || no_run "$tool missing"; done
+HF_BIN=$(command -v hf-api)
 printf '%s\n' "$HF_BUDGET_USD" > "$HF_STATE/budget"
-HF_BIN=$(command -v hf-api) || { echo "hf-api missing; no run" >&2; exit 1; }
-[[ -x $GATE_BIN ]] || { echo "gate-logger missing; no run" >&2; exit 1; }
-for tool in setsid jq claude; do command -v "$tool" >/dev/null || { echo "$tool missing; no run" >&2; exit 1; }; done
 touch "$HF_STATE/ledger.jsonl"; : > run.jsonl
+
+# The wrapper must declare this contract and prove it refuses an unarmed generate.
+caps=$("$HF_BIN" capabilities) || no_run "hf-api capabilities failed"
+jq -e --arg s "$HF_STATE" '.contract == "hf-api/1" and .probe == true and .state_dir == $s
+  and .gate_file == "\($s)/gate/armed" and .budget_file == "\($s)/budget"
+  and .ledger == "\($s)/ledger.jsonl"' <<< "$caps" > /dev/null \
+  || no_run "hf-api does not meet the contract: $caps"
+rm -f "$HF_GATE_DIR/armed"
+set +e; "$HF_BIN" generate --probe > /dev/null 2>&1; probe=$?; set -e
+(( probe == 4 )) || no_run "hf-api generate --probe exited $probe without an armed gate (want 4)"
+
+RUN_PID="" GATE_PID=""
+cleanup() {
+  [[ -n $RUN_PID ]] && kill -TERM -- "-$RUN_PID" 2>/dev/null
+  [[ -n $GATE_PID ]] && kill -TERM "$GATE_PID" 2>/dev/null
+  return 0
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM HUP
 
 setsid nohup "$GATE_BIN" --dir "$HF_GATE_DIR" --hf-api "$HF_BIN" \
   --ledger "$HF_STATE/ledger.jsonl" --key "$HF_STATE/key" \
@@ -110,7 +132,7 @@ setsid nohup "$GATE_BIN" --dir "$HF_GATE_DIR" --hf-api "$HF_BIN" \
   > gate.out 2>&1 < /dev/null &
 for _ in $(seq 50); do [[ -s $HF_GATE_DIR/ready ]] && break; sleep 0.2; done
 GATE_PID=$(cat "$HF_GATE_DIR/ready" 2>/dev/null) && kill -0 "$GATE_PID" 2>/dev/null \
-  || { echo "gate not ready: $(cat gate.out); no run" >&2; exit 1; }
+  || { GATE_PID=""; no_run "gate not ready: $(cat gate.out)"; }
 
 SID=$(uuidgen)
 setsid claude -p "$(cat user-prompt.txt)" \
@@ -124,10 +146,14 @@ setsid claude -p "$(cat user-prompt.txt)" \
   --disallowedTools "Bash(curl *)" "Bash(wget *)" "Read(~/.hf-api/**)" "Write(~/.hf-api/**)" "Edit(~/.hf-api/**)" \
   --max-budget-usd 20 \
   --output-format stream-json --verbose > run.jsonl &
-echo $! > "$HF_GATE_DIR/run.pid"
-wait $! || true
+RUN_PID=$!
+echo "$RUN_PID" > "$HF_GATE_DIR/run.pid"
+wait "$RUN_PID" || true
+RUN_PID=""
 wait_gate=0; while kill -0 "$GATE_PID" 2>/dev/null && (( wait_gate++ < 30 )); do sleep 1; done
 [[ ! -e $HF_GATE_DIR/tripped ]] || { echo "gate tripped: $(cat "$HF_GATE_DIR/tripped")" >&2; exit 3; }
+kill -0 "$GATE_PID" 2>/dev/null && { echo "gate did not finish; treat the run as tripped" >&2; exit 3; }
+GATE_PID=""
 
 jq -c 'select(.type=="system" and .subtype=="init")
   | {model, mcp: (.mcp_servers | length), skills: ((.skills // []) | length)}' run.jsonl
@@ -201,7 +227,7 @@ H.264 Main 4.1, yuv420p, 30 fps CFR, ~10 Mbps capped (maxrate = bufsize), 1 s cl
 
 ```bash
 ffmpeg -i master-14lufs.mp4 -map 0:v:0 -map 0:a:0 \
-  -vf "scale='min(1920,iw)':-2" \
+  -vf "scale=w='min(iw,if(gt(iw,ih),1920,1080))':h='min(ih,if(gt(iw,ih),1080,1920))':force_original_aspect_ratio=decrease:force_divisible_by=2" \
   -c:v libx264 -preset slow -profile:v main -level:v 4.1 -pix_fmt yuv420p \
   -r 30 -fps_mode cfr -b:v 10M -maxrate 10M -bufsize 10M \
   -g 30 -keyint_min 30 -sc_threshold 0 -flags +cgop \
@@ -210,7 +236,7 @@ ffmpeg -i master-14lufs.mp4 -map 0:v:0 -map 0:a:0 \
   promo.mp4
 ```
 
-Level 4.1 tops out at 1080p30, so the scale filter caps width at 1920. A vertical 1080x1920 cut also fits.
+Level 4.1 allows 8192 macroblocks per frame at up to 245760 macroblocks per second, which is 1080p30. The scale filter fits a landscape master inside 1920x1080 and a portrait or square one inside 1080x1920 (8160 macroblocks either way), keeping the aspect ratio, so a 4K or 9:16 master never produces a frame over the level. Capping only the width is not enough: a 2160x3840 portrait master would come out 1920x3414.
 
 **Discord copy under 10 MB.** Size the video bitrate from the duration: video kbps ≈ 9.5 MB × 8000 ÷ seconds − 192. About 3.8 Mbps for ~18 s. For a ~35 s cut, drop to 720p and about 1.9 Mbps.
 
