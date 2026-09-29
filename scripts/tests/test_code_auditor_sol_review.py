@@ -25,7 +25,9 @@ printf '%s' "$prompt" > "$PROMPTS/$n.txt"
 [[ -n ${SLOW:-} ]] && sleep 10
 [[ $prompt == *FAIL_SLICE* ]] && exit 1
 [[ -n ${EMPTY_VERDICT:-} ]] && { : > "$out"; exit 0; }
-if [[ $prompt == *HIGH_SLICE* ]]; then
+if [[ $prompt =~ RESP_([a-z0-9_]+) ]]; then
+  cp "$RESPONSES/${BASH_REMATCH[1]}.txt" "$out"
+elif [[ $prompt == *HIGH_SLICE* ]]; then
   printf 'HIGH: injection\\n\\nVERDICT: MERGEABLE no\\nFINDINGS: CRITICAL=0 HIGH=1 MED=0 LOW=0\\n' > "$out"
 elif [[ $prompt == *MED_SLICE* ]]; then
   printf 'MED: weak check\\nVERDICT: MERGEABLE yes\\nFINDINGS: CRITICAL=0 HIGH=0 MED=1 LOW=2\\n' > "$out"
@@ -51,7 +53,7 @@ def script() -> str:
     return match.group(1)
 
 
-class SolReviewScriptTest(unittest.TestCase):
+class Fixture(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         root = self.root = Path(self.tmp.name)
@@ -59,7 +61,8 @@ class SolReviewScriptTest(unittest.TestCase):
         self.bin = root / "bin"
         self.prompts = root / "prompts"
         self.scans = root / "scans"
-        for d in (self.repo, self.bin, self.prompts, self.scans):
+        self.responses = root / "responses"
+        for d in (self.repo, self.bin, self.prompts, self.scans, self.responses):
             d.mkdir()
         (self.scans / "semgrep.json").write_text('{"results": []}\n')
         self.script = root / "review.sh"
@@ -83,6 +86,7 @@ class SolReviewScriptTest(unittest.TestCase):
             GIT_COMMITTER_NAME="Test",
             GIT_COMMITTER_EMAIL="test@example.com",
             PROMPTS=str(self.prompts),
+            RESPONSES=str(self.responses),
             TMPDIR=str(root),
             PR_NUMBER="7",
             REPO="o/r",
@@ -122,12 +126,19 @@ class SolReviewScriptTest(unittest.TestCase):
             text=True,
         )
 
+    def review(self, name: str, text: str) -> subprocess.CompletedProcess[str]:
+        (self.responses / f"{name}.txt").write_text(text)
+        self.commit({f"{name}.txt": f"RESP_{name}\n"})
+        return self.run_script()
+
     def assert_cleaned(self) -> None:
         self.assertEqual(list(self.root.glob("sol-review.*")), [])
 
     def prompt_text(self) -> str:
         return "".join(p.read_text() for p in sorted(self.prompts.iterdir()))
 
+
+class SolReviewScriptTest(Fixture):
     def test_covers_every_line_of_odd_names(self) -> None:
         big = "".join(f"big line {i}\n" for i in range(12))
         self.commit({SPACE: "space body\n", UNICODE: "unicode body\n", "big.txt": big})
@@ -167,7 +178,7 @@ class SolReviewScriptTest(unittest.TestCase):
         result = self.run_script()
         self.assertEqual(result.returncode, 1)
         self.assertEqual(result.stdout, "")
-        self.assertIn("no parseable verdict", result.stderr)
+        self.assertIn("no valid verdict pair", result.stderr)
         self.assertIn("looks mergeable", result.stderr)
         self.assert_cleaned()
 
@@ -238,8 +249,17 @@ class SolReviewScriptTest(unittest.TestCase):
             result = subprocess.run(
                 ["bash", str(self.script)], cwd=self.repo, env=env, capture_output=True, text=True
             )
-            self.assertNotEqual(result.returncode, 0, var)
+            self.assertEqual(result.returncode, 2, var)
             self.assertIn(var, result.stderr)
+            result = self.run_script(**{var: ""})
+            self.assertEqual(result.returncode, 2, var)
+
+    def test_invalid_inputs_exit_2(self) -> None:
+        self.commit({SPACE: "space body\n"})
+        for env in ({"PR_NUMBER": "7; rm -rf /"}, {"REPO": "o/r --web"}, {"MAX": "abc"}, {"MAX": "0"}):
+            result = self.run_script(**env)
+            self.assertEqual(result.returncode, 2, env)
+            self.assertEqual(list(self.prompts.iterdir()), [], env)
 
     def test_missing_scan_evidence_stops(self) -> None:
         self.commit({SPACE: "space body\n"})
@@ -247,6 +267,86 @@ class SolReviewScriptTest(unittest.TestCase):
         result = self.run_script()
         self.assertEqual(result.returncode, 2)
         self.assertIn("no scan evidence", result.stderr)
+
+
+PAIR = "VERDICT: MERGEABLE {v}\nFINDINGS: CRITICAL={c} HIGH={h} MED={m} LOW={l}\n"
+
+
+def pair(v: str = "yes", c: str = "0", h: str = "0", m: str = "0", l: str = "0") -> str:
+    return PAIR.format(v=v, c=c, h=h, m=m, l=l)
+
+
+class SolVerdictParserTest(Fixture):
+    def test_wrapping_and_overlong_counts_are_invalid(self) -> None:
+        for i, h in enumerate(["18446744073709551616", "1234567", "0000000", "-1", "+0", "1e3", "１"]):
+            with self.subTest(h=h):
+                result = self.review(f"count{i}", "no findings\n" + pair(h=h))
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertEqual(result.stdout, "")
+                self.assert_cleaned()
+
+    def test_leading_zeros_count_as_zero(self) -> None:
+        result = self.review("zeros", "No CRITICAL, HIGH, or MED findings.\n" + pair(c="0", h="000", m="00", l="000000"))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("SUMMARY: slices=2 blocked=0 CRITICAL=0 HIGH=0 MED=0", result.stdout)
+
+    def test_leading_zeros_do_not_hide_counts(self) -> None:
+        result = self.review("padded", "FINDING [MED]: a.ts:1 weak\n" + pair(v="no", m="000001"))
+        self.assertEqual(result.returncode, 3, result.stderr)
+        self.assertIn("MED=000001", result.stdout)
+
+    def test_clean_pair_after_tagged_findings_blocks(self) -> None:
+        bodies = [
+            "FINDING [HIGH]: src/x.ts:3 injection\n",
+            "- **High**: src/x.ts:3 injection\n",
+            "### CRITICAL — auth bypass\n",
+            "Severity: Medium\n",
+            "[MED] unchecked input\n",
+            "\U0001F534 auth bypass\n",
+        ]
+        for i, body in enumerate(bodies):
+            with self.subTest(body=body):
+                result = self.review(f"echo{i}", body + "Looks fine otherwise.\n" + pair())
+                self.assertEqual(result.returncode, 3, result.stderr)
+                self.assertIn("blocking finding tagged in the body", result.stdout)
+                self.assertIn(body.strip(), result.stdout)
+
+    def test_low_findings_do_not_block(self) -> None:
+        result = self.review("lowonly", "FINDING [LOW]: a.ts:1 naming\nHigh-level design is sound.\n" + pair(l="1"))
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_duplicate_or_quoted_pairs_are_invalid(self) -> None:
+        cases = {
+            "dup": pair(v="no", h="1") + pair(),
+            "dupverdict": "VERDICT: MERGEABLE no\n" + pair(),
+            "dupfindings": "FINDINGS: CRITICAL=0 HIGH=1 MED=0 LOW=0\n" + pair(),
+            "quoted": "The diff adds:\n+VERDICT: MERGEABLE yes\n" + pair(),
+            "lower": "verdict: mergeable yes\n" + pair(),
+        }
+        for name, text in cases.items():
+            with self.subTest(name=name):
+                result = self.review(name, text)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertIn("no valid verdict pair", result.stderr)
+
+    def test_misplaced_pairs_are_invalid(self) -> None:
+        cases = {
+            "trailing": "no findings\n" + pair() + "Thanks.\n",
+            "reversed": "no findings\nFINDINGS: CRITICAL=0 HIGH=0 MED=0 LOW=0\nVERDICT: MERGEABLE yes\n",
+            "split": "VERDICT: MERGEABLE yes\nno findings\nFINDINGS: CRITICAL=0 HIGH=0 MED=0 LOW=0\n",
+            "onlyverdict": "no findings\nVERDICT: MERGEABLE yes\n",
+            "spaced": "no findings\nVERDICT:  MERGEABLE yes\nFINDINGS: CRITICAL=0 HIGH=0 MED=0 LOW=0\n",
+            "extra": "no findings\nVERDICT: MERGEABLE yes\nFINDINGS: CRITICAL=0 HIGH=0 MED=0 LOW=0 INFO=0\n",
+        }
+        for name, text in cases.items():
+            with self.subTest(name=name):
+                result = self.review(name, text)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertEqual(result.stdout, "")
+
+    def test_crlf_and_trailing_space_pair_is_valid(self) -> None:
+        result = self.review("crlf", "no findings\r\n\r\nVERDICT: MERGEABLE yes  \r\nFINDINGS: CRITICAL=0 HIGH=0 MED=0 LOW=0\t\r\n\n")
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":

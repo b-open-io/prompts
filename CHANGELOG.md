@@ -181,24 +181,33 @@ manifests share the same release version.
 - Visual coordinator: any node with `read-only-review` execution, whatever its
   role, is restaffed onto the review target (`gpt-6-sol` at `xhigh`), must
   validate as a Sol `xhigh` reviewer, and exports as `actor: "reviewer"`.
-- Review 0.1.21: `code-auditor` 1.4.18 drops its direct xAI review route
+- Review 0.1.21: `code-auditor` 1.4.19 drops its direct xAI review route
   (`XAI_REVIEW_MODEL`) and takes its verdict from read-only
   `codex exec -m gpt-6-sol` passes at `xhigh` on every review. Its recipe
   diffs against the PR merge-base, slices the whole diff (nothing is
   truncated), and runs one Sol pass per slice, each with the author claims
-  and saved scan evidence. The recipe fails closed: it requires explicit
-  `PR_NUMBER`, `REPO`, and `SCAN_DIR`, verifies (or fetches) `BASE_REF`, stops
-  on a missing merge-base, empty diff, unfetchable PR body, or missing scan
-  evidence, carries file names NUL-delimited, and works in a fresh `mktemp` run
-  directory that a trap removes on every exit, including interrupts. Each
-  slice must end with a strict `VERDICT: MERGEABLE yes|no` /
-  `FINDINGS: CRITICAL=n HIGH=n MED=n LOW=n` pair. A failed pass or a missing or
-  unparseable verdict exits 1 with no verdict. A slice that says `MERGEABLE no`
-  or reports any CRITICAL, HIGH, or MED finding exits 3 after printing every
-  slice's findings and a `SUMMARY:` line. Only an all-clean run exits 0, and the
-  integration example stops on any non-zero exit.
-  `scripts/tests/test_code_auditor_sol_review.py` runs it against a temp repo. Plugin agent `model` fields
-  accept only Claude models, so Coordinator and `hunter-skeptic-referee`
+  and saved scan evidence. The recipe fails closed:
+  - Missing or invalid input exits 2. That covers an unset or malformed
+    `PR_NUMBER`, `REPO`, `SCAN_DIR` or `MAX`, an unresolvable `BASE_REF`
+    (fetched first when needed), a missing merge-base, an empty diff, an
+    unfetchable PR body, and missing scan evidence.
+  - File names stay NUL-delimited, and a trap removes the `mktemp` run
+    directory on every exit, including interrupts.
+  - Each reply is parsed as untrusted text. It must contain exactly one
+    verdict-like and one findings-like line, and they must be its final two
+    non-blank lines, exactly `VERDICT: MERGEABLE yes|no` and
+    `FINDINGS: CRITICAL=n HIGH=n MED=n LOW=n`. Each count must be 1-6 ASCII
+    digits, and blocking is decided by string comparison, so values like 2^64
+    cannot wrap to 0. A failed pass, a duplicate, quoted or misplaced pair, or
+    an invalid count exits 1 with no verdict.
+  - `MERGEABLE no`, a non-zero CRITICAL/HIGH/MED count, or a blocking
+    finding tagged in the reply body despite a clean pair exits 3, after every
+    slice's findings and a `SUMMARY:` line are printed. Only an all-clean run
+    exits 0, and the integration example stops on any non-zero exit.
+  - `scripts/tests/test_code_auditor_sol_review.py` runs the recipe against a
+    temp repo.
+
+  Plugin agent `model` fields accept only Claude models, so Coordinator and `hunter-skeptic-referee`
   1.1.4 route review verdicts through that explicit Sol reviewer rather than
   the agents' declared Claude tiers. `security-ops` 1.0.12 pins its scan and
   validate recipes to `xhigh`.
