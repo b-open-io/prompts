@@ -13,7 +13,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-GATE = ROOT / "modules/creative/skills/promo-video-pipeline/scripts/gate-logger.sh"
+SCRIPTS = ROOT / "modules/creative/skills/promo-video-pipeline/scripts"
+GATE = SCRIPTS / "gate-logger.sh"
 INIT = {"type": "system", "subtype": "init", "model": "claude-opus-5-5", "mcp_servers": [], "skills": []}
 
 
@@ -31,7 +32,7 @@ def wait(check, timeout: float = 10) -> bool:
     return False
 
 
-@unittest.skipUnless(shutil.which("jq") and shutil.which("setsid"), "needs jq and setsid")
+@unittest.skipUnless(shutil.which("jq"), "needs jq")
 class GateLoggerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.start()
@@ -43,15 +44,14 @@ class GateLoggerTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         root = Path(self.tmp.name)
         self.state = root / "st"
-        self.state.mkdir()
-        self.hf = self.state / "hf-api"
-        self.hf.write_text("#!/bin/sh\nexit 0\n")
-        self.hf.chmod(0o755)
+        (self.state / "bin").mkdir(parents=True)
+        self.hf = self.state / "bin" / "hf-api"
+        shutil.copy(SCRIPTS / "hf-api", self.hf)
         self.ledger = self.state / "ledger.jsonl"
         self.ledger.write_text("")
         self.key = self.state / "key"
         self.key.write_text("secret\n")
-        self.dir = root / "gate"
+        self.dir = self.state / "gate"
         self.stream = root / "run.jsonl"
         self.stream.write_text("")
         self.gate = subprocess.Popen(
@@ -94,7 +94,7 @@ class GateLoggerTest(unittest.TestCase):
 
     def test_protected_path_tokens_trip(self) -> None:
         commands = (f"cat {self.key}", "cat key", "cat ./key", 'cat "key"', "tail st/ledger.jsonl",
-                    f"cp x {self.state}/hf-api")
+                    f"cp x {self.state}/bin/hf-api", "curl https://platform.higgsfield.ai/x")
         for i, command in enumerate(commands):
             with self.subTest(command=command):
                 if i:
@@ -105,6 +105,30 @@ class GateLoggerTest(unittest.TestCase):
                 self.assertEqual(self.gate.wait(timeout=15), 3)
                 self.assertIn("protected path", (self.dir / "tripped").read_text())
                 self.assertIsNotNone(self.run_proc.wait(timeout=10))
+
+    def test_refuses_a_wrapper_that_is_not_the_shipped_one(self) -> None:
+        self.arm()
+        self.assertEqual(self.finish(), 0)
+        cases = {
+            "edited": lambda: self.hf.write_text(self.hf.read_text() + "\n# edited\n"),
+            "misplaced": lambda: shutil.move(self.hf, self.state / "hf-api"),
+        }
+        for name, change in cases.items():
+            with self.subTest(name):
+                (self.dir / "ready").unlink(missing_ok=True)
+                shutil.rmtree(self.state / "bin")
+                (self.state / "bin").mkdir()
+                shutil.copy(SCRIPTS / "hf-api", self.hf)
+                change()
+                hf = self.hf if self.hf.exists() else self.state / "hf-api"
+                result = subprocess.run(
+                    ["bash", str(GATE), "--dir", str(self.dir), "--hf-api", str(hf), "--ledger", str(self.ledger),
+                     "--key", str(self.key), "--budget", "15", "--stream", str(self.stream)],
+                    capture_output=True, text=True, timeout=15,
+                )
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertRegex(result.stderr, "not the hf-api shipped|must be installed")
+                self.assertFalse((self.dir / "ready").exists())
 
     def test_signal_kills_the_run(self) -> None:
         self.arm()

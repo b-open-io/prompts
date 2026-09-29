@@ -29,25 +29,35 @@ Not for: a single generated clip (use `gemskills:generate-video`), a single imag
 
 - The `gemskills` plugin (`b-open-io/gemskills`) for keyframes. This skill does not duplicate its generation logic.
 - Claude Code CLI with access to Claude Opus 5.5.
-- Higgsfield API credentials (key ID and secret) and an `hf-api` wrapper that implements the contract below, including `capabilities` and `generate --probe`.
-- ffmpeg 5.1 or newer (`-fps_mode` replaced the deprecated `-vsync`), ffprobe, `jq`, and `setsid` (util-linux; `brew install util-linux` on macOS).
-- The spend and tamper gate shipped with this skill: `scripts/gate-logger.sh` (in Claude Code, `${CLAUDE_SKILL_DIR}/scripts/gate-logger.sh`).
+- Higgsfield API credentials (key ID and secret).
+- ffmpeg 5.1 or newer (`-fps_mode` replaced the deprecated `-vsync`), ffprobe, `curl`, `jq`, and `setsid` (util-linux; `brew install util-linux` on macOS).
+- The two scripts shipped with this skill (in Claude Code, under `${CLAUDE_SKILL_DIR}/scripts/`): the `hf-api` wrapper and the spend and tamper gate `gate-logger.sh`. No other wrapper is accepted.
 - The user's own Suno account if they want a scored track.
 
 ### The `hf-api` wrapper
 
-The coding model calls Higgsfield only through a CLI wrapper named `hf-api`. It is not published in any public b-open-io repository. Build or supply one that meets this contract. The wrapper, its key file, and its ledger live outside the run's working directory (for example `~/.hf-api/`), so the coding model's file tools cannot reach them.
+The coding model calls Higgsfield only through `scripts/hf-api`, which ships with this skill. The launcher installs it as `~/.hf-api/bin/hf-api`. The wrapper takes its state directory from its own install path (the parent of `bin/`), never from the environment, so a caller cannot point it at a fake gate, budget, or ledger. A copy anywhere else has no key and refuses to run. `gate-logger.sh` refuses to start unless the installed file is byte-identical (same sha256) to the one shipped beside it, and it trips if the file changes during the run. So the armed-gate check and the budget are always enforced by code this skill ships, never by a wrapper that only claims to.
 
-| Command | Contract |
+State lives in `~/.hf-api/`, outside the run's working directory, where the coding model's file tools cannot reach it:
+
+| File | Contents |
+|------|----------|
+| `key` | `ID:SECRET` on one line, mode 600. The wrapper passes it to curl through a header file, never on the command line. |
+| `budget` | The Higgsfield spend cap in USD. |
+| `prices.json` | The price of each model the run may use, copied from Higgsfield's public catalog: `{"<model path>": {"usd_per_second": N}}` (charged on the body's `duration`) or `{"<model path>": {"usd_per_request": N}}`. A model without an entry is never submitted. |
+| `ledger.jsonl` | One object per spend or refund, each with a numeric `cost_usd`. |
+| `gate/armed` | PID of the live `gate-logger.sh` that armed the run. |
+
+| Command | Behavior |
 |---------|----------|
-| `capabilities` | Print one JSON object and exit 0: `{"contract": "hf-api/1", "state_dir": "<absolute path of ~/.hf-api>", "gate_file": "<state_dir>/gate/armed", "budget_file": "<state_dir>/budget", "ledger": "<state_dir>/ledger.jsonl", "probe": true}`. The launcher refuses to run a wrapper that prints anything else. |
-| `generate` | Submit a generation request. Refuse unless `~/.hf-api/gate/armed` exists and names a live process (the gate). Refuse if the ledger total plus the estimate would exceed the cap in `~/.hf-api/budget`. Read both from those files, never from the caller's environment. Append the request ID, model, parameters, and estimated cost to the ledger. `generate --probe` runs only these checks, never contacts Higgsfield or writes the ledger, and exits 0 when it would submit or 4 when it refuses. |
-| `status` | Poll a request by ID and download finished output right away; do not rely on Higgsfield keeping it. |
-| `estimate` | Price a request before submitting it (Higgsfield exposes an estimate endpoint). |
-| `balance` | Report spend and remaining budget from the ledger. The REST API has no balance endpoint, so the ledger is the only record. |
-| `cancel` | Cancel a queued request. Higgsfield can cancel only before processing starts; refunded cancels go in the ledger. |
+| `capabilities` | Prints `{"contract": "hf-api/1", "state_dir", "gate_file", "budget_file", "ledger", "probe": true}` for its own state directory. |
+| `generate --model PATH --json BODY` | Refuses (exit 4) unless `gate/armed` names a live `gate-logger.sh` process, the model has a price, and the ledger total plus the estimate stays within `budget`. Then it POSTs the body to `https://platform.higgsfield.ai/<model path>` and appends the request ID, model, parameters, and estimate to the ledger. A clean 4xx rejection is not booked. Any other outcome is booked, including a timeout, because it may have been charged. `generate --probe` runs the same checks without contacting Higgsfield or writing the ledger, and exits 0 when it would submit or 4 when it refuses. |
+| `estimate --model PATH --json BODY` | Prices a request from `prices.json`. |
+| `status ID` | Polls `/requests/<id>/status` and downloads finished output right away to `./hf-output/<id>/`; do not rely on Higgsfield keeping it. A `failed` or `nsfw` result refunds its estimate in the ledger, once. |
+| `cancel ID` | POSTs `/requests/<id>/cancel`. Higgsfield can cancel only while the request is queued. An accepted cancel refunds the estimate, once. |
+| `balance` | Reports spend and remaining budget from the ledger. The REST API has no balance endpoint, so the ledger is the only record. |
 
-The ledger is JSONL, one object per call, each with a numeric `cost_usd` (the estimate for a generate, negative for a refunded cancel); the gate sums it. Auth is the header `Authorization: Key ID:SECRET` against `https://api.higgsfield.ai`. The wrapper reads the key from a file only it uses. The coding model never sees the key.
+The gate sums the ledger. Auth is the header `Authorization: Key ID:SECRET`. The coding model never sees the key.
 
 ## Steps
 
@@ -92,23 +102,31 @@ Keep the subject specific to the current request; never bake an example brand, w
 - File tools scoped to the working directory, with the wrapper's state directory denied, so the model cannot read the key or edit the wrapper or ledger.
 - Two separate caps. `HF_BUDGET_USD` (written to `~/.hf-api/budget`) caps Higgsfield spend: `hf-api` refuses past it and the gate kills the run if the ledger goes over it. `--max-budget-usd` caps only model spend.
 
-**Gate (hard precondition).** No spend-capable step runs until the gate is up and verified; any failed check stops the run. The gate (`scripts/gate-logger.sh`) runs detached with `setsid nohup` so it outlives the shell that started it. It writes `ready` once its preconditions hold, writes `armed` only after the run's `system`/`init` event shows `claude-opus-5-5` with 0 MCP servers and 0 skills, and `hf-api generate` refuses without `armed`. Every ledger entry goes to `gate.log`. It removes `armed`, writes the reason to `tripped`, and kills the run's process group on any of these: a tool call before the init check, a changed `hf-api` binary, a rewritten or malformed ledger, Higgsfield spend over `HF_BUDGET_USD`, or a tool call that names the key, ledger, wrapper, gate directory, or the Higgsfield API host. Protected names match only as whole path tokens, so a key file named `key` stops `cat key` but not `ls keyframes/`. The gate also stops the run whenever it exits any other way than a clean end of the run: an unexpected command failure (it runs under `set -e`) or an INT, TERM, or HUP signal. Before the gate starts, the launcher checks `hf-api capabilities` against the contract above and requires `hf-api generate --probe` to refuse (exit 4) while no gate is armed; a wrapper that is merely executable is not enough. The launcher's own exit and signal traps kill the run and the gate.
+**Gate (hard precondition).** No spend-capable step runs until the gate is up and verified; any failed check stops the run. The gate (`scripts/gate-logger.sh`) runs detached with `setsid nohup` so it outlives the shell that started it. It writes `ready` once its preconditions hold, writes `armed` only after the run's `system`/`init` event shows `claude-opus-5-5` with 0 MCP servers and 0 skills, and `hf-api generate` refuses without `armed`. Every ledger entry goes to `gate.log`. It removes `armed`, writes the reason to `tripped`, and kills the run's process group on any of these: a tool call before the init check, a changed `hf-api` binary, a rewritten or malformed ledger, Higgsfield spend over `HF_BUDGET_USD`, or a tool call that names the key, ledger, wrapper, gate directory, or a `higgsfield.ai` host. Protected names match only as whole path tokens, so a key file named `key` stops `cat key` but not `ls keyframes/`. The gate also stops the run whenever it exits any other way than a clean end of the run: an unexpected command failure (it runs under `set -e`) or an INT, TERM, or HUP signal. Before the gate starts, the launcher installs the shipped wrapper, checks that the installed copy has the shipped sha256, checks `hf-api capabilities` against the contract above, and requires `hf-api generate --probe` to refuse (exit 4) while no gate is armed. The gate repeats the sha256 check itself, so a wrapper swapped in after install is also refused. The launcher's own exit and signal traps kill the run and the gate.
 
 ```bash
 set -euo pipefail
 no_run() { echo "$*; no run" >&2; exit 1; }
-GATE_BIN="${CLAUDE_SKILL_DIR:?run from the skill}/scripts/gate-logger.sh"
-HF_STATE="$HOME/.hf-api"                  # hf-api wrapper, key, ledger
+SKILL_BIN="${CLAUDE_SKILL_DIR:?run from the skill}/scripts"
+GATE_BIN="$SKILL_BIN/gate-logger.sh"
+HF_STATE="$HOME/.hf-api"                  # key, budget, prices.json, ledger
 HF_GATE_DIR="$HF_STATE/gate" HF_BUDGET_USD=15
-[[ -x $GATE_BIN ]] || no_run "gate-logger missing"
-for tool in hf-api setsid jq claude uuidgen; do command -v "$tool" >/dev/null || no_run "$tool missing"; done
-HF_BIN=$(command -v hf-api)
+[[ -x $GATE_BIN && -f $SKILL_BIN/hf-api ]] || no_run "shipped gate-logger or hf-api missing"
+for tool in setsid jq curl claude uuidgen; do command -v "$tool" >/dev/null || no_run "$tool missing"; done
+sha() { if command -v sha256sum >/dev/null; then sha256sum < "$1"; else shasum -a 256 < "$1"; fi | cut -d' ' -f1; }
+mkdir -p "$HF_STATE/bin" && chmod 700 "$HF_STATE"
+install -m 0555 "$SKILL_BIN/hf-api" "$HF_STATE/bin/hf-api"
+HF_BIN="$HF_STATE/bin/hf-api"
+[[ $(sha "$HF_BIN") == "$(sha "$SKILL_BIN/hf-api")" ]] || no_run "installed hf-api does not match the shipped sha256"
+[[ -s $HF_STATE/key && -s $HF_STATE/prices.json ]] || no_run "put ID:SECRET in $HF_STATE/key and model prices in $HF_STATE/prices.json"
+jq -e 'type == "object" and length > 0' "$HF_STATE/prices.json" > /dev/null || no_run "prices.json is not a price table"
 printf '%s\n' "$HF_BUDGET_USD" > "$HF_STATE/budget"
 touch "$HF_STATE/ledger.jsonl"; : > run.jsonl
+export PATH="$HF_STATE/bin:$PATH"         # the coding model's `hf-api` is the installed copy
 
-# The wrapper must declare this contract and prove it refuses an unarmed generate.
+# The installed wrapper must report this state dir and refuse an unarmed generate.
 caps=$("$HF_BIN" capabilities) || no_run "hf-api capabilities failed"
-jq -e --arg s "$HF_STATE" '.contract == "hf-api/1" and .probe == true and .state_dir == $s
+jq -e --arg s "$(cd "$HF_STATE" && pwd -P)" '.contract == "hf-api/1" and .probe == true and .state_dir == $s
   and .gate_file == "\($s)/gate/armed" and .budget_file == "\($s)/budget"
   and .ledger == "\($s)/ledger.jsonl"' <<< "$caps" > /dev/null \
   || no_run "hf-api does not meet the contract: $caps"

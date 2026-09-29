@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # gate-logger.sh — spend and tamper gate for the headless promo-video run.
 #
-# Start it detached before the coding model runs. It snapshots the hf-api
-# wrapper and ledger, writes <dir>/ready (its PID) once every precondition
-# holds, then watches the run until it ends:
+# Start it detached before the coding model runs. It refuses any hf-api that
+# is not byte-identical to the wrapper shipped beside it (installed as
+# <state>/bin/hf-api, with <state>/key, <state>/ledger.jsonl, and --dir
+# <state>/gate). It snapshots the wrapper and ledger, writes <dir>/ready (its
+# PID) once every precondition holds, then watches the run until it ends:
 #   - arms the run (<dir>/armed) only after the stream's system/init event
 #     shows the expected model, 0 MCP servers, and 0 skills; hf-api generate
 #     must refuse unless <dir>/armed exists and names a live gate PID
@@ -51,6 +53,14 @@ elif command -v shasum >/dev/null; then hash_of() { shasum -a 256 | cut -d' ' -f
 else fail "sha256sum or shasum is required"; fi
 [[ $BUDGET =~ ^[0-9]+(\.[0-9]+)?$ ]] && jq -en "$BUDGET > 0" >/dev/null || fail "--budget must be a positive USD amount"
 [[ -f $HF && -x $HF ]] || fail "hf-api wrapper $HF is missing or not executable"
+# Only the wrapper shipped beside this gate enforces the armed check and the
+# budget in code, so any other hf-api is refused, whatever it claims.
+SHIPPED="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/hf-api"
+[[ -f $SHIPPED ]] || fail "shipped wrapper $SHIPPED is missing"
+[[ $(hash_of < "$HF") == "$(hash_of < "$SHIPPED")" ]] || fail "$HF is not the hf-api shipped with this skill (sha256 differs)"
+state=$(dirname "$LEDGER")
+[[ $HF == "$state/bin/hf-api" && $KEY == "$state/key" && $GATE == "$state/gate" ]] \
+  || fail "hf-api must be installed as $state/bin/hf-api, with its key at $state/key and --dir $state/gate"
 [[ -f $LEDGER ]] || fail "ledger $LEDGER is missing (create it empty first)"
 [[ -f $KEY ]] || fail "key file $KEY is missing"
 [[ -f $STREAM ]] || fail "stream $STREAM is missing (create it empty first)"
@@ -137,7 +147,7 @@ for p in "${protected[@]}"; do
 done
 
 names_forbidden() {
-  [[ $1 =~ $forbidden_re ]] || [[ $1 == *api.higgsfield.ai* || $1 == *"Authorization: Key"* ]]
+  [[ $1 =~ $forbidden_re ]] || [[ $1 == *higgsfield.ai* || $1 == *"Authorization: Key"* ]]
 }
 
 while :; do
