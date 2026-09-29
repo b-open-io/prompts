@@ -39,8 +39,10 @@ that offers it — host, then Claude Code, OpenCode, Grok CLI. Review defaults t
 OpenCode, Grok CLI; OpenCode counts only when the detector reports an
 `opencode_read_only_agent` (from `BOPEN_OPENCODE_READONLY_AGENT`), since a
 review there cannot be exported without one. Report a missing lane rather than
-substituting Sol for a build, GPT-5.6, or Grok. Only the observed main
-coordinator keeps the host's main model; any other coordinator node is held to
+substituting Sol for a build, GPT-5.6, or Grok. The observed main coordinator
+keeps the host's main model only when that model is in policy (Opus or Sol
+from its own provider, or `grok-4.7` under credit pressure); GPT-5.5, GPT-5.6,
+Grok 4.6, and Fable mains are rejected. Any other coordinator node is held to
 the coding-worker pin. The detector reports `credit_pressure: true`
 only when `BOPEN_USAGE_CREDIT_PRESSURE=1`; without it, Grok worker nodes fail
 validation.

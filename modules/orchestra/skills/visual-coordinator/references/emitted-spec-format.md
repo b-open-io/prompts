@@ -215,12 +215,15 @@ when reported. A Grok host has no main at all unless the detector reported
 stays empty and fails validation. Other hosts without a reported default use
 their first native host-lane coordinator. A Coordinate card edited away from
 the observed default is a dispatch: on the Grok lane it becomes a disclosed
-wrapper shell-out that needs credit pressure. The observed main alone keeps the
-model the detector saw only when that is `grok-4.6` (or an alias resolving to
-it); every other version, dispatch, edited card, and inventory choice stays
-pinned to `grok-4.7`. That legacy `grok-4.6` main is also the only Grok use
-exempt from credit pressure: an observed `grok-4.7` main validates and exports
-only under credit pressure. Every other native Grok-lane node
+wrapper shell-out that needs credit pressure. The observed main is held to the
+same model policy as a dispatch. A main whose model is out of policy (the
+`gpt-5.5` and `gpt-5.6` families, `grok-4.6` in any form, any Fable id, or an
+alias that resolves to one) leaves the Coordinate card empty with an issue
+naming the resolved model the host runs. Any other main must run
+`claude-opus-5-5` or `gpt-6-sol` from its own provider (Claude's `inherit`
+aside), or `grok-4.7` from xAI or OpenRouter under credit pressure; there is no
+legacy Grok exemption. Cards and model pickers show the resolved model, with
+the alias it was reached through (`grok-4.6 (via xai/grok-4.7)`). Every other native Grok-lane node
 converts to a shell-out whether or not its model is listed, and a Grok dispatch
 is never Ready unless the detector's `grok models` listing shows its model. A
 custom alias served by xAI, or pointing at a Grok model (`grok_model_targets`),
@@ -242,8 +245,7 @@ Codex lanes accept only the bare ids, and OpenCode only
 `openai/gpt-6-sol`, `anthropic/claude-opus-5-5`, or those behind
 `openrouter/`, so `x/gpt-6-sol` is not Sol on any lane. Every coordinator
 other than the observed main session is a dispatch and is held to the same
-coding-worker pin as a builder. The observed main's pin exemption covers only a resolved
-`grok-4.6`; any other off-pin Grok version is rejected like a dispatch. The canvas's
+coding-worker pin as a builder. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.
 

@@ -266,15 +266,25 @@ const runsModel = (id: string) => (environment: WorkflowEnvironment, lane: Workf
 };
 export const runsSol = runsModel(SOL);
 export const runsOpus = runsModel(OPUS);
-// The whole gpt-5.6 family is out of policy, even by explicit choice.
-function isSuperseded(model: string) { return /(?:^|\/)gpt-5\.6(?:$|-)/i.test(model); }
+// Out of policy even by explicit choice, main session included: the gpt-5.5 and gpt-5.6 families,
+// grok-4.6 in any form, and every Fable id.
+const isFable = (model: string) => /(?:^|\/)(?:claude-)?fable(?:$|[-_.])/i.test(model);
+function isSuperseded(model: string) { return /(?:^|\/)(?:gpt-5\.[56]|grok-4\.6)(?:$|-)/i.test(model) || isFable(model); }
 // Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
 // Provider-qualified xAI ids (xai/…, openrouter/x-ai/…) are Grok whatever the model name says.
 export const isGrokFamily = (model: string) => /(?:^|\/)(?:grok-|x-?ai\/)/i.test(model);
 const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
-// The only out-of-policy Grok version an observed main may keep is the legacy grok-4.6 session.
-const isObservedLegacyGrok = (model: string) => /(?:^|\/)grok-4\.6$/i.test(model);
-const offPolicy = `GPT-5.6 models are out of policy (build on ${OPUS}, review on ${SOL}).`;
+const offPolicy = `GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on ${OPUS}, review on ${SOL}).`;
+/** The model a lane really runs for an id: a Grok CLI id runs its config.toml target. */
+const resolve = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): string =>
+  lane === "grok" ? own(environment.grokModelTargets, model) ?? model : model;
+/** Display form of a model: the resolved model, with the alias it was reached through. */
+export const resolvedModel = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): string => {
+  const target = resolve(environment, lane, model);
+  return target !== model ? `${target} (via ${model})` : model;
+};
+const offPolicyModel = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string) =>
+  isSuperseded(model) || isSuperseded(resolve(environment, lane, model));
 
 const preferredLane = (environment: WorkflowEnvironment): WorkflowLane => environment.hostLane ?? "codex";
 const laneModels = (environment: WorkflowEnvironment, lane: WorkflowLane): string[] => own(environment.lanes, lane)?.models ?? own(fallbackModels, lane) ?? [];
@@ -284,7 +294,7 @@ const laneModels = (environment: WorkflowEnvironment, lane: WorkflowLane): strin
 // without a selected model it stays empty and validation rejects it.
 const mainModel = (environment: WorkflowEnvironment, lane: WorkflowLane): string => {
   const configured = own(environment.mainModels, lane);
-  if (configured) return isSuperseded(configured) ? "" : configured;
+  if (configured) return offPolicyModel(environment, lane, configured) ? "" : configured;
   return lane === "claude" && laneModels(environment, lane).includes("inherit") ? "inherit" : "";
 };
 
@@ -553,14 +563,18 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
   if (workflow.nodes.some((node) => walk(node.id))) issues.push({ scope: "graph", id: "forward-cycle", message: "Forward handoffs form a cycle; use a reject or memory edge instead." });
   for (const node of workflow.nodes) {
     const model = typeof node.model === "string" ? node.model.trim() : "";
+    const observedDefault = node.lane === environment.hostLane ? own(environment.mainModels, node.lane) : undefined;
     if (!model) issues.push({ scope: "node", id: node.id, message: node.role === "coordinator"
-      ? node.lane === "grok" && environment.hostLane === "grok" && !own(environment.mainModels, "grok")
+      ? observedDefault && offPolicyModel(environment, node.lane, observedDefault)
+        ? `${node.title} cannot stand for the main session: the host runs ${resolvedModel(environment, node.lane, observedDefault)}; ${offPolicy}`
+        : node.lane === "grok" && environment.hostLane === "grok" && !own(environment.mainModels, "grok")
         ? `${node.title} needs a model: detect-harness.sh did not report the Grok host's default model; re-run it before planning.`
         : `${node.title} needs a model.`
       : `${node.title} needs a model: ${node.lane || "this lane"} does not offer ${node.role === "reviewer" ? SOL : OPUS}; choose a lane that does or set a model explicitly.` });
     if (isSuperseded(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; ${offPolicy}` });
-    // The single observed native main keeps the model the detector saw it running, even an
-    // out-of-policy Grok id; every dispatch, edit, and inventory choice stays pinned.
+    if (isFable(model) || isFable(resolve(environment, node.lane, model))) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${resolvedModel(environment, node.lane, model)}; Fable is never used to coordinate, build, review, or advise.` });
+    // The observed native main is the model the detector saw the host running. It is held to the same
+    // policy as a dispatch; it is only exempt from the inventory and native-pairing checks.
     const observedMainModel = node.id === mainId && model !== "" && model === own(environment.mainModels, node.lane);
     // A Grok-CLI id is judged by the model its config.toml entry points at (grok_model_targets). An alias
     // served by xAI, or aimed at a Grok model, gets the Grok pin and credit gate; one aimed at a GPT-5.6
@@ -573,8 +587,7 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
       && (aliasProvider === "xai" || (aliasTarget !== undefined && isGrokFamily(aliasTarget)));
     const grokBacked = isGrokFamily(model) || xaiAlias;
     if (effectiveModel !== model && isSuperseded(effectiveModel)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, an alias for ${effectiveModel}; ${offPolicy}` });
-    const observedLegacyGrokMain = observedMainModel && isObservedLegacyGrok(effectiveModel);
-    if (grokBacked && !isApprovedGrok(effectiveModel) && !observedLegacyGrokMain) issues.push({ scope: "node", id: node.id, message: isGrokFamily(model) && effectiveModel === model
+    if (grokBacked && !isApprovedGrok(effectiveModel)) issues.push({ scope: "node", id: node.id, message: isGrokFamily(model) && effectiveModel === model
       ? `${node.title} uses ${model}; Grok is pinned to grok-4.7.`
       : `${node.title} uses ${model}, an xAI alias for ${aliasTarget && aliasTarget !== model ? aliasTarget : "an unreported model"}; Grok is pinned to grok-4.7.` });
     // A custom id is resolved only when its entry names both the model and a base_url host, so the
@@ -586,15 +599,20 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     if (node.lane === "grok" && isGrokFamily(model) && aliasProvider !== undefined && aliasProvider !== "xai" && !routers.includes(aliasProvider)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry sends content to ${aliasProvider}, not xAI or an approved router.` });
     if (node.lane === "grok" && isSol(model) && aliasTarget !== undefined && !isSol(aliasTarget)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry runs ${aliasTarget}, not ${SOL}.` });
     if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
-    // Grok needs usage-credit pressure, observed on-pin main included. Only a host already running the
-    // legacy grok-4.6 main is exempt: that session is an observed fact, not a new dispatch.
-    if (grokBacked && !(observedLegacyGrokMain && environment.hostLane === "grok") && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${node.role === "reviewer" ? SOL : OPUS}.` });
+    // Grok needs usage-credit pressure, observed main included.
+    if (grokBacked && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${node.role === "reviewer" ? SOL : OPUS}.` });
     // Any node that executes a review is a reviewer for model policy, whatever its role.
     const reviewing = node.role === "reviewer" || node.execution === "read-only-review";
     // Only the observed main session keeps its own model; any other coordinator is a dispatch and
     // is held to the coding-worker pin like a builder.
     if (node.role !== "coordinator" || node.id !== mainId) {
       if (!reviewing && model !== "" && !grokBacked && !isSuperseded(effectiveModel) && !runsOpus(environment, node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, which is not the coding worker; build on ${OPUS}.` });
+    } else if (!reviewing && !grokBacked && !isSuperseded(effectiveModel) && !(node.lane === "claude" && model === "inherit")
+      && !runsOpus(environment, node.lane, model) && !runsSol(environment, node.lane, model)) {
+      // The main session runs Opus or Sol from its own provider (or an approved router); an alias that
+      // reaches either through another host is not the pinned model.
+      const via = node.lane === "grok" ? own(environment.grokModelProviders, model) : undefined;
+      issues.push({ scope: "node", id: node.id, message: `${node.title} is the main session on ${resolvedModel(environment, node.lane, model)}${via ? ` served by ${via}` : ""}, which is not ${OPUS} or ${SOL} from its own provider.` });
     }
     if (reviewing && (!runsSol(environment, node.lane, model) || node.effort !== "xhigh")) issues.push({ scope: "node", id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });
     const lane = own(environment.lanes, node.lane);
@@ -604,7 +622,7 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
         && node.provider === "native"
         && node.lane === "grok";
       if (lane.availability !== "available") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
-      if (lane.inventory === "complete" && !lane.models.includes(model) && !(observedMainModel && (node.lane !== "grok" || observedLegacyGrokMain))) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
+      if (lane.inventory === "complete" && !lane.models.includes(model) && !(observedMainModel && node.lane !== "grok")) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
       // The wrapper's preflight dispatches only ids its fresh `grok models` listing shows, so every Grok
       // dispatch needs that listing as evidence; an unlisted or fallback-only id is never Ready.
       if (node.lane === "grok" && node.id !== mainId && lane.inventory !== "complete" && !(lane.detected && lane.models.includes(model))) {

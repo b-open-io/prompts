@@ -445,16 +445,20 @@ describe("versioned export contract", () => {
     expect(serializeWorkflow(disclosed(configured), configured).nodes.find((node) => node.id === "coordinate")).toMatchObject({ actor: "main-controller" });
   });
 
-  it("exports the observed grok-4.6 main as native main-controller and nothing else on 4.6", () => {
+  it("never exports an observed grok-4.6 main or anything else on 4.6", () => {
     const observed = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "grok-4.6"], grok_default: "grok-4.6" }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(observed);
     const main = workflow.nodes[0];
     workflow.nodes = [main, { ...main, id: "second", title: "Second", disclosure: "Approved xAI" }];
     workflow.edges = [];
 
+    expect(main.model).toBe("");
     const spec = serializeWorkflow(workflow, observed);
-    expect(spec.nodes).toEqual([expect.objectContaining({ id: "coordinate", actor: "main-controller", execution: "native-agent", model: "grok-4.6" })]);
-    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "second", reason: expect.stringContaining("pinned to grok-4.7") }));
+    expect(spec.nodes).toEqual([]);
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "coordinate", omit: true }));
+    expect(validateWorkflow(workflow, observed).map((issue) => issue.message)).toContain(
+      "Coordinate cannot stand for the main session: the host runs grok-4.6; GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).",
+    );
   });
 
   it("never exports an unlisted Grok-host model as a native-agent dispatch", () => {
@@ -519,7 +523,7 @@ describe("versioned export contract", () => {
     const oldTarget = grokHost({ credit_pressure: true, grok_model_targets: { "ox-alpha": "grok-4.6", "or-grok": "x-ai/grok-4.6", "or-luna": "gpt-5.6-luna" } });
     expect(messages(oldTarget, "ox-alpha")).toContain("Build uses ox-alpha, an xAI alias for grok-4.6; Grok is pinned to grok-4.7.");
     expect(messages(oldTarget, "or-grok")).toContain("Build uses or-grok, an xAI alias for x-ai/grok-4.6; Grok is pinned to grok-4.7.");
-    expect(messages(oldTarget, "or-luna")).toContain("Build uses or-luna, an alias for gpt-5.6-luna; GPT-5.6 models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).");
+    expect(messages(oldTarget, "or-luna")).toContain("Build uses or-luna, an alias for gpt-5.6-luna; GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).");
     expect(serializeWorkflow(builder(oldTarget, "ox-alpha"), oldTarget).nodes).toEqual([]);
 
     const pinned = grokHost({ credit_pressure: true, grok_model_targets: { "ox-alpha": "grok-4.7" } });
@@ -530,8 +534,10 @@ describe("versioned export contract", () => {
 
     const observed = grokHost({ models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "ox-alpha" }, grok_model_targets: { "ox-alpha": "grok-4.6" } });
     const main = defaultWorkflow(observed).nodes[0];
-    expect(main).toMatchObject({ model: "ox-alpha", provider: "native" });
-    expect(validateWorkflow({ title: "t", nodes: [main], edges: [] }, observed)).toEqual([]);
+    expect(main).toMatchObject({ model: "", provider: "native" });
+    expect(validateWorkflow({ title: "t", nodes: [main], edges: [] }, observed).map((issue) => issue.message)).toContain(
+      "Coordinate cannot stand for the main session: the host runs grok-4.6 (via ox-alpha); GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).",
+    );
   });
 
   it("keeps provider-qualified xAI ids on the Grok lane behind its gates", () => {
@@ -686,7 +692,7 @@ describe("versioned export contract", () => {
     expect(serializeWorkflow(builder(bare, "grok-4.7"), bare).nodes).toEqual([expect.objectContaining({ id: "build", provider: "xai" })]);
   });
 
-  it("limits the observed-main Grok exemption to grok-4.6", () => {
+  it("holds every observed Grok main to the grok-4.7 pin and credit gate", () => {
     const observed = (grok_default: string, extra: Record<string, unknown> = {}) => {
       const environment = parseEnvironment({
         harness: "grok",
@@ -720,12 +726,19 @@ describe("versioned export contract", () => {
     ]);
     expect(serializeWorkflow(unpressured.workflow, unpressured.environment).nodes).toEqual([]);
 
-    for (const allowed of [observed("grok-4.6"), observed("grok-4.7", { credit_pressure: true }), observed("ox-legacy", { grok_model_providers: { "ox-legacy": "xai" }, grok_model_targets: { "ox-legacy": "grok-4.6" } })]) {
-      expect(validateWorkflow(allowed.workflow, allowed.environment)).toEqual([]);
-      expect(serializeWorkflow(allowed.workflow, allowed.environment).nodes).toEqual([
-        expect.objectContaining({ id: "coordinate", actor: "main-controller", execution: "native-agent" }),
-      ]);
+    for (const [legacy, shown] of [[observed("grok-4.6", { credit_pressure: true }), "grok-4.6"],
+      [observed("ox-legacy", { credit_pressure: true, grok_model_providers: { "ox-legacy": "xai" }, grok_model_targets: { "ox-legacy": "grok-4.6" } }), "grok-4.6 (via ox-legacy)"]] as const) {
+      expect(legacy.workflow.nodes[0].model).toBe("");
+      expect(validateWorkflow(legacy.workflow, legacy.environment).map((issue) => issue.message)).toContain(
+        `Coordinate cannot stand for the main session: the host runs ${shown}; GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).`,
+      );
+      expect(serializeWorkflow(legacy.workflow, legacy.environment).nodes).toEqual([]);
     }
+    const allowed = observed("grok-4.7", { credit_pressure: true });
+    expect(validateWorkflow(allowed.workflow, allowed.environment)).toEqual([]);
+    expect(serializeWorkflow(allowed.workflow, allowed.environment).nodes).toEqual([
+      expect.objectContaining({ id: "coordinate", actor: "main-controller", execution: "native-agent" }),
+    ]);
   });
 
   it("rejects an observed main whose alias points at a GPT-5.6 model", () => {
@@ -742,9 +755,9 @@ describe("versioned export contract", () => {
     workflow.nodes = [workflow.nodes[0]];
     workflow.edges = [];
 
-    expect(workflow.nodes[0]).toMatchObject({ model: "ox-luna", provider: "native" });
+    expect(workflow.nodes[0]).toMatchObject({ model: "", provider: "native" });
     expect(validateWorkflow(workflow, observed).map((issue) => issue.message)).toContain(
-      "Coordinate uses ox-luna, an alias for gpt-5.6-luna; GPT-5.6 models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).",
+      "Coordinate cannot stand for the main session: the host runs gpt-5.6-luna (via ox-luna); GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).",
     );
     expect(serializeWorkflow(workflow, observed).nodes).toEqual([]);
   });
