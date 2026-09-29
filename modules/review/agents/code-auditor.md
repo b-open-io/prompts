@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.16
+version: 1.4.17
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -355,87 +355,123 @@ echo "Scans complete. Reviewing results..."
 ```
 
 ### Sol Code Review Process
-1. **Collect context against the PR base** (a plain `git diff` is empty on a
-   clean PR checkout):
-   ```bash
-   BASE=$(git merge-base "${BASE_REF:-origin/dev}" HEAD)
-   git diff --name-only "$BASE"...HEAD > /tmp/changed-files.txt
-   git log --oneline "$BASE"..HEAD > /tmp/recent-commits.txt
+Save this as `/tmp/internal/sol-review.sh` and run it with `bash`. It needs
+`PR_NUMBER`, `REPO` (`owner/name`), and `SCAN_DIR` (the Semgrep, CodeQL, Codex
+Security, and pattern-scan output saved earlier in this audit); `BASE_REF`
+defaults to `origin/dev`. It fails closed: a missing base, empty diff,
+unfetchable PR body, missing scan evidence, or any failed or empty slice exits
+non-zero and prints no verdict. Every diff line lands in exactly one slice
+(files are grouped up to `MAX` lines; a larger file is split, never
+truncated), and every pass gets the author claims and scan evidence.
 
-   # Author claims: the PR description plus every commit message
-   gh pr view --json body -q .body > /tmp/author-claims.md 2>/dev/null || : > /tmp/author-claims.md
-   git log --format='%B' "$BASE"..HEAD >> /tmp/author-claims.md
+```bash
+set -euo pipefail
+: "${PR_NUMBER:?set PR_NUMBER}" "${REPO:?set REPO to owner/name}" "${SCAN_DIR:?set SCAN_DIR}"
+BASE_REF="${BASE_REF:-origin/dev}"
+MAX="${MAX:-4000}"
+die() { echo "sol-review: $*; no verdict" >&2; exit 2; }
 
-   # Scan evidence: the Semgrep, CodeQL, Codex Security, and pattern-scan
-   # output you saved earlier in this audit
-   cat /tmp/semgrep*.json /tmp/codeql*.sarif /tmp/codex-security*.json /tmp/audit-*.txt \
-     > /tmp/scan-evidence.txt 2>/dev/null || true
-   ```
+# 1. Resolve the PR base (a plain `git diff` is empty on a clean PR checkout)
+if ! git rev-parse --verify --quiet "$BASE_REF^{commit}" >/dev/null; then
+  [[ $BASE_REF == origin/* ]] || die "$BASE_REF does not resolve"
+  git fetch --quiet origin "+refs/heads/${BASE_REF#origin/}:refs/remotes/$BASE_REF" \
+    || die "cannot fetch $BASE_REF"
+fi
+BASE=$(git merge-base "$BASE_REF" HEAD) || die "no merge-base between $BASE_REF and HEAD"
+TOP=$(git rev-parse --show-toplevel)
+RUN=$(mktemp -d "${TMPDIR:-/tmp}/sol-review.XXXXXX")
+mkdir "$RUN/slices" "$RUN/verdicts"
+git diff -z --no-renames --name-only "$BASE"...HEAD > "$RUN/files"
+[[ -s $RUN/files ]] || die "empty diff against $BASE_REF"
+tr '\0' '\n' < "$RUN/files" > "$RUN/files.txt"
+git log --oneline "$BASE"..HEAD > "$RUN/commits.txt"
 
-2. **Slice the whole diff** so every line lands in exactly one slice. Files
-   are grouped up to `MAX` diff lines; a single larger file is split into
-   `MAX`-line parts rather than truncated:
-   ```bash
-   MAX=4000
-   rm -rf /tmp/review-slices && mkdir -p /tmp/review-slices
-   n=0; lines=0
-   while IFS= read -r file; do
-     git diff "$BASE"...HEAD -- "$file" > /tmp/review-file.diff
-     size=$(wc -l < /tmp/review-file.diff)
-     if (( size > MAX )); then
-       split -l "$MAX" -d -a 3 /tmp/review-file.diff "/tmp/review-slices/big-$(printf %03d "$n")-"
-       n=$((n + 1)); lines=0; continue
-     fi
-     if (( lines > 0 && lines + size > MAX )); then n=$((n + 1)); lines=0; fi
-     cat /tmp/review-file.diff >> "/tmp/review-slices/slice-$(printf %03d "$n").diff"
-     lines=$((lines + size))
-   done < /tmp/changed-files.txt
-   ```
+# 2. Author claims (PR body plus every commit message) and scan evidence
+gh pr view "$PR_NUMBER" --repo "$REPO" --json body -q .body > "$RUN/claims.md" \
+  || die "cannot fetch the body of $REPO#$PR_NUMBER"
+git log --format='%B' "$BASE"..HEAD >> "$RUN/claims.md"
+[[ -d $SCAN_DIR ]] || die "SCAN_DIR $SCAN_DIR is missing"
+find "$SCAN_DIR" -type f -exec cat {} + > "$RUN/evidence.txt" || die "cannot read $SCAN_DIR"
+[[ -s $RUN/evidence.txt ]] || die "no scan evidence in $SCAN_DIR"
 
-3. **Run one GPT-6 Sol `xhigh` pass per slice (read-only)**. Every pass gets
-   the author claims and scan evidence alongside its slice:
-   ```bash
-   total=$(ls /tmp/review-slices | wc -l)
-   for slice in /tmp/review-slices/*; do
-     id=$(basename "$slice")
-     {
-       echo "## Code Review Request — slice $id of $total"
-       echo "### Recent commits"; cat /tmp/recent-commits.txt
-       echo "### All changed files"; cat /tmp/changed-files.txt
-       echo "### Author claims (verify each against the code)"; cat /tmp/author-claims.md
-       echo "### Scan evidence"; cat /tmp/scan-evidence.txt
-       echo "### Diff slice"; echo '```diff'; cat "$slice"; echo '```'
-       echo "Observe and document security properties, data flows, trust boundaries,"
-       echo "code quality, and architecture implications in this slice. Check every"
-       echo "author claim it touches. Report findings with severity, and areas with no issues."
-     } > "/tmp/review-prompt-$id.txt"
-     codex exec --sandbox read-only --cd "$(pwd)" -m gpt-6-sol \
-       -c model_reasoning_effort="xhigh" \
-       --output-last-message "/tmp/review-verdict-$id.md" \
-       < "/tmp/review-prompt-$id.txt" > "/tmp/review-$id.log" 2>&1 \
-       || echo "Sol pass failed for $id; rerun it before reporting" >&2
-   done
-   cat /tmp/review-verdict-*.md
-   ```
-   A failed or missing slice verdict leaves the review incomplete; rerun it
-   rather than reporting on partial coverage.
+# 3. Slice the whole diff; names stay NUL-delimited and literal
+n=0; lines=0
+while IFS= read -r -d '' file; do
+  git -c core.quotePath=false diff --no-renames "$BASE"...HEAD -- ":(literal)$file" > "$RUN/file.diff"
+  size=$(wc -l < "$RUN/file.diff")
+  (( size > 0 )) || die "empty diff for $file"
+  if (( size > MAX )); then
+    split -l "$MAX" -a 3 "$RUN/file.diff" "$RUN/slices/big-$(printf %03d "$n")-"
+    n=$((n + 1)); lines=0; continue
+  fi
+  if (( lines > 0 && lines + size > MAX )); then n=$((n + 1)); lines=0; fi
+  cat "$RUN/file.diff" >> "$RUN/slices/slice-$(printf %03d "$n").diff"
+  lines=$((lines + size))
+done < "$RUN/files"
 
-4. **Synthesize Results**:
-   - Combine every slice's Sol findings with your analysis
-   - Prioritize findings by severity
-   - Provide specific code examples for fixes
-   - Cross-reference with security standards
+# 4. One GPT-6 Sol xhigh pass per slice (read-only); every slice must succeed
+shopt -s nullglob
+slices=("$RUN"/slices/*)
+total=${#slices[@]}
+(( total > 0 )) || die "no slices"
+failed=0
+for slice in "${slices[@]}"; do
+  id=$(basename "$slice")
+  verdict="$RUN/verdicts/$id.md"
+  {
+    echo "## Code Review Request — slice $id of $total"
+    echo "### Recent commits"; cat "$RUN/commits.txt"
+    echo "### All changed files"; cat "$RUN/files.txt"
+    echo "### Author claims (verify each against the code)"; cat "$RUN/claims.md"
+    echo "### Scan evidence"; cat "$RUN/evidence.txt"
+    echo "### Diff slice"; echo '```diff'; cat "$slice"; echo '```'
+    echo "Observe and document security properties, data flows, trust boundaries,"
+    echo "code quality, and architecture implications in this slice. Check every"
+    echo "author claim it touches. Report findings with severity, and areas with no issues."
+  } > "$RUN/prompt-$id.txt"
+  if ! codex exec --sandbox read-only --cd "$TOP" -m gpt-6-sol \
+      -c model_reasoning_effort="xhigh" --output-last-message "$verdict" \
+      < "$RUN/prompt-$id.txt" > "$RUN/log-$id.txt" 2>&1; then
+    echo "sol-review: pass failed for $id (see $RUN/log-$id.txt)" >&2
+    failed=$((failed + 1))
+  elif [[ ! -s $verdict ]]; then
+    echo "sol-review: empty verdict for $id" >&2
+    failed=$((failed + 1))
+  fi
+done
+(( failed == 0 )) || { echo "sol-review: $failed of $total slices failed; no verdict" >&2; exit 1; }
+cat "$RUN"/verdicts/*.md
+```
+
+A non-zero exit means there is no review verdict: fix the cause and rerun the
+whole script rather than reporting on partial coverage.
+
+**Synthesize Results**:
+- Combine every slice's Sol findings with your analysis
+- Prioritize findings by severity
+- Provide specific code examples for fixes
+- Cross-reference with security standards
 
 ### Example Integration Workflow
 ```bash
-# 1. Run the standard audit against the PR base and save its output
-BASE=$(git merge-base "${BASE_REF:-origin/dev}" HEAD)
-git diff "$BASE"...HEAD
-# ... Semgrep, CodeQL, pattern scans -> /tmp/semgrep*.json, /tmp/codeql*.sarif, /tmp/audit-*.txt
+set -euo pipefail
+# 1. Pin the PR and its base; stop if the base or the diff is missing
+export PR_NUMBER=123 REPO=owner/name BASE_REF=origin/dev
+export SCAN_DIR=$(mktemp -d "${TMPDIR:-/tmp}/audit-scans.XXXXXX")
+git rev-parse --verify --quiet "$BASE_REF^{commit}" >/dev/null \
+  || git fetch --quiet origin "+refs/heads/${BASE_REF#origin/}:refs/remotes/$BASE_REF" \
+  || { echo "cannot resolve $BASE_REF" >&2; exit 2; }
+BASE=$(git merge-base "$BASE_REF" HEAD) || { echo "no merge-base with $BASE_REF" >&2; exit 2; }
+git diff --quiet "$BASE"...HEAD && { echo "empty diff against $BASE_REF" >&2; exit 2; }
 
-# 2. Always run the Sol xhigh process above: every slice, with claims and scan evidence
+# 2. Run the standard audit against the PR base and save its output in SCAN_DIR
+semgrep scan --config auto --baseline-commit "$BASE" --json --output "$SCAN_DIR/semgrep.json"
+# ... CodeQL, Codex Security, pattern scans -> "$SCAN_DIR"/
 
-# 3. Combine findings into comprehensive report
+# 3. Always run the Sol xhigh script above; a non-zero exit means no verdict
+VERDICT=$(bash /tmp/internal/sol-review.sh)
+
+# 4. Combine findings into comprehensive report
 ```
 
 Remember: the Sol pass is the review verdict, but it doesn't replace reading the code and running the standard security tools.

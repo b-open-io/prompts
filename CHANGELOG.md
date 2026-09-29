@@ -181,12 +181,18 @@ manifests share the same release version.
 - Visual coordinator: any node with `read-only-review` execution, whatever its
   role, is restaffed onto the review target (`gpt-6-sol` at `xhigh`), must
   validate as a Sol `xhigh` reviewer, and exports as `actor: "reviewer"`.
-- Review 0.1.21: `code-auditor` 1.4.16 drops its direct xAI review route
+- Review 0.1.21: `code-auditor` 1.4.17 drops its direct xAI review route
   (`XAI_REVIEW_MODEL`) and takes its verdict from read-only
   `codex exec -m gpt-6-sol` passes at `xhigh` on every review. Its recipe
   diffs against the PR merge-base, slices the whole diff (nothing is
   truncated), and runs one Sol pass per slice, each with the author claims
-  and saved scan evidence. Plugin agent `model` fields
+  and saved scan evidence. The recipe fails closed: it requires explicit
+  `PR_NUMBER`, `REPO`, and `SCAN_DIR`, verifies (or fetches) `BASE_REF`, stops
+  on a missing merge-base, empty diff, unfetchable PR body, or missing scan
+  evidence, carries file names NUL-delimited, works in a fresh `mktemp` run
+  directory, and exits non-zero with no verdict unless every slice returns a
+  non-empty result. `scripts/tests/test_code_auditor_sol_review.py` runs it
+  against a temp repo. Plugin agent `model` fields
   accept only Claude models, so Coordinator and `hunter-skeptic-referee`
   1.1.4 route review verdicts through that explicit Sol reviewer rather than
   the agents' declared Claude tiers. `security-ops` 1.0.12 pins its scan and
