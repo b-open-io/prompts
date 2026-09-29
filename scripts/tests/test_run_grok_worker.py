@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import importlib.util
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -22,6 +24,10 @@ base_url = "https://api.x.ai/v1"
 """
 
 
+@unittest.skipUnless(
+    importlib.util.find_spec("tomllib") or importlib.util.find_spec("tomli"),
+    "the wrapper reads config.toml with tomllib or tomli",
+)
 class GrokWrapperBindingTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -34,6 +40,9 @@ class GrokWrapperBindingTest(unittest.TestCase):
         self.cwd = root / "work"
         self.cwd.mkdir()
         self.log = root / "run.log"
+        self.bin = root / "bin"
+        self.bin.mkdir()
+        (self.bin / "python3").symlink_to(sys.executable)
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -43,7 +52,7 @@ class GrokWrapperBindingTest(unittest.TestCase):
             (self.home / "config.toml").unlink()
         env = {k: v for k, v in os.environ.items() if k != "BOPEN_USAGE_CREDIT_PRESSURE"}
         # With no grok on PATH, a binding that passes stops at "grok is not installed".
-        env.update(GROK_HOME=str(self.home), PATH="/usr/bin:/bin")
+        env.update(GROK_HOME=str(self.home), PATH=f"{self.bin}:/usr/bin:/bin")
         return subprocess.run(
             ["bash", str(WRAPPER), "--auth", "api", "--model", model, "--mode", "read", "--cwd", str(self.cwd),
              "--prompt-file", str(self.prompt), "--log", str(self.log), *extra],
