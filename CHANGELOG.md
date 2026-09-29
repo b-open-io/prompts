@@ -145,6 +145,39 @@ manifests share the same release version.
   the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
   `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
 
+## [1.1.173] - Pending production promotion
+
+### Fixed
+
+Third round of Sol review fixes. Core 1.1.173, creative 0.1.12, orchestra
+0.1.34, review 0.1.24.
+
+- `code-auditor` 1.4.24: the Sol review recipe never summarizes lockfiles or
+  source maps. A lockfile diff is reviewed in full when it fits; otherwise
+  its changed lines are sent with exact `@@` headers, then only the changed
+  lines that carry a name, version, resolved, integrity, or source key. If
+  even that does not fit, the run stops with no verdict. Only JSONL and JSON
+  under data directories are summarized.
+- `promo-video-pipeline` 0.0.5 ships the `hf-api` wrapper. It checks the
+  armed gate and the budget ledger under a lock before every paid generate,
+  books each accepted request, and refunds failed, NSFW, and cancelled ones.
+  `gate-logger.sh` arms only when the wrapper on PATH has the same sha256 as
+  the shipped one, and any tool call that names `higgsfield.ai` trips the gate.
+- `visual-coordinator` 0.1.15: the observed main session is held to the same
+  model policy as dispatched steps. Fable ids, GPT-5.5, GPT-5.6, Grok 4.6
+  (including `xai/grok-4.7` aliases that resolve to it), `grok-4.7` without
+  credit pressure, and Sol or Opus aliases on a look-alike host are rejected,
+  and the card shows the resolved model. The legacy Grok 4.6 main exemption
+  is removed. An OpenCode reviewer exports only when the detector reads every
+  definition of `BOPEN_OPENCODE_READONLY_AGENT` and each denies edit, bash,
+  and task with no write-capable tool allowed; otherwise the detector reports
+  `opencode_read_only_problem` and the reviewer is omitted with that reason.
+- `codex-security`: the pre-commit hook recipe pins the installed hook to
+  `--model gpt-6-sol --effort xhigh` and verifies the result, removing the
+  hook when the pin does not apply.
+- Tests: the Grok wrapper test runs under the test interpreter and skips
+  without `tomllib`/`tomli`.
+
 ## [1.1.172] - Pending production promotion
 
 ### Fixed

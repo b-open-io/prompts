@@ -1,6 +1,6 @@
 ---
 name: promo-video-pipeline
-version: 0.0.4
+version: 0.0.5
 description: >-
   Use this when making a motion-graphics promo or showreel, a short social cut or a
   longer commercial cut, from the user's prompt plus optional music. Covers
