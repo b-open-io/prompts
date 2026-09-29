@@ -145,6 +145,42 @@ manifests share the same release version.
   the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
   `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
 
+## [1.1.171] - Pending production promotion
+
+### Fixed
+
+Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
+0.1.22.
+
+- `creative:promo-video-pipeline` 0.0.3 ships `scripts/gate-logger.sh` and
+  makes it a hard precondition. The launcher stops unless the gate reports
+  `ready`; the gate arms `hf-api generate` only after the `init` event shows
+  `claude-opus-5-5` with 0 MCP servers and 0 skills, and kills the run on
+  early tool calls, a changed wrapper, a rewritten ledger, Higgsfield spend
+  over the `~/.hf-api/budget` cap, or tool calls naming the key, ledger,
+  wrapper, or API host. File tools are scoped to the working directory with
+  the wrapper state denied.
+- `visual-coordinator` 0.1.13: changing lane, execution provider, or model
+  provider (OpenCode prefix, Grok `base_url` host) clears the disclosure
+  approval; the Coordinate card takes only the detector's selected
+  `<lane>_default` (or Claude's `inherit`), never a Sol catalog entry; a lane
+  missing from `lane_access` is unverified, and `detect-harness.sh` now
+  reports every lane; the Grok export removes its prompt temp file on every
+  exit.
+- `advisor` 0.0.12 / `agent-builder` 1.7.20: removed the Fable advisor
+  route; the Claude CLI channel guide is now `claude-cli.md`.
+- `prompt-router` keys fire counters by kind and id, so a skill and an agent
+  that share an id (`core:front-desk`) no longer exhaust each other.
+- `code-auditor` 1.4.22: the Sol review recipe caps each prompt at `CAP`
+  bytes (default 800000, at most 900000), summarizes generated fixtures
+  instead of slicing them, and splits on file and hunk boundaries with the
+  file and `@@` headers repeated in every piece.
+- `codex-security` pins `gpt-6-sol` explicitly (`--model` for `scan`,
+  `--codex 'model="gpt-6-sol"'` for `validate`); `scan` otherwise defaults
+  to `gpt-5.6-sol`.
+- The isolated install check pins codex 0.156.1, the minimum the Sol review
+  recipe needs.
+
 ## [1.1.170] - Pending production promotion
 
 ### Changed
