@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.11
+version: 0.1.12
 ---
 
 # Visual Coordinator
@@ -57,9 +57,9 @@ display names. Grok's model list is account-scoped. Codex has no enumeration
 command, so the detector reads its account-scoped local model cache and keeps
 the configured model as a fallback. Add `BOPEN_USAGE_CREDIT_PRESSURE=1` only
 when the user has declared usage-credit pressure; it is the only signal that
-permits Grok worker nodes. Build and Review default to `gpt-6-sol` regardless
-of which model the host lists first, preferring a lane whose Sol was actually
-detected. The detector also reports each lane's configured main model
+permits Grok worker nodes. Build and new steps default to `claude-opus-5-5`
+and Review to `gpt-6-sol` at `xhigh`, regardless of which model the host lists
+first, preferring a lane whose model was actually detected. The detector also reports each lane's configured main model
 (`models.<lane>_default`) for the Coordinate card and the absolute
 `grok_worker` wrapper path and `grok_auth` lane that Grok-lane exports use; set
 `BOPEN_GROK_WORKER` only to point at a different installed wrapper.
@@ -155,7 +155,7 @@ disabled; it never shrinks the infinite canvas into an unreadable editor.
 
 On receiving a pasted spec, translate it for the host — Claude Code maps onto a
 JavaScript workflow script; Grok maps onto a Rhai workflow (bundled
-`/create-workflow`, native `agent_type` + `model`, Sol/Claude nodes as
+`/create-workflow`, native `agent_type` + `model`, Claude Opus/Sol nodes as
 Grok-CLI or Claude-CLI shell-outs);
 Codex becomes an ordered series of `codex exec` dispatches the caller sequences.
 OpenCode becomes an ordered series of caller-sequenced `opencode run`

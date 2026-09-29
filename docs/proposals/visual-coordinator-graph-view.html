@@ -7,7 +7,7 @@
 <!--
   ARCHIVAL PROPOSAL: superseded by tools/visual-coordinator and
   modules/orchestra/skills/visual-coordinator/examples/graph-builder.html.
-  Model defaults below follow current policy: workers gpt-6-sol, review
+  Model defaults below follow current policy: workers claude-opus-5-5, review
   gpt-6-sol at xhigh, advisor claude-opus-5-5, Grok only under usage-credit
   pressure and only grok-4.7.
   Copy this file into the artifact. Replace window.VC_SEED with the graph
@@ -159,7 +159,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   var hist = [], hpos = -1;
 
   function uid(p){ return p + (p==="n"? nid++ : eid++); }
-  function node(o){ return Object.assign({ id:uid("n"), kind:"process", x:80, y:160, label:"Step", detail:"", lane:hostLane(), model:(modelsFor(hostLane())[0]||"gpt-6-sol"), effort:"medium", agentType:"", task:"", gateCmd:"", schema:"", paths:"", command:"" }, o); }
+  function node(o){ return Object.assign({ id:uid("n"), kind:"process", x:80, y:160, label:"Step", detail:"", lane:hostLane(), model:(modelsFor(hostLane())[0]||"claude-opus-5-5"), effort:"medium", agentType:"", task:"", gateCmd:"", schema:"", paths:"", command:"" }, o); }
   function edge(o){ return Object.assign({ id:uid("e"), from:"", to:"", label:"", kind:"forward" }, o); }
   function hostLane(){
     if(HARNESS==="claude-code") return "claude";
@@ -216,12 +216,13 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   function seedMinimal(){
     nid=1; eid=1;
     var native=hostLane();
-    var nativeModel=modelsFor(native)[0]||"gpt-6-sol";
+    var nativeModel=modelsFor(native)[0]||"claude-opus-5-5";
     var solLane=laneAvailable("codex") ? "codex" : native;
+    var opusLane=laneAvailable("claude") ? "claude" : native;
     S.name = "untitled";
     S.nodes = [
       node({id:"n1", kind:"source", x:36, y:188, label:"Start", detail:"brief in"}),
-      node({id:"n2", kind:"process", x:280, y:178, label:"Work", detail:"do the job", lane:solLane, model:"gpt-6-sol", effort:"medium"}),
+      node({id:"n2", kind:"process", x:280, y:178, label:"Work", detail:"do the job", lane:opusLane, model:"claude-opus-5-5", effort:"medium"}),
       node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:solLane, model:"gpt-6-sol", effort:"xhigh", gateCmd:"bun test"}),
       node({id:"n4", kind:"process", x:780, y:178, label:"Done", detail:"ship or complete", lane:native, model:nativeModel, effort:"low"})
     ];
@@ -242,9 +243,9 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     S.nodes = [
       node({id:"n1", kind:"source", x:36, y:188, label:"Intake", detail:"user brief and repo"}),
       node({id:"n2", kind:"process", x:268, y:178, label:"Decompose", detail:"owned paths", lane:"grok", model:"grok-4.7", effort:"high", agentType:"orchestra:coordinator"}),
-      node({id:"n3", kind:"process", x:508, y:36, label:"Implement A", detail:"tests", lane:"codex", model:"gpt-6-sol", effort:"medium"}),
-      node({id:"n4", kind:"process", x:508, y:178, label:"Implement B", detail:"pages", lane:"codex", model:"gpt-6-sol", effort:"medium"}),
-      node({id:"n5", kind:"process", x:508, y:320, label:"Implement C", detail:"API", lane:"codex", model:"gpt-6-sol", effort:"medium"}),
+      node({id:"n3", kind:"process", x:508, y:36, label:"Implement A", detail:"tests", lane:"claude", model:"claude-opus-5-5", effort:"medium"}),
+      node({id:"n4", kind:"process", x:508, y:178, label:"Implement B", detail:"pages", lane:"claude", model:"claude-opus-5-5", effort:"medium"}),
+      node({id:"n5", kind:"process", x:508, y:320, label:"Implement C", detail:"API", lane:"claude", model:"claude-opus-5-5", effort:"medium"}),
       node({id:"n6", kind:"gate", x:748, y:178, label:"Verify", detail:"checker + bun test", lane:"codex", model:"gpt-6-sol", effort:"xhigh", gateCmd:"bun test"}),
       node({id:"n7", kind:"process", x:988, y:178, label:"Ship", detail:"git stays here", lane:"grok", model:"grok-4.7", effort:"medium", agentType:"orchestra:coordinator"}),
       node({id:"n8", kind:"artifact", x:988, y:36, label:"Diff", detail:"what workers wrote"}),
@@ -493,8 +494,8 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     var n=node({ kind:kind, x:x, y:y,
       label: kind==="gate"?"Gate": kind==="source"?"Source": kind==="artifact"?"Artifact": kind==="memory"?"Memory":"Step",
       detail: kind==="gate"?"prove the work":"",
-      lane: laneAvailable("codex")?"codex":hostLane(),
-      model: "gpt-6-sol",
+      lane: kind==="gate" ? (laneAvailable("codex")?"codex":hostLane()) : (laneAvailable("claude")?"claude":hostLane()),
+      model: kind==="gate" ? "gpt-6-sol" : "claude-opus-5-5",
       effort: kind==="gate"?"xhigh":"medium",
       gateCmd: kind==="gate"?"bun test":"" });
     S.nodes.push(n);

@@ -7,14 +7,15 @@ Full installed agent roster with `subagent_type` identifiers and the skills to m
 > **Some of these skills are external.** `semgrep`, `codeql`, `differential-review`, and `secure-workflow-guide` come from the `trailofbits/skills` marketplace (plugins `static-analysis`, `differential-review`, `building-secure-contracts`). They resolve by bare name when installed and are simply absent when not — no error. Naming an uninstalled skill in a spawn prompt is worse than omitting it, because the agent reports against a pass it never ran. Add one line to any prompt naming them: *"If a skill isn't available, say which one and what you did instead."*
 
 > **HARD RULE — dispatch models.** Roster `Model` values below are native
-> persona tiers, not coding-worker defaults. Use `gpt-6-sol` for coding workers
-> and `gpt-6-sol` at `xhigh` for code review. Use `claude-opus-5-5` for the
-> advisor. Grok is a usage-credit-pressure fallback only, pinned to
-> `grok-4.7`; never use Grok 4.6. CloudAgent is only one coding lane: if its
-> catalog omits GPT-6 Sol, use `gpt-6-sol` through the CLI on an agent computer
-> or Luke's desktop harnesses. Do not treat that gap as unavailability or
-> substitute GPT-5.6 Sol or Opus as the coding worker. Coding uses GPT-6 models
-> only; no `gpt-5.6` model (Sol, Luna, Terra) is used, even by explicit choice.
+> persona tiers, not coding-worker defaults. Use `claude-opus-5-5` for coding
+> workers and `gpt-6-sol` (or `gpt-6-astra`) at `xhigh` for code review, never
+> at default reasoning. Use `claude-opus-5-5` for the advisor. Grok is a
+> usage-credit-pressure fallback only, pinned to `grok-4.7`; never use Grok
+> 4.6. CloudAgent is only one coding lane: if its catalog omits Claude Opus
+> 5.5, run `claude-opus-5-5` through the Claude Code CLI on an agent computer
+> or Luke's Claude Code desktop harness. Do not treat that gap as
+> unavailability or substitute Sol, GPT-5.6, or Grok as the coding worker. No
+> `gpt-5.6` model (Sol, Luna, Terra) is used, even by explicit choice.
 
 ## Roster
 

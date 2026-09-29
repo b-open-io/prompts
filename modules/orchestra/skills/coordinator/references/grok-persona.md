@@ -31,7 +31,7 @@ bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
   --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"
 ```
 
-Read-only lane (research, summaries, reviews — no edits). The wrapper uses plan
+Read-only lane (research and summaries — no edits). The wrapper uses plan
 permission mode and keeps the workspace sandbox. Keep the task and allowed
 repository scope narrow so headless operation does not stall on unrelated
 approvals:
@@ -42,6 +42,18 @@ bash scripts/grok-persona.sh researcher "Summarize this README:
 $(head -60 README.md)" > "$PROMPT_FILE"
 bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
   --auth grok.com --model "$WORKER_MODEL" --mode read \
+  --cwd "$(pwd)" --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"
+```
+
+Review lane (read-only). Review never inherits `$WORKER_MODEL` or the runtime
+default effort: it runs on a quoted `gpt-6-sol` entry with `--effort xhigh`.
+Usage-credit pressure never moves a review to Grok; narrow its scope or queue it.
+
+```bash
+PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
+bash scripts/grok-persona.sh code-auditor "$(cat REVIEW-x.md)" > "$PROMPT_FILE"
+bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
+  --auth grok.com --model gpt-6-sol --effort xhigh --mode read \
   --cwd "$(pwd)" --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"
 ```
 

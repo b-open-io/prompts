@@ -7,17 +7,18 @@ Codex process when it is the chosen coding or isolated implementation lane.
 
 ## Choose the model
 
-- **Sol** (`gpt-6-sol`, reasoning `high`) — preferred coding worker. Use
-  `xhigh` for independent code review.
+- **Sol** (`gpt-6-sol`, reasoning `xhigh`) — independent code reviewer, never
+  at default effort. It is not the coding worker; Claude Opus 5.5
+  (`claude-opus-5-5`) is.
 - **Astra** (`gpt-6-astra`, recommended `high`) — 3D / animation / gamification /
   creative implementation lane. Use `xhigh` or `max` only if the user asks or
-  the first `high` run fails.
+  the first `high` run fails. Also an allowed code reviewer at `xhigh`.
 
 Read-only second opinions stay in Advisor; implementation stays here. The
 default advisor is Claude Opus 5.5 (`claude-opus-5-5`), not a Codex worker.
 
-Coding uses GPT-6 models only. Do not dispatch any `gpt-5.6` model (Sol, Luna,
-Terra), even when a user or catalog offers it.
+Do not dispatch any `gpt-5.6` model (Sol, Luna, Terra), even when a user or
+catalog offers it.
 
 Both send the prompt, spec, and selected repository content to OpenAI.
 Apply the Coordinator disclosure rule before first use.

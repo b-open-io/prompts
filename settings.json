@@ -7,10 +7,10 @@
       "source": "env",
       "key": "BOPEN_WORKER_MODEL",
       "type": "string",
-      "default": "gpt-6-sol",
+      "default": "claude-opus-5-5",
       "tier": "model",
       "label": "Worker model",
-      "description": "Default external implementation worker selected by coordinator.",
+      "description": "Default implementation worker selected by coordinator.",
       "sessionContext": true,
       "contextKey": "models.worker"
     },

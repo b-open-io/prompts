@@ -26,7 +26,13 @@ GIT_LOCATION_VARS = (
 def base_env() -> dict[str, str]:
     # Keep the user's git config (signing, hooks) and any ambient repo
     # location out of both setup and the worker run.
-    env = {k: v for k, v in os.environ.items() if k not in GIT_LOCATION_VARS and k != "CDPATH"}
+    env = {
+        k: v
+        for k, v in os.environ.items()
+        if k not in GIT_LOCATION_VARS
+        and k not in ("CDPATH", "GIT_CONFIG_COUNT")
+        and not k.startswith(("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_"))
+    }
     env.update(
         GIT_CONFIG_GLOBAL=os.devnull,
         GIT_CONFIG_NOSYSTEM="1",

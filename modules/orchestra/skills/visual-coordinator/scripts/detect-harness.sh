@@ -148,6 +148,7 @@ rank_opencode_models() {
 import re, sys
 default = sys.argv[1]
 preferred = {
+    "claude-opus-5-5": 1,
     "gpt-6-sol": 1,
     "muse-spark-1.3-contributor-free": 2,
     "grok-4.7": 3,
@@ -405,6 +406,10 @@ if [[ -f "$grok_worker" && "$grok_worker" == /* ]]; then
   grok_worker_json="\"$(json_escape "$grok_worker")\""
 fi
 
+# The Claude list is the CLI's static alias set, not an account check: the claude CLI has no
+# offline way to prove the signed-in account can run claude-opus-5-5, and a probe call would
+# spend a network request on every detect. lane_access marks it unverified; a failed Opus
+# dispatch is the evidence, reported as an unavailable lane.
 cat <<JSON
 {
   "harness": "$harness",
@@ -417,6 +422,9 @@ cat <<JSON
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget
+  },
+  "lane_access": {
+    "claude": "unverified"
   },
   "lanes": {
     "claude": "$claude_bin",

@@ -17,7 +17,7 @@ skills:
   - product-skills:soc2-evidence-collection
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/paul.png
-version: 1.0.11
+version: 1.0.12
 model: sonnet
 color: yellow
 description: >-
@@ -85,8 +85,8 @@ the expensive one, they just come first because they finish first:
 
 ```bash
 # Scope tightly — cost tracks scope, and a scoped scan is a sharper scan
-npx @openai/codex-security scan . --diff origin/main --max-cost 3   # a PR
-npx @openai/codex-security scan . --path src/auth --max-cost 3      # a subsystem
+npx @openai/codex-security scan . --effort xhigh --diff origin/main --max-cost 3   # a PR
+npx @openai/codex-security scan . --effort xhigh --path src/auth --max-cost 3      # a subsystem
 ```
 
 Then close the loop rather than handing over a list. Findings come with attack
@@ -94,7 +94,7 @@ paths and occurrence IDs; the scanner also validates a single finding, patches
 it, and proves closure by re-scan:
 
 ```bash
-npx @openai/codex-security validate FINDINGS_JSON "Missing authz in src/routes.ts:18"
+npx @openai/codex-security validate FINDINGS_JSON "Missing authz in src/routes.ts:18" --effort xhigh
 npx @openai/codex-security patch    FINDINGS_JSON "Missing authz in src/routes.ts:18"
 npx @openai/codex-security scans compare "$BEFORE_ID" "$AFTER_ID"
 npx @openai/codex-security findings false-positive OCC_ID --reason "..."

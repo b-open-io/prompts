@@ -1,6 +1,6 @@
 ---
 name: software-factory
-version: 0.0.12
+version: 0.0.13
 description: >-
   Design or harden a software factory: an agentic loop that iterates toward a goal with a
   verification gate, persistent state, and a stop condition. Use for "build a loop", "agentic
@@ -95,7 +95,7 @@ actual models in the loop config and verify each at preflight.
 | Stage | Model / lane | Invocation (verified) | What it guards |
 |---|---|---|---|
 | **Plan** | Claude Opus 5.5 (`claude-opus-5-5`) | native `Workflow` `agent(..., { model: 'claude-opus-5-5', schema })` | Premise verification BEFORE decomposition; routes each item to a lane + named roster agent |
-| **Implement** | preferred coding worker: `codex exec -m gpt-6-sol`; named roster agents (`agentType`) remain available for specialist work | supervisor-agent pattern: a thin workflow agent writes the spec file, drives the CLI via Bash, relays the report + `git diff --stat` | Volume off the main seat; disjoint file partitions per item |
+| **Implement** | preferred coding worker: Claude Opus 5.5 (`claude-opus-5-5`); named roster agents (`agentType`) remain available for specialist work | native `agent(..., { model: 'claude-opus-5-5' })`; off-host, supervisor-agent pattern: a thin workflow agent writes the spec file, drives `claude -p --model claude-opus-5-5` via Bash, relays the report + `git diff --stat` | Volume off the main seat; disjoint file partitions per item |
 | **Review** | independent `gpt-6-sol` checker at `xhigh` (`codex exec -m gpt-6-sol --sandbox read-only -c model_reasoning_effort="xhigh"`) | supervisor agent builds a review brief (diff + every claim), demands a schema verdict | The missing gate: adversarial review of the diff AND the claims; one corrective round max |
 | **Gate + ship** | main seat, model PINNED in loop config | mechanical gate unpiped, then `lint-pr.sh` if opening a PR, then git | Merge requires gate green **AND** `verdict.approved`. Auto-merged PRs also require the human-artifact linter green |
 

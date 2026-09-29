@@ -287,8 +287,9 @@ const providerForNode = (node: WorkflowNode, environment: WorkflowEnvironment): 
   return own(providerForLane, lane) ?? node.provider;
 };
 
+// A node that executes a read-only review is a reviewer whatever its role, so a restaffed step keeps its label.
 const actorForNode = (node: WorkflowNode, mainId: string | null): EmittedNodeSpec["actor"] =>
-  node.role === "reviewer" ? "reviewer" : node.id === mainId ? "main-controller" : "maker";
+  node.role === "reviewer" || node.execution === "read-only-review" ? "reviewer" : node.id === mainId ? "main-controller" : "maker";
 
 const rosterId = (environment: WorkflowEnvironment, node: WorkflowNode): string | null => {
   const entry = environment.roster.find((candidate) => {

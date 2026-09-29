@@ -4,8 +4,9 @@ Read this only when Codex is the current main session.
 
 Prefer installed bopen specialist agents, then built-in worker or explorer
 roles, for evidence, investigation, review, testing, and tool-bound judgment.
-That preference does not override Coordinator's preferred `gpt-6-sol` worker
-default for routine implementation or its `xhigh` code-review default. Never
+That preference does not override Coordinator's preferred `claude-opus-5-5`
+worker default for routine implementation (dispatched through the Claude Code
+CLI) or its `gpt-6-sol` `xhigh` code-review default. Never
 claim a named persona ran unless that adapter was actually spawned. Keep
 orchestration in the main task; the safe default
 depth prevents children from recursively creating an uncontrolled tree.

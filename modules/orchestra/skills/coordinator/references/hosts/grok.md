@@ -5,8 +5,9 @@ Read this only when Grok Build is the current main session.
 ## Native agents
 
 A Grok main session stays the main seat, but that does not make Grok the worker
-default. Route implementation to `gpt-6-sol` and code review to `gpt-6-sol`
-at `xhigh` through `run-grok-worker.sh --model gpt-6-sol` or the Codex CLI. Dispatch
+default. Route implementation to `claude-opus-5-5` through the Claude Code CLI
+and code review to `gpt-6-sol` at `xhigh` through
+`run-grok-worker.sh --model gpt-6-sol` or the Codex CLI. Dispatch
 native Grok roster agents or Grok workers only under explicit usage-credit
 pressure (`BOPEN_USAGE_CREDIT_PRESSURE=1` or the user saying so), and then only
 on `grok-4.7`. Never dispatch Grok 4.6. Pass the named agent type; installed
@@ -26,7 +27,7 @@ check with representative validation arguments before a real run. Worktree
 isolation does not merge results; the main reviews and integrates them.
 
 Custom ids shown by `grok models` work through the Grok CLI, but not as native
-workflow agent model values. To use GPT-6 Sol inside a Grok workflow, wrap a
+workflow agent model values. To use a GPT-6 Sol reviewer inside a Grok workflow, wrap a
 `run-grok-worker.sh --model gpt-6-sol` call in a thin supervisor after
 confirming the quoted model entry; never a raw `grok --single` dispatch. The supervisor only relays; it does not implement. An unquoted
 dotted TOML key creates the wrong nested id.
