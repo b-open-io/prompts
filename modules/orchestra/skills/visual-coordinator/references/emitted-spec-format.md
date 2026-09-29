@@ -261,9 +261,13 @@ it after the subcommand). A worktree path that starts with `~/` is emitted as
 
 OpenCode has no read-only CLI flag, so an OpenCode reviewer exports only with
 `--agent <name>`, where the name comes from the detector's
-`opencode_read_only_agent` (set `BOPEN_OPENCODE_READONLY_AGENT` to an agent
-configured with edit and bash denied). Without one, reviews are staffed on
-another lane instead.
+`opencode_read_only_agent`. Set `BOPEN_OPENCODE_READONLY_AGENT` to the agent;
+the detector reads every definition of it (`opencode.json` `agent.<name>` and
+`agent/`/`agents/<name>.md`, from the working directory up to the git root and
+in the global config) and reports the name only when each one denies `edit`,
+`bash`, and `task` and none allows a write-capable tool. Otherwise it reports
+`opencode_read_only_problem`, and the reviewer is omitted with that reason.
+Without a verified agent, reviews are staffed on another lane instead.
 
 Generated commands encode task text before passing it through stdin or
 `--prompt-file`; never interpolate backticks, `$()`, backslashes, or newlines

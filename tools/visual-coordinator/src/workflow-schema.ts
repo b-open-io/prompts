@@ -38,6 +38,8 @@ export type WorkflowEnvironment = {
   grokModelTargets: Record<string, string>;
   /** A configured OpenCode agent that cannot edit or run commands; OpenCode reviewers need one to export. */
   opencodeReadOnlyAgent: string | null;
+  /** Why the named OpenCode agent was not verified read-only, when one was named. */
+  opencodeReadOnlyProblem: string | null;
   caps: { liveChildren: number | null; agentBudgetDefault: number };
   lanes: Record<string, DetectedLane>;
   roster: unknown[];
@@ -205,6 +207,8 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
       : {}),
     opencodeReadOnlyAgent: typeof raw.opencode_read_only_agent === "string" && /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(raw.opencode_read_only_agent)
       ? raw.opencode_read_only_agent : null,
+    opencodeReadOnlyProblem: typeof raw.opencode_read_only_problem === "string" && raw.opencode_read_only_problem
+      ? raw.opencode_read_only_problem.slice(0, 300) : null,
     caps: {
       liveChildren: safeNumber(rawCaps.live_children ?? rawCaps.liveChildren, null),
       agentBudgetDefault: safeNumber(rawCaps.agent_budget_default ?? rawCaps.agentBudgetDefault, 0) ?? 0,

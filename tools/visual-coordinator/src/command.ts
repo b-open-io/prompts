@@ -11,6 +11,8 @@ export type CommandGenerationOptions = {
   nativeController?: string;
   /** The configured read-only OpenCode agent, when one exists. */
   readOnlyAgent?: string;
+  /** Why the named OpenCode agent failed the detector's read-only check. */
+  readOnlyProblem?: string;
   /** Absolute path of the installed run-grok-worker.sh; Grok shell-outs are not executable without it. */
   grokWorker?: string;
   /** Grok auth lane confirmed by the detector's `grok models` listing. */
@@ -225,7 +227,12 @@ const externalCommand = (
 
   if (lane === "opencode") {
     if (readOnly && !options.readOnlyAgent) {
-      return { command: null, reason: "OpenCode has no portable read-only CLI flag; configure a read-only agent before emitting this reviewer." };
+      return {
+        command: null,
+        reason: options.readOnlyProblem
+          ? `OpenCode reviewer rejected: ${options.readOnlyProblem}.`
+          : "OpenCode has no portable read-only CLI flag; configure a read-only agent before emitting this reviewer.",
+      };
     }
     const args: string[] = [];
     if (node.effort === "xhigh") args.push("--variant", "xhigh");
@@ -363,7 +370,8 @@ const planDispatch = (workflow: Workflow, environment: WorkflowEnvironment, opti
     grokAuth: options.grokAuth ?? environment.grokAuth ?? undefined,
     grokProviders: options.grokProviders ?? environment.grokModelProviders,
     grokTargets: options.grokTargets ?? environment.grokModelTargets,
-    readOnlyAgent: options.readOnlyAgent ?? environment.opencodeReadOnlyAgent ?? undefined,
+    readOnlyAgent: environment.opencodeReadOnlyAgent ?? undefined,
+    readOnlyProblem: environment.opencodeReadOnlyProblem ?? undefined,
   };
   const mainId = mainNodeId(workflow, environment);
   const nodes: NodeDispatch[] = workflow.nodes.map((original) => {

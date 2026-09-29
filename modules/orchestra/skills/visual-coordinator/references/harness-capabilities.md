@@ -37,8 +37,9 @@ Build and new or lane-less steps default to `claude-opus-5-5` on the first lane
 that offers it — host, then Claude Code, OpenCode, Grok CLI. Review defaults to
 `gpt-6-sol` at `xhigh` on the first lane that offers it — host, then Codex,
 OpenCode, Grok CLI; OpenCode counts only when the detector reports an
-`opencode_read_only_agent` (from `BOPEN_OPENCODE_READONLY_AGENT`), since a
-review there cannot be exported without one. Report a missing lane rather than
+`opencode_read_only_agent` (from `BOPEN_OPENCODE_READONLY_AGENT`, reported only
+after its OpenCode config denies edit, bash, and task), since a review there
+cannot be exported without one. Report a missing lane rather than
 substituting Sol for a build, GPT-5.6, or Grok. The observed main coordinator
 keeps the host's main model only when that model is in policy (Opus or Sol
 from its own provider, or `grok-4.7` under credit pressure); GPT-5.5, GPT-5.6,

@@ -232,6 +232,31 @@ describe("versioned export contract", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  it("exports an OpenCode reviewer only with the detector's verified read-only agent", () => {
+    const host = (extra: Record<string, unknown>) => parseEnvironment({
+      harness: "claude-code",
+      lanes: { claude: "available", opencode: "available", codex: "unavailable" },
+      models: { claude: ["inherit"], opencode: ["openrouter/anthropic/claude-opus-5-5", "openrouter/openai/gpt-6-sol"], opencode_effort: ["medium", "high", "xhigh"] },
+      ...extra,
+    });
+    const review = (environment: ReturnType<typeof host>) => {
+      const workflow = defaultWorkflow(environment);
+      workflow.nodes = workflow.nodes.map((entry) => entry.role === "reviewer" ? { ...entry, lane: "opencode", provider: "external", model: "openrouter/openai/gpt-6-sol", disclosure: "Approved" } : entry);
+      return workflow;
+    };
+
+    const verified = host({ opencode_read_only_agent: "review" });
+    expect(toExportText(review(verified), verified)).toContain("'--agent' 'review'");
+
+    const rejected = host({ opencode_read_only_problem: "opencode.json does not deny bash for agent review" });
+    const workflow = review(rejected);
+    const id = workflow.nodes.find((entry) => entry.role === "reviewer")!.id;
+    const spec = serializeWorkflow(workflow, rejected, { readOnlyAgent: "review" });
+    expect(spec.nodes.map((entry) => entry.id)).not.toContain(id);
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id, reason: expect.stringContaining("does not deny bash for agent review") }));
+    expect(toExportText(workflow, rejected, { readOnlyAgent: "review" })).not.toContain("'--agent'");
+  });
+
   it("withholds executable records for nodes that fail validation", () => {
     const pressured = parseEnvironment({
       harness: "claude-code",

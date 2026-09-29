@@ -407,11 +407,134 @@ if [[ -f "$grok_worker" && "$grok_worker" == /* ]]; then
   grok_worker_json="\"$(json_escape "$grok_worker")\""
 fi
 
-# OpenCode has no read-only CLI flag, so an OpenCode review exports only with an agent the operator
-# configured with edit and bash denied, named in BOPEN_OPENCODE_READONLY_AGENT.
+# OpenCode has no read-only CLI flag, so an OpenCode review exports only with the agent named in
+# BOPEN_OPENCODE_READONLY_AGENT, and only after its config is read and proves edit, bash, and task
+# (subagents can write) are denied. Every definition found (opencode.json `agent.<name>` and
+# agent/agents/<name>.md, from the working directory up to its git root and in the global config)
+# must deny each one explicitly, through `permission` or the legacy `tools` booleans, and none may
+# allow a write-capable tool. Inherited or global defaults do not count, and an OPENCODE_CONFIG*
+# override or an opencode.jsonc cannot be verified. Anything else is reported as a problem and
+# staffs no OpenCode review.
 opencode_read_only_agent_json="null"
-if [[ "${BOPEN_OPENCODE_READONLY_AGENT:-}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]]; then
-  opencode_read_only_agent_json="\"$BOPEN_OPENCODE_READONLY_AGENT\""
+opencode_read_only_problem_json="null"
+if [[ -n "${BOPEN_OPENCODE_READONLY_AGENT:-}" ]]; then
+  _ro=$(python3 - "$BOPEN_OPENCODE_READONLY_AGENT" "$PWD" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode" <<'PY_OPENCODE_RO' 2>/dev/null || printf 'problem\tcannot read the OpenCode config\n'
+import json, os, re, sys
+
+name, project, home = sys.argv[1], sys.argv[2], sys.argv[3]
+if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", name):
+    print("problem\tBOPEN_OPENCODE_READONLY_AGENT is not a valid agent name"); sys.exit(0)
+REQUIRED = ("edit", "bash", "task")
+WRITERS = ("edit", "write", "patch", "multiedit", "bash", "task")
+
+
+def scalar(text):
+    text = text.strip()
+    if len(text) >= 2 and text[0] == text[-1] and text[0] in "'\"":
+        return text[1:-1]
+    return {"true": True, "false": False}.get(text.lower(), text)
+
+
+def frontmatter(text):
+    """The permission and tools maps of a markdown agent (a small YAML subset)."""
+    lines = text.split("\n")
+    if not lines or lines[0].strip() != "---":
+        return None
+    out, stack = {}, [(-1, None)]
+    for line in lines[1:]:
+        if line.strip() == "---":
+            return out
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        m = re.fullmatch(r"\s*(\"[^\"]*\"|'[^']*'|[^:]+?)\s*:\s*(.*)", line)
+        if not m:
+            continue
+        key, value = scalar(m[1]), m[2]
+        while stack[-1][0] >= indent:
+            stack.pop()
+        parent = stack[-1][1]
+        target = out if parent is None else parent
+        if value.strip() == "":
+            child = {}
+            if isinstance(target, dict):
+                target[key] = child
+            stack.append((indent, child))
+        elif isinstance(target, dict):
+            target[key] = scalar(value)
+    return None
+
+
+def denied(value):
+    if isinstance(value, str):
+        return value == "deny"
+    return isinstance(value, dict) and bool(value) and all(v == "deny" for v in value.values())
+
+
+def allows(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value in ("allow", "ask")
+    return isinstance(value, dict) and any(allows(v) for v in value.values())
+
+
+def check(where, agent):
+    if not isinstance(agent, dict):
+        return "%s does not define agent %s as a map" % (where, name)
+    perm = agent.get("permission") if isinstance(agent.get("permission"), dict) else {}
+    tools = agent.get("tools") if isinstance(agent.get("tools"), dict) else {}
+    for key in REQUIRED:
+        if not (denied(perm.get(key)) or tools.get(key) is False):
+            return "%s does not deny %s for agent %s" % (where, key, name)
+    for key in WRITERS:
+        if allows(perm.get(key)) or tools.get(key) is True:
+            return "%s lets agent %s use %s" % (where, name, key)
+    if allows(perm.get("*")) or tools.get("*") is True:
+        return "%s allows every tool for agent %s" % (where, name)
+    return None
+
+
+found, problem = 0, None
+for var in ("OPENCODE_CONFIG", "OPENCODE_CONFIG_CONTENT", "OPENCODE_CONFIG_DIR"):
+    if os.environ.get(var):
+        problem = problem or "%s overrides the OpenCode config and cannot be verified" % var
+bases, here = [], project
+while True:
+    bases.append(here)
+    if os.path.exists(os.path.join(here, ".git")) or os.path.dirname(here) == here:
+        break
+    here = os.path.dirname(here)
+for base in bases + [home]:
+    for cfg in (os.path.join(base, "opencode.json"), os.path.join(base, ".opencode", "opencode.json")):
+        if not os.path.isfile(cfg):
+            continue
+        with open(cfg, encoding="utf-8") as handle:
+            data = json.load(handle)
+        agents = data.get("agent") if isinstance(data, dict) else None
+        if isinstance(agents, dict) and name in agents:
+            found += 1
+            problem = problem or check(cfg, agents[name])
+    if os.path.isfile(os.path.join(base, "opencode.jsonc")):
+        problem = problem or "%s/opencode.jsonc cannot be verified; move the agent to opencode.json" % base
+    dirs = [os.path.join(base, ".opencode", d) for d in ("agent", "agents")] if base != home else \
+        [os.path.join(base, d) for d in ("agent", "agents")]
+    for d in dirs:
+        path = os.path.join(d, name + ".md")
+        if os.path.isfile(path):
+            found += 1
+            with open(path, encoding="utf-8") as handle:
+                meta = frontmatter(handle.read())
+            problem = problem or (check(path, meta) if meta is not None else "%s has no frontmatter" % path)
+if not found:
+    problem = problem or "no OpenCode config defines agent %s" % name
+print(("problem\t" + problem) if problem else ("agent\t" + name))
+PY_OPENCODE_RO
+)
+  case "$_ro" in
+    agent$'\t'*) opencode_read_only_agent_json="\"$(json_escape "${_ro#agent$'\t'}")\"" ;;
+    *) opencode_read_only_problem_json="\"$(json_escape "${_ro#problem$'\t'}")\"" ;;
+  esac
 fi
 
 # The Claude list is the CLI's static alias set, not an account check: the claude CLI has no
@@ -436,6 +559,7 @@ cat <<JSON
   "grok_model_providers": $grok_model_providers_json,
   "grok_model_targets": $grok_model_targets_json,
   "opencode_read_only_agent": $opencode_read_only_agent_json,
+  "opencode_read_only_problem": $opencode_read_only_problem_json,
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget
