@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.21
+version: 1.4.22
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -358,10 +358,20 @@ echo "Scans complete. Reviewing results..."
 Save this as `/tmp/internal/sol-review.sh` and run it with `bash`. It needs
 `python3`, codex-cli 0.156.1 or newer, `PR_NUMBER`, `REPO` (`owner/name`), and `SCAN_DIR` (the Semgrep, CodeQL,
 Codex Security, and pattern-scan output saved earlier in this audit);
-`BASE_REF` defaults to `origin/dev` and `MAX` (lines per slice) to 4000 when
-unset. Every diff line lands in exactly one slice (files are grouped up to
-`MAX` lines; a larger file is split, never truncated), and every pass gets the
-author claims and scan evidence.
+`BASE_REF` defaults to `origin/dev`, `MAX` (lines per slice) to 4000, and
+`CAP` (bytes per Sol prompt, at most 900000) to 800000 when unset. Every
+reviewed diff line lands in exactly one slice, never truncated. Files are
+grouped up to both caps; a larger file is split on hunk boundaries and an
+oversized hunk on line boundaries, and every piece repeats the file header
+and its `@@` hunk header so Sol keeps file and hunk context. The per-slice byte
+budget is `CAP` minus the shared context (claims, scan evidence, file list),
+and every prompt is checked against `CAP` before it is sent, which keeps
+passes under codex's `input_too_large` limit. Generated fixtures (`*.jsonl`,
+`*.ndjson`, JSON under `benchmarks/`, `fixtures/`, `results/`, or
+`baselines/`, lockfiles, `*.min.js`, `*.map`, `*.snap`, plus any
+colon-separated globs in `GENERATED`) are not sliced; every pass gets a
+summary line for each (path, added and deleted lines, blob id). Every pass
+gets the author claims and scan evidence.
 
 Each pass runs `codex exec --output-schema` against a JSON Schema written to
 the run directory, so Sol's final message must be
@@ -387,7 +397,7 @@ and the exit code matches.
 |------|---------|--------|
 | 0 | Every slice returned valid findings with no CRITICAL, HIGH, or MED | All findings plus a `SUMMARY:` line |
 | 1 | A slice pass failed or returned missing, empty, or invalid JSON; or an unexpected command failed | Nothing (the failing output goes to stderr) |
-| 2 | Missing or invalid input: `python3`, `codex` older than 0.156.1 or with an unreadable version, `PR_NUMBER`, `REPO`, `SCAN_DIR`, `MAX`, base, merge-base, diff, PR body, or scan evidence | Nothing |
+| 2 | Missing or invalid input: `python3`, `codex` older than 0.156.1 or with an unreadable version, `PR_NUMBER`, `REPO`, `SCAN_DIR`, `MAX`, `CAP`, base, merge-base, diff, PR body, or scan evidence; shared context too large for `CAP`; a single diff line or prompt over the byte budget | Nothing |
 | 3 | Valid findings include a CRITICAL, HIGH, or MED in any slice | All findings plus a `SUMMARY:` line |
 | 130 / 143 | Interrupted (INT / TERM) | Nothing |
 
@@ -410,6 +420,8 @@ for v in PR_NUMBER REPO SCAN_DIR; do [[ -n ${!v:-} ]] || die "set $v"; done
 BASE_REF="${BASE_REF:-origin/dev}"
 MAX="${MAX-4000}"
 [[ $MAX =~ ^[1-9][0-9]{0,5}$ ]] || die "MAX must be a positive line count"
+CAP="${CAP-800000}"
+[[ $CAP =~ ^[1-9][0-9]{0,5}$ ]] && (( CAP <= 900000 )) || die "CAP must be a byte count up to 900000"
 
 # 1. Resolve the PR base (a plain `git diff` is empty on a clean PR checkout)
 if ! git rev-parse --verify --quiet "$BASE_REF^{commit}" >/dev/null; then
@@ -437,20 +449,104 @@ git log --format='%B' "$BASE"..HEAD >> "$RUN/claims.md"
 find "$SCAN_DIR" -type f -exec cat {} + > "$RUN/evidence.txt" || die "cannot read $SCAN_DIR"
 [[ -s $RUN/evidence.txt ]] || die "no scan evidence in $SCAN_DIR"
 
-# 3. Slice the whole diff; names stay NUL-delimited and literal
-n=0; lines=0
-while IFS= read -r -d '' file; do
-  git -c core.quotePath=false diff --no-renames "$BASE"...HEAD -- ":(literal)$file" > "$RUN/file.diff"
-  size=$(wc -l < "$RUN/file.diff")
-  (( size > 0 )) || die "empty diff for $file"
-  if (( size > MAX )); then
-    split -l "$MAX" -a 3 "$RUN/file.diff" "$RUN/slices/big-$(printf %03d "$n")-"
-    n=$((n + 1)); lines=0; continue
-  fi
-  if (( lines > 0 && lines + size > MAX )); then n=$((n + 1)); lines=0; fi
-  cat "$RUN/file.diff" >> "$RUN/slices/slice-$(printf %03d "$n").diff"
-  lines=$((lines + size))
-done < "$RUN/files"
+# 3. Slice the whole diff on file and hunk boundaries under the line and byte caps;
+#    names stay NUL-delimited and literal, and generated fixtures are summarized
+cat > "$RUN/slice.py" <<'PY'
+import fnmatch, os, subprocess, sys
+
+base, run, max_lines, cap = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
+GENERATED = ["*.jsonl", "*.ndjson", "*.lock", "*-lock.json", "*-lock.yaml", "*.min.js", "*.map",
+             "*.snap", "benchmarks/*.json", "*fixtures/*.json", "*results/*.json", "*baselines/*.json"]
+GENERATED += [g for g in os.environ.get("GENERATED", "").split(":") if g]
+
+
+def die(msg):
+    sys.exit("sol-review: %s; no verdict" % msg)
+
+
+def git(*args):
+    return subprocess.run(["git", "-c", "core.quotePath=false", *args], check=True,
+                          capture_output=True).stdout
+
+
+with open(os.path.join(run, "files"), "rb") as f:
+    files = [p.decode("utf-8", "surrogateescape") for p in f.read().split(b"\0") if p]
+summary, reviewed = [], []
+for path in files:
+    spec = ":(literal)" + path
+    if any(fnmatch.fnmatch(path, g) for g in GENERATED):
+        stat = git("diff", "--numstat", "--no-renames", base + "...HEAD", "--", spec).split(b"\t")
+        blob = subprocess.run(["git", "rev-parse", "--verify", "--quiet", "HEAD:" + path],
+                              capture_output=True).stdout.strip().decode() or "deleted"
+        added, deleted = (stat[0].decode(), stat[1].decode()) if len(stat) > 2 else ("?", "?")
+        summary.append("%s +%s -%s blob=%s\n" % (path, added, deleted, blob))
+    else:
+        reviewed.append((path, spec))
+with open(os.path.join(run, "generated.txt"), "w", encoding="utf-8", errors="surrogateescape") as f:
+    f.write("".join(summary) or "(none)\n")
+
+shared = sum(os.path.getsize(os.path.join(run, n))
+             for n in ("commits.txt", "files.txt", "claims.md", "evidence.txt", "generated.txt"))
+budget = cap - shared - 8192
+if budget < 65536:
+    die("claims, scan evidence, and file list take %d of the %d-byte CAP; trim SCAN_DIR" % (shared, cap))
+
+slices, cur = [], [[], 0, 0]
+
+
+def flush():
+    if cur[0]:
+        slices.append(b"".join(cur[0]))
+    cur[:] = [[], 0, 0]
+
+
+def add(chunk, what):
+    n, size = len(chunk), sum(map(len, chunk))
+    if n > max_lines or size > budget:
+        die("%s is over the %d-line or %d-byte slice budget" % (what, max_lines, budget))
+    if cur[1] + n > max_lines or cur[2] + size > budget:
+        flush()
+    cur[0].extend(chunk); cur[1] += n; cur[2] += size
+
+
+for path, spec in reviewed:
+    lines = git("diff", "--no-renames", base + "...HEAD", "--", spec).splitlines(keepends=True)
+    if not lines:
+        die("empty diff for %s" % path)
+    if len(lines) <= max_lines and sum(map(len, lines)) <= budget:
+        add(lines, path)
+        continue
+    start = next((i for i, l in enumerate(lines) if l.startswith(b"@@")), len(lines))
+    head, hunks = lines[:start], []
+    for line in lines[start:]:
+        if line.startswith(b"@@"):
+            hunks.append([line])
+        else:
+            hunks[-1].append(line)
+    flush()
+    for hunk in hunks:
+        if len(head) + len(hunk) <= max_lines and sum(map(len, head + hunk)) <= budget:
+            if cur[0] and cur[1] + len(hunk) <= max_lines and cur[2] + sum(map(len, hunk)) <= budget:
+                add(hunk, path)
+            else:
+                flush(); add(head + hunk, path)
+            continue
+        flush()
+        piece = head + [hunk[0]]
+        for line in hunk[1:]:
+            full = len(piece) + 1 > max_lines or sum(map(len, piece)) + len(line) > budget
+            if full and len(piece) > len(head) + 1:
+                add(piece, path); flush()
+                piece = head + [hunk[0].rstrip(b"\n") + b" (hunk continued)\n"]
+            piece.append(line)
+        add(piece, path)
+    flush()
+flush()
+for i, data in enumerate(slices):
+    with open(os.path.join(run, "slices", "slice-%03d.diff" % i), "wb") as f:
+        f.write(data)
+PY
+python3 "$RUN/slice.py" "$BASE" "$RUN" "$MAX" "$CAP" || exit 2
 
 # 4. One GPT-6 Sol xhigh pass per slice (read-only) under a JSON output contract
 shopt -s nullglob
@@ -537,6 +633,7 @@ for slice in "${slices[@]}"; do
     echo "### All changed files"; cat "$RUN/files.txt"
     echo "### Author claims (verify each against the code)"; cat "$RUN/claims.md"
     echo "### Scan evidence"; cat "$RUN/evidence.txt"
+    echo "### Generated files (summarized, not sliced)"; cat "$RUN/generated.txt"
     echo "### Diff slice"; echo '```diff'; cat "$slice"; echo '```'
     echo "Observe security properties, data flows, trust boundaries, code quality,"
     echo "and architecture implications in this slice, and check every author claim"
@@ -548,6 +645,8 @@ for slice in "${slices[@]}"; do
     echo "findings array when there are none. Add no other keys or text: the verdict"
     echo "is computed from the severities alone."
   } > "$RUN/prompt-$id.txt"
+  bytes=$(wc -c < "$RUN/prompt-$id.txt")
+  (( bytes <= CAP )) || die "prompt for $id is $bytes bytes, over CAP $CAP"
   if ! codex exec --sandbox read-only --cd "$TOP" -m gpt-6-sol \
       -c model_reasoning_effort="xhigh" --output-schema "$RUN/schema.json" \
       --output-last-message "$out" \
