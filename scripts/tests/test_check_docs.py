@@ -330,9 +330,10 @@ console.log(JSON.stringify({
             Path(handle.name).unlink()
         observed = json.loads(result.stdout.strip().splitlines()[-1])
         self.assertEqual(observed["models"], ["xai/ox-alpha", "openrouter/x-ai/grok-4.7"])
-        self.assertEqual(observed["main"], "coordinate")
-        self.assertEqual(observed["coordinator"], "xai/grok-4.6")
-        self.assertEqual(observed["issues"], [])
+        self.assertIsNone(observed["main"])
+        self.assertEqual(observed["coordinator"], "")
+        self.assertTrue(any("grok-4.6" in issue and "main session" in issue for issue in observed["issues"]), observed["issues"])
+        self.assertFalse(any(issue.startswith("Build ") for issue in observed["issues"]), observed["issues"])
 
     def test_detector_never_assumes_a_custom_id_serves_itself(self) -> None:
         detected = self._detect_grok(
