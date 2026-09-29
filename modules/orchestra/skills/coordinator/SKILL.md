@@ -1,6 +1,6 @@
 ---
 name: coordinator
-version: 0.0.22
+version: 0.0.23
 description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Opus, Sol, Astra, Muse, Grok, OpenCode, or native workflows.
 ---
 

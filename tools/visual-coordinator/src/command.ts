@@ -15,6 +15,10 @@ export type CommandGenerationOptions = {
   grokWorker?: string;
   /** Grok auth lane confirmed by the detector's `grok models` listing. */
   grokAuth?: "grok.com" | "api";
+  /** Provider behind each custom Grok-CLI id (detector `grok_model_providers`); the wrapper must see the same. */
+  grokProviders?: Record<string, string>;
+  /** Model behind each custom Grok-CLI id (detector `grok_model_targets`); the wrapper must see the same. */
+  grokTargets?: Record<string, string>;
 };
 
 export type CommandExecution = "native-agent" | "external-provider";
@@ -111,6 +115,13 @@ export const shellQuote = (value: string): string => {
   return `'${value.replaceAll("'", "'\"'\"'")}'`;
 };
 
+/** Quote a path, letting a leading `~` expand to the caller's home directory. */
+export const shellPath = (value: string): string => {
+  if (value === "~") return `"$HOME"`;
+  if (value.startsWith("~/")) return `"$HOME"/${shellQuote(value.slice(2))}`;
+  return shellQuote(value);
+};
+
 const worktreeHandoff = (node: WorkflowNode): string => {
   const worktree = node.worktree;
   if (!worktree) return "Prepared-worktree metadata is missing; do not edit or execute this task.";
@@ -165,11 +176,13 @@ const externalCommand = (
   const model = node.model;
   const lane = node.lane.toLowerCase();
   const promptArg = shellQuote(prompt);
-  const repoArg = shellQuote(repo);
+  const repoArg = shellPath(repo);
 
   if (lane === "codex") {
-    const args = ["codex", "exec", "--sandbox", readOnly ? "read-only" : "workspace-write", "--ask-for-approval", "never", "--cd", repo, "--model", model, "-c", `model_reasoning_effort=${node.effort}`];
-    return { command: `printf '%s\\n' ${promptArg} | ${args.map(shellQuote).join(" ")}` };
+    // --ask-for-approval is a top-level codex flag; codex exec rejects it after the subcommand.
+    const head = ["codex", "--ask-for-approval", "never", "exec", "--sandbox", readOnly ? "read-only" : "workspace-write"].map(shellQuote);
+    const tail = ["--model", model, "-c", `model_reasoning_effort="${node.effort}"`].map(shellQuote);
+    return { command: `printf '%s\\n' ${promptArg} | ${[...head, "--cd", repoArg, ...tail].join(" ")}` };
   }
 
   if (lane === "claude") {
@@ -187,8 +200,15 @@ const externalCommand = (
     if (!options.grokAuth) {
       return { command: null, reason: "No Grok auth lane was confirmed by detect-harness.sh; sign in to grok.com or provide XAI_API_KEY, then re-detect." };
     }
+    // Bind the provider (and, for a custom id, the target model) approved at planning time, so the
+    // wrapper refuses if config.toml has since pointed the id somewhere else.
+    const provider = own(options.grokProviders ?? {}, model) ?? (/^grok-/i.test(model) ? "xai" : undefined);
+    if (!provider) {
+      return { command: null, reason: `detect-harness.sh did not resolve the provider behind ${model}; re-run it before exporting Grok work.` };
+    }
+    const target = own(options.grokTargets ?? {}, model);
     const worktree = node.worktree!;
-    const args = ["--model", model, "--effort", node.effort, "--mode", readOnly ? "read" : "write", "--cwd", repo];
+    const args = ["--model", model, "--provider", provider, ...(target ? ["--target", target] : []), "--effort", node.effort, "--mode", readOnly ? "read" : "write"];
     if (!readOnly) args.push("--branch", worktree.branch, "--base-ref", worktree.baseRef, "--ownership", node.ownedPaths.join(", ") || "none");
     // The subshell's EXIT trap removes the prompt file on success, failure, and interrupt alike.
     return {
@@ -198,7 +218,7 @@ const externalCommand = (
         `trap 'exit 129' HUP`,
         `trap 'exit 130' INT`,
         `trap 'exit 143' TERM`,
-        `printf '%s\\n' ${promptArg} > "$PROMPT_FILE" && bash ${shellQuote(options.grokWorker)} --auth ${shellQuote(options.grokAuth)} ${args.map(shellQuote).join(" ")} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
+        `printf '%s\\n' ${promptArg} > "$PROMPT_FILE" && bash ${shellQuote(options.grokWorker)} --auth ${shellQuote(options.grokAuth)} ${args.map(shellQuote).join(" ")} --cwd ${repoArg} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
       ].join("; ")})`,
     };
   }
@@ -207,10 +227,11 @@ const externalCommand = (
     if (readOnly && !options.readOnlyAgent) {
       return { command: null, reason: "OpenCode has no portable read-only CLI flag; configure a read-only agent before emitting this reviewer." };
     }
-    const args = ["opencode", "run", "--model", model, "--dir", repo];
+    const args: string[] = [];
     if (node.effort === "xhigh") args.push("--variant", "xhigh");
     if (readOnly) args.push("--agent", options.readOnlyAgent!);
-    return { command: `${args.map(shellQuote).join(" ")} ${promptArg}` };
+    const head = ["opencode", "run", "--model", model, "--dir"].map(shellQuote);
+    return { command: [...head, repoArg, ...args.map(shellQuote), promptArg].join(" ") };
   }
 
   return { command: null, reason: `No executable adapter is registered for lane ${node.lane}.` };
@@ -340,6 +361,9 @@ const planDispatch = (workflow: Workflow, environment: WorkflowEnvironment, opti
     nativeController: options.nativeController ?? (environment.simulationOnly ? undefined : environment.harness),
     grokWorker: options.grokWorker ?? environment.grokWorker ?? undefined,
     grokAuth: options.grokAuth ?? environment.grokAuth ?? undefined,
+    grokProviders: options.grokProviders ?? environment.grokModelProviders,
+    grokTargets: options.grokTargets ?? environment.grokModelTargets,
+    readOnlyAgent: options.readOnlyAgent ?? environment.opencodeReadOnlyAgent ?? undefined,
   };
   const mainId = mainNodeId(workflow, environment);
   const nodes: NodeDispatch[] = workflow.nodes.map((original) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultWorkflow, destination, groupModels, laneStatus, nextNodeId, parseEnvironment, parseSeed, reapprove, restaff, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
+import { defaultWorkflow, destination, groupModels, laneStatus, nextNodeId, parseEnvironment, parseSeed, reapprove, restaff, runsNatively, runsOpus, runsSol, toPlan, validateWorkflow } from "./workflow-schema";
 
 const liveCodexEnvironment = () => parseEnvironment({
   harness: "codex",
@@ -161,13 +161,34 @@ describe("workflow schema", () => {
       "Coordinate needs an approved external-provider disclosure for this Grok CLI shell-out.",
     );
     workflow.nodes[0].disclosure = "Approved Grok CLI conversion";
+    // A converted coordinator is a dispatch, so it is held to the coding-worker pin too.
+    expect(validateWorkflow(workflow, environment).map((issue) => issue.message)).toEqual([
+      "Coordinate uses ox-alpha, which is not the coding worker; build on claude-opus-5-5.",
+    ]);
+  });
+
+  it("holds every coordinator except the observed main to the coding-worker pin", () => {
+    const environment = parseEnvironment({
+      harness: "codex",
+      lanes: { codex: "available", claude: "available" },
+      models: { codex: ["gpt-6-sol", "gpt-6-astra"], codex_default: "gpt-6-sol", codex_effort: ["medium", "high", "xhigh"], claude: ["claude-opus-5-5", "sonnet"] },
+    });
+    const workflow = defaultWorkflow(environment);
+    workflow.nodes.slice(1).forEach((node) => { node.disclosure = "Approved external worker"; });
+    expect(validateWorkflow(workflow, environment)).toEqual([]);
+    const extra = { ...workflow.nodes[0], id: "plan", title: "Plan", lane: "claude", provider: "external" as const, model: "sonnet", disclosure: "Approved" };
+    workflow.nodes.push(extra);
+    expect(validateWorkflow(workflow, environment).map((issue) => issue.message)).toEqual([
+      "Plan uses sonnet, which is not the coding worker; build on claude-opus-5-5.",
+    ]);
+    extra.model = "claude-opus-5-5";
     expect(validateWorkflow(workflow, environment)).toEqual([]);
   });
 
   describe("host-first worker defaults", () => {
     const soloSolLast = { codex: ["gpt-5.6-sol", "gpt-6-sol"], codex_effort: ["medium", "high", "xhigh"] };
-    const workerNodes = (harness: string, lanes: Record<string, string>, models: Record<string, unknown>) =>
-      defaultWorkflow(parseEnvironment({ harness, lanes, models })).nodes;
+    const workerNodes = (harness: string, lanes: Record<string, string>, models: Record<string, unknown>, extra: Record<string, unknown> = {}) =>
+      defaultWorkflow(parseEnvironment({ harness, lanes, models, ...extra })).nodes;
 
     it("builds natively on Claude Opus on a Claude host and reviews on GPT-6 Sol", () => {
       const nodes = workerNodes("claude-code", { claude: "available", codex: "available" }, {
@@ -196,12 +217,14 @@ describe("workflow schema", () => {
     });
 
     it("falls through to an OpenCode lane for each role when the preferred CLI is unavailable", () => {
-      const nodes = workerNodes("codex", { claude: "unavailable", codex: "unavailable", opencode: "available" }, {
-        opencode: ["openai/gpt-6-sol", "anthropic/claude-opus-5-5"],
-      });
+      const lanes = { claude: "unavailable", codex: "unavailable", opencode: "available" };
+      const models = { opencode: ["openai/gpt-6-sol", "anthropic/claude-opus-5-5"] };
+      const nodes = workerNodes("codex", lanes, models, { opencode_read_only_agent: "review" });
 
       expect(nodes[1]).toMatchObject({ lane: "opencode", model: "anthropic/claude-opus-5-5" });
       expect(nodes[2]).toMatchObject({ lane: "opencode", model: "openai/gpt-6-sol" });
+      // Without a read-only agent an OpenCode review could never be exported, so it is not staffed there.
+      expect(workerNodes("codex", lanes, models)[2]).toMatchObject({ lane: "codex", model: "gpt-6-sol" });
     });
 
     it("reports a missing Claude Opus lane instead of substituting another model", () => {
@@ -315,6 +338,7 @@ describe("workflow schema", () => {
       harness: "opencode",
       lanes: { opencode: "available", codex: "unavailable", grok: "unavailable", claude: "unavailable" },
       models: { opencode: models, opencode_effort: ["medium", "high", "xhigh"] },
+      opencode_read_only_agent: "review",
     });
 
     it("staffs only Claude Opus 5.5 and GPT-6 Sol from a nested OpenCode catalog", () => {
@@ -607,11 +631,12 @@ describe("workflow schema", () => {
       const environment = parseEnvironment({
         harness: "claude-code",
         lanes: { claude: "available", codex: "available", opencode: "available" },
-        models: { claude: ["inherit"], codex: [], opencode: ["x/gpt-6-sol"] },
+        models: { claude: ["inherit"], codex: [], opencode: ["openai/gpt-6-sol"] },
+        opencode_read_only_agent: "review",
       });
 
       expect(environment.lanes.codex).toMatchObject({ detected: false, models: ["gpt-6-sol"] });
-      expect(defaultWorkflow(environment).nodes[2]).toMatchObject({ lane: "opencode", model: "x/gpt-6-sol" });
+      expect(defaultWorkflow(environment).nodes[2]).toMatchObject({ lane: "opencode", model: "openai/gpt-6-sol" });
     });
   });
 
@@ -740,5 +765,72 @@ describe("disclosure approval", () => {
   it("clears the approval when the execution provider or lane changes", () => {
     expect(reapprove(environment, node, { ...node, provider: "native" }).disclosure).toBeUndefined();
     expect(reapprove(environment, node, { ...node, lane: "codex" }).disclosure).toBeUndefined();
+  });
+});
+
+describe("pinned model matching", () => {
+  const environment = parseEnvironment({
+    harness: "codex",
+    grok_model_providers: { sol: "openai", routed: "openrouter", fake: "openrouter", elsewhere: "example.com", opus: "anthropic" },
+    grok_model_targets: { sol: "gpt-6-sol", routed: "openai/gpt-6-sol", fake: "evil/gpt-6-sol", elsewhere: "gpt-6-sol", opus: "claude-opus-5-5" },
+  });
+
+  it("takes only the bare id on Claude and Codex lanes", () => {
+    expect(runsSol(environment, "codex", "gpt-6-sol")).toBe(true);
+    expect(runsSol(environment, "codex", "x/gpt-6-sol")).toBe(false);
+    expect(runsSol(environment, "codex", "openai/gpt-6-sol")).toBe(false);
+    expect(runsOpus(environment, "claude", "claude-opus-5-5")).toBe(true);
+    expect(runsOpus(environment, "claude", "x/claude-opus-5-5")).toBe(false);
+  });
+
+  it("takes only the owner-qualified id, optionally behind an approved router, on OpenCode", () => {
+    expect(runsSol(environment, "opencode", "openai/gpt-6-sol")).toBe(true);
+    expect(runsSol(environment, "opencode", "openrouter/openai/gpt-6-sol")).toBe(true);
+    expect(runsSol(environment, "opencode", "x/gpt-6-sol")).toBe(false);
+    expect(runsSol(environment, "opencode", "openrouter/x/gpt-6-sol")).toBe(false);
+    expect(runsSol(environment, "opencode", "gpt-6-sol")).toBe(false);
+    expect(runsOpus(environment, "opencode", "anthropic/claude-opus-5-5")).toBe(true);
+    expect(runsOpus(environment, "opencode", "openai/claude-opus-5-5")).toBe(false);
+  });
+
+  it("takes a Grok CLI alias only when its provider and target match the pinned model", () => {
+    expect(runsSol(environment, "grok", "sol")).toBe(true);
+    expect(runsSol(environment, "grok", "routed")).toBe(true);
+    expect(runsSol(environment, "grok", "fake")).toBe(false);
+    expect(runsSol(environment, "grok", "elsewhere")).toBe(false);
+    expect(runsOpus(environment, "grok", "opus")).toBe(true);
+    expect(runsSol(environment, "grok", "unlisted")).toBe(false);
+  });
+});
+
+describe("qualified Grok ids on the Grok lane", () => {
+  const grokEnv = (providers: Record<string, string>, targets: Record<string, string>) => parseEnvironment({
+    harness: "codex",
+    credit_pressure: true,
+    lanes: { codex: "available", grok: "available" },
+    models: { codex: ["gpt-6-sol"], codex_default: "gpt-6-sol", grok: ["grok-4.7", "xai/grok-4.7"] },
+    grok_model_providers: providers,
+    grok_model_targets: targets,
+  });
+  const messages = (environment: ReturnType<typeof parseEnvironment>, model: string) => {
+    const workflow = parseSeed({ nodes: [{ id: "build", role: "builder", lane: "grok", model, provider: "external", disclosure: "Approved" }], edges: [] }, environment);
+    return validateWorkflow(workflow, environment).map((issue) => issue.message);
+  };
+
+  it("resolves a qualified id through config.toml like any custom id", () => {
+    expect(messages(grokEnv({}, {}), "xai/grok-4.7")).toContain(
+      "build uses custom id xai/grok-4.7, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.",
+    );
+    expect(messages(grokEnv({ "xai/grok-4.7": "xai" }, { "xai/grok-4.7": "grok-4.7" }), "xai/grok-4.7").join("\n")).not.toMatch(/custom id|not xAI|pinned/);
+    expect(messages(grokEnv({ "xai/grok-4.7": "xai" }, { "xai/grok-4.7": "grok-4.6" }), "xai/grok-4.7")).toContain(
+      "build uses xai/grok-4.7, an xAI alias for grok-4.6; Grok is pinned to grok-4.7.",
+    );
+  });
+
+  it("rejects a Grok id whose entry sends content somewhere other than xAI", () => {
+    expect(messages(grokEnv({ "grok-4.7": "example.com" }, {}), "grok-4.7")).toContain(
+      "build uses grok-4.7, but its Grok CLI entry sends content to example.com, not xAI or an approved router.",
+    );
+    expect(messages(grokEnv({}, {}), "grok-4.7").join("\n")).not.toMatch(/custom id|not xAI/);
   });
 });

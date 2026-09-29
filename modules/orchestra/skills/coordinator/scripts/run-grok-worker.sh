@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 
 usage() {
-  echo "usage: $0 --auth grok.com|api --model ID --mode read|write --cwd DIR --prompt-file FILE --log FILE [--credit-pressure] [--effort none|minimal|low|medium|high|xhigh] [--branch NAME --base-ref REF --ownership TEXT] [--clean-home] [--disable-subagents] [--tools CSV] [--max-turns N]" >&2
+  echo "usage: $0 --auth grok.com|api --model ID --mode read|write --cwd DIR --prompt-file FILE --log FILE [--credit-pressure] [--effort none|minimal|low|medium|high|xhigh] [--branch NAME --base-ref REF --ownership TEXT] [--provider LABEL] [--target MODEL] [--clean-home] [--disable-subagents] [--tools CSV] [--max-turns N]" >&2
 }
 
 auth=""
@@ -20,6 +20,8 @@ branch=""
 base_ref=""
 ownership=""
 effort=""
+expect_provider=""
+expect_target=""
 credit_pressure=0
 case "${BOPEN_USAGE_CREDIT_PRESSURE:-}" in
   1|true|TRUE|yes|YES) credit_pressure=1 ;;
@@ -35,6 +37,8 @@ while (($#)); do
     --log) log_file="$2"; shift 2 ;;
     --credit-pressure) credit_pressure=1; shift ;;
     --effort) effort="$2"; shift 2 ;;
+    --provider) expect_provider="$2"; shift 2 ;;
+    --target) expect_target="$2"; shift 2 ;;
     --clean-home) clean_home=1; shift ;;
     --disable-subagents) disable_subagents=1; shift ;;
     --tools) tools="$2"; shift 2 ;;
@@ -66,6 +70,8 @@ esac
 # GPT-5.6 ban as the bare id would. A non-Grok id with no resolvable entry is refused.
 alias_config="${GROK_HOME:-$HOME/.grok}/config.toml"
 alias_info=""
+alias_host=""
+alias_target=""
 alias_status=4
 if [[ -f "$alias_config" ]]; then
   set +e
@@ -104,7 +110,7 @@ case "$alias_status" in
   3) echo "could not parse $alias_config as TOML to check $model" >&2; exit 2 ;;
   *)
     case "$model_policy" in
-      grok-*|*/grok-*) ;;
+      grok-*) ;;
       *) echo "custom model $model has no resolvable [model] entry in $alias_config" >&2; exit 2 ;;
     esac ;;
 esac
@@ -113,13 +119,13 @@ if [[ "$alias_status" == 0 ]]; then
   alias_target=${alias_info#* }
   if [[ -z "$alias_host" ]]; then
     case "$model_policy" in
-      grok-*|*/grok-*) ;;
+      grok-*) ;;
       *) echo "custom model $model has no base_url in $alias_config, so its provider cannot be verified" >&2; exit 2 ;;
     esac
   fi
   if [[ -z "$alias_target" ]]; then
     case "$model_policy" in
-      grok-*|*/grok-*) ;;
+      grok-*) ;;
       *) echo "custom model $model has no explicit model in $alias_config, so its target cannot be verified" >&2; exit 2 ;;
     esac
   fi
@@ -133,6 +139,30 @@ if [[ "$alias_status" == 0 ]]; then
         ((credit_pressure)) || { echo "$model is an xAI alias for grok-4.7, a usage-credit-pressure fallback; pass --credit-pressure or route the work to claude-opus-5-5" >&2; exit 2; } ;;
       *) echo "model $model is an xAI alias for ${alias_target:-an unreported model}; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
     esac
+  fi
+fi
+# The planner binds the provider (and a custom id's target) it approved; config.toml must still agree.
+route_provider=""
+if [[ "$alias_status" == 0 && -n "$alias_host" ]]; then
+  case "$alias_host" in
+    openai.com|*.openai.com) route_provider=openai ;;
+    x.ai|*.x.ai) route_provider=xai ;;
+    anthropic.com|*.anthropic.com) route_provider=anthropic ;;
+    openrouter.ai|*.openrouter.ai) route_provider=openrouter ;;
+    *) route_provider="$alias_host" ;;
+  esac
+elif [[ "$model_policy" == grok-* ]]; then
+  route_provider=xai
+fi
+if [[ -n "$expect_provider" && "$route_provider" != "$expect_provider" ]]; then
+  echo "model $model now routes to ${route_provider:-an unknown provider}, not the approved $expect_provider; re-run detect-harness.sh and re-approve" >&2
+  exit 2
+fi
+if [[ -n "$expect_target" ]]; then
+  expect_target_policy=$(printf '%s' "$expect_target" | tr '[:upper:]' '[:lower:]')
+  if [[ "$alias_status" != 0 || "${alias_target:-}" != "$expect_target_policy" ]]; then
+    echo "model $model now points at ${alias_target:-no model}, not the approved $expect_target; re-run detect-harness.sh and re-approve" >&2
+    exit 2
   fi
 fi
 if [[ "$mode" == "write" ]]; then

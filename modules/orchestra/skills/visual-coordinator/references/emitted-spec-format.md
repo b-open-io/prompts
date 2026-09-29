@@ -231,14 +231,37 @@ listed custom id is refused unless its entry names both an explicit `model`
 and a `base_url` host; an entry is never assumed to serve its own id.
 Provider-qualified xAI ids (`xai/…`, `openrouter/x-ai/…`) are Grok: they run
 only on the Grok lane, under credit pressure, pinned to `grok-4.7`. The
-detector keeps these ids whole. A Grok CLI id named `gpt-6-sol` counts as Sol
-only when its entry resolves to `gpt-6-sol` behind a non-xAI host; otherwise it
-is never staffed as Sol and is rejected as a Review model; a Grok CLI id is
-likewise staffed as a Build model only when its entry resolves to
-`claude-opus-5-5` behind a non-xAI host. The observed main's pin exemption covers only a resolved
+detector keeps these ids whole. Only a bare `grok-*` id is a Grok CLI
+built-in; a qualified one is a `config.toml` alias and must resolve like any
+custom id, to `grok-4.7` served by xAI or OpenRouter. A Grok CLI id counts as
+Sol only when its entry resolves to `gpt-6-sol` behind OpenAI (or
+`openai/gpt-6-sol` behind OpenRouter), and as the Build model only when it
+resolves to `claude-opus-5-5` behind Anthropic (or `anthropic/claude-opus-5-5`
+behind OpenRouter); anything else is never staffed as Sol or Opus. Claude and
+Codex lanes accept only the bare ids, and OpenCode only
+`openai/gpt-6-sol`, `anthropic/claude-opus-5-5`, or those behind
+`openrouter/`, so `x/gpt-6-sol` is not Sol on any lane. Every coordinator
+other than the observed main session is a dispatch and is held to the same
+coding-worker pin as a builder. The observed main's pin exemption covers only a resolved
 `grok-4.6`; any other off-pin Grok version is rejected like a dispatch. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.
+
+Grok shell-outs also pass `--provider` (the detector's `grok_model_providers`
+entry, or `xai` for a bare `grok-*` id) and, for a custom id, `--target` (its
+`grok_model_targets` entry); the wrapper refuses to run if `config.toml` now
+routes the id elsewhere. A Grok id whose provider the detector did not resolve
+is not executable.
+
+Codex shell-outs put `--ask-for-approval never` before `exec` (codex rejects
+it after the subcommand). A worktree path that starts with `~/` is emitted as
+`"$HOME"/'…'` so the shell expands it; the rest of the path stays quoted.
+
+OpenCode has no read-only CLI flag, so an OpenCode reviewer exports only with
+`--agent <name>`, where the name comes from the detector's
+`opencode_read_only_agent` (set `BOPEN_OPENCODE_READONLY_AGENT` to an agent
+configured with edit and bash denied). Without one, reviews are staffed on
+another lane instead.
 
 Generated commands encode task text before passing it through stdin or
 `--prompt-file`; never interpolate backticks, `$()`, backslashes, or newlines

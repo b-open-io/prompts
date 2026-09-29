@@ -47,6 +47,42 @@ describe("visual coordinator command generation", () => {
     expect(generated.prompt).toContain("Do not create or switch branches.");
   });
 
+  it("puts --ask-for-approval before the codex exec subcommand", () => {
+    const { command } = generateNodeCommand(node("w", { provider: "external", lane: "codex", model: "gpt-6-sol", disclosure: "Approved" }), { hostHarness: "grok", nativeController: "grok" });
+    expect(command).toContain("'codex' '--ask-for-approval' 'never' 'exec' '--sandbox' 'workspace-write'");
+    expect(command!.indexOf("'--ask-for-approval'")).toBeLessThan(command!.indexOf("'exec'"));
+  });
+
+  it("expands a ~ worktree path to $HOME in every lane's command", () => {
+    const home = mkdtempSync(join(tmpdir(), "vc-home-"));
+    try {
+      const bin = join(home, "bin");
+      const task = join(home, "code", "worktrees", "{repo}-build");
+      spawnSync("mkdir", ["-p", bin, task]);
+      // Each fake CLI records its argv and working directory.
+      for (const cli of ["codex", "claude", "opencode"]) {
+        writeFileSync(join(bin, cli), `#!/bin/sh\ncat > /dev/null\nprintf '%s\\n' "$PWD" "$@" > "$HOME/${cli}.log"\n`, { mode: 0o755 });
+      }
+      const worker = join(home, "run-grok-worker.sh");
+      writeFileSync(worker, `printf '%s\\n' "$@" > "$HOME/grok.log"\n`);
+      const options = { hostHarness: "grok", nativeController: "grok", grokWorker: worker, grokAuth: "api" as const };
+      const env = { ...process.env, HOME: home, PATH: `${bin}:${process.env.PATH}` };
+      const lanes: Array<[string, string]> = [["codex", "gpt-6-sol"], ["claude", "claude-opus-5-5"], ["opencode", "anthropic/claude-opus-5-5"], ["grok", "grok-4.7"]];
+      for (const [lane, model] of lanes) {
+        const { command } = generateNodeCommand(node("w", { provider: "external", lane, model, disclosure: "Approved" }), options);
+        expect(command, lane).toContain(`"$HOME"/'code/worktrees/{repo}-build'`);
+        const run = spawnSync("bash", ["-c", command!], { env, encoding: "utf8" });
+        expect(run.status, `${lane}: ${run.stderr}`).toBe(0);
+        const log = readFileSync(join(home, `${lane}.log`), "utf8").split("\n");
+        if (lane === "claude") expect(log[0]).toBe(task);
+        else expect(log, lane).toContain(task);
+        expect(log, lane).not.toContain("~/code/worktrees/{repo}-build");
+      }
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it("never emits an executable command for an external node without approved disclosure", () => {
     for (const disclosure of [undefined, "", "pending", "denied", "required"]) {
       const generated = generateNodeCommand(node("undisclosed", {
@@ -69,7 +105,7 @@ describe("visual coordinator command generation", () => {
     expect(codex.command).toContain("--sandbox");
     expect(codex.command).toContain("read-only");
     expect(codex.command).toContain("gpt-6-sol");
-    expect(codex.command).toContain("model_reasoning_effort=xhigh");
+    expect(codex.command).toContain(`model_reasoning_effort="xhigh"`);
     expect(codex.command).not.toContain("workspace-write");
 
     const opencode = generateNodeCommand(node("review-opencode", { role: "reviewer", provider: "external", lane: "opencode", disclosure: "Approved" }), { hostHarness: "grok", nativeController: "grok" });
@@ -157,7 +193,8 @@ describe("versioned export contract", () => {
   });
 
   it("routes Grok-lane dispatches through the policy wrapper, never a raw grok call", () => {
-    const options = { hostHarness: "codex", nativeController: "codex", grokWorker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grokAuth: "api" as const };
+    const options = { hostHarness: "codex", nativeController: "codex", grokWorker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grokAuth: "api" as const,
+      grokProviders: { "gpt-6-sol": "openai" }, grokTargets: { "gpt-6-sol": "gpt-6-sol" } };
     const writer = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", effort: "high", ownedPaths: ["src/a.ts"], disclosure: "Approved" }), options);
     const reviewer = generateNodeCommand(node("grok-review", { role: "reviewer", provider: "external", lane: "grok", model: "gpt-6-sol", effort: "xhigh", disclosure: "Approved" }), options);
     const unresolved = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex" });
@@ -167,13 +204,16 @@ describe("versioned export contract", () => {
     expect(writer.command).not.toContain("BOPEN_GROK_WORKER");
     expect(unresolved).toMatchObject({ executable: false, command: null });
     expect(unresolved.reason).toContain("wrapper was not resolved");
-    expect(writer.command).toContain("'--model' 'grok-4.7' '--effort' 'high' '--mode' 'write'");
+    expect(writer.command).toContain("'--model' 'grok-4.7' '--provider' 'xai' '--effort' 'high' '--mode' 'write'");
     expect(writer.command).toContain("'--branch' 'codex/build' '--base-ref' 'origin/dev' '--ownership' 'src/a.ts'");
     expect(writer.command).toContain('--prompt-file "$PROMPT_FILE"');
     expect(writer.command).not.toContain("--credit-pressure");
     expect(writer.command).not.toMatch(/(^|\| )'?grok'? /);
-    expect(reviewer.command).toContain("'--mode' 'read'");
+    expect(reviewer.command).toContain("'--model' 'gpt-6-sol' '--provider' 'openai' '--target' 'gpt-6-sol' '--effort' 'xhigh' '--mode' 'read'");
     expect(reviewer.command).not.toContain("--branch");
+    const unbound = generateNodeCommand(node("grok-review", { role: "reviewer", provider: "external", lane: "grok", model: "gpt-6-sol", effort: "xhigh", disclosure: "Approved" }), { ...options, grokProviders: {} });
+    expect(unbound).toMatchObject({ executable: false, command: null });
+    expect(unbound.reason).toContain("did not resolve the provider behind gpt-6-sol");
   });
 
   it("removes the Grok prompt file whether the wrapper succeeds or fails", () => {
@@ -281,7 +321,7 @@ describe("versioned export contract", () => {
   });
 
   it("keeps the Grok host main native and main-controller when a custom Grok coordinator comes first", () => {
-    const grokHost = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com", credit_pressure: true });
+    const grokHost = parseEnvironment({ grok_model_targets: { "ox-alpha": "anthropic/claude-opus-5-5", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com", credit_pressure: true });
     const workflow = defaultWorkflow(grokHost);
     const main = workflow.nodes[0];
     workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
@@ -341,7 +381,7 @@ describe("versioned export contract", () => {
   });
 
   it("gates Ready and Copy on the converted dispatch the export would emit", () => {
-    const unconfirmed = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", credit_pressure: true });
+    const unconfirmed = parseEnvironment({ grok_model_targets: { "ox-alpha": "anthropic/claude-opus-5-5", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", credit_pressure: true });
     const workflow = defaultWorkflow(unconfirmed);
     const main = workflow.nodes[0];
     workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
@@ -740,7 +780,7 @@ describe("versioned export contract", () => {
   });
 
   it("converts a detected native non-4.7 Grok model to an explicit shell-out", () => {
-    const grok = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
+    const grok = parseEnvironment({ grok_model_targets: { "ox-alpha": "anthropic/claude-opus-5-5", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(grok);
     workflow.nodes[0] = { ...workflow.nodes[0], model: "ox-alpha", disclosure: "Approved Grok CLI conversion" };
 

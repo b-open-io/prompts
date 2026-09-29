@@ -406,6 +406,13 @@ if [[ -f "$grok_worker" && "$grok_worker" == /* ]]; then
   grok_worker_json="\"$(json_escape "$grok_worker")\""
 fi
 
+# OpenCode has no read-only CLI flag, so an OpenCode review exports only with an agent the operator
+# configured with edit and bash denied, named in BOPEN_OPENCODE_READONLY_AGENT.
+opencode_read_only_agent_json="null"
+if [[ "${BOPEN_OPENCODE_READONLY_AGENT:-}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]]; then
+  opencode_read_only_agent_json="\"$BOPEN_OPENCODE_READONLY_AGENT\""
+fi
+
 # The Claude list is the CLI's static alias set, not an account check: the claude CLI has no
 # offline way to prove the signed-in account can run claude-opus-5-5, and a probe call would
 # spend a network request on every detect. lane_access marks it unverified; a failed Opus
@@ -427,6 +434,7 @@ cat <<JSON
   "grok_auth": $grok_auth_json,
   "grok_model_providers": $grok_model_providers_json,
   "grok_model_targets": $grok_model_targets_json,
+  "opencode_read_only_agent": $opencode_read_only_agent_json,
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget
