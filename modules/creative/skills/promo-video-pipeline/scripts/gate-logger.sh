@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+# gate-logger.sh — spend and tamper gate for the headless promo-video run.
+#
+# Start it detached before the coding model runs. It snapshots the hf-api
+# wrapper and ledger, writes <dir>/ready (its PID) once every precondition
+# holds, then watches the run until it ends:
+#   - arms the run (<dir>/armed) only after the stream's system/init event
+#     shows the expected model, 0 MCP servers, and 0 skills; hf-api generate
+#     must refuse unless <dir>/armed exists and names a live gate PID
+#   - logs every ledger entry (every hf-api call that spends or refunds)
+#   - trips on a changed hf-api binary, a rewritten or malformed ledger,
+#     Higgsfield spend over --budget, a tool call before the init check, or a
+#     tool call that names the key, ledger, wrapper, gate dir, or the
+#     Higgsfield API host
+# A trip removes <dir>/armed, writes the reason to <dir>/tripped, and kills
+# the run's process group (<dir>/run.pid). Exit: 0 run ended, 2 bad input,
+# 3 tripped.
+#
+# Ledger contract: JSONL, one object per hf-api call, with a numeric
+# cost_usd (the estimate for a generate, negative for a refunded cancel).
+
+set -uo pipefail
+
+usage() {
+  echo "usage: gate-logger.sh --dir DIR --hf-api PATH --ledger PATH --key PATH --budget USD --stream PATH [--model ID]" >&2
+  exit 2
+}
+
+GATE="" HF="" LEDGER="" KEY="" BUDGET="" STREAM="" MODEL="claude-opus-5-5"
+while [[ $# -gt 0 ]]; do
+  [[ $# -ge 2 ]] || usage
+  case "$1" in
+    --dir) GATE=$2 ;;
+    --hf-api) HF=$2 ;;
+    --ledger) LEDGER=$2 ;;
+    --key) KEY=$2 ;;
+    --budget) BUDGET=$2 ;;
+    --stream) STREAM=$2 ;;
+    --model) MODEL=$2 ;;
+    *) usage ;;
+  esac
+  shift 2
+done
+
+fail() { echo "gate-logger: $*" >&2; exit 2; }
+for v in GATE HF LEDGER KEY BUDGET STREAM; do [[ -n ${!v} ]] || usage; done
+for p in "$GATE" "$HF" "$LEDGER" "$KEY" "$STREAM"; do [[ $p == /* ]] || fail "$p must be an absolute path"; done
+command -v jq >/dev/null || fail "jq is required"
+if command -v sha256sum >/dev/null; then hash_of() { sha256sum | cut -d' ' -f1; }
+elif command -v shasum >/dev/null; then hash_of() { shasum -a 256 | cut -d' ' -f1; }
+else fail "sha256sum or shasum is required"; fi
+[[ $BUDGET =~ ^[0-9]+(\.[0-9]+)?$ ]] && jq -en "$BUDGET > 0" >/dev/null || fail "--budget must be a positive USD amount"
+[[ -f $HF && -x $HF ]] || fail "hf-api wrapper $HF is missing or not executable"
+[[ -f $LEDGER ]] || fail "ledger $LEDGER is missing (create it empty first)"
+[[ -f $KEY ]] || fail "key file $KEY is missing"
+[[ -f $STREAM ]] || fail "stream $STREAM is missing (create it empty first)"
+
+mkdir -p "$GATE" || fail "cannot create $GATE"
+rm -f "$GATE/ready" "$GATE/armed" "$GATE/tripped" "$GATE/run.pid"
+LOG="$GATE/gate.log"
+
+log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >> "$LOG"; }
+
+spent() { jq -en '[inputs | .cost_usd | if type == "number" then . else error("cost_usd") end] | add // 0' "$LEDGER" 2>/dev/null; }
+
+trip() {
+  rm -f "$GATE/armed"
+  printf '%s\n' "$*" > "$GATE/tripped"
+  log "TRIP: $*"
+  local pid
+  pid=$(cat "$GATE/run.pid" 2>/dev/null || true)
+  if [[ $pid =~ ^[0-9]+$ ]]; then
+    kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null
+  fi
+  exit 3
+}
+
+hf_hash=$(hash_of < "$HF")
+ledger_off=$(wc -c < "$LEDGER" | tr -d ' ')
+ledger_hash=$(head -c "$ledger_off" "$LEDGER" | hash_of)
+total=$(spent) || fail "ledger $LEDGER is malformed"
+jq -en "$total <= $BUDGET" >/dev/null || fail "ledger already shows \$$total, over the \$$BUDGET budget"
+stream_off=0
+armed=0
+ending=0
+
+log "ready pid=$$ model=$MODEL budget=$BUDGET spent=$total hf-api=$hf_hash"
+printf '%s\n' "$$" > "$GATE/ready.tmp" && mv "$GATE/ready.tmp" "$GATE/ready"
+
+# Complete lines appended to $1 since byte offset $2, written to $GATE/chunk;
+# prints the new offset.
+take() {
+  local size partial=0
+  size=$(wc -c < "$1" | tr -d ' ')
+  (( size < $2 )) && return 1
+  tail -c +"$(($2 + 1))" "$1" | head -c "$((size - $2))" > "$GATE/chunk"
+  if [[ -s $GATE/chunk && $(tail -c 1 "$GATE/chunk" | od -An -c | tr -d ' ') != '\n' ]]; then
+    partial=$(tail -n 1 "$GATE/chunk" | wc -c | tr -d ' ')
+  fi
+  head -c "$((size - $2 - partial))" "$GATE/chunk" > "$GATE/chunk.lines"
+  echo "$((size - partial))"
+}
+
+names_forbidden() {
+  local p
+  for p in "$KEY" "$LEDGER" "$HF" "$GATE" "$(basename "$KEY")" "$(basename "$LEDGER")"; do
+    [[ $1 == *"$p"* ]] && return 0
+  done
+  [[ $1 == *api.higgsfield.ai* || $1 == *"Authorization: Key"* ]]
+}
+
+while :; do
+  [[ $(hash_of < "$HF") == "$hf_hash" ]] || trip "hf-api wrapper changed"
+
+  off=$(take "$LEDGER" "$ledger_off") || trip "ledger shrank"
+  [[ $(head -c "$ledger_off" "$LEDGER" | hash_of) == "$ledger_hash" ]] || trip "ledger rewritten"
+  if [[ $off != "$ledger_off" ]]; then
+    while IFS= read -r entry; do log "hf-api: $entry"; done < "$GATE/chunk.lines"
+    ledger_off=$off
+    ledger_hash=$(head -c "$ledger_off" "$LEDGER" | hash_of)
+    total=$(spent) || trip "ledger malformed"
+    jq -en "$total <= $BUDGET" >/dev/null || trip "Higgsfield spend \$$total is over the \$$BUDGET budget"
+  fi
+
+  off=$(take "$STREAM" "$stream_off") || trip "stream truncated"
+  if [[ $off != "$stream_off" ]]; then
+    stream_off=$off
+    events=$(jq -Rr 'fromjson? // {type: "unparsed"}
+      | if .type == "unparsed" then "bad"
+        elif .type == "system" and .subtype == "init" then
+          "init\t\(.model)\t\(.mcp_servers // [] | length)\t\(.skills // [] | length)"
+        elif .type == "assistant" then
+          (.message.content[]? | select(.type == "tool_use") | "tool\t\(.name)\t\(.input | tojson)")
+        else empty end' "$GATE/chunk.lines") || trip "cannot parse the stream"
+    while IFS=$'\t' read -r kind a b c; do
+      case $kind in
+        bad) trip "unparseable stream line" ;;
+        init)
+          (( armed == 0 )) || trip "second init event"
+          [[ $a == "$MODEL" && $b == 0 && $c == 0 ]] || trip "init shows model=$a mcp=$b skills=$c"
+          printf '%s\n' "$$" > "$GATE/armed.tmp" && mv "$GATE/armed.tmp" "$GATE/armed"
+          armed=1
+          log "armed: model=$a mcp=0 skills=0"
+          ;;
+        tool)
+          (( armed == 1 )) || trip "tool call before the init check"
+          names_forbidden "$b" && trip "$a call names a protected path or the Higgsfield API: $b"
+          log "tool: $a $b"
+          ;;
+      esac
+    done <<< "$events"
+  fi
+
+  pid=$(cat "$GATE/run.pid" 2>/dev/null || true)
+  if [[ $pid =~ ^[0-9]+$ ]] && ! kill -0 "$pid" 2>/dev/null; then
+    # One more pass picks up ledger and stream lines written just before the exit.
+    (( ending == 1 )) || { ending=1; continue; }
+    (( armed == 1 )) || trip "run ended before the init check"
+    rm -f "$GATE/armed"
+    log "run ended; spent=$total"
+    exit 0
+  fi
+  sleep 1
+done

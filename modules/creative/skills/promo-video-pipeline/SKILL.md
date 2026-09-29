@@ -1,6 +1,6 @@
 ---
 name: promo-video-pipeline
-version: 0.0.2
+version: 0.0.3
 description: >-
   Use this when making a motion-graphics promo or showreel, a short social cut or a
   longer commercial cut, from the user's prompt plus optional music. Covers
@@ -30,22 +30,23 @@ Not for: a single generated clip (use `gemskills:generate-video`), a single imag
 - The `gemskills` plugin (`b-open-io/gemskills`) for keyframes. This skill does not duplicate its generation logic.
 - Claude Code CLI with access to Claude Opus 5.5.
 - Higgsfield API credentials (key ID and secret) and the `hf-api` wrapper described below.
-- ffmpeg 5.1 or newer (`-fps_mode` replaced the deprecated `-vsync`), ffprobe, and `jq`.
+- ffmpeg 5.1 or newer (`-fps_mode` replaced the deprecated `-vsync`), ffprobe, `jq`, and `setsid` (util-linux; `brew install util-linux` on macOS).
+- The spend and tamper gate shipped with this skill: `scripts/gate-logger.sh` (in Claude Code, `${CLAUDE_SKILL_DIR}/scripts/gate-logger.sh`).
 - The user's own Suno account if they want a scored track.
 
 ### The `hf-api` wrapper
 
-The coding model calls Higgsfield only through a CLI wrapper named `hf-api`. It is not published in any public b-open-io repository. Build or supply one that meets this contract:
+The coding model calls Higgsfield only through a CLI wrapper named `hf-api`. It is not published in any public b-open-io repository. Build or supply one that meets this contract. The wrapper, its key file, and its ledger live outside the run's working directory (for example `~/.hf-api/`), so the coding model's file tools cannot reach them.
 
 | Command | Contract |
 |---------|----------|
-| `generate` | Submit a generation request. Refuse if the ledger total plus the estimate would exceed the budget cap. Append the request ID, model, parameters, and estimated cost to the ledger. |
+| `generate` | Submit a generation request. Refuse unless `~/.hf-api/gate/armed` exists and names a live process (the gate). Refuse if the ledger total plus the estimate would exceed the cap in `~/.hf-api/budget`. Read both from those files, never from the caller's environment. Append the request ID, model, parameters, and estimated cost to the ledger. |
 | `status` | Poll a request by ID and download finished output right away; do not rely on Higgsfield keeping it. |
 | `estimate` | Price a request before submitting it (Higgsfield exposes an estimate endpoint). |
 | `balance` | Report spend and remaining budget from the ledger. The REST API has no balance endpoint, so the ledger is the only record. |
 | `cancel` | Cancel a queued request. Higgsfield can cancel only before processing starts; refunded cancels go in the ledger. |
 
-Auth is the header `Authorization: Key ID:SECRET` against `https://api.higgsfield.ai`. The wrapper reads the key from a file only it uses. The coding model never sees the key.
+The ledger is JSONL, one object per call, each with a numeric `cost_usd` (the estimate for a generate, negative for a refunded cancel); the gate sums it. Auth is the header `Authorization: Key ID:SECRET` against `https://api.higgsfield.ai`. The wrapper reads the key from a file only it uses. The coding model never sees the key.
 
 ## Steps
 
@@ -87,26 +88,46 @@ Keep the subject specific to the current request; never bake an example brand, w
 - Empty strict MCP config: `--strict-mcp-config --mcp-config '{"mcpServers":{}}'`.
 - `--disable-slash-commands`, which turns off all skills and commands.
 - HyperFrames and any other video plugins disabled for the run (`enabledPlugins` set to `false` in a run-only `--settings` file).
-- A hard budget cap for video spend, enforced by the `hf-api` ledger. `--max-budget-usd` caps model spend separately and is worth setting too.
-- At start, check the `system`/`init` event: 0 MCP servers and 0 skills, and the model is Claude Opus 5.5. If either count is non-zero, stop and fix the config before any spend.
+- File tools scoped to the working directory, with the wrapper's state directory denied, so the model cannot read the key or edit the wrapper or ledger.
+- Two separate caps. `HF_BUDGET_USD` (written to `~/.hf-api/budget`) caps Higgsfield spend: `hf-api` refuses past it and the gate kills the run if the ledger goes over it. `--max-budget-usd` caps only model spend.
 
-**Gate logger.** Before launching, start a gate process detached with `setsid nohup` so it outlives the shell that started it. It logs every `hf-api` call and kills the run if the coding model tampers with the CLI or ledger, reads the key file, or calls the API directly.
+**Gate (hard precondition).** No spend-capable step runs until the gate is up and verified; any failed check stops the run. The gate (`scripts/gate-logger.sh`) runs detached with `setsid nohup` so it outlives the shell that started it. It writes `ready` once its preconditions hold, writes `armed` only after the run's `system`/`init` event shows `claude-opus-5-5` with 0 MCP servers and 0 skills, and `hf-api generate` refuses without `armed`. Every ledger entry goes to `gate.log`. It removes `armed`, writes the reason to `tripped`, and kills the run's process group on any of these: a tool call before the init check, a changed `hf-api` binary, a rewritten or malformed ledger, Higgsfield spend over `HF_BUDGET_USD`, or a tool call that names the key, ledger, wrapper, gate directory, or the Higgsfield API host.
 
 ```bash
-setsid nohup ./gate-logger > gate.log 2>&1 < /dev/null &
+set -euo pipefail
+GATE_BIN="${CLAUDE_SKILL_DIR:?run from the skill}/scripts/gate-logger.sh"
+HF_STATE="$HOME/.hf-api"                  # hf-api wrapper, key, ledger
+HF_GATE_DIR="$HF_STATE/gate" HF_BUDGET_USD=15
+printf '%s\n' "$HF_BUDGET_USD" > "$HF_STATE/budget"
+HF_BIN=$(command -v hf-api) || { echo "hf-api missing; no run" >&2; exit 1; }
+[[ -x $GATE_BIN ]] || { echo "gate-logger missing; no run" >&2; exit 1; }
+for tool in setsid jq claude; do command -v "$tool" >/dev/null || { echo "$tool missing; no run" >&2; exit 1; }; done
+touch "$HF_STATE/ledger.jsonl"; : > run.jsonl
+
+setsid nohup "$GATE_BIN" --dir "$HF_GATE_DIR" --hf-api "$HF_BIN" \
+  --ledger "$HF_STATE/ledger.jsonl" --key "$HF_STATE/key" \
+  --budget "$HF_BUDGET_USD" --stream "$PWD/run.jsonl" --model claude-opus-5-5 \
+  > gate.out 2>&1 < /dev/null &
+for _ in $(seq 50); do [[ -s $HF_GATE_DIR/ready ]] && break; sleep 0.2; done
+GATE_PID=$(cat "$HF_GATE_DIR/ready" 2>/dev/null) && kill -0 "$GATE_PID" 2>/dev/null \
+  || { echo "gate not ready: $(cat gate.out); no run" >&2; exit 1; }
 
 SID=$(uuidgen)
-claude -p "$(cat user-prompt.txt)" \
+setsid claude -p "$(cat user-prompt.txt)" \
   --model claude-opus-5-5 \
   --session-id "$SID" \
   --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
   --disable-slash-commands \
   --settings ./run-settings.json \
   --append-system-prompt-file ./run-rules.md \
-  --allowedTools "Bash(hf-api *)" "Bash(ffmpeg *)" "Bash(ffprobe *)" Read Write Edit \
-  --disallowedTools "Bash(curl *)" "Bash(wget *)" \
+  --allowedTools "Bash(hf-api *)" "Bash(ffmpeg *)" "Bash(ffprobe *)" "Read(./**)" "Write(./**)" "Edit(./**)" \
+  --disallowedTools "Bash(curl *)" "Bash(wget *)" "Read(~/.hf-api/**)" "Write(~/.hf-api/**)" "Edit(~/.hf-api/**)" \
   --max-budget-usd 20 \
-  --output-format stream-json --verbose > run.jsonl
+  --output-format stream-json --verbose > run.jsonl &
+echo $! > "$HF_GATE_DIR/run.pid"
+wait $! || true
+wait_gate=0; while kill -0 "$GATE_PID" 2>/dev/null && (( wait_gate++ < 30 )); do sleep 1; done
+[[ ! -e $HF_GATE_DIR/tripped ]] || { echo "gate tripped: $(cat "$HF_GATE_DIR/tripped")" >&2; exit 3; }
 
 jq -c 'select(.type=="system" and .subtype=="init")
   | {model, mcp: (.mcp_servers | length), skills: ((.skills // []) | length)}' run.jsonl
@@ -116,16 +137,16 @@ Adjust `--allowedTools` to what the edit needs. `claude-opus-5-5` is the Claude 
 
 **Pricing.** Kling 3.0 Pro image-to-video runs about $0.15–0.19 per 3 s clip and $0.25–0.31 per 5 s clip. Treat these as a guide and use `hf-api estimate` for the real number.
 
-**If a background render dies,** resume the same session rather than starting over:
+**If a background render dies,** resume the same session rather than starting over. Start a fresh gate first (the resumed run emits a new `init` event), exactly as above:
 
 ```bash
-claude -p --resume "$SID" "The render stopped. Re-run it in the foreground and continue." \
+setsid claude -p --resume "$SID" "The render stopped. Re-run it in the foreground and continue." \
   <same flags as above, minus --session-id>
 ```
 
 **If the API is unreachable,** stop and report. Do not switch to alternative video paths.
 
-**Credentials.** Place the key only for the run, never print it, and scan every log (`run.jsonl`, `gate.log`, render logs) for the key ID, the secret, and `Authorization: Key` strings. Then delete the key file.
+**Credentials.** Place the key only for the run, never print it, and scan every log (`run.jsonl`, `gate.out`, `$HF_GATE_DIR/gate.log`, render logs) for the key ID, the secret, and `Authorization: Key` strings. Then delete the key file.
 
 ### 3. Music
 
@@ -227,12 +248,14 @@ Send the video files and stills with the total cost, a remaining-balance estimat
 - Real product UI is always a real capture.
 - No video spend before the user approves the keyframes.
 - The coding model reaches Higgsfield only through `hf-api`, under a hard budget cap.
+- No spend-capable step runs before the gate reports `ready`; `hf-api generate` refuses until the gate arms the run.
 - If the API is unreachable, stop and report. No fallback video paths.
 
 ## Checklist
 
 - [ ] ~10–12 flare keyframes proposing new scenes; contact sheet shown; user approved
-- [ ] Opus run: prompt verbatim, 0 MCP servers, 0 skills, video plugins off, budget cap set, gate logger running detached
+- [ ] Gate ready before launch; run armed only after init showed Opus, 0 MCP servers, 0 skills; no `tripped` file
+- [ ] Opus run: prompt verbatim, video plugins off, `HF_BUDGET_USD` and `--max-budget-usd` both set
 - [ ] Renders ran in the foreground; any dead render resumed in the same session
 - [ ] Key never printed; logs scanned; key file deleted
 - [ ] Music beat-aligned; SFX regenerated without music, lows cut ~6 dB, ~6–7 LU under music
