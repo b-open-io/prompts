@@ -358,7 +358,8 @@ echo "Scans complete. Reviewing results..."
 Save this as `/tmp/internal/sol-review.sh` and run it with `bash`. It needs
 `python3`, codex-cli 0.156.1 or newer, `PR_NUMBER`, `REPO` (`owner/name`), and `SCAN_DIR` (the Semgrep, CodeQL,
 Codex Security, and pattern-scan output saved earlier in this audit);
-`BASE_REF` defaults to `origin/dev`, `MAX` (lines per slice) to 4000, and
+`BASE_REF` defaults to `origin/dev`, `MAX` (diff lines per slice, not counting
+repeated file and hunk headers) to 4000, and
 `CAP` (bytes per Sol prompt, at most 900000) to 800000 when unset. Every
 reviewed diff line lands in exactly one slice, never truncated. Files are
 grouped up to both caps; a larger file is split on hunk boundaries and an
@@ -500,8 +501,10 @@ def flush():
     cur[:] = [[], 0, 0]
 
 
-def add(chunk, what):
-    n, size = len(chunk), sum(map(len, chunk))
+# `ctx` leading lines are the repeated file header (and the @@ line of a split hunk):
+# they count toward the byte budget but not toward MAX.
+def add(chunk, what, ctx=0):
+    n, size = len(chunk) - ctx, sum(map(len, chunk))
     if n > max_lines or size > budget:
         die("%s is over the %d-line or %d-byte slice budget" % (what, max_lines, budget))
     if cur[1] + n > max_lines or cur[2] + size > budget:
@@ -513,10 +516,10 @@ for path, spec in reviewed:
     lines = git("diff", "--no-renames", base + "...HEAD", "--", spec).splitlines(keepends=True)
     if not lines:
         die("empty diff for %s" % path)
-    if len(lines) <= max_lines and sum(map(len, lines)) <= budget:
-        add(lines, path)
-        continue
     start = next((i for i, l in enumerate(lines) if l.startswith(b"@@")), len(lines))
+    if len(lines) - start <= max_lines and sum(map(len, lines)) <= budget:
+        add(lines, path, start)
+        continue
     head, hunks = lines[:start], []
     for line in lines[start:]:
         if line.startswith(b"@@"):
@@ -525,21 +528,23 @@ for path, spec in reviewed:
             hunks[-1].append(line)
     flush()
     for hunk in hunks:
-        if len(head) + len(hunk) <= max_lines and sum(map(len, head + hunk)) <= budget:
-            if cur[0] and cur[1] + len(hunk) <= max_lines and cur[2] + sum(map(len, hunk)) <= budget:
+        size = sum(map(len, hunk))
+        if len(hunk) <= max_lines and sum(map(len, head)) + size <= budget:
+            if cur[0] and cur[1] + len(hunk) <= max_lines and cur[2] + size <= budget:
                 add(hunk, path)
             else:
-                flush(); add(head + hunk, path)
+                flush(); add(head + hunk, path, len(head))
             continue
         flush()
+        ctx = len(head) + 1
         piece = head + [hunk[0]]
         for line in hunk[1:]:
-            full = len(piece) + 1 > max_lines or sum(map(len, piece)) + len(line) > budget
-            if full and len(piece) > len(head) + 1:
-                add(piece, path); flush()
+            full = len(piece) - ctx + 1 > max_lines or sum(map(len, piece)) + len(line) > budget
+            if full and len(piece) > ctx:
+                add(piece, path, ctx); flush()
                 piece = head + [hunk[0].rstrip(b"\n") + b" (hunk continued)\n"]
             piece.append(line)
-        add(piece, path)
+        add(piece, path, ctx)
     flush()
 flush()
 for i, data in enumerate(slices):

@@ -102,7 +102,7 @@ class Fixture(unittest.TestCase):
             REPO="o/r",
             SCAN_DIR=str(self.scans),
             BASE_REF="dev",
-            MAX="5",
+            MAX="2",
         )
         self.git("init", "-q", "-b", "dev")
         (self.repo / "base.txt").write_text("base\n")
@@ -181,7 +181,7 @@ class SolReviewScriptTest(Fixture):
         result = self.run_script()
         self.assertEqual(result.returncode, 3, result.stderr)
         self.assertIn("- [MED] a.ts:- weak check", result.stdout)
-        self.assertIn("blocked=1 CRITICAL=0 HIGH=0 MED=1 LOW=1", result.stdout)
+        self.assertIn("blocked=1 CRITICAL=0 HIGH=0 MED=1 LOW=0", result.stdout)
 
     def test_unparseable_verdict_fails(self) -> None:
         self.commit({SPACE: "space body\n", UNICODE: "VAGUE_SLICE\n"})
@@ -271,6 +271,65 @@ class SolReviewScriptTest(Fixture):
             self.assertEqual(result.returncode, 2, env)
             self.assertEqual(list(self.prompts.iterdir()), [], env)
 
+    def test_slices_keep_file_and_hunk_headers(self) -> None:
+        self.commit({"big.txt": "".join(f"big line {i}\n" for i in range(7))})
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        prompts = [p.read_text() for p in sorted(self.prompts.iterdir())]
+        self.assertEqual(len(prompts), 4)
+        for text in prompts:
+            self.assertIn("+++ b/big.txt", text)
+            self.assertRegex(text, r"(?m)^@@ ")
+        joined = "".join(prompts)
+        for i in range(7):
+            self.assertEqual(joined.count(f"+big line {i}\n"), 1)
+
+    def test_byte_cap_splits_on_hunk_boundaries(self) -> None:
+        body = "".join(f"line {i} {'x' * 2000}\n" for i in range(3000))
+        self.commit({"wide.txt": body})
+        lines = body.splitlines(keepends=True)
+        for i in range(0, 3000, 100):
+            lines[i] = f"edit {i} {'y' * 2000}\n"
+        self.commit({"wide.txt": "".join(lines)})
+        self.git("branch", "-f", "dev", "HEAD~1")
+        result = self.run_script(MAX="100000", CAP="200000")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        prompts = [p.read_text() for p in sorted(self.prompts.iterdir())]
+        self.assertGreater(len(prompts), 1)
+        for text in prompts:
+            self.assertLessEqual(len(text.encode()), 200000)
+            self.assertIn("+++ b/wide.txt", text)
+            diff = text.split("### Diff slice", 1)[1]
+            self.assertRegex(diff, r"^\n```diff\ndiff --git")
+            self.assertNotIn("(hunk continued)", diff)
+        joined = "".join(prompts)
+        for i in range(0, 3000, 100):
+            self.assertEqual(joined.count(f"+edit {i} "), 1)
+
+    def test_generated_fixtures_are_summarized(self) -> None:
+        (self.repo / "benchmarks").mkdir()
+        huge = "".join(json.dumps({"i": i, "blob": "z" * 5000}) + "\n" for i in range(400))
+        self.commit({"benchmarks/run.jsonl": huge, "benchmarks/result.json": "{}\n", "code.ts": "export {}\n"})
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        text = self.prompt_text()
+        self.assertNotIn("zzzzzzzzzz", text)
+        self.assertRegex(text, r"benchmarks/run.jsonl \+400 -0 blob=[0-9a-f]{40}")
+        self.assertIn("benchmarks/result.json +1 -0", text)
+        self.assertIn("+export {}", text)
+
+    def test_oversized_line_and_cap_stop(self) -> None:
+        self.commit({"long.ts": "x" * 300000 + "\n"})
+        result = self.run_script(CAP="200000")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("slice budget", result.stderr)
+        self.assertEqual(list(self.prompts.iterdir()), [])
+        for cap in ("900001", "0", "abc"):
+            result = self.run_script(CAP=cap)
+            self.assertEqual(result.returncode, 2, cap)
+            self.assertEqual(list(self.prompts.iterdir()), [], cap)
+        self.assert_cleaned()
+
     def test_missing_scan_evidence_stops(self) -> None:
         self.commit({SPACE: "space body\n"})
         (self.scans / "semgrep.json").unlink()
@@ -310,7 +369,7 @@ class SolJsonContractTest(Fixture):
         result = self.review("low", doc(finding("LOW", "naming", None), finding("LOW", "style")))
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("- [LOW] a.ts:- naming", result.stdout)
-        self.assertIn("blocked=0 CRITICAL=0 HIGH=0 MED=0 LOW=3", result.stdout)
+        self.assertIn("blocked=0 CRITICAL=0 HIGH=0 MED=0 LOW=2", result.stdout)
 
     def test_blocking_severities_exit_3(self) -> None:
         for severity in ("CRITICAL", "HIGH", "MED"):
