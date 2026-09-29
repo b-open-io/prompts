@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.17
+version: 1.4.18
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -358,11 +358,20 @@ echo "Scans complete. Reviewing results..."
 Save this as `/tmp/internal/sol-review.sh` and run it with `bash`. It needs
 `PR_NUMBER`, `REPO` (`owner/name`), and `SCAN_DIR` (the Semgrep, CodeQL, Codex
 Security, and pattern-scan output saved earlier in this audit); `BASE_REF`
-defaults to `origin/dev`. It fails closed: a missing base, empty diff,
-unfetchable PR body, missing scan evidence, or any failed or empty slice exits
-non-zero and prints no verdict. Every diff line lands in exactly one slice
-(files are grouped up to `MAX` lines; a larger file is split, never
-truncated), and every pass gets the author claims and scan evidence.
+defaults to `origin/dev`. Every diff line lands in exactly one slice (files
+are grouped up to `MAX` lines; a larger file is split, never truncated), and
+every pass gets the author claims and scan evidence. Each slice must end with
+a strict `VERDICT:` / `FINDINGS:` pair. Exit codes:
+
+| Exit | Meaning | stdout |
+|------|---------|--------|
+| 0 | Every slice is `MERGEABLE yes` with no CRITICAL, HIGH, or MED finding | All slice findings plus a `SUMMARY:` line |
+| 1 | A slice pass failed, was empty, or had no parseable verdict | Nothing (the failing responses go to stderr) |
+| 2 | Missing input: base, merge-base, diff, PR body, or scan evidence | Nothing |
+| 3 | A slice says `MERGEABLE no` or reports a CRITICAL, HIGH, or MED finding | All slice findings plus a `SUMMARY:` line |
+
+The run directory holds the PR claims, evidence, and logs, and is removed on
+every exit, including interrupts.
 
 ```bash
 set -euo pipefail
@@ -380,6 +389,9 @@ fi
 BASE=$(git merge-base "$BASE_REF" HEAD) || die "no merge-base between $BASE_REF and HEAD"
 TOP=$(git rev-parse --show-toplevel)
 RUN=$(mktemp -d "${TMPDIR:-/tmp}/sol-review.XXXXXX")
+trap 'rm -rf "$RUN"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 mkdir "$RUN/slices" "$RUN/verdicts"
 git diff -z --no-renames --name-only "$BASE"...HEAD > "$RUN/files"
 [[ -s $RUN/files ]] || die "empty diff against $BASE_REF"
@@ -409,12 +421,13 @@ while IFS= read -r -d '' file; do
   lines=$((lines + size))
 done < "$RUN/files"
 
-# 4. One GPT-6 Sol xhigh pass per slice (read-only); every slice must succeed
+# 4. One GPT-6 Sol xhigh pass per slice (read-only), each ending in a strict verdict
 shopt -s nullglob
 slices=("$RUN"/slices/*)
 total=${#slices[@]}
 (( total > 0 )) || die "no slices"
-failed=0
+re=$'^VERDICT: MERGEABLE (yes|no)\nFINDINGS: CRITICAL=([0-9]+) HIGH=([0-9]+) MED=([0-9]+) LOW=([0-9]+)$'
+failed=0; blocked=0; crit=0; high=0; med=0; low=0
 for slice in "${slices[@]}"; do
   id=$(basename "$slice")
   verdict="$RUN/verdicts/$id.md"
@@ -428,23 +441,39 @@ for slice in "${slices[@]}"; do
     echo "Observe and document security properties, data flows, trust boundaries,"
     echo "code quality, and architecture implications in this slice. Check every"
     echo "author claim it touches. Report findings with severity, and areas with no issues."
+    echo "End with exactly these two lines, nothing after them, counting this slice's findings:"
+    echo "VERDICT: MERGEABLE yes|no"
+    echo "FINDINGS: CRITICAL=<n> HIGH=<n> MED=<n> LOW=<n>"
+    echo "Answer MERGEABLE no if there is any CRITICAL, HIGH, or MED finding."
   } > "$RUN/prompt-$id.txt"
   if ! codex exec --sandbox read-only --cd "$TOP" -m gpt-6-sol \
       -c model_reasoning_effort="xhigh" --output-last-message "$verdict" \
       < "$RUN/prompt-$id.txt" > "$RUN/log-$id.txt" 2>&1; then
-    echo "sol-review: pass failed for $id (see $RUN/log-$id.txt)" >&2
-    failed=$((failed + 1))
-  elif [[ ! -s $verdict ]]; then
-    echo "sol-review: empty verdict for $id" >&2
-    failed=$((failed + 1))
+    echo "sol-review: pass failed for $id:" >&2; tail -n 20 "$RUN/log-$id.txt" >&2
+    failed=$((failed + 1)); continue
   fi
+  last=$(tr -d '\r' < "$verdict" | grep -v '^[[:space:]]*$' | tail -n 2 || true)
+  if [[ ! $last =~ $re ]]; then
+    echo "sol-review: no parseable verdict for $id:" >&2; cat "$verdict" >&2
+    failed=$((failed + 1)); continue
+  fi
+  c=$((10#${BASH_REMATCH[2]})); h=$((10#${BASH_REMATCH[3]}))
+  m=$((10#${BASH_REMATCH[4]})); l=$((10#${BASH_REMATCH[5]}))
+  crit=$((crit + c)); high=$((high + h)); med=$((med + m)); low=$((low + l))
+  if [[ ${BASH_REMATCH[1]} == no ]] || (( c + h + m > 0 )); then blocked=$((blocked + 1)); fi
 done
 (( failed == 0 )) || { echo "sol-review: $failed of $total slices failed; no verdict" >&2; exit 1; }
-cat "$RUN"/verdicts/*.md
+for slice in "${slices[@]}"; do
+  id=$(basename "$slice")
+  echo "## Slice $id"; cat "$RUN/verdicts/$id.md"; echo
+done
+echo "SUMMARY: slices=$total blocked=$blocked CRITICAL=$crit HIGH=$high MED=$med LOW=$low"
+(( blocked == 0 )) || { echo "sol-review: $blocked of $total slices block the merge" >&2; exit 3; }
 ```
 
-A non-zero exit means there is no review verdict: fix the cause and rerun the
-whole script rather than reporting on partial coverage.
+Exit 1 or 2 means there is no review verdict: fix the cause and rerun the
+whole script rather than reporting on partial coverage. Exit 3 is a complete
+verdict that blocks the merge; report its findings.
 
 **Synthesize Results**:
 - Combine every slice's Sol findings with your analysis
@@ -458,6 +487,9 @@ set -euo pipefail
 # 1. Pin the PR and its base; stop if the base or the diff is missing
 export PR_NUMBER=123 REPO=owner/name BASE_REF=origin/dev
 export SCAN_DIR=$(mktemp -d "${TMPDIR:-/tmp}/audit-scans.XXXXXX")
+trap 'rm -rf "$SCAN_DIR"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 git rev-parse --verify --quiet "$BASE_REF^{commit}" >/dev/null \
   || git fetch --quiet origin "+refs/heads/${BASE_REF#origin/}:refs/remotes/$BASE_REF" \
   || { echo "cannot resolve $BASE_REF" >&2; exit 2; }
@@ -468,8 +500,12 @@ git diff --quiet "$BASE"...HEAD && { echo "empty diff against $BASE_REF" >&2; ex
 semgrep scan --config auto --baseline-commit "$BASE" --json --output "$SCAN_DIR/semgrep.json"
 # ... CodeQL, Codex Security, pattern scans -> "$SCAN_DIR"/
 
-# 3. Always run the Sol xhigh script above; a non-zero exit means no verdict
-VERDICT=$(bash /tmp/internal/sol-review.sh)
+# 3. Always run the Sol xhigh script above; show its findings, then stop on any
+#    non-zero exit (1/2: no verdict, 3: merge blocked)
+status=0
+VERDICT=$(bash /tmp/internal/sol-review.sh) || status=$?
+printf '%s\n' "$VERDICT"
+(( status == 0 )) || { echo "Sol review did not pass (exit $status)" >&2; exit "$status"; }
 
 # 4. Combine findings into comprehensive report
 ```

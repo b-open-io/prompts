@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import os
 import re
+import signal
 import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -20,9 +22,18 @@ done
 prompt=$(cat)
 n=$(ls "$PROMPTS" | wc -l)
 printf '%s' "$prompt" > "$PROMPTS/$n.txt"
+[[ -n ${SLOW:-} ]] && sleep 10
 [[ $prompt == *FAIL_SLICE* ]] && exit 1
 [[ -n ${EMPTY_VERDICT:-} ]] && { : > "$out"; exit 0; }
-printf 'verdict ok\\n' > "$out"
+if [[ $prompt == *HIGH_SLICE* ]]; then
+  printf 'HIGH: injection\\n\\nVERDICT: MERGEABLE no\\nFINDINGS: CRITICAL=0 HIGH=1 MED=0 LOW=0\\n' > "$out"
+elif [[ $prompt == *MED_SLICE* ]]; then
+  printf 'MED: weak check\\nVERDICT: MERGEABLE yes\\nFINDINGS: CRITICAL=0 HIGH=0 MED=1 LOW=2\\n' > "$out"
+elif [[ $prompt == *VAGUE_SLICE* ]]; then
+  printf 'verdict ok, looks mergeable\\n' > "$out"
+else
+  printf 'verdict ok\\nVERDICT: MERGEABLE yes\\r\\nFINDINGS: CRITICAL=0 HIGH=0 MED=0 LOW=1\\n\\n' > "$out"
+fi
 """
 
 FAKE_GH = """#!/usr/bin/env bash
@@ -43,7 +54,7 @@ def script() -> str:
 class SolReviewScriptTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
-        root = Path(self.tmp.name)
+        root = self.root = Path(self.tmp.name)
         self.repo = root / "repo"
         self.bin = root / "bin"
         self.prompts = root / "prompts"
@@ -51,7 +62,7 @@ class SolReviewScriptTest(unittest.TestCase):
         for d in (self.repo, self.bin, self.prompts, self.scans):
             d.mkdir()
         (self.scans / "semgrep.json").write_text('{"results": []}\n')
-        self.script = root / "sol-review.sh"
+        self.script = root / "review.sh"
         self.script.write_text(script())
         for name, body in (("codex", FAKE_CODEX), ("gh", FAKE_GH)):
             path = self.bin / name
@@ -111,6 +122,9 @@ class SolReviewScriptTest(unittest.TestCase):
             text=True,
         )
 
+    def assert_cleaned(self) -> None:
+        self.assertEqual(list(self.root.glob("sol-review.*")), [])
+
     def prompt_text(self) -> str:
         return "".join(p.read_text() for p in sorted(self.prompts.iterdir()))
 
@@ -128,19 +142,69 @@ class SolReviewScriptTest(unittest.TestCase):
         self.assertIn("claim: adds files", text)
         self.assertIn('"results"', text)
         self.assertGreater(len(list(self.prompts.iterdir())), 2)
+        self.assertIn("SUMMARY: slices=", result.stdout)
+        self.assertIn("blocked=0 CRITICAL=0 HIGH=0 MED=0", result.stdout)
+        self.assert_cleaned()
+
+    def test_high_finding_blocks_but_prints_findings(self) -> None:
+        self.commit({SPACE: "space body\n", UNICODE: "HIGH_SLICE\n"})
+        result = self.run_script()
+        self.assertEqual(result.returncode, 3, result.stderr)
+        self.assertIn("HIGH: injection", result.stdout)
+        self.assertIn("verdict ok", result.stdout)
+        self.assertIn("blocked=1 CRITICAL=0 HIGH=1", result.stdout)
+        self.assert_cleaned()
+
+    def test_med_finding_blocks_even_when_mergeable(self) -> None:
+        self.commit({SPACE: "MED_SLICE\n"})
+        result = self.run_script()
+        self.assertEqual(result.returncode, 3, result.stderr)
+        self.assertIn("MED: weak check", result.stdout)
+        self.assertIn("blocked=1 CRITICAL=0 HIGH=0 MED=1 LOW=3", result.stdout)
+
+    def test_unparseable_verdict_fails(self) -> None:
+        self.commit({SPACE: "space body\n", UNICODE: "VAGUE_SLICE\n"})
+        result = self.run_script()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("no parseable verdict", result.stderr)
+        self.assertIn("looks mergeable", result.stderr)
+        self.assert_cleaned()
 
     def test_failed_slice_exits_without_verdict(self) -> None:
         self.commit({SPACE: "space body\n", UNICODE: "FAIL_SLICE\n"})
         result = self.run_script()
-        self.assertNotEqual(result.returncode, 0)
-        self.assertNotIn("verdict ok", result.stdout)
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout, "")
         self.assertIn("no verdict", result.stderr)
+        self.assert_cleaned()
 
     def test_empty_verdict_exits_without_verdict(self) -> None:
         self.commit({SPACE: "space body\n"})
         result = self.run_script(EMPTY_VERDICT="1")
-        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.returncode, 1)
         self.assertEqual(result.stdout, "")
+        self.assert_cleaned()
+
+    def test_terminate_removes_work_dir(self) -> None:
+        self.commit({SPACE: "space body\n"})
+        proc = subprocess.Popen(
+            ["bash", str(self.script)],
+            cwd=self.repo,
+            env={**self.env, "SLOW": "1"},
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+        )
+        deadline = time.monotonic() + 10
+        while not any(self.prompts.iterdir()) and time.monotonic() < deadline:
+            time.sleep(0.05)
+        self.assertTrue(list(self.root.glob("sol-review.*")))
+        os.killpg(proc.pid, signal.SIGTERM)
+        out, _ = proc.communicate(timeout=10)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertEqual(out, b"")
+        self.assert_cleaned()
 
     def test_missing_base_ref_stops(self) -> None:
         self.commit({SPACE: "space body\n"})
@@ -159,6 +223,7 @@ class SolReviewScriptTest(unittest.TestCase):
         result = self.run_script()
         self.assertEqual(result.returncode, 2)
         self.assertIn("empty diff", result.stderr)
+        self.assert_cleaned()
 
     def test_pr_body_failure_stops(self) -> None:
         self.commit({SPACE: "space body\n"})
