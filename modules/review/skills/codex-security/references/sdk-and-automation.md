@@ -126,17 +126,36 @@ Notes for pipelines:
 
 ## 3. Pre-commit hook
 
+`install-hook` has no `--model` or `--effort` option, so the hook it writes
+scans with the package default (`gpt-5.6-sol`), which is out of policy for
+review here. The recipe below installs the hook, pins its `scan` line to
+`gpt-6-sol` at `xhigh`, and verifies the result. It stops without a pinned hook
+if any step fails. Run the globally installed CLI from outside the repository,
+as the package README recommends:
+
 ```bash
-npx @openai/codex-security install-hook --fail-on-severity high
+set -eu
+REPO=/path/to/repository
+HOOK=$(git -C "$REPO" rev-parse --path-format=absolute --git-path hooks/pre-commit)
+[ ! -e "$HOOK" ] || { echo "a pre-commit hook already exists at $HOOK; leave it to its owner" >&2; exit 1; }
+codex-security install-hook "$REPO" --fail-on-severity high
+# The generated hook is three lines ending in:
+#   exec '<node>' '<cli.js>' scan . --working-tree --fail-on-severity high
+sed -i.orig -E 's/^(exec .* scan \. --working-tree --fail-on-severity [a-z]+)$/\1 --model gpt-6-sol --effort xhigh/' "$HOOK"
+rm -f "$HOOK.orig"
+# Verify: exactly one exec line, pinned, and nothing else changed.
+[ "$(wc -l < "$HOOK" | tr -d ' ')" = 3 ] \
+  && [ "$(grep -c '^exec ' "$HOOK")" = 1 ] \
+  && grep -Eq '^exec .* scan \. --working-tree --fail-on-severity [a-z]+ --model gpt-6-sol --effort xhigh$' "$HOOK" \
+  || { rm -f "$HOOK"; echo "could not pin $HOOK to gpt-6-sol at xhigh; hook removed" >&2; exit 1; }
 ```
 
-`install-hook` has no `--model` or `--effort` option, so the hook scans with
-the package default (`gpt-5.6-sol`), which is out of policy for review here.
-After installing, add `--model gpt-6-sol --effort xhigh` to the `scan` line
-in the generated hook file, and keep the pinned CI diff scan above as the
-gate. It scans staged and unstaged changes before each commit, respects
-`core.hooksPath`, and will not replace an existing hook. Blocks on
-high-severity findings and on failed scans.
+To re-check an installed hook later, run the same `grep -Eq` line against
+`$HOOK`. A pinned hook no longer matches the file `install-hook` writes, so
+`install-hook` refuses to overwrite it; to change the severity, remove the
+hook and rerun the recipe. Keep the pinned CI diff scan above as the gate. The
+hook scans staged and unstaged changes before each commit, respects
+`core.hooksPath`, and blocks on high-severity findings and on failed scans.
 
 This is a real latency and cost cost on every commit. It fits a
 high-consequence repository (payments, auth, key handling); on a busy

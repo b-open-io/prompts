@@ -271,7 +271,10 @@ npx @openai/codex-security install-hook [--fail-on-severity LEVEL]
 
 Installs a pre-commit hook that scans staged and unstaged changes. It respects
 `core.hooksPath`, refuses to replace an existing hook, and blocks high-severity
-findings or failed scans by default.
+findings or failed scans by default. It takes no `--model` or `--effort`, so
+the hook it writes runs the `gpt-5.6-sol` default. Never leave it that way: use
+the install, pin, and verify recipe in `sdk-and-automation.md` (section 3),
+which pins the hook to `gpt-6-sol` at `xhigh`.
 
 ## 11. Environment variables
 
