@@ -181,14 +181,15 @@ manifests share the same release version.
 - Visual coordinator: any node with `read-only-review` execution, whatever its
   role, is restaffed onto the review target (`gpt-6-sol` at `xhigh`), must
   validate as a Sol `xhigh` reviewer, and exports as `actor: "reviewer"`.
-- Review 0.1.21: `code-auditor` 1.4.20 drops its direct xAI review route
+- Review 0.1.21: `code-auditor` 1.4.21 drops its direct xAI review route
   (`XAI_REVIEW_MODEL`) and takes its verdict from read-only
   `codex exec -m gpt-6-sol` passes at `xhigh` on every review. Its recipe
   diffs against the PR merge-base, slices the whole diff (nothing is
   truncated), and runs one Sol pass per slice, each with the author claims
   and saved scan evidence. The recipe fails closed:
-  - Missing or invalid input exits 2. That covers a missing `jq`, an unset
-    or malformed `PR_NUMBER`, `REPO` or `SCAN_DIR`, an empty or invalid `MAX`,
+  - Missing or invalid input exits 2. That covers a missing `python3`, a
+    `codex` older than 0.156.1 or with an unreadable `--version`, an unset or
+    malformed `PR_NUMBER`, `REPO` or `SCAN_DIR`, an empty or invalid `MAX`,
     an unresolvable `BASE_REF` (fetched first when needed), a missing
     merge-base, an empty diff, an unfetchable PR body, and missing scan
     evidence.
@@ -196,17 +197,23 @@ manifests share the same release version.
     directory on every exit, including interrupts.
   - Each pass uses `codex exec --output-schema` with a strict JSON Schema,
     `{"findings": [{severity, file, line, title, detail}]}`, where severity is
-    one of `CRITICAL|HIGH|MED|LOW`. The script re-validates the
-    `--output-last-message` file with `jq`: it must be one JSON value with
-    exact keys, the exact enum, and no duplicate keys. The script then
-    computes the counts and verdict itself, and no model prose or verdict
+    one of `CRITICAL|HIGH|MED|LOW`. `-o`/`--output-last-message` writes the
+    final message to a file.
+  - One standard-library `python3` step parses that file, validates its
+    shape and counts severities. Its `object_pairs_hook` rejects a repeated
+    key at any depth, including one whose values are empty containers, so a
+    duplicate `findings` key can no longer hide a HIGH. It also rejects
+    `NaN`/`Infinity`, non-integer numbers and trailing data. The script
+    computes the verdict from those counts, and no model prose or verdict
     wording is read.
   - A failed pass or missing, empty or invalid JSON exits 1 with no verdict.
   - Any CRITICAL, HIGH or MED finding exits 3 after every finding and a
     `SUMMARY:` line are printed. Otherwise the run exits 0, and the
     integration example stops on any non-zero exit.
-  - `scripts/tests/test_code_auditor_sol_review.py` runs the recipe against a
-    temp repo.
+  - The recipe has only run against a stub `codex`. The agent file says a
+    live smoke pass on the reviewer machine is required before relying on it.
+  - `scripts/tests/test_code_auditor_sol_review.py` has 25 tests that run the
+    recipe against a temp repo with stub `codex` and `gh`.
 
   Plugin agent `model` fields accept only Claude models, so Coordinator and `hunter-skeptic-referee`
   1.1.4 route review verdicts through that explicit Sol reviewer rather than

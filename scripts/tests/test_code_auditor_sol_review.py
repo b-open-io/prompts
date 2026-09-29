@@ -15,6 +15,10 @@ SPACE = "a file.txt"
 UNICODE = "ünïcødé.txt"
 
 FAKE_CODEX = """#!/usr/bin/env bash
+if [[ ${1:-} == --version ]]; then
+  [[ -n ${VERSION_FAIL:-} ]] && exit 1
+  echo "${CODEX_VERSION-codex-cli 0.159.0}"; exit 0
+fi
 out=""; schema=""
 while (($#)); do
   case $1 in
@@ -353,9 +357,60 @@ class SolJsonContractTest(Fixture):
                 self.assertIn("no verdict", result.stderr)
                 self.assert_cleaned()
 
+    def test_duplicate_keys_at_any_depth_fail(self) -> None:
+        item = '{"severity": "LOW", "file": "a", "line": 1, "title": "t", "detail": "d"%s}'
+        high = item.replace("LOW", "HIGH") % ""
+        cases = {
+            "duphighfirst": '{"findings": [%s], "findings": []}' % high,
+            "dupbothfull": '{"findings": [%s], "findings": [%s]}' % (high, item % ""),
+            "dupbothempty": '{"findings": [], "findings": []}',
+            "dupseverity": '{"findings": [%s]}' % high.replace('"file"', '"severity": "LOW", "file"'),
+            "dupemptyvalues": '{"findings": [%s]}' % (item % ', "x": {}, "x": {}'),
+            "dupinemptyobject": '{"findings": [], "z": {"k": [], "k": []}}',
+        }
+        for name, text in cases.items():
+            with self.subTest(name=name):
+                result = self.review(name, text)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertEqual(result.stdout, "")
+                self.assertIn("duplicate key", result.stderr)
+                self.assert_cleaned()
+
+    def test_non_finite_and_non_integer_numbers_fail(self) -> None:
+        for i, value in enumerate(["NaN", "Infinity", "-Infinity", "1e400", "3.0", "true", "1000000000"]):
+            with self.subTest(value=value):
+                text = '{"findings": [{"severity": "LOW", "file": "a", "line": %s, "title": "t", "detail": "d"}]}' % value
+                result = self.review(f"num{i}", text)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertIn("invalid findings JSON", result.stderr)
+
     def test_whitespace_around_json_is_valid(self) -> None:
         result = self.review("spaced", "\n  " + doc(finding("LOW")) + "\r\n\n")
         self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class CodexVersionTest(Fixture):
+    def test_old_or_unreadable_codex_exits_2(self) -> None:
+        self.commit({SPACE: "space body\n"})
+        for env in (
+            {"CODEX_VERSION": "codex-cli 0.156.0"},
+            {"CODEX_VERSION": "codex-cli 0.99.9"},
+            {"CODEX_VERSION": "codex-cli dev"},
+            {"CODEX_VERSION": ""},
+            {"VERSION_FAIL": "1"},
+        ):
+            with self.subTest(env=env):
+                result = self.run_script(**env)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertIn("codex", result.stderr)
+                self.assertEqual(list(self.prompts.iterdir()), [])
+
+    def test_minimum_and_newer_codex_pass(self) -> None:
+        self.commit({SPACE: "space body\n"})
+        for version in ("codex-cli 0.156.1", "codex-cli 0.159.0", "codex-cli 0.157.0-alpha.2", "codex-cli 1.0.0"):
+            with self.subTest(version=version):
+                result = self.run_script(CODEX_VERSION=version)
+                self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":

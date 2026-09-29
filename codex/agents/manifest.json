@@ -72,10 +72,10 @@
     {
       "source_name": "code-auditor",
       "source_path": "modules/review/agents/code-auditor.md",
-      "source_version": "1.4.20",
-      "source_hash": "sha256:4b56f4b6cb3f8f0dd373b07dbaec174cd1a043f631da33c394e00a1b97f2b9d7",
+      "source_version": "1.4.21",
+      "source_hash": "sha256:f4403e2d7e0d2a53b0adc3de32de0282cd654cd94bf1cf4c8e92e41d661ede4f",
       "generated_file": "bopen-code-auditor.toml",
-      "generated_hash": "sha256:6fb101c11e0a840c5e3d2ea05a7f80b875b770ecc8edf7a1ede71cc2109bb699",
+      "generated_hash": "sha256:4d46a2aeb07627d1f920c2472e96c4888f401218fe9634ddcae9c5d68fdc3b02",
       "agent_name": "bopen_code_auditor",
       "curated": true,
       "default_install": true

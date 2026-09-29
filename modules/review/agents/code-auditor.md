@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.20
+version: 1.4.21
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -356,7 +356,7 @@ echo "Scans complete. Reviewing results..."
 
 ### Sol Code Review Process
 Save this as `/tmp/internal/sol-review.sh` and run it with `bash`. It needs
-`jq`, `PR_NUMBER`, `REPO` (`owner/name`), and `SCAN_DIR` (the Semgrep, CodeQL,
+`python3`, codex-cli 0.156.1 or newer, `PR_NUMBER`, `REPO` (`owner/name`), and `SCAN_DIR` (the Semgrep, CodeQL,
 Codex Security, and pattern-scan output saved earlier in this audit);
 `BASE_REF` defaults to `origin/dev` and `MAX` (lines per slice) to 4000 when
 unset. Every diff line lands in exactly one slice (files are grouped up to
@@ -367,16 +367,27 @@ Each pass runs `codex exec --output-schema` against a JSON Schema written to
 the run directory, so Sol's final message must be
 `{"findings": [{"severity", "file", "line", "title", "detail"}]}` with
 `severity` one of `CRITICAL|HIGH|MED|LOW`, `line` an integer or `null`, no
-other keys, and an empty array when there is nothing to report. The script
-re-validates that shape with `jq` (one JSON value, exact keys, exact enum, no
-duplicate keys) and computes the counts and verdict itself; any prose,
-summary, or verdict wording from the model is never read.
+other keys, and an empty array when there is nothing to report.
+`-o`/`--output-last-message` writes that final message (the schema-shaped
+JSON) to a file. One small standard-library `python3` step then parses the
+file, validates its shape, and counts severities in a single pass, so no two
+parsers can disagree about it. The file must hold exactly one JSON value, with
+no repeated key in any object at any depth, no `NaN`/`Infinity` or
+non-integer numbers, exact keys, and the exact severity enum. The script
+computes the verdict from those counts; any prose, summary, or verdict wording
+from the model is never read.
+
+Both flags appear in `codex exec --help` for codex-cli 0.156.1 and 0.159.0,
+but this recipe has only been exercised against a stub `codex`. Before
+relying on it, run one live smoke pass on the reviewer machine (for example,
+on a PR with a known finding) and confirm the `-o` file holds the schema JSON
+and the exit code matches.
 
 | Exit | Meaning | stdout |
 |------|---------|--------|
 | 0 | Every slice returned valid findings with no CRITICAL, HIGH, or MED | All findings plus a `SUMMARY:` line |
 | 1 | A slice pass failed or returned missing, empty, or invalid JSON; or an unexpected command failed | Nothing (the failing output goes to stderr) |
-| 2 | Missing or invalid input: `jq`, `PR_NUMBER`, `REPO`, `SCAN_DIR`, `MAX`, base, merge-base, diff, PR body, or scan evidence | Nothing |
+| 2 | Missing or invalid input: `python3`, `codex` older than 0.156.1 or with an unreadable version, `PR_NUMBER`, `REPO`, `SCAN_DIR`, `MAX`, base, merge-base, diff, PR body, or scan evidence | Nothing |
 | 3 | Valid findings include a CRITICAL, HIGH, or MED in any slice | All findings plus a `SUMMARY:` line |
 | 130 / 143 | Interrupted (INT / TERM) | Nothing |
 
@@ -388,7 +399,11 @@ set -euo pipefail
 export LC_ALL=C
 die() { echo "sol-review: $*; no verdict" >&2; exit 2; }
 trap 'echo "sol-review: unexpected failure at line $LINENO; no verdict" >&2; exit 1' ERR
-command -v jq >/dev/null || die "jq is required"
+command -v python3 >/dev/null || die "python3 is required"
+cv=$(codex --version 2>/dev/null | sed -n 1p) || die "codex is required"
+[[ $cv =~ ^[^0-9]*([0-9]{1,6})\.([0-9]{1,6})\.([0-9]{1,6}) ]] || die "cannot read the codex version ($cv)"
+(( 10#${BASH_REMATCH[1]} * 1000000000000 + 10#${BASH_REMATCH[2]} * 1000000 + 10#${BASH_REMATCH[3]} \
+  >= 156000001 )) || die "codex $cv is too old; --output-schema needs codex-cli >= 0.156.1"
 for v in PR_NUMBER REPO SCAN_DIR; do [[ -n ${!v:-} ]] || die "set $v"; done
 [[ $PR_NUMBER =~ ^[1-9][0-9]{0,8}$ ]] || die "PR_NUMBER must be a number"
 [[ $REPO =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || die "REPO must be owner/name"
@@ -466,15 +481,52 @@ cat > "$RUN/schema.json" <<'JSON'
   }
 }
 JSON
-shape='length == 1 and (.[0] | type == "object" and keys == ["findings"]
-  and (.findings | type == "array" and all(.[];
-    type == "object" and keys == ["detail", "file", "line", "severity", "title"]
-    and (.severity | . == "CRITICAL" or . == "HIGH" or . == "MED" or . == "LOW")
-    and (.file | type == "string") and (.title | type == "string")
-    and (.detail | type == "string")
-    and (.line == null or (.line | type == "number" and . == floor and . >= 0 and . < 1e9)))))'
-unique='[inputs | select(length == 2) | .[0]] | length == (unique | length)'
-count='[("CRITICAL", "HIGH", "MED", "LOW") as $s | [.findings[] | select(.severity == $s)] | length] | @tsv'
+cat > "$RUN/check.py" <<'PY'
+import json, sys
+
+SEVERITIES = ("CRITICAL", "HIGH", "MED", "LOW")
+KEYS = {"severity", "file", "line", "title", "detail"}
+
+
+def unique(pairs):
+    obj = {}
+    for key, value in pairs:
+        if key in obj:
+            raise ValueError("duplicate key %r" % key)
+        obj[key] = value
+    return obj
+
+
+def reject(token):
+    raise ValueError("number %s is not allowed" % token)
+
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as f:
+        doc = json.load(f, object_pairs_hook=unique, parse_constant=reject, parse_float=reject)
+    if type(doc) is not dict or set(doc) != {"findings"} or type(doc["findings"]) is not list:
+        raise ValueError("top level must be exactly {\"findings\": [...]}")
+    counts = dict.fromkeys(SEVERITIES, 0)
+    lines = []
+    for item in doc["findings"]:
+        if type(item) is not dict or set(item) != KEYS:
+            raise ValueError("finding keys must be exactly %s" % sorted(KEYS))
+        sev, line = item["severity"], item["line"]
+        if type(sev) is not str or sev not in counts:
+            raise ValueError("bad severity %r" % (sev,))
+        if any(type(item[k]) is not str for k in ("file", "title", "detail")):
+            raise ValueError("file, title, and detail must be strings")
+        if line is not None and (type(line) is not int or not 0 <= line < 10**9):
+            raise ValueError("bad line %r" % (line,))
+        counts[sev] += 1
+        where = "-" if line is None else line
+        lines.append("- [%s] %s:%s %s\n  %s" % (sev, item["file"], where, item["title"], item["detail"]))
+except Exception as e:
+    sys.exit("invalid findings JSON: %s" % e)
+with open(sys.argv[2], "w", encoding="utf-8", errors="backslashreplace") as f:
+    f.write("".join(l + "\n" for l in lines))
+print("\t".join(str(counts[s]) for s in SEVERITIES))
+PY
 failed=0; blocked=0; crit=0; high=0; med=0; low=0
 for slice in "${slices[@]}"; do
   id=$(basename "$slice")
@@ -503,11 +555,10 @@ for slice in "${slices[@]}"; do
     echo "sol-review: pass failed for $id:" >&2; tail -n 20 "$RUN/log-$id.txt" >&2
     failed=$((failed + 1)); continue
   fi
-  if ! jq -es "$shape" "$out" >/dev/null 2>&1 || ! jq -en --stream "$unique" "$out" >/dev/null 2>&1; then
-    echo "sol-review: invalid findings JSON for $id:" >&2; cat "$out" >&2 2>/dev/null || true
+  if ! counts=$(python3 "$RUN/check.py" "$out" "$RUN/verdicts/$id.txt" 2>"$RUN/check-$id.txt"); then
+    echo "sol-review: $(cat "$RUN/check-$id.txt") for $id:" >&2; cat "$out" >&2 2>/dev/null || true
     failed=$((failed + 1)); continue
   fi
-  counts=$(jq -r "$count" "$out")
   IFS=$'\t' read -r c h m l <<< "$counts"
   [[ $c =~ ^[0-9]+$ && $h =~ ^[0-9]+$ && $m =~ ^[0-9]+$ && $l =~ ^[0-9]+$ ]] \
     || { echo "sol-review: cannot count findings for $id" >&2; failed=$((failed + 1)); continue; }
@@ -518,8 +569,7 @@ done
 for slice in "${slices[@]}"; do
   id=$(basename "$slice")
   echo "## Slice $id"
-  jq -r '.findings[] | "- [\(.severity)] \(.file):\(.line // "-") \(.title)\n  \(.detail)"' \
-    "$RUN/verdicts/$id.json"
+  cat "$RUN/verdicts/$id.txt"
 done
 echo "SUMMARY: slices=$total blocked=$blocked CRITICAL=$crit HIGH=$high MED=$med LOW=$low"
 (( blocked == 0 )) || { echo "sol-review: $blocked of $total slices block the merge" >&2; exit 3; }
@@ -539,8 +589,8 @@ verdict that blocks the merge; report its findings.
 ```bash
 set -euo pipefail
 # 1. Pin the PR and its base; stop if a tool, the base, or the diff is missing
-command -v codex >/dev/null && command -v jq >/dev/null \
-  || { echo "codex (with --output-schema) and jq are required" >&2; exit 2; }
+command -v codex >/dev/null && command -v python3 >/dev/null \
+  || { echo "codex (>= 0.156.1, for --output-schema) and python3 are required" >&2; exit 2; }
 export PR_NUMBER=123 REPO=owner/name BASE_REF=origin/dev
 export SCAN_DIR=$(mktemp -d "${TMPDIR:-/tmp}/audit-scans.XXXXXX")
 trap 'rm -rf "$SCAN_DIR"' EXIT
