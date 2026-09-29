@@ -909,12 +909,14 @@ divide responsibilities:
   not duplicate their manuals.
 - `advisor` packages a narrow, read-only consult and defaults to
   `claude-opus-5-5`. From a Codex main it can use the Claude CLI in read-only
-  mode; override the model with `BOPEN_ADVISOR_MODEL`. Claude CLI `--safe-mode` appends
+  mode; `BOPEN_ADVISOR_MODEL` may name only an approved Claude advisor model
+  (`claude-opus-5-5`), and any Fable ID is rejected. Claude CLI `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
   The skill loads only the selected channel guide and records the provider,
   model, authentication path, context sent, and proof that the intended
   advisor ran. OpenCode consults use a permission-constrained child. Optional
-  Codex-model consults require an explicit `BOPEN_CODEX_ADVISOR_MODEL`.
+  Codex-model consults require an explicit `BOPEN_CODEX_ADVISOR_MODEL`, which
+  must be `gpt-6-sol`, and run at `xhigh`.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
   edges, reject-back gates) before it runs. Staffing, isolation,
   concurrency, refusals, and the paste-back spec live on that canvas.

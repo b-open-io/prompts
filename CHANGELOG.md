@@ -145,6 +145,44 @@ manifests share the same release version.
   the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
   `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
 
+## [1.1.172] - Pending production promotion
+
+### Fixed
+
+Second round of Sol review fixes. Core 1.1.172, creative 0.1.11, orchestra
+0.1.33, review 0.1.23.
+
+- `code-auditor` 1.4.23: the Sol review recipe summarizes only data files
+  that pass a content check (JSONL rows that parse, known lockfiles with
+  their generator marker, source maps, and parseable JSON under data
+  directories or a `GENERATED` glob). Code, scripts, prose, and config JSON
+  are always reviewed, whatever `GENERATED` says; an oversized one stops the
+  run. Each piece of a split hunk now carries its own exact `@@` range.
+- `promo-video-pipeline` 0.0.4: the launcher checks `hf-api capabilities`
+  against the documented contract and requires `hf-api generate --probe` to
+  refuse while no gate is armed; its exit and signal traps kill the run and
+  the gate. `gate-logger.sh` runs under `set -e`, disarms and kills the run
+  on any unexpected exit or INT/TERM/HUP, and matches protected names only as
+  whole path tokens (a key named `key` no longer trips on `keyframes/`). The
+  delivery export fits portrait masters inside 1080x1920 so no frame exceeds
+  H.264 level 4.1.
+- `security-ops` 1.0.13 and the `codex-security` references pin
+  `gpt-6-sol` at `xhigh` for scans, CI, the SDK (`codexOverrides`),
+  `bulk-scan`, `validate`, and `patch`; `cli-reference` states the real
+  `gpt-5.6-sol` default.
+- `advisor` 0.0.13: the Claude CLI channel checks `BOPEN_ADVISOR_MODEL`
+  against an allowlist (`claude-opus-5-5`) and rejects any Fable ID; the
+  Codex channel accepts only `gpt-6-sol` and pins `xhigh`.
+- `visual-coordinator` 0.1.14: Codex exports put `--ask-for-approval never`
+  before `exec`; `~/` worktree paths expand through `$HOME`; Grok exports
+  bind the approved provider and target, and `run-grok-worker.sh`
+  (`coordinator` 0.0.23) refuses when `config.toml` has moved the id. Sol and
+  Opus match only the bare id on Claude and Codex, owner-qualified ids on
+  OpenCode, and Grok aliases whose provider and target match. Extra
+  coordinators are held to the Opus pin, qualified Grok ids must resolve
+  through `config.toml`, and OpenCode reviews are staffed only with a
+  detected read-only agent (`BOPEN_OPENCODE_READONLY_AGENT`).
+
 ## [1.1.171] - Pending production promotion
 
 ### Fixed
