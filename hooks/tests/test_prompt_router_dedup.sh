@@ -42,7 +42,7 @@ if [[ -f "$state_file" ]]; then
 else
   FAIL=$((FAIL + 1)); failures+=("prompt-router dedup: state file not written"); printf '  FAIL  prompt-router dedup: state file written\n'
 fi
-recorded_count=$(jq -r '.fires["orchestra:software-factory"].count // 0' "$state_file" 2>/dev/null)
+recorded_count=$(jq -r '.fires["skill:orchestra:software-factory"].count // 0' "$state_file" 2>/dev/null)
 assert_eq "prompt-router dedup: state file records id with count 1" "1" "$recorded_count"
 
 # --- same factory prompt again immediately → second firing suppressed ---
@@ -51,7 +51,7 @@ assert_exit "prompt-router dedup: second call exit 0" "0" "$HOOK_EXIT"
 assert_eq "prompt-router dedup: second firing suppressed" "" "$HOOK_STDOUT"
 
 # --- count is untouched by the suppressed attempt (no phantom re-fire) ---
-recorded_count2=$(jq -r '.fires["orchestra:software-factory"].count // 0' "$state_file" 2>/dev/null)
+recorded_count2=$(jq -r '.fires["skill:orchestra:software-factory"].count // 0' "$state_file" 2>/dev/null)
 assert_eq "prompt-router dedup: count still 1 after suppressed attempt" "1" "$recorded_count2"
 
 # --- a third call, still within the 10-prompt gap, also stays silent ---
@@ -65,7 +65,7 @@ for _ in $(seq 1 9); do
 done
 run_hook "prompt-router.sh" "claude" "$factory_input"
 assert_contains "prompt-router dedup: re-nudge allowed after 10-prompt gap" "[BOPEN-ROUTER]" "$HOOK_STDOUT"
-recorded_count3=$(jq -r '.fires["orchestra:software-factory"].count // 0' "$state_file" 2>/dev/null)
+recorded_count3=$(jq -r '.fires["skill:orchestra:software-factory"].count // 0' "$state_file" 2>/dev/null)
 assert_eq "prompt-router dedup: fire count now 2" "2" "$recorded_count3"
 
 # --- a fourth firing never happens — max 2 fires per session, ever ---
@@ -74,6 +74,37 @@ for _ in $(seq 1 12); do
 done
 run_hook "prompt-router.sh" "claude" "$factory_input"
 assert_eq "prompt-router dedup: permanently silent after 2 fires" "" "$HOOK_STDOUT"
+
+# --- a skill and an agent sharing one id keep separate fire counters ---
+SHARED_INDEX="$FIXTURE_DIR/shared-index.json"
+cat > "$SHARED_INDEX" <<'EOF'
+{
+  "version": 1,
+  "entries": [
+    {"kind": "skill", "id": "core:front-desk", "triggers": ["who handles this", "roster"], "hint": "Route the request."},
+    {"kind": "agent", "id": "core:front-desk", "triggers": ["who handles this", "roster"], "hint": "Front desk."}
+  ]
+}
+EOF
+export BOPEN_ROUTER_INDEX="$SHARED_INDEX"
+shared_input=$(jq -n '{prompt:"who handles this on the roster", session_id:"shared-session"}')
+shared_filler=$(jq -n '{prompt:"what is the weather like outside today", session_id:"shared-session"}')
+shared_state="$BOPEN_ROUTER_STATE_DIR/shared-session.json"
+shared_count() { jq -r --arg k "$1" '.fires[$k].count // 0' "$shared_state" 2>/dev/null; }
+
+run_hook "prompt-router.sh" "claude" "$shared_input"
+assert_contains "prompt-router dedup: shared id fires the skill and the agent" "Also relevant" "$HOOK_STDOUT"
+assert_eq "prompt-router dedup: skill counter is 1" "1" "$(shared_count "skill:core:front-desk")"
+assert_eq "prompt-router dedup: agent counter is 1" "1" "$(shared_count "agent:core:front-desk")"
+assert_eq "prompt-router dedup: no bare-id counter" "0" "$(shared_count "core:front-desk")"
+
+for _ in $(seq 1 10); do
+  run_hook "prompt-router.sh" "claude" "$shared_filler"
+done
+run_hook "prompt-router.sh" "claude" "$shared_input"
+assert_contains "prompt-router dedup: shared id re-nudges after the gap" "Also relevant" "$HOOK_STDOUT"
+assert_eq "prompt-router dedup: skill counter is 2" "2" "$(shared_count "skill:core:front-desk")"
+assert_eq "prompt-router dedup: agent counter is 2" "2" "$(shared_count "agent:core:front-desk")"
 
 rm -rf "$FIXTURE_DIR" "$BOPEN_ROUTER_STATE_DIR"
 unset BOPEN_ROUTER_INDEX BOPEN_ROUTER_STATE_DIR

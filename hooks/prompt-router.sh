@@ -22,9 +22,10 @@
 #      transcripts lie after compaction, and a faded-attention re-nudge is
 #      desirable, not a bug.
 #   2. Router-side session memory — ~/.claude/core/router-state/
-#      <session_id>.json tracks, per matched id, how many times it has
-#      fired and at which prompt count. Each id fires at most twice per
-#      session, with a minimum 10-prompt gap between the two firings. This
+#      <session_id>.json tracks, per matched (kind, id), how many times it
+#      has fired and at which prompt count. A skill and an agent that share
+#      an id (e.g. core:front-desk) keep separate counters. Each entry fires
+#      at most twice per session, with a minimum 10-prompt gap between the two firings. This
 #      stops repeat nagging while still allowing one late re-nudge after a
 #      long gap. State files older than 7 days are pruned on every write.
 #
@@ -157,8 +158,12 @@ word_re = re.compile(r"[a-z0-9']+")
 prompt_words = set(word_re.findall(prompt_lower))
 
 
-def eligible(entry_id):
-    rec = state["fires"].get(entry_id)
+def fire_key(entry):
+    return f"{entry.get('kind', '')}:{entry['id']}"
+
+
+def eligible(entry):
+    rec = state["fires"].get(fire_key(entry))
     if not rec:
         return True
     count = rec.get("count", 0)
@@ -237,7 +242,7 @@ def keyword_top():
         s = score_entry(entry)
         if s >= 2:
             scored.append((s, entry))
-    scored = [(s, e) for s, e in scored if eligible(e["id"])]
+    scored = [(s, e) for s, e in scored if eligible(e)]
     if not scored:
         return []
     scored.sort(key=lambda x: (-x[0], x[1]["kind"], x[1]["id"]))
@@ -246,7 +251,7 @@ def keyword_top():
 
 jev_entries = try_jev_route(prompt, entries)
 top = keyword_top() if jev_entries is None else [
-    (0, entry) for entry in jev_entries if eligible(entry["id"])
+    (0, entry) for entry in jev_entries if eligible(entry)
 ]
 
 if not top:
@@ -283,7 +288,7 @@ if len(msg) > 500:
     msg = msg[:497] + "..."
 
 for _, entry in top:
-    rec = state["fires"].setdefault(entry["id"], {"count": 0, "last_fired_at": 0})
+    rec = state["fires"].setdefault(fire_key(entry), {"count": 0, "last_fired_at": 0})
     rec["count"] = rec.get("count", 0) + 1
     rec["last_fired_at"] = current_index
 
