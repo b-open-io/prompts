@@ -1,4 +1,4 @@
-# Claude CLI from Codex (legacy Fable channel)
+# Claude CLI from Codex
 
 Use this lane for a context-clean Claude opinion from a Codex main. Preflight
 `command -v claude`, `claude --version`, and `claude auth status`. Prepare the
@@ -22,11 +22,9 @@ env -u ANTHROPIC_API_KEY claude \
   < "$PROMPT_FILE"
 ```
 
-The file name is retained for legacy links, but Fable is not the default.
-Select a Fable alias only when the user explicitly requests that legacy
-channel. `--safe-mode` excludes personal plugins, hooks, memory, and project
-prompt customization. The communication file is required so the clean session
-keeps the expected communication style.
+`--safe-mode` excludes personal plugins, hooks, memory, and project prompt
+customization. The communication file is required so the clean session keeps
+the expected communication style.
 
 Removing `ANTHROPIC_API_KEY` deliberately selects the signed-in Claude Code
 account. Keep the same authentication lane for preflight and dispatch. If the

@@ -9,7 +9,7 @@ Slash commands are user-only; do not try to run `/advisor` for the user.
 For repository inspection, use a read-only premium Claude subagent with only
 Read, Grep, and Glob. Pin `claude-opus-5-5` and require its first line to name
 the model it actually used. An unavailable pin can silently fall back to the
-session model; treat that as no consult rather than substituting Fable.
+session model; treat that as no consult rather than substituting another model.
 
 Advisor usage is metered at the advisor model's rate. It never edits or runs
 shell commands.

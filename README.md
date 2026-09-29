@@ -909,8 +909,7 @@ divide responsibilities:
   not duplicate their manuals.
 - `advisor` packages a narrow, read-only consult and defaults to
   `claude-opus-5-5`. From a Codex main it can use the Claude CLI in read-only
-  mode; override the model with `BOPEN_ADVISOR_MODEL`. Fable remains an
-  explicit legacy opt-in, not a default. Claude CLI `--safe-mode` appends
+  mode; override the model with `BOPEN_ADVISOR_MODEL`. Claude CLI `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
   The skill loads only the selected channel guide and records the provider,
   model, authentication path, context sent, and proof that the intended
@@ -927,7 +926,7 @@ divide responsibilities:
 External lanes cross provider boundaries. A Grok dispatch can send its prompt,
 specification, and selected repository content to xAI. A Muse dispatch can send
 the same class of content to Meta. A Codex / Sol / Astra dispatch can send it to
-OpenAI. A Claude Opus or legacy Fable consult can send its consult and files
+OpenAI. A Claude Opus consult can send its consult and files
 inspected by read-only tools to Anthropic. An `opencode run` dispatch can send its prompt and repository
 content to whichever provider backs the pinned `provider/model` — confirm the
 `opencode.json` provider block first so the destination is known. State what will be shared before first use, obtain approval
