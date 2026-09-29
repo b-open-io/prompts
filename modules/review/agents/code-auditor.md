@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.22
+version: 1.4.23
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -363,16 +363,29 @@ repeated file and hunk headers) to 4000, and
 `CAP` (bytes per Sol prompt, at most 900000) to 800000 when unset. Every
 reviewed diff line lands in exactly one slice, never truncated. Files are
 grouped up to both caps; a larger file is split on hunk boundaries and an
-oversized hunk on line boundaries, and every piece repeats the file header
-and its `@@` hunk header so Sol keeps file and hunk context. The per-slice byte
-budget is `CAP` minus the shared context (claims, scan evidence, file list),
-and every prompt is checked against `CAP` before it is sent, which keeps
-passes under codex's `input_too_large` limit. Generated fixtures (`*.jsonl`,
-`*.ndjson`, JSON under `benchmarks/`, `fixtures/`, `results/`, or
-`baselines/`, lockfiles, `*.min.js`, `*.map`, `*.snap`, plus any
-colon-separated globs in `GENERATED`) are not sliced; every pass gets a
-summary line for each (path, added and deleted lines, blob id). Every pass
-gets the author claims and scan evidence.
+oversized hunk on line boundaries. Every piece repeats the file header, and
+each piece of a split hunk gets its own `@@ -old,count +new,count @@` range
+computed from the lines it holds, so Sol's line numbers stay exact. The
+per-slice byte budget is `CAP` minus the shared context (claims, scan
+evidence, file list), and every prompt is checked against `CAP` before it is
+sent, which keeps passes under codex's `input_too_large` limit.
+
+Only data files that pass a content check are summarized instead of sliced;
+every pass gets a summary line for each (path, added and deleted lines, blob
+id). The data files are: `*.jsonl`/`*.ndjson` where every non-empty line
+parses as a JSON object or array; known lockfiles (`package-lock.json`,
+`npm-shrinkwrap.json`, `composer.lock`, and `flake.lock` must parse as JSON;
+`bun.lock`, `pnpm-lock.yaml`, `yarn.lock`, `Cargo.lock`, and `poetry.lock`
+must carry their generator's marker); source maps (`*.map` that parse as JSON
+with a `mappings` string); and `*.json` that parses as an object or array and
+sits under a `benchmarks/`, `fixtures/`, `results/`, or `baselines/`
+directory or matches a colon-separated glob in `GENERATED`. Config JSON such
+as `package.json`, `tsconfig*.json`, `plugin.json`, `marketplace.json`,
+`hooks*.json`, and `settings*.json` is always reviewed. `GENERATED` globs never
+widen this to other extensions: code, scripts, and prose (`*.js`, `*.min.js`,
+`*.ts`, `*.tsx`, `*.sh`, `*.py`, `*.md`, and so on) are always sliced and
+reviewed, and one that does not fit the budget stops the run with exit 2.
+Every pass gets the author claims and scan evidence.
 
 Each pass runs `codex exec --output-schema` against a JSON Schema written to
 the run directory, so Sol's final message must be
@@ -453,12 +466,22 @@ find "$SCAN_DIR" -type f -exec cat {} + > "$RUN/evidence.txt" || die "cannot rea
 # 3. Slice the whole diff on file and hunk boundaries under the line and byte caps;
 #    names stay NUL-delimited and literal, and generated fixtures are summarized
 cat > "$RUN/slice.py" <<'PY'
-import fnmatch, os, subprocess, sys
+import fnmatch, json, os, re, subprocess, sys
 
 base, run, max_lines, cap = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
-GENERATED = ["*.jsonl", "*.ndjson", "*.lock", "*-lock.json", "*-lock.yaml", "*.min.js", "*.map",
-             "*.snap", "benchmarks/*.json", "*fixtures/*.json", "*results/*.json", "*baselines/*.json"]
-GENERATED += [g for g in os.environ.get("GENERATED", "").split(":") if g]
+# Only data files can be summarized, and only when their content checks out;
+# code, scripts, and prose are always reviewed, whatever GENERATED says.
+CUSTOM = [g for g in os.environ.get("GENERATED", "").split(":") if g]
+DATA_DIRS = {"benchmarks", "fixtures", "results", "baselines"}
+CONFIG = re.compile(r"^(package|composer|tsconfig.*|jsconfig.*|plugin|marketplace|hooks.*|settings.*"
+                    r"|\.mcp|mcp|manifest|app|vercel|turbo|biome|deno|components)\.json$", re.I)
+LOCKS = {
+    "package-lock.json": "json", "npm-shrinkwrap.json": "json", "composer.lock": "json",
+    "flake.lock": "json", "bun.lock": b'"lockfileVersion"', "pnpm-lock.yaml": b"lockfileVersion:",
+    "yarn.lock": (b"# yarn lockfile", b"__metadata:"), "Cargo.lock": b"@generated",
+    "poetry.lock": b"@generated",
+}
+HUNK = re.compile(rb"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(.*)$", re.S)
 
 
 def die(msg):
@@ -470,12 +493,53 @@ def git(*args):
                           capture_output=True).stdout
 
 
+def show(rev, path):
+    out = subprocess.run(["git", "cat-file", "blob", "%s:%s" % (rev, path)], capture_output=True)
+    return out.stdout if out.returncode == 0 else None
+
+
+def container(text):
+    try:
+        return isinstance(json.loads(text), (dict, list))
+    except (ValueError, UnicodeDecodeError, RecursionError):
+        return False
+
+
+def data(path):
+    name, parts = os.path.basename(path), path.split("/")[:-1]
+    ext = os.path.splitext(name)[1].lower()
+    body = show("HEAD", path)
+    if body is None:
+        body = show(base, path)
+    if body is None:
+        return False
+    if name in LOCKS:
+        mark = LOCKS[name]
+        if mark == "json":
+            return container(body)
+        return any(m in body[:4096] for m in (mark if isinstance(mark, tuple) else (mark,)))
+    if ext in (".jsonl", ".ndjson"):
+        rows = [r for r in body.splitlines() if r.strip()]
+        return bool(rows) and all(container(r) for r in rows)
+    if ext == ".map":
+        try:
+            doc = json.loads(body)
+        except (ValueError, UnicodeDecodeError, RecursionError):
+            return False
+        return isinstance(doc, dict) and isinstance(doc.get("mappings"), str)
+    if ext != ".json" or CONFIG.match(name):
+        return False
+    placed = (any(p.lower() in DATA_DIRS for p in parts)
+              or any(fnmatch.fnmatch(path, g) for g in CUSTOM))
+    return placed and container(body)
+
+
 with open(os.path.join(run, "files"), "rb") as f:
     files = [p.decode("utf-8", "surrogateescape") for p in f.read().split(b"\0") if p]
 summary, reviewed = [], []
 for path in files:
     spec = ":(literal)" + path
-    if any(fnmatch.fnmatch(path, g) for g in GENERATED):
+    if data(path):
         stat = git("diff", "--numstat", "--no-renames", base + "...HEAD", "--", spec).split(b"\t")
         blob = subprocess.run(["git", "rev-parse", "--verify", "--quiet", "HEAD:" + path],
                               capture_output=True).stdout.strip().decode() or "deleted"
@@ -536,15 +600,31 @@ for path, spec in reviewed:
                 flush(); add(head + hunk, path, len(head))
             continue
         flush()
-        ctx = len(head) + 1
-        piece = head + [hunk[0]]
-        for line in hunk[1:]:
-            full = len(piece) - ctx + 1 > max_lines or sum(map(len, piece)) + len(line) > budget
-            if full and len(piece) > ctx:
-                add(piece, path, ctx); flush()
-                piece = head + [hunk[0].rstrip(b"\n") + b" (hunk continued)\n"]
-            piece.append(line)
-        add(piece, path, ctx)
+        m = HUNK.match(hunk[0])
+        if not m:
+            die("cannot parse the hunk header in %s" % path)
+        # Each piece gets its own @@ range; a zero count names the line before the hunk.
+        old, new, tail = int(m[1]) + (m[2] == b"0"), int(m[3]) + (m[4] == b"0"), m[5]
+        room = budget - sum(map(len, head)) - len(hunk[0]) - 64
+        bodies, body, size = [], [], 0
+        rest = hunk[1:]
+        for j, line in enumerate(rest):
+            # a "\ No newline" marker stays with the line it describes
+            tag = j + 1 < len(rest) and rest[j + 1].startswith(b"\\")
+            want, grow = 1 + tag, len(line) + (len(rest[j + 1]) if tag else 0)
+            if (body and not line.startswith(b"\\")
+                    and (len(body) + want > max_lines or size + grow > room)):
+                bodies.append(body); body, size = [], 0
+            body.append(line); size += len(line)
+        bodies.append(body)
+        for i, body in enumerate(bodies):
+            oc = sum(1 for l in body if l[:1] in (b" ", b"-"))
+            nc = sum(1 for l in body if l[:1] in (b" ", b"+"))
+            at = b"@@ -%d,%d +%d,%d @@" % (old if oc else old - 1, oc, new if nc else new - 1, nc)
+            add(head + [at + tail] + body, path, len(head) + 1)
+            if i < len(bodies) - 1:
+                flush()
+            old, new = old + oc, new + nc
     flush()
 flush()
 for i, data in enumerate(slices):

@@ -318,6 +318,69 @@ class SolReviewScriptTest(Fixture):
         self.assertIn("benchmarks/result.json +1 -0", text)
         self.assertIn("+export {}", text)
 
+    def test_code_and_unchecked_data_are_reviewed(self) -> None:
+        for d in ("dist", "benchmarks", "fixtures", "custom"):
+            (self.repo / d).mkdir()
+        self.commit({
+            "dist/app.min.js": "MINIFIED_CODE();\n",
+            "benchmarks/tool.js": "BENCH_SCRIPT();\n",
+            "benchmarks/notes.md": "BENCH_NOTES\n",
+            "benchmarks/bad.json": '{"BROKEN_JSON": \n',
+            "benchmarks/rows.jsonl": '{"ok": 1}\nROW_NOT_JSON\n',
+            "fixtures/package.json": '{"scripts": {"postinstall": "FIXTURE_HOOK"}}\n',
+            "custom/run.sh": "CUSTOM_SCRIPT\n",
+            "custom/data.json": '{"CUSTOM_DATA": 1}\n',
+        })
+        result = self.run_script(GENERATED="*.js:*.md:*.sh:custom/*:dist/*")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        text = self.prompt_text()
+        summary = text.split("### Generated files", 1)[1].split("###", 1)[0]
+        for marker in ("MINIFIED_CODE", "BENCH_SCRIPT", "BENCH_NOTES", "BROKEN_JSON", "ROW_NOT_JSON",
+                       "FIXTURE_HOOK", "CUSTOM_SCRIPT"):
+            self.assertRegex(text, r"(?m)^\+.*" + marker)
+        for path in ("dist/app.min.js", "benchmarks/tool.js", "benchmarks/notes.md", "benchmarks/bad.json",
+                     "benchmarks/rows.jsonl", "fixtures/package.json", "custom/run.sh"):
+            self.assertNotIn(path + " +", summary)
+        self.assertIn("custom/data.json +1 -0", summary)
+        self.assertNotIn("CUSTOM_DATA", text)
+
+    def test_oversized_minified_code_stops(self) -> None:
+        (self.repo / "dist").mkdir()
+        self.commit({"dist/app.min.js": "x" * 300000 + "\n"})
+        result = self.run_script(CAP="200000", GENERATED="*.js")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("slice budget", result.stderr)
+        self.assertEqual(list(self.prompts.iterdir()), [])
+
+    def test_split_hunks_get_exact_ranges(self) -> None:
+        old = [f"keep {i}\n" for i in range(1, 21)]
+        self.commit({"r.txt": "".join(old)})
+        new = old[:5] + [f"new {i}\n" for i in range(7)] + old[9:]
+        self.commit({"r.txt": "".join(new)})
+        self.git("branch", "-f", "dev", "HEAD~1")
+        whole = subprocess.run(["git", "diff", "HEAD~1", "HEAD", "--", "r.txt"], cwd=self.repo,
+                               capture_output=True, text=True, check=True).stdout
+        top = re.search(r"(?m)^@@ -(\d+),(\d+) \+(\d+),(\d+) @@", whole)
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        rx = re.compile(r"(?m)^@@ -(\d+),(\d+) \+(\d+),(\d+) @@.*\n((?:[ +\-\\].*\n?)*)")
+        pieces = [m for p in sorted(self.prompts.iterdir()) for m in rx.finditer(p.read_text())]
+        self.assertGreater(len(pieces), 2)
+        o, n = int(top[1]), int(top[3])
+        total_o = total_n = 0
+        for m in pieces:
+            body = [l for l in m[5].splitlines() if l and not l.startswith("```")]
+            oc = sum(l[0] in " -" for l in body)
+            nc = sum(l[0] in " +" for l in body)
+            self.assertEqual((int(m[2]), int(m[4])), (oc, nc), m[0])
+            self.assertEqual(int(m[1]), o if oc else o - 1, m[0])
+            self.assertEqual(int(m[3]), n if nc else n - 1, m[0])
+            for k, l in enumerate(x for x in body if x[0] in " +"):
+                self.assertEqual(new[n - 1 + k].rstrip("\n"), l[1:])
+            o, n = o + oc, n + nc
+            total_o, total_n = total_o + oc, total_n + nc
+        self.assertEqual((total_o, total_n), (int(top[2]), int(top[4])))
+
     def test_oversized_line_and_cap_stop(self) -> None:
         self.commit({"long.ts": "x" * 300000 + "\n"})
         result = self.run_script(CAP="200000")
