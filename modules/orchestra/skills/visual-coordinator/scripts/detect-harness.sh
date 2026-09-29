@@ -409,7 +409,15 @@ fi
 # The Claude list is the CLI's static alias set, not an account check: the claude CLI has no
 # offline way to prove the signed-in account can run claude-opus-5-5, and a probe call would
 # spend a network request on every detect. lane_access marks it unverified; a failed Opus
-# dispatch is the evidence, reported as an unavailable lane.
+# dispatch is the evidence, reported as an unavailable lane. The graph treats a lane missing
+# from lane_access as unverified, so every lane is reported: Codex is verified only by
+# `codex login status`, Grok only by a signed-in listing, OpenCode only by a provider listing.
+codex_access="unverified"
+[[ "$codex_bin" == "available" ]] && codex login status >/dev/null 2>&1 && codex_access="verified"
+grok_access="unverified"
+[[ -n "$grok_auth" ]] && grok_access="verified"
+opencode_access="unverified"
+[[ -n "$opencode_models_json" ]] && opencode_access="verified"
 cat <<JSON
 {
   "harness": "$harness",
@@ -424,7 +432,10 @@ cat <<JSON
     "agent_budget_default": $agent_budget
   },
   "lane_access": {
-    "claude": "unverified"
+    "claude": "unverified",
+    "codex": "$codex_access",
+    "grok": "$grok_access",
+    "opencode": "$opencode_access"
   },
   "lanes": {
     "claude": "$claude_bin",

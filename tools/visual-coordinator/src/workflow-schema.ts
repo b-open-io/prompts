@@ -170,7 +170,8 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
       id,
       label: own(laneLabels, id) ?? id.replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
       availability,
-      access: (own(rawAccess, id) ?? own(rawAccess, rawId)) === "unverified" ? "unverified" as const : "verified" as const,
+      // Only an explicit "verified" proves access; a missing or unknown value stays unverified.
+      access: (own(rawAccess, id) ?? own(rawAccess, rawId)) === "verified" ? "verified" as const : "unverified" as const,
       isHost: id === hostLane,
       models: detectedModels.length > 0 ? detectedModels : (modelInventory.complete ? [] : (own(fallbackModels, id) ?? [])),
       efforts: effortInventory.length > 0 ? effortInventory : fallbackEfforts,
@@ -262,16 +263,13 @@ const offPolicy = `GPT-5.6 models are out of policy (build on ${OPUS}, review on
 const preferredLane = (environment: WorkflowEnvironment): WorkflowLane => environment.hostLane ?? "codex";
 const laneModels = (environment: WorkflowEnvironment, lane: WorkflowLane): string[] => own(environment.lanes, lane)?.models ?? own(fallbackModels, lane) ?? [];
 
-// The coordinator is the current main session. Only an allowed model is picked; otherwise it stays
-// empty so validation fails closed instead of drifting to the next catalog entry.
+// The coordinator is the current main session: the model the detector reports as selected
+// (`<lane>_default`), or Claude's `inherit`. A catalog entry is only an option, never the main, so
+// without a selected model it stays empty and validation rejects it.
 const mainModel = (environment: WorkflowEnvironment, lane: WorkflowLane): string => {
   const configured = own(environment.mainModels, lane);
   if (configured) return isSuperseded(configured) ? "" : configured;
-  const models = laneModels(environment, lane);
-  if (lane === "claude") return models.includes("inherit") ? "inherit" : "";
-  // A Grok main is only ever the detector-reported default; never assume grok-4.7.
-  if (lane === "grok") return "";
-  return models.find(isSol) ?? "";
+  return lane === "claude" && laneModels(environment, lane).includes("inherit") ? "inherit" : "";
 };
 
 type Runs = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string) => boolean;
@@ -397,6 +395,19 @@ export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnviro
     ],
   };
 };
+
+/** Where a step's content goes: the OpenCode provider prefix, a Grok id's base_url host, or the lane. */
+export const destination = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): string => {
+  if (lane === "opencode") return model.includes("/") ? model.split("/", 1)[0] : "";
+  if (lane === "grok") return own(environment.grokModelProviders, model) ?? (isGrokFamily(model) ? "xai" : "");
+  return lane;
+};
+
+/** An approval covers one lane, execution provider, and model provider; changing any of them clears it. */
+export const reapprove = (environment: WorkflowEnvironment, node: WorkflowNode, next: WorkflowNode): WorkflowNode =>
+  next.lane === node.lane && next.provider === node.provider
+    && destination(environment, next.lane, next.model) === destination(environment, node.lane, node.model)
+    ? next : { ...next, disclosure: undefined };
 
 /** Re-staff a step whose role changed, the same way a lane-less seed node is staffed. */
 export const restaff = (node: WorkflowNode, role: NodeRole, environment: WorkflowEnvironment): WorkflowNode => {

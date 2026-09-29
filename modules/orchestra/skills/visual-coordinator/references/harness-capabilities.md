@@ -56,7 +56,7 @@ Verified against official docs and a real persisted run.
 | Primitives | `agent(prompt, opts)`, `pipeline(items, ...stages)`, `parallel(thunks)`, `phase(title)`, `log(msg)`, globals `args` and `budget` |
 | Fan-out | 16 concurrent (runtime-enforced, not configurable), 1,000 agents total per run |
 | Sequencing | `pipeline()` has **no barrier** — item A can be in stage 3 while B is in stage 1. `parallel()` **is** a barrier |
-| Per-step model | Yes: `opts.model` (`opus`/`sonnet`/`haiku`/`fable`/full id/`inherit`) and `opts.effort` (`low`…`max`) |
+| Per-step model | Yes: `opts.model` (`opus`/`sonnet`/`haiku`/full id/`inherit`) and `opts.effort` (`low`…`max`) |
 | Structured output | `opts.schema` (JSON Schema) forces a validated object return |
 | Named agents | `opts.agentType` uses a roster `subagent_type`, inheriting its tools and model |
 | Isolation | `opts.isolation: 'worktree'` per agent; controller owns predictable worktree/branch lifecycle |
@@ -161,11 +161,13 @@ Discover rather than assume; invoke `scripts/detect-harness.sh` with the
 main-known `BOPEN_HOST_HARNESS` value.
 
 - **Claude**: default advisor `claude-opus-5-5`; native aliases include
-  `opus`, `sonnet`, `haiku`, and `inherit`. `fable` is legacy opt-in only.
+  `opus`, `sonnet`, `haiku`, and `inherit`.
   Effort `low|medium|high|xhigh|max`. The detector lists these whenever the
   `claude` CLI exists and reports `lane_access.claude: "unverified"`: there is
   no offline account check, so a failed Opus dispatch reports the lane
-  unavailable.
+  unavailable. The detector reports `lane_access` for every lane (Codex from
+  `codex login status`, Grok from a signed-in listing, OpenCode from a provider
+  listing); the graph treats a missing or unknown value as unverified.
 - **Codex**: whatever `model =` says in `~/.codex/config.toml`, plus
   `model_reasoning_effort`. There is no enumeration command; the config is the
   truth. The in-app picker has lagged behind what `-m` accepts.

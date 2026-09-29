@@ -190,12 +190,16 @@ const externalCommand = (
     const worktree = node.worktree!;
     const args = ["--model", model, "--effort", node.effort, "--mode", readOnly ? "read" : "write", "--cwd", repo];
     if (!readOnly) args.push("--branch", worktree.branch, "--base-ref", worktree.baseRef, "--ownership", node.ownedPaths.join(", ") || "none");
+    // The subshell's EXIT trap removes the prompt file on success, failure, and interrupt alike.
     return {
-      command: [
-        `PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)`,
-        `printf '%s\\n' ${promptArg} > "$PROMPT_FILE"`,
-        `bash ${shellQuote(options.grokWorker)} --auth ${shellQuote(options.grokAuth)} ${args.map(shellQuote).join(" ")} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
-      ].join(" && "),
+      command: `(${[
+        `PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX) || exit 1`,
+        `trap 'rm -f "$PROMPT_FILE"' EXIT`,
+        `trap 'exit 129' HUP`,
+        `trap 'exit 130' INT`,
+        `trap 'exit 143' TERM`,
+        `printf '%s\\n' ${promptArg} > "$PROMPT_FILE" && bash ${shellQuote(options.grokWorker)} --auth ${shellQuote(options.grokAuth)} ${args.map(shellQuote).join(" ")} --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"`,
+      ].join("; ")})`,
     };
   }
 

@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { defaultWorkflow, parseEnvironment, restaff, validateWorkflow, type WorkflowNode } from "./workflow-schema";
 import { commandForNode, dispatchIssues, generateNodeCommand, serializeWorkflow, shellQuote, toExportText } from "./command";
 
@@ -111,7 +115,7 @@ describe("versioned export contract", () => {
   const environment = parseEnvironment({
     harness: "codex",
     lanes: { codex: "available", grok: "available", claude: "available" },
-    models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"], claude: ["claude-opus-5-5"] },
+    models: { codex: ["gpt-6-sol"], codex_default: "gpt-6-sol", grok: ["grok-4.7"], claude: ["claude-opus-5-5"] },
   });
   const approvedDefault = () => {
     const workflow = defaultWorkflow(environment);
@@ -170,6 +174,22 @@ describe("versioned export contract", () => {
     expect(writer.command).not.toMatch(/(^|\| )'?grok'? /);
     expect(reviewer.command).toContain("'--mode' 'read'");
     expect(reviewer.command).not.toContain("--branch");
+  });
+
+  it("removes the Grok prompt file whether the wrapper succeeds or fails", () => {
+    const dir = mkdtempSync(join(tmpdir(), "grok-cleanup-"));
+    const seen = join(dir, "seen");
+    const worker = join(dir, "run-grok-worker.sh");
+    for (const code of [0, 7]) {
+      writeFileSync(worker, `#!/bin/bash\nwhile [ $# -gt 0 ]; do [ "$1" = --prompt-file ] && echo "$2" > '${seen}'; shift; done\nexit ${code}\n`);
+      const spec = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex", grokWorker: worker, grokAuth: "api" });
+      const run = spawnSync("sh", ["-c", spec.command!], { env: { ...process.env, TMPDIR: dir } });
+      expect(run.status).toBe(code);
+      const promptFile = readFileSync(seen, "utf8").trim();
+      expect(promptFile.startsWith(dir)).toBe(true);
+      expect(existsSync(promptFile)).toBe(false);
+    }
+    rmSync(dir, { recursive: true, force: true });
   });
 
   it("withholds executable records for nodes that fail validation", () => {

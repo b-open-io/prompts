@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultWorkflow, groupModels, laneStatus, nextNodeId, parseEnvironment, parseSeed, restaff, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
+import { defaultWorkflow, destination, groupModels, laneStatus, nextNodeId, parseEnvironment, parseSeed, reapprove, restaff, runsNatively, toPlan, validateWorkflow } from "./workflow-schema";
 
 const liveCodexEnvironment = () => parseEnvironment({
   harness: "codex",
@@ -9,6 +9,7 @@ const liveCodexEnvironment = () => parseEnvironment({
     claude_effort: ["low", "medium", "high", "max"],
     codex: ["gpt-6-sol", "gpt-5.6-luna"],
     codex_effort: ["minimal", "low", "medium", "high", "xhigh"],
+    codex_default: "gpt-6-sol",
     grok: ["grok-4.7", "grok-4.6"],
     grok_effort: ["minimal", "low", "medium", "high", "xhigh"],
     opencode: [],
@@ -190,7 +191,7 @@ describe("workflow schema", () => {
     it("skips a superseded Sol that heads the Codex inventory", () => {
       const nodes = workerNodes("codex", { codex: "available", claude: "available" }, { ...soloSolLast, claude: ["claude-opus-5-5"] });
 
-      expect(nodes.map((node) => node.model)).toEqual(["gpt-6-sol", "claude-opus-5-5", "gpt-6-sol"]);
+      expect(nodes.map((node) => node.model)).toEqual(["", "claude-opus-5-5", "gpt-6-sol"]);
       expect(nodes.map((node) => node.provider)).toEqual(["native", "external", "native"]);
     });
 
@@ -428,7 +429,21 @@ describe("workflow schema", () => {
       expect(validateWorkflow(defaultWorkflow(fiveSixOnly), fiveSixOnly).map((issue) => issue.message)).toContain("Coordinate needs a model.");
 
       const withSol = opencodeOnly(["openrouter/openai/gpt-5.6-sol", luna, "openrouter/openai/gpt-6-sol"]);
-      expect(defaultWorkflow(withSol).nodes[0].model).toBe("openrouter/openai/gpt-6-sol");
+      expect(defaultWorkflow(withSol).nodes[0].model).toBe("");
+    });
+
+    it("takes the main model from the selected default, never from a Sol catalog entry", () => {
+      const catalog = ["openrouter/openai/gpt-6-sol", "anthropic/claude-opus-5-5"];
+      const selected = parseEnvironment({
+        harness: "opencode",
+        lanes: { opencode: "available" },
+        models: { opencode: catalog, opencode_default: "anthropic/claude-opus-5-5" },
+      });
+      expect(defaultWorkflow(selected).nodes[0].model).toBe("anthropic/claude-opus-5-5");
+      expect(defaultWorkflow(opencodeOnly(catalog)).nodes[0].model).toBe("");
+      const codex = parseEnvironment({ harness: "codex", lanes: { codex: "available" }, models: { codex: ["gpt-6-sol"] } });
+      expect(defaultWorkflow(codex).nodes[0].model).toBe("");
+      expect(validateWorkflow(defaultWorkflow(codex), codex).map((issue) => issue.message)).toContain("Coordinate needs a model.");
     });
 
     it("never auto-staffs Grok on a non-Grok lane, even under credit pressure", () => {
@@ -634,7 +649,7 @@ describe("workflow schema", () => {
     expect(validateWorkflow({ title: "t", nodes: [solMedium], edges: [] }, environment).map((issue) => issue.message)).toEqual(["External review must review on gpt-6-sol at xhigh."]);
   });
 
-  it("marks a lane the detector could not verify as unverified", () => {
+  it("treats a lane as verified only when the detector says so", () => {
     const environment = parseEnvironment({
       harness: "codex",
       lanes: { claude: "available", codex: "available" },
@@ -643,10 +658,13 @@ describe("workflow schema", () => {
     });
 
     expect(environment.lanes.claude.access).toBe("unverified");
-    expect(environment.lanes.codex.access).toBe("verified");
+    expect(environment.lanes.codex.access).toBe("unverified");
     expect(laneStatus(environment.lanes.claude)).toBe("available shell-out · access unverified");
-    expect(laneStatus(environment.lanes.codex)).toBe("current host");
-    expect(laneStatus(liveCodexEnvironment().lanes.claude)).toBe("available shell-out");
+    expect(laneStatus(environment.lanes.codex)).toBe("current host · access unverified");
+    const verified = parseEnvironment({ harness: "codex", lanes: { claude: "available" }, lane_access: { claude: "verified", codex: "bogus" } });
+    expect(verified.lanes.claude.access).toBe("verified");
+    expect(verified.lanes.codex.access).toBe("unverified");
+    expect(laneStatus(verified.lanes.claude)).toBe("available shell-out");
   });
 
   it("sanitizes node ids before using them in generated worktree metadata", () => {
@@ -695,5 +713,32 @@ describe("model picker groups", () => {
       ["constructor", ["constructor/gpt-6-sol"]],
       ["openai", ["openai/gpt-6-sol", "openai/gpt-6-astra"]],
     ]);
+  });
+});
+
+describe("disclosure approval", () => {
+  const environment = parseEnvironment({
+    harness: "codex",
+    lanes: { codex: "available", opencode: "available", grok: "available" },
+    models: { codex: ["gpt-6-sol"], codex_default: "gpt-6-sol", opencode: ["anthropic/claude-opus-5-5", "openrouter/anthropic/claude-opus-5-5"], grok: ["grok-4.7", "ox-alpha"] },
+    grok_model_providers: { "ox-alpha": "openrouter" },
+  });
+  const node = { ...defaultWorkflow(environment).nodes[1], lane: "opencode", provider: "external" as const, model: "anthropic/claude-opus-5-5", disclosure: "Approved direct Anthropic" };
+
+  it("names the provider a model sends content to", () => {
+    expect(destination(environment, "opencode", "openrouter/anthropic/claude-opus-5-5")).toBe("openrouter");
+    expect(destination(environment, "grok", "ox-alpha")).toBe("openrouter");
+    expect(destination(environment, "grok", "grok-4.7")).toBe("xai");
+    expect(destination(environment, "codex", "gpt-6-sol")).toBe("codex");
+  });
+
+  it("clears the approval when the model provider changes", () => {
+    expect(reapprove(environment, node, { ...node, model: "openrouter/anthropic/claude-opus-5-5" }).disclosure).toBeUndefined();
+    expect(reapprove(environment, node, { ...node, model: "anthropic/claude-sonnet-5" }).disclosure).toBe("Approved direct Anthropic");
+  });
+
+  it("clears the approval when the execution provider or lane changes", () => {
+    expect(reapprove(environment, node, { ...node, provider: "native" }).disclosure).toBeUndefined();
+    expect(reapprove(environment, node, { ...node, lane: "codex" }).disclosure).toBeUndefined();
   });
 });
