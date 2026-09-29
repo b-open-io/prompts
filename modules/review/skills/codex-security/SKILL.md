@@ -156,7 +156,7 @@ closure, so run the loop rather than handing the user a list:
 npx @openai/codex-security validate FINDINGS_JSON "Missing authz in src/routes.ts:18" --codex 'model="gpt-6-sol"' --effort xhigh
 
 # 2. Minimal repository-native fix that closes the boundary.
-npx @openai/codex-security patch FINDINGS_JSON "Missing authz in src/routes.ts:18"
+npx @openai/codex-security patch FINDINGS_JSON "Missing authz in src/routes.ts:18" --codex 'model="gpt-6-sol"' --effort xhigh
 
 # 3. Prove it closed — re-scan the same scope, then compare by root cause.
 npx @openai/codex-security scan . --path src/routes.ts --model gpt-6-sol --effort xhigh --max-cost 2

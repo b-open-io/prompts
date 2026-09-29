@@ -21,7 +21,10 @@ Contents:
 ```ts
 import { CodexSecurity } from "@openai/codex-security";
 
-const security = new CodexSecurity();
+// The SDK takes no model option; pin it through the isolated Codex config.
+const security = new CodexSecurity({
+  codexOverrides: { model: "gpt-6-sol", model_reasoning_effort: "xhigh" },
+});
 
 try {
   const result = await security.run("/path/to/repository", {
@@ -88,7 +91,7 @@ export OPENAI_API_KEY="$CODEX_SECURITY_KEY"
 
 npx @openai/codex-security scan . \
   --diff "origin/${GITHUB_BASE_REF:-main}" \
-  --effort xhigh \
+  --model gpt-6-sol --effort xhigh \
   --output-dir "$RUNNER_TEMP/security-results" \
   --fail-on-severity high \
   --max-cost 5 \
@@ -127,7 +130,11 @@ Notes for pipelines:
 npx @openai/codex-security install-hook --fail-on-severity high
 ```
 
-Scans staged and unstaged changes before each commit, respects
+`install-hook` has no `--model` or `--effort` option, so the hook scans with
+the package default (`gpt-5.6-sol`), which is out of policy for review here.
+After installing, add `--model gpt-6-sol --effort xhigh` to the `scan` line
+in the generated hook file, and keep the pinned CI diff scan above as the
+gate. It scans staged and unstaged changes before each commit, respects
 `core.hooksPath`, and will not replace an existing hook. Blocks on
 high-severity findings and on failed scans.
 
@@ -161,7 +168,7 @@ wallet,https://github.com/acme/wallet.git,89abcdef0123456789abcdef0123456789abcd
 ```
 
 ```bash
-npx @openai/codex-security bulk-scan repositories.csv --effort xhigh \
+npx @openai/codex-security bulk-scan repositories.csv --model gpt-6-sol --effort xhigh \
   --output-dir /path/outside/repos/security-scans \
   --workers 4 --max-attempts 2
 ```
@@ -198,7 +205,7 @@ Ordered by how much they save per unit of lost signal:
    biggest lever.
 2. `--max-cost` on every invocation. Partial results are preserved, so a
    ceiling costs coverage, never the whole run.
-3. Keep `--effort xhigh`; never lower review effort or switch the review to
+3. Keep `--model gpt-6-sol --effort xhigh`; never lower review effort or switch the review to
    another model to save cost. Cut cost by narrowing scope instead: fewer
    files, a focused diff, fewer passes. Under usage-credit pressure, narrow
    further or queue the review.

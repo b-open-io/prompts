@@ -27,6 +27,8 @@ absolute paths with the prepared consult, repository, and output locations:
 set -o pipefail
 : "${BOPEN_CODEX_ADVISOR_MODEL:?Set the explicitly selected Codex advisor model}"
 CODEX_ADVISOR_MODEL="$BOPEN_CODEX_ADVISOR_MODEL"
+[[ $CODEX_ADVISOR_MODEL == gpt-6-sol ]] \
+  || { echo "advisor: $CODEX_ADVISOR_MODEL is not approved; Codex review consults use gpt-6-sol" >&2; exit 2; }
 PROMPT_FILE="/absolute/path/to/prepared-advisor-consult.md"
 REPO_DIR="/absolute/path/to/repo-or-worktree"
 LOG_FILE="/absolute/path/to/advisor.log"
@@ -34,6 +36,7 @@ VERDICT_FILE="/absolute/path/to/advisor-verdict.md"
 
 codex exec \
   --model "$CODEX_ADVISOR_MODEL" \
+  -c 'model_reasoning_effort="xhigh"' \
   --sandbox read-only \
   --cd "$REPO_DIR" \
   --output-last-message "$VERDICT_FILE" \
@@ -42,8 +45,9 @@ codex exec \
 
 `BOPEN_ADVISOR_MODEL` remains the general advisor default and resolves to
 `claude-opus-5-5`; this optional channel uses its separate explicit
-`BOPEN_CODEX_ADVISOR_MODEL` selection. Let that model use its default reasoning
-effort unless the task or user calls for a supported override.
+`BOPEN_CODEX_ADVISOR_MODEL` selection, which must be `gpt-6-sol`; any other
+value stops the consult with exit 2. Reasoning effort is pinned to `xhigh` with
+`-c model_reasoning_effort="xhigh"` so a user's config cannot lower it.
 
 Keep `--sandbox read-only` explicit so a user's write-capable configuration
 does not determine the consult's filesystem permissions. Do not add write or

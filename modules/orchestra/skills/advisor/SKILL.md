@@ -1,6 +1,6 @@
 ---
 name: advisor
-version: 0.0.12
+version: 0.0.13
 description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult

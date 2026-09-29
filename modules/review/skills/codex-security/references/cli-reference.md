@@ -73,8 +73,8 @@ npx @openai/codex-security scan <path> [flags]
 | `--diff REF` | Scan committed changes against a ref (e.g. `origin/main`) |
 | `--working-tree` | Scan staged and unstaged changes |
 | `--mode standard\|deep` | Deep repeats discovery to reduce variance; supports repository and path targets, not diffs |
-| `--model MODEL` | Default `gpt-6-sol`; GPT-6 models only |
-| `--effort minimal\|low\|medium\|high\|xhigh` | Default `xhigh` |
+| `--model MODEL` | Default `gpt-5.6-sol` (codex-security 0.1.31), which is out of policy here: always pass `--model gpt-6-sol` |
+| `--effort minimal\|low\|medium\|high\|xhigh\|max` | Default `xhigh`; pass `--effort xhigh` explicitly anyway |
 | `--knowledge-base PATH` (repeatable) | Architecture docs, threat models, policies. Directories are searched recursively for Markdown, text, PDF, and `.docx` |
 | `--output-dir DIR` | Artifact directory; must be outside the scanned directory and any enclosing Git worktree |
 | `--archive-existing` | Move existing results to `<output-dir>.previous-<timestamp>-<id>` and start clean |
@@ -122,7 +122,7 @@ configuration. Each scan starts a private runtime with these defaults:
 
 ```toml
 cli_auth_credentials_store = "file"
-model = "gpt-6-sol"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 
 [features]
@@ -211,11 +211,11 @@ state and results outside the scanned repository.
 npx @openai/codex-security findings false-positive OCCURRENCE_ID \
   --reason "The route already checks permissions"
 
-npx @openai/codex-security validate FINDINGS_JSON "Possible SQL injection in src/query.ts:42" --effort xhigh
-npx @openai/codex-security validate "Possible SQL injection" --effort xhigh
+npx @openai/codex-security validate FINDINGS_JSON "Possible SQL injection in src/query.ts:42" --codex 'model="gpt-6-sol"' --effort xhigh
+npx @openai/codex-security validate "Possible SQL injection" --codex 'model="gpt-6-sol"' --effort xhigh
 
-npx @openai/codex-security patch FINDINGS_JSON "Missing authorization check in src/routes.ts:18"
-npx @openai/codex-security patch "Missing authorization check" --effort high
+npx @openai/codex-security patch FINDINGS_JSON "Missing authorization check in src/routes.ts:18" --codex 'model="gpt-6-sol"' --effort xhigh
+npx @openai/codex-security patch "Missing authorization check" --codex 'model="gpt-6-sol"' --effort xhigh
 ```
 
 `validate` re-checks whether a finding is real. `patch` produces a minimal
@@ -241,9 +241,8 @@ reviewers.
 ## 9. `bulk-scan`
 
 ```bash
-npx @openai/codex-security bulk-scan --effort xhigh
 npx @openai/codex-security bulk-scan --model gpt-6-sol --effort xhigh
-npx @openai/codex-security bulk-scan repositories.csv --effort xhigh \
+npx @openai/codex-security bulk-scan repositories.csv --model gpt-6-sol --effort xhigh \
   --output-dir /path/outside/repos/security-scans --workers 4 --max-attempts 2
 ```
 
