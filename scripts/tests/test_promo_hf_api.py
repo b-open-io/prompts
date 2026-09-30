@@ -172,6 +172,15 @@ class HfApiTest(unittest.TestCase):
             with self.subTest(path=path):
                 result = self.hf_api("generate", "--probe", "--model", "kling/v3/pro", "--body-file", path)
                 self.assertEqual(result.returncode, 2)
+        (self.work / "link.json").symlink_to(outside)
+        (self.work / "linkdir").symlink_to(self.state, target_is_directory=True)
+        (self.work / "sub").mkdir()
+        (self.work / "sub" / "body.json").write_text('{"duration": 3}')
+        self.assertEqual(self.hf_api("generate", "--probe", "--model", "kling/v3/pro", "--body-file", "sub/body.json").returncode, 0)
+        for path in ("link.json", "linkdir/outside.json"):
+            with self.subTest(path=path):
+                result = self.hf_api("generate", "--probe", "--model", "kling/v3/pro", "--body-file", path)
+                self.assertEqual(result.returncode, 2, result.stderr)
 
     def spent(self) -> float:
         return round(sum(e["cost_usd"] for e in self.entries()), 6)

@@ -1,6 +1,6 @@
 ---
 name: promo-video-pipeline
-version: 0.0.8
+version: 0.0.9
 description: >-
   Use this when making a motion-graphics promo or showreel, a short social cut or a
   longer commercial cut, from the user's prompt plus optional music. Covers
@@ -225,7 +225,7 @@ SID=$(uuidgen)
   --setting-sources "" --settings ./run-settings.json \
   --permission-mode dontAsk \
   --append-system-prompt-file ./run-rules.md \
-  --allowedTools "Bash(hf-api *)" "Bash(ffmpeg *)" "Bash(ffprobe *)" "Read(./**)" "Write(./**)" "Edit(./**)" \
+  --allowedTools "Bash(hf-api *)" "Bash(ffmpeg *)" "Bash(ffprobe *)" "Read(./**)" "Edit(./**)" \
   --disallowedTools "Bash(curl *)" "Bash(wget *)" "Read(~/.hf-api/**)" "Edit(~/.hf-api/**)" \
   --max-budget-usd 20 \
   --output-format stream-json --verbose > run.jsonl &
