@@ -21,6 +21,14 @@ base_url = "https://api.openai.com/v1"
 [model."xai/grok-4.7"]
 model = "grok-4.7"
 base_url = "https://api.x.ai/v1"
+
+[model."old-gpt"]
+model = "gpt-5.5"
+base_url = "https://api.openai.com/v1"
+
+[model."story"]
+model = "claude-fable-5-1"
+base_url = "https://api.anthropic.com/v1"
 """
 
 
@@ -86,6 +94,21 @@ class GrokWrapperBindingTest(unittest.TestCase):
         result = self.run_wrapper("xai/grok-4.7", "--credit-pressure", config=False)
         self.assertEqual(result.returncode, 2)
         self.assertIn("no resolvable [model] entry", result.stderr)
+
+    def test_shared_policy_refuses_gpt_5_5_and_fable(self) -> None:
+        cases = [
+            ("gpt-5.5", "GPT-5.5 models are out of policy"),
+            ("openrouter/openai/gpt-5.5-mini", "GPT-5.5 models are out of policy"),
+            ("claude-fable-5-1", "Fable models are never used"),
+            ("anthropic/Fable-2", "Fable models are never used"),
+            ("old-gpt", "an alias for gpt-5.5; GPT-5.5 models are out of policy"),
+            ("story", "an alias for claude-fable-5-1; Fable models are never used"),
+        ]
+        for model, message in cases:
+            with self.subTest(model=model):
+                result = self.run_wrapper(model)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertIn(message, result.stderr)
 
 
 if __name__ == "__main__":

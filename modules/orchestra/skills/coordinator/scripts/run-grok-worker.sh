@@ -59,15 +59,19 @@ done
 # Provider-qualified ids (xai/grok-4.6, openrouter/openai/gpt-5.6-luna) get the same policy as bare
 # ids, and so does any casing; the original id is still used for the listing check and dispatch.
 model_policy=$(printf '%s' "$model" | tr '[:upper:]' '[:lower:]')
+# shellcheck source=model-policy.sh
+source "$(dirname "${BASH_SOURCE[0]}")/model-policy.sh"
+if why=$(bopen_off_policy "$model_policy"); then
+  echo "model $model is not allowed; $why" >&2; exit 2
+fi
 case "$model_policy" in
-  gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is not allowed; GPT-5.6 models are out of policy" >&2; exit 2 ;;
   grok-4.7|*/grok-4.7)
     ((credit_pressure)) || { echo "$model is a usage-credit-pressure fallback; pass --credit-pressure or route the work to claude-opus-5-5" >&2; exit 2; } ;;
   grok-*|*/grok-*) echo "model $model is not allowed; Grok workers are pinned to grok-4.7" >&2; exit 2 ;;
 esac
 # A custom id is judged by its config.toml entry too (parsed as real TOML, so either quote style):
-# an alias served by xAI, or pointing at a Grok or GPT-5.6 model, gets the same pin, credit gate, and
-# GPT-5.6 ban as the bare id would. A non-Grok id with no resolvable entry is refused.
+# an alias served by xAI, or pointing at a Grok or out-of-policy model, gets the same pin, credit
+# gate, and model-policy ban as the bare id would. A non-Grok id with no resolvable entry is refused.
 alias_config="${GROK_HOME:-$HOME/.grok}/config.toml"
 alias_info=""
 alias_host=""
@@ -130,9 +134,9 @@ if [[ "$alias_status" == 0 ]]; then
     esac
   fi
   alias_effective=${alias_target:-$model_policy}
-  case "$alias_effective" in
-    gpt-5.6|gpt-5.6-*|*/gpt-5.6|*/gpt-5.6-*) echo "model $model is an alias for $alias_effective; GPT-5.6 models are out of policy" >&2; exit 2 ;;
-  esac
+  if why=$(bopen_off_policy "$alias_effective"); then
+    echo "model $model is an alias for $alias_effective; $why" >&2; exit 2
+  fi
   if [[ "$alias_host" == "x.ai" || "$alias_host" == *.x.ai || "$alias_effective" == grok-* || "$alias_effective" == */grok-* || "$model_policy" =~ (^|/)x-?ai/ || "$alias_effective" =~ (^|/)x-?ai/ ]]; then
     case "$alias_effective" in
       grok-4.7|*/grok-4.7)
