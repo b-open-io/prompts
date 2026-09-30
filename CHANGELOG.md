@@ -145,6 +145,43 @@ manifests share the same release version.
   the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
   `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
 
+## [1.1.174] - Pending production promotion
+
+### Fixed
+
+Fourth round of Sol review fixes. Core 1.1.174, creative 0.1.13, orchestra
+0.1.35, review 0.1.25.
+
+- `visual-coordinator` 0.1.16 / `coordinator` 0.0.24: an OpenCode read-only
+  review exports only through the shipped `run-opencode-review.sh`. At
+  dispatch it turns off project config and plugins in the task worktree,
+  pins a primary `bopen-review` agent inline, and runs `opencode debug agent`
+  there. The run starts only when the resolved agent denies every edit,
+  shell, task, and web permission, enables no tool beyond read, grep, glob,
+  and list (so no MCP or custom tool), and the model's provider uses its
+  official host and package. The detector parses JSONC configs, including
+  the default `opencode.jsonc`, and reports each provider's host. An
+  OpenCode main session on Sol or Opus is accepted only on the official
+  host.
+- `run-grok-worker.sh` shares the model policy check with the coordinator,
+  so an id or config alias that resolves to GPT-5.5, GPT-5.6, Grok 4.6, or
+  Fable is refused.
+- `promo-video-pipeline` 0.0.6: `gate-logger.sh` snapshots the sha256 of
+  `hf-api`, `prices.json`, and `budget` at start and keeps read-only copies.
+  `hf-api` checks its own sha256 and both files against that snapshot on
+  every generate and prices only from the gate's copies. The launcher runs
+  the model in the Claude Code OS sandbox with no network and no access to
+  `~/.hf-api`, loads no settings besides its own, and refuses to start when
+  the key is visibly exposed. The tripwire matches names with shell quotes
+  removed. `gate-logger.sh` starts on macOS (no `head -c 0` or
+  `realpath -m`).
+- `code-auditor` 1.4.25: the lockfile key-lines tier keeps Yarn Berry
+  `resolution` lines, Composer `shasum`, flake `rev` and `narHash`, npm
+  `hasInstallScript`, Gemfile version lines, and added dependency entries.
+- `codex-security`: the pre-commit recipe removes its hook on any failed
+  step before the pin is verified. The workspace-write `codex exec` example
+  in `harness-capabilities.md` pins its model.
+
 ## [1.1.173] - Pending production promotion
 
 ### Fixed
