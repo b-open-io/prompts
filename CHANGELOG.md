@@ -145,6 +145,43 @@ manifests share the same release version.
   the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
   `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
 
+## [1.1.175] - Pending production promotion
+
+### Fixed
+
+Fifth round of Sol review fixes. Core 1.1.175, creative 0.1.14, orchestra
+0.1.36, review 0.1.26.
+
+- `promo-video-pipeline` 0.0.7: `hf-api` calls `https://api.higgsfield.ai`,
+  the host in Higgsfield's authentication docs. Each `prices.json` entry
+  needs a positive `usd_ceiling` (the model's most expensive variant) and
+  may add a positive `usd_per_second`, which prices a request by its
+  `duration` up to the ceiling. Any other price is refused. A generate
+  reserves its cost in the ledger before the call and sends the reservation
+  as the `Idempotency-Key`. A 2xx with a request id books the spend, a 4xx
+  releases the reservation, and a timeout or 5xx is retried with the same
+  key; if it stays ambiguous the reservation stays booked, since Higgsfield
+  may have charged it. The launcher starts its session with `setsid`, or
+  with `perl` or `python3` where `setsid` is missing (stock macOS).
+  `gate-logger.sh` trips on a Claude Code `model_refusal_fallback` event and
+  on any assistant message whose model is not `claude-opus-5-5`.
+- `coordinator` 0.0.25: `run-opencode-review.sh` refuses any allow or ask
+  rule after the reviewer's deny-all rule other than read, grep, glob, and
+  list, so a wildcard grant such as `"evil_*": "allow"` is caught although
+  MCP tools never appear in `opencode debug agent`. It runs only
+  `openai/gpt-6-sol` or `openai/gpt-6-astra` (or their `openrouter/openai/`
+  ids) at `--variant xhigh`. OpenCode's built-in default plugins stay on and
+  are documented: they are provider sign-in loaders, and turning them off
+  removes ChatGPT sign-in for OpenAI.
+- `visual-coordinator` 0.1.17: the detector reads OpenCode's managed
+  settings, `OPENCODE_CONFIG_CONTENT`, `OPENCODE_CONFIG_DIR`, and
+  `OPENCODE_CONFIG` when it reports provider hosts for the main session.
+  The canvas exports an OpenCode review only for an approved review model
+  at xhigh.
+- `code-auditor` 1.4.26: the Sol review summarizes only benchmark data (JSON
+  or JSONL that parses, under `benchmarks/` or a `GENERATED` directory
+  glob). JSON under `fixtures/`, `results/`, or `baselines/` is reviewed.
+
 ## [1.1.174] - Pending production promotion
 
 ### Fixed
