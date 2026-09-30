@@ -104,11 +104,11 @@ class FakeOpenCodeTests(unittest.TestCase):
 
     def test_t1_worktree_grant_is_refused(self) -> None:
         self.agent(permission=READ_ONLY_RULES + [{"permission": "bash", "action": "allow", "pattern": "*"}], tools={**READ_ONLY_TOOLS, "bash": True})
-        self.assert_refused(self.review(), "does not deny bash")
+        self.assert_refused(self.review(), "allows bash after its deny-all rule")
 
     def test_t1_pattern_allow_after_deny_is_refused(self) -> None:
         self.agent(permission=READ_ONLY_RULES + [{"permission": "edit", "action": "allow", "pattern": "src/*"}])
-        self.assert_refused(self.review(), "does not deny edit")
+        self.assert_refused(self.review(), "allows edit after its deny-all rule")
 
     def test_t1b_subagent_is_refused(self) -> None:
         self.agent(mode="subagent")
@@ -118,12 +118,24 @@ class FakeOpenCodeTests(unittest.TestCase):
         self.agent(tools={**READ_ONLY_TOOLS, "github_create_pull_request": True})
         self.assert_refused(self.review(), "can use github_create_pull_request")
 
-    def test_t5_unknown_tools_must_be_denied(self) -> None:
-        self.agent(permission=READ_ONLY_RULES + [{"permission": "github_*", "action": "allow", "pattern": "*"}])
+    def test_t5_wildcard_grants_are_refused_by_rule(self) -> None:
+        for rule in ({"permission": "evil_*", "action": "allow", "pattern": "*"},
+                     {"permission": "github_create_pull_request", "action": "ask", "pattern": "*"},
+                     {"permission": "*", "action": "ask", "pattern": "*"},
+                     {"permission": "external_directory", "action": "allow", "pattern": "*"}):
+            with self.subTest(rule=rule):
+                self.agent(permission=READ_ONLY_RULES + [rule])
+                self.assert_refused(self.review(), "after its deny-all rule")
+        self.agent(permission=READ_ONLY_RULES[:1])
+        self.assert_refused(self.review(), "does not deny every tool by default")
+
+    def test_denies_and_opencode_tool_output_are_accepted(self) -> None:
+        self.agent(permission=READ_ONLY_RULES + [
+            {"permission": "read", "action": "deny", "pattern": "*.env"},
+            {"permission": "bash", "action": "deny", "pattern": "*"},
+            {"permission": "external_directory", "action": "allow", "pattern": "/home/x/.local/share/opencode/tool-output/*"},
+        ])
         self.assertEqual(self.review().returncode, 0)
-        (self.state / "run.args").unlink()
-        self.agent(permission=READ_ONLY_RULES + [{"permission": "*", "action": "ask", "pattern": "*"}])
-        self.assert_refused(self.review(), "does not deny")
 
     def test_unverifiable_output_is_refused(self) -> None:
         (self.state / "agent.json").write_text("Error: unknown command debug agent\n")
@@ -148,6 +160,18 @@ class FakeOpenCodeTests(unittest.TestCase):
         for model in ("openai/gpt-5.5", "openrouter/openai/gpt-5.6-sol", "anthropic/claude-fable-5-1"):
             with self.subTest(model=model):
                 self.assert_refused(self.review(model), "is not allowed")
+
+    def test_only_an_approved_model_at_xhigh_reviews(self) -> None:
+        for model in ("anthropic/claude-opus-5-5", "xai/grok-4.7", "openai/gpt-6-terra", "custom/gpt-6-sol"):
+            with self.subTest(model=model):
+                self.assert_refused(self.review(model), "not an approved review model")
+        for variant in ((), ("--variant", "high")):
+            with self.subTest(variant=variant):
+                self.assert_refused(self.run_wrapper("--model", "openai/gpt-6-sol", "--dir", str(self.worktree), *variant, "--", "x"), "--variant xhigh")
+        for model in ("openai/gpt-6-astra", "openrouter/openai/gpt-6-sol"):
+            with self.subTest(model=model):
+                self.assertEqual(self.review(model).returncode, 0)
+                (self.state / "run.args").unlink()
 
     def test_missing_opencode_is_refused(self) -> None:
         (self.bin / "opencode").unlink()
@@ -268,6 +292,12 @@ class RealOpenCodeTests(unittest.TestCase):
         (self.global_dir / "tool/scribble.ts").write_text('export default { description: "w", args: {}, async execute() { return "x" } }\n')
         result = self.check()
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_t5_global_wildcard_grant_is_refused(self) -> None:
+        (self.global_dir / "opencode.json").write_text(json.dumps({"agent": {"bopen-review": {"permission": {"*": "deny", "evil_*": "allow"}}}}))
+        result = self.check()
+        self.assertEqual(result.returncode, 3, result.stderr)
+        self.assertIn("allows evil_* after its deny-all rule", result.stderr)
 
     def test_t6_global_jsonc_endpoint_override_is_refused(self) -> None:
         (self.global_dir / "opencode.jsonc").write_text(

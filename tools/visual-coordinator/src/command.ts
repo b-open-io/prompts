@@ -234,6 +234,12 @@ const externalCommand = (
           : "OpenCode has no portable read-only CLI flag; OpenCode reviews export only through run-opencode-review.sh, which detect-harness.sh did not verify.",
       };
     }
+    if (readOnly && (!/^(?:openai|openrouter\/openai)\/gpt-6-(?:sol|astra)$/.test(model) || node.effort !== "xhigh")) {
+      return {
+        command: null,
+        reason: `OpenCode review needs openai/gpt-6-sol or openai/gpt-6-astra (or their openrouter/openai/ ids) at xhigh, not ${model} at ${node.effort ?? "the default effort"}.`,
+      };
+    }
     const args: string[] = [];
     if (node.effort === "xhigh") args.push("--variant", "xhigh");
     if (readOnly) {

@@ -256,6 +256,14 @@ describe("versioned export contract", () => {
     expect(spec.omissions).toContainEqual(expect.objectContaining({ id, reason: expect.stringContaining("can use scribble") }));
     expect(toExportText(workflow, rejected, { opencodeReviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" })).not.toContain("run-opencode-review.sh");
 
+    const offModel = review(verified);
+    const reviewer = offModel.nodes.find((entry) => entry.role === "reviewer")!;
+    for (const change of [{ model: "anthropic/claude-opus-5-5" }, { effort: "high" as const }]) {
+      const generated = generateNodeCommand({ ...reviewer, ...change }, { hostHarness: "grok", nativeController: "grok", opencodeReviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" });
+      expect(generated.command).toBeNull();
+      expect(generated.reason).toContain("at xhigh");
+    }
+
     for (const bad of ["run-opencode-review.sh", "/tmp/x/other.sh", "/tmp/$(id)/run-opencode-review.sh"]) {
       expect(parseEnvironment({ opencode_reviewer: bad }).opencodeReviewer).toBeNull();
     }

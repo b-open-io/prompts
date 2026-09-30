@@ -4,13 +4,15 @@
 # under review could grant itself edit or bash. This wrapper turns project config and plugins off,
 # pins the reviewer agent inline, then asks OpenCode for the agent it actually resolves in that
 # directory (`opencode debug agent`) and runs the review only when that agent is a primary agent
-# whose every enabled tool is read-only and whose edit, bash, task, and unknown (MCP or custom)
-# tools are denied. Anything it cannot verify refuses the run.
+# that denies every tool by default and, after that deny, allows or asks for nothing but read, grep,
+# glob, and list (MCP and custom tools never show up in `debug agent`, so wildcard grants are refused
+# by rule, not by probing tool names). Only an approved review model at xhigh runs. Anything it
+# cannot verify refuses the run.
 set -euo pipefail
 umask 077
 
 usage() {
-  echo "usage: $0 --dir DIR --model PROVIDER/MODEL [--variant NAME] -- PROMPT" >&2
+  echo "usage: $0 --dir DIR --model PROVIDER/MODEL --variant xhigh -- PROMPT" >&2
   echo "       $0 --check --dir DIR [--model PROVIDER/MODEL]" >&2
 }
 
@@ -43,7 +45,10 @@ if [[ -n "$model" ]]; then
   if why=$(bopen_off_policy "$model"); then
     echo "model $model is not allowed; $why" >&2; exit 3
   fi
+  [[ "$model" =~ ^(openai|openrouter/openai)/gpt-6-(sol|astra)$ ]] \
+    || { echo "model $model is not an approved review model; use openai/gpt-6-sol or openai/gpt-6-astra (or their openrouter/openai/ ids)" >&2; exit 3; }
 fi
+((check)) || [[ "$variant" == xhigh ]] || { echo "code review runs at --variant xhigh, not ${variant:-the default}" >&2; exit 3; }
 command -v opencode >/dev/null 2>&1 || { echo "opencode is not installed" >&2; exit 3; }
 command -v python3 >/dev/null 2>&1 || { echo "python3 is required to verify the reviewer" >&2; exit 3; }
 
@@ -85,13 +90,11 @@ trap 'rm -rf "$tmp"' EXIT
   || { echo "opencode debug config failed in $dir, so the reviewer cannot be verified:" >&2; tail -n 5 "$tmp/config.err" >&2; exit 3; }
 
 python3 - "$AGENT" "$model" "$tmp/agent.json" "$tmp/config.json" <<'PY_VERIFY' || exit 3
-import json, re, sys
+import json, sys
 from urllib.parse import urlparse
 
 name, model, agent_path, config_path = sys.argv[1:]
 READ = {"read", "grep", "glob", "list"}
-DENIED = ("edit", "write", "patch", "multiedit", "apply_patch", "bash", "task", "skill", "todowrite",
-          "webfetch", "websearch", "codesearch", "lsp", "bopen_probe_mcp_tool")
 HOSTS = {"openai": "openai.com", "anthropic": "anthropic.com", "openrouter": "openrouter.ai", "xai": "x.ai"}
 PACKAGES = {"openai": "@ai-sdk/openai", "anthropic": "@ai-sdk/anthropic", "openrouter": "@openrouter/ai-sdk-provider", "xai": "@ai-sdk/xai"}
 
@@ -113,10 +116,6 @@ def load(path, what):
     return value
 
 
-def matches(value, pattern):
-    return re.fullmatch("".join(".*" if c == "*" else "." if c == "?" else re.escape(c) for c in pattern), value) is not None
-
-
 agent = load(agent_path, "agent")
 if agent.get("name") != name:
     refuse("OpenCode resolved agent %r, not %s" % (agent.get("name"), name))
@@ -125,11 +124,16 @@ if agent.get("mode") not in ("primary", "all"):
 rules = agent.get("permission")
 if not isinstance(rules, list) or not all(isinstance(r, dict) and {"permission", "pattern", "action"} <= r.keys() for r in rules):
     refuse("agent %s has no resolved permission ruleset" % name)
-for tool in DENIED:
-    last = next((r for r in reversed(rules) if isinstance(r["permission"], str) and matches(tool, r["permission"])), None)
-    if not last or last["action"] != "deny" or last["pattern"] != "*":
-        label = "MCP and custom tools" if tool == "bopen_probe_mcp_tool" else tool
-        refuse("agent %s does not deny %s (last rule: %s)" % (name, label, json.dumps(last)))
+floor = max((i for i, r in enumerate(rules) if (r["permission"], r["pattern"], r["action"]) == ("*", "*", "deny")), default=None)
+if floor is None:
+    refuse("agent %s does not deny every tool by default" % name)
+for rule in rules[floor + 1:]:
+    kind, pattern, action = rule["permission"], rule["pattern"], rule["action"]
+    if action == "deny" or kind in READ:
+        continue
+    if (kind, action) == ("external_directory", "allow") and isinstance(pattern, str) and pattern.endswith("/opencode/tool-output/*"):
+        continue
+    refuse("agent %s %ss %s after its deny-all rule; only read, grep, glob, and list may be allowed (%s)" % (name, action, kind, json.dumps(rule)))
 tools = agent.get("tools")
 if not isinstance(tools, dict):
     refuse("agent %s has no resolved tool map" % name)
@@ -158,6 +162,4 @@ if ((check)); then
   echo "ok: $AGENT is read-only in $dir"
   exit 0
 fi
-args=(run --pure --agent "$AGENT" --model "$model" --dir "$dir")
-[[ -n "$variant" ]] && args+=(--variant "$variant")
-exec opencode "${args[@]}" "$prompt"
+exec opencode run --pure --agent "$AGENT" --model "$model" --dir "$dir" --variant "$variant" "$prompt"
