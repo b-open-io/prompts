@@ -344,6 +344,26 @@ class SolReviewScriptTest(Fixture):
         self.assertIn("custom/data.json +1 -0", summary)
         self.assertNotIn("CUSTOM_DATA", text)
 
+    def test_only_benchmark_paths_are_summarized(self) -> None:
+        for d in ("fixtures", "results", "baselines", "bench-out"):
+            (self.repo / d).mkdir()
+        self.commit({
+            "fixtures/f.json": '{"FIX_JSON": 1}\n',
+            "results/r.json": '{"RES_JSON": 1}\n',
+            "baselines/b.json": '{"BASE_JSON": 1}\n',
+            "rows.jsonl": '{"TOP_JSONL": 1}\n',
+            "loose.json": '{"GLOB_JSON": 1}\n',
+            "bench-out/o.json": '{"OUT_JSON": 1}\n',
+        })
+        result = self.run_script(GENERATED="*.json:*/o.json:bench-out/*")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        text = self.prompt_text()
+        summary = text.split("### Generated files", 1)[1].split("###", 1)[0]
+        for marker in ("FIX_JSON", "RES_JSON", "BASE_JSON", "TOP_JSONL", "GLOB_JSON"):
+            self.assertRegex(text, r"(?m)^\+.*" + marker)
+        self.assertIn("bench-out/o.json +1 -0", summary)
+        self.assertNotIn("OUT_JSON", text)
+
     def test_lockfiles_and_source_maps_are_reviewed(self) -> None:
         (self.repo / "fixtures").mkdir()
         self.commit({
