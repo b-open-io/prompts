@@ -168,36 +168,118 @@ for _, _, model in sorted(models)[:80]:
     print(model)
 ' "$1"
 }
+# OpenCode reads opencode.json or opencode.jsonc (fresh installs write JSONC) from the project,
+# its .opencode/ directory, and the global config. Each provider that overrides its endpoint
+# (`options.baseURL`, `api`) or its SDK package (`npm`) is reported with the host it really
+# reaches, so the canvas can refuse an openai/… or anthropic/… id served somewhere else. A
+# config that does not parse is reported as the `*` provider, which makes every host unverified.
 opencode_config_info() {
-  python3 - "$1" <<'PY_OPENCODE_CONFIG'
-import json, re, sys
+  python3 - "$@" <<'PY_OPENCODE_CONFIG'
+import json, os, re, sys
+from urllib.parse import urlparse
 
-try:
-    data = json.load(open(sys.argv[1], encoding="utf-8"))
-except (OSError, TypeError, ValueError):
-    data = {}
+HOSTS = {"openai": "openai.com", "anthropic": "anthropic.com", "openrouter": "openrouter.ai", "xai": "x.ai"}
+PACKAGES = {"openai": "@ai-sdk/openai", "anthropic": "@ai-sdk/anthropic", "openrouter": "@openrouter/ai-sdk-provider", "xai": "@ai-sdk/xai"}
 
-if isinstance(data, dict):
+
+def jsonc(text):
+    """Parse JSON with // and /* */ comments and trailing commas, as OpenCode accepts."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        if text[i] == '"':
+            j = i + 1
+            while j < n and text[j] != '"':
+                j += 2 if text[j] == "\\" else 1
+            if j >= n:
+                raise ValueError("unterminated string")
+            out.append(text[i:j + 1])
+            i = j + 1
+        elif text.startswith("//", i):
+            j = text.find("\n", i)
+            i = n if j < 0 else j
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            if j < 0:
+                raise ValueError("unterminated comment")
+            i = j + 2
+        elif text[i] == ",":
+            rest = re.match(r"\s*", text[i + 1:])
+            k = i + 1 + rest.end()
+            if k < n and text[k] in "}]":
+                i += 1
+                continue
+            out.append(",")
+            i += 1
+        else:
+            out.append(text[i])
+            i += 1
+    return json.loads("".join(out))
+
+
+def official(provider, host):
+    base = HOSTS.get(provider)
+    return base is not None and (host == base or host.endswith("." + base))
+
+
+hosts = {}
+for path in sys.argv[1:]:
+    if not os.path.isfile(path):
+        continue
+    try:
+        with open(path, encoding="utf-8") as handle:
+            data = jsonc(handle.read())
+    except (OSError, ValueError):
+        hosts["*"] = "unparseable " + path
+        continue
+    if not isinstance(data, dict):
+        hosts["*"] = "unparseable " + path
+        continue
     model = data.get("model")
     if isinstance(model, str) and model:
         print("model\t" + model)
     providers = data.get("provider")
-    if isinstance(providers, dict):
-        for provider in providers:
-            if isinstance(provider, str) and re.fullmatch(r"[A-Za-z0-9._-]+", provider):
-                print("provider\t" + provider)
+    if not isinstance(providers, dict):
+        continue
+    for provider, entry in providers.items():
+        if not isinstance(provider, str) or not re.fullmatch(r"[A-Za-z0-9._-]+", provider):
+            continue
+        print("provider\t" + provider)
+        if not isinstance(entry, dict):
+            continue
+        options = entry.get("options") if isinstance(entry.get("options"), dict) else {}
+        found = []
+        for url in (options.get("baseURL"), entry.get("api")):
+            if url is not None:
+                found.append((urlparse(url).hostname or "").lower() if isinstance(url, str) else "")
+        if entry.get("npm") is not None and entry.get("npm") != PACKAGES.get(provider):
+            found.append("npm:" + str(entry.get("npm")))
+        for host in found:
+            host = host if re.fullmatch(r"[A-Za-z0-9.:@/_-]+", host or "") else "unverified"
+            if provider not in hosts or official(provider, hosts[provider]):
+                hosts[provider] = host
+for provider, host in hosts.items():
+    print("host\t%s\t%s" % (provider, host))
 PY_OPENCODE_CONFIG
 }
-for _cfg in "$PWD/opencode.json" "$HOME/.config/opencode/opencode.json"; do
-  if [[ -f "$_cfg" ]]; then
-    while IFS=$'\t' read -r _kind _value; do
-      case "$_kind" in
-        model) [[ -n "$opencode_model" ]] && continue; opencode_model="$_value" ;;
-        provider) opencode_providers=$(printf '%s\n%s' "$opencode_providers" "$_value") ;;
-      esac
-    done < <(opencode_config_info "$_cfg")
-  fi
-done
+opencode_hosts=""
+_oc_global="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
+while IFS=$'\t' read -r _kind _value _extra; do
+  case "$_kind" in
+    model) [[ -n "$opencode_model" ]] && continue; opencode_model="$_value" ;;
+    provider) opencode_providers=$(printf '%s\n%s' "$opencode_providers" "$_value") ;;
+    host) opencode_hosts=$(printf '%s\n%s\t%s' "$opencode_hosts" "$_value" "$_extra") ;;
+  esac
+done < <(opencode_config_info "$PWD/opencode.jsonc" "$PWD/opencode.json" "$PWD/.opencode/opencode.jsonc" "$PWD/.opencode/opencode.json" \
+  "$_oc_global/opencode.jsonc" "$_oc_global/opencode.json" "$_oc_global/config.json")
+unset _oc_global _extra
+opencode_hosts_json=$(printf '%s\n' "$opencode_hosts" | python3 -c '
+import json, sys
+out = {}
+for line in sys.stdin:
+    parts = line.rstrip("\n").split("\t")
+    if len(parts) == 2 and parts[0] not in out:
+        out[parts[0]] = parts[1]
+print(json.dumps(out))')
 if [[ "$opencode_model" == */* ]]; then
   opencode_providers=$(printf '%s\n%s' "$opencode_providers" "${opencode_model%%/*}")
 fi
@@ -407,135 +489,25 @@ if [[ -f "$grok_worker" && "$grok_worker" == /* ]]; then
   grok_worker_json="\"$(json_escape "$grok_worker")\""
 fi
 
-# OpenCode has no read-only CLI flag, so an OpenCode review exports only with the agent named in
-# BOPEN_OPENCODE_READONLY_AGENT, and only after its config is read and proves edit, bash, and task
-# (subagents can write) are denied. Every definition found (opencode.json `agent.<name>` and
-# agent/agents/<name>.md, from the working directory up to its git root and in the global config)
-# must deny each one explicitly, through `permission` or the legacy `tools` booleans, and none may
-# allow a write-capable tool. Inherited or global defaults do not count, and an OPENCODE_CONFIG*
-# override or an opencode.jsonc cannot be verified. Anything else is reported as a problem and
-# staffs no OpenCode review.
-opencode_read_only_agent_json="null"
+# OpenCode has no read-only CLI flag, and `opencode run --dir <worktree>` loads that worktree's
+# own config, so an OpenCode review exports only through run-opencode-review.sh. At dispatch it
+# turns project config and plugins off, pins its reviewer agent inline, and checks the agent
+# OpenCode resolves inside the worktree before it runs. Here it is checked once against the
+# current directory, so a host whose OpenCode cannot prove a read-only primary agent reports the
+# problem instead of staffing the reviewer.
+opencode_reviewer_json="null"
 opencode_read_only_problem_json="null"
-if [[ -n "${BOPEN_OPENCODE_READONLY_AGENT:-}" ]]; then
-  _ro=$(python3 - "$BOPEN_OPENCODE_READONLY_AGENT" "$PWD" "${XDG_CONFIG_HOME:-$HOME/.config}/opencode" <<'PY_OPENCODE_RO' 2>/dev/null || printf 'problem\tcannot read the OpenCode config\n'
-import json, os, re, sys
-
-name, project, home = sys.argv[1], sys.argv[2], sys.argv[3]
-if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", name):
-    print("problem\tBOPEN_OPENCODE_READONLY_AGENT is not a valid agent name"); sys.exit(0)
-REQUIRED = ("edit", "bash", "task")
-WRITERS = ("edit", "write", "patch", "multiedit", "bash", "task")
-
-
-def scalar(text):
-    text = text.strip()
-    if len(text) >= 2 and text[0] == text[-1] and text[0] in "'\"":
-        return text[1:-1]
-    return {"true": True, "false": False}.get(text.lower(), text)
-
-
-def frontmatter(text):
-    """The permission and tools maps of a markdown agent (a small YAML subset)."""
-    lines = text.split("\n")
-    if not lines or lines[0].strip() != "---":
-        return None
-    out, stack = {}, [(-1, None)]
-    for line in lines[1:]:
-        if line.strip() == "---":
-            return out
-        if not line.strip() or line.lstrip().startswith("#"):
-            continue
-        indent = len(line) - len(line.lstrip(" "))
-        m = re.fullmatch(r"\s*(\"[^\"]*\"|'[^']*'|[^:]+?)\s*:\s*(.*)", line)
-        if not m:
-            continue
-        key, value = scalar(m[1]), m[2]
-        while stack[-1][0] >= indent:
-            stack.pop()
-        parent = stack[-1][1]
-        target = out if parent is None else parent
-        if value.strip() == "":
-            child = {}
-            if isinstance(target, dict):
-                target[key] = child
-            stack.append((indent, child))
-        elif isinstance(target, dict):
-            target[key] = scalar(value)
-    return None
-
-
-def denied(value):
-    if isinstance(value, str):
-        return value == "deny"
-    return isinstance(value, dict) and bool(value) and all(v == "deny" for v in value.values())
-
-
-def allows(value):
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, str):
-        return value in ("allow", "ask")
-    return isinstance(value, dict) and any(allows(v) for v in value.values())
-
-
-def check(where, agent):
-    if not isinstance(agent, dict):
-        return "%s does not define agent %s as a map" % (where, name)
-    perm = agent.get("permission") if isinstance(agent.get("permission"), dict) else {}
-    tools = agent.get("tools") if isinstance(agent.get("tools"), dict) else {}
-    for key in REQUIRED:
-        if not (denied(perm.get(key)) or tools.get(key) is False):
-            return "%s does not deny %s for agent %s" % (where, key, name)
-    for key in WRITERS:
-        if allows(perm.get(key)) or tools.get(key) is True:
-            return "%s lets agent %s use %s" % (where, name, key)
-    if allows(perm.get("*")) or tools.get("*") is True:
-        return "%s allows every tool for agent %s" % (where, name)
-    return None
-
-
-found, problem = 0, None
-for var in ("OPENCODE_CONFIG", "OPENCODE_CONFIG_CONTENT", "OPENCODE_CONFIG_DIR"):
-    if os.environ.get(var):
-        problem = problem or "%s overrides the OpenCode config and cannot be verified" % var
-bases, here = [], project
-while True:
-    bases.append(here)
-    if os.path.exists(os.path.join(here, ".git")) or os.path.dirname(here) == here:
-        break
-    here = os.path.dirname(here)
-for base in bases + [home]:
-    for cfg in (os.path.join(base, "opencode.json"), os.path.join(base, ".opencode", "opencode.json")):
-        if not os.path.isfile(cfg):
-            continue
-        with open(cfg, encoding="utf-8") as handle:
-            data = json.load(handle)
-        agents = data.get("agent") if isinstance(data, dict) else None
-        if isinstance(agents, dict) and name in agents:
-            found += 1
-            problem = problem or check(cfg, agents[name])
-    if os.path.isfile(os.path.join(base, "opencode.jsonc")):
-        problem = problem or "%s/opencode.jsonc cannot be verified; move the agent to opencode.json" % base
-    dirs = [os.path.join(base, ".opencode", d) for d in ("agent", "agents")] if base != home else \
-        [os.path.join(base, d) for d in ("agent", "agents")]
-    for d in dirs:
-        path = os.path.join(d, name + ".md")
-        if os.path.isfile(path):
-            found += 1
-            with open(path, encoding="utf-8") as handle:
-                meta = frontmatter(handle.read())
-            problem = problem or (check(path, meta) if meta is not None else "%s has no frontmatter" % path)
-if not found:
-    problem = problem or "no OpenCode config defines agent %s" % name
-print(("problem\t" + problem) if problem else ("agent\t" + name))
-PY_OPENCODE_RO
-)
-  case "$_ro" in
-    agent$'\t'*) opencode_read_only_agent_json="\"$(json_escape "${_ro#agent$'\t'}")\"" ;;
-    *) opencode_read_only_problem_json="\"$(json_escape "${_ro#problem$'\t'}")\"" ;;
-  esac
+opencode_reviewer="${BOPEN_OPENCODE_REVIEWER:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../coordinator/scripts" 2>/dev/null && pwd -P)/run-opencode-review.sh}"
+if [[ "$opencode_bin" != "available" ]]; then
+  :
+elif [[ ! -f "$opencode_reviewer" || "$opencode_reviewer" != /* ]]; then
+  opencode_read_only_problem_json="\"run-opencode-review.sh was not found beside the orchestra coordinator\""
+elif _ro=$(bash "$opencode_reviewer" --check --dir "$PWD" 2>&1); then
+  opencode_reviewer_json="\"$(json_escape "$opencode_reviewer")\""
+else
+  opencode_read_only_problem_json="\"$(json_escape "$(printf '%s\n' "$_ro" | head -n 1)")\""
 fi
+unset _ro
 
 # The Claude list is the CLI's static alias set, not an account check: the claude CLI has no
 # offline way to prove the signed-in account can run claude-opus-5-5, and a probe call would
@@ -558,7 +530,8 @@ cat <<JSON
   "grok_auth": $grok_auth_json,
   "grok_model_providers": $grok_model_providers_json,
   "grok_model_targets": $grok_model_targets_json,
-  "opencode_read_only_agent": $opencode_read_only_agent_json,
+  "opencode_reviewer": $opencode_reviewer_json,
+  "opencode_provider_hosts": $opencode_hosts_json,
   "opencode_read_only_problem": $opencode_read_only_problem_json,
   "caps": {
     "live_children": $live_children,

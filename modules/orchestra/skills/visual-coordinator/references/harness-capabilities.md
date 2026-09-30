@@ -37,9 +37,9 @@ Build and new or lane-less steps default to `claude-opus-5-5` on the first lane
 that offers it — host, then Claude Code, OpenCode, Grok CLI. Review defaults to
 `gpt-6-sol` at `xhigh` on the first lane that offers it — host, then Codex,
 OpenCode, Grok CLI; OpenCode counts only when the detector reports an
-`opencode_read_only_agent` (from `BOPEN_OPENCODE_READONLY_AGENT`, reported only
-after its OpenCode config denies edit, bash, and task), since a review there
-cannot be exported without one. Report a missing lane rather than
+`opencode_reviewer` (the `run-opencode-review.sh` path, reported only after it
+verified a read-only primary reviewer), since a review there cannot be
+exported without it. Report a missing lane rather than
 substituting Sol for a build, GPT-5.6, or Grok. The observed main coordinator
 keeps the host's main model only when that model is in policy (Opus or Sol
 from its own provider, or `grok-4.7` under credit pressure); GPT-5.5, GPT-5.6,
@@ -193,7 +193,9 @@ The only mechanism that works from every harness. Capture output to a file —
 piping through `tail` truncates the worker's final report irrecoverably.
 
 ```bash
-codex exec --sandbox workspace-write --cd <repo> "<one-line task>" \
+# Codex write — pinned the same way as coordinator/references/workers/cli-dispatch.md
+codex --ask-for-approval never exec --sandbox workspace-write --cd <repo> \
+  --model gpt-6-astra -c model_reasoning_effort="high" "<one-line task>" \
   > /tmp/dispatch-<id>.log 2>&1 &
 
 # Claude Opus worker from a non-Claude host
@@ -228,6 +230,13 @@ opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"
 # Require dispatch evidence: a child marker such as `General Agent` — a
 # primary `build` line alone does not prove delegation. A subagent without
 # its own `model` inherits the parent model.
+
+# opencode read-only review — always through the orchestra wrapper, which
+# ignores the worktree's OpenCode config, pins the primary `bopen-review`
+# agent inline, and runs only after `opencode debug agent` inside the worktree
+# proves every enabled tool is read-only (exit 3 otherwise).
+bash "<opencode_reviewer path from detect-harness.sh>" --model openai/gpt-6-sol \
+  --dir <worktree> --variant xhigh -- "<review brief>" > /tmp/review-<id>.log 2>&1 &
 ```
 
 Two caveats worth putting in front of the user:

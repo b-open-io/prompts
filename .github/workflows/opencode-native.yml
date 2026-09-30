@@ -22,3 +22,7 @@ jobs:
         run: npm install --global opencode-ai@1.18.20
       - name: Verify native discovery without model requests
         run: bash scripts/test-opencode-install.sh
+      - name: Verify the read-only reviewer against real OpenCode config resolution
+        env:
+          BOPEN_REQUIRE_OPENCODE: '1'
+        run: python3 -m unittest -v scripts.tests.test_opencode_review_wrapper

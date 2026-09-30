@@ -407,7 +407,8 @@ console.log(JSON.stringify({
             self.assertEqual(detected["models"]["opencode"], [
                 "alpha/first", "alpha/shared", "beta/second", "beta/shared",
             ])
-            self.assertEqual(calls.read_text(encoding="utf-8").splitlines(), ["models alpha", "models beta"])
+            model_calls = [line for line in calls.read_text(encoding="utf-8").splitlines() if line.split(" ", 1)[0] == "models"]
+            self.assertEqual(model_calls, ["models alpha", "models beta"])
 
     def test_detector_handles_opencode_inventory_failure_without_logging_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

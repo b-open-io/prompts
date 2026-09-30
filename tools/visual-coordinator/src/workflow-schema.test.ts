@@ -223,7 +223,7 @@ describe("workflow schema", () => {
     it("falls through to an OpenCode lane for each role when the preferred CLI is unavailable", () => {
       const lanes = { claude: "unavailable", codex: "unavailable", opencode: "available" };
       const models = { opencode: ["openai/gpt-6-sol", "anthropic/claude-opus-5-5"] };
-      const nodes = workerNodes("codex", lanes, models, { opencode_read_only_agent: "review" });
+      const nodes = workerNodes("codex", lanes, models, { opencode_reviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" });
 
       expect(nodes[1]).toMatchObject({ lane: "opencode", model: "anthropic/claude-opus-5-5" });
       expect(nodes[2]).toMatchObject({ lane: "opencode", model: "openai/gpt-6-sol" });
@@ -342,7 +342,7 @@ describe("workflow schema", () => {
       harness: "opencode",
       lanes: { opencode: "available", codex: "unavailable", grok: "unavailable", claude: "unavailable" },
       models: { opencode: models, opencode_effort: ["medium", "high", "xhigh"] },
-      opencode_read_only_agent: "review",
+      opencode_reviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh",
     });
 
     it("staffs only Claude Opus 5.5 and GPT-6 Sol from a nested OpenCode catalog", () => {
@@ -594,6 +594,40 @@ describe("workflow schema", () => {
         expect(coordinate(grok("house-sol", { grok_model_providers: { "house-sol": "openai" }, grok_model_targets: { "house-sol": "gpt-6-sol" } })).messages).toEqual([]);
       });
 
+      describe("OpenCode provider endpoints", () => {
+        const opencode = (opencode_default: string, hosts: Record<string, string> = {}) => ({
+          harness: "opencode", lanes: { opencode: "available" },
+          models: { opencode: [opencode_default], opencode_default }, opencode_provider_hosts: hosts,
+        });
+
+        it.each([
+          ["openai/gpt-6-sol", {}],
+          ["openai/gpt-6-sol", { openai: "api.openai.com" }],
+          ["anthropic/claude-opus-5-5", { anthropic: "api.anthropic.com" }],
+          ["openrouter/openai/gpt-6-sol", { openrouter: "openrouter.ai", openai: "evil.test" }],
+        ])("accepts %s reaching its own host (%j)", (model, hosts) => {
+          expect(coordinate(opencode(model, hosts)).messages).toEqual([]);
+        });
+
+        it.each([
+          ["openai/gpt-6-sol", { openai: "api.openai.com.evil.test" }],
+          ["openai/gpt-6-sol", { openai: "npm:@ai-sdk/openai-compatible" }],
+          ["anthropic/claude-opus-5-5", { anthropic: "anthropic-proxy.io" }],
+          ["openrouter/openai/gpt-6-sol", { openrouter: "openrouter.ai.evil.test" }],
+          ["openai/gpt-6-sol", { "*": "unparseable /home/u/.config/opencode/opencode.jsonc" }],
+        ])("rejects %s when the provider is overridden (%j)", (model, hosts) => {
+          const { main, messages } = coordinate(opencode(model, hosts));
+          expect(main.model).toBe(model);
+          expect(messages).toContain(`Coordinate is the main session on ${model}, which is not claude-opus-5-5 or gpt-6-sol from its own provider.`);
+        });
+
+        it("will not staff an OpenCode worker on an overridden provider", () => {
+          const environment = parseEnvironment({ ...opencode("anthropic/claude-opus-5-5", { anthropic: "evil.test" }), models: { opencode: ["anthropic/claude-opus-5-5"] } });
+          expect(runsOpus(environment, "opencode", "anthropic/claude-opus-5-5")).toBe(false);
+          expect(runsOpus(parseEnvironment(opencode("anthropic/claude-opus-5-5")), "opencode", "anthropic/claude-opus-5-5")).toBe(true);
+        });
+      });
+
       it("flags an explicit Fable choice on any node", () => {
         const environment = parseEnvironment({ harness: "claude-code", lanes: { claude: "available" }, models: { claude: ["claude-opus-5-5"], claude_default: "claude-opus-5-5" } });
         const workflow = defaultWorkflow(environment);
@@ -692,7 +726,7 @@ describe("workflow schema", () => {
         harness: "claude-code",
         lanes: { claude: "available", codex: "available", opencode: "available" },
         models: { claude: ["inherit"], codex: [], opencode: ["openai/gpt-6-sol"] },
-        opencode_read_only_agent: "review",
+        opencode_reviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh",
       });
 
       expect(environment.lanes.codex).toMatchObject({ detected: false, models: ["gpt-6-sol"] });

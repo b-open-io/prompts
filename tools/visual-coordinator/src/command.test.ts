@@ -116,10 +116,10 @@ describe("visual coordinator command generation", () => {
 
     const variant = generateNodeCommand(
       node("review-opencode", { role: "reviewer", provider: "external", lane: "opencode", model: "openrouter/openai/gpt-6-sol", effort: "xhigh", disclosure: "Approved" }),
-      { hostHarness: "grok", nativeController: "grok", readOnlyAgent: "review-readonly" },
+      { hostHarness: "grok", nativeController: "grok", opencodeReviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" },
     );
-    expect(variant.command).toContain("'--variant' 'xhigh'");
-    expect(variant.command).toContain("'--agent' 'review-readonly'");
+    expect(variant.command).toMatch(/^'bash' '\/opt\/orchestra\/coordinator\/scripts\/run-opencode-review\.sh' '--model' 'openrouter\/openai\/gpt-6-sol' '--dir' \S+ '--variant' 'xhigh' -- '/);
+    expect(variant.command).not.toContain("'opencode' 'run'");
 
     const medium = generateNodeCommand(
       node("build-opencode", { provider: "external", lane: "opencode", model: "openrouter/openai/gpt-6-sol", effort: "medium", disclosure: "Approved" }),
@@ -232,7 +232,7 @@ describe("versioned export contract", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("exports an OpenCode reviewer only with the detector's verified read-only agent", () => {
+  it("exports an OpenCode reviewer only through the verified review wrapper", () => {
     const host = (extra: Record<string, unknown>) => parseEnvironment({
       harness: "claude-code",
       lanes: { claude: "available", opencode: "available", codex: "unavailable" },
@@ -245,16 +245,20 @@ describe("versioned export contract", () => {
       return workflow;
     };
 
-    const verified = host({ opencode_read_only_agent: "review" });
-    expect(toExportText(review(verified), verified)).toContain("'--agent' 'review'");
+    const verified = host({ opencode_reviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" });
+    expect(toExportText(review(verified), verified)).toContain("'bash' '/opt/orchestra/coordinator/scripts/run-opencode-review.sh' '--model' 'openrouter/openai/gpt-6-sol'");
 
-    const rejected = host({ opencode_read_only_problem: "opencode.json does not deny bash for agent review" });
+    const rejected = host({ opencode_read_only_problem: "OpenCode reviewer refused: agent bopen-review can use scribble, which are not read-only" });
     const workflow = review(rejected);
     const id = workflow.nodes.find((entry) => entry.role === "reviewer")!.id;
-    const spec = serializeWorkflow(workflow, rejected, { readOnlyAgent: "review" });
+    const spec = serializeWorkflow(workflow, rejected, { opencodeReviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" });
     expect(spec.nodes.map((entry) => entry.id)).not.toContain(id);
-    expect(spec.omissions).toContainEqual(expect.objectContaining({ id, reason: expect.stringContaining("does not deny bash for agent review") }));
-    expect(toExportText(workflow, rejected, { readOnlyAgent: "review" })).not.toContain("'--agent'");
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id, reason: expect.stringContaining("can use scribble") }));
+    expect(toExportText(workflow, rejected, { opencodeReviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" })).not.toContain("run-opencode-review.sh");
+
+    for (const bad of ["run-opencode-review.sh", "/tmp/x/other.sh", "/tmp/$(id)/run-opencode-review.sh"]) {
+      expect(parseEnvironment({ opencode_reviewer: bad }).opencodeReviewer).toBeNull();
+    }
   });
 
   it("withholds executable records for nodes that fail validation", () => {

@@ -9,9 +9,9 @@ export type CommandGenerationOptions = {
   hostHarness?: string;
   /** The native harness that is supervising an external provider. */
   nativeController?: string;
-  /** The configured read-only OpenCode agent, when one exists. */
-  readOnlyAgent?: string;
-  /** Why the named OpenCode agent failed the detector's read-only check. */
+  /** Absolute path of run-opencode-review.sh, which verifies the reviewer inside the worktree at dispatch. */
+  opencodeReviewer?: string;
+  /** Why the detector could not prove a read-only OpenCode reviewer. */
   readOnlyProblem?: string;
   /** Absolute path of the installed run-grok-worker.sh; Grok shell-outs are not executable without it. */
   grokWorker?: string;
@@ -226,17 +226,20 @@ const externalCommand = (
   }
 
   if (lane === "opencode") {
-    if (readOnly && !options.readOnlyAgent) {
+    if (readOnly && !options.opencodeReviewer) {
       return {
         command: null,
         reason: options.readOnlyProblem
           ? `OpenCode reviewer rejected: ${options.readOnlyProblem}.`
-          : "OpenCode has no portable read-only CLI flag; configure a read-only agent before emitting this reviewer.",
+          : "OpenCode has no portable read-only CLI flag; OpenCode reviews export only through run-opencode-review.sh, which detect-harness.sh did not verify.",
       };
     }
     const args: string[] = [];
     if (node.effort === "xhigh") args.push("--variant", "xhigh");
-    if (readOnly) args.push("--agent", options.readOnlyAgent!);
+    if (readOnly) {
+      const head = ["bash", options.opencodeReviewer!, "--model", model].map(shellQuote);
+      return { command: [...head, shellQuote("--dir"), repoArg, ...args.map(shellQuote), "--", promptArg].join(" ") };
+    }
     const head = ["opencode", "run", "--model", model, "--dir"].map(shellQuote);
     return { command: [...head, repoArg, ...args.map(shellQuote), promptArg].join(" ") };
   }
@@ -370,7 +373,7 @@ const planDispatch = (workflow: Workflow, environment: WorkflowEnvironment, opti
     grokAuth: options.grokAuth ?? environment.grokAuth ?? undefined,
     grokProviders: options.grokProviders ?? environment.grokModelProviders,
     grokTargets: options.grokTargets ?? environment.grokModelTargets,
-    readOnlyAgent: environment.opencodeReadOnlyAgent ?? undefined,
+    opencodeReviewer: environment.opencodeReviewer ?? undefined,
     readOnlyProblem: environment.opencodeReadOnlyProblem ?? undefined,
   };
   const mainId = mainNodeId(workflow, environment);

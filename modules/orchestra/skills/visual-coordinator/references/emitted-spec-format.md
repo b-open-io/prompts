@@ -259,15 +259,22 @@ Codex shell-outs put `--ask-for-approval never` before `exec` (codex rejects
 it after the subcommand). A worktree path that starts with `~/` is emitted as
 `"$HOME"/'…'` so the shell expands it; the rest of the path stays quoted.
 
-OpenCode has no read-only CLI flag, so an OpenCode reviewer exports only with
-`--agent <name>`, where the name comes from the detector's
-`opencode_read_only_agent`. Set `BOPEN_OPENCODE_READONLY_AGENT` to the agent;
-the detector reads every definition of it (`opencode.json` `agent.<name>` and
-`agent/`/`agents/<name>.md`, from the working directory up to the git root and
-in the global config) and reports the name only when each one denies `edit`,
-`bash`, and `task` and none allows a write-capable tool. Otherwise it reports
-`opencode_read_only_problem`, and the reviewer is omitted with that reason.
-Without a verified agent, reviews are staffed on another lane instead.
+OpenCode has no read-only CLI flag, and `opencode run --dir <worktree>` loads
+that worktree's own `opencode.json(c)`, `.opencode/` agents, tools, and plugins.
+An OpenCode reviewer therefore exports only as
+`bash <opencode_reviewer> --model <provider/model> --dir <worktree> -- <prompt>`,
+where `opencode_reviewer` is the detector's path to the orchestra
+`run-opencode-review.sh`. At dispatch the wrapper turns project config and
+plugins off (`OPENCODE_DISABLE_PROJECT_CONFIG=1`, `--pure`), pins its
+`bopen-review` agent inline (`OPENCODE_CONFIG_CONTENT`: primary mode, `*`
+denied, read/grep/glob/list allowed), and runs `opencode debug agent
+bopen-review` inside the worktree. It starts the review only when OpenCode
+resolves a primary agent whose enabled tools are all read-only and whose edit,
+bash, task, and unknown (MCP or custom) tools are denied, and when the model's
+provider still reaches its own endpoint. Anything it cannot verify exits 3.
+When the detector's own check fails it reports `opencode_read_only_problem`,
+and the reviewer is omitted with that reason; reviews are then staffed on
+another lane.
 
 Generated commands encode task text before passing it through stdin or
 `--prompt-file`; never interpolate backticks, `$()`, backslashes, or newlines

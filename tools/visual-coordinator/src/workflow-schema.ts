@@ -36,10 +36,12 @@ export type WorkflowEnvironment = {
   grokModelProviders: Record<string, string>;
   /** Underlying model each listed custom Grok-CLI id points at (config.toml `model`). */
   grokModelTargets: Record<string, string>;
-  /** A configured OpenCode agent that cannot edit or run commands; OpenCode reviewers need one to export. */
-  opencodeReadOnlyAgent: string | null;
-  /** Why the named OpenCode agent was not verified read-only, when one was named. */
+  /** Absolute path of run-opencode-review.sh, reported only when it verified a read-only reviewer here. */
+  opencodeReviewer: string | null;
+  /** Why OpenCode could not prove a read-only reviewer, when it is installed. */
   opencodeReadOnlyProblem: string | null;
+  /** Host each OpenCode provider override really reaches; `*` means a config did not parse. */
+  opencodeProviderHosts: Record<string, string>;
   caps: { liveChildren: number | null; agentBudgetDefault: number };
   lanes: Record<string, DetectedLane>;
   roster: unknown[];
@@ -186,6 +188,7 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
   const mainModels = ownOnly(Object.fromEntries(Object.entries(rawModels)
     .filter(([key, model]) => key.endsWith("_default") && typeof model === "string" && model.trim().length > 0)
     .map(([key, model]) => [laneKey(key.slice(0, -"_default".length)), (model as string).trim()])));
+  const opencodeReviewer = typeof raw.opencode_reviewer === "string" && /^\/[^\0\n\r'"`$\\]*\/run-opencode-review\.sh$/.test(raw.opencode_reviewer) ? raw.opencode_reviewer : null;
   const grokWorker = typeof raw.grok_worker === "string" && /^\/[^\0\n\r'"`$\\]*\/run-grok-worker\.sh$/.test(raw.grok_worker) ? raw.grok_worker : null;
   const rawCaps = raw.caps && typeof raw.caps === "object" ? raw.caps as Record<string, unknown> : {};
   return {
@@ -205,10 +208,13 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
       ? Object.fromEntries(Object.entries(raw.grok_model_targets as Record<string, unknown>)
         .filter((entry): entry is [string, string] => typeof entry[1] === "string" && /^[A-Za-z0-9._/:@-]+$/.test(entry[1])))
       : {}),
-    opencodeReadOnlyAgent: typeof raw.opencode_read_only_agent === "string" && /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(raw.opencode_read_only_agent)
-      ? raw.opencode_read_only_agent : null,
+    opencodeReviewer,
     opencodeReadOnlyProblem: typeof raw.opencode_read_only_problem === "string" && raw.opencode_read_only_problem
       ? raw.opencode_read_only_problem.slice(0, 300) : null,
+    opencodeProviderHosts: ownOnly(raw.opencode_provider_hosts && typeof raw.opencode_provider_hosts === "object"
+      ? Object.fromEntries(Object.entries(raw.opencode_provider_hosts as Record<string, unknown>)
+        .filter((entry): entry is [string, string] => typeof entry[1] === "string"))
+      : {}),
     caps: {
       liveChildren: safeNumber(rawCaps.live_children ?? rawCaps.liveChildren, null),
       agentBudgetDefault: safeNumber(rawCaps.agent_budget_default ?? rawCaps.agentBudgetDefault, 0) ?? 0,
@@ -248,6 +254,17 @@ const isSol = named(SOL);
 /** The provider that serves each pinned model, and the routers approved to carry it. */
 const owners: Record<string, string> = { [SOL]: "openai", [OPUS]: "anthropic" };
 const routers = ["openrouter"];
+/** The endpoint each provider must reach when an OpenCode config overrides it. */
+const hosts: Record<string, string> = { openai: "openai.com", anthropic: "anthropic.com", openrouter: "openrouter.ai" };
+/** An OpenCode provider serves its own models unless a config points it at another host. */
+const ownHost = (environment: WorkflowEnvironment, model: string): boolean => {
+  if (own(environment.opencodeProviderHosts, "*") !== undefined) return false;
+  const provider = model.split("/", 1)[0];
+  const host = own(environment.opencodeProviderHosts, provider);
+  if (host === undefined) return true;
+  const base = own(hosts, provider);
+  return base !== undefined && (host === base || host.endsWith(`.${base}`));
+};
 /** A provider-qualified id names the model's own provider, optionally behind an approved router. */
 const qualified = (id: string, model: string): boolean =>
   model === `${owners[id]}/${id}` || routers.some((router) => model === `${router}/${owners[id]}/${id}`);
@@ -259,7 +276,7 @@ const qualified = (id: string, model: string): boolean =>
  * qualified id.
  */
 const runsModel = (id: string) => (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): boolean => {
-  if (lane === "opencode") return qualified(id, model);
+  if (lane === "opencode") return qualified(id, model) && ownHost(environment, model);
   if (lane !== "grok") return model === id;
   if (isGrokFamily(model)) return false;
   const provider = own(environment.grokModelProviders, model);
@@ -337,7 +354,7 @@ export const codingTarget = (environment: WorkflowEnvironment): { lane: Workflow
  */
 export const reviewTarget = (environment: WorkflowEnvironment): { lane: WorkflowLane; model: string } =>
   targetFor(environment, runsSol, ["codex", "opencode", "grok"], { lane: "codex", model: SOL },
-    (lane) => lane !== "opencode" || environment.opencodeReadOnlyAgent !== null);
+    (lane) => lane !== "opencode" || environment.opencodeReviewer !== null);
 
 const targetForRole = (environment: WorkflowEnvironment, role: NodeRole) =>
   role === "reviewer" ? reviewTarget(environment) : codingTarget(environment);
