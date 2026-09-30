@@ -6,146 +6,26 @@ manifests share the same release version.
 
 ## Unreleased
 
-### Fixed
+No unreleased changes.
 
-- `creative:promo-video-pipeline` 0.0.2: include the original dynamic
-  15-second showreel direction as a reusable base prompt, with the subject
-  supplied per request. Preserve a user's full prompt when one exists.
-  Creative plugin 0.1.9.
-
-### Added
-
-- `creative:promo-video-pipeline` 0.0.1: motion-graphics promo and showreel
-  pipeline. gpt-image-2.5-flare keyframes via `gemskills:generate-image`, an
-  approval gate before video spend, a budget-capped headless Claude Opus 5.5
-  (`claude-opus-5-5`) edit through the Higgsfield REST API, Suno scoring, beat
-  alignment, -14 LUFS loudness, and QuickTime/Discord-safe H.264 exports.
-  Creative plugin 0.1.8.
-
-### Changed
-
-- Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
-- `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench.
-- Companion copy: gemskills catalog is **0.0.70** (GPT Image 2.5 Flare
-  `gpt-image-2.5-flare` default / Sunburst `gpt-image-2.5-sunburst` opt-in).
-  Front-desk, setup pack catalog, Frames `gemskills:content` blurbs, and Ridd's
-  visual-generation heading no longer advertise bare `gpt-image-2`. The
-  2026-09-05 marketplace CSV stays a frozen snapshot; `CATALOG.md` notes the
-  currency. `kris-mcp-research.md` footnotes that Flux159's DALL·E tool label
-  is third-party MCP marketing.
-- Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
-  for Maps JS, Places, Routes, and Street View. Missing skill:
-  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.8.
-- humanize 1.0.14 → **1.0.15**: never write "fail closed" / "fail open". Say
-  reject, deny, stop, allow, or continue. Removed that slang from the rest of
-  this repo.
-- CLAUDE.md: mark **bsv-mcp** as shipped (npm `bsv-mcp`, https://bsvmcp.com/docs; wallet, explorer, ordinals via MCP Apps). `agent-master` and `gib` remain WIP.
-- humanize 1.0.13 → **1.0.14**: rename check 5 heading to **Mannered prose**.
-- humanize 1.0.12 → **1.0.13**: Core editorial check **Reject mannered prose** (Anthropic block seated verbatim; no separate mannered-prose skill).
-
-### Removed
-
-- Orchestra: removed the `orchestrator` skill. It had become a thin restatement
-  of `coordinator` (topology diagram, routing-decision framing, composition
-  pointers, and its two distinct failure rules — no silent CLI installs/global
-  config changes, and reconciling rather than ignoring advisor disagreement)
-  with no reference content of its own; every SKILL-MAP entry already routed
-  worker dispatch to `coordinator`. That content is now folded into
-  `coordinator/SKILL.md` and its eval suite, and `advisor/SKILL.md` no longer
-  points at `orchestrator`. README, the plugin-context architecture doc, and
-  the module inventory now point at `coordinator` instead.
-
-### Changed
-
-- Orchestra 0.1.27 / Advisor 0.0.10 / Coordinator 0.0.19: fold verified
-  Muse-via-OpenCode dispatch lessons into
-  `coordinator/references/workers/opencode.md` (message positional must
-  precede `--file` or yargs swallows it as a path; non-interactive
-  `auto-rejecting` permission prompts end a run silently with exit 0 and no
-  FINAL REPORT; the verified `OPENCODE_CONFIG` permission block, including
-  keeping `git branch*` read access open; config is read only at process
-  start) and `coordinator/references/workers/muse.md` (OpenCode is the primary
-  route, not a fallback, when `muse` is not on PATH). Claude host guide adds
-  the auto-mode classifier's sensitivity to relaunch phrasing after a denied
-  permission, the `worktree` isolation git-repository requirement, and
-  `run_in_background` controller re-invocation. Dispatch contract adds
-  sandbox path/command preflight and treats a clean exit code as inconclusive
-  without a FINAL REPORT and a permission-rejection log check.
-
-- Orchestra 0.1.26 / Advisor 0.0.9 / Coordinator 0.0.18: add Astra
-  (`gpt-6-astra`) as the Codex creative implementation worker (3D / animation /
-  gamification). Split raw `codex exec` recipes into
-  `coordinator/references/workers/cli-dispatch.md`. Advisor cross-links build
-  work to Coordinator and stays read-only. Claude host guide notes auto-mode
-  classifier blocks on Workflow-embedded `codex exec`.
-
-### Added
-
-- New skill `restraint` 0.1.0: YAGNI with a governor for any coding task — write
-  the least code that is still the right code. Ladder (required-or-speculative,
-  reuse, stdlib/native, installed dep, smallest correct change with the UI and
-  trust-boundary guard inside the rung), levels `off | lite | full (default) |
-  ultra` via `/restraint`, no in-code marker comments. Triggers on "restraint",
-  "don't over-build", "yagni", and bloat/boilerplate complaints.
-- Ada (native-desktop) 1.1.0: wire `apple-xcode-build-loop`; document OpenAI `build-macos-apps` + twostraws Swift skill pointers for non–Native-SDK Swift work.
-- Kira (mobile) 1.2.0: wire `apple-xcode-build-loop`; native Swift path points at OpenAI `build-ios-apps` + twostraws pros without abandoning Expo-first.
-- New skill `apple-xcode-build-loop`: Makefile + xcodebuild + xcbeautify + warnings-as-errors + simulator/SPM gates (AppCreator-inspired; not a copy).
-- front-desk Third-Party Skills: twostraws Swift* Pro, AvdLee alts, openai/plugins `build-ios-apps` / `build-macos-apps`, Zabłocki AGENTS.md/rule-loading pointer.
-- creative plugin 0.1.4 → 0.1.5; web-dev plugin 0.1.5 → 0.1.6.
-
-- `brand-rep:schedule-social-post` 1.0.0 teaches any agent harness without
-  bopen.ai's native draft tools to use the bopen.ai social scheduler for X:
-  the auth.md service-auth login with the `social:draft` scope, image upload,
-  thread creation as a `planned` post, the private review URL where the user
-  confirms, and the X split-carousel rules (two equal portrait tiles or three
-  1024×2048 slices, uploaded left to right). `scripts/bopen-social.sh` wraps
-  discovery, login, refresh, accounts, next-slot, upload, create, get, update,
-  delete, review-url, and open. `references/bopen-social-api.md` records the
-  endpoint contract and `references/x-carousel.md` the carousel brief for
-  Lisa. The skill icon is briefed in bopen-ai
-  (`docs/art-batches/2026-09-02-schedule-social-post.md`), Linear OPL-4363.
-
-### Changed
-
-- `social-media-manager` (Alex) 1.0.7 loads `brand-rep:schedule-social-post`
-  for harnesses outside bopen.ai chat, states the agent ceiling (`draft`,
-  `planned`) and the consent step before the login email, and points its
-  carousel section at the skill's reference. Bumped `brand-rep` to 0.1.9.
-
-### Changed
-
-- Review plugin 0.1.16: updated `visual-proposal` to 0.0.16 with BitPlan's reading aesthetic, explicit
-  Unsure choices and consequences, scripts-off response copying, decision-tree
-  guidance, revision summaries, and implementation handoffs with done conditions.
-- Preserved advocates, cross-examination, judging, and the CEO call. Kept option
-  cards neutral and recommendations attributed to the panel.
-- Removed the embedded proposals archive menu and its scanner and example;
-  BitPlan handles plan organization. Responses use non-secret plan identifiers.
-
-- Orchestra 0.1.25 / Advisor 0.0.8 recommends `gpt-6-astra` via Codex CLI across Claude Code,
-  Codex, Grok Build, OpenCode, and other shell-capable hosts. The shared lane
-  documents authentication preflight, an explicit read-only sandbox, model
-  overrides, and saved runtime evidence and verdicts.
+## [1.1.177] - 2026-09-30
 
 ### Fixed
 
-- `scripts/prompts-factory-worker.sh` accepts a git worktree as `repoDir`.
-  It tested `[[ -d "$repo_dir/.git" ]]`, but a worktree's `.git` is a file, so
-  every run stopped with `BAD_REPO_DIR`. It now requires `.git` to exist as a
-  file or directory and asks git (`rev-parse --is-inside-work-tree`, then
-  `--show-toplevel` compared with symlinks resolved). A normal checkout, a
-  worktree, a submodule, a nested repo, and a symlink to any of them pass. A
-  plain or missing directory, a subdirectory of a checkout, a `.git`
-  directory, or a bare repo still exits 2 with `BAD_REPO_DIR`. The worker
-  unsets inherited `GIT_DIR`, `GIT_WORK_TREE`, and the other git location
-  variables at startup, so neither the check nor later git and gh commands
-  can be pointed at a different repo. Paths are resolved with `CDPATH=''`,
-  so a relative `repoDir` is not redirected or rejected when `CDPATH` is set.
-  Covered by `scripts/tests/test_factory_worker_repo_dir.py`, which runs with
-  the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
-  `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
+Pre-promotion fixes from the Sol review of the dev to master promote. Core
+1.1.177, creative 0.1.16.
 
-## [1.1.176] - Pending production promotion
+- `promo-video-pipeline` 0.0.9: `hf-api --body-file` refuses a symlink and
+  resolves the file's real directory, so a planted link cannot send a file
+  from outside the working directory to Higgsfield. The launcher drops the
+  `Write(./**)` allow rule, which Claude Code ignores; `Edit(./**)` already
+  covers the editing tools and `run.jsonl` stays denied.
+- CHANGELOG: entries 1.1.163 to 1.1.176 carry release dates. Promo
+  0.0.1/0.0.2 and the factory-worker fix move to 1.1.170, the duplicate jev
+  lines are dropped (they live in 1.1.166), and the older unversioned block
+  that already reached master is labelled as such.
+
+## [1.1.176] - 2026-09-30
 
 ### Fixed
 
@@ -163,7 +43,7 @@ Sixth round of Sol review fixes. Core 1.1.176, creative 0.1.15.
   -1) as an error. The `prices.json` docs say `usd_per_second` must be the
   most expensive variant's rate.
 
-## [1.1.175] - Pending production promotion
+## [1.1.175] - 2026-09-30
 
 ### Fixed
 
@@ -200,7 +80,7 @@ Fifth round of Sol review fixes. Core 1.1.175, creative 0.1.14, orchestra
   or JSONL that parses, under `benchmarks/` or a `GENERATED` directory
   glob). JSON under `fixtures/`, `results/`, or `baselines/` is reviewed.
 
-## [1.1.174] - Pending production promotion
+## [1.1.174] - 2026-09-30
 
 ### Fixed
 
@@ -237,7 +117,7 @@ Fourth round of Sol review fixes. Core 1.1.174, creative 0.1.13, orchestra
   step before the pin is verified. The workspace-write `codex exec` example
   in `harness-capabilities.md` pins its model.
 
-## [1.1.173] - Pending production promotion
+## [1.1.173] - 2026-09-30
 
 ### Fixed
 
@@ -270,7 +150,7 @@ Third round of Sol review fixes. Core 1.1.173, creative 0.1.12, orchestra
 - Tests: the Grok wrapper test runs under the test interpreter and skips
   without `tomllib`/`tomli`.
 
-## [1.1.172] - Pending production promotion
+## [1.1.172] - 2026-09-30
 
 ### Fixed
 
@@ -308,7 +188,7 @@ Second round of Sol review fixes. Core 1.1.172, creative 0.1.11, orchestra
   through `config.toml`, and OpenCode reviews are staffed only with a
   detected read-only agent (`BOPEN_OPENCODE_READONLY_AGENT`).
 
-## [1.1.171] - Pending production promotion
+## [1.1.171] - 2026-09-30
 
 ### Fixed
 
@@ -344,7 +224,38 @@ Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
 - The isolated install check pins codex 0.156.1, the minimum the Sol review
   recipe needs.
 
-## [1.1.170] - Pending production promotion
+## [1.1.170] - 2026-09-30
+
+### Added
+
+- `creative:promo-video-pipeline` 0.0.1: motion-graphics promo and showreel
+  pipeline. gpt-image-2.5-flare keyframes via `gemskills:generate-image`, an
+  approval gate before video spend, a budget-capped headless Claude Opus 5.5
+  (`claude-opus-5-5`) edit through the Higgsfield REST API, Suno scoring, beat
+  alignment, -14 LUFS loudness, and QuickTime/Discord-safe H.264 exports.
+  Creative plugin 0.1.8.
+
+### Fixed
+
+- `creative:promo-video-pipeline` 0.0.2: include the original dynamic
+  15-second showreel direction as a reusable base prompt, with the subject
+  supplied per request. Preserve a user's full prompt when one exists.
+  Creative plugin 0.1.9.
+- `scripts/prompts-factory-worker.sh` accepts a git worktree as `repoDir`.
+  It tested `[[ -d "$repo_dir/.git" ]]`, but a worktree's `.git` is a file, so
+  every run stopped with `BAD_REPO_DIR`. It now requires `.git` to exist as a
+  file or directory and asks git (`rev-parse --is-inside-work-tree`, then
+  `--show-toplevel` compared with symlinks resolved). A normal checkout, a
+  worktree, a submodule, a nested repo, and a symlink to any of them pass. A
+  plain or missing directory, a subdirectory of a checkout, a `.git`
+  directory, or a bare repo still exits 2 with `BAD_REPO_DIR`. The worker
+  unsets inherited `GIT_DIR`, `GIT_WORK_TREE`, and the other git location
+  variables at startup, so neither the check nor later git and gh commands
+  can be pointed at a different repo. Paths are resolved with `CDPATH=''`,
+  so a relative `repoDir` is not redirected or rejected when `CDPATH` is set.
+  Covered by `scripts/tests/test_factory_worker_repo_dir.py`, which runs with
+  the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
+  `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
 
 ### Changed
 
@@ -426,7 +337,7 @@ Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
   the agents' declared Claude tiers. `security-ops` 1.0.12 pins its scan and
   validate recipes to `xhigh`.
 
-## [1.1.169] - Pending production promotion
+## [1.1.169] - 2026-09-30
 
 ### Changed
 
@@ -567,7 +478,7 @@ Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
   Only a host already running the legacy `grok-4.6` main keeps that session
   without pressure. This supersedes the earlier pressure-free main notes above.
 
-## [1.1.168] - Pending production promotion
+## [1.1.168] - 2026-09-30
 
 ### Fixed
 
@@ -580,7 +491,7 @@ Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
   Its 8/96 fallback rate exceeds the predeclared reliability gate; no production
   accuracy or cost improvement is claimed. See the benchmark report.
 
-## [1.1.167] - Pending production promotion
+## [1.1.167] - 2026-09-30
 
 ### Fixed
 
@@ -593,13 +504,14 @@ Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
   Review plugin 0.1.19; visual-proposal 0.0.18.
 - Reconcile production's Codex display names and icons before promotion.
 
-## [1.1.166] - Pending production promotion
+## [1.1.166] - 2026-09-30
 
 ### Changed
 
 - Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
 - `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench. Review plugin 0.1.18.
-## [1.1.165] - Pending production promotion
+
+## [1.1.165] - 2026-09-10
 
 ### Changed
 
@@ -612,7 +524,7 @@ Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
   web-dev 0.1.7, creative 0.1.7, mcp-dev 0.1.5, dev-ops 0.1.11, research 0.1.5,
   brand-rep 0.1.10.
 
-## [1.1.164] - Pending production promotion
+## [1.1.164] - 2026-09-09
 
 ### Changed
 
@@ -620,7 +532,7 @@ Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
   Auth is `npm login --auth-type=web` plus bun's publish confirm URL. No OTP,
   no `setup-token.sh`. Core 1.1.164, dev-ops 0.1.10, plugin-kit 0.1.9.
 
-## [1.1.163] - Pending production promotion
+## [1.1.163] - 2026-09-05
 
 ### Fixed
 
@@ -629,6 +541,113 @@ Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
 - Benchmarks isolate tool-free text ablations, discover module skills, reject invalid eval contracts, report unknown usage honestly, and fail on provider or judge errors. Pinned runtime dependencies and deterministic CLI tests cover the executable entrypoint.
 - Plugin-kit 0.1.8 moves prompt-engineer manuals into on-demand module references and corrects authoring permissions, publishing, and benchmark guidance. Component patches: prompt-engineer 2.3.21, agent-auditor 0.1.3, benchmark-skills 2.0.2, skill-publish 1.0.2.
 - Setup 1.0.6 and runtime context distinguish the active host, installed CLIs, and unavailable capabilities. CI enforces core/suite metadata budgets and adapter, hook, benchmark, and extraction checks.
+
+## [Unversioned] - Shipped to master by 2026-09-10
+
+Changes that reached master before they were given a core version.
+
+### Changed
+
+- Companion copy: gemskills catalog is **0.0.70** (GPT Image 2.5 Flare
+  `gpt-image-2.5-flare` default / Sunburst `gpt-image-2.5-sunburst` opt-in).
+  Front-desk, setup pack catalog, Frames `gemskills:content` blurbs, and Ridd's
+  visual-generation heading no longer advertise bare `gpt-image-2`. The
+  2026-09-05 marketplace CSV stays a frozen snapshot; `CATALOG.md` notes the
+  currency. `kris-mcp-research.md` footnotes that Flux159's DALL·E tool label
+  is third-party MCP marketing.
+- Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
+  for Maps JS, Places, Routes, and Street View. Missing skill:
+  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.8.
+- humanize 1.0.14 → **1.0.15**: never write "fail closed" / "fail open". Say
+  reject, deny, stop, allow, or continue. Removed that slang from the rest of
+  this repo.
+- CLAUDE.md: mark **bsv-mcp** as shipped (npm `bsv-mcp`, https://bsvmcp.com/docs; wallet, explorer, ordinals via MCP Apps). `agent-master` and `gib` remain WIP.
+- humanize 1.0.13 → **1.0.14**: rename check 5 heading to **Mannered prose**.
+- humanize 1.0.12 → **1.0.13**: Core editorial check **Reject mannered prose** (Anthropic block seated verbatim; no separate mannered-prose skill).
+
+### Removed
+
+- Orchestra: removed the `orchestrator` skill. It had become a thin restatement
+  of `coordinator` (topology diagram, routing-decision framing, composition
+  pointers, and its two distinct failure rules — no silent CLI installs/global
+  config changes, and reconciling rather than ignoring advisor disagreement)
+  with no reference content of its own; every SKILL-MAP entry already routed
+  worker dispatch to `coordinator`. That content is now folded into
+  `coordinator/SKILL.md` and its eval suite, and `advisor/SKILL.md` no longer
+  points at `orchestrator`. README, the plugin-context architecture doc, and
+  the module inventory now point at `coordinator` instead.
+
+### Changed
+
+- Orchestra 0.1.27 / Advisor 0.0.10 / Coordinator 0.0.19: fold verified
+  Muse-via-OpenCode dispatch lessons into
+  `coordinator/references/workers/opencode.md` (message positional must
+  precede `--file` or yargs swallows it as a path; non-interactive
+  `auto-rejecting` permission prompts end a run silently with exit 0 and no
+  FINAL REPORT; the verified `OPENCODE_CONFIG` permission block, including
+  keeping `git branch*` read access open; config is read only at process
+  start) and `coordinator/references/workers/muse.md` (OpenCode is the primary
+  route, not a fallback, when `muse` is not on PATH). Claude host guide adds
+  the auto-mode classifier's sensitivity to relaunch phrasing after a denied
+  permission, the `worktree` isolation git-repository requirement, and
+  `run_in_background` controller re-invocation. Dispatch contract adds
+  sandbox path/command preflight and treats a clean exit code as inconclusive
+  without a FINAL REPORT and a permission-rejection log check.
+
+- Orchestra 0.1.26 / Advisor 0.0.9 / Coordinator 0.0.18: add Astra
+  (`gpt-6-astra`) as the Codex creative implementation worker (3D / animation /
+  gamification). Split raw `codex exec` recipes into
+  `coordinator/references/workers/cli-dispatch.md`. Advisor cross-links build
+  work to Coordinator and stays read-only. Claude host guide notes auto-mode
+  classifier blocks on Workflow-embedded `codex exec`.
+
+### Added
+
+- New skill `restraint` 0.1.0: YAGNI with a governor for any coding task — write
+  the least code that is still the right code. Ladder (required-or-speculative,
+  reuse, stdlib/native, installed dep, smallest correct change with the UI and
+  trust-boundary guard inside the rung), levels `off | lite | full (default) |
+  ultra` via `/restraint`, no in-code marker comments. Triggers on "restraint",
+  "don't over-build", "yagni", and bloat/boilerplate complaints.
+- Ada (native-desktop) 1.1.0: wire `apple-xcode-build-loop`; document OpenAI `build-macos-apps` + twostraws Swift skill pointers for non–Native-SDK Swift work.
+- Kira (mobile) 1.2.0: wire `apple-xcode-build-loop`; native Swift path points at OpenAI `build-ios-apps` + twostraws pros without abandoning Expo-first.
+- New skill `apple-xcode-build-loop`: Makefile + xcodebuild + xcbeautify + warnings-as-errors + simulator/SPM gates (AppCreator-inspired; not a copy).
+- front-desk Third-Party Skills: twostraws Swift* Pro, AvdLee alts, openai/plugins `build-ios-apps` / `build-macos-apps`, Zabłocki AGENTS.md/rule-loading pointer.
+- creative plugin 0.1.4 → 0.1.5; web-dev plugin 0.1.5 → 0.1.6.
+
+- `brand-rep:schedule-social-post` 1.0.0 teaches any agent harness without
+  bopen.ai's native draft tools to use the bopen.ai social scheduler for X:
+  the auth.md service-auth login with the `social:draft` scope, image upload,
+  thread creation as a `planned` post, the private review URL where the user
+  confirms, and the X split-carousel rules (two equal portrait tiles or three
+  1024×2048 slices, uploaded left to right). `scripts/bopen-social.sh` wraps
+  discovery, login, refresh, accounts, next-slot, upload, create, get, update,
+  delete, review-url, and open. `references/bopen-social-api.md` records the
+  endpoint contract and `references/x-carousel.md` the carousel brief for
+  Lisa. The skill icon is briefed in bopen-ai
+  (`docs/art-batches/2026-09-02-schedule-social-post.md`), Linear OPL-4363.
+
+### Changed
+
+- `social-media-manager` (Alex) 1.0.7 loads `brand-rep:schedule-social-post`
+  for harnesses outside bopen.ai chat, states the agent ceiling (`draft`,
+  `planned`) and the consent step before the login email, and points its
+  carousel section at the skill's reference. Bumped `brand-rep` to 0.1.9.
+
+### Changed
+
+- Review plugin 0.1.16: updated `visual-proposal` to 0.0.16 with BitPlan's reading aesthetic, explicit
+  Unsure choices and consequences, scripts-off response copying, decision-tree
+  guidance, revision summaries, and implementation handoffs with done conditions.
+- Preserved advocates, cross-examination, judging, and the CEO call. Kept option
+  cards neutral and recommendations attributed to the panel.
+- Removed the embedded proposals archive menu and its scanner and example;
+  BitPlan handles plan organization. Responses use non-secret plan identifiers.
+
+- Orchestra 0.1.25 / Advisor 0.0.8 recommends `gpt-6-astra` via Codex CLI across Claude Code,
+  Codex, Grok Build, OpenCode, and other shell-capable hosts. The shared lane
+  documents authentication preflight, an explicit read-only sandbox, model
+  overrides, and saved runtime evidence and verdicts.
 
 ## [1.1.162] - 2026-09-04
 

@@ -120,7 +120,14 @@ request_args() {
       --body-file)
         [[ $# -ge 2 && -f $2 ]] || die "--body-file needs a file"
         [[ $2 != /* && $2 != '~'* && /$2/ != */../* ]] || die "--body-file must be a path inside the working directory"
-        BODY=$(cat "$2"); shift 2 ;;
+        # Resolve the real location so a planted symlink (on the file or on a
+        # parent directory) cannot send some other file to Higgsfield.
+        [[ ! -L $2 ]] || die "--body-file must not be a symlink"
+        local bf_dir bf_wd
+        bf_dir=$(CDPATH='' cd -P -- "$(dirname -- "$2")" && pwd -P) || die "--body-file directory is unreadable"
+        bf_wd=$(pwd -P)
+        [[ $bf_dir == "$bf_wd" || $bf_dir == "$bf_wd"/* ]] || die "--body-file must resolve inside the working directory"
+        BODY=$(cat -- "$bf_dir/$(basename -- "$2")"); shift 2 ;;
       *) die "unknown argument $1" ;;
     esac
   done
