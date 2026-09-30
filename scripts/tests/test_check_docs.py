@@ -515,6 +515,7 @@ class GrokWrapperTests(unittest.TestCase):
             log = temp / "run.log"
             env = dict(os.environ)
             env["PATH"] = f"{temp}:/usr/bin:/bin"
+            env.update({"HOME": str(temp / "home"), "XDG_CONFIG_HOME": str(temp / "home/.config")})
             command = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7", "--credit-pressure", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(log)]
             subprocess.run(command, cwd=self.ROOT, env=env, capture_output=True, text=True, check=True)
             inventory = Path(str(log) + ".inspect.json").read_text(encoding="utf-8")
@@ -702,7 +703,8 @@ class GrokWrapperTests(unittest.TestCase):
                 "--base-ref", "HEAD", "--ownership", "README.md",
             ]
 
-            rejected = subprocess.run(command, cwd=self.ROOT, capture_output=True, text=True)
+            env = {**os.environ, "HOME": str(temp / "home"), "XDG_CONFIG_HOME": str(temp / "home/.config")}
+            rejected = subprocess.run(command, cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertNotEqual(rejected.returncode, 0)
             self.assertIn("branch mismatch", rejected.stderr)
 
@@ -723,6 +725,7 @@ class GrokWrapperTests(unittest.TestCase):
             prompt.write_text("Research only.\n", encoding="utf-8")
             env = dict(os.environ)
             env["PATH"] = f"{temp}:/usr/bin:/bin"
+            env.update({"HOME": str(temp / "home"), "XDG_CONFIG_HOME": str(temp / "home/.config")})
             command = [
                 "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7", "--credit-pressure",
                 "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt),
@@ -739,6 +742,7 @@ class GrokWrapperTests(unittest.TestCase):
             prompt = temp / "prompt.md"
             prompt.write_text("Research only.\n", encoding="utf-8")
             env = {key: value for key, value in os.environ.items() if key != "BOPEN_USAGE_CREDIT_PRESSURE"}
+            env.update({"HOME": str(temp / "home"), "XDG_CONFIG_HOME": str(temp / "home/.config")})
             base = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(temp / "run.log")]
             cases = [
                 (["--model", "grok-4.7"], {}, "usage-credit-pressure"),
