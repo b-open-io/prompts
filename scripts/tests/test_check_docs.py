@@ -191,6 +191,7 @@ class VisualWorkflowContractTests(unittest.TestCase):
             env = dict(os.environ)
             env.update({
                 "HOME": str(temp),
+                "XDG_CONFIG_HOME": str(temp / ".config"),
                 "PATH": f"{temp}:/usr/bin:/bin",
                 "BOPEN_HOST_HARNESS": "grok",
             })
@@ -218,7 +219,7 @@ class VisualWorkflowContractTests(unittest.TestCase):
                 (temp / ".grok").mkdir()
                 (temp / ".grok" / "config.toml").write_text(config, encoding="utf-8")
             env = {key: value for key, value in os.environ.items() if key not in {"XAI_API_KEY", "GROK_API_KEY", "GROK_HOME"}}
-            env.update({"HOME": str(temp), "PATH": f"{temp}:/usr/bin:/bin", "BOPEN_HOST_HARNESS": "grok", **(extra_env or {})})
+            env.update({"HOME": str(temp), "XDG_CONFIG_HOME": str(temp / ".config"), "PATH": f"{temp}:/usr/bin:/bin", "BOPEN_HOST_HARNESS": "grok", **(extra_env or {})})
             output = subprocess.run(["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env, capture_output=True, text=True, check=True)
             self.assertNotIn("secret-key", output.stdout)
             return json.loads(output.stdout)
@@ -298,7 +299,15 @@ class VisualWorkflowContractTests(unittest.TestCase):
     def test_slash_qualified_grok_ids_round_trip_into_the_canvas(self) -> None:
         if shutil.which("bun") is None:
             self.skipTest("Bun is not installed in the isolated Python runner")
-        detected = self._detect_grok(self.SLASHY_LISTING, extra_env={"BOPEN_USAGE_CREDIT_PRESSURE": "1"}, config=self.SLASHY_CONFIG)
+        config = self.SLASHY_CONFIG + (
+            '[model."xai/grok-4.6"]\nmodel = "grok-4.6"\nbase_url = "https://api.x.ai/v1"\n'
+            '[model."openrouter/x-ai/grok-4.7"]\nmodel = "x-ai/grok-4.7"\nbase_url = "https://openrouter.ai/api/v1"\n'
+        )
+        detected = self._detect_grok(
+            self.SLASHY_LISTING,
+            extra_env={"BOPEN_USAGE_CREDIT_PRESSURE": "1"},
+            config=config,
+        )
         probe = """
 import { defaultWorkflow, parseEnvironment, validateWorkflow, mainNodeId } from "./src/workflow-schema";
 const environment = parseEnvironment(JSON.parse(process.argv[2]));
@@ -322,9 +331,10 @@ console.log(JSON.stringify({
             Path(handle.name).unlink()
         observed = json.loads(result.stdout.strip().splitlines()[-1])
         self.assertEqual(observed["models"], ["xai/ox-alpha", "openrouter/x-ai/grok-4.7"])
-        self.assertEqual(observed["main"], "coordinate")
-        self.assertEqual(observed["coordinator"], "xai/grok-4.6")
-        self.assertEqual(observed["issues"], [])
+        self.assertIsNone(observed["main"])
+        self.assertEqual(observed["coordinator"], "")
+        self.assertTrue(any("grok-4.6" in issue and "main session" in issue for issue in observed["issues"]), observed["issues"])
+        self.assertFalse(any(issue.startswith("Build ") for issue in observed["issues"]), observed["issues"])
 
     def test_detector_never_assumes_a_custom_id_serves_itself(self) -> None:
         detected = self._detect_grok(
@@ -348,7 +358,7 @@ console.log(JSON.stringify({
             codex_home.mkdir()
             (codex_home / "config.toml").write_text('model = "gpt-6-astra"\n', encoding="utf-8")
             env = {key: value for key, value in os.environ.items() if key != "BOPEN_GROK_WORKER"}
-            env.update({"HOME": str(temp), "PATH": "/usr/bin:/bin", "CODEX_HOME": str(codex_home), "BOPEN_HOST_HARNESS": "codex"})
+            env.update({"HOME": str(temp), "XDG_CONFIG_HOME": str(temp / ".config"), "PATH": "/usr/bin:/bin", "CODEX_HOME": str(codex_home), "BOPEN_HOST_HARNESS": "codex"})
             detected = json.loads(subprocess.run(
                 ["bash", str(self.DETECTOR)], cwd=temp, env=env, capture_output=True, text=True, check=True,
             ).stdout)
@@ -387,7 +397,7 @@ console.log(JSON.stringify({
             )
             fake.chmod(0o755)
             env = dict(os.environ)
-            env.update({"HOME": str(temp), "PATH": f"{temp}:/usr/bin:/bin", "OPENCODE_CALLS": str(calls)})
+            env.update({"HOME": str(temp), "XDG_CONFIG_HOME": str(temp / ".config"), "PATH": f"{temp}:/usr/bin:/bin", "OPENCODE_CALLS": str(calls)})
             env["BOPEN_HOST_HARNESS"] = "codex"
             detected = json.loads(
                 subprocess.run(
@@ -398,7 +408,8 @@ console.log(JSON.stringify({
             self.assertEqual(detected["models"]["opencode"], [
                 "alpha/first", "alpha/shared", "beta/second", "beta/shared",
             ])
-            self.assertEqual(calls.read_text(encoding="utf-8").splitlines(), ["models alpha", "models beta"])
+            model_calls = [line for line in calls.read_text(encoding="utf-8").splitlines() if line.split(" ", 1)[0] == "models"]
+            self.assertEqual(model_calls, ["models alpha", "models beta"])
 
     def test_detector_handles_opencode_inventory_failure_without_logging_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -412,7 +423,7 @@ console.log(JSON.stringify({
             )
             fake.chmod(0o755)
             env = dict(os.environ)
-            env.update({"HOME": str(temp), "PATH": f"{temp}:/usr/bin:/bin"})
+            env.update({"HOME": str(temp), "XDG_CONFIG_HOME": str(temp / ".config"), "PATH": f"{temp}:/usr/bin:/bin"})
             env["BOPEN_HOST_HARNESS"] = "opencode"
             result = subprocess.run(
                 ["bash", str(self.DETECTOR)], cwd=self.ROOT, env=env,
@@ -450,6 +461,7 @@ console.log(JSON.stringify({
             env = dict(os.environ)
             env.update({
                 "HOME": str(temp),
+                "XDG_CONFIG_HOME": str(temp / ".config"),
                 "PATH": f"{temp}:/usr/bin:/bin",
                 "XDG_DATA_HOME": str(readonly_data),
                 "OPENCODE_READONLY_DATA": str(readonly_data),
@@ -503,6 +515,7 @@ class GrokWrapperTests(unittest.TestCase):
             log = temp / "run.log"
             env = dict(os.environ)
             env["PATH"] = f"{temp}:/usr/bin:/bin"
+            env.update({"HOME": str(temp / "home"), "XDG_CONFIG_HOME": str(temp / "home/.config")})
             command = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7", "--credit-pressure", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(log)]
             subprocess.run(command, cwd=self.ROOT, env=env, capture_output=True, text=True, check=True)
             inventory = Path(str(log) + ".inspect.json").read_text(encoding="utf-8")
@@ -594,7 +607,7 @@ class GrokWrapperTests(unittest.TestCase):
             prompt = temp / "prompt.md"
             prompt.write_text("Research only.\n", encoding="utf-8")
             env = {key: value for key, value in os.environ.items() if key not in {"BOPEN_USAGE_CREDIT_PRESSURE", "GROK_HOME"}}
-            env.update({"HOME": str(temp), "PATH": "/usr/bin:/bin"})
+            env.update({"HOME": str(temp), "XDG_CONFIG_HOME": str(temp / ".config"), "PATH": "/usr/bin:/bin"})
             base = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(temp / "run.log")]
             config.write_text('[model."ox-alpha"\nmodel = grok-4.7\n', encoding="utf-8")
             broken = subprocess.run(base + ["--model", "ox-alpha", "--credit-pressure"], cwd=self.ROOT, env=env, capture_output=True, text=True)
@@ -651,7 +664,7 @@ class GrokWrapperTests(unittest.TestCase):
             prompt = temp / "prompt.md"
             prompt.write_text("Research only.\n", encoding="utf-8")
             env = {key: value for key, value in os.environ.items() if key not in {"BOPEN_USAGE_CREDIT_PRESSURE", "GROK_HOME"}}
-            env.update({"HOME": str(temp), "PATH": "/usr/bin:/bin"})
+            env.update({"HOME": str(temp), "XDG_CONFIG_HOME": str(temp / ".config"), "PATH": "/usr/bin:/bin"})
             base = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(temp / "run.log")]
             rejected = [
                 (["--model", "ox-alpha"], "usage-credit-pressure"),
@@ -690,7 +703,8 @@ class GrokWrapperTests(unittest.TestCase):
                 "--base-ref", "HEAD", "--ownership", "README.md",
             ]
 
-            rejected = subprocess.run(command, cwd=self.ROOT, capture_output=True, text=True)
+            env = {**os.environ, "HOME": str(temp / "home"), "XDG_CONFIG_HOME": str(temp / "home/.config")}
+            rejected = subprocess.run(command, cwd=self.ROOT, env=env, capture_output=True, text=True)
             self.assertNotEqual(rejected.returncode, 0)
             self.assertIn("branch mismatch", rejected.stderr)
 
@@ -711,6 +725,7 @@ class GrokWrapperTests(unittest.TestCase):
             prompt.write_text("Research only.\n", encoding="utf-8")
             env = dict(os.environ)
             env["PATH"] = f"{temp}:/usr/bin:/bin"
+            env.update({"HOME": str(temp / "home"), "XDG_CONFIG_HOME": str(temp / "home/.config")})
             command = [
                 "bash", str(self.WRAPPER), "--auth", "grok.com", "--model", "grok-4.7", "--credit-pressure",
                 "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt),
@@ -727,6 +742,7 @@ class GrokWrapperTests(unittest.TestCase):
             prompt = temp / "prompt.md"
             prompt.write_text("Research only.\n", encoding="utf-8")
             env = {key: value for key, value in os.environ.items() if key != "BOPEN_USAGE_CREDIT_PRESSURE"}
+            env.update({"HOME": str(temp / "home"), "XDG_CONFIG_HOME": str(temp / "home/.config")})
             base = ["bash", str(self.WRAPPER), "--auth", "grok.com", "--mode", "read", "--cwd", str(temp), "--prompt-file", str(prompt), "--log", str(temp / "run.log")]
             cases = [
                 (["--model", "grok-4.7"], {}, "usage-credit-pressure"),

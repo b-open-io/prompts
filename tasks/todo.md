@@ -2,7 +2,8 @@
 
 - [x] Audit active settings, roster, advisor, worker, review, and generated
   workflow surfaces.
-- [x] Set GPT-6 Sol as the preferred coding worker and xhigh reviewer.
+- [x] Set GPT-6 Sol as the xhigh reviewer. (The Sol coding-worker default was
+  superseded on 2026-09-26: the worker default is `claude-opus-5-5`.)
 - [x] Set Claude Opus 5.5 as the advisor default and demote Fable to legacy.
 - [x] Restrict Grok fallback guidance to usage-credit pressure and Grok 4.7.
 - [x] Update public docs, tests, generated artifacts, versions, and manifests.
@@ -16,8 +17,8 @@
 
 ## Review
 
-- Root settings now inject `gpt-6-sol` for workers and
-  `claude-opus-5-5` for advisors. Agent-builder, roster, Coordinator,
+- Root settings now inject `claude-opus-5-5` for workers and advisors;
+  `gpt-6-sol` is review only, at `xhigh`. Agent-builder, roster, Coordinator,
   Advisor, software-factory, wave/visual coordination, claudex, and Codex
   Security carry the same policy.
 - Agent-builder, the roster, and Coordinator now treat CloudAgent as one lane:

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { groupModels, laneStatus, modelFor, own, restaff, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
+import { groupModels, laneStatus, modelFor, own, reapprove, resolvedModel, restaff, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
 
 type Props = {
   node?: WorkflowNode;
@@ -57,7 +57,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
   const hostLanes = lanes.filter((candidate) => candidate.isHost);
   const availableLanes = lanes.filter((candidate) => !candidate.isHost && candidate.availability === "available");
   const unavailableLanes = lanes.filter((candidate) => !candidate.isHost && candidate.availability !== "available");
-  // The observed main keeps the model the detector saw even when it is not a dispatch choice (e.g. grok-4.6).
+  // The observed main keeps the model the detector saw even when it is not a dispatch choice.
   const observedMain = node.role === "coordinator" && node.provider === "native" && node.lane === environment.hostLane
     && node.model !== "" && node.model === own(environment.mainModels, node.lane);
   const showObserved = observedMain && !lane.models.includes(node.model);
@@ -81,12 +81,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
   const onModelChange = (selected: string) => {
     const model = selected === CUSTOM_MODEL ? "" : selected;
     const provider = runsNatively(environment, node.lane, model, node.role) ? "native" : "external";
-    onNodeChange({
-      ...node,
-      model,
-      provider,
-      disclosure: provider === node.provider ? node.disclosure : undefined,
-    });
+    onNodeChange(reapprove(environment, node, { ...node, model, provider }));
   };
 
   return <aside className="inspector" aria-label="Node inspector">
@@ -97,7 +92,7 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
     <div className="field-grid">
       <label>Role<Select value={node.role} onValueChange={(role) => onNodeChange(restaff(node, role as WorkflowNode["role"], environment))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{options(["coordinator", "builder", "reviewer", "external"] as const)}</SelectContent></Select></label>
       <label>Execution<Select value={node.execution} onValueChange={(execution) => update("execution", execution as WorkflowNode["execution"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{options(["write", "read-only-review"] as const)}</SelectContent></Select></label>
-      <label>Provider<Select value={node.provider} onValueChange={(provider) => onNodeChange({ ...node, provider: provider as WorkflowNode["provider"], disclosure: provider === node.provider ? node.disclosure : undefined })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="native" disabled={environment.hostLane !== node.lane}>native · current host only</SelectItem><SelectItem value="external">external · shell-out</SelectItem></SelectContent></Select></label>
+      <label>Provider<Select value={node.provider} onValueChange={(provider) => onNodeChange(reapprove(environment, node, { ...node, provider: provider as WorkflowNode["provider"] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="native" disabled={environment.hostLane !== node.lane}>native · current host only</SelectItem><SelectItem value="external">external · shell-out</SelectItem></SelectContent></Select></label>
       <label>Effort<Select value={node.effort} onValueChange={(effort) => update("effort", effort as WorkflowNode["effort"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectGroup><SelectLabel>{lane.label} presets</SelectLabel>{options(efforts)}</SelectGroup></SelectContent></Select></label>
     </div>
     <label>Lane<Select value={node.lane || UNKNOWN_MODEL} onValueChange={onLaneChange}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
@@ -107,12 +102,12 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
       {!own(environment.lanes, node.lane) && node.lane && <SelectItem value={node.lane} disabled>{node.lane} · not detected</SelectItem>}
     </SelectContent></Select></label>
     <label>Model<Select value={modelValue} onValueChange={onModelChange}><SelectTrigger><SelectValue placeholder="Choose a model" /></SelectTrigger><SelectContent>
-      {modelGroups.map(([provider, models]) => <SelectGroup key={provider}><SelectLabel>{lane.id === "opencode" ? `${provider} provider` : `Detected ${provider} models`}</SelectLabel>{models?.map((model) => <SelectItem key={model} value={model}>{model}</SelectItem>)}</SelectGroup>)}
-      {showObserved && <SelectGroup><SelectLabel>Observed main session</SelectLabel><SelectItem value={node.model}>{node.model}</SelectItem></SelectGroup>}
+      {modelGroups.map(([provider, models]) => <SelectGroup key={provider}><SelectLabel>{lane.id === "opencode" ? `${provider} provider` : `Detected ${provider} models`}</SelectLabel>{models?.map((model) => <SelectItem key={model} value={model}>{resolvedModel(environment, lane.id, model)}</SelectItem>)}</SelectGroup>)}
+      {showObserved && <SelectGroup><SelectLabel>Observed main session</SelectLabel><SelectItem value={node.model}>{resolvedModel(environment, node.lane, node.model)}</SelectItem></SelectGroup>}
       {lane.inventory === "incomplete" && <SelectGroup><SelectLabel>Fallback</SelectLabel><SelectItem value={CUSTOM_MODEL}>Custom model…</SelectItem></SelectGroup>}
       {lane.inventory === "complete" && !modelIsPreset && <SelectItem value={UNKNOWN_MODEL} disabled>Current model not detected</SelectItem>}
     </SelectContent></Select></label>
-    {lane.inventory === "incomplete" && modelValue === CUSTOM_MODEL && <label>Custom model id<Input value={node.model} placeholder="provider/model or harness alias" onChange={(event) => update("model", event.target.value)} /></label>}
+    {lane.inventory === "incomplete" && modelValue === CUSTOM_MODEL && <label>Custom model id<Input value={node.model} placeholder="provider/model or harness alias" onChange={(event) => onNodeChange(reapprove(environment, node, { ...node, model: event.target.value }))} /></label>}
     {lane.access === "unverified" && <p className="field-warning">{lane.label} access is unverified: the detector cannot prove this account can run {node.model || "the model"}; a failed dispatch marks the lane unavailable.</p>}
     {lane.inventory === "complete" && !modelIsPreset && <p className="field-warning">Choose one of the detected {lane.label} models before exporting.</p>}
     {node.provider === "external" && <label>Disclosure<Textarea value={node.disclosure ?? ""} placeholder="What leaves the host, where it goes, and user approval." onChange={(event) => update("disclosure", event.target.value)} /></label>}

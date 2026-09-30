@@ -1,11 +1,11 @@
 ---
 name: advisor
-version: 0.0.11
+version: 0.0.13
 description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
   the advisor", "get a second opinion", "ask Claude Opus", "ask claude-opus-5-5",
-  "ask codex", "ask Fable", "ask opencode", or "ask a bigger model". The
+  "ask codex", "ask opencode", or "ask a bigger model". The
   advisor returns guidance; the main session keeps execution and decision ownership.
 ---
 
@@ -17,9 +17,9 @@ workers; it also composes native specialists and this advisor into one
 workflow when a task needs all three.
 
 The default advisor is Claude Opus 5.5 (`claude-opus-5-5`). Use Claude's native
-advisor or the clean Claude CLI channel according to the current host. Fable is
-a legacy opt-in channel, never a default. Honor an explicit model or channel
-preference. See [channels/README.md](references/channels/README.md) for channel
+advisor or the clean Claude CLI channel according to the current host. Honor an
+explicit model or channel preference within policy; Fable is out of policy and
+is never an advisor, even on request. See [channels/README.md](references/channels/README.md) for channel
 selection and preflight.
 
 If the user wants another advisor model to build rather than advise, route

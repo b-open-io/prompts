@@ -36,6 +36,12 @@ export type WorkflowEnvironment = {
   grokModelProviders: Record<string, string>;
   /** Underlying model each listed custom Grok-CLI id points at (config.toml `model`). */
   grokModelTargets: Record<string, string>;
+  /** Absolute path of run-opencode-review.sh, reported only when it verified a read-only reviewer here. */
+  opencodeReviewer: string | null;
+  /** Why OpenCode could not prove a read-only reviewer, when it is installed. */
+  opencodeReadOnlyProblem: string | null;
+  /** Host each OpenCode provider override really reaches; `*` means a config did not parse. */
+  opencodeProviderHosts: Record<string, string>;
   caps: { liveChildren: number | null; agentBudgetDefault: number };
   lanes: Record<string, DetectedLane>;
   roster: unknown[];
@@ -170,7 +176,8 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
       id,
       label: own(laneLabels, id) ?? id.replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()),
       availability,
-      access: (own(rawAccess, id) ?? own(rawAccess, rawId)) === "unverified" ? "unverified" as const : "verified" as const,
+      // Only an explicit "verified" proves access; a missing or unknown value stays unverified.
+      access: (own(rawAccess, id) ?? own(rawAccess, rawId)) === "verified" ? "verified" as const : "unverified" as const,
       isHost: id === hostLane,
       models: detectedModels.length > 0 ? detectedModels : (modelInventory.complete ? [] : (own(fallbackModels, id) ?? [])),
       efforts: effortInventory.length > 0 ? effortInventory : fallbackEfforts,
@@ -181,6 +188,7 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
   const mainModels = ownOnly(Object.fromEntries(Object.entries(rawModels)
     .filter(([key, model]) => key.endsWith("_default") && typeof model === "string" && model.trim().length > 0)
     .map(([key, model]) => [laneKey(key.slice(0, -"_default".length)), (model as string).trim()])));
+  const opencodeReviewer = typeof raw.opencode_reviewer === "string" && /^\/[^\0\n\r'"`$\\]*\/run-opencode-review\.sh$/.test(raw.opencode_reviewer) ? raw.opencode_reviewer : null;
   const grokWorker = typeof raw.grok_worker === "string" && /^\/[^\0\n\r'"`$\\]*\/run-grok-worker\.sh$/.test(raw.grok_worker) ? raw.grok_worker : null;
   const rawCaps = raw.caps && typeof raw.caps === "object" ? raw.caps as Record<string, unknown> : {};
   return {
@@ -199,6 +207,13 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
     grokModelTargets: ownOnly(raw.grok_model_targets && typeof raw.grok_model_targets === "object"
       ? Object.fromEntries(Object.entries(raw.grok_model_targets as Record<string, unknown>)
         .filter((entry): entry is [string, string] => typeof entry[1] === "string" && /^[A-Za-z0-9._/:@-]+$/.test(entry[1])))
+      : {}),
+    opencodeReviewer,
+    opencodeReadOnlyProblem: typeof raw.opencode_read_only_problem === "string" && raw.opencode_read_only_problem
+      ? raw.opencode_read_only_problem.slice(0, 300) : null,
+    opencodeProviderHosts: ownOnly(raw.opencode_provider_hosts && typeof raw.opencode_provider_hosts === "object"
+      ? Object.fromEntries(Object.entries(raw.opencode_provider_hosts as Record<string, unknown>)
+        .filter((entry): entry is [string, string] => typeof entry[1] === "string"))
       : {}),
     caps: {
       liveChildren: safeNumber(rawCaps.live_children ?? rawCaps.liveChildren, null),
@@ -236,42 +251,72 @@ export const OPUS = "claude-opus-5-5";
 export const SOL = "gpt-6-sol";
 const named = (id: string) => (model: string) => model === id || model.endsWith(`/${id}`);
 const isSol = named(SOL);
-const isOpusWorker = named(OPUS);
+/** The provider that serves each pinned model, and the routers approved to carry it. */
+const owners: Record<string, string> = { [SOL]: "openai", [OPUS]: "anthropic" };
+const routers = ["openrouter"];
+/** The endpoint each provider must reach when an OpenCode config overrides it. */
+const hosts: Record<string, string> = { openai: "openai.com", anthropic: "anthropic.com", openrouter: "openrouter.ai" };
+/** An OpenCode provider serves its own models unless a config points it at another host. */
+const ownHost = (environment: WorkflowEnvironment, model: string): boolean => {
+  if (own(environment.opencodeProviderHosts, "*") !== undefined) return false;
+  const provider = model.split("/", 1)[0];
+  const host = own(environment.opencodeProviderHosts, provider);
+  if (host === undefined) return true;
+  const base = own(hosts, provider);
+  return base !== undefined && (host === base || host.endsWith(`.${base}`));
+};
+/** A provider-qualified id names the model's own provider, optionally behind an approved router. */
+const qualified = (id: string, model: string): boolean =>
+  model === `${owners[id]}/${id}` || routers.some((router) => model === `${router}/${owners[id]}/${id}`);
 /**
- * Whether a node really runs the model matched by `is`. On the Grok CLI a listed id is only a name for
- * its config.toml entry, so it counts only when the detector resolved that entry behind a non-xAI host.
+ * Whether a node really runs the pinned model `id`. Claude and Codex take the bare id only; OpenCode
+ * takes the id qualified by its own provider (or an approved router in front of it). On the Grok CLI
+ * a listed id is only a name for its config.toml entry, so it counts only when the detector resolved
+ * that entry to the model's own provider serving the bare id, or an approved router serving the
+ * qualified id.
  */
-const runsModel = (is: (model: string) => boolean) => (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): boolean => {
-  if (lane !== "grok") return is(model);
+const runsModel = (id: string) => (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): boolean => {
+  if (lane === "opencode") return qualified(id, model) && ownHost(environment, model);
+  if (lane !== "grok") return model === id;
   if (isGrokFamily(model)) return false;
   const provider = own(environment.grokModelProviders, model);
-  return is(own(environment.grokModelTargets, model) ?? "") && provider !== undefined && provider !== "xai";
+  const target = own(environment.grokModelTargets, model);
+  if (provider === undefined || target === undefined) return false;
+  return provider === owners[id] ? target === id || target === `${owners[id]}/${id}`
+    : routers.includes(provider) && target === `${owners[id]}/${id}`;
 };
-export const runsSol = runsModel(isSol);
-export const runsOpus = runsModel(isOpusWorker);
-// The whole gpt-5.6 family is out of policy, even by explicit choice.
-function isSuperseded(model: string) { return /(?:^|\/)gpt-5\.6(?:$|-)/i.test(model); }
+export const runsSol = runsModel(SOL);
+export const runsOpus = runsModel(OPUS);
+// Out of policy even by explicit choice, main session included: the gpt-5.5 and gpt-5.6 families,
+// grok-4.6 in any form, and every Fable id.
+const isFable = (model: string) => /(?:^|\/)(?:claude-)?fable(?:$|[-_.])/i.test(model);
+function isSuperseded(model: string) { return /(?:^|\/)(?:gpt-5\.[56]|grok-4\.6)(?:$|-)/i.test(model) || isFable(model); }
 // Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
 // Provider-qualified xAI ids (xai/…, openrouter/x-ai/…) are Grok whatever the model name says.
 export const isGrokFamily = (model: string) => /(?:^|\/)(?:grok-|x-?ai\/)/i.test(model);
 const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
-// The only out-of-policy Grok version an observed main may keep is the legacy grok-4.6 session.
-const isObservedLegacyGrok = (model: string) => /(?:^|\/)grok-4\.6$/i.test(model);
-const offPolicy = `GPT-5.6 models are out of policy (build on ${OPUS}, review on ${SOL}).`;
+const offPolicy = `GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on ${OPUS}, review on ${SOL}).`;
+/** The model a lane really runs for an id: a Grok CLI id runs its config.toml target. */
+const resolve = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): string =>
+  lane === "grok" ? own(environment.grokModelTargets, model) ?? model : model;
+/** Display form of a model: the resolved model, with the alias it was reached through. */
+export const resolvedModel = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): string => {
+  const target = resolve(environment, lane, model);
+  return target !== model ? `${target} (via ${model})` : model;
+};
+const offPolicyModel = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string) =>
+  isSuperseded(model) || isSuperseded(resolve(environment, lane, model));
 
 const preferredLane = (environment: WorkflowEnvironment): WorkflowLane => environment.hostLane ?? "codex";
 const laneModels = (environment: WorkflowEnvironment, lane: WorkflowLane): string[] => own(environment.lanes, lane)?.models ?? own(fallbackModels, lane) ?? [];
 
-// The coordinator is the current main session. Only an allowed model is picked; otherwise it stays
-// empty so validation fails closed instead of drifting to the next catalog entry.
+// The coordinator is the current main session: the model the detector reports as selected
+// (`<lane>_default`), or Claude's `inherit`. A catalog entry is only an option, never the main, so
+// without a selected model it stays empty and validation rejects it.
 const mainModel = (environment: WorkflowEnvironment, lane: WorkflowLane): string => {
   const configured = own(environment.mainModels, lane);
-  if (configured) return isSuperseded(configured) ? "" : configured;
-  const models = laneModels(environment, lane);
-  if (lane === "claude") return models.includes("inherit") ? "inherit" : "";
-  // A Grok main is only ever the detector-reported default; never assume grok-4.7.
-  if (lane === "grok") return "";
-  return models.find(isSol) ?? "";
+  if (configured) return offPolicyModel(environment, lane, configured) ? "" : configured;
+  return lane === "claude" && laneModels(environment, lane).includes("inherit") ? "inherit" : "";
 };
 
 type Runs = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string) => boolean;
@@ -285,8 +330,8 @@ const findOn = (environment: WorkflowEnvironment, lane: WorkflowLane, runs: Runs
  * Pick the first lane that runs the model, independent of which model the host lists first. A lane
  * whose model was actually detected on an available CLI wins over a lane with only the fallback list.
  */
-const targetFor = (environment: WorkflowEnvironment, runs: Runs, lanes: WorkflowLane[], fallback: { lane: WorkflowLane; model: string }) => {
-  const order = [...new Set([environment.hostLane, ...lanes].filter((lane): lane is string => Boolean(lane)))];
+const targetFor = (environment: WorkflowEnvironment, runs: Runs, lanes: WorkflowLane[], fallback: { lane: WorkflowLane; model: string }, usable: (lane: WorkflowLane) => boolean = () => true) => {
+  const order = [...new Set([environment.hostLane, ...lanes].filter((lane): lane is string => Boolean(lane) && usable(lane as string)))];
   for (const lane of order) {
     const detected = own(environment.lanes, lane);
     const model = detected?.detected && detected.availability === "available" ? findOn(environment, lane, runs) : null;
@@ -303,9 +348,13 @@ const targetFor = (environment: WorkflowEnvironment, runs: Runs, lanes: Workflow
 export const codingTarget = (environment: WorkflowEnvironment): { lane: WorkflowLane; model: string } =>
   targetFor(environment, runsOpus, ["claude", "opencode", "grok"], { lane: "claude", model: OPUS });
 
-/** Lane and model for review steps: GPT-6 Sol. */
+/**
+ * Lane and model for review steps: GPT-6 Sol. OpenCode has no read-only CLI flag, so it staffs a
+ * review only when the detector reported a read-only agent the export can pass with `--agent`.
+ */
 export const reviewTarget = (environment: WorkflowEnvironment): { lane: WorkflowLane; model: string } =>
-  targetFor(environment, runsSol, ["codex", "opencode", "grok"], { lane: "codex", model: SOL });
+  targetFor(environment, runsSol, ["codex", "opencode", "grok"], { lane: "codex", model: SOL },
+    (lane) => lane !== "opencode" || environment.opencodeReviewer !== null);
 
 const targetForRole = (environment: WorkflowEnvironment, role: NodeRole) =>
   role === "reviewer" ? reviewTarget(environment) : codingTarget(environment);
@@ -397,6 +446,19 @@ export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnviro
     ],
   };
 };
+
+/** Where a step's content goes: the OpenCode provider prefix, a Grok id's base_url host, or the lane. */
+export const destination = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): string => {
+  if (lane === "opencode") return model.includes("/") ? model.split("/", 1)[0] : "";
+  if (lane === "grok") return own(environment.grokModelProviders, model) ?? (isGrokFamily(model) ? "xai" : "");
+  return lane;
+};
+
+/** An approval covers one lane, execution provider, and model provider; changing any of them clears it. */
+export const reapprove = (environment: WorkflowEnvironment, node: WorkflowNode, next: WorkflowNode): WorkflowNode =>
+  next.lane === node.lane && next.provider === node.provider
+    && destination(environment, next.lane, next.model) === destination(environment, node.lane, node.model)
+    ? next : { ...next, disclosure: undefined };
 
 /** Re-staff a step whose role changed, the same way a lane-less seed node is staffed. */
 export const restaff = (node: WorkflowNode, role: NodeRole, environment: WorkflowEnvironment): WorkflowNode => {
@@ -522,14 +584,18 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
   if (workflow.nodes.some((node) => walk(node.id))) issues.push({ scope: "graph", id: "forward-cycle", message: "Forward handoffs form a cycle; use a reject or memory edge instead." });
   for (const node of workflow.nodes) {
     const model = typeof node.model === "string" ? node.model.trim() : "";
+    const observedDefault = node.lane === environment.hostLane ? own(environment.mainModels, node.lane) : undefined;
     if (!model) issues.push({ scope: "node", id: node.id, message: node.role === "coordinator"
-      ? node.lane === "grok" && environment.hostLane === "grok" && !own(environment.mainModels, "grok")
+      ? observedDefault && offPolicyModel(environment, node.lane, observedDefault)
+        ? `${node.title} cannot stand for the main session: the host runs ${resolvedModel(environment, node.lane, observedDefault)}; ${offPolicy}`
+        : node.lane === "grok" && environment.hostLane === "grok" && !own(environment.mainModels, "grok")
         ? `${node.title} needs a model: detect-harness.sh did not report the Grok host's default model; re-run it before planning.`
         : `${node.title} needs a model.`
       : `${node.title} needs a model: ${node.lane || "this lane"} does not offer ${node.role === "reviewer" ? SOL : OPUS}; choose a lane that does or set a model explicitly.` });
     if (isSuperseded(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; ${offPolicy}` });
-    // The single observed native main keeps the model the detector saw it running, even an
-    // out-of-policy Grok id; every dispatch, edit, and inventory choice stays pinned.
+    if (isFable(model) || isFable(resolve(environment, node.lane, model))) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${resolvedModel(environment, node.lane, model)}; Fable is never used to coordinate, build, review, or advise.` });
+    // The observed native main is the model the detector saw the host running. It is held to the same
+    // policy as a dispatch; it is only exempt from the inventory and native-pairing checks.
     const observedMainModel = node.id === mainId && model !== "" && model === own(environment.mainModels, node.lane);
     // A Grok-CLI id is judged by the model its config.toml entry points at (grok_model_targets). An alias
     // served by xAI, or aimed at a Grok model, gets the Grok pin and credit gate; one aimed at a GPT-5.6
@@ -542,22 +608,32 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
       && (aliasProvider === "xai" || (aliasTarget !== undefined && isGrokFamily(aliasTarget)));
     const grokBacked = isGrokFamily(model) || xaiAlias;
     if (effectiveModel !== model && isSuperseded(effectiveModel)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, an alias for ${effectiveModel}; ${offPolicy}` });
-    const observedLegacyGrokMain = observedMainModel && isObservedLegacyGrok(effectiveModel);
-    if (grokBacked && !isApprovedGrok(effectiveModel) && !observedLegacyGrokMain) issues.push({ scope: "node", id: node.id, message: isGrokFamily(model) && effectiveModel === model
+    if (grokBacked && !isApprovedGrok(effectiveModel)) issues.push({ scope: "node", id: node.id, message: isGrokFamily(model) && effectiveModel === model
       ? `${node.title} uses ${model}; Grok is pinned to grok-4.7.`
       : `${node.title} uses ${model}, an xAI alias for ${aliasTarget && aliasTarget !== model ? aliasTarget : "an unreported model"}; Grok is pinned to grok-4.7.` });
     // A custom id is resolved only when its entry names both the model and a base_url host, so the
     // export can say where content goes; anything less is refused rather than shipped as "unknown".
-    if (node.lane === "grok" && model !== "" && !isGrokFamily(model) && (aliasTarget === undefined || aliasProvider === undefined)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses custom id ${model}, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.` });
+    // Only a bare grok-* id is a Grok CLI built-in: a qualified one (xai/grok-4.7) is a config.toml
+    // alias like any other and must resolve to an xAI-served grok-4.7.
+    const builtinGrok = /^grok-/i.test(model);
+    if (node.lane === "grok" && model !== "" && !builtinGrok && (aliasTarget === undefined || aliasProvider === undefined)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses custom id ${model}, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.` });
+    if (node.lane === "grok" && isGrokFamily(model) && aliasProvider !== undefined && aliasProvider !== "xai" && !routers.includes(aliasProvider)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry sends content to ${aliasProvider}, not xAI or an approved router.` });
     if (node.lane === "grok" && isSol(model) && aliasTarget !== undefined && !isSol(aliasTarget)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry runs ${aliasTarget}, not ${SOL}.` });
     if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
-    // Grok needs usage-credit pressure, observed on-pin main included. Only a host already running the
-    // legacy grok-4.6 main is exempt: that session is an observed fact, not a new dispatch.
-    if (grokBacked && !(observedLegacyGrokMain && environment.hostLane === "grok") && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${node.role === "reviewer" ? SOL : OPUS}.` });
+    // Grok needs usage-credit pressure, observed main included.
+    if (grokBacked && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${node.role === "reviewer" ? SOL : OPUS}.` });
     // Any node that executes a review is a reviewer for model policy, whatever its role.
     const reviewing = node.role === "reviewer" || node.execution === "read-only-review";
-    if (node.role !== "coordinator") {
+    // Only the observed main session keeps its own model; any other coordinator is a dispatch and
+    // is held to the coding-worker pin like a builder.
+    if (node.role !== "coordinator" || node.id !== mainId) {
       if (!reviewing && model !== "" && !grokBacked && !isSuperseded(effectiveModel) && !runsOpus(environment, node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, which is not the coding worker; build on ${OPUS}.` });
+    } else if (!reviewing && !grokBacked && !isSuperseded(effectiveModel) && !(node.lane === "claude" && model === "inherit")
+      && !runsOpus(environment, node.lane, model) && !runsSol(environment, node.lane, model)) {
+      // The main session runs Opus or Sol from its own provider (or an approved router); an alias that
+      // reaches either through another host is not the pinned model.
+      const via = node.lane === "grok" ? own(environment.grokModelProviders, model) : undefined;
+      issues.push({ scope: "node", id: node.id, message: `${node.title} is the main session on ${resolvedModel(environment, node.lane, model)}${via ? ` served by ${via}` : ""}, which is not ${OPUS} or ${SOL} from its own provider.` });
     }
     if (reviewing && (!runsSol(environment, node.lane, model) || node.effort !== "xhigh")) issues.push({ scope: "node", id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });
     const lane = own(environment.lanes, node.lane);
@@ -567,7 +643,7 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
         && node.provider === "native"
         && node.lane === "grok";
       if (lane.availability !== "available") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${lane.label}, which is ${lane.availability === "unknown" ? "not detected" : "unavailable"}.` });
-      if (lane.inventory === "complete" && !lane.models.includes(model) && !(observedMainModel && (node.lane !== "grok" || observedLegacyGrokMain))) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
+      if (lane.inventory === "complete" && !lane.models.includes(model) && !(observedMainModel && node.lane !== "grok")) issues.push({ scope: "node", id: node.id, message: `${node.title} uses a model not offered by ${lane.label}: ${model || "(empty)"}.` });
       // The wrapper's preflight dispatches only ids its fresh `grok models` listing shows, so every Grok
       // dispatch needs that listing as evidence; an unlisted or fallback-only id is never Ready.
       if (node.lane === "grok" && node.id !== mainId && lane.inventory !== "complete" && !(lane.detected && lane.models.includes(model))) {

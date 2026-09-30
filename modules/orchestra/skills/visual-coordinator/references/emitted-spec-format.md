@@ -215,12 +215,15 @@ when reported. A Grok host has no main at all unless the detector reported
 stays empty and fails validation. Other hosts without a reported default use
 their first native host-lane coordinator. A Coordinate card edited away from
 the observed default is a dispatch: on the Grok lane it becomes a disclosed
-wrapper shell-out that needs credit pressure. The observed main alone keeps the
-model the detector saw only when that is `grok-4.6` (or an alias resolving to
-it); every other version, dispatch, edited card, and inventory choice stays
-pinned to `grok-4.7`. That legacy `grok-4.6` main is also the only Grok use
-exempt from credit pressure: an observed `grok-4.7` main validates and exports
-only under credit pressure. Every other native Grok-lane node
+wrapper shell-out that needs credit pressure. The observed main is held to the
+same model policy as a dispatch. A main whose model is out of policy (the
+`gpt-5.5` and `gpt-5.6` families, `grok-4.6` in any form, any Fable id, or an
+alias that resolves to one) leaves the Coordinate card empty with an issue
+naming the resolved model the host runs. Any other main must run
+`claude-opus-5-5` or `gpt-6-sol` from its own provider (Claude's `inherit`
+aside), or `grok-4.7` from xAI or OpenRouter under credit pressure; there is no
+legacy Grok exemption. Cards and model pickers show the resolved model, with
+the alias it was reached through (`grok-4.6 (via xai/grok-4.7)`). Every other native Grok-lane node
 converts to a shell-out whether or not its model is listed, and a Grok dispatch
 is never Ready unless the detector's `grok models` listing shows its model. A
 custom alias served by xAI, or pointing at a Grok model (`grok_model_targets`),
@@ -231,14 +234,47 @@ listed custom id is refused unless its entry names both an explicit `model`
 and a `base_url` host; an entry is never assumed to serve its own id.
 Provider-qualified xAI ids (`xai/…`, `openrouter/x-ai/…`) are Grok: they run
 only on the Grok lane, under credit pressure, pinned to `grok-4.7`. The
-detector keeps these ids whole. A Grok CLI id named `gpt-6-sol` counts as Sol
-only when its entry resolves to `gpt-6-sol` behind a non-xAI host; otherwise it
-is never staffed as Sol and is rejected as a Review model; a Grok CLI id is
-likewise staffed as a Build model only when its entry resolves to
-`claude-opus-5-5` behind a non-xAI host. The observed main's pin exemption covers only a resolved
-`grok-4.6`; any other off-pin Grok version is rejected like a dispatch. The canvas's
+detector keeps these ids whole. Only a bare `grok-*` id is a Grok CLI
+built-in; a qualified one is a `config.toml` alias and must resolve like any
+custom id, to `grok-4.7` served by xAI or OpenRouter. A Grok CLI id counts as
+Sol only when its entry resolves to `gpt-6-sol` behind OpenAI (or
+`openai/gpt-6-sol` behind OpenRouter), and as the Build model only when it
+resolves to `claude-opus-5-5` behind Anthropic (or `anthropic/claude-opus-5-5`
+behind OpenRouter); anything else is never staffed as Sol or Opus. Claude and
+Codex lanes accept only the bare ids, and OpenCode only
+`openai/gpt-6-sol`, `anthropic/claude-opus-5-5`, or those behind
+`openrouter/`, so `x/gpt-6-sol` is not Sol on any lane. Every coordinator
+other than the observed main session is a dispatch and is held to the same
+coding-worker pin as a builder. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.
+
+Grok shell-outs also pass `--provider` (the detector's `grok_model_providers`
+entry, or `xai` for a bare `grok-*` id) and, for a custom id, `--target` (its
+`grok_model_targets` entry); the wrapper refuses to run if `config.toml` now
+routes the id elsewhere. A Grok id whose provider the detector did not resolve
+is not executable.
+
+Codex shell-outs put `--ask-for-approval never` before `exec` (codex rejects
+it after the subcommand). A worktree path that starts with `~/` is emitted as
+`"$HOME"/'…'` so the shell expands it; the rest of the path stays quoted.
+
+OpenCode has no read-only CLI flag, and `opencode run --dir <worktree>` loads
+that worktree's own `opencode.json(c)`, `.opencode/` agents, tools, and plugins.
+An OpenCode reviewer therefore exports only as
+`bash <opencode_reviewer> --model <provider/model> --dir <worktree> -- <prompt>`,
+where `opencode_reviewer` is the detector's path to the orchestra
+`run-opencode-review.sh`. At dispatch the wrapper turns project config and
+plugins off (`OPENCODE_DISABLE_PROJECT_CONFIG=1`, `--pure`), pins its
+`bopen-review` agent inline (`OPENCODE_CONFIG_CONTENT`: primary mode, `*`
+denied, read/grep/glob/list allowed), and runs `opencode debug agent
+bopen-review` inside the worktree. It starts the review only when OpenCode
+resolves a primary agent whose enabled tools are all read-only and whose edit,
+bash, task, and unknown (MCP or custom) tools are denied, and when the model's
+provider still reaches its own endpoint. Anything it cannot verify exits 3.
+When the detector's own check fails it reports `opencode_read_only_problem`,
+and the reviewer is omitted with that reason; reviews are then staffed on
+another lane.
 
 Generated commands encode task text before passing it through stdin or
 `--prompt-file`; never interpolate backticks, `$()`, backslashes, or newlines

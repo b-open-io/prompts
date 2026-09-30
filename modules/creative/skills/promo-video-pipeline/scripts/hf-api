@@ -1,0 +1,300 @@
+#!/usr/bin/env bash
+# hf-api — the only path from the headless promo-video run to Higgsfield.
+#
+# Install it as <state>/bin/hf-api (the launcher uses ~/.hf-api/bin/hf-api).
+# The state directory is the parent of the directory holding this file, never
+# an environment variable, so a caller cannot point it at a fake gate, budget,
+# or ledger, and a copy made anywhere else has no key. gate-logger.sh refuses
+# to start unless this file is byte-identical to the one shipped beside it.
+#
+# State layout:
+#   key          ID:SECRET, one line, mode 600
+#   budget       Higgsfield spend cap in USD
+#   prices.json  {"<model path>": {"usd_ceiling": N, "usd_per_second": N}}
+#                usd_ceiling (required) is the most one request can cost: the
+#                longest, highest-resolution, most expensive variant.
+#                usd_per_second (optional) is the most expensive variant's
+#                per-second rate; with it, a request whose body carries a
+#                numeric duration is priced duration * rate, and any other
+#                request is priced at the ceiling. Every price must be > 0.
+#   ledger.jsonl one JSON object per reservation, settlement, or refund, each
+#                with numeric cost_usd
+#   gate/armed   PID of the live gate-logger.sh that armed this run
+#   gate/snapshot.json, gate/prices.json, gate/budget
+#                the gate's start-time copies of prices.json and budget, with
+#                their sha256 and the sha256 of this wrapper
+#
+# Every spend check runs against the gate's snapshot: generate refuses unless
+# prices.json and budget still hash to what the gate recorded at start, the
+# gate's copies do too, and this file still hashes to the wrapper the gate
+# verified. So rewriting the price table or the budget mid-run, or swapping
+# this file, refuses the next generate.
+#
+# Commands:
+#   capabilities
+#   generate [--probe] --model PATH (--json BODY | --body-file FILE)
+#   estimate --model PATH (--json BODY | --body-file FILE)
+#   status REQUEST_ID      polls; downloads finished output to ./hf-output/REQUEST_ID/
+#   cancel REQUEST_ID
+#   balance
+# Exit: 0 ok, 1 API or network error, 2 bad usage or state, 4 refused by the
+# gate, price table, or budget.
+
+set -euo pipefail
+umask 077
+
+# REST host from https://docs.higgsfield.ai/docs/authentication.md and
+# https://docs.higgsfield.ai/docs/how-to/introduction.md ("Base URL").
+BASE="https://api.higgsfield.ai"
+self=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/$(basename "${BASH_SOURCE[0]}")
+S=$(dirname "$(dirname "$self")")
+KEY="$S/key" BUDGET_FILE="$S/budget" PRICES="$S/prices.json" LEDGER="$S/ledger.jsonl"
+LIVE_BUDGET=$BUDGET_FILE LIVE_PRICES=$PRICES
+ARMED="$S/gate/armed" LOCK="$S/lock" SNAP="$S/gate/snapshot.json"
+
+die() { echo "hf-api: $*" >&2; exit "${2:-2}"; }
+refuse() { echo "hf-api: refused: $*" >&2; exit 4; }
+for tool in curl jq; do command -v "$tool" >/dev/null || die "$tool is required"; done
+if command -v sha256sum >/dev/null; then sha() { sha256sum < "$1" | cut -d' ' -f1; }
+elif command -v shasum >/dev/null; then sha() { shasum -a 256 < "$1" | cut -d' ' -f1; }
+else die "sha256sum or shasum is required"; fi
+[[ $(basename "$(dirname "$self")") == bin ]] || die "install as <state>/bin/hf-api"
+
+spent() { jq -en '[inputs | .cost_usd | if type == "number" then . else error("cost_usd") end] | add // 0' "$LEDGER"; }
+
+record() { jq -cn "$@" >> "$LEDGER"; }
+
+# The armed file must name a live gate-logger.sh process.
+gate_ok() {
+  local pid cmd
+  [[ -f $ARMED ]] || return 1
+  pid=$(tr -d '[:space:]' < "$ARMED")
+  [[ $pid =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null || return 1
+  cmd=$(ps -o command= -p "$pid" 2>/dev/null) || return 1
+  [[ $cmd == *gate-logger.sh* ]]
+}
+
+# The gate's snapshot must still match the live files and this wrapper; spend
+# checks then read the gate's copies. Sets PRICES and BUDGET_FILE.
+snapshot_ok() {
+  local want
+  [[ -f $SNAP && -f $S/gate/prices.json && -f $S/gate/budget ]] || refuse "the gate has not snapshotted prices.json and budget"
+  want=$(jq -r '[.hf_api, .prices, .budget] | map(if type == "string" and test("^[0-9a-f]{64}$") then . else error("bad") end) | join(" ")' "$SNAP" 2>/dev/null) \
+    || refuse "gate snapshot $SNAP is malformed"
+  read -r want_hf want_prices want_budget <<< "$want"
+  [[ $(sha "$self") == "$want_hf" ]] || refuse "this hf-api is not the wrapper the gate verified (sha256 differs)"
+  [[ -f $LIVE_PRICES && $(sha "$LIVE_PRICES") == "$want_prices" && $(sha "$S/gate/prices.json") == "$want_prices" ]] \
+    || refuse "prices.json changed since the gate started"
+  [[ -f $LIVE_BUDGET && $(sha "$LIVE_BUDGET") == "$want_budget" && $(sha "$S/gate/budget") == "$want_budget" ]] \
+    || refuse "budget changed since the gate started"
+  PRICES="$S/gate/prices.json" BUDGET_FILE="$S/gate/budget"
+}
+
+HDR="" OUT="" LOCKED=0
+cleanup() {
+  rm -f "$HDR" "$OUT"
+  (( LOCKED == 0 )) || rmdir "$LOCK" 2>/dev/null || true
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM HUP
+
+lock() {
+  local tries=0
+  until mkdir "$LOCK" 2>/dev/null; do
+    (( tries++ < 100 )) || die "ledger lock $LOCK is stuck"
+    sleep 0.1
+  done
+  LOCKED=1
+}
+unlock() { rmdir "$LOCK" 2>/dev/null || true; LOCKED=0; }
+
+# Parse --model and the request body; sets MODEL and BODY.
+MODEL="" BODY="" PROBE=0
+request_args() {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --probe) PROBE=1; shift ;;
+      --model) [[ $# -ge 2 ]] || die "--model needs a value"; MODEL=$2; shift 2 ;;
+      --json) [[ $# -ge 2 ]] || die "--json needs a value"; BODY=$2; shift 2 ;;
+      --body-file)
+        [[ $# -ge 2 && -f $2 ]] || die "--body-file needs a file"
+        [[ $2 != /* && $2 != '~'* && /$2/ != */../* ]] || die "--body-file must be a path inside the working directory"
+        BODY=$(cat "$2"); shift 2 ;;
+      *) die "unknown argument $1" ;;
+    esac
+  done
+  (( PROBE == 1 )) && [[ -z $MODEL ]] && return 0
+  [[ $MODEL =~ ^[A-Za-z0-9][A-Za-z0-9._-]*(/[A-Za-z0-9._-]+)*$ && $MODEL != *..* ]] || die "bad --model $MODEL"
+  [[ -n $BODY ]] || BODY="{}"
+  jq -e 'type == "object"' <<< "$BODY" > /dev/null 2>&1 || die "request body must be a JSON object"
+}
+
+# Price from the local table at the model's worst case; a model without a
+# valid entry is never submitted.
+estimate() {
+  [[ -f $PRICES ]] || refuse "no price table at $PRICES"
+  jq -ern --arg m "$MODEL" --argjson body "$BODY" --slurpfile p "$PRICES" '
+    def pos: type == "number" and . > 0;
+    ($p[0] | if type == "object" then .[$m] else null end) as $e
+    | if $e == null then error("no price for \($m)")
+      elif ($e | type) != "object" or ($e | keys - ["usd_ceiling", "usd_per_second"] | length) > 0 then
+        error("price entry for \($m) must hold only usd_ceiling and usd_per_second")
+      elif ($e.usd_ceiling | pos | not) then error("price entry for \($m) needs a positive usd_ceiling")
+      elif ($e | has("usd_per_second")) and ($e.usd_per_second | pos | not) then
+        error("usd_per_second for \($m) must be positive")
+      # Per-second pricing only for a single-shot body whose one duration is
+      # the top-level one; multi-shot requests (Kling multi_prompt/multi_shots)
+      # bill the sum of their shot durations, so they take the ceiling.
+      elif ($e | has("usd_per_second")) and ($body.duration | pos)
+        and ([$body | paths | select(.[-1] == "duration")] | length) == 1
+        and ([$body | paths | .[] | strings | select(test("multi|shot"; "i"))] | length) == 0 then
+        ($body.duration * $e.usd_per_second) as $c
+        | if $c > $e.usd_ceiling then
+            error("\($body.duration) s at \($e.usd_per_second)/s is over the \($m) ceiling of \($e.usd_ceiling)")
+          else $c end
+      else $e.usd_ceiling end' 2>&1
+}
+
+auth_header() {
+  [[ -f $KEY ]] || die "key file $KEY is missing"
+  local cred
+  cred=$(tr -d '\r\n' < "$KEY")
+  [[ $cred =~ ^[^:[:space:]]+:[^[:space:]]+$ ]] || die "key file must hold ID:SECRET"
+  HDR=$(mktemp "$S/.hdr.XXXXXX")
+  printf 'Authorization: Key %s\n' "$cred" > "$HDR"
+}
+
+# call METHOD URL [BODY [IDEMPOTENCY_KEY]]: sets CODE and RESP; the key goes
+# through a header file, never argv.
+call() {
+  auth_header
+  OUT=$(mktemp "$S/.out.XXXXXX")
+  local args=(-sS -o "$OUT" -w '%{http_code}' -X "$1" -H @"$HDR" -H 'Content-Type: application/json' --max-time 120)
+  [[ -z ${3:-} ]] || args+=(--data-binary "$3")
+  [[ -z ${4:-} ]] || args+=(-H "Idempotency-Key: $4")
+  CODE=$(curl "${args[@]}" "$2") || CODE=000
+  rm -f "$HDR"
+  RESP=$(cat "$OUT")
+  rm -f "$OUT"
+}
+
+request_id() {
+  [[ ${1:-} =~ ^[A-Za-z0-9-]{8,64}$ ]] || die "bad request id ${1:-}"
+  ID=$1
+}
+
+refund() {
+  local cost
+  cost=$(jq -rn --arg id "$ID" '[inputs | select(.request_id == $id)] as $r
+    | if any($r[]; .cmd == "refund") then 0 else ([$r[] | select(.cmd == "generate") | .cost_usd] | add // 0) end' "$LEDGER")
+  if jq -en "$cost > 0" > /dev/null; then
+    record --arg id "$ID" --arg why "$1" --argjson c "$cost" \
+      '{ts: (now | todate), cmd: "refund", request_id: $id, reason: $why, cost_usd: (0 - $c)}'
+  fi
+}
+
+cmd=${1:-}; shift || true
+case $cmd in
+  capabilities)
+    jq -n --arg s "$S" '{contract: "hf-api/1", state_dir: $s, gate_file: "\($s)/gate/armed",
+      budget_file: "\($s)/budget", ledger: "\($s)/ledger.jsonl", probe: true}'
+    ;;
+
+  estimate)
+    request_args "$@"
+    cost=$(estimate) || refuse "$cost"
+    jq -n --arg m "$MODEL" --argjson c "$cost" '{model: $m, cost_usd: $c}'
+    ;;
+
+  generate)
+    request_args "$@"
+    [[ -f $LEDGER ]] || die "ledger $LEDGER is missing"
+    gate_ok || refuse "no live gate has armed this run"
+    snapshot_ok
+    budget=$(tr -d '[:space:]' < "$BUDGET_FILE" 2>/dev/null) || refuse "no budget file at $BUDGET_FILE"
+    [[ $budget =~ ^[0-9]+(\.[0-9]+)?$ ]] && jq -en "$budget > 0" > /dev/null || refuse "budget file must hold a positive USD amount"
+    # A bare probe (no --model) checks only the gate and budget.
+    [[ -n $MODEL ]] || exit 0
+    cost=$(estimate) || refuse "$cost"
+    lock
+    total=$(spent 2>/dev/null) || refuse "ledger is malformed"
+    jq -en "$total + $cost <= $budget + 0.000001" > /dev/null \
+      || refuse "\$$cost on top of \$$total spent is over the \$$budget budget"
+    (( PROBE == 0 )) || exit 0
+    gate_ok || refuse "the gate disarmed before submission"
+    snapshot_ok
+    # Reserve the worst case under the lock before calling, so concurrent
+    # generates cannot overspend together; the call itself runs unlocked.
+    res="res-$(date +%s)-$$-$RANDOM$RANDOM"
+    record --arg r "$res" --arg m "$MODEL" --argjson body "$BODY" --argjson c "$cost" \
+      '{ts: (now | todate), cmd: "reserve", reservation: $r, model: $m, params: $body, cost_usd: $c}'
+    unlock
+    # Higgsfield dedupes a repeated submission with the same Idempotency-Key,
+    # so an ambiguous failure (no response or 5xx) is retried with it.
+    ambiguous=0
+    for wait in 1 2 0; do
+      call POST "$BASE/$MODEL" "$BODY" "$res"
+      [[ $CODE == 000 || $CODE == 5* ]] || break
+      ambiguous=1
+      (( wait == 0 )) || sleep "$wait"
+    done
+    resp=$RESP
+    rid=$(jq -r '.request_id // empty' <<< "$resp" 2>/dev/null || true)
+    lock
+    if [[ $CODE == 2* && -n $rid ]]; then
+      record --arg r "$res" --arg m "$MODEL" --argjson body "$BODY" --argjson c "$cost" --arg id "$rid" --arg code "$CODE" \
+        '{ts: (now | todate), cmd: "generate", request_id: $id, reservation: $r, model: $m, params: $body, http: $code, cost_usd: $c}'
+      record --arg r "$res" --argjson c "$cost" '{ts: (now | todate), cmd: "settle", reservation: $r, cost_usd: (0 - $c)}'
+      jq -c '{request_id, status}' <<< "$resp"
+    elif [[ $CODE == 4* && $ambiguous == 0 ]]; then
+      # A 4xx is a rejection before acceptance; Higgsfield charges nothing.
+      record --arg r "$res" --argjson c "$cost" --arg code "$CODE" \
+        '{ts: (now | todate), cmd: "release", reservation: $r, http: $code, cost_usd: (0 - $c)}'
+      die "generate rejected (HTTP $CODE): $resp" 1
+    else
+      # No response, a 5xx after retries, a 2xx without a request_id, or a 4xx
+      # after an earlier ambiguous attempt (which may have been accepted): the
+      # request may have been charged, so the reservation stays.
+      die "generate failed (HTTP $CODE); reservation $res stays booked: $resp" 1
+    fi
+    ;;
+
+  status)
+    request_id "${1:-}"
+    call GET "$BASE/requests/$ID/status"; resp=$RESP
+    [[ $CODE == 2* ]] || die "status failed (HTTP $CODE): $resp" 1
+    state=$(jq -r '.status // empty' <<< "$resp")
+    case $state in
+      failed|nsfw) lock; refund "$state" ;;
+      completed)
+        mkdir -p "hf-output/$ID"
+        jq -r '[.video.url?, (.images[]?.url), (.audio.url?)] | map(select(type == "string")) | .[]' <<< "$resp" \
+          | while IFS= read -r url; do
+              [[ $url == https://* ]] || die "refusing non-https output URL" 1
+              name=$(basename "${url%%\?*}")
+              [[ $name =~ ^[A-Za-z0-9._-]+$ ]] || name="output-$RANDOM"
+              curl -fsS --max-time 600 -o "hf-output/$ID/$name" "$url" || die "download failed: $url" 1
+            done
+        ;;
+    esac
+    jq -c --arg dir "hf-output/$ID" '{request_id, status} + (if .status == "completed" then {saved: $dir} else {} end)' <<< "$resp"
+    ;;
+
+  cancel)
+    request_id "${1:-}"
+    call POST "$BASE/requests/$ID/cancel"; resp=$RESP
+    [[ $CODE == 2* ]] || die "cancel refused (HTTP $CODE): $resp" 1
+    lock
+    refund cancelled
+    echo '{"cancelled": true}'
+    ;;
+
+  balance)
+    budget=$(tr -d '[:space:]' < "$BUDGET_FILE" 2>/dev/null) || die "no budget file"
+    total=$(spent) || die "ledger is malformed"
+    jq -n --argjson b "$budget" --argjson s "$total" '{budget_usd: $b, spent_usd: $s, remaining_usd: ($b - $s)}'
+    ;;
+
+  *) die "usage: hf-api capabilities|generate|estimate|status|cancel|balance" ;;
+esac

@@ -36,9 +36,15 @@ The canvas never takes worker defaults from the host's first listed model.
 Build and new or lane-less steps default to `claude-opus-5-5` on the first lane
 that offers it — host, then Claude Code, OpenCode, Grok CLI. Review defaults to
 `gpt-6-sol` at `xhigh` on the first lane that offers it — host, then Codex,
-OpenCode, Grok CLI. Report a missing lane rather than substituting Sol for a
-build, GPT-5.6, or Grok. Only the coordinator
-node keeps the host's main model. The detector reports `credit_pressure: true`
+OpenCode, Grok CLI; OpenCode counts only when the detector reports an
+`opencode_reviewer` (the `run-opencode-review.sh` path, reported only after it
+verified a read-only primary reviewer), since a review there cannot be
+exported without it. Report a missing lane rather than
+substituting Sol for a build, GPT-5.6, or Grok. The observed main coordinator
+keeps the host's main model only when that model is in policy (Opus or Sol
+from its own provider, or `grok-4.7` under credit pressure); GPT-5.5, GPT-5.6,
+Grok 4.6, and Fable mains are rejected. Any other coordinator node is held to
+the coding-worker pin. The detector reports `credit_pressure: true`
 only when `BOPEN_USAGE_CREDIT_PRESSURE=1`; without it, Grok worker nodes fail
 validation.
 
@@ -56,7 +62,7 @@ Verified against official docs and a real persisted run.
 | Primitives | `agent(prompt, opts)`, `pipeline(items, ...stages)`, `parallel(thunks)`, `phase(title)`, `log(msg)`, globals `args` and `budget` |
 | Fan-out | 16 concurrent (runtime-enforced, not configurable), 1,000 agents total per run |
 | Sequencing | `pipeline()` has **no barrier** — item A can be in stage 3 while B is in stage 1. `parallel()` **is** a barrier |
-| Per-step model | Yes: `opts.model` (`opus`/`sonnet`/`haiku`/`fable`/full id/`inherit`) and `opts.effort` (`low`…`max`) |
+| Per-step model | Yes: `opts.model` (`opus`/`sonnet`/`haiku`/full id/`inherit`) and `opts.effort` (`low`…`max`) |
 | Structured output | `opts.schema` (JSON Schema) forces a validated object return |
 | Named agents | `opts.agentType` uses a roster `subagent_type`, inheriting its tools and model |
 | Isolation | `opts.isolation: 'worktree'` per agent; controller owns predictable worktree/branch lifecycle |
@@ -161,11 +167,13 @@ Discover rather than assume; invoke `scripts/detect-harness.sh` with the
 main-known `BOPEN_HOST_HARNESS` value.
 
 - **Claude**: default advisor `claude-opus-5-5`; native aliases include
-  `opus`, `sonnet`, `haiku`, and `inherit`. `fable` is legacy opt-in only.
+  `opus`, `sonnet`, `haiku`, and `inherit`.
   Effort `low|medium|high|xhigh|max`. The detector lists these whenever the
   `claude` CLI exists and reports `lane_access.claude: "unverified"`: there is
   no offline account check, so a failed Opus dispatch reports the lane
-  unavailable.
+  unavailable. The detector reports `lane_access` for every lane (Codex from
+  `codex login status`, Grok from a signed-in listing, OpenCode from a provider
+  listing); the graph treats a missing or unknown value as unverified.
 - **Codex**: whatever `model =` says in `~/.codex/config.toml`, plus
   `model_reasoning_effort`. There is no enumeration command; the config is the
   truth. The in-app picker has lagged behind what `-m` accepts.
@@ -185,7 +193,9 @@ The only mechanism that works from every harness. Capture output to a file —
 piping through `tail` truncates the worker's final report irrecoverably.
 
 ```bash
-codex exec --sandbox workspace-write --cd <repo> "<one-line task>" \
+# Codex write — pinned the same way as coordinator/references/workers/cli-dispatch.md
+codex --ask-for-approval never exec --sandbox workspace-write --cd <repo> \
+  --model gpt-6-astra -c model_reasoning_effort="high" "<one-line task>" \
   > /tmp/dispatch-<id>.log 2>&1 &
 
 # Claude Opus worker from a non-Claude host
@@ -220,6 +230,13 @@ opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"
 # Require dispatch evidence: a child marker such as `General Agent` — a
 # primary `build` line alone does not prove delegation. A subagent without
 # its own `model` inherits the parent model.
+
+# opencode read-only review — always through the orchestra wrapper, which
+# ignores the worktree's OpenCode config, pins the primary `bopen-review`
+# agent inline, and runs only after `opencode debug agent` inside the worktree
+# proves every enabled tool is read-only (exit 3 otherwise).
+bash "<opencode_reviewer path from detect-harness.sh>" --model openai/gpt-6-sol \
+  --dir <worktree> --variant xhigh -- "<review brief>" > /tmp/review-<id>.log 2>&1 &
 ```
 
 Two caveats worth putting in front of the user:

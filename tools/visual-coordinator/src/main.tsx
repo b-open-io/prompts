@@ -7,7 +7,7 @@ import { Controls } from "@/components/ai-elements/controls";
 import { Panel } from "@/components/ai-elements/panel";
 import { Inspector } from "@/components/inspector";
 import { SemanticEdge } from "@/components/semantic-edge";
-import { WorkflowNode } from "@/components/workflow-node";
+import { EnvironmentContext, WorkflowNode } from "@/components/workflow-node";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -111,10 +111,10 @@ function VisualCoordinator() {
     </header>
     <main className="workspace">
       <section className="canvas-pane" aria-label="Editable workflow canvas">
-        <Canvas nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange as OnNodesChange} onEdgesChange={onEdgesChange as OnEdgesChange} onConnect={onConnect} onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(undefined); setInspectorOpen(true); }} onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(undefined); setInspectorOpen(true); }} onPaneClick={() => { setSelectedId(undefined); setSelectedEdgeId(undefined); }} fitViewOptions={{ padding: .22 }}>
+        <EnvironmentContext.Provider value={environment}><Canvas nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange as OnNodesChange} onEdgesChange={onEdgesChange as OnEdgesChange} onConnect={onConnect} onNodeClick={(_, node) => { setSelectedId(node.id); setSelectedEdgeId(undefined); setInspectorOpen(true); }} onEdgeClick={(_, edge) => { setSelectedEdgeId(edge.id); setSelectedId(undefined); setInspectorOpen(true); }} onPaneClick={() => { setSelectedId(undefined); setSelectedEdgeId(undefined); }} fitViewOptions={{ padding: .22 }}>
           <Controls position="bottom-left" showInteractive={false} />
           <Panel position="top-left" className="canvas-summary"><strong>{nodes.length} steps</strong><span>{edges.length} handoffs</span><span className={allIssues.length ? "has-issues" : "ready"}>{allIssues.length ? `${allIssues.length} checks` : "Ready"}</span></Panel>
-        </Canvas>
+        </Canvas></EnvironmentContext.Provider>
       </section>
       <section className="mobile-review" aria-label="Workflow review list"><p className="mobile-note">Review mode · edit this workflow on a wider screen.</p>{workflow.nodes.map((node, index) => <button key={node.id} onClick={() => { setSelectedId(node.id); setInspectorOpen(true); }}><span>{String(index + 1).padStart(2, "0")}</span><strong>{node.title}</strong><small>{node.task}</small></button>)}</section>
       {inspectorOpen && <Inspector node={selected} edge={selectedEdge} onNodeChange={updateSelected} onEdgeChange={updateSelectedEdge} onDeleteEdge={deleteEdge} onClose={() => setInspectorOpen(false)} environment={environment} />}

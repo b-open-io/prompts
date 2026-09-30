@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.12
+version: 0.1.17
 ---
 
 # Visual Coordinator
@@ -60,7 +60,9 @@ when the user has declared usage-credit pressure; it is the only signal that
 permits Grok worker nodes. Build and new steps default to `claude-opus-5-5`
 and Review to `gpt-6-sol` at `xhigh`, regardless of which model the host lists
 first, preferring a lane whose model was actually detected. The detector also reports each lane's configured main model
-(`models.<lane>_default`) for the Coordinate card and the absolute
+(`models.<lane>_default`) for the Coordinate card; a catalog entry is never
+treated as the main, so without a reported default (or Claude's `inherit`) the
+card stays empty and fails validation. It also reports the absolute
 `grok_worker` wrapper path and `grok_auth` lane that Grok-lane exports use; set
 `BOPEN_GROK_WORKER` only to point at a different installed wrapper.
 

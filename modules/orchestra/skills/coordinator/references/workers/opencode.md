@@ -37,6 +37,34 @@ OpenCode Go SKU.
 Every report identifies the actual provider/model and authentication path
 that ran.
 
+## Read-only review
+
+`opencode run --dir <worktree>` loads the worktree's own `opencode.json(c)`
+and `.opencode/` agents, tools, and plugins, so a change under review can
+grant its reviewer edit or bash. Never dispatch an OpenCode review with a
+bare `opencode run --agent`. Use the wrapper beside this skill:
+
+    bash /absolute/path/to/coordinator/scripts/run-opencode-review.sh \
+      --model openai/gpt-6-sol --dir <worktree> --variant xhigh -- "<review brief>"
+
+It turns project config and plugins off, pins a primary `bopen-review` agent
+inline, runs `opencode debug agent bopen-review` inside the worktree, and
+starts the review only when every enabled tool is read-only, the agent
+denies every tool by default and afterwards allows or asks for nothing but
+`read`, `grep`, `glob`, and `list` (MCP and custom tools never appear in
+`debug agent`, so a wildcard grant such as `"evil_*": "allow"` is refused by
+rule), the model is `openai/gpt-6-sol` or `openai/gpt-6-astra` (or their
+`openrouter/openai/` ids) at `--variant xhigh`, and the model's provider
+reaches its own endpoint. It exits 3 on anything it cannot verify; report
+that as an unavailable reviewer, never retry without the wrapper.
+
+`--pure` drops config plugins, but OpenCode still loads its built-in default
+plugins. In 1.18.x those are provider sign-in loaders (OpenAI ChatGPT, GitHub
+Copilot, GitLab, xAI, Azure, and others) that add models and auth, not tools.
+The wrapper leaves them on: `OPENCODE_DISABLE_DEFAULT_PLUGINS=1` would also
+remove ChatGPT sign-in for `openai/gpt-6-sol`. Any tool they did add would
+still have to pass the resolved-agent check above.
+
 ## Dispatch
 
 Use a unique prompt file for every parallel run. The message positional must

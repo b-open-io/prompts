@@ -2,12 +2,17 @@ import { Handle, NodeResizer, Position, type Node, type NodeProps } from "@xyflo
 import { ExternalLink, MoreHorizontal, Trash2 } from "lucide-react";
 import { Toolbar } from "@/components/ai-elements/toolbar";
 import { Button } from "@/components/ui/button";
-import type { WorkflowNode as WorkflowNodeData } from "@/workflow-schema";
+import { createContext, useContext } from "react";
+import { defaultEnvironment, resolvedModel, type WorkflowEnvironment, type WorkflowNode as WorkflowNodeData } from "@/workflow-schema";
+
+/** The detected environment, so a card can show the model a lane really runs for an alias. */
+export const EnvironmentContext = createContext<WorkflowEnvironment>(defaultEnvironment());
 
 type Data = WorkflowNodeData & { onDelete: (id: string) => void };
 type WorkflowFlowNode = Node<Data, "workflow">;
 
 export function WorkflowNode({ data, selected }: NodeProps<WorkflowFlowNode>) {
+  const environment = useContext(EnvironmentContext);
   return (
     <article className={`workflow-node ${selected ? "is-selected" : ""}`}>
       <NodeResizer minWidth={220} minHeight={120} isVisible={selected} color="#e38f1a" />
@@ -22,7 +27,7 @@ export function WorkflowNode({ data, selected }: NodeProps<WorkflowFlowNode>) {
       </header>
       <h3>{data.title}</h3>
       <p>{data.task}</p>
-      <footer><code>{data.lane}</code><code>{data.model}</code></footer>
+      <footer><code>{data.lane}</code><code title={data.model}>{data.model ? resolvedModel(environment, data.lane, data.model) : "no model"}</code></footer>
       <Handle type="source" position={Position.Right} />
     </article>
   );

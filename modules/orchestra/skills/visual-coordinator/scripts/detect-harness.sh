@@ -67,8 +67,9 @@ fi
 grok_model_providers_json="{}"
 grok_model_targets_json="{}"
 grok_config="${GROK_HOME:-$HOME/.grok}/config.toml"
-if [[ -n "$grok_models" && -f "$grok_config" ]]; then
-  grok_alias_json=$(python3 - "$grok_config" "$grok_models" <<'PY_GROK_PROVIDERS' 2>/dev/null || printf '{}\n{}\n'
+if [[ -n "$grok_models$grok_default" && -f "$grok_config" ]]; then
+  # The default is resolved too: a qualified default (xai/grok-4.6) is an alias like any other.
+  grok_alias_json=$(python3 - "$grok_config" "$grok_models,$grok_default" <<'PY_GROK_PROVIDERS' 2>/dev/null || printf '{}\n{}\n'
 import json, re, sys
 from urllib.parse import urlparse
 try:
@@ -167,36 +168,132 @@ for _, _, model in sorted(models)[:80]:
     print(model)
 ' "$1"
 }
+# OpenCode reads opencode.json or opencode.jsonc (fresh installs write JSONC) from, highest
+# precedence first: the managed settings directory, OPENCODE_CONFIG_CONTENT, the project, its
+# .opencode/ directory, OPENCODE_CONFIG_DIR, OPENCODE_CONFIG, and the global config. Each provider
+# that overrides its endpoint (`options.baseURL`, `api`) or its SDK package (`npm`) is reported with
+# the host it really reaches, so the canvas can refuse an openai/… or anthropic/… id served
+# somewhere else. A config that does not parse is reported as the `*` provider, which makes every
+# host unverified.
 opencode_config_info() {
-  python3 - "$1" <<'PY_OPENCODE_CONFIG'
-import json, re, sys
+  python3 - "$@" <<'PY_OPENCODE_CONFIG'
+import json, os, re, sys
+from urllib.parse import urlparse
 
-try:
-    data = json.load(open(sys.argv[1], encoding="utf-8"))
-except (OSError, TypeError, ValueError):
-    data = {}
+HOSTS = {"openai": "openai.com", "anthropic": "anthropic.com", "openrouter": "openrouter.ai", "xai": "x.ai"}
+PACKAGES = {"openai": "@ai-sdk/openai", "anthropic": "@ai-sdk/anthropic", "openrouter": "@openrouter/ai-sdk-provider", "xai": "@ai-sdk/xai"}
 
-if isinstance(data, dict):
+
+def jsonc(text):
+    """Parse JSON with // and /* */ comments and trailing commas, as OpenCode accepts."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        if text[i] == '"':
+            j = i + 1
+            while j < n and text[j] != '"':
+                j += 2 if text[j] == "\\" else 1
+            if j >= n:
+                raise ValueError("unterminated string")
+            out.append(text[i:j + 1])
+            i = j + 1
+        elif text.startswith("//", i):
+            j = text.find("\n", i)
+            i = n if j < 0 else j
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            if j < 0:
+                raise ValueError("unterminated comment")
+            i = j + 2
+        elif text[i] == ",":
+            rest = re.match(r"\s*", text[i + 1:])
+            k = i + 1 + rest.end()
+            if k < n and text[k] in "}]":
+                i += 1
+                continue
+            out.append(",")
+            i += 1
+        else:
+            out.append(text[i])
+            i += 1
+    return json.loads("".join(out))
+
+
+def official(provider, host):
+    base = HOSTS.get(provider)
+    return base is not None and (host == base or host.endswith("." + base))
+
+
+hosts = {}
+for path in sys.argv[1:]:
+    inline = path == "OPENCODE_CONFIG_CONTENT"
+    if inline and not os.environ.get(path) or not inline and not os.path.isfile(path):
+        continue
+    try:
+        if inline:
+            data = jsonc(os.environ[path])
+        else:
+            with open(path, encoding="utf-8") as handle:
+                data = jsonc(handle.read())
+    except (OSError, ValueError):
+        hosts["*"] = "unparseable " + path
+        continue
+    if not isinstance(data, dict):
+        hosts["*"] = "unparseable " + path
+        continue
     model = data.get("model")
     if isinstance(model, str) and model:
         print("model\t" + model)
     providers = data.get("provider")
-    if isinstance(providers, dict):
-        for provider in providers:
-            if isinstance(provider, str) and re.fullmatch(r"[A-Za-z0-9._-]+", provider):
-                print("provider\t" + provider)
+    if not isinstance(providers, dict):
+        continue
+    for provider, entry in providers.items():
+        if not isinstance(provider, str) or not re.fullmatch(r"[A-Za-z0-9._-]+", provider):
+            continue
+        print("provider\t" + provider)
+        if not isinstance(entry, dict):
+            continue
+        options = entry.get("options") if isinstance(entry.get("options"), dict) else {}
+        found = []
+        for url in (options.get("baseURL"), entry.get("api")):
+            if url is not None:
+                found.append((urlparse(url).hostname or "").lower() if isinstance(url, str) else "")
+        if entry.get("npm") is not None and entry.get("npm") != PACKAGES.get(provider):
+            found.append("npm:" + str(entry.get("npm")))
+        for host in found:
+            host = host if re.fullmatch(r"[A-Za-z0-9.:@/_-]+", host or "") else "unverified"
+            if provider not in hosts or official(provider, hosts[provider]):
+                hosts[provider] = host
+for provider, host in hosts.items():
+    print("host\t%s\t%s" % (provider, host))
 PY_OPENCODE_CONFIG
 }
-for _cfg in "$PWD/opencode.json" "$HOME/.config/opencode/opencode.json"; do
-  if [[ -f "$_cfg" ]]; then
-    while IFS=$'\t' read -r _kind _value; do
-      case "$_kind" in
-        model) [[ -n "$opencode_model" ]] && continue; opencode_model="$_value" ;;
-        provider) opencode_providers=$(printf '%s\n%s' "$opencode_providers" "$_value") ;;
-      esac
-    done < <(opencode_config_info "$_cfg")
-  fi
-done
+opencode_hosts=""
+_oc_global="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
+case "$(uname -s)" in
+  Darwin) _oc_managed="/Library/Application Support/opencode" ;;
+  *) _oc_managed=/etc/opencode ;;
+esac
+_oc_managed="${OPENCODE_TEST_MANAGED_CONFIG_DIR:-$_oc_managed}"
+_oc_dir="${OPENCODE_CONFIG_DIR:-/nonexistent}"
+while IFS=$'\t' read -r _kind _value _extra; do
+  case "$_kind" in
+    model) [[ -n "$opencode_model" ]] && continue; opencode_model="$_value" ;;
+    provider) opencode_providers=$(printf '%s\n%s' "$opencode_providers" "$_value") ;;
+    host) opencode_hosts=$(printf '%s\n%s\t%s' "$opencode_hosts" "$_value" "$_extra") ;;
+  esac
+done < <(opencode_config_info "$_oc_managed/opencode.jsonc" "$_oc_managed/opencode.json" OPENCODE_CONFIG_CONTENT \
+  "$PWD/opencode.jsonc" "$PWD/opencode.json" "$PWD/.opencode/opencode.jsonc" "$PWD/.opencode/opencode.json" \
+  "$_oc_dir/opencode.jsonc" "$_oc_dir/opencode.json" "${OPENCODE_CONFIG:-/nonexistent}" \
+  "$_oc_global/opencode.jsonc" "$_oc_global/opencode.json" "$_oc_global/config.json")
+unset _oc_global _oc_managed _oc_dir _extra
+opencode_hosts_json=$(printf '%s\n' "$opencode_hosts" | python3 -c '
+import json, sys
+out = {}
+for line in sys.stdin:
+    parts = line.rstrip("\n").split("\t")
+    if len(parts) == 2 and parts[0] not in out:
+        out[parts[0]] = parts[1]
+print(json.dumps(out))')
 if [[ "$opencode_model" == */* ]]; then
   opencode_providers=$(printf '%s\n%s' "$opencode_providers" "${opencode_model%%/*}")
 fi
@@ -406,10 +503,38 @@ if [[ -f "$grok_worker" && "$grok_worker" == /* ]]; then
   grok_worker_json="\"$(json_escape "$grok_worker")\""
 fi
 
+# OpenCode has no read-only CLI flag, and `opencode run --dir <worktree>` loads that worktree's
+# own config, so an OpenCode review exports only through run-opencode-review.sh. At dispatch it
+# turns project config and plugins off, pins its reviewer agent inline, and checks the agent
+# OpenCode resolves inside the worktree before it runs. Here it is checked once against the
+# current directory, so a host whose OpenCode cannot prove a read-only primary agent reports the
+# problem instead of staffing the reviewer.
+opencode_reviewer_json="null"
+opencode_read_only_problem_json="null"
+opencode_reviewer="${BOPEN_OPENCODE_REVIEWER:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../coordinator/scripts" 2>/dev/null && pwd -P)/run-opencode-review.sh}"
+if [[ "$opencode_bin" != "available" ]]; then
+  :
+elif [[ ! -f "$opencode_reviewer" || "$opencode_reviewer" != /* ]]; then
+  opencode_read_only_problem_json="\"run-opencode-review.sh was not found beside the orchestra coordinator\""
+elif _ro=$(bash "$opencode_reviewer" --check --dir "$PWD" 2>&1); then
+  opencode_reviewer_json="\"$(json_escape "$opencode_reviewer")\""
+else
+  opencode_read_only_problem_json="\"$(json_escape "$(printf '%s\n' "$_ro" | head -n 1)")\""
+fi
+unset _ro
+
 # The Claude list is the CLI's static alias set, not an account check: the claude CLI has no
 # offline way to prove the signed-in account can run claude-opus-5-5, and a probe call would
 # spend a network request on every detect. lane_access marks it unverified; a failed Opus
-# dispatch is the evidence, reported as an unavailable lane.
+# dispatch is the evidence, reported as an unavailable lane. The graph treats a lane missing
+# from lane_access as unverified, so every lane is reported: Codex is verified only by
+# `codex login status`, Grok only by a signed-in listing, OpenCode only by a provider listing.
+codex_access="unverified"
+[[ "$codex_bin" == "available" ]] && codex login status >/dev/null 2>&1 && codex_access="verified"
+grok_access="unverified"
+[[ -n "$grok_auth" ]] && grok_access="verified"
+opencode_access="unverified"
+[[ -n "$opencode_models_json" ]] && opencode_access="verified"
 cat <<JSON
 {
   "harness": "$harness",
@@ -419,12 +544,18 @@ cat <<JSON
   "grok_auth": $grok_auth_json,
   "grok_model_providers": $grok_model_providers_json,
   "grok_model_targets": $grok_model_targets_json,
+  "opencode_reviewer": $opencode_reviewer_json,
+  "opencode_provider_hosts": $opencode_hosts_json,
+  "opencode_read_only_problem": $opencode_read_only_problem_json,
   "caps": {
     "live_children": $live_children,
     "agent_budget_default": $agent_budget
   },
   "lane_access": {
-    "claude": "unverified"
+    "claude": "unverified",
+    "codex": "$codex_access",
+    "grok": "$grok_access",
+    "opencode": "$opencode_access"
   },
   "lanes": {
     "claude": "$claude_bin",

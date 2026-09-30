@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { defaultWorkflow, parseEnvironment, restaff, validateWorkflow, type WorkflowNode } from "./workflow-schema";
 import { commandForNode, dispatchIssues, generateNodeCommand, serializeWorkflow, shellQuote, toExportText } from "./command";
 
@@ -43,6 +47,42 @@ describe("visual coordinator command generation", () => {
     expect(generated.prompt).toContain("Do not create or switch branches.");
   });
 
+  it("puts --ask-for-approval before the codex exec subcommand", () => {
+    const { command } = generateNodeCommand(node("w", { provider: "external", lane: "codex", model: "gpt-6-sol", disclosure: "Approved" }), { hostHarness: "grok", nativeController: "grok" });
+    expect(command).toContain("'codex' '--ask-for-approval' 'never' 'exec' '--sandbox' 'workspace-write'");
+    expect(command!.indexOf("'--ask-for-approval'")).toBeLessThan(command!.indexOf("'exec'"));
+  });
+
+  it("expands a ~ worktree path to $HOME in every lane's command", () => {
+    const home = mkdtempSync(join(tmpdir(), "vc-home-"));
+    try {
+      const bin = join(home, "bin");
+      const task = join(home, "code", "worktrees", "{repo}-build");
+      spawnSync("mkdir", ["-p", bin, task]);
+      // Each fake CLI records its argv and working directory.
+      for (const cli of ["codex", "claude", "opencode"]) {
+        writeFileSync(join(bin, cli), `#!/bin/sh\ncat > /dev/null\nprintf '%s\\n' "$PWD" "$@" > "$HOME/${cli}.log"\n`, { mode: 0o755 });
+      }
+      const worker = join(home, "run-grok-worker.sh");
+      writeFileSync(worker, `printf '%s\\n' "$@" > "$HOME/grok.log"\n`);
+      const options = { hostHarness: "grok", nativeController: "grok", grokWorker: worker, grokAuth: "api" as const };
+      const env = { ...process.env, HOME: home, PATH: `${bin}:${process.env.PATH}` };
+      const lanes: Array<[string, string]> = [["codex", "gpt-6-sol"], ["claude", "claude-opus-5-5"], ["opencode", "anthropic/claude-opus-5-5"], ["grok", "grok-4.7"]];
+      for (const [lane, model] of lanes) {
+        const { command } = generateNodeCommand(node("w", { provider: "external", lane, model, disclosure: "Approved" }), options);
+        expect(command, lane).toContain(`"$HOME"/'code/worktrees/{repo}-build'`);
+        const run = spawnSync("bash", ["-c", command!], { env, encoding: "utf8" });
+        expect(run.status, `${lane}: ${run.stderr}`).toBe(0);
+        const log = readFileSync(join(home, `${lane}.log`), "utf8").split("\n");
+        if (lane === "claude") expect(log[0]).toBe(task);
+        else expect(log, lane).toContain(task);
+        expect(log, lane).not.toContain("~/code/worktrees/{repo}-build");
+      }
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it("never emits an executable command for an external node without approved disclosure", () => {
     for (const disclosure of [undefined, "", "pending", "denied", "required"]) {
       const generated = generateNodeCommand(node("undisclosed", {
@@ -65,7 +105,7 @@ describe("visual coordinator command generation", () => {
     expect(codex.command).toContain("--sandbox");
     expect(codex.command).toContain("read-only");
     expect(codex.command).toContain("gpt-6-sol");
-    expect(codex.command).toContain("model_reasoning_effort=xhigh");
+    expect(codex.command).toContain(`model_reasoning_effort="xhigh"`);
     expect(codex.command).not.toContain("workspace-write");
 
     const opencode = generateNodeCommand(node("review-opencode", { role: "reviewer", provider: "external", lane: "opencode", disclosure: "Approved" }), { hostHarness: "grok", nativeController: "grok" });
@@ -76,10 +116,10 @@ describe("visual coordinator command generation", () => {
 
     const variant = generateNodeCommand(
       node("review-opencode", { role: "reviewer", provider: "external", lane: "opencode", model: "openrouter/openai/gpt-6-sol", effort: "xhigh", disclosure: "Approved" }),
-      { hostHarness: "grok", nativeController: "grok", readOnlyAgent: "review-readonly" },
+      { hostHarness: "grok", nativeController: "grok", opencodeReviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" },
     );
-    expect(variant.command).toContain("'--variant' 'xhigh'");
-    expect(variant.command).toContain("'--agent' 'review-readonly'");
+    expect(variant.command).toMatch(/^'bash' '\/opt\/orchestra\/coordinator\/scripts\/run-opencode-review\.sh' '--model' 'openrouter\/openai\/gpt-6-sol' '--dir' \S+ '--variant' 'xhigh' -- '/);
+    expect(variant.command).not.toContain("'opencode' 'run'");
 
     const medium = generateNodeCommand(
       node("build-opencode", { provider: "external", lane: "opencode", model: "openrouter/openai/gpt-6-sol", effort: "medium", disclosure: "Approved" }),
@@ -111,7 +151,7 @@ describe("versioned export contract", () => {
   const environment = parseEnvironment({
     harness: "codex",
     lanes: { codex: "available", grok: "available", claude: "available" },
-    models: { codex: ["gpt-6-sol"], grok: ["grok-4.7"], claude: ["claude-opus-5-5"] },
+    models: { codex: ["gpt-6-sol"], codex_default: "gpt-6-sol", grok: ["grok-4.7"], claude: ["claude-opus-5-5"] },
   });
   const approvedDefault = () => {
     const workflow = defaultWorkflow(environment);
@@ -153,7 +193,8 @@ describe("versioned export contract", () => {
   });
 
   it("routes Grok-lane dispatches through the policy wrapper, never a raw grok call", () => {
-    const options = { hostHarness: "codex", nativeController: "codex", grokWorker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grokAuth: "api" as const };
+    const options = { hostHarness: "codex", nativeController: "codex", grokWorker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grokAuth: "api" as const,
+      grokProviders: { "gpt-6-sol": "openai" }, grokTargets: { "gpt-6-sol": "gpt-6-sol" } };
     const writer = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", effort: "high", ownedPaths: ["src/a.ts"], disclosure: "Approved" }), options);
     const reviewer = generateNodeCommand(node("grok-review", { role: "reviewer", provider: "external", lane: "grok", model: "gpt-6-sol", effort: "xhigh", disclosure: "Approved" }), options);
     const unresolved = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex" });
@@ -163,13 +204,69 @@ describe("versioned export contract", () => {
     expect(writer.command).not.toContain("BOPEN_GROK_WORKER");
     expect(unresolved).toMatchObject({ executable: false, command: null });
     expect(unresolved.reason).toContain("wrapper was not resolved");
-    expect(writer.command).toContain("'--model' 'grok-4.7' '--effort' 'high' '--mode' 'write'");
+    expect(writer.command).toContain("'--model' 'grok-4.7' '--provider' 'xai' '--effort' 'high' '--mode' 'write'");
     expect(writer.command).toContain("'--branch' 'codex/build' '--base-ref' 'origin/dev' '--ownership' 'src/a.ts'");
     expect(writer.command).toContain('--prompt-file "$PROMPT_FILE"');
     expect(writer.command).not.toContain("--credit-pressure");
     expect(writer.command).not.toMatch(/(^|\| )'?grok'? /);
-    expect(reviewer.command).toContain("'--mode' 'read'");
+    expect(reviewer.command).toContain("'--model' 'gpt-6-sol' '--provider' 'openai' '--target' 'gpt-6-sol' '--effort' 'xhigh' '--mode' 'read'");
     expect(reviewer.command).not.toContain("--branch");
+    const unbound = generateNodeCommand(node("grok-review", { role: "reviewer", provider: "external", lane: "grok", model: "gpt-6-sol", effort: "xhigh", disclosure: "Approved" }), { ...options, grokProviders: {} });
+    expect(unbound).toMatchObject({ executable: false, command: null });
+    expect(unbound.reason).toContain("did not resolve the provider behind gpt-6-sol");
+  });
+
+  it("removes the Grok prompt file whether the wrapper succeeds or fails", () => {
+    const dir = mkdtempSync(join(tmpdir(), "grok-cleanup-"));
+    const seen = join(dir, "seen");
+    const worker = join(dir, "run-grok-worker.sh");
+    for (const code of [0, 7]) {
+      writeFileSync(worker, `#!/bin/bash\nwhile [ $# -gt 0 ]; do [ "$1" = --prompt-file ] && echo "$2" > '${seen}'; shift; done\nexit ${code}\n`);
+      const spec = generateNodeCommand(node("grok-writer", { provider: "external", lane: "grok", model: "grok-4.7", disclosure: "Approved" }), { hostHarness: "codex", nativeController: "codex", grokWorker: worker, grokAuth: "api" });
+      const run = spawnSync("sh", ["-c", spec.command!], { env: { ...process.env, TMPDIR: dir } });
+      expect(run.status).toBe(code);
+      const promptFile = readFileSync(seen, "utf8").trim();
+      expect(promptFile.startsWith(dir)).toBe(true);
+      expect(existsSync(promptFile)).toBe(false);
+    }
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("exports an OpenCode reviewer only through the verified review wrapper", () => {
+    const host = (extra: Record<string, unknown>) => parseEnvironment({
+      harness: "claude-code",
+      lanes: { claude: "available", opencode: "available", codex: "unavailable" },
+      models: { claude: ["inherit"], opencode: ["openrouter/anthropic/claude-opus-5-5", "openrouter/openai/gpt-6-sol"], opencode_effort: ["medium", "high", "xhigh"] },
+      ...extra,
+    });
+    const review = (environment: ReturnType<typeof host>) => {
+      const workflow = defaultWorkflow(environment);
+      workflow.nodes = workflow.nodes.map((entry) => entry.role === "reviewer" ? { ...entry, lane: "opencode", provider: "external", model: "openrouter/openai/gpt-6-sol", disclosure: "Approved" } : entry);
+      return workflow;
+    };
+
+    const verified = host({ opencode_reviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" });
+    expect(toExportText(review(verified), verified)).toContain("'bash' '/opt/orchestra/coordinator/scripts/run-opencode-review.sh' '--model' 'openrouter/openai/gpt-6-sol'");
+
+    const rejected = host({ opencode_read_only_problem: "OpenCode reviewer refused: agent bopen-review can use scribble, which are not read-only" });
+    const workflow = review(rejected);
+    const id = workflow.nodes.find((entry) => entry.role === "reviewer")!.id;
+    const spec = serializeWorkflow(workflow, rejected, { opencodeReviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" });
+    expect(spec.nodes.map((entry) => entry.id)).not.toContain(id);
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id, reason: expect.stringContaining("can use scribble") }));
+    expect(toExportText(workflow, rejected, { opencodeReviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" })).not.toContain("run-opencode-review.sh");
+
+    const offModel = review(verified);
+    const reviewer = offModel.nodes.find((entry) => entry.role === "reviewer")!;
+    for (const change of [{ model: "anthropic/claude-opus-5-5" }, { effort: "high" as const }]) {
+      const generated = generateNodeCommand({ ...reviewer, ...change }, { hostHarness: "grok", nativeController: "grok", opencodeReviewer: "/opt/orchestra/coordinator/scripts/run-opencode-review.sh" });
+      expect(generated.command).toBeNull();
+      expect(generated.reason).toContain("at xhigh");
+    }
+
+    for (const bad of ["run-opencode-review.sh", "/tmp/x/other.sh", "/tmp/$(id)/run-opencode-review.sh"]) {
+      expect(parseEnvironment({ opencode_reviewer: bad }).opencodeReviewer).toBeNull();
+    }
   });
 
   it("withholds executable records for nodes that fail validation", () => {
@@ -261,7 +358,7 @@ describe("versioned export contract", () => {
   });
 
   it("keeps the Grok host main native and main-controller when a custom Grok coordinator comes first", () => {
-    const grokHost = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com", credit_pressure: true });
+    const grokHost = parseEnvironment({ grok_model_targets: { "ox-alpha": "anthropic/claude-opus-5-5", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com", credit_pressure: true });
     const workflow = defaultWorkflow(grokHost);
     const main = workflow.nodes[0];
     workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
@@ -321,7 +418,7 @@ describe("versioned export contract", () => {
   });
 
   it("gates Ready and Copy on the converted dispatch the export would emit", () => {
-    const unconfirmed = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", credit_pressure: true });
+    const unconfirmed = parseEnvironment({ grok_model_targets: { "ox-alpha": "anthropic/claude-opus-5-5", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "grok-4.7" }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", credit_pressure: true });
     const workflow = defaultWorkflow(unconfirmed);
     const main = workflow.nodes[0];
     workflow.nodes = [{ ...main, id: "custom", title: "Custom", model: "ox-alpha", disclosure: "Approved Grok CLI conversion" }, main];
@@ -385,16 +482,20 @@ describe("versioned export contract", () => {
     expect(serializeWorkflow(disclosed(configured), configured).nodes.find((node) => node.id === "coordinate")).toMatchObject({ actor: "main-controller" });
   });
 
-  it("exports the observed grok-4.6 main as native main-controller and nothing else on 4.6", () => {
+  it("never exports an observed grok-4.6 main or anything else on 4.6", () => {
     const observed = parseEnvironment({ harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "grok-4.6"], grok_default: "grok-4.6" }, credit_pressure: true, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(observed);
     const main = workflow.nodes[0];
     workflow.nodes = [main, { ...main, id: "second", title: "Second", disclosure: "Approved xAI" }];
     workflow.edges = [];
 
+    expect(main.model).toBe("");
     const spec = serializeWorkflow(workflow, observed);
-    expect(spec.nodes).toEqual([expect.objectContaining({ id: "coordinate", actor: "main-controller", execution: "native-agent", model: "grok-4.6" })]);
-    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "second", reason: expect.stringContaining("pinned to grok-4.7") }));
+    expect(spec.nodes).toEqual([]);
+    expect(spec.omissions).toContainEqual(expect.objectContaining({ id: "coordinate", omit: true }));
+    expect(validateWorkflow(workflow, observed).map((issue) => issue.message)).toContain(
+      "Coordinate cannot stand for the main session: the host runs grok-4.6; GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).",
+    );
   });
 
   it("never exports an unlisted Grok-host model as a native-agent dispatch", () => {
@@ -459,7 +560,7 @@ describe("versioned export contract", () => {
     const oldTarget = grokHost({ credit_pressure: true, grok_model_targets: { "ox-alpha": "grok-4.6", "or-grok": "x-ai/grok-4.6", "or-luna": "gpt-5.6-luna" } });
     expect(messages(oldTarget, "ox-alpha")).toContain("Build uses ox-alpha, an xAI alias for grok-4.6; Grok is pinned to grok-4.7.");
     expect(messages(oldTarget, "or-grok")).toContain("Build uses or-grok, an xAI alias for x-ai/grok-4.6; Grok is pinned to grok-4.7.");
-    expect(messages(oldTarget, "or-luna")).toContain("Build uses or-luna, an alias for gpt-5.6-luna; GPT-5.6 models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).");
+    expect(messages(oldTarget, "or-luna")).toContain("Build uses or-luna, an alias for gpt-5.6-luna; GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).");
     expect(serializeWorkflow(builder(oldTarget, "ox-alpha"), oldTarget).nodes).toEqual([]);
 
     const pinned = grokHost({ credit_pressure: true, grok_model_targets: { "ox-alpha": "grok-4.7" } });
@@ -470,8 +571,10 @@ describe("versioned export contract", () => {
 
     const observed = grokHost({ models: { grok: ["grok-4.7", "ox-alpha"], grok_default: "ox-alpha" }, grok_model_targets: { "ox-alpha": "grok-4.6" } });
     const main = defaultWorkflow(observed).nodes[0];
-    expect(main).toMatchObject({ model: "ox-alpha", provider: "native" });
-    expect(validateWorkflow({ title: "t", nodes: [main], edges: [] }, observed)).toEqual([]);
+    expect(main).toMatchObject({ model: "", provider: "native" });
+    expect(validateWorkflow({ title: "t", nodes: [main], edges: [] }, observed).map((issue) => issue.message)).toContain(
+      "Coordinate cannot stand for the main session: the host runs grok-4.6 (via ox-alpha); GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).",
+    );
   });
 
   it("keeps provider-qualified xAI ids on the Grok lane behind its gates", () => {
@@ -626,7 +729,7 @@ describe("versioned export contract", () => {
     expect(serializeWorkflow(builder(bare, "grok-4.7"), bare).nodes).toEqual([expect.objectContaining({ id: "build", provider: "xai" })]);
   });
 
-  it("limits the observed-main Grok exemption to grok-4.6", () => {
+  it("holds every observed Grok main to the grok-4.7 pin and credit gate", () => {
     const observed = (grok_default: string, extra: Record<string, unknown> = {}) => {
       const environment = parseEnvironment({
         harness: "grok",
@@ -660,12 +763,19 @@ describe("versioned export contract", () => {
     ]);
     expect(serializeWorkflow(unpressured.workflow, unpressured.environment).nodes).toEqual([]);
 
-    for (const allowed of [observed("grok-4.6"), observed("grok-4.7", { credit_pressure: true }), observed("ox-legacy", { grok_model_providers: { "ox-legacy": "xai" }, grok_model_targets: { "ox-legacy": "grok-4.6" } })]) {
-      expect(validateWorkflow(allowed.workflow, allowed.environment)).toEqual([]);
-      expect(serializeWorkflow(allowed.workflow, allowed.environment).nodes).toEqual([
-        expect.objectContaining({ id: "coordinate", actor: "main-controller", execution: "native-agent" }),
-      ]);
+    for (const [legacy, shown] of [[observed("grok-4.6", { credit_pressure: true }), "grok-4.6"],
+      [observed("ox-legacy", { credit_pressure: true, grok_model_providers: { "ox-legacy": "xai" }, grok_model_targets: { "ox-legacy": "grok-4.6" } }), "grok-4.6 (via ox-legacy)"]] as const) {
+      expect(legacy.workflow.nodes[0].model).toBe("");
+      expect(validateWorkflow(legacy.workflow, legacy.environment).map((issue) => issue.message)).toContain(
+        `Coordinate cannot stand for the main session: the host runs ${shown}; GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).`,
+      );
+      expect(serializeWorkflow(legacy.workflow, legacy.environment).nodes).toEqual([]);
     }
+    const allowed = observed("grok-4.7", { credit_pressure: true });
+    expect(validateWorkflow(allowed.workflow, allowed.environment)).toEqual([]);
+    expect(serializeWorkflow(allowed.workflow, allowed.environment).nodes).toEqual([
+      expect.objectContaining({ id: "coordinate", actor: "main-controller", execution: "native-agent" }),
+    ]);
   });
 
   it("rejects an observed main whose alias points at a GPT-5.6 model", () => {
@@ -682,9 +792,9 @@ describe("versioned export contract", () => {
     workflow.nodes = [workflow.nodes[0]];
     workflow.edges = [];
 
-    expect(workflow.nodes[0]).toMatchObject({ model: "ox-luna", provider: "native" });
+    expect(workflow.nodes[0]).toMatchObject({ model: "", provider: "native" });
     expect(validateWorkflow(workflow, observed).map((issue) => issue.message)).toContain(
-      "Coordinate uses ox-luna, an alias for gpt-5.6-luna; GPT-5.6 models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).",
+      "Coordinate cannot stand for the main session: the host runs gpt-5.6-luna (via ox-luna); GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on claude-opus-5-5, review on gpt-6-sol).",
     );
     expect(serializeWorkflow(workflow, observed).nodes).toEqual([]);
   });
@@ -720,7 +830,7 @@ describe("versioned export contract", () => {
   });
 
   it("converts a detected native non-4.7 Grok model to an explicit shell-out", () => {
-    const grok = parseEnvironment({ grok_model_targets: { "ox-alpha": "ox-alpha", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
+    const grok = parseEnvironment({ grok_model_targets: { "ox-alpha": "anthropic/claude-opus-5-5", "gpt-6-sol": "gpt-6-sol" }, grok_model_providers: { "ox-alpha": "openrouter", "gpt-6-sol": "openai" }, harness: "grok", lanes: { grok: "available" }, models: { grok: ["grok-4.7", "ox-alpha"] }, grok_worker: "/opt/orchestra/skills/coordinator/scripts/run-grok-worker.sh", grok_auth: "grok.com" });
     const workflow = defaultWorkflow(grok);
     workflow.nodes[0] = { ...workflow.nodes[0], model: "ox-alpha", disclosure: "Approved Grok CLI conversion" };
 

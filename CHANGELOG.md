@@ -145,6 +145,205 @@ manifests share the same release version.
   the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
   `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
 
+## [1.1.176] - Pending production promotion
+
+### Fixed
+
+Sixth round of Sol review fixes. Core 1.1.176, creative 0.1.15.
+
+- `promo-video-pipeline` 0.0.8: `hf-api` prices a request per second only
+  when the body has a single top-level `duration` and no multi-shot fields.
+  Kling 3.0 multi-shot requests (`multi_prompt`, `multi_shots`) bill the sum
+  of shot durations, so they now book the model's ceiling.
+- A 4xx on a retry that follows a timeout or 5xx now keeps the reservation
+  booked, since the first attempt may already have billed.
+- Budget checks in `hf-api` and `gate-logger.sh` allow an exact fit
+  (for example 0.1 x 3 against 0.3) instead of refusing on float rounding.
+- The detach helper treats a failed Perl `POSIX::setsid()` (which returns
+  -1) as an error. The `prices.json` docs say `usd_per_second` must be the
+  most expensive variant's rate.
+
+## [1.1.175] - Pending production promotion
+
+### Fixed
+
+Fifth round of Sol review fixes. Core 1.1.175, creative 0.1.14, orchestra
+0.1.36, review 0.1.26.
+
+- `promo-video-pipeline` 0.0.7: `hf-api` calls `https://api.higgsfield.ai`,
+  the host in Higgsfield's authentication docs. Each `prices.json` entry
+  needs a positive `usd_ceiling` (the model's most expensive variant) and
+  may add a positive `usd_per_second`, which prices a request by its
+  `duration` up to the ceiling. Any other price is refused. A generate
+  reserves its cost in the ledger before the call and sends the reservation
+  as the `Idempotency-Key`. A 2xx with a request id books the spend, a 4xx
+  releases the reservation, and a timeout or 5xx is retried with the same
+  key; if it stays ambiguous the reservation stays booked, since Higgsfield
+  may have charged it. The launcher starts its session with `setsid`, or
+  with `perl` or `python3` where `setsid` is missing (stock macOS).
+  `gate-logger.sh` trips on a Claude Code `model_refusal_fallback` event and
+  on any assistant message whose model is not `claude-opus-5-5`.
+- `coordinator` 0.0.25: `run-opencode-review.sh` refuses any allow or ask
+  rule after the reviewer's deny-all rule other than read, grep, glob, and
+  list, so a wildcard grant such as `"evil_*": "allow"` is caught although
+  MCP tools never appear in `opencode debug agent`. It runs only
+  `openai/gpt-6-sol` or `openai/gpt-6-astra` (or their `openrouter/openai/`
+  ids) at `--variant xhigh`. OpenCode's built-in default plugins stay on and
+  are documented: they are provider sign-in loaders, and turning them off
+  removes ChatGPT sign-in for OpenAI.
+- `visual-coordinator` 0.1.17: the detector reads OpenCode's managed
+  settings, `OPENCODE_CONFIG_CONTENT`, `OPENCODE_CONFIG_DIR`, and
+  `OPENCODE_CONFIG` when it reports provider hosts for the main session.
+  The canvas exports an OpenCode review only for an approved review model
+  at xhigh.
+- `code-auditor` 1.4.26: the Sol review summarizes only benchmark data (JSON
+  or JSONL that parses, under `benchmarks/` or a `GENERATED` directory
+  glob). JSON under `fixtures/`, `results/`, or `baselines/` is reviewed.
+
+## [1.1.174] - Pending production promotion
+
+### Fixed
+
+Fourth round of Sol review fixes. Core 1.1.174, creative 0.1.13, orchestra
+0.1.35, review 0.1.25.
+
+- `visual-coordinator` 0.1.16 / `coordinator` 0.0.24: an OpenCode read-only
+  review exports only through the shipped `run-opencode-review.sh`. At
+  dispatch it turns off project config and plugins in the task worktree,
+  pins a primary `bopen-review` agent inline, and runs `opencode debug agent`
+  there. The run starts only when the resolved agent denies every edit,
+  shell, task, and web permission, enables no tool beyond read, grep, glob,
+  and list (so no MCP or custom tool), and the model's provider uses its
+  official host and package. The detector parses JSONC configs, including
+  the default `opencode.jsonc`, and reports each provider's host. An
+  OpenCode main session on Sol or Opus is accepted only on the official
+  host.
+- `run-grok-worker.sh` shares the model policy check with the coordinator,
+  so an id or config alias that resolves to GPT-5.5, GPT-5.6, Grok 4.6, or
+  Fable is refused.
+- `promo-video-pipeline` 0.0.6: `gate-logger.sh` snapshots the sha256 of
+  `hf-api`, `prices.json`, and `budget` at start and keeps read-only copies.
+  `hf-api` checks its own sha256 and both files against that snapshot on
+  every generate and prices only from the gate's copies. The launcher runs
+  the model in the Claude Code OS sandbox with no network and no access to
+  `~/.hf-api`, loads no settings besides its own, and refuses to start when
+  the key is visibly exposed. The tripwire matches names with shell quotes
+  removed. `gate-logger.sh` starts on macOS (no `head -c 0` or
+  `realpath -m`).
+- `code-auditor` 1.4.25: the lockfile key-lines tier keeps Yarn Berry
+  `resolution` lines, Composer `shasum`, flake `rev` and `narHash`, npm
+  `hasInstallScript`, Gemfile version lines, and added dependency entries.
+- `codex-security`: the pre-commit recipe removes its hook on any failed
+  step before the pin is verified. The workspace-write `codex exec` example
+  in `harness-capabilities.md` pins its model.
+
+## [1.1.173] - Pending production promotion
+
+### Fixed
+
+Third round of Sol review fixes. Core 1.1.173, creative 0.1.12, orchestra
+0.1.34, review 0.1.24.
+
+- `code-auditor` 1.4.24: the Sol review recipe never summarizes lockfiles or
+  source maps. A lockfile diff is reviewed in full when it fits; otherwise
+  its changed lines are sent with exact `@@` headers, then only the changed
+  lines that carry a name, version, resolved, integrity, or source key. If
+  even that does not fit, the run stops with no verdict. Only JSONL and JSON
+  under data directories are summarized.
+- `promo-video-pipeline` 0.0.5 ships the `hf-api` wrapper. It checks the
+  armed gate and the budget ledger under a lock before every paid generate,
+  books each accepted request, and refunds failed, NSFW, and cancelled ones.
+  `gate-logger.sh` arms only when the wrapper on PATH has the same sha256 as
+  the shipped one, and any tool call that names `higgsfield.ai` trips the gate.
+- `visual-coordinator` 0.1.15: the observed main session is held to the same
+  model policy as dispatched steps. Fable ids, GPT-5.5, GPT-5.6, Grok 4.6
+  (including `xai/grok-4.7` aliases that resolve to it), `grok-4.7` without
+  credit pressure, and Sol or Opus aliases on a look-alike host are rejected,
+  and the card shows the resolved model. The legacy Grok 4.6 main exemption
+  is removed. An OpenCode reviewer exports only when the detector reads every
+  definition of `BOPEN_OPENCODE_READONLY_AGENT` and each denies edit, bash,
+  and task with no write-capable tool allowed; otherwise the detector reports
+  `opencode_read_only_problem` and the reviewer is omitted with that reason.
+- `codex-security`: the pre-commit hook recipe pins the installed hook to
+  `--model gpt-6-sol --effort xhigh` and verifies the result, removing the
+  hook when the pin does not apply.
+- Tests: the Grok wrapper test runs under the test interpreter and skips
+  without `tomllib`/`tomli`.
+
+## [1.1.172] - Pending production promotion
+
+### Fixed
+
+Second round of Sol review fixes. Core 1.1.172, creative 0.1.11, orchestra
+0.1.33, review 0.1.23.
+
+- `code-auditor` 1.4.23: the Sol review recipe summarizes only data files
+  that pass a content check (JSONL rows that parse, known lockfiles with
+  their generator marker, source maps, and parseable JSON under data
+  directories or a `GENERATED` glob). Code, scripts, prose, and config JSON
+  are always reviewed, whatever `GENERATED` says; an oversized one stops the
+  run. Each piece of a split hunk now carries its own exact `@@` range.
+- `promo-video-pipeline` 0.0.4: the launcher checks `hf-api capabilities`
+  against the documented contract and requires `hf-api generate --probe` to
+  refuse while no gate is armed; its exit and signal traps kill the run and
+  the gate. `gate-logger.sh` runs under `set -e`, disarms and kills the run
+  on any unexpected exit or INT/TERM/HUP, and matches protected names only as
+  whole path tokens (a key named `key` no longer trips on `keyframes/`). The
+  delivery export fits portrait masters inside 1080x1920 so no frame exceeds
+  H.264 level 4.1.
+- `security-ops` 1.0.13 and the `codex-security` references pin
+  `gpt-6-sol` at `xhigh` for scans, CI, the SDK (`codexOverrides`),
+  `bulk-scan`, `validate`, and `patch`; `cli-reference` states the real
+  `gpt-5.6-sol` default.
+- `advisor` 0.0.13: the Claude CLI channel checks `BOPEN_ADVISOR_MODEL`
+  against an allowlist (`claude-opus-5-5`) and rejects any Fable ID; the
+  Codex channel accepts only `gpt-6-sol` and pins `xhigh`.
+- `visual-coordinator` 0.1.14: Codex exports put `--ask-for-approval never`
+  before `exec`; `~/` worktree paths expand through `$HOME`; Grok exports
+  bind the approved provider and target, and `run-grok-worker.sh`
+  (`coordinator` 0.0.23) refuses when `config.toml` has moved the id. Sol and
+  Opus match only the bare id on Claude and Codex, owner-qualified ids on
+  OpenCode, and Grok aliases whose provider and target match. Extra
+  coordinators are held to the Opus pin, qualified Grok ids must resolve
+  through `config.toml`, and OpenCode reviews are staffed only with a
+  detected read-only agent (`BOPEN_OPENCODE_READONLY_AGENT`).
+
+## [1.1.171] - Pending production promotion
+
+### Fixed
+
+Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
+0.1.22.
+
+- `creative:promo-video-pipeline` 0.0.3 ships `scripts/gate-logger.sh` and
+  makes it a hard precondition. The launcher stops unless the gate reports
+  `ready`; the gate arms `hf-api generate` only after the `init` event shows
+  `claude-opus-5-5` with 0 MCP servers and 0 skills, and kills the run on
+  early tool calls, a changed wrapper, a rewritten ledger, Higgsfield spend
+  over the `~/.hf-api/budget` cap, or tool calls naming the key, ledger,
+  wrapper, or API host. File tools are scoped to the working directory with
+  the wrapper state denied.
+- `visual-coordinator` 0.1.13: changing lane, execution provider, or model
+  provider (OpenCode prefix, Grok `base_url` host) clears the disclosure
+  approval; the Coordinate card takes only the detector's selected
+  `<lane>_default` (or Claude's `inherit`), never a Sol catalog entry; a lane
+  missing from `lane_access` is unverified, and `detect-harness.sh` now
+  reports every lane; the Grok export removes its prompt temp file on every
+  exit.
+- `advisor` 0.0.12 / `agent-builder` 1.7.20: removed the Fable advisor
+  route; the Claude CLI channel guide is now `claude-cli.md`.
+- `prompt-router` keys fire counters by kind and id, so a skill and an agent
+  that share an id (`core:front-desk`) no longer exhaust each other.
+- `code-auditor` 1.4.22: the Sol review recipe caps each prompt at `CAP`
+  bytes (default 800000, at most 900000), summarizes generated fixtures
+  instead of slicing them, and splits on file and hunk boundaries with the
+  file and `@@` headers repeated in every piece.
+- `codex-security` pins `gpt-6-sol` explicitly (`--model` for `scan`,
+  `--codex 'model="gpt-6-sol"'` for `validate`); `scan` otherwise defaults
+  to `gpt-5.6-sol`.
+- The isolated install check pins codex 0.156.1, the minimum the Sol review
+  recipe needs.
+
 ## [1.1.170] - Pending production promotion
 
 ### Changed
