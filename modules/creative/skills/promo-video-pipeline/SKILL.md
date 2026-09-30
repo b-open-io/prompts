@@ -28,7 +28,8 @@ Not for: a single generated clip (use `gemskills:generate-video`), a single imag
 ## Requirements
 
 - The `gemskills` plugin (`b-open-io/gemskills`) for keyframes. This skill does not duplicate its generation logic.
-- Claude Code CLI with access to Claude Opus 5.5.
+- Claude Code CLI 2.1.219 or newer (for `sandbox.network.strictAllowlist`) with access to Claude Opus 5.5.
+- The Claude Code OS sandbox: Seatbelt on macOS (built in), or `bubblewrap` and `socat` on Linux. The launcher refuses to start without it.
 - Higgsfield API credentials (key ID and secret).
 - ffmpeg 5.1 or newer (`-fps_mode` replaced the deprecated `-vsync`), ffprobe, `curl`, `jq`, and `setsid` (util-linux; `brew install util-linux` on macOS).
 - The two scripts shipped with this skill (in Claude Code, under `${CLAUDE_SKILL_DIR}/scripts/`): the `hf-api` wrapper and the spend and tamper gate `gate-logger.sh`. No other wrapper is accepted.
@@ -47,6 +48,7 @@ State lives in `~/.hf-api/`, outside the run's working directory, where the codi
 | `prices.json` | The price of each model the run may use, copied from Higgsfield's public catalog: `{"<model path>": {"usd_per_second": N}}` (charged on the body's `duration`) or `{"<model path>": {"usd_per_request": N}}`. A model without an entry is never submitted. |
 | `ledger.jsonl` | One object per spend or refund, each with a numeric `cost_usd`. |
 | `gate/armed` | PID of the live `gate-logger.sh` that armed the run. |
+| `gate/snapshot.json` | sha256 of `hf-api`, `prices.json`, and `budget`, taken by the gate at start, with read-only copies `gate/prices.json` and `gate/budget`. On every call `hf-api` checks its own sha256 and the live price table and budget against the snapshot, refuses (exit 4) on any difference, and prices only from the gate's copies. The gate also trips if any of the three changes. |
 
 | Command | Behavior |
 |---------|----------|
@@ -98,11 +100,17 @@ Keep the subject specific to the current request; never bake an example brand, w
 
 - Empty strict MCP config: `--strict-mcp-config --mcp-config '{"mcpServers":{}}'`.
 - `--disable-slash-commands`, which turns off all skills and commands.
-- HyperFrames and any other video plugins disabled for the run (`enabledPlugins` set to `false` in a run-only `--settings` file).
-- File tools scoped to the working directory, with the wrapper's state directory denied, so the model cannot read the key or edit the wrapper or ledger.
+- HyperFrames and any other video plugins disabled for the run (`enabledPlugins` set to `false` in the run-only settings the launcher writes).
+- `--setting-sources ""`, so only the launcher's `--settings` file applies. User, project, and local settings cannot widen the allowlist or the sandbox.
+- The Claude Code OS sandbox on every Bash command, with no escape hatch: `failIfUnavailable`, `allowUnsandboxedCommands: false`, `autoAllowBashIfSandboxed: false`. Sandboxed commands cannot read or write `~/.hf-api` and have no network (`allowedDomains: []`, `strictAllowlist: true`). Only `hf-api` runs outside the sandbox (`excludedCommands`), because it alone needs the key and the Higgsfield host.
+- `--permission-mode dontAsk`: any tool call the allowlist does not name is denied. A prefix rule such as `Bash(hf-api *)` does not cover `hf-api … && cat …`, so a compound command cannot ride along with the unsandboxed wrapper.
+- File tools scoped to the working directory, with the wrapper's state directory and `./.claude` denied, so the model cannot read the key or edit the wrapper, ledger, prices, or its own settings.
+- ffmpeg and ffprobe stay on the allowlist only because they run inside the sandbox: a crafted command line cannot reach the network (`-method POST`, remote URLs) or the state directory, however it quotes paths.
 - Two separate caps. `HF_BUDGET_USD` (written to `~/.hf-api/budget`) caps Higgsfield spend: `hf-api` refuses past it and the gate kills the run if the ledger goes over it. `--max-budget-usd` caps only model spend.
 
-**Gate (hard precondition).** No spend-capable step runs until the gate is up and verified; any failed check stops the run. The gate (`scripts/gate-logger.sh`) runs detached with `setsid nohup` so it outlives the shell that started it. It writes `ready` once its preconditions hold, writes `armed` only after the run's `system`/`init` event shows `claude-opus-5-5` with 0 MCP servers and 0 skills, and `hf-api generate` refuses without `armed`. Every ledger entry goes to `gate.log`. It removes `armed`, writes the reason to `tripped`, and kills the run's process group on any of these: a tool call before the init check, a changed `hf-api` binary, a rewritten or malformed ledger, Higgsfield spend over `HF_BUDGET_USD`, or a tool call that names the key, ledger, wrapper, gate directory, or a `higgsfield.ai` host. Protected names match only as whole path tokens, so a key file named `key` stops `cat key` but not `ls keyframes/`. The gate also stops the run whenever it exits any other way than a clean end of the run: an unexpected command failure (it runs under `set -e`) or an INT, TERM, or HUP signal. Before the gate starts, the launcher installs the shipped wrapper, checks that the installed copy has the shipped sha256, checks `hf-api capabilities` against the contract above, and requires `hf-api generate --probe` to refuse (exit 4) while no gate is armed. The gate repeats the sha256 check itself, so a wrapper swapped in after install is also refused. The launcher's own exit and signal traps kill the run and the gate.
+**Gate (hard precondition).** No spend-capable step runs until the gate is up and verified; any failed check stops the run. The gate (`scripts/gate-logger.sh`) runs detached with `setsid nohup` so it outlives the shell that started it. It writes `ready` once its preconditions hold, writes `armed` only after the run's `system`/`init` event shows `claude-opus-5-5` with 0 MCP servers and 0 skills, and `hf-api generate` refuses without `armed`. Every ledger entry goes to `gate.log`. It removes `armed`, writes the reason to `tripped`, and kills the run's process group on any of these: a tool call before the init check, a changed `hf-api` binary, a rewritten or malformed ledger, Higgsfield spend over `HF_BUDGET_USD`, or a tool call that names the key, ledger, wrapper, gate directory, or a `higgsfield.ai` host. Protected names match only as whole path tokens, so a key file named `key` stops `cat key` but not `ls keyframes/`, and they are matched again with shell quotes and backslashes removed, so `k''ey` or `higgs""field.ai` also trips. It also trips when `prices.json`, `budget`, or its own snapshot changes. The tripwire is a backstop; the OS sandbox is the boundary. The gate also stops the run whenever it exits any other way than a clean end of the run: an unexpected command failure (it runs under `set -e`) or an INT, TERM, or HUP signal. Before the gate starts, the launcher installs the shipped wrapper, checks that the installed copy has the shipped sha256, checks `hf-api capabilities` against the contract above, and requires `hf-api generate --probe` to refuse (exit 4) while no gate is armed. The gate repeats the sha256 check itself, so a wrapper swapped in after install is also refused. The launcher's own exit and signal traps kill the run and the gate.
+
+**Key isolation.** The sandbox keeps the key away from the model's Bash commands and the deny rules keep it away from its file tools, but the key is still a file the agent's OS user can read. Full protection needs the key outside that user: run `hf-api` as a separate OS user that owns `~/.hf-api` (the model's user reaches it only through a fixed `sudo -u` rule), or keep the secret in the OS keychain. The launcher refuses to start when it can see the key is exposed: the key is not a regular file owned by you with mode 600 or 400, the state directory is not mode 700, the state directory sits inside the working directory, the working directory holds `.claude` settings, or the generated run settings lack any of the sandbox and deny rules above.
 
 ```bash
 set -euo pipefail
@@ -113,13 +121,58 @@ HF_STATE="$HOME/.hf-api"                  # key, budget, prices.json, ledger
 HF_GATE_DIR="$HF_STATE/gate" HF_BUDGET_USD=15
 [[ -x $GATE_BIN && -f $SKILL_BIN/hf-api ]] || no_run "shipped gate-logger or hf-api missing"
 for tool in setsid jq curl claude uuidgen; do command -v "$tool" >/dev/null || no_run "$tool missing"; done
+if [[ $(uname) == Darwin ]]; then deps=(sandbox-exec); else deps=(bwrap socat); fi
+for tool in "${deps[@]}"; do command -v "$tool" >/dev/null || no_run "$tool missing; the Claude Code sandbox cannot start"; done
+ver=$(claude --version | awk '{print $1}')
+awk -v v="$ver" 'BEGIN { split(v, a, "."); exit !(a[1] > 2 || (a[1] == 2 && (a[2] > 1 || (a[2] == 1 && a[3] >= 219)))) }' \
+  || no_run "Claude Code $ver predates sandbox.network.strictAllowlist (2.1.219)"
 sha() { if command -v sha256sum >/dev/null; then sha256sum < "$1"; else shasum -a 256 < "$1"; fi | cut -d' ' -f1; }
+perm() { stat -c '%a %u' "$1" 2>/dev/null || stat -f '%Lp %u' "$1"; }
 mkdir -p "$HF_STATE/bin" && chmod 700 "$HF_STATE"
 install -m 0555 "$SKILL_BIN/hf-api" "$HF_STATE/bin/hf-api"
 HF_BIN="$HF_STATE/bin/hf-api"
 [[ $(sha "$HF_BIN") == "$(sha "$SKILL_BIN/hf-api")" ]] || no_run "installed hf-api does not match the shipped sha256"
 [[ -s $HF_STATE/key && -s $HF_STATE/prices.json ]] || no_run "put ID:SECRET in $HF_STATE/key and model prices in $HF_STATE/prices.json"
 jq -e 'type == "object" and length > 0' "$HF_STATE/prices.json" > /dev/null || no_run "prices.json is not a price table"
+
+# Refuse wherever the key is visibly exposed to the model's process.
+[[ -f $HF_STATE/key && ! -L $HF_STATE/key ]] || no_run "the key must be a regular file"
+read -r kmode kuid <<< "$(perm "$HF_STATE/key")"
+[[ $kuid == "$(id -u)" && $kmode =~ ^[46]00$ ]] || no_run "the key must be yours with mode 600 or 400 (is $kmode)"
+read -r smode _ <<< "$(perm "$HF_STATE")"
+[[ $smode == 700 ]] || no_run "$HF_STATE must be mode 700 (is $smode)"
+st=$(cd "$HF_STATE" && pwd -P) wd=$(pwd -P)
+case "$st/" in "$wd/"*) no_run "the state directory is inside the working directory" ;; esac
+case "$wd/" in "$st/"*) no_run "the working directory is inside the state directory" ;; esac
+[[ ! -e .claude ]] || no_run "remove ./.claude; the run takes its settings only from run-settings.json"
+
+jq -n --arg wd "$wd" '{
+  enabledPlugins: {},
+  permissions: {
+    defaultMode: "dontAsk",
+    deny: ["Read(~/.hf-api/**)", "Edit(~/.hf-api/**)", "Read(./.claude/**)", "Edit(./.claude/**)",
+           "Edit(./run.jsonl)", "Edit(./run-settings.json)", "Edit(./gate.out)",
+           "Bash(curl *)", "Bash(wget *)", "WebFetch", "WebSearch"]
+  },
+  sandbox: {
+    enabled: true, failIfUnavailable: true,
+    allowUnsandboxedCommands: false, autoAllowBashIfSandboxed: false,
+    excludedCommands: ["hf-api *"],
+    filesystem: {
+      denyRead: ["~/.hf-api"],
+      denyWrite: ["~/.hf-api", "\($wd)/.claude", "\($wd)/run.jsonl", "\($wd)/run-settings.json", "\($wd)/gate.out"]
+    },
+    credentials: {files: [{path: "~/.hf-api/key", mode: "deny"}]},
+    network: {allowedDomains: [], strictAllowlist: true}
+  }
+}' > run-settings.json
+jq -e '.sandbox as $s | $s.enabled and $s.failIfUnavailable
+  and $s.allowUnsandboxedCommands == false and $s.autoAllowBashIfSandboxed == false
+  and $s.excludedCommands == ["hf-api *"] and $s.network.allowedDomains == []
+  and $s.network.strictAllowlist and ($s.filesystem.denyRead | index("~/.hf-api"))
+  and .permissions.defaultMode == "dontAsk"
+  and (.permissions.deny | index("Read(~/.hf-api/**)"))' run-settings.json > /dev/null \
+  || no_run "run-settings.json does not confine the run"
 printf '%s\n' "$HF_BUDGET_USD" > "$HF_STATE/budget"
 touch "$HF_STATE/ledger.jsonl"; : > run.jsonl
 export PATH="$HF_STATE/bin:$PATH"         # the coding model's `hf-api` is the installed copy
@@ -158,10 +211,11 @@ setsid claude -p "$(cat user-prompt.txt)" \
   --session-id "$SID" \
   --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
   --disable-slash-commands \
-  --settings ./run-settings.json \
+  --setting-sources "" --settings ./run-settings.json \
+  --permission-mode dontAsk \
   --append-system-prompt-file ./run-rules.md \
   --allowedTools "Bash(hf-api *)" "Bash(ffmpeg *)" "Bash(ffprobe *)" "Read(./**)" "Write(./**)" "Edit(./**)" \
-  --disallowedTools "Bash(curl *)" "Bash(wget *)" "Read(~/.hf-api/**)" "Write(~/.hf-api/**)" "Edit(~/.hf-api/**)" \
+  --disallowedTools "Bash(curl *)" "Bash(wget *)" "Read(~/.hf-api/**)" "Edit(~/.hf-api/**)" \
   --max-budget-usd 20 \
   --output-format stream-json --verbose > run.jsonl &
 RUN_PID=$!
@@ -177,7 +231,7 @@ jq -c 'select(.type=="system" and .subtype=="init")
   | {model, mcp: (.mcp_servers | length), skills: ((.skills // []) | length)}' run.jsonl
 ```
 
-Adjust `--allowedTools` to what the edit needs. `claude-opus-5-5` is the Claude Opus 5.5 model ID.
+Adjust `--allowedTools` to what the edit needs, but keep every added command sandboxed: never add to `excludedCommands`, and never allow `Bash(*)`. `claude-opus-5-5` is the Claude Opus 5.5 model ID.
 
 **Pricing.** Kling 3.0 Pro image-to-video runs about $0.15–0.19 per 3 s clip and $0.25–0.31 per 5 s clip. Treat these as a guide and use `hf-api estimate` for the real number.
 

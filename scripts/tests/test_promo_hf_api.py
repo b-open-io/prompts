@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -78,6 +79,16 @@ class HfApiTest(unittest.TestCase):
         fake.chmod(0o755)
         self.gate_proc = subprocess.Popen([str(fake)], stdout=subprocess.DEVNULL, start_new_session=True)
         (self.state / "gate" / "armed").write_text(f"{self.gate_proc.pid}\n")
+        self.snapshot()
+
+    def snapshot(self) -> None:
+        """What gate-logger.sh writes at start: copies of prices.json and budget, and every sha256."""
+        gate = self.state / "gate"
+        for name in ("prices.json", "budget"):
+            shutil.copy(self.state / name, gate / name)
+        digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+        (gate / "snapshot.json").write_text(json.dumps({
+            "hf_api": digest(self.hf), "prices": digest(self.state / "prices.json"), "budget": digest(self.state / "budget")}))
 
     def entries(self) -> list[dict]:
         return [json.loads(line) for line in self.ledger.read_text().splitlines()]
@@ -119,6 +130,44 @@ class HfApiTest(unittest.TestCase):
         self.ledger.write_text('{"cost_usd": 0.9}\n')
         self.assertEqual(self.hf_api("generate", "--model", "flat/model").returncode, 4)
         self.assertFalse(self.log.exists())
+
+    def test_generate_checks_the_gate_snapshot_every_call(self) -> None:
+        body = ("generate", "--model", "kling/v3/pro", "--json", '{"duration": 3}')
+        changes = {
+            "prices.json changed": lambda: (self.state / "prices.json").write_text(json.dumps({"kling/v3/pro": {"usd_per_second": 0.0001}})),
+            "budget changed": lambda: (self.state / "budget").write_text("1000\n"),
+            "prices.json changed ": lambda: (self.state / "gate/prices.json").write_text("{}"),
+            "not the wrapper the gate verified": lambda: self.hf.write_text(self.hf.read_text() + "\n# edited\n"),
+            "malformed": lambda: (self.state / "gate/snapshot.json").write_text('{"hf_api": "x"}'),
+            "has not snapshotted": lambda: (self.state / "gate/snapshot.json").unlink(),
+        }
+        for reason, change in changes.items():
+            with self.subTest(reason):
+                shutil.copy(WRAPPER, self.hf)
+                (self.state / "budget").write_text("1\n")
+                (self.state / "prices.json").write_text(json.dumps({"kling/v3/pro": {"usd_per_second": 0.1}}))
+                self.arm()
+                self.assertEqual(self.hf_api("generate", "--probe").returncode, 0)
+                change()
+                for args in (body, ("generate", "--probe"), (body[0], "--probe", *body[1:])):
+                    result = self.hf_api(*args)
+                    self.assertEqual(result.returncode, 4, result.stderr)
+                    self.assertIn(reason.strip(), result.stderr)
+                os.killpg(self.gate_proc.pid, signal.SIGKILL)
+                self.gate_proc.wait()
+        self.assertFalse(self.log.exists())
+        self.assertEqual(self.entries(), [])
+
+    def test_body_file_must_be_inside_the_working_directory(self) -> None:
+        self.arm()
+        (self.work / "body.json").write_text('{"duration": 3}')
+        self.assertEqual(self.hf_api("generate", "--probe", "--model", "kling/v3/pro", "--body-file", "body.json").returncode, 0)
+        outside = self.state / "outside.json"
+        outside.write_text('{"duration": 3}')
+        for path in (str(outside), "../state/outside.json", "~/x.json"):
+            with self.subTest(path=path):
+                result = self.hf_api("generate", "--probe", "--model", "kling/v3/pro", "--body-file", path)
+                self.assertEqual(result.returncode, 2)
 
     def test_generate_books_the_estimate_and_hides_the_key(self) -> None:
         self.arm()

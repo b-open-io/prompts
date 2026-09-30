@@ -13,6 +13,15 @@
 #   prices.json  {"<model path>": {"usd_per_second": N} | {"usd_per_request": N}}
 #   ledger.jsonl one JSON object per spend or refund, each with numeric cost_usd
 #   gate/armed   PID of the live gate-logger.sh that armed this run
+#   gate/snapshot.json, gate/prices.json, gate/budget
+#                the gate's start-time copies of prices.json and budget, with
+#                their sha256 and the sha256 of this wrapper
+#
+# Every spend check runs against the gate's snapshot: generate refuses unless
+# prices.json and budget still hash to what the gate recorded at start, the
+# gate's copies do too, and this file still hashes to the wrapper the gate
+# verified. So rewriting the price table or the budget mid-run, or swapping
+# this file, refuses the next generate.
 #
 # Commands:
 #   capabilities
@@ -31,11 +40,15 @@ BASE="https://platform.higgsfield.ai"
 self=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/$(basename "${BASH_SOURCE[0]}")
 S=$(dirname "$(dirname "$self")")
 KEY="$S/key" BUDGET_FILE="$S/budget" PRICES="$S/prices.json" LEDGER="$S/ledger.jsonl"
-ARMED="$S/gate/armed" LOCK="$S/lock"
+LIVE_BUDGET=$BUDGET_FILE LIVE_PRICES=$PRICES
+ARMED="$S/gate/armed" LOCK="$S/lock" SNAP="$S/gate/snapshot.json"
 
 die() { echo "hf-api: $*" >&2; exit "${2:-2}"; }
 refuse() { echo "hf-api: refused: $*" >&2; exit 4; }
 for tool in curl jq; do command -v "$tool" >/dev/null || die "$tool is required"; done
+if command -v sha256sum >/dev/null; then sha() { sha256sum < "$1" | cut -d' ' -f1; }
+elif command -v shasum >/dev/null; then sha() { shasum -a 256 < "$1" | cut -d' ' -f1; }
+else die "sha256sum or shasum is required"; fi
 [[ $(basename "$(dirname "$self")") == bin ]] || die "install as <state>/bin/hf-api"
 
 spent() { jq -en '[inputs | .cost_usd | if type == "number" then . else error("cost_usd") end] | add // 0' "$LEDGER"; }
@@ -50,6 +63,22 @@ gate_ok() {
   [[ $pid =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null || return 1
   cmd=$(ps -o command= -p "$pid" 2>/dev/null) || return 1
   [[ $cmd == *gate-logger.sh* ]]
+}
+
+# The gate's snapshot must still match the live files and this wrapper; spend
+# checks then read the gate's copies. Sets PRICES and BUDGET_FILE.
+snapshot_ok() {
+  local want
+  [[ -f $SNAP && -f $S/gate/prices.json && -f $S/gate/budget ]] || refuse "the gate has not snapshotted prices.json and budget"
+  want=$(jq -r '[.hf_api, .prices, .budget] | map(if type == "string" and test("^[0-9a-f]{64}$") then . else error("bad") end) | join(" ")' "$SNAP" 2>/dev/null) \
+    || refuse "gate snapshot $SNAP is malformed"
+  read -r want_hf want_prices want_budget <<< "$want"
+  [[ $(sha "$self") == "$want_hf" ]] || refuse "this hf-api is not the wrapper the gate verified (sha256 differs)"
+  [[ -f $LIVE_PRICES && $(sha "$LIVE_PRICES") == "$want_prices" && $(sha "$S/gate/prices.json") == "$want_prices" ]] \
+    || refuse "prices.json changed since the gate started"
+  [[ -f $LIVE_BUDGET && $(sha "$LIVE_BUDGET") == "$want_budget" && $(sha "$S/gate/budget") == "$want_budget" ]] \
+    || refuse "budget changed since the gate started"
+  PRICES="$S/gate/prices.json" BUDGET_FILE="$S/gate/budget"
 }
 
 HDR="" OUT="" LOCKED=0
@@ -78,7 +107,10 @@ request_args() {
       --probe) PROBE=1; shift ;;
       --model) [[ $# -ge 2 ]] || die "--model needs a value"; MODEL=$2; shift 2 ;;
       --json) [[ $# -ge 2 ]] || die "--json needs a value"; BODY=$2; shift 2 ;;
-      --body-file) [[ $# -ge 2 && -f $2 ]] || die "--body-file needs a file"; BODY=$(cat "$2"); shift 2 ;;
+      --body-file)
+        [[ $# -ge 2 && -f $2 ]] || die "--body-file needs a file"
+        [[ $2 != /* && $2 != '~'* && /$2/ != */../* ]] || die "--body-file must be a path inside the working directory"
+        BODY=$(cat "$2"); shift 2 ;;
       *) die "unknown argument $1" ;;
     esac
   done
@@ -153,6 +185,7 @@ case $cmd in
     request_args "$@"
     [[ -f $LEDGER ]] || die "ledger $LEDGER is missing"
     gate_ok || refuse "no live gate has armed this run"
+    snapshot_ok
     budget=$(tr -d '[:space:]' < "$BUDGET_FILE" 2>/dev/null) || refuse "no budget file at $BUDGET_FILE"
     [[ $budget =~ ^[0-9]+(\.[0-9]+)?$ ]] && jq -en "$budget > 0" > /dev/null || refuse "budget file must hold a positive USD amount"
     # A bare probe (no --model) checks only the gate and budget.
@@ -164,6 +197,7 @@ case $cmd in
       || refuse "\$$cost on top of \$$total spent is over the \$$budget budget"
     (( PROBE == 0 )) || exit 0
     gate_ok || refuse "the gate disarmed before submission"
+    snapshot_ok
     call POST "$BASE/$MODEL" "$BODY"; resp=$RESP
     rid=$(jq -r '.request_id // empty' <<< "$resp" 2>/dev/null || true)
     # Anything but a clean 4xx rejection may have been charged, so it is booked.

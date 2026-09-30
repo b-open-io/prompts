@@ -15,6 +15,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "modules/creative/skills/promo-video-pipeline/scripts"
 GATE = SCRIPTS / "gate-logger.sh"
+# BSD userland (macOS) rejects `head -c 0` and has no `realpath -m`.
+BSD_HEAD = """#!/usr/bin/env bash
+for ((i = 1; i <= $#; i++)); do
+  if [[ ${!i} == -c ]]; then j=$((i + 1)); [[ ${!j} == 0 ]] && { echo "head: illegal byte count -- 0" >&2; exit 1; }; fi
+done
+exec /usr/bin/head "$@"
+"""
+BSD_REALPATH = """#!/usr/bin/env bash
+[[ " $* " == *" -m "* ]] && { echo "realpath: illegal option -- m" >&2; exit 1; }
+exec /usr/bin/realpath "$@"
+"""
 INIT = {"type": "system", "subtype": "init", "model": "claude-opus-5-5", "mcp_servers": [], "skills": []}
 
 
@@ -34,6 +45,8 @@ def wait(check, timeout: float = 10) -> bool:
 
 @unittest.skipUnless(shutil.which("jq"), "needs jq")
 class GateLoggerTest(unittest.TestCase):
+    path = os.environ["PATH"]
+
     def setUp(self) -> None:
         self.start()
 
@@ -51,13 +64,17 @@ class GateLoggerTest(unittest.TestCase):
         self.ledger.write_text("")
         self.key = self.state / "key"
         self.key.write_text("secret\n")
+        self.prices = self.state / "prices.json"
+        self.prices.write_text(json.dumps({"kling/v3/pro": {"usd_per_second": 0.1}}))
+        self.budget = self.state / "budget"
+        self.budget.write_text("15\n")
         self.dir = self.state / "gate"
         self.stream = root / "run.jsonl"
         self.stream.write_text("")
         self.gate = subprocess.Popen(
             ["bash", str(GATE), "--dir", str(self.dir), "--hf-api", str(self.hf), "--ledger",
              str(self.ledger), "--key", str(self.key), "--budget", "15", "--stream", str(self.stream)],
-            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, start_new_session=True,
+            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, start_new_session=True, env={**os.environ, "PATH": self.path},
         )
         self.assertTrue(wait(lambda: (self.dir / "ready").exists()), "gate never became ready")
         self.run_proc = subprocess.Popen(["sleep", "60"], start_new_session=True)
@@ -94,7 +111,9 @@ class GateLoggerTest(unittest.TestCase):
 
     def test_protected_path_tokens_trip(self) -> None:
         commands = (f"cat {self.key}", "cat key", "cat ./key", 'cat "key"', "tail st/ledger.jsonl",
-                    f"cp x {self.state}/bin/hf-api", "curl https://platform.higgsfield.ai/x")
+                    f"cp x {self.state}/bin/hf-api", "curl https://platform.higgsfield.ai/x",
+                    "ffmpeg -i k''ey -f null -", 'ffmpeg -method POST -i https://platform.higgs""field.ai/x',
+                    "cat \\k\\ey")
         for i, command in enumerate(commands):
             with self.subTest(command=command):
                 if i:
@@ -130,6 +149,41 @@ class GateLoggerTest(unittest.TestCase):
                 self.assertRegex(result.stderr, "not the hf-api shipped|must be installed")
                 self.assertFalse((self.dir / "ready").exists())
 
+    def test_snapshot_is_written_for_hf_api(self) -> None:
+        snap = json.loads((self.dir / "snapshot.json").read_text())
+        self.assertEqual(set(snap), {"hf_api", "prices", "budget"})
+        self.assertEqual((self.dir / "prices.json").read_text(), self.prices.read_text())
+        self.assertEqual((self.dir / "budget").read_text(), "15\n")
+
+    def test_price_budget_or_snapshot_change_trips(self) -> None:
+        changes = {
+            "prices.json changed": lambda: self.prices.write_text(json.dumps({"kling/v3/pro": {"usd_per_second": 0.001}})),
+            "budget changed": lambda: self.budget.write_text("1500\n"),
+            "gate snapshot changed": lambda: ((self.dir / "snapshot.json").chmod(0o600), (self.dir / "snapshot.json").write_text("{}")),
+            "prices.json changed ": lambda: ((self.dir / "prices.json").chmod(0o600), (self.dir / "prices.json").write_text("{}")),
+        }
+        for i, (reason, change) in enumerate(changes.items()):
+            with self.subTest(reason):
+                if i:
+                    self.stop()
+                    self.start()
+                self.arm()
+                change()
+                self.assertEqual(self.gate.wait(timeout=15), 3)
+                self.assertIn(reason.strip(), (self.dir / "tripped").read_text())
+
+    def test_refuses_a_budget_file_that_disagrees(self) -> None:
+        self.arm()
+        self.assertEqual(self.finish(), 0)
+        self.budget.write_text("16\n")
+        result = subprocess.run(
+            ["bash", str(GATE), "--dir", str(self.dir), "--hf-api", str(self.hf), "--ledger", str(self.ledger),
+             "--key", str(self.key), "--budget", "15", "--stream", str(self.stream)],
+            capture_output=True, text=True, timeout=15, env={**os.environ, "PATH": self.path},
+        )
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("must hold the --budget amount", result.stderr)
+
     def test_signal_kills_the_run(self) -> None:
         self.arm()
         os.killpg(self.gate.pid, signal.SIGTERM)
@@ -137,6 +191,30 @@ class GateLoggerTest(unittest.TestCase):
         self.assertFalse((self.dir / "armed").exists())
         self.assertIn("signal", (self.dir / "tripped").read_text())
         self.assertIsNotNone(self.run_proc.wait(timeout=10))
+
+
+class BsdGateLoggerTest(GateLoggerTest):
+    """The same behavior with BSD head and realpath semantics first on PATH."""
+
+    shims: tempfile.TemporaryDirectory
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.shims = tempfile.TemporaryDirectory()
+        for name, body in (("head", BSD_HEAD), ("realpath", BSD_REALPATH)):
+            path = Path(cls.shims.name) / name
+            path.write_text(body)
+            path.chmod(0o755)
+        cls.path = f"{cls.shims.name}{os.pathsep}{os.environ['PATH']}"
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.shims.cleanup()
+
+    def test_shims_behave_like_bsd(self) -> None:
+        env = {**os.environ, "PATH": self.path}
+        self.assertNotEqual(subprocess.run(["head", "-c", "0", str(self.key)], env=env, capture_output=True).returncode, 0)
+        self.assertNotEqual(subprocess.run(["realpath", "-m", "/x/y"], env=env, capture_output=True).returncode, 0)
 
 
 if __name__ == "__main__":
