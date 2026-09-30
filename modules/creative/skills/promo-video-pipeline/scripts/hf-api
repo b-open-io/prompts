@@ -14,9 +14,11 @@
 #                usd_ceiling (required) is the most one request can cost: the
 #                longest, highest-resolution, most expensive variant.
 #                usd_per_second (optional) is the most expensive variant's
-#                per-second rate; with it, a request whose body carries a
-#                numeric duration is priced duration * rate, and any other
-#                request is priced at the ceiling. Every price must be > 0.
+#                per-second rate; with it, a single-shot request (one
+#                numeric top-level duration and no multi-shot fields) is
+#                priced duration * rate, and any other request, including a
+#                Kling multi-shot one, is priced at the ceiling. Every price
+#                must be > 0.
 #   ledger.jsonl one JSON object per reservation, settlement, or refund, each
 #                with numeric cost_usd
 #   gate/armed   PID of the live gate-logger.sh that armed this run

@@ -20,6 +20,8 @@ Pre-promotion fixes from the Sol review of the dev to master promote. Core
   from outside the working directory to Higgsfield. The launcher drops the
   `Write(./**)` allow rule, which Claude Code ignores; `Edit(./**)` already
   covers the editing tools and `run.jsonl` stays denied.
+- README and the `hf-api` header describe the single-shot per-second rule
+  instead of "any numeric duration".
 - CHANGELOG: entries 1.1.163 to 1.1.176 carry release dates. Promo
   0.0.1/0.0.2 and the factory-worker fix move to 1.1.170, the duplicate jev
   lines are dropped (they live in 1.1.166), and the older unversioned block
