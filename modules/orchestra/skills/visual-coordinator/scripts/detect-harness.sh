@@ -168,11 +168,13 @@ for _, _, model in sorted(models)[:80]:
     print(model)
 ' "$1"
 }
-# OpenCode reads opencode.json or opencode.jsonc (fresh installs write JSONC) from the project,
-# its .opencode/ directory, and the global config. Each provider that overrides its endpoint
-# (`options.baseURL`, `api`) or its SDK package (`npm`) is reported with the host it really
-# reaches, so the canvas can refuse an openai/… or anthropic/… id served somewhere else. A
-# config that does not parse is reported as the `*` provider, which makes every host unverified.
+# OpenCode reads opencode.json or opencode.jsonc (fresh installs write JSONC) from, highest
+# precedence first: the managed settings directory, OPENCODE_CONFIG_CONTENT, the project, its
+# .opencode/ directory, OPENCODE_CONFIG_DIR, OPENCODE_CONFIG, and the global config. Each provider
+# that overrides its endpoint (`options.baseURL`, `api`) or its SDK package (`npm`) is reported with
+# the host it really reaches, so the canvas can refuse an openai/… or anthropic/… id served
+# somewhere else. A config that does not parse is reported as the `*` provider, which makes every
+# host unverified.
 opencode_config_info() {
   python3 - "$@" <<'PY_OPENCODE_CONFIG'
 import json, os, re, sys
@@ -223,11 +225,15 @@ def official(provider, host):
 
 hosts = {}
 for path in sys.argv[1:]:
-    if not os.path.isfile(path):
+    inline = path == "OPENCODE_CONFIG_CONTENT"
+    if inline and not os.environ.get(path) or not inline and not os.path.isfile(path):
         continue
     try:
-        with open(path, encoding="utf-8") as handle:
-            data = jsonc(handle.read())
+        if inline:
+            data = jsonc(os.environ[path])
+        else:
+            with open(path, encoding="utf-8") as handle:
+                data = jsonc(handle.read())
     except (OSError, ValueError):
         hosts["*"] = "unparseable " + path
         continue
@@ -263,15 +269,23 @@ PY_OPENCODE_CONFIG
 }
 opencode_hosts=""
 _oc_global="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
+case "$(uname -s)" in
+  Darwin) _oc_managed="/Library/Application Support/opencode" ;;
+  *) _oc_managed=/etc/opencode ;;
+esac
+_oc_managed="${OPENCODE_TEST_MANAGED_CONFIG_DIR:-$_oc_managed}"
+_oc_dir="${OPENCODE_CONFIG_DIR:-/nonexistent}"
 while IFS=$'\t' read -r _kind _value _extra; do
   case "$_kind" in
     model) [[ -n "$opencode_model" ]] && continue; opencode_model="$_value" ;;
     provider) opencode_providers=$(printf '%s\n%s' "$opencode_providers" "$_value") ;;
     host) opencode_hosts=$(printf '%s\n%s\t%s' "$opencode_hosts" "$_value" "$_extra") ;;
   esac
-done < <(opencode_config_info "$PWD/opencode.jsonc" "$PWD/opencode.json" "$PWD/.opencode/opencode.jsonc" "$PWD/.opencode/opencode.json" \
+done < <(opencode_config_info "$_oc_managed/opencode.jsonc" "$_oc_managed/opencode.json" OPENCODE_CONFIG_CONTENT \
+  "$PWD/opencode.jsonc" "$PWD/opencode.json" "$PWD/.opencode/opencode.jsonc" "$PWD/.opencode/opencode.json" \
+  "$_oc_dir/opencode.jsonc" "$_oc_dir/opencode.json" "${OPENCODE_CONFIG:-/nonexistent}" \
   "$_oc_global/opencode.jsonc" "$_oc_global/opencode.json" "$_oc_global/config.json")
-unset _oc_global _extra
+unset _oc_global _oc_managed _oc_dir _extra
 opencode_hosts_json=$(printf '%s\n' "$opencode_hosts" | python3 -c '
 import json, sys
 out = {}
