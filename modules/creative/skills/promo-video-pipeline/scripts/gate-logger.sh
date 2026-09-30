@@ -11,6 +11,8 @@
 #   - arms the run (<dir>/armed) only after the stream's system/init event
 #     shows the expected model, 0 MCP servers, and 0 skills; hf-api generate
 #     must refuse unless <dir>/armed exists and names a live gate PID
+#   - trips on any system fallback event (model_refusal_fallback) and on any
+#     assistant message whose model is not the expected one
 #   - logs every ledger entry (every hf-api call that spends or refunds)
 #   - trips on a changed hf-api binary, prices.json, budget, or snapshot, a
 #     rewritten or malformed ledger,
@@ -76,7 +78,11 @@ state=$(dirname "$LEDGER")
 [[ -f $KEY ]] || fail "key file $KEY is missing"
 [[ -f $STREAM ]] || fail "stream $STREAM is missing (create it empty first)"
 PRICES="$state/prices.json" BUDGET_FILE="$state/budget"
-jq -e 'type == "object" and length > 0' "$PRICES" > /dev/null 2>&1 || fail "$PRICES is missing or not a price table"
+jq -e 'type == "object" and length > 0 and all(.[]; type == "object"
+    and (keys - ["usd_ceiling", "usd_per_second"] | length) == 0
+    and (.usd_ceiling | type == "number" and . > 0)
+    and ((has("usd_per_second") | not) or (.usd_per_second | type == "number" and . > 0)))' "$PRICES" > /dev/null 2>&1 \
+  || fail "$PRICES is missing or not a price table (every model needs a positive usd_ceiling; usd_per_second, if set, must be positive)"
 [[ -f $BUDGET_FILE ]] && jq -en --argjson f "$(tr -d '[:space:]' < "$BUDGET_FILE")" "\$f == $BUDGET" > /dev/null 2>&1 \
   || fail "$BUDGET_FILE must hold the --budget amount ($BUDGET)"
 
@@ -198,7 +204,10 @@ while :; do
       | if .type == "unparsed" then "bad"
         elif .type == "system" and .subtype == "init" then
           "init\t\(.model)\t\(.mcp_servers // [] | length)\t\(.skills // [] | length)"
+        elif .type == "system" and (.subtype // "" | test("fallback")) then
+          "fallback\t\(.subtype)\t\(.model // .fallback_model // "" | tostring)"
         elif .type == "assistant" then
+          "model\t\(.message.model // "" | tostring)",
           (.message.content[]? | select(.type == "tool_use") | "tool\t\(.name)\t\(.input | tojson)")
         else empty end' "$GATE/chunk.lines") || trip "cannot parse the stream"
     while IFS=$'\t' read -r kind a b c; do
@@ -211,6 +220,8 @@ while :; do
           armed=1
           log "armed: model=$a mcp=0 skills=0"
           ;;
+        fallback) trip "Claude Code switched models ($a${b:+ to $b})" ;;
+        model) [[ $a == "$MODEL" ]] || trip "assistant message ran on model=${a:-none}, not $MODEL" ;;
         tool)
           (( armed == 1 )) || trip "tool call before the init check"
           names_forbidden "$b" && trip "$a call names a protected path or the Higgsfield API: $b"

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -92,6 +93,35 @@ class LauncherTest(unittest.TestCase):
 
     def test_state_inside_work_dir_refuses(self) -> None:
         self.assertIn("inside the working directory", self.exposure(self.dir).stderr)
+
+    def detach(self, keep: tuple[str, ...]) -> subprocess.CompletedProcess[str]:
+        """Start `sleep` through DETACH with only `keep` (plus basics) on PATH."""
+        bin_dir = self.dir / ("bin-" + "-".join(keep or ("none",)))
+        bin_dir.mkdir()
+        for name in ("bash", "sleep", "ps", "tr", "kill", *keep):
+            found = shutil.which(name)
+            if found:
+                (bin_dir / name).symlink_to(found)
+        block = part("# Starts a command as the leader", 'own session"; fi\n')
+        script = block + '"${DETACH[@]}" sleep 30 &\npid=$!\nsleep 0.5\n' \
+            'sid=$(ps -o sid= -p "$pid" | tr -d " ")\necho "$pid $sid"\nkill "$pid"\n'
+        return subprocess.run([str(bin_dir / "bash"), "-c", 'set -euo pipefail\nno_run() { echo "$*; no run" >&2; exit 1; }\n' + script],
+                              cwd=self.work, text=True, capture_output=True, env={"PATH": str(bin_dir)})
+
+    def test_detach_falls_back_without_setsid(self) -> None:
+        for keep in (("setsid",), ("perl",), ("python3",)):
+            if not shutil.which(keep[0]):
+                continue
+            with self.subTest(keep=keep):
+                done = self.detach(keep)
+                self.assertEqual(done.returncode, 0, done.stderr)
+                pid, sid = done.stdout.split()
+                self.assertEqual(pid, sid, "the started command must lead its own session with the PID the launcher records")
+
+    def test_detach_refuses_without_any_way_to_setsid(self) -> None:
+        done = self.detach(())
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn("setsid, perl, or python3 is needed", done.stderr)
 
     def test_project_settings_refuse(self) -> None:
         (self.work / ".claude").mkdir()

@@ -31,7 +31,7 @@ Not for: a single generated clip (use `gemskills:generate-video`), a single imag
 - Claude Code CLI 2.1.219 or newer (for `sandbox.network.strictAllowlist`) with access to Claude Opus 5.5.
 - The Claude Code OS sandbox: Seatbelt on macOS (built in), or `bubblewrap` and `socat` on Linux. The launcher refuses to start without it.
 - Higgsfield API credentials (key ID and secret).
-- ffmpeg 5.1 or newer (`-fps_mode` replaced the deprecated `-vsync`), ffprobe, `curl`, `jq`, and `setsid` (util-linux; `brew install util-linux` on macOS).
+- ffmpeg 5.1 or newer (`-fps_mode` replaced the deprecated `-vsync`), ffprobe, `curl`, `jq`, and one way to start a process in its own session: `setsid` (util-linux), or else `perl` or `python3` (both ship with macOS, which has no `setsid`).
 - The two scripts shipped with this skill (in Claude Code, under `${CLAUDE_SKILL_DIR}/scripts/`): the `hf-api` wrapper and the spend and tamper gate `gate-logger.sh`. No other wrapper is accepted.
 - The user's own Suno account if they want a scored track.
 
@@ -45,7 +45,7 @@ State lives in `~/.hf-api/`, outside the run's working directory, where the codi
 |------|----------|
 | `key` | `ID:SECRET` on one line, mode 600. The wrapper passes it to curl through a header file, never on the command line. |
 | `budget` | The Higgsfield spend cap in USD. |
-| `prices.json` | The price of each model the run may use, copied from Higgsfield's public catalog: `{"<model path>": {"usd_per_second": N}}` (charged on the body's `duration`) or `{"<model path>": {"usd_per_request": N}}`. A model without an entry is never submitted. |
+| `prices.json` | The worst-case price of each model the run may use, from Higgsfield's catalog: `{"<model path>": {"usd_ceiling": N, "usd_per_second": N}}`. `usd_ceiling` (required) is the most one request can cost: the longest duration at the most expensive resolution, mode, and audio option. `usd_per_second` (optional) is the most expensive variant's per-second rate; a request whose body carries a numeric `duration` is priced at duration times that rate, and anything else at the ceiling. A request priced over its ceiling is refused, and so is any price that is missing, not a number, or not above 0. A model without an entry is never submitted. |
 | `ledger.jsonl` | One object per spend or refund, each with a numeric `cost_usd`. |
 | `gate/armed` | PID of the live `gate-logger.sh` that armed the run. |
 | `gate/snapshot.json` | sha256 of `hf-api`, `prices.json`, and `budget`, taken by the gate at start, with read-only copies `gate/prices.json` and `gate/budget`. On every call `hf-api` checks its own sha256 and the live price table and budget against the snapshot, refuses (exit 4) on any difference, and prices only from the gate's copies. The gate also trips if any of the three changes. |
@@ -53,8 +53,8 @@ State lives in `~/.hf-api/`, outside the run's working directory, where the codi
 | Command | Behavior |
 |---------|----------|
 | `capabilities` | Prints `{"contract": "hf-api/1", "state_dir", "gate_file", "budget_file", "ledger", "probe": true}` for its own state directory. |
-| `generate --model PATH --json BODY` | Refuses (exit 4) unless `gate/armed` names a live `gate-logger.sh` process, the model has a price, and the ledger total plus the estimate stays within `budget`. Then it POSTs the body to `https://platform.higgsfield.ai/<model path>` and appends the request ID, model, parameters, and estimate to the ledger. A clean 4xx rejection is not booked. Any other outcome is booked, including a timeout, because it may have been charged. `generate --probe` runs the same checks without contacting Higgsfield or writing the ledger, and exits 0 when it would submit or 4 when it refuses. |
-| `estimate --model PATH --json BODY` | Prices a request from `prices.json`. |
+| `generate --model PATH --json BODY` | Refuses (exit 4) unless `gate/armed` names a live `gate-logger.sh` process, the model has a price, and the ledger total plus the estimate stays within `budget`. Then, still under the ledger lock, it books a `reserve` entry for the estimate, so parallel generates cannot overspend together, and POSTs the body to `https://api.higgsfield.ai/<model path>` (the host in [Higgsfield's authentication docs](https://docs.higgsfield.ai/docs/authentication.md)) with the reservation as its `Idempotency-Key`. A 2xx with a request ID books a `generate` entry with the request ID, model, parameters, and estimate, and settles the reservation. A 4xx is a rejection before acceptance, which Higgsfield does not charge, so the reservation is released. No response or a 5xx is retried twice with the same key, which Higgsfield dedupes. If it stays ambiguous, the reservation stays booked, because the request may have been accepted and charged. `generate --probe` runs the same checks without contacting Higgsfield or writing the ledger, and exits 0 when it would submit or 4 when it refuses. |
+| `estimate --model PATH --json BODY` | Prices a request from `prices.json` at its worst case. |
 | `status ID` | Polls `/requests/<id>/status` and downloads finished output right away to `./hf-output/<id>/`; do not rely on Higgsfield keeping it. A `failed` or `nsfw` result refunds its estimate in the ledger, once. |
 | `cancel ID` | POSTs `/requests/<id>/cancel`. Higgsfield can cancel only while the request is queued. An accepted cancel refunds the estimate, once. |
 | `balance` | Reports spend and remaining budget from the ledger. The REST API has no balance endpoint, so the ledger is the only record. |
@@ -108,7 +108,7 @@ Keep the subject specific to the current request; never bake an example brand, w
 - ffmpeg and ffprobe stay on the allowlist only because they run inside the sandbox: a crafted command line cannot reach the network (`-method POST`, remote URLs) or the state directory, however it quotes paths.
 - Two separate caps. `HF_BUDGET_USD` (written to `~/.hf-api/budget`) caps Higgsfield spend: `hf-api` refuses past it and the gate kills the run if the ledger goes over it. `--max-budget-usd` caps only model spend.
 
-**Gate (hard precondition).** No spend-capable step runs until the gate is up and verified; any failed check stops the run. The gate (`scripts/gate-logger.sh`) runs detached with `setsid nohup` so it outlives the shell that started it. It writes `ready` once its preconditions hold, writes `armed` only after the run's `system`/`init` event shows `claude-opus-5-5` with 0 MCP servers and 0 skills, and `hf-api generate` refuses without `armed`. Every ledger entry goes to `gate.log`. It removes `armed`, writes the reason to `tripped`, and kills the run's process group on any of these: a tool call before the init check, a changed `hf-api` binary, a rewritten or malformed ledger, Higgsfield spend over `HF_BUDGET_USD`, or a tool call that names the key, ledger, wrapper, gate directory, or a `higgsfield.ai` host. Protected names match only as whole path tokens, so a key file named `key` stops `cat key` but not `ls keyframes/`, and they are matched again with shell quotes and backslashes removed, so `k''ey` or `higgs""field.ai` also trips. It also trips when `prices.json`, `budget`, or its own snapshot changes. The tripwire is a backstop; the OS sandbox is the boundary. The gate also stops the run whenever it exits any other way than a clean end of the run: an unexpected command failure (it runs under `set -e`) or an INT, TERM, or HUP signal. Before the gate starts, the launcher installs the shipped wrapper, checks that the installed copy has the shipped sha256, checks `hf-api capabilities` against the contract above, and requires `hf-api generate --probe` to refuse (exit 4) while no gate is armed. The gate repeats the sha256 check itself, so a wrapper swapped in after install is also refused. The launcher's own exit and signal traps kill the run and the gate.
+**Gate (hard precondition).** No spend-capable step runs until the gate is up and verified; any failed check stops the run. The gate (`scripts/gate-logger.sh`) runs detached in its own session (`setsid`, or `perl` or `python3` calling `setsid()` where `setsid` is missing) so it outlives the shell that started it. It writes `ready` once its preconditions hold, writes `armed` only after the run's `system`/`init` event shows `claude-opus-5-5` with 0 MCP servers and 0 skills, and trips on any `system` fallback event (such as `model_refusal_fallback`) or any assistant message whose `model` is not `claude-opus-5-5`. And `hf-api generate` refuses without `armed`. Every ledger entry goes to `gate.log`. It removes `armed`, writes the reason to `tripped`, and kills the run's process group on any of these: a tool call before the init check, a changed `hf-api` binary, a rewritten or malformed ledger, Higgsfield spend over `HF_BUDGET_USD`, or a tool call that names the key, ledger, wrapper, gate directory, or a `higgsfield.ai` host. Protected names match only as whole path tokens, so a key file named `key` stops `cat key` but not `ls keyframes/`, and they are matched again with shell quotes and backslashes removed, so `k''ey` or `higgs""field.ai` also trips. It also trips when `prices.json`, `budget`, or its own snapshot changes. The tripwire is a backstop; the OS sandbox is the boundary. The gate also stops the run whenever it exits any other way than a clean end of the run: an unexpected command failure (it runs under `set -e`) or an INT, TERM, or HUP signal. Before the gate starts, the launcher installs the shipped wrapper, checks that the installed copy has the shipped sha256, checks `hf-api capabilities` against the contract above, and requires `hf-api generate --probe` to refuse (exit 4) while no gate is armed. The gate repeats the sha256 check itself, so a wrapper swapped in after install is also refused. The launcher's own exit and signal traps kill the run and the gate.
 
 **Key isolation.** The sandbox keeps the key away from the model's Bash commands and the deny rules keep it away from its file tools, but the key is still a file the agent's OS user can read. Full protection needs the key outside that user: run `hf-api` as a separate OS user that owns `~/.hf-api` (the model's user reaches it only through a fixed `sudo -u` rule), or keep the secret in the OS keychain. The launcher refuses to start when it can see the key is exposed: the key is not a regular file owned by you with mode 600 or 400, the state directory is not mode 700, the state directory sits inside the working directory, the working directory holds `.claude` settings, or the generated run settings lack any of the sandbox and deny rules above.
 
@@ -120,7 +120,14 @@ GATE_BIN="$SKILL_BIN/gate-logger.sh"
 HF_STATE="$HOME/.hf-api"                  # key, budget, prices.json, ledger
 HF_GATE_DIR="$HF_STATE/gate" HF_BUDGET_USD=15
 [[ -x $GATE_BIN && -f $SKILL_BIN/hf-api ]] || no_run "shipped gate-logger or hf-api missing"
-for tool in setsid jq curl claude uuidgen; do command -v "$tool" >/dev/null || no_run "$tool missing"; done
+for tool in jq curl claude uuidgen; do command -v "$tool" >/dev/null || no_run "$tool missing"; done
+# Starts a command as the leader of a new session, keeping its PID; stock macOS has no setsid.
+if command -v setsid >/dev/null; then DETACH=(setsid)
+elif command -v perl >/dev/null; then
+  DETACH=(perl -MPOSIX -e 'defined POSIX::setsid() or die "setsid: $!\n"; exec { $ARGV[0] } @ARGV or die "exec $ARGV[0]: $!\n"')
+elif command -v python3 >/dev/null; then
+  DETACH=(python3 -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])')
+else no_run "setsid, perl, or python3 is needed to start the run in its own session"; fi
 if [[ $(uname) == Darwin ]]; then deps=(sandbox-exec); else deps=(bwrap socat); fi
 for tool in "${deps[@]}"; do command -v "$tool" >/dev/null || no_run "$tool missing; the Claude Code sandbox cannot start"; done
 ver=$(claude --version | awk '{print $1}')
@@ -133,7 +140,11 @@ install -m 0555 "$SKILL_BIN/hf-api" "$HF_STATE/bin/hf-api"
 HF_BIN="$HF_STATE/bin/hf-api"
 [[ $(sha "$HF_BIN") == "$(sha "$SKILL_BIN/hf-api")" ]] || no_run "installed hf-api does not match the shipped sha256"
 [[ -s $HF_STATE/key && -s $HF_STATE/prices.json ]] || no_run "put ID:SECRET in $HF_STATE/key and model prices in $HF_STATE/prices.json"
-jq -e 'type == "object" and length > 0' "$HF_STATE/prices.json" > /dev/null || no_run "prices.json is not a price table"
+jq -e 'type == "object" and length > 0 and all(.[]; type == "object"
+    and (keys - ["usd_ceiling", "usd_per_second"] | length) == 0
+    and (.usd_ceiling | type == "number" and . > 0)
+    and ((has("usd_per_second") | not) or (.usd_per_second | type == "number" and . > 0)))' "$HF_STATE/prices.json" > /dev/null \
+  || no_run "prices.json needs a positive usd_ceiling for every model (and a positive usd_per_second where set)"
 
 # Refuse wherever the key is visibly exposed to the model's process.
 [[ -f $HF_STATE/key && ! -L $HF_STATE/key ]] || no_run "the key must be a regular file"
@@ -197,7 +208,7 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM HUP
 
-setsid nohup "$GATE_BIN" --dir "$HF_GATE_DIR" --hf-api "$HF_BIN" \
+"${DETACH[@]}" nohup "$GATE_BIN" --dir "$HF_GATE_DIR" --hf-api "$HF_BIN" \
   --ledger "$HF_STATE/ledger.jsonl" --key "$HF_STATE/key" \
   --budget "$HF_BUDGET_USD" --stream "$PWD/run.jsonl" --model claude-opus-5-5 \
   > gate.out 2>&1 < /dev/null &
@@ -206,7 +217,7 @@ GATE_PID=$(cat "$HF_GATE_DIR/ready" 2>/dev/null) && kill -0 "$GATE_PID" 2>/dev/n
   || { GATE_PID=""; no_run "gate not ready: $(cat gate.out)"; }
 
 SID=$(uuidgen)
-setsid claude -p "$(cat user-prompt.txt)" \
+"${DETACH[@]}" claude -p "$(cat user-prompt.txt)" \
   --model claude-opus-5-5 \
   --session-id "$SID" \
   --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
@@ -238,7 +249,7 @@ Adjust `--allowedTools` to what the edit needs, but keep every added command san
 **If a background render dies,** resume the same session rather than starting over. Start a fresh gate first (the resumed run emits a new `init` event), exactly as above:
 
 ```bash
-setsid claude -p --resume "$SID" "The render stopped. Re-run it in the foreground and continue." \
+"${DETACH[@]}" claude -p --resume "$SID" "The render stopped. Re-run it in the foreground and continue." \
   <same flags as above, minus --session-id>
 ```
 

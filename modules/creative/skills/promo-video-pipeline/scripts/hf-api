@@ -10,8 +10,15 @@
 # State layout:
 #   key          ID:SECRET, one line, mode 600
 #   budget       Higgsfield spend cap in USD
-#   prices.json  {"<model path>": {"usd_per_second": N} | {"usd_per_request": N}}
-#   ledger.jsonl one JSON object per spend or refund, each with numeric cost_usd
+#   prices.json  {"<model path>": {"usd_ceiling": N, "usd_per_second": N}}
+#                usd_ceiling (required) is the most one request can cost: the
+#                longest, highest-resolution, most expensive variant.
+#                usd_per_second (optional) is the most expensive variant's
+#                per-second rate; with it, a request whose body carries a
+#                numeric duration is priced duration * rate, and any other
+#                request is priced at the ceiling. Every price must be > 0.
+#   ledger.jsonl one JSON object per reservation, settlement, or refund, each
+#                with numeric cost_usd
 #   gate/armed   PID of the live gate-logger.sh that armed this run
 #   gate/snapshot.json, gate/prices.json, gate/budget
 #                the gate's start-time copies of prices.json and budget, with
@@ -36,7 +43,9 @@
 set -euo pipefail
 umask 077
 
-BASE="https://platform.higgsfield.ai"
+# REST host from https://docs.higgsfield.ai/docs/authentication.md and
+# https://docs.higgsfield.ai/docs/how-to/introduction.md ("Base URL").
+BASE="https://api.higgsfield.ai"
 self=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/$(basename "${BASH_SOURCE[0]}")
 S=$(dirname "$(dirname "$self")")
 KEY="$S/key" BUDGET_FILE="$S/budget" PRICES="$S/prices.json" LEDGER="$S/ledger.jsonl"
@@ -98,6 +107,7 @@ lock() {
   done
   LOCKED=1
 }
+unlock() { rmdir "$LOCK" 2>/dev/null || true; LOCKED=0; }
 
 # Parse --model and the request body; sets MODEL and BODY.
 MODEL="" BODY="" PROBE=0
@@ -120,16 +130,25 @@ request_args() {
   jq -e 'type == "object"' <<< "$BODY" > /dev/null 2>&1 || die "request body must be a JSON object"
 }
 
-# Price from the local table; a model without an entry is never submitted.
+# Price from the local table at the model's worst case; a model without a
+# valid entry is never submitted.
 estimate() {
   [[ -f $PRICES ]] || refuse "no price table at $PRICES"
-  jq -en --arg m "$MODEL" --argjson body "$BODY" --slurpfile p "$PRICES" '
-    ($p[0][$m] // error("no price for \($m)")) as $e
-    | if ($e.usd_per_request | type) == "number" then $e.usd_per_request
-      elif ($e.usd_per_second | type) == "number" then
-        ($body.duration | if type == "number" and . > 0 then . else error("body.duration (seconds) is required") end)
-        * $e.usd_per_second
-      else error("price entry for \($m) has no usd_per_request or usd_per_second") end' 2>&1
+  jq -ern --arg m "$MODEL" --argjson body "$BODY" --slurpfile p "$PRICES" '
+    def pos: type == "number" and . > 0;
+    ($p[0] | if type == "object" then .[$m] else null end) as $e
+    | if $e == null then error("no price for \($m)")
+      elif ($e | type) != "object" or ($e | keys - ["usd_ceiling", "usd_per_second"] | length) > 0 then
+        error("price entry for \($m) must hold only usd_ceiling and usd_per_second")
+      elif ($e.usd_ceiling | pos | not) then error("price entry for \($m) needs a positive usd_ceiling")
+      elif ($e | has("usd_per_second")) and ($e.usd_per_second | pos | not) then
+        error("usd_per_second for \($m) must be positive")
+      elif ($e | has("usd_per_second")) and ($body.duration | pos) then
+        ($body.duration * $e.usd_per_second) as $c
+        | if $c > $e.usd_ceiling then
+            error("\($body.duration) s at \($e.usd_per_second)/s is over the \($m) ceiling of \($e.usd_ceiling)")
+          else $c end
+      else $e.usd_ceiling end' 2>&1
 }
 
 auth_header() {
@@ -141,12 +160,14 @@ auth_header() {
   printf 'Authorization: Key %s\n' "$cred" > "$HDR"
 }
 
-# call METHOD URL [BODY]: sets CODE and RESP; the key goes through a header file, never argv.
+# call METHOD URL [BODY [IDEMPOTENCY_KEY]]: sets CODE and RESP; the key goes
+# through a header file, never argv.
 call() {
   auth_header
   OUT=$(mktemp "$S/.out.XXXXXX")
   local args=(-sS -o "$OUT" -w '%{http_code}' -X "$1" -H @"$HDR" -H 'Content-Type: application/json' --max-time 120)
   [[ -z ${3:-} ]] || args+=(--data-binary "$3")
+  [[ -z ${4:-} ]] || args+=(-H "Idempotency-Key: $4")
   CODE=$(curl "${args[@]}" "$2") || CODE=000
   rm -f "$HDR"
   RESP=$(cat "$OUT")
@@ -198,15 +219,37 @@ case $cmd in
     (( PROBE == 0 )) || exit 0
     gate_ok || refuse "the gate disarmed before submission"
     snapshot_ok
-    call POST "$BASE/$MODEL" "$BODY"; resp=$RESP
+    # Reserve the worst case under the lock before calling, so concurrent
+    # generates cannot overspend together; the call itself runs unlocked.
+    res="res-$(date +%s)-$$-$RANDOM$RANDOM"
+    record --arg r "$res" --arg m "$MODEL" --argjson body "$BODY" --argjson c "$cost" \
+      '{ts: (now | todate), cmd: "reserve", reservation: $r, model: $m, params: $body, cost_usd: $c}'
+    unlock
+    # Higgsfield dedupes a repeated submission with the same Idempotency-Key,
+    # so an ambiguous failure (no response or 5xx) is retried with it.
+    for wait in 1 2 0; do
+      call POST "$BASE/$MODEL" "$BODY" "$res"
+      [[ $CODE == 000 || $CODE == 5* ]] || break
+      (( wait == 0 )) || sleep "$wait"
+    done
+    resp=$RESP
     rid=$(jq -r '.request_id // empty' <<< "$resp" 2>/dev/null || true)
-    # Anything but a clean 4xx rejection may have been charged, so it is booked.
-    if [[ $CODE != 4* ]]; then
-      record --arg m "$MODEL" --argjson body "$BODY" --argjson c "$cost" --arg id "$rid" --arg code "$CODE" \
-        '{ts: (now | todate), cmd: "generate", request_id: $id, model: $m, params: $body, http: $code, cost_usd: $c}'
+    lock
+    if [[ $CODE == 2* && -n $rid ]]; then
+      record --arg r "$res" --arg m "$MODEL" --argjson body "$BODY" --argjson c "$cost" --arg id "$rid" --arg code "$CODE" \
+        '{ts: (now | todate), cmd: "generate", request_id: $id, reservation: $r, model: $m, params: $body, http: $code, cost_usd: $c}'
+      record --arg r "$res" --argjson c "$cost" '{ts: (now | todate), cmd: "settle", reservation: $r, cost_usd: (0 - $c)}'
+      jq -c '{request_id, status}' <<< "$resp"
+    elif [[ $CODE == 4* ]]; then
+      # A 4xx is a rejection before acceptance; Higgsfield charges nothing.
+      record --arg r "$res" --argjson c "$cost" --arg code "$CODE" \
+        '{ts: (now | todate), cmd: "release", reservation: $r, http: $code, cost_usd: (0 - $c)}'
+      die "generate rejected (HTTP $CODE): $resp" 1
+    else
+      # No response, a 5xx after retries, or a 2xx without a request_id: the
+      # request may have been accepted and charged, so the reservation stays.
+      die "generate failed (HTTP $CODE); reservation $res stays booked: $resp" 1
     fi
-    [[ $CODE == 2* && -n $rid ]] || die "generate failed (HTTP $CODE): $resp" 1
-    jq -c '{request_id, status}' <<< "$resp"
     ;;
 
   status)

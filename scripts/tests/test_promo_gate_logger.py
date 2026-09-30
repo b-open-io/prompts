@@ -29,8 +29,8 @@ exec /usr/bin/realpath "$@"
 INIT = {"type": "system", "subtype": "init", "model": "claude-opus-5-5", "mcp_servers": [], "skills": []}
 
 
-def tool(command: str) -> dict:
-    return {"type": "assistant", "message": {"content": [
+def tool(command: str, model: str = "claude-opus-5-5") -> dict:
+    return {"type": "assistant", "message": {"model": model, "content": [
         {"type": "tool_use", "name": "Bash", "input": {"command": command}}]}}
 
 
@@ -65,7 +65,7 @@ class GateLoggerTest(unittest.TestCase):
         self.key = self.state / "key"
         self.key.write_text("secret\n")
         self.prices = self.state / "prices.json"
-        self.prices.write_text(json.dumps({"kling/v3/pro": {"usd_per_second": 0.1}}))
+        self.prices.write_text(json.dumps({"kling/v3/pro": {"usd_ceiling": 1.5, "usd_per_second": 0.1}}))
         self.budget = self.state / "budget"
         self.budget.write_text("15\n")
         self.dir = self.state / "gate"
@@ -157,7 +157,7 @@ class GateLoggerTest(unittest.TestCase):
 
     def test_price_budget_or_snapshot_change_trips(self) -> None:
         changes = {
-            "prices.json changed": lambda: self.prices.write_text(json.dumps({"kling/v3/pro": {"usd_per_second": 0.001}})),
+            "prices.json changed": lambda: self.prices.write_text(json.dumps({"kling/v3/pro": {"usd_ceiling": 0.001}})),
             "budget changed": lambda: self.budget.write_text("1500\n"),
             "gate snapshot changed": lambda: ((self.dir / "snapshot.json").chmod(0o600), (self.dir / "snapshot.json").write_text("{}")),
             "prices.json changed ": lambda: ((self.dir / "prices.json").chmod(0o600), (self.dir / "prices.json").write_text("{}")),
@@ -183,6 +183,39 @@ class GateLoggerTest(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 2, result.stderr)
         self.assertIn("must hold the --budget amount", result.stderr)
+
+    def test_a_model_switch_trips(self) -> None:
+        cases = {
+            "switched models": {"type": "system", "subtype": "model_refusal_fallback",
+                                "model": "claude-opus-4-8"},
+            "ran on model=claude-opus-4-8": tool("ls", model="claude-opus-4-8"),
+            "ran on model=none": {"type": "assistant", "message": {"content": [{"type": "text", "text": "hi"}]}},
+        }
+        for i, (reason, event) in enumerate(cases.items()):
+            with self.subTest(reason):
+                if i:
+                    self.stop()
+                    self.start()
+                self.arm()
+                self.emit(tool("ls"), event)
+                self.assertEqual(self.gate.wait(timeout=15), 3)
+                self.assertIn(reason, (self.dir / "tripped").read_text())
+                self.assertIsNotNone(self.run_proc.wait(timeout=10))
+
+    def test_refuses_a_price_table_without_positive_ceilings(self) -> None:
+        self.arm()
+        self.assertEqual(self.finish(), 0)
+        for table in ({"m": {"usd_per_second": 0.1}}, {"m": {"usd_ceiling": 0}}, {"m": {"usd_ceiling": "1"}},
+                      {"m": {"usd_ceiling": 1, "usd_per_second": -1}}, {"m": {"usd_ceiling": 1, "usd_per_request": 1}}):
+            with self.subTest(table=table):
+                self.prices.write_text(json.dumps(table))
+                result = subprocess.run(
+                    ["bash", str(GATE), "--dir", str(self.dir), "--hf-api", str(self.hf), "--ledger", str(self.ledger),
+                     "--key", str(self.key), "--budget", "15", "--stream", str(self.stream)],
+                    capture_output=True, text=True, timeout=15, env={**os.environ, "PATH": self.path},
+                )
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertIn("usd_ceiling", result.stderr)
 
     def test_signal_kills_the_run(self) -> None:
         self.arm()
