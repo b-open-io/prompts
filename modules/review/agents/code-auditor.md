@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.24
+version: 1.4.25
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -389,8 +389,12 @@ Lockfiles (`package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock`,
 `*-lock.*` file) are never summarized, wherever they sit. A lockfile diff that
 fits the slice budget is reviewed whole. A larger one is reviewed as a
 filtered diff: first every changed line with context dropped, and if that is
-still over budget, every changed line that names a package, `resolved`,
-`integrity`, `version`, `source`, `checksum`, or a URL. Each run of kept lines
+still over budget, every changed line that names a package, a source or
+URL, a version, a hash, an install script, or a dependency entry: `resolved`
+and Yarn Berry `resolution` (including `file:` and `patch:` sources),
+`integrity`, `checksum`, Composer `shasum`, flake `rev` and `narHash`, npm
+`hasInstallScript`, Gemfile `name (1.2.3)` lines, and every added dependency
+line. Each run of kept lines
 carries its own exact `@@` range and a `lockfile: context dropped` or
 `lockfile: key lines only` tag. If the key lines alone are over budget, or the
 lockfile is binary (`bun.lockb`), the run stops with exit 2. Every pass gets
@@ -487,8 +491,17 @@ CONFIG = re.compile(r"^(package|composer|tsconfig.*|jsconfig.*|plugin|marketplac
 # Lockfiles are never summarized: a changed resolved URL or integrity hash must reach Sol.
 LOCK = re.compile(r"^(.+[.-]lock(\.json|\.ya?ml)?|.+\.lockb|go\.sum|gradle\.lockfile"
                   r"|npm-shrinkwrap\.json)$", re.I)
-KEY = re.compile(rb"^\S|node_modules/|\b(resolved|integrity|version|source|checksum|tarball"
-                 rb"|registry|url|git|hash|sha\d*|name)\b|://", re.I)
+# Names, sources, hashes, install scripts, and dependency entries across npm, Yarn
+# Berry, pnpm, Bun, Cargo, Poetry, uv, Composer, Bundler, Go, and Nix flakes.
+KEY = re.compile(rb"^\S|node_modules/|://|\b(resolved|resolution|integrity|version|source|checksum"
+                 rb"|tarball|registry|url|git|hash|sha\d*|shasum|narHash|rev|ref|name|owner|repo"
+                 rb"|hasInstallScript|\w*install|dependencies|requires|specifiers?|reference|dist|bin"
+                 rb"|patch|file|link|portal|exec|workspace)\b"
+                 rb"|\b(file|patch|link|portal|exec|npm|github|workspace|git\+\w+):"
+                 rb"|\(\s*[\d<>=~!]"
+                 rb"|^\s*\"?@?[\w.\/-]+\"?\s*[:=]\s*\"?[\^~<>=*v]?\d"
+                 rb"|^\s*\"[\w.@\/-]+( [\w.+-]+)?\",?\s*$"
+                 rb"|^\s+[\w.@\/-]+!?\s*$", re.I)
 HUNK = re.compile(rb"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(.*)$", re.S)
 
 

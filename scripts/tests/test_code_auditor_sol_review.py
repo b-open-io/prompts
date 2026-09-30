@@ -407,6 +407,47 @@ class SolReviewScriptTest(Fixture):
             self.assertIn(f'+  integrity "sha512-new{i}"', text)
         self.assert_exact(new, "lockfile: key lines only")
 
+    def test_key_lines_cover_every_lockfile_format(self) -> None:
+        body = re.search(r"^KEY = re\.compile\(.*?re\.I\)$", script(), re.M | re.S)
+        assert body
+        scope: dict = {"re": re}
+        exec(body.group(0), scope)
+        key = scope["KEY"]
+        kept = [
+            '  resolution: "left-pad@file:./vendor/left-pad"',
+            '  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>"',
+            '  checksum: 10c0/abc',
+            '            "shasum": "0f1e2d3c"',
+            '        "rev": "b1a2c3d4e5f6",',
+            '        "narHash": "sha256-AAAA=",',
+            '      "hasInstallScript": true,',
+            '    rack (3.0.8)',
+            '      rack (>= 2.2.4)',
+            '    nokogiri',
+            '        "evil-pkg": "^1.0.0",',
+            '    evil-pkg: 1.0.0',
+            '  "evil-pkg 1.0.0",',
+            '    "postinstall": "node x.js"',
+        ]
+        for line in kept:
+            self.assertTrue(key.search(line.encode()), line)
+        for line in ("  # " + "p" * 50, "  # " + "a" * 50):
+            self.assertFalse(key.search(line.encode()), line)
+
+    def test_huge_berry_lockfile_keeps_resolution_lines(self) -> None:
+        old, new = [], []
+        for i in range(120):
+            old += [f'"pkg{i}@npm:^1":\n', f"  # {'a' * 3000}\n", f'  resolution: "pkg{i}@npm:1.0.0"\n']
+            new += [f'"pkg{i}@npm:^1":\n', f"  # {'b' * 3000}\n", f'  resolution: "pkg{i}@patch:pkg{i}@npm%3A1.0.0#./x.patch"\n']
+        self.lock_pair(old, new)
+        result = self.run_script(MAX="100000", CAP="200000")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        text = self.prompt_text()
+        self.assertNotIn("bbbbb", text)
+        for i in range(120):
+            self.assertIn(f'+  resolution: "pkg{i}@patch:pkg{i}@npm%3A1.0.0#./x.patch"', text)
+        self.assert_exact(new, "lockfile: key lines only")
+
     def test_lockfile_over_budget_even_filtered_stops(self) -> None:
         old = [f'  resolved "https://r.example/{"o" * 3000}{i}"\n' for i in range(120)]
         new = [f'  resolved "https://r.example/{"n" * 3000}{i}"\n' for i in range(120)]
