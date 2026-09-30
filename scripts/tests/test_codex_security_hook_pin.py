@@ -74,6 +74,23 @@ class HookPinTest(unittest.TestCase):
         self.assertIn("could not pin", result.stderr)
         self.assertFalse(self.hook.exists())
 
+    def test_removes_the_hook_when_install_hook_fails_after_writing(self) -> None:
+        result = self.run_recipe(FAKE_EXTRA="false")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("hook removed", result.stderr)
+        self.assertFalse(self.hook.exists())
+
+    def test_removes_the_hook_when_sed_fails(self) -> None:
+        shim = Path(self.tmp.name) / "shim"
+        shim.mkdir()
+        (shim / "sed").write_text("#!/bin/sh\nexit 4\n")
+        (shim / "sed").chmod(0o755)
+        result = self.run_recipe(PATH=f"{shim}{os.pathsep}{self.env['PATH']}")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("hook removed", result.stderr)
+        self.assertFalse(self.hook.exists())
+        self.assertEqual(list(self.hook.parent.glob("*.orig")), [])
+
 
 if __name__ == "__main__":
     unittest.main()

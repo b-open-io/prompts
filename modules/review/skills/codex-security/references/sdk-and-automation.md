@@ -138,16 +138,20 @@ set -eu
 REPO=/path/to/repository
 HOOK=$(git -C "$REPO" rev-parse --path-format=absolute --git-path hooks/pre-commit)
 [ ! -e "$HOOK" ] || { echo "a pre-commit hook already exists at $HOOK; leave it to its owner" >&2; exit 1; }
+PINNED=0
+# Any exit before the pin is verified, including a failed install-hook or sed
+# under set -e, removes whatever hook this recipe wrote.
+trap '[ "$PINNED" = 1 ] || { rm -f "$HOOK" "$HOOK.orig"; echo "could not pin $HOOK to gpt-6-sol at xhigh; hook removed" >&2; }' EXIT
 codex-security install-hook "$REPO" --fail-on-severity high
 # The generated hook is three lines ending in:
 #   exec '<node>' '<cli.js>' scan . --working-tree --fail-on-severity high
 sed -i.orig -E 's/^(exec .* scan \. --working-tree --fail-on-severity [a-z]+)$/\1 --model gpt-6-sol --effort xhigh/' "$HOOK"
 rm -f "$HOOK.orig"
 # Verify: exactly one exec line, pinned, and nothing else changed.
-[ "$(wc -l < "$HOOK" | tr -d ' ')" = 3 ] \
-  && [ "$(grep -c '^exec ' "$HOOK")" = 1 ] \
-  && grep -Eq '^exec .* scan \. --working-tree --fail-on-severity [a-z]+ --model gpt-6-sol --effort xhigh$' "$HOOK" \
-  || { rm -f "$HOOK"; echo "could not pin $HOOK to gpt-6-sol at xhigh; hook removed" >&2; exit 1; }
+[ "$(wc -l < "$HOOK" | tr -d ' ')" = 3 ]
+[ "$(grep -c '^exec ' "$HOOK")" = 1 ]
+grep -Eq '^exec .* scan \. --working-tree --fail-on-severity [a-z]+ --model gpt-6-sol --effort xhigh$' "$HOOK"
+PINNED=1
 ```
 
 To re-check an installed hook later, run the same `grep -Eq` line against
