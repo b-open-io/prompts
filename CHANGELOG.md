@@ -145,6 +145,24 @@ manifests share the same release version.
   the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
   `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
 
+## [1.1.176] - Pending production promotion
+
+### Fixed
+
+Sixth round of Sol review fixes. Core 1.1.176, creative 0.1.15.
+
+- `promo-video-pipeline` 0.0.8: `hf-api` prices a request per second only
+  when the body has a single top-level `duration` and no multi-shot fields.
+  Kling 3.0 multi-shot requests (`multi_prompt`, `multi_shots`) bill the sum
+  of shot durations, so they now book the model's ceiling.
+- A 4xx on a retry that follows a timeout or 5xx now keeps the reservation
+  booked, since the first attempt may already have billed.
+- Budget checks in `hf-api` and `gate-logger.sh` allow an exact fit
+  (for example 0.1 x 3 against 0.3) instead of refusing on float rounding.
+- The detach helper treats a failed Perl `POSIX::setsid()` (which returns
+  -1) as an error. The `prices.json` docs say `usd_per_second` must be the
+  most expensive variant's rate.
+
 ## [1.1.175] - Pending production promotion
 
 ### Fixed

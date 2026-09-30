@@ -133,7 +133,7 @@ snap_hash=$(hash_of < "$GATE/snapshot.json")
 ledger_off=$(wc -c < "$LEDGER" | tr -d ' ')
 ledger_hash=$(head_bytes "$ledger_off" "$LEDGER" | hash_of)
 total=$(spent) || fail "ledger $LEDGER is malformed"
-jq -en "$total <= $BUDGET" >/dev/null || fail "ledger already shows \$$total, over the \$$BUDGET budget"
+jq -en "$total <= $BUDGET + 0.000001" >/dev/null || fail "ledger already shows \$$total, over the \$$BUDGET budget"
 stream_off=0
 armed=0
 ending=0
@@ -194,7 +194,7 @@ while :; do
     ledger_off=$off
     ledger_hash=$(head_bytes "$ledger_off" "$LEDGER" | hash_of)
     total=$(spent) || trip "ledger malformed"
-    jq -en "$total <= $BUDGET" >/dev/null || trip "Higgsfield spend \$$total is over the \$$BUDGET budget"
+    jq -en "$total <= $BUDGET + 0.000001" >/dev/null || trip "Higgsfield spend \$$total is over the \$$BUDGET budget"
   fi
 
   off=$(take "$STREAM" "$stream_off") || trip "stream truncated"

@@ -1,6 +1,6 @@
 ---
 name: promo-video-pipeline
-version: 0.0.7
+version: 0.0.8
 description: >-
   Use this when making a motion-graphics promo or showreel, a short social cut or a
   longer commercial cut, from the user's prompt plus optional music. Covers
@@ -45,7 +45,7 @@ State lives in `~/.hf-api/`, outside the run's working directory, where the codi
 |------|----------|
 | `key` | `ID:SECRET` on one line, mode 600. The wrapper passes it to curl through a header file, never on the command line. |
 | `budget` | The Higgsfield spend cap in USD. |
-| `prices.json` | The worst-case price of each model the run may use, from Higgsfield's catalog: `{"<model path>": {"usd_ceiling": N, "usd_per_second": N}}`. `usd_ceiling` (required) is the most one request can cost: the longest duration at the most expensive resolution, mode, and audio option. `usd_per_second` (optional) is the most expensive variant's per-second rate; a request whose body carries a numeric `duration` is priced at duration times that rate, and anything else at the ceiling. A request priced over its ceiling is refused, and so is any price that is missing, not a number, or not above 0. A model without an entry is never submitted. |
+| `prices.json` | The worst-case price of each model the run may use, from Higgsfield's catalog: `{"<model path>": {"usd_ceiling": N, "usd_per_second": N}}`. `usd_ceiling` (required) is the most one request can cost: the longest duration at the most expensive resolution, mode, and audio option. `usd_per_second` (optional) must be the most expensive variant's per-second rate (the wrapper cannot check this, so never enter a cheaper variant's rate); a single-shot request whose body carries one numeric top-level `duration` is priced at duration times that rate, and anything else at the ceiling, including any multi-shot request (a `multi_prompt` or `multi_shots` field, or any nested `duration`), since Higgsfield bills the sum of the shot durations. A request priced over its ceiling is refused, and so is any price that is missing, not a number, or not above 0. A model without an entry is never submitted. |
 | `ledger.jsonl` | One object per spend or refund, each with a numeric `cost_usd`. |
 | `gate/armed` | PID of the live `gate-logger.sh` that armed the run. |
 | `gate/snapshot.json` | sha256 of `hf-api`, `prices.json`, and `budget`, taken by the gate at start, with read-only copies `gate/prices.json` and `gate/budget`. On every call `hf-api` checks its own sha256 and the live price table and budget against the snapshot, refuses (exit 4) on any difference, and prices only from the gate's copies. The gate also trips if any of the three changes. |
@@ -124,7 +124,7 @@ for tool in jq curl claude uuidgen; do command -v "$tool" >/dev/null || no_run "
 # Starts a command as the leader of a new session, keeping its PID; stock macOS has no setsid.
 if command -v setsid >/dev/null; then DETACH=(setsid)
 elif command -v perl >/dev/null; then
-  DETACH=(perl -MPOSIX -e 'defined POSIX::setsid() or die "setsid: $!\n"; exec { $ARGV[0] } @ARGV or die "exec $ARGV[0]: $!\n"')
+  DETACH=(perl -MPOSIX -e 'POSIX::setsid() > 0 or die "setsid: $!\n"; exec { $ARGV[0] } @ARGV or die "exec $ARGV[0]: $!\n"')
 elif command -v python3 >/dev/null; then
   DETACH=(python3 -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])')
 else no_run "setsid, perl, or python3 is needed to start the run in its own session"; fi

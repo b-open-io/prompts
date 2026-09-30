@@ -143,7 +143,12 @@ estimate() {
       elif ($e.usd_ceiling | pos | not) then error("price entry for \($m) needs a positive usd_ceiling")
       elif ($e | has("usd_per_second")) and ($e.usd_per_second | pos | not) then
         error("usd_per_second for \($m) must be positive")
-      elif ($e | has("usd_per_second")) and ($body.duration | pos) then
+      # Per-second pricing only for a single-shot body whose one duration is
+      # the top-level one; multi-shot requests (Kling multi_prompt/multi_shots)
+      # bill the sum of their shot durations, so they take the ceiling.
+      elif ($e | has("usd_per_second")) and ($body.duration | pos)
+        and ([$body | paths | select(.[-1] == "duration")] | length) == 1
+        and ([$body | paths | .[] | strings | select(test("multi|shot"; "i"))] | length) == 0 then
         ($body.duration * $e.usd_per_second) as $c
         | if $c > $e.usd_ceiling then
             error("\($body.duration) s at \($e.usd_per_second)/s is over the \($m) ceiling of \($e.usd_ceiling)")
@@ -214,7 +219,7 @@ case $cmd in
     cost=$(estimate) || refuse "$cost"
     lock
     total=$(spent 2>/dev/null) || refuse "ledger is malformed"
-    jq -en "$total + $cost <= $budget" > /dev/null \
+    jq -en "$total + $cost <= $budget + 0.000001" > /dev/null \
       || refuse "\$$cost on top of \$$total spent is over the \$$budget budget"
     (( PROBE == 0 )) || exit 0
     gate_ok || refuse "the gate disarmed before submission"
@@ -227,9 +232,11 @@ case $cmd in
     unlock
     # Higgsfield dedupes a repeated submission with the same Idempotency-Key,
     # so an ambiguous failure (no response or 5xx) is retried with it.
+    ambiguous=0
     for wait in 1 2 0; do
       call POST "$BASE/$MODEL" "$BODY" "$res"
       [[ $CODE == 000 || $CODE == 5* ]] || break
+      ambiguous=1
       (( wait == 0 )) || sleep "$wait"
     done
     resp=$RESP
@@ -240,14 +247,15 @@ case $cmd in
         '{ts: (now | todate), cmd: "generate", request_id: $id, reservation: $r, model: $m, params: $body, http: $code, cost_usd: $c}'
       record --arg r "$res" --argjson c "$cost" '{ts: (now | todate), cmd: "settle", reservation: $r, cost_usd: (0 - $c)}'
       jq -c '{request_id, status}' <<< "$resp"
-    elif [[ $CODE == 4* ]]; then
+    elif [[ $CODE == 4* && $ambiguous == 0 ]]; then
       # A 4xx is a rejection before acceptance; Higgsfield charges nothing.
       record --arg r "$res" --argjson c "$cost" --arg code "$CODE" \
         '{ts: (now | todate), cmd: "release", reservation: $r, http: $code, cost_usd: (0 - $c)}'
       die "generate rejected (HTTP $CODE): $resp" 1
     else
-      # No response, a 5xx after retries, or a 2xx without a request_id: the
-      # request may have been accepted and charged, so the reservation stays.
+      # No response, a 5xx after retries, a 2xx without a request_id, or a 4xx
+      # after an earlier ambiguous attempt (which may have been accepted): the
+      # request may have been charged, so the reservation stays.
       die "generate failed (HTTP $CODE); reservation $res stays booked: $resp" 1
     fi
     ;;

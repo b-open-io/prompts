@@ -214,6 +214,26 @@ class HfApiTest(unittest.TestCase):
         self.assertEqual(len(self.log.read_text().splitlines()), 3)
         self.assertEqual(len(keys), 1)
 
+    def test_a_rejection_after_an_ambiguous_attempt_keeps_the_reservation(self) -> None:
+        self.arm()
+        codes = Path(self.tmp.name) / "codes"
+        codes.write_text("503\n409\n")
+        result = self.hf_api("generate", "--model", "flat/model", FAKE_RESP='{"detail": "dup"}', FAKE_CODES=str(codes))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("stays booked", result.stderr)
+        self.assertEqual([e["cmd"] for e in self.entries()], ["reserve"])
+        self.assertEqual(self.spent(), 0.25)
+
+    def test_an_exact_budget_fit_is_allowed(self) -> None:
+        (self.state / "budget").write_text("0.3\n")
+        self.arm()
+        self.ledger.write_text('{"cmd": "reserve", "reservation": "res-a", "cost_usd": 0.1}\n'
+                               '{"cmd": "reserve", "reservation": "res-b", "cost_usd": 0.1}\n')
+        (self.state / "prices.json").write_text(json.dumps({"flat/model": {"usd_ceiling": 0.1}}))
+        self.snapshot()
+        result = self.hf_api("generate", "--model", "flat/model", "--probe")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_a_retry_that_succeeds_books_once(self) -> None:
         self.arm()
         codes = Path(self.tmp.name) / "codes"
@@ -256,6 +276,17 @@ class HfApiTest(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertAlmostEqual(json.loads(result.stdout)["cost_usd"], want)
         self.assertAlmostEqual(json.loads(self.hf_api("estimate", "--model", "flat/model", "--json", '{"duration": 30}').stdout)["cost_usd"], 0.25)
+        multi = [
+            '{"duration": 3, "multi_shots": true, "multi_prompt": [{"prompt": "a", "duration": 5}, {"prompt": "b", "duration": 5}, {"prompt": "c", "duration": 5}]}',
+            '{"duration": 3, "multi_prompt": [{"prompt": "a"}]}',
+            '{"duration": 3, "multi_shots": false}',
+            '{"duration": 3, "shots": [{"duration": 5}]}',
+        ]
+        for body in multi:
+            with self.subTest(multi=body):
+                result = self.hf_api("estimate", "--model", "kling/v3/pro", "--json", body)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertAlmostEqual(json.loads(result.stdout)["cost_usd"], 1.5)
         over = self.hf_api("estimate", "--model", "kling/v3/pro", "--json", '{"duration": 16}')
         self.assertEqual(over.returncode, 4)
         self.assertIn("ceiling", over.stderr)
