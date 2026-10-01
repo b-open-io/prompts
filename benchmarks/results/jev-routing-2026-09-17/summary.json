@@ -1,0 +1,58 @@
+{
+  "keyword": {
+    "correct": 69,
+    "trials": 96,
+    "accuracy": 0.71875,
+    "p50_ms": 101.5215,
+    "p95_ms": 113.759,
+    "max_ms": 132.505,
+    "hook_errors": 0,
+    "top2_hits": 81,
+    "categories": {
+      "boundary": {
+        "correct": 12,
+        "trials": 24
+      },
+      "negative": {
+        "correct": 24,
+        "trials": 24
+      },
+      "ordinary": {
+        "correct": 33,
+        "trials": 48
+      }
+    }
+  },
+  "jev": {
+    "correct": 94,
+    "trials": 96,
+    "accuracy": 0.9791666666666666,
+    "p50_ms": 511.84950000000003,
+    "p95_ms": 3168.643,
+    "max_ms": 3188.135,
+    "hook_errors": 0,
+    "top2_hits": 95,
+    "categories": {
+      "boundary": {
+        "correct": 24,
+        "trials": 24
+      },
+      "negative": {
+        "correct": 24,
+        "trials": 24
+      },
+      "ordinary": {
+        "correct": 46,
+        "trials": 48
+      }
+    },
+    "fallbacks": 8
+  },
+  "paired_lift": 0.2604166666666667,
+  "prompt_cluster_bootstrap_95": [
+    0.11458333333333333,
+    0.4166666666666667
+  ],
+  "bootstrap_seed": 4929,
+  "bootstrap_draws": 10000
+}

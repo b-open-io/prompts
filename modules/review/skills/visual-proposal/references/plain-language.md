@@ -140,7 +140,9 @@ budget keeps a card readable next to its neighbors.
 | lens | 6 words | The single axis this judge evaluates. |
 | winner / runner\_up | option names | No ties. A tie hides the reasoning. |
 | deciding\_factor | 1 sentence | A testable statement, not a preference. |
-| flip\_condition | 1 sentence | The form "would flip if <observable fact>". Name a fact somebody can go check. |
+| flip\_condition | 1 sentence | The form "would flip if <observable fact>". Name a fact somebody can go check. Keep this agent-authored when a roster judge runs. |
+| score | 0–3 (weak / lean / clear / decisive anchors) | Optional continuous score; preserve fractional values. When `AI_GATEWAY_API_KEY` is set, `scripts/lens-score-jev.mjs` may fill this from a jev `score`. |
+| attribution | — | Roster judge: avatar, display name, role. Any Jev-derived winner or strength: **scored by jev**, alongside the roster judge if present. |
 
 **CEO**
 

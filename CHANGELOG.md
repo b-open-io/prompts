@@ -6,6 +6,548 @@ manifests share the same release version.
 
 ## Unreleased
 
+No unreleased changes.
+
+## [1.1.177] - 2026-09-30
+
+### Fixed
+
+Pre-promotion fixes from the Sol review of the dev to master promote. Core
+1.1.177, creative 0.1.16.
+
+- `promo-video-pipeline` 0.0.9: `hf-api --body-file` refuses a symlink and
+  resolves the file's real directory, so a planted link cannot send a file
+  from outside the working directory to Higgsfield. The launcher drops the
+  `Write(./**)` allow rule, which Claude Code ignores; `Edit(./**)` already
+  covers the editing tools and `run.jsonl` stays denied.
+- README and the `hf-api` header describe the single-shot per-second rule
+  instead of "any numeric duration".
+- CHANGELOG: entries 1.1.163 to 1.1.176 carry release dates. Promo
+  0.0.1/0.0.2 and the factory-worker fix move to 1.1.170, the duplicate jev
+  lines are dropped (they live in 1.1.166), and the older unversioned block
+  that already reached master is labelled as such.
+
+## [1.1.176] - 2026-09-30
+
+### Fixed
+
+Sixth round of Sol review fixes. Core 1.1.176, creative 0.1.15.
+
+- `promo-video-pipeline` 0.0.8: `hf-api` prices a request per second only
+  when the body has a single top-level `duration` and no multi-shot fields.
+  Kling 3.0 multi-shot requests (`multi_prompt`, `multi_shots`) bill the sum
+  of shot durations, so they now book the model's ceiling.
+- A 4xx on a retry that follows a timeout or 5xx now keeps the reservation
+  booked, since the first attempt may already have billed.
+- Budget checks in `hf-api` and `gate-logger.sh` allow an exact fit
+  (for example 0.1 x 3 against 0.3) instead of refusing on float rounding.
+- The detach helper treats a failed Perl `POSIX::setsid()` (which returns
+  -1) as an error. The `prices.json` docs say `usd_per_second` must be the
+  most expensive variant's rate.
+
+## [1.1.175] - 2026-09-30
+
+### Fixed
+
+Fifth round of Sol review fixes. Core 1.1.175, creative 0.1.14, orchestra
+0.1.36, review 0.1.26.
+
+- `promo-video-pipeline` 0.0.7: `hf-api` calls `https://api.higgsfield.ai`,
+  the host in Higgsfield's authentication docs. Each `prices.json` entry
+  needs a positive `usd_ceiling` (the model's most expensive variant) and
+  may add a positive `usd_per_second`, which prices a request by its
+  `duration` up to the ceiling. Any other price is refused. A generate
+  reserves its cost in the ledger before the call and sends the reservation
+  as the `Idempotency-Key`. A 2xx with a request id books the spend, a 4xx
+  releases the reservation, and a timeout or 5xx is retried with the same
+  key; if it stays ambiguous the reservation stays booked, since Higgsfield
+  may have charged it. The launcher starts its session with `setsid`, or
+  with `perl` or `python3` where `setsid` is missing (stock macOS).
+  `gate-logger.sh` trips on a Claude Code `model_refusal_fallback` event and
+  on any assistant message whose model is not `claude-opus-5-5`.
+- `coordinator` 0.0.25: `run-opencode-review.sh` refuses any allow or ask
+  rule after the reviewer's deny-all rule other than read, grep, glob, and
+  list, so a wildcard grant such as `"evil_*": "allow"` is caught although
+  MCP tools never appear in `opencode debug agent`. It runs only
+  `openai/gpt-6-sol` or `openai/gpt-6-astra` (or their `openrouter/openai/`
+  ids) at `--variant xhigh`. OpenCode's built-in default plugins stay on and
+  are documented: they are provider sign-in loaders, and turning them off
+  removes ChatGPT sign-in for OpenAI.
+- `visual-coordinator` 0.1.17: the detector reads OpenCode's managed
+  settings, `OPENCODE_CONFIG_CONTENT`, `OPENCODE_CONFIG_DIR`, and
+  `OPENCODE_CONFIG` when it reports provider hosts for the main session.
+  The canvas exports an OpenCode review only for an approved review model
+  at xhigh.
+- `code-auditor` 1.4.26: the Sol review summarizes only benchmark data (JSON
+  or JSONL that parses, under `benchmarks/` or a `GENERATED` directory
+  glob). JSON under `fixtures/`, `results/`, or `baselines/` is reviewed.
+
+## [1.1.174] - 2026-09-30
+
+### Fixed
+
+Fourth round of Sol review fixes. Core 1.1.174, creative 0.1.13, orchestra
+0.1.35, review 0.1.25.
+
+- `visual-coordinator` 0.1.16 / `coordinator` 0.0.24: an OpenCode read-only
+  review exports only through the shipped `run-opencode-review.sh`. At
+  dispatch it turns off project config and plugins in the task worktree,
+  pins a primary `bopen-review` agent inline, and runs `opencode debug agent`
+  there. The run starts only when the resolved agent denies every edit,
+  shell, task, and web permission, enables no tool beyond read, grep, glob,
+  and list (so no MCP or custom tool), and the model's provider uses its
+  official host and package. The detector parses JSONC configs, including
+  the default `opencode.jsonc`, and reports each provider's host. An
+  OpenCode main session on Sol or Opus is accepted only on the official
+  host.
+- `run-grok-worker.sh` shares the model policy check with the coordinator,
+  so an id or config alias that resolves to GPT-5.5, GPT-5.6, Grok 4.6, or
+  Fable is refused.
+- `promo-video-pipeline` 0.0.6: `gate-logger.sh` snapshots the sha256 of
+  `hf-api`, `prices.json`, and `budget` at start and keeps read-only copies.
+  `hf-api` checks its own sha256 and both files against that snapshot on
+  every generate and prices only from the gate's copies. The launcher runs
+  the model in the Claude Code OS sandbox with no network and no access to
+  `~/.hf-api`, loads no settings besides its own, and refuses to start when
+  the key is visibly exposed. The tripwire matches names with shell quotes
+  removed. `gate-logger.sh` starts on macOS (no `head -c 0` or
+  `realpath -m`).
+- `code-auditor` 1.4.25: the lockfile key-lines tier keeps Yarn Berry
+  `resolution` lines, Composer `shasum`, flake `rev` and `narHash`, npm
+  `hasInstallScript`, Gemfile version lines, and added dependency entries.
+- `codex-security`: the pre-commit recipe removes its hook on any failed
+  step before the pin is verified. The workspace-write `codex exec` example
+  in `harness-capabilities.md` pins its model.
+
+## [1.1.173] - 2026-09-30
+
+### Fixed
+
+Third round of Sol review fixes. Core 1.1.173, creative 0.1.12, orchestra
+0.1.34, review 0.1.24.
+
+- `code-auditor` 1.4.24: the Sol review recipe never summarizes lockfiles or
+  source maps. A lockfile diff is reviewed in full when it fits; otherwise
+  its changed lines are sent with exact `@@` headers, then only the changed
+  lines that carry a name, version, resolved, integrity, or source key. If
+  even that does not fit, the run stops with no verdict. Only JSONL and JSON
+  under data directories are summarized.
+- `promo-video-pipeline` 0.0.5 ships the `hf-api` wrapper. It checks the
+  armed gate and the budget ledger under a lock before every paid generate,
+  books each accepted request, and refunds failed, NSFW, and cancelled ones.
+  `gate-logger.sh` arms only when the wrapper on PATH has the same sha256 as
+  the shipped one, and any tool call that names `higgsfield.ai` trips the gate.
+- `visual-coordinator` 0.1.15: the observed main session is held to the same
+  model policy as dispatched steps. Fable ids, GPT-5.5, GPT-5.6, Grok 4.6
+  (including `xai/grok-4.7` aliases that resolve to it), `grok-4.7` without
+  credit pressure, and Sol or Opus aliases on a look-alike host are rejected,
+  and the card shows the resolved model. The legacy Grok 4.6 main exemption
+  is removed. An OpenCode reviewer exports only when the detector reads every
+  definition of `BOPEN_OPENCODE_READONLY_AGENT` and each denies edit, bash,
+  and task with no write-capable tool allowed; otherwise the detector reports
+  `opencode_read_only_problem` and the reviewer is omitted with that reason.
+- `codex-security`: the pre-commit hook recipe pins the installed hook to
+  `--model gpt-6-sol --effort xhigh` and verifies the result, removing the
+  hook when the pin does not apply.
+- Tests: the Grok wrapper test runs under the test interpreter and skips
+  without `tomllib`/`tomli`.
+
+## [1.1.172] - 2026-09-30
+
+### Fixed
+
+Second round of Sol review fixes. Core 1.1.172, creative 0.1.11, orchestra
+0.1.33, review 0.1.23.
+
+- `code-auditor` 1.4.23: the Sol review recipe summarizes only data files
+  that pass a content check (JSONL rows that parse, known lockfiles with
+  their generator marker, source maps, and parseable JSON under data
+  directories or a `GENERATED` glob). Code, scripts, prose, and config JSON
+  are always reviewed, whatever `GENERATED` says; an oversized one stops the
+  run. Each piece of a split hunk now carries its own exact `@@` range.
+- `promo-video-pipeline` 0.0.4: the launcher checks `hf-api capabilities`
+  against the documented contract and requires `hf-api generate --probe` to
+  refuse while no gate is armed; its exit and signal traps kill the run and
+  the gate. `gate-logger.sh` runs under `set -e`, disarms and kills the run
+  on any unexpected exit or INT/TERM/HUP, and matches protected names only as
+  whole path tokens (a key named `key` no longer trips on `keyframes/`). The
+  delivery export fits portrait masters inside 1080x1920 so no frame exceeds
+  H.264 level 4.1.
+- `security-ops` 1.0.13 and the `codex-security` references pin
+  `gpt-6-sol` at `xhigh` for scans, CI, the SDK (`codexOverrides`),
+  `bulk-scan`, `validate`, and `patch`; `cli-reference` states the real
+  `gpt-5.6-sol` default.
+- `advisor` 0.0.13: the Claude CLI channel checks `BOPEN_ADVISOR_MODEL`
+  against an allowlist (`claude-opus-5-5`) and rejects any Fable ID; the
+  Codex channel accepts only `gpt-6-sol` and pins `xhigh`.
+- `visual-coordinator` 0.1.14: Codex exports put `--ask-for-approval never`
+  before `exec`; `~/` worktree paths expand through `$HOME`; Grok exports
+  bind the approved provider and target, and `run-grok-worker.sh`
+  (`coordinator` 0.0.23) refuses when `config.toml` has moved the id. Sol and
+  Opus match only the bare id on Claude and Codex, owner-qualified ids on
+  OpenCode, and Grok aliases whose provider and target match. Extra
+  coordinators are held to the Opus pin, qualified Grok ids must resolve
+  through `config.toml`, and OpenCode reviews are staffed only with a
+  detected read-only agent (`BOPEN_OPENCODE_READONLY_AGENT`).
+
+## [1.1.171] - 2026-09-30
+
+### Fixed
+
+Sol review fixes. Core 1.1.171, creative 0.1.10, orchestra 0.1.32, review
+0.1.22.
+
+- `creative:promo-video-pipeline` 0.0.3 ships `scripts/gate-logger.sh` and
+  makes it a hard precondition. The launcher stops unless the gate reports
+  `ready`; the gate arms `hf-api generate` only after the `init` event shows
+  `claude-opus-5-5` with 0 MCP servers and 0 skills, and kills the run on
+  early tool calls, a changed wrapper, a rewritten ledger, Higgsfield spend
+  over the `~/.hf-api/budget` cap, or tool calls naming the key, ledger,
+  wrapper, or API host. File tools are scoped to the working directory with
+  the wrapper state denied.
+- `visual-coordinator` 0.1.13: changing lane, execution provider, or model
+  provider (OpenCode prefix, Grok `base_url` host) clears the disclosure
+  approval; the Coordinate card takes only the detector's selected
+  `<lane>_default` (or Claude's `inherit`), never a Sol catalog entry; a lane
+  missing from `lane_access` is unverified, and `detect-harness.sh` now
+  reports every lane; the Grok export removes its prompt temp file on every
+  exit.
+- `advisor` 0.0.12 / `agent-builder` 1.7.20: removed the Fable advisor
+  route; the Claude CLI channel guide is now `claude-cli.md`.
+- `prompt-router` keys fire counters by kind and id, so a skill and an agent
+  that share an id (`core:front-desk`) no longer exhaust each other.
+- `code-auditor` 1.4.22: the Sol review recipe caps each prompt at `CAP`
+  bytes (default 800000, at most 900000), summarizes generated fixtures
+  instead of slicing them, and splits on file and hunk boundaries with the
+  file and `@@` headers repeated in every piece.
+- `codex-security` pins `gpt-6-sol` explicitly (`--model` for `scan`,
+  `--codex 'model="gpt-6-sol"'` for `validate`); `scan` otherwise defaults
+  to `gpt-5.6-sol`.
+- The isolated install check pins codex 0.156.1, the minimum the Sol review
+  recipe needs.
+
+## [1.1.170] - 2026-09-30
+
+### Added
+
+- `creative:promo-video-pipeline` 0.0.1: motion-graphics promo and showreel
+  pipeline. gpt-image-2.5-flare keyframes via `gemskills:generate-image`, an
+  approval gate before video spend, a budget-capped headless Claude Opus 5.5
+  (`claude-opus-5-5`) edit through the Higgsfield REST API, Suno scoring, beat
+  alignment, -14 LUFS loudness, and QuickTime/Discord-safe H.264 exports.
+  Creative plugin 0.1.8.
+
+### Fixed
+
+- `creative:promo-video-pipeline` 0.0.2: include the original dynamic
+  15-second showreel direction as a reusable base prompt, with the subject
+  supplied per request. Preserve a user's full prompt when one exists.
+  Creative plugin 0.1.9.
+- `scripts/prompts-factory-worker.sh` accepts a git worktree as `repoDir`.
+  It tested `[[ -d "$repo_dir/.git" ]]`, but a worktree's `.git` is a file, so
+  every run stopped with `BAD_REPO_DIR`. It now requires `.git` to exist as a
+  file or directory and asks git (`rev-parse --is-inside-work-tree`, then
+  `--show-toplevel` compared with symlinks resolved). A normal checkout, a
+  worktree, a submodule, a nested repo, and a symlink to any of them pass. A
+  plain or missing directory, a subdirectory of a checkout, a `.git`
+  directory, or a bare repo still exits 2 with `BAD_REPO_DIR`. The worker
+  unsets inherited `GIT_DIR`, `GIT_WORK_TREE`, and the other git location
+  variables at startup, so neither the check nor later git and gh commands
+  can be pointed at a different repo. Paths are resolved with `CDPATH=''`,
+  so a relative `repoDir` is not redirected or rejected when `CDPATH` is set.
+  Covered by `scripts/tests/test_factory_worker_repo_dir.py`, which runs with
+  the user's git config isolated, including inherited `GIT_CONFIG_COUNT` /
+  `GIT_CONFIG_KEY_n` / `GIT_CONFIG_VALUE_n` overrides.
+
+### Changed
+
+- Orchestra 0.1.31 / Review 0.1.21: `claude-opus-5-5` replaces `gpt-6-sol`
+  as the preferred coding worker (Luke's Sep 26 rule supersedes the Sep 23
+  one). Code review stays on `gpt-6-sol` or `gpt-6-astra` at `xhigh`, never at
+  default reasoning. Coordinator, its host and worker guides, agent-builder,
+  the roster policy, software-factory, wave-coordinator, the
+  visual-coordinator docs, `BOPEN_WORKER_MODEL`, and the settings docs
+  follow the new split. A CloudAgent catalog gap now routes Claude Opus 5.5
+  through the Claude Code CLI or Luke's Claude Code desktop harness instead
+  of substituting Sol, GPT-5.6, or Grok. The CLI dispatch guide gains a
+  `claude -p --model claude-opus-5-5` recipe. Advisor defaults are unchanged.
+- Visual coordinator: Build, new, and lane-less worker steps default to
+  `claude-opus-5-5` on the first lane that runs it (host, then Claude Code,
+  OpenCode, Grok CLI). Review steps default to `gpt-6-sol` at `xhigh` on the
+  first lane that runs it (host, then Codex, OpenCode, Grok CLI). Validation
+  now rejects any other worker model, Sol included, and accepts Claude Opus
+  5.5 builders. The detector ranks OpenCode `claude-opus-5-5` ids with Sol.
+- `run-grok-worker.sh` and visual-coordinator messages now describe GPT-5.6
+  as out of policy and point credit-gated Grok work at `claude-opus-5-5`.
+- Codex Security examples (`scan`, `bulk-scan`, `validate`, `--codex` effort
+  override) run at `xhigh`. The cost guidance no longer suggests lowering
+  review effort: narrow scope instead (fewer files, a focused diff, fewer
+  passes), and under usage-credit pressure narrow further or queue it.
+- The Grok worker guide splits read-only research (worker model) from code
+  review, which gets its own `gpt-6-sol --effort xhigh` recipe instead of
+  inheriting `BOPEN_WORKER_MODEL` at default effort.
+- Visual coordinator: changing a step's role in the inspector re-staffs its
+  lane, model, provider, effort, and execution from policy (`restaff`),
+  clears its disclosure approval, and never gives a former review step write
+  access. Changing a step's provider also clears its approval. The detector
+  reports `lane_access.claude: "unverified"` because the Claude CLI has no
+  offline account check for `claude-opus-5-5`; the lane picker and inspector
+  show that state.
+- Review never switches models or lowers effort: every review, validate, and
+  CI-scan recipe pins `--effort xhigh`, and credit pressure narrows scope or
+  queues the review instead of moving it to Grok. The Grok persona guide gets
+  a separate `gpt-6-sol --effort xhigh` review lane.
+- Visual coordinator: any node with `read-only-review` execution, whatever its
+  role, is restaffed onto the review target (`gpt-6-sol` at `xhigh`), must
+  validate as a Sol `xhigh` reviewer, and exports as `actor: "reviewer"`.
+- Review 0.1.21: `code-auditor` 1.4.21 drops its direct xAI review route
+  (`XAI_REVIEW_MODEL`) and takes its verdict from read-only
+  `codex exec -m gpt-6-sol` passes at `xhigh` on every review. Its recipe
+  diffs against the PR merge-base, slices the whole diff (nothing is
+  truncated), and runs one Sol pass per slice, each with the author claims
+  and saved scan evidence. The recipe fails closed:
+  - Missing or invalid input exits 2. That covers a missing `python3`, a
+    `codex` older than 0.156.1 or with an unreadable `--version`, an unset or
+    malformed `PR_NUMBER`, `REPO` or `SCAN_DIR`, an empty or invalid `MAX`,
+    an unresolvable `BASE_REF` (fetched first when needed), a missing
+    merge-base, an empty diff, an unfetchable PR body, and missing scan
+    evidence.
+  - File names stay NUL-delimited, and a trap removes the `mktemp` run
+    directory on every exit, including interrupts.
+  - Each pass uses `codex exec --output-schema` with a strict JSON Schema,
+    `{"findings": [{severity, file, line, title, detail}]}`, where severity is
+    one of `CRITICAL|HIGH|MED|LOW`. `-o`/`--output-last-message` writes the
+    final message to a file.
+  - One standard-library `python3` step parses that file, validates its
+    shape and counts severities. Its `object_pairs_hook` rejects a repeated
+    key at any depth, including one whose values are empty containers, so a
+    duplicate `findings` key can no longer hide a HIGH. It also rejects
+    `NaN`/`Infinity`, non-integer numbers and trailing data. The script
+    computes the verdict from those counts, and no model prose or verdict
+    wording is read.
+  - A failed pass or missing, empty or invalid JSON exits 1 with no verdict.
+  - Any CRITICAL, HIGH or MED finding exits 3 after every finding and a
+    `SUMMARY:` line are printed. Otherwise the run exits 0, and the
+    integration example stops on any non-zero exit.
+  - The recipe has only run against a stub `codex`. The agent file says a
+    live smoke pass on the reviewer machine is required before relying on it.
+  - `scripts/tests/test_code_auditor_sol_review.py` has 25 tests that run the
+    recipe against a temp repo with stub `codex` and `gh`.
+
+  Plugin agent `model` fields accept only Claude models, so Coordinator and `hunter-skeptic-referee`
+  1.1.4 route review verdicts through that explicit Sol reviewer rather than
+  the agents' declared Claude tiers. `security-ops` 1.0.12 pins its scan and
+  validate recipes to `xhigh`.
+
+## [1.1.169] - 2026-09-30
+
+### Changed
+
+- Orchestra 0.1.30 / Review 0.1.20: make `gpt-6-sol` the preferred coding
+  worker and `xhigh` code-review model, set `claude-opus-5-5` as the advisor
+  default, and demote Fable to an explicit legacy channel. Grok is now a
+  usage-credit-pressure fallback only and must use `grok-4.7`; active worker
+  guides, roster policy, visual-workflow templates, claudex, settings
+  injection, and Codex Security guidance no longer default to Grok 4.6 or
+  GPT-5.6 Sol. CloudAgent is explicitly one coding lane: a catalog gap routes
+  GPT-6 Sol through CLI-capable agent computers or desktop harnesses instead
+  of substituting GPT-5.6 Sol or Opus as the coding worker.
+- The visual coordinator no longer takes Build and Review from the host's first
+  listed model. Both default to `gpt-6-sol` (Review at `xhigh`) on the first
+  lane that offers it, and validation rejects GPT-5.6 Sol, Grok models other
+  than `grok-4.7`, Grok workers without usage-credit pressure, Opus coding
+  workers, and reviews that are not GPT-6 Sol at `xhigh`. The detector reports
+  `credit_pressure` from `BOPEN_USAGE_CREDIT_PRESSURE`.
+- `run-grok-worker.sh` rejects every Grok model except `grok-4.7`, requires
+  `--credit-pressure` (or `BOPEN_USAGE_CREDIT_PRESSURE=1`) for it, and rejects
+  `gpt-5.6-sol`. The Grok host guide no longer defaults native roster agents
+  to Grok.
+- Visual coordinator follow-up: a new canvas step is staffed like the default
+  Build card instead of from the host's first listed model, a seeded reviewer
+  without an effort defaults to `xhigh`, and a seeded node without a provider
+  takes the lane's real boundary instead of always `native`.
+- A seeded worker or reviewer with no `lane` is staffed on `gpt-6-sol` through
+  the first lane that offers it instead of the host's model; with no such lane
+  it stays on Codex and fails validation. Validation also rejects any Claude
+  model or Claude lane as a coding worker.
+- Claude and Grok detection now match provider-nested ids such as
+  `openrouter/anthropic/claude-sonnet-4.5` and `openrouter/x-ai/grok-4.6`.
+  OpenCode worker defaults never pick a Claude id, so a Claude-only OpenCode
+  inventory leaves the worker unstaffed and fails validation.
+- An omitted worker or reviewer model defaults only to `gpt-6-sol` (or
+  `grok-4.7` for a builder under usage-credit pressure). When the lane lacks
+  Sol, the model stays empty and validation names the missing lane instead of
+  silently staffing Luna or another catalog entry.
+- Coding uses GPT-6 models only. The visual coordinator drops every `gpt-5.6`
+  model (Sol, Luna, Terra) from lane inventories and rejects it on any node,
+  including explicit choices; `run-grok-worker.sh` rejects bare and
+  provider-qualified `gpt-5.6` ids. Coordinator, Codex worker, CLI dispatch,
+  and roster guidance no longer offer Luna as a lane.
+- The Coordinate card picks only an allowed main model (Claude `inherit`,
+  `grok-4.7` on a Grok host, otherwise `gpt-6-sol`) and stays empty rather than
+  drifting to the next catalog entry. `grok-4.7` is auto-staffed only for
+  builders pinned to the Grok lane under credit pressure, never from an
+  OpenCode, Codex, or Claude catalog. The Grok wrapper applies the 4.7 pin and
+  credit gate to provider-qualified ids such as `xai/grok-4.6`. OpenCode
+  commands pass `--variant xhigh` when the node's effort is `xhigh`.
+- Validation rejects an explicit Grok-family worker on any lane other than
+  Grok, with or without credit pressure, so it cannot be exported. The Grok
+  worker guide now requires the wrapper for every Grok model; its raw command
+  shapes serve only non-Grok ids such as `gpt-6-sol` and run the wrapper's
+  model gate before dispatch.
+- Coordinator nodes get the same Grok rules: Grok only on the Grok lane, and
+  only under credit pressure unless the node is the Grok host's own native main
+  session. The export serializer runs validation and withholds every invalid
+  node (and all nodes when the workflow itself is invalid), and Grok-lane
+  exports call `run-grok-worker.sh`, which gains `--effort`, instead of raw
+  `grok -m`.
+- Only the first native coordinator on the host lane counts as the main
+  session; a second Grok coordinator needs credit pressure and exports as a
+  dispatch, not `main-controller`. Validation issues carry a `graph`/`node`
+  scope, so a graph-wide error withholds every node even when its id matches a
+  node id. The Coordinate card shows the detector's configured main model
+  (`models.<lane>_default`, now also reported for Codex), and Build/Review
+  prefer a lane whose Sol was actually detected over a fallback-only lane. The
+  detector reports the installed `grok_worker` path; Grok-lane exports call it
+  directly and are not executable when it is unresolved.
+- The Grok main session stays native `main-controller` through export: a
+  custom-model Grok coordinator ahead of it is a converted dispatch, and a Grok
+  host main on its configured default is never converted. The detector reports
+  `models.grok_default`, lists Grok models under the same auth lane the wrapper
+  uses (reported as `grok_auth` and passed as `--auth`), and no longer adds
+  `config.toml`-only ids the wrapper's preflight would reject.
+- The main session is bound to the observed host main model: when the detector
+  reports `models.<lane>_default`, only a coordinator on that model is the
+  pressure-free native main, so editing Coordinate to `grok-4.7` on a Grok host
+  whose default differs makes it a dispatch that needs credit pressure. The
+  canvas's Ready/Copy gate now uses the serializer's own dispatch plan, so a
+  converted Grok node the export would drop (for example, with no confirmed
+  `grok_auth`) blocks Copy.
+- A Grok host has a pressure-free main only when the detector reported
+  `models.grok_default`; bare `grok-4.7` is never assumed. Every other native
+  Grok-lane node, `grok-4.7` included, exports as a disclosed wrapper
+  shell-out, and the inspector and default staffing mark it external.
+- Exported `provider` reflects the model's real destination: a custom
+  `gpt-6-sol` on the Grok CLI reports the provider behind its `config.toml`
+  `base_url` (new detector field `grok_model_providers`) or `unknown`, never
+  `xai`. `run-grok-worker.sh` applies its GPT-6-only and Grok pin rules to any
+  casing, so `GPT-5.6-LUNA` and `GROK-4.6` are rejected like lowercase ids.
+- Every documented Grok-CLI dispatch (worker guide, persona passing, Grok host
+  guide) now goes through `run-grok-worker.sh`; the raw `grok` recipes and their
+  duplicate case-sensitive gate are gone. The observed native Grok main keeps a
+  detected `grok-4.6` default instead of failing validation; any other use of
+  4.6 is still rejected.
+- Wave Coordinator and the visual-coordinator docs also route Grok-CLI Sol
+  dispatch through `run-grok-worker.sh`; a docs test now fails on any
+  non-negated raw `grok --single`/`-m`/`-p`/`--prompt-file` line across
+  orchestra skills and agents. The inspector lists the observed main's model
+  (such as `grok-4.6`) instead of warning that it was not detected.
+- Every non-main native Grok-lane node converts to a wrapper shell-out even when
+  its model is not in the inventory, and validation requires the detector's
+  `grok models` listing to show a Grok dispatch's model, so an unlisted custom id
+  on a Grok host can no longer export as a native-agent maker.
+- Custom Grok-CLI aliases served by xAI (or pointing at a Grok model) get the
+  Grok credit gate and `grok-4.7` pin, checked against the underlying model the
+  detector now reports as `grok_model_targets`; aliases for `gpt-5.6` models are
+  rejected. `run-grok-worker.sh` reads the same `config.toml` entry at run time
+  and applies the same rules case-insensitively.
+- The detector and wrapper parse Grok `config.toml` with a real TOML parser,
+  so single-quoted entries get the same alias rules; an unparseable file or a
+  listed custom id with no resolvable entry fails closed. The GPT-5.6 target
+  ban now also applies to the observed Grok main; only its Grok pin exemption
+  remains.
+- A listed custom Grok id counts as resolved only when its `config.toml` entry
+  has both a model and a `base_url` host; otherwise validation rejects it and
+  the wrapper exits instead of dispatching to an unknown provider. The observed
+  main's pin exemption now covers only `grok-4.6`; other off-pin versions such
+  as `grok-4.5` or `grok-5.0` are rejected.
+- A custom Grok id also needs an explicit `model` in its entry; the detector and
+  wrapper no longer assume it serves its own id. Provider-qualified xAI ids
+  (`xai/…`, `openrouter/x-ai/…`) are treated as Grok, so they cannot run on
+  OpenCode or skip the credit gate and `grok-4.7` pin. The wrapper applies the
+  detector's bar to `model` (a blank or padded value is no model) and holds a
+  custom id whose target is a nested xAI id to the same gate.
+- The canvas judges a Grok CLI `gpt-6-sol` alias by the model its entry really
+  runs: one that resolves elsewhere, or through xAI, is never staffed or
+  exported as Sol. The detector keeps slash-qualified Grok ids such as
+  `xai/ox-alpha` whole, and environment maps ignore `Object.prototype` keys.
+- Exports report a Grok CLI id's configured provider first, so an
+  OpenRouter-backed `openrouter/x-ai/grok-4.7` exports as `openrouter`; `xai` is
+  only the fallback for Grok models with none configured. The model picker no
+  longer crashes on OpenCode provider names such as `__proto__`.
+- An observed Grok host main needs usage-credit pressure like any other Grok
+  use, so an on-pin `grok-4.7` main no longer validates or exports without it.
+  Only a host already running the legacy `grok-4.6` main keeps that session
+  without pressure. This supersedes the earlier pressure-free main notes above.
+
+## [1.1.168] - 2026-09-30
+
+### Fixed
+
+- Jev accepts a skill and agent sharing a qualified id (such as
+  `core:front-desk`) by classifying with resource kind and preserving that kind
+  when selecting the hook hint. The previous validation rejected the installed
+  228-entry catalog before evaluation.
+- Add a reproducible live routing pilot with frozen cases and raw trials:
+  corrected assisted-hook accuracy 94/96 versus keyword accuracy 69/96.
+  Its 8/96 fallback rate exceeds the predeclared reliability gate; no production
+  accuracy or cost improvement is claimed. See the benchmark report.
+
+## [1.1.167] - 2026-09-30
+
+### Fixed
+
+- Jev helpers can load an explicitly installed AI SDK from `~/.cache/bopen-jev`
+  after plugin extraction. Missing runtime, invalid responses, and timeouts
+  retain the local fallback without exposing provider error text.
+- Prompt routing respects Jev's `NONE` decision and handles malformed helper
+  JSON without losing the keyword fallback.
+- Visual proposal scores retain Jev attribution alongside roster judges.
+  Review plugin 0.1.19; visual-proposal 0.0.18.
+- Reconcile production's Codex display names and icons before promotion.
+
+## [1.1.166] - 2026-09-30
+
+### Changed
+
+- Optional semantic skill/agent routing: when `AI_GATEWAY_API_KEY` is set, `prompt-router` may pick via Vercel AI Gateway `typesafe-ai/jev` (`experimental_evaluate` choice over `router-index` ids ≤255). Missing key or evaluate failure keeps the existing keyword/phrase scorer; SessionStart never depends on Gateway.
+- `visual-proposal` 0.0.17: optional per-lens jev `score`/`choice` when `AI_GATEWAY_API_KEY` is set (attribution “scored by jev” for jev-only lenses). Advocates, diagrams, roster judges, and CEO call remain; missing key keeps the prior agent-only bench. Review plugin 0.1.18.
+
+## [1.1.165] - 2026-09-10
+
+### Changed
+
+- Codex module `displayName`s drop the `bOpen` prefix: Orchestration, Plugin
+  Dev, Review, Web, Creative, MCP, Ops, Research, Public Agents. `core` stays
+  `core`.
+- Codex plugins ship `./assets/logo.png` and `./assets/icon.png` (512×512
+  catalog emblems from bopen.ai) so installed plugins stop showing placeholder
+  icons. Module versions: orchestra 0.1.28, plugin-kit 0.1.10, review 0.1.17,
+  web-dev 0.1.7, creative 0.1.7, mcp-dev 0.1.5, dev-ops 0.1.11, research 0.1.5,
+  brand-rep 0.1.10.
+
+## [1.1.164] - 2026-09-09
+
+### Changed
+
+- Moved `npm-publish` from plugin-kit to dev-ops (`dev-ops:npm-publish` 3.3.1).
+  Auth is `npm login --auth-type=web` plus bun's publish confirm URL. No OTP,
+  no `setup-token.sh`. Core 1.1.164, dev-ops 0.1.10, plugin-kit 0.1.9.
+
+## [1.1.163] - 2026-09-05
+
+### Fixed
+
+- OpenCode preserves scoped Bash/Skill restrictions and source denies while honoring ordered native user overrides. Session context loads once per session; disposed message routing stops without disabling tool guards.
+- Routing probes retain run identity and failures; scoring rejects duplicate cases and incomplete or forbidden routes.
+- Benchmarks isolate tool-free text ablations, discover module skills, reject invalid eval contracts, report unknown usage honestly, and fail on provider or judge errors. Pinned runtime dependencies and deterministic CLI tests cover the executable entrypoint.
+- Plugin-kit 0.1.8 moves prompt-engineer manuals into on-demand module references and corrects authoring permissions, publishing, and benchmark guidance. Component patches: prompt-engineer 2.3.21, agent-auditor 0.1.3, benchmark-skills 2.0.2, skill-publish 1.0.2.
+- Setup 1.0.6 and runtime context distinguish the active host, installed CLIs, and unavailable capabilities. CI enforces core/suite metadata budgets and adapter, hook, benchmark, and extraction checks.
+
+## [Unversioned] - Shipped to master by 2026-09-10
+
+Changes that reached master before they were given a core version.
+
 ### Changed
 
 - Companion copy: gemskills catalog is **0.0.70** (GPT Image 2.5 Flare
@@ -17,7 +559,7 @@ manifests share the same release version.
   is third-party MCP marketing.
 - Leaf (`creative:cartographer` 1.0.6) loads Google's `google-maps-platform` skill
   for Maps JS, Places, Routes, and Street View. Missing skill:
-  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.6.
+  `npx skills add googlemaps/agent-skills`. Creative plugin 0.1.8.
 - humanize 1.0.14 → **1.0.15**: never write "fail closed" / "fail open". Say
   reject, deny, stop, allow, or continue. Removed that slang from the rest of
   this repo.
@@ -108,37 +650,6 @@ manifests share the same release version.
   Codex, Grok Build, OpenCode, and other shell-capable hosts. The shared lane
   documents authentication preflight, an explicit read-only sandbox, model
   overrides, and saved runtime evidence and verdicts.
-
-## [1.1.165] - Pending production promotion
-
-### Changed
-
-- Codex module `displayName`s drop the `bOpen` prefix: Orchestration, Plugin
-  Dev, Review, Web, Creative, MCP, Ops, Research, Public Agents. `core` stays
-  `core`.
-- Codex plugins ship `./assets/logo.png` and `./assets/icon.png` (512×512
-  catalog emblems from bopen.ai) so installed plugins stop showing placeholder
-  icons. Module versions: orchestra 0.1.28, plugin-kit 0.1.10, review 0.1.17,
-  web-dev 0.1.7, creative 0.1.7, mcp-dev 0.1.5, dev-ops 0.1.11, research 0.1.5,
-  brand-rep 0.1.10.
-
-## [1.1.164] - Pending production promotion
-
-### Changed
-
-- Moved `npm-publish` from plugin-kit to dev-ops (`dev-ops:npm-publish` 3.3.1).
-  Auth is `npm login --auth-type=web` plus bun's publish confirm URL. No OTP,
-  no `setup-token.sh`. Core 1.1.164, dev-ops 0.1.10, plugin-kit 0.1.9.
-
-## [1.1.163] - Pending production promotion
-
-### Fixed
-
-- OpenCode preserves scoped Bash/Skill restrictions and source denies while honoring ordered native user overrides. Session context loads once per session; disposed message routing stops without disabling tool guards.
-- Routing probes retain run identity and failures; scoring rejects duplicate cases and incomplete or forbidden routes.
-- Benchmarks isolate tool-free text ablations, discover module skills, reject invalid eval contracts, report unknown usage honestly, and fail on provider or judge errors. Pinned runtime dependencies and deterministic CLI tests cover the executable entrypoint.
-- Plugin-kit 0.1.8 moves prompt-engineer manuals into on-demand module references and corrects authoring permissions, publishing, and benchmark guidance. Component patches: prompt-engineer 2.3.21, agent-auditor 0.1.3, benchmark-skills 2.0.2, skill-publish 1.0.2.
-- Setup 1.0.6 and runtime context distinguish the active host, installed CLIs, and unavailable capabilities. CI enforces core/suite metadata budgets and adapter, hook, benchmark, and extraction checks.
 
 ## [1.1.162] - 2026-09-04
 

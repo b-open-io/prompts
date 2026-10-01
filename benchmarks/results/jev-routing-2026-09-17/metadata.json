@@ -1,0 +1,27 @@
+{
+  "started_at": "2026-09-17T20:45:56.252700+00:00",
+  "cases": 32,
+  "catalog_entries": 228,
+  "repeats": 3,
+  "concurrency": 3,
+  "model": "typesafe-ai/jev",
+  "sdk": "ai@7.0.105",
+  "cost_usd": null,
+  "cost_note": "The production helper does not expose billing telemetry; unknown is not zero.",
+  "git_commit": "23120db496fd7aabdd0147cc81f7516d13d87954",
+  "sha256": {
+    "benchmarks/fixtures/jev-routing-cases.json": "5e65529fd91f9196b4802d423aed067aade2ac7122570c1c8bf36c9471dee5f6",
+    "benchmarks/fixtures/jev-router-index-2026-09-17.json": "5652eb273d23d3739d542db216251fe135a0987028b6576b2033c075e9c210ac",
+    "scripts/route-with-jev.mjs": "1c620a302e0aa5abfd4e51e60861a60bf181cdec4a9791ff29ff72775613e9a5",
+    "hooks/prompt-router.sh": "ac18c880edb4e590b4613dd3c6d3114bbfb7351905ad49bdb1b1536684ef4642"
+  },
+  "acceptance": {
+    "positive_accuracy_min": 0.85,
+    "must_not_regress_baseline": true,
+    "negative_false_positives_max": 0,
+    "fallback_rate_max": 0.05,
+    "hook_p95_ms_max": 3500
+  },
+  "sampling": "Synthetic fixed prompts; fresh isolated session for each trial. Labels frozen before outputs. Repeats do not increase independent prompt count.",
+  "runner_note": "Runner gained summarize-only after live trials; recorded hook/helper/catalog/case hashes identify the executed classifier."
+}

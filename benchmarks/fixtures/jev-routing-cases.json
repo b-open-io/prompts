@@ -1,0 +1,303 @@
+{
+  "provenance": {
+    "authored": "2026-09-17",
+    "source": "Synthetic prompts authored from the frozen installed-resource catalog before inspecting classifier outputs or routing implementation. These are not sampled production user traffic.",
+    "label_policy": "Prefer the most specific applicable skill. No alternative labels were added. A generic parent agent is not counted as equivalent to the requested specialized workflow.",
+    "limitations": [
+      "Small purposive sample; aggregate accuracy does not estimate production accuracy.",
+      "Sixteen ordinary and eight semantic/boundary positives plus eight simple negatives are intentionally balanced for diagnostic coverage, not usage frequency.",
+      "Some prompts name tools explicitly; others paraphrase their purpose. This is not an adversarial or exhaustive ambiguity suite.",
+      "Labels reflect one author interpretation and have not been independently adjudicated."
+    ]
+  },
+  "cases": [
+    {
+      "id": "ordinary-01",
+      "category": "ordinary",
+      "prompt": "Fetch the text and author of this post: https://x.com/example/status/1840000000000000000",
+      "acceptable": [
+        "skill:research:x-tweet-fetch"
+      ],
+      "rationale": "A specific status URL calls for single-post retrieval, not search or timeline browsing."
+    },
+    {
+      "id": "ordinary-02",
+      "category": "ordinary",
+      "prompt": "Use Scribe to create an invoice for Acme for my August consulting work, totaling $2,400.",
+      "acceptable": [
+        "skill:scribe:invoice"
+      ],
+      "rationale": "Explicit Scribe invoice generation."
+    },
+    {
+      "id": "ordinary-03",
+      "category": "ordinary",
+      "prompt": "Add Plaid Link so customers can connect their bank accounts and import transactions.",
+      "acceptable": [
+        "skill:dev-ops:plaid-integration"
+      ],
+      "rationale": "The requested integration is specifically Plaid financial data access."
+    },
+    {
+      "id": "ordinary-04",
+      "category": "ordinary",
+      "prompt": "Our Next.js app is on an older major version. Upgrade it to the current stable release and check the migration.",
+      "acceptable": [
+        "skill:web-dev:nextjs-upgrade"
+      ],
+      "rationale": "Upgrade of an existing Next.js project, not initial scaffolding."
+    },
+    {
+      "id": "ordinary-05",
+      "category": "ordinary",
+      "prompt": "Render this HTML business card as a print-ready PDF with the correct margins.",
+      "acceptable": [
+        "skill:creative:html-to-pdf"
+      ],
+      "rationale": "HTML-to-PDF print production is the requested workflow."
+    },
+    {
+      "id": "ordinary-06",
+      "category": "ordinary",
+      "prompt": "I want to claim an OpNS name at 1sat.name and associate it with my wallet identity.",
+      "acceptable": [
+        "skill:1sat:opns"
+      ],
+      "rationale": "OpNS claiming and identity binding have a dedicated skill."
+    },
+    {
+      "id": "ordinary-07",
+      "category": "ordinary",
+      "prompt": "Implement Sigma Auth sign-in in our Convex application.",
+      "acceptable": [
+        "skill:sigma-auth:setup-convex"
+      ],
+      "rationale": "The backend-specific Sigma OAuth setup resource matches Convex."
+    },
+    {
+      "id": "ordinary-08",
+      "category": "ordinary",
+      "prompt": "Show me which core hooks are enabled and disable the one that checks repository freshness.",
+      "acceptable": [
+        "skill:core:hook-manager"
+      ],
+      "rationale": "Core hook inventory and toggling are the concrete operations."
+    },
+    {
+      "id": "ordinary-09",
+      "category": "ordinary",
+      "prompt": "Create a terminal demo GIF of our CLI login and status commands for the README.",
+      "acceptable": [
+        "skill:creative:cli-demo-gif"
+      ],
+      "rationale": "Terminal session recording to GIF is a dedicated workflow."
+    },
+    {
+      "id": "ordinary-10",
+      "category": "ordinary",
+      "prompt": "Calculate the lift and confidence interval for our A/B test: control 120 conversions out of 2000, variant 155 out of 2100.",
+      "acceptable": [
+        "skill:product-skills:experiment-stats"
+      ],
+      "rationale": "Statistical evaluation of a marketing experiment has a specific resource."
+    },
+    {
+      "id": "ordinary-11",
+      "category": "ordinary",
+      "prompt": "Get a citation-backed answer from my NotebookLM notebook about the launch requirements.",
+      "acceptable": [
+        "skill:research:notebooklm"
+      ],
+      "rationale": "The user explicitly chooses NotebookLM source retrieval."
+    },
+    {
+      "id": "ordinary-12",
+      "category": "ordinary",
+      "prompt": "Build an evidence register for our SOC 2 auditor and organize the control artifacts we already have.",
+      "acceptable": [
+        "skill:product-skills:soc2-evidence-collection"
+      ],
+      "rationale": "Evidence organization rather than control-gap assessment or policy drafting."
+    },
+    {
+      "id": "ordinary-13",
+      "category": "ordinary",
+      "prompt": "Add GitHub star counts and a star button to the repository section of our landing page.",
+      "acceptable": [
+        "skill:web-dev:github-stars"
+      ],
+      "rationale": "Repository star social proof is the exact specialized skill."
+    },
+    {
+      "id": "ordinary-14",
+      "category": "ordinary",
+      "prompt": "Set up the React Native renderer for json-render so our JSON specs become native mobile components.",
+      "acceptable": [
+        "skill:mcp-dev:json-render-react-native"
+      ],
+      "rationale": "Explicit renderer package selection makes the target unambiguous."
+    },
+    {
+      "id": "ordinary-15",
+      "category": "ordinary",
+      "prompt": "Estimate the BSV transaction fee for a 1,500-byte transaction at our configured satoshis-per-byte rate.",
+      "acceptable": [
+        "skill:bsv-skills:estimate-transaction-fee"
+      ],
+      "rationale": "Fee calculation rather than creating or broadcasting a transaction."
+    },
+    {
+      "id": "ordinary-16",
+      "category": "ordinary",
+      "prompt": "Publish a new version of our package to npm after bumping its patch version.",
+      "acceptable": [
+        "skill:dev-ops:npm-publish"
+      ],
+      "rationale": "A general npm package release rather than a plugin or skill release."
+    },
+    {
+      "id": "boundary-01",
+      "category": "boundary",
+      "prompt": "Show the latest posts from @example, in order; I am interested in what that account has been saying.",
+      "acceptable": [
+        "skill:research:x-user-timeline"
+      ],
+      "rationale": "Account feed retrieval differs from profile lookup and query-based search."
+    },
+    {
+      "id": "boundary-02",
+      "category": "boundary",
+      "prompt": "Our support team has a command-line utility with no redirect handler. Let users approve a short code on another device so the utility can sign them in.",
+      "acceptable": [
+        "skill:sigma-auth:device-authorization"
+      ],
+      "rationale": "Semantic description of device authorization without naming RFC 8628."
+    },
+    {
+      "id": "boundary-03",
+      "category": "boundary",
+      "prompt": "The app made with the Vercel Native SDK already works on my Mac. Package it for other Macs with Developer ID signing, notarization, and stapling.",
+      "acceptable": [
+        "skill:creative:native-sdk-macos-release"
+      ],
+      "rationale": "Distribution of an existing Native SDK application differs from interface design."
+    },
+    {
+      "id": "boundary-04",
+      "category": "boundary",
+      "prompt": "Before changing anything, measure heavy dependencies and oversized assets entirely from this checkout. The machine is offline.",
+      "acceptable": [
+        "skill:web-dev:perf-audit"
+      ],
+      "rationale": "Local-only asset and dependency measurement matches the offline audit skill."
+    },
+    {
+      "id": "boundary-05",
+      "category": "boundary",
+      "prompt": "In Scribe, move this repository under the Acme project and connect that project to the Acme client.",
+      "acceptable": [
+        "skill:scribe:project"
+      ],
+      "rationale": "Project/client association rather than invoice generation or first-time onboarding."
+    },
+    {
+      "id": "boundary-06",
+      "category": "boundary",
+      "prompt": "Take the existing photo and extend the background on both sides so it fits a wide banner without cropping the person.",
+      "acceptable": [
+        "skill:gemskills:edit-image"
+      ],
+      "rationale": "Outpainting existing content differs from new image generation or resolution upscaling."
+    },
+    {
+      "id": "boundary-07",
+      "category": "boundary",
+      "prompt": "The releases are becoming hard to navigate. Turn the changes in this branch into a standalone HTML recap with before-and-after views and annotated diffs.",
+      "acceptable": [
+        "skill:review:visual-review"
+      ],
+      "rationale": "A built-change review artifact differs from a proposal for future work."
+    },
+    {
+      "id": "boundary-08",
+      "category": "boundary",
+      "prompt": "Explain how @1sat/actions separates preparing a wallet action from signing it, including its context and registry.",
+      "acceptable": [
+        "skill:1sat:action-patterns"
+      ],
+      "rationale": "Architecture of the named action library rather than performing a payment."
+    },
+    {
+      "id": "negative-01",
+      "category": "negative",
+      "prompt": "What is 17 multiplied by 23?",
+      "acceptable": [
+        "NONE"
+      ],
+      "rationale": "Basic arithmetic needs no installed specialist resource."
+    },
+    {
+      "id": "negative-02",
+      "category": "negative",
+      "prompt": "Explain why the sky looks blue to a six-year-old.",
+      "acceptable": [
+        "NONE"
+      ],
+      "rationale": "Elementary science explanation, with no research or authored marketing task requested."
+    },
+    {
+      "id": "negative-03",
+      "category": "negative",
+      "prompt": "How many teaspoons are in two tablespoons?",
+      "acceptable": [
+        "NONE"
+      ],
+      "rationale": "Simple cooking unit conversion falls outside the catalog."
+    },
+    {
+      "id": "negative-04",
+      "category": "negative",
+      "prompt": "What is the capital of Portugal?",
+      "acceptable": [
+        "NONE"
+      ],
+      "rationale": "Stable general-knowledge fact needs no specialized workflow."
+    },
+    {
+      "id": "negative-05",
+      "category": "negative",
+      "prompt": "Translate only the word \"cat\" into Spanish.",
+      "acceptable": [
+        "NONE"
+      ],
+      "rationale": "Single-word translation does not call for a writing-style or content-production workflow."
+    },
+    {
+      "id": "negative-06",
+      "category": "negative",
+      "prompt": "In chess, can a knight jump over another piece?",
+      "acceptable": [
+        "NONE"
+      ],
+      "rationale": "Basic board-game rule question is outside the software game-UI resource."
+    },
+    {
+      "id": "negative-07",
+      "category": "negative",
+      "prompt": "Sort these numbers from smallest to largest: 9, 2, 15, 4.",
+      "acceptable": [
+        "NONE"
+      ],
+      "rationale": "Tiny in-message ordering task does not require a data pipeline or chart."
+    },
+    {
+      "id": "negative-08",
+      "category": "negative",
+      "prompt": "How do I fold a fitted sheet?",
+      "acceptable": [
+        "NONE"
+      ],
+      "rationale": "Everyday household instruction outside the installed resource catalog."
+    }
+  ]
+}

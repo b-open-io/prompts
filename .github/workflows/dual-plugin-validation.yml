@@ -55,6 +55,15 @@ jobs:
       - name: Test Codex agent installer safety
         run: python3 scripts/codex-agents/test_install.py -v
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Test Jev helpers against the AI SDK without network calls
+        run: |
+          npm install --prefix "$RUNNER_TEMP/bopen-jev" --no-save --ignore-scripts ai@7.0.105
+          BOPEN_JEV_TEST_SDK_PREFIX="$RUNNER_TEMP/bopen-jev" node scripts/test-jev-helpers.mjs
+
       - name: Test dual-runtime hooks
         run: bash hooks/tests/run-tests.sh
 

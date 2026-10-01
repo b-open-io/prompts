@@ -28,12 +28,14 @@ cleanup policy (after-approved-merge)
 - <from> —memory · carried forward→ <to>
 
 ## Nodes
-- **Work** — Display Name (`plugin:id`)
-  model: grok-4.6 · effort: medium
-- **Implement B** — SHELL-OUT to codex
-  controller: grok · provider/model: openai/gpt-5.6-sol
+- **Work** — SHELL-OUT to claude
+  controller: grok · provider/model: anthropic/claude-opus-5-5 · effort: medium
   disclosure: approved · context: brief, owned paths, test contract
-  command: codex exec ...
+  command: claude --print ...
+- **Review** — SHELL-OUT to codex (read-only)
+  controller: grok · provider/model: openai/gpt-6-sol · effort: xhigh
+  disclosure: approved · context: diff, worker report, claims
+  command: codex exec --sandbox read-only ...
 
 ## Verification gate
 <node id>: <command>
@@ -58,27 +60,32 @@ cleanup policy (after-approved-merge)
       "id": "n2",
       "kind": "process",
       "label": "Work",
-      "lane": "grok",
-      "model": "grok-4.6",
+      "lane": "claude",
+      "model": "claude-opus-5-5",
       "effort": "medium",
       "actor": "maker",
-      "execution": "native-agent",
+      "execution": "external-provider",
       "agentType": null,
       "task": "<prompt>",
-      "shell": false,
-      "command": null
+      "shell": true,
+      "nativeController": "grok",
+      "provider": "anthropic",
+      "disclosure": "approved",
+      "context": "<exact shared context>",
+      "command": "<safe stdin/prompt-file dispatch>"
     },
     {
       "id": "n3",
       "kind": "process",
       "label": "Review",
-      "lane": "claude",
-      "model": "fable",
+      "lane": "codex",
+      "model": "gpt-6-sol",
+      "effort": "xhigh",
       "actor": "reviewer",
       "execution": "read-only-review",
       "shell": true,
       "nativeController": "grok",
-      "provider": "anthropic",
+      "provider": "openai",
       "disclosure": "approved",
       "context": "<exact shared context>",
       "command": "<safe stdin/prompt-file dispatch>"
@@ -100,9 +107,10 @@ cleanup policy (after-approved-merge)
 The current canvas emits executable agent steps as `kind: "process"`.
 Node `lane` is `grok` | `claude` | `codex` | `opencode`.
 A process or gate with `lane` not equal to the host is a shell-out (`shell:
-true`). A shell-out is a subprocess of another vendor's CLI. A Grok native
-node whose detected model is not `grok-4.6` is converted (`converted: true`)
-to a shell-out. A model on no detected lane, or a shell-out whose CLI is not
+true`). A shell-out is a subprocess of another vendor's CLI. Every native
+Grok-lane node except the observed main session — `grok-4.7` included — is
+converted (`converted: true`) to a wrapper shell-out and needs an approved
+disclosure. A model on no detected lane, or a shell-out whose CLI is not
 installed, is omitted from executable `nodes[]` and named under `Not emitted`
 with `kind: "node"` and `omit: true` in `omissions[]`. Every incident handoff is
 also recorded there with `kind: "edge"`, so removing an unavailable reviewer,
@@ -121,6 +129,8 @@ must come from the detected lists for that lane.
 
 `actor` / `execution` are required to distinguish maker/reviewer agents from
 main-controller, deterministic-gate, human-approval, and main-ship actions.
+`actor` is `reviewer` for every node whose canvas execution is
+`read-only-review`, whatever its role.
 Main-only actions never shell out. `gates[]` and `gateNode` are reserved for a
 future deterministic-gate editor and remain empty/null in this release. The
 single workflow-level `correctionBudget` covers
@@ -157,7 +167,11 @@ second dispatch after a failed gate, not a native loop. Never emit a native
 DAG, pipeline, or workflow-engine construct for OpenCode.
 
 **Grok**: emit a Rhai workflow. Follow the bundled `/create-workflow`
-skill. Native `agent().model` is `grok-4.6` only. A non-Grok lane is a
+skill. Native `agent().model` is pinned to `grok-4.7` and allowed for worker
+nodes only under usage-credit pressure; Grok 4.6 is forbidden. Worker nodes
+default to `claude-opus-5-5` shell-outs and review nodes to `gpt-6-sol`
+shell-outs at `xhigh`.
+A non-Grok lane is a
 Grok-CLI or Claude-CLI shell-out. `parallel(jobs)` is the barrier.
 Smoke-check with `{ validate_only: true }` before a real run.
 
@@ -176,8 +190,91 @@ shell-out node and say so, or drop it. Never leave it looking configured.
 The Visual Coordinator's version-2 serializer emits this shape from the live
 canvas. Nodes without an executable boundary are omitted from `nodes[]` and
 listed in `omissions[]` together with every affected edge; the human plan
-repeats those refusals under `Not emitted`. A native Grok node whose model is detected but not `grok-4.6` is
-converted to a Grok CLI shell-out and marked `converted: true`.
+repeats those refusals under `Not emitted`. Every native Grok-lane node other
+than the observed main session is converted to a wrapper shell-out and marked
+`converted: true`.
+
+The serializer runs the same validation that gates Copy. Every validation
+issue carries a `scope`: a `node` issue omits that node with the issues as its
+reason, and a `graph` issue (cycle, broken edge, live-child cap,
+simulation-only host) omits every node, whatever the ids are, so an invalid
+canvas never yields a runnable record. Grok-lane shell-outs call the installed
+`run-grok-worker.sh` by the absolute path the detector reports as
+`grok_worker`, with `--auth` set to the detected `grok_auth`. They
+never emit a raw `grok -m` dispatch, and without both they are not executable.
+The wrapper checks `BOPEN_USAGE_CREDIT_PRESSURE` when the command runs rather
+than baking the credit decision into the export. A node's `provider` is where
+its content goes, not which CLI carries it: a Grok-lane shell-out is `xai` only
+for a Grok model; a custom id such as `gpt-6-sol` reports the provider behind
+its `config.toml` `base_url` (the detector's `grok_model_providers`) or
+`unknown`, and its disclosure must name the real destination. The main session
+(`actor: "main-controller"`) is the first native coordinator on the host lane
+whose model is the observed host main: the detector's `models.<lane>_default`
+when reported. A Grok host has no main at all unless the detector reported
+`models.grok_default`; bare `grok-4.7` is never assumed, so the Coordinate card
+stays empty and fails validation. Other hosts without a reported default use
+their first native host-lane coordinator. A Coordinate card edited away from
+the observed default is a dispatch: on the Grok lane it becomes a disclosed
+wrapper shell-out that needs credit pressure. The observed main is held to the
+same model policy as a dispatch. A main whose model is out of policy (the
+`gpt-5.5` and `gpt-5.6` families, `grok-4.6` in any form, any Fable id, or an
+alias that resolves to one) leaves the Coordinate card empty with an issue
+naming the resolved model the host runs. Any other main must run
+`claude-opus-5-5` or `gpt-6-sol` from its own provider (Claude's `inherit`
+aside), or `grok-4.7` from xAI or OpenRouter under credit pressure; there is no
+legacy Grok exemption. Cards and model pickers show the resolved model, with
+the alias it was reached through (`grok-4.6 (via xai/grok-4.7)`). Every other native Grok-lane node
+converts to a shell-out whether or not its model is listed, and a Grok dispatch
+is never Ready unless the detector's `grok models` listing shows its model. A
+custom alias served by xAI, or pointing at a Grok model (`grok_model_targets`),
+is held to the same credit gate and `grok-4.7` pin as a `grok-*` id, checked
+against the model it points at; an alias for a `gpt-5.6` model is rejected,
+observed main included. The detector parses `config.toml` as real TOML, and a
+listed custom id is refused unless its entry names both an explicit `model`
+and a `base_url` host; an entry is never assumed to serve its own id.
+Provider-qualified xAI ids (`xai/…`, `openrouter/x-ai/…`) are Grok: they run
+only on the Grok lane, under credit pressure, pinned to `grok-4.7`. The
+detector keeps these ids whole. Only a bare `grok-*` id is a Grok CLI
+built-in; a qualified one is a `config.toml` alias and must resolve like any
+custom id, to `grok-4.7` served by xAI or OpenRouter. A Grok CLI id counts as
+Sol only when its entry resolves to `gpt-6-sol` behind OpenAI (or
+`openai/gpt-6-sol` behind OpenRouter), and as the Build model only when it
+resolves to `claude-opus-5-5` behind Anthropic (or `anthropic/claude-opus-5-5`
+behind OpenRouter); anything else is never staffed as Sol or Opus. Claude and
+Codex lanes accept only the bare ids, and OpenCode only
+`openai/gpt-6-sol`, `anthropic/claude-opus-5-5`, or those behind
+`openrouter/`, so `x/gpt-6-sol` is not Sol on any lane. Every coordinator
+other than the observed main session is a dispatch and is held to the same
+coding-worker pin as a builder. The canvas's
+Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
+never reports Ready while the export would drop a node.
+
+Grok shell-outs also pass `--provider` (the detector's `grok_model_providers`
+entry, or `xai` for a bare `grok-*` id) and, for a custom id, `--target` (its
+`grok_model_targets` entry); the wrapper refuses to run if `config.toml` now
+routes the id elsewhere. A Grok id whose provider the detector did not resolve
+is not executable.
+
+Codex shell-outs put `--ask-for-approval never` before `exec` (codex rejects
+it after the subcommand). A worktree path that starts with `~/` is emitted as
+`"$HOME"/'…'` so the shell expands it; the rest of the path stays quoted.
+
+OpenCode has no read-only CLI flag, and `opencode run --dir <worktree>` loads
+that worktree's own `opencode.json(c)`, `.opencode/` agents, tools, and plugins.
+An OpenCode reviewer therefore exports only as
+`bash <opencode_reviewer> --model <provider/model> --dir <worktree> -- <prompt>`,
+where `opencode_reviewer` is the detector's path to the orchestra
+`run-opencode-review.sh`. At dispatch the wrapper turns project config and
+plugins off (`OPENCODE_DISABLE_PROJECT_CONFIG=1`, `--pure`), pins its
+`bopen-review` agent inline (`OPENCODE_CONFIG_CONTENT`: primary mode, `*`
+denied, read/grep/glob/list allowed), and runs `opencode debug agent
+bopen-review` inside the worktree. It starts the review only when OpenCode
+resolves a primary agent whose enabled tools are all read-only and whose edit,
+bash, task, and unknown (MCP or custom) tools are denied, and when the model's
+provider still reaches its own endpoint. Anything it cannot verify exits 3.
+When the detector's own check fails it reports `opencode_read_only_problem`,
+and the reviewer is omitted with that reason; reviews are then staffed on
+another lane.
 
 Generated commands encode task text before passing it through stdin or
 `--prompt-file`; never interpolate backticks, `$()`, backslashes, or newlines

@@ -28,10 +28,10 @@
     {
       "source_name": "agent-builder",
       "source_path": "modules/orchestra/agents/agent-builder.md",
-      "source_version": "1.7.16",
-      "source_hash": "sha256:52a6754fb02bcd53c4324b52c18fb30eaa4ec1edf3b7a9dbeb32ab5590624fe6",
+      "source_version": "1.7.20",
+      "source_hash": "sha256:ff627215f941fb032fe60cff759f6cc3fd1058152abd9373512164f0f39fb622",
       "generated_file": "bopen-agent-builder.toml",
-      "generated_hash": "sha256:e43adebecc513df7866f453341c4d7836d385a5ec882b0e4e7ee85a06da5834f",
+      "generated_hash": "sha256:e71d520298aa71fa8286a0de92356d3459b0d5f4667fd8f3d79e368efefe99c9",
       "agent_name": "bopen_agent_builder",
       "curated": true,
       "default_install": true
@@ -72,10 +72,10 @@
     {
       "source_name": "code-auditor",
       "source_path": "modules/review/agents/code-auditor.md",
-      "source_version": "1.4.13",
-      "source_hash": "sha256:9a25633e53bf57250891b72de74820f84d1a3de5e849259106c7e52f6fe188d6",
+      "source_version": "1.4.26",
+      "source_hash": "sha256:581002a8b5eba151fbbb0cdb2b348a0cc161286072130c2f04b3e4becbc81953",
       "generated_file": "bopen-code-auditor.toml",
-      "generated_hash": "sha256:9e8e8efa3cf9b5ea71a45bf7058740992a5900fd4cb9c381f48e689471215870",
+      "generated_hash": "sha256:0cdc1852cae24383630b5980d3a3b15754c832ba5ecf3e8ab3a9aab5bd1794a3",
       "agent_name": "bopen_code_auditor",
       "curated": true,
       "default_install": true
@@ -303,10 +303,10 @@
     {
       "source_name": "security-ops",
       "source_path": "modules/review/agents/security-ops.md",
-      "source_version": "1.0.11",
-      "source_hash": "sha256:d019c66bdb7ba34f2e5816ec16b8969c86f9a2b2c2bf2a5d9da4e5c2eae3f2f8",
+      "source_version": "1.0.13",
+      "source_hash": "sha256:14e4133dae7969aca5bdd48bc085375dfdd31484646ebe60d1de6881ea19f1da",
       "generated_file": "bopen-security-ops.toml",
-      "generated_hash": "sha256:e4b0974bf056d1d7561862d7503cdd2c8ad7c30c19d30d2133387a26dd52aa86",
+      "generated_hash": "sha256:de1ece04c5f262ea72462b9517166187d86e17a737b497876d4bfb64f028d1c5",
       "agent_name": "bopen_security_ops",
       "curated": false,
       "default_install": false

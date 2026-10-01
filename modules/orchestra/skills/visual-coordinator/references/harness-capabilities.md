@@ -10,9 +10,9 @@ it and the emitted spec fails.
 ## The single most important constraint
 
 **No host `agent().model` slug is a foreign vendor.** Claude stays Claude.
-Codex stays OpenAI-family. Grok 1.0.13 task slugs are `grok-4.6` and
-`grok-4.5` only. Custom ids run through `grok --single -m`, which is a
-shell-out node on the canvas.
+Codex stays OpenAI-family. The approved Grok task slug is `grok-4.7`; Grok 4.6
+must not be offered. Custom ids run through the Grok CLI via
+`run-grok-worker.sh`, which is a shell-out node on the canvas.
 
 Claude Code's workflow harness runs Claude agents only. The `Agent` tool's
 `model` parameter and subagent `model:` frontmatter accept Claude aliases, full
@@ -21,18 +21,32 @@ Claude ids, or `inherit` — nothing else. Codex's non-OpenAI escape hatch
 
 Grok Build's `~/.grok/config.toml` supports `[model."<id>"]` blocks with
 `model`, `base_url`, and `env_key`. Quote the table key when the id contains
-dots. After `grok models` lists that id, `grok --single -m <id>` runs it.
-`workflow` `agent().model` and `spawn_subagent` still reject it. Verified
-2026-08-13: quoted `[model."gpt-5.6-sol"]` with `OPENAI_API_KEY` /
-`api_backend = "responses"` made `grok --single -m gpt-5.6-sol` return
-`native-sol-ok`. A live `workflow` `agent({ model: "gpt-5.6-sol" })` failed
-with `Unknown Task.model slug 'gpt-5.6-sol'. Valid model slugs: grok-4.5, grok-4.6.`
-An unquoted `[model.gpt-5.6-sol]` becomes nested TOML and Grok offers a
-bogus `gpt-5`.
+dots. After `grok models` lists that id, the Grok CLI can run it; dispatch it
+through `run-grok-worker.sh --model <id>`.
+`workflow` `agent().model` and `spawn_subagent` still reject foreign ids. A
+quoted `[model."gpt-6-sol"]` keeps the identifier intact; an unquoted dotted
+TOML key becomes a nested id.
 
-Do not dispatch `grok-4.5`. Inherit `grok-4.6` for Grok-family work. Render
-Sol as a Grok-CLI shell-out node (`grok --single -m gpt-5.6-sol`), not as a
-native slug.
+Grok is a usage-credit-pressure fallback only. Pin Grok-family work to
+`grok-4.7`. Render a Claude Opus worker or Sol reviewer on the Grok lane as a
+Grok-CLI shell-out node (`run-grok-worker.sh --model claude-opus-5-5` or
+`--model gpt-6-sol`), not as a native slug.
+
+The canvas never takes worker defaults from the host's first listed model.
+Build and new or lane-less steps default to `claude-opus-5-5` on the first lane
+that offers it — host, then Claude Code, OpenCode, Grok CLI. Review defaults to
+`gpt-6-sol` at `xhigh` on the first lane that offers it — host, then Codex,
+OpenCode, Grok CLI; OpenCode counts only when the detector reports an
+`opencode_reviewer` (the `run-opencode-review.sh` path, reported only after it
+verified a read-only primary reviewer), since a review there cannot be
+exported without it. Report a missing lane rather than
+substituting Sol for a build, GPT-5.6, or Grok. The observed main coordinator
+keeps the host's main model only when that model is in policy (Opus or Sol
+from its own provider, or `grok-4.7` under credit pressure); GPT-5.5, GPT-5.6,
+Grok 4.6, and Fable mains are rejected. Any other coordinator node is held to
+the coding-worker pin. The detector reports `credit_pressure: true`
+only when `BOPEN_USAGE_CREDIT_PRESSURE=1`; without it, Grok worker nodes fail
+validation.
 
 Therefore a cross-provider step is always one thing: **a shell-out to another
 vendor's CLI, wrapped in a step of the host harness.** Render those nodes
@@ -48,7 +62,7 @@ Verified against official docs and a real persisted run.
 | Primitives | `agent(prompt, opts)`, `pipeline(items, ...stages)`, `parallel(thunks)`, `phase(title)`, `log(msg)`, globals `args` and `budget` |
 | Fan-out | 16 concurrent (runtime-enforced, not configurable), 1,000 agents total per run |
 | Sequencing | `pipeline()` has **no barrier** — item A can be in stage 3 while B is in stage 1. `parallel()` **is** a barrier |
-| Per-step model | Yes: `opts.model` (`opus`/`sonnet`/`haiku`/`fable`/full id/`inherit`) and `opts.effort` (`low`…`max`) |
+| Per-step model | Yes: `opts.model` (`opus`/`sonnet`/`haiku`/full id/`inherit`) and `opts.effort` (`low`…`max`) |
 | Structured output | `opts.schema` (JSON Schema) forces a validated object return |
 | Named agents | `opts.agentType` uses a roster `subagent_type`, inheriting its tools and model |
 | Isolation | `opts.isolation: 'worktree'` per agent; controller owns predictable worktree/branch lifecycle |
@@ -80,7 +94,7 @@ and `~/.grok/docs/user-guide/`. That skill is not in this plugin.
 | Primitives | `agent(prompt, opts)`, `parallel(jobs)` (barrier), `phase(title)`, `log(msg)`, `complete(value)`, `budget()` |
 | No `pipeline()` | A later item cannot advance while an earlier one is still running. `parallel()` waits for the whole panel |
 | Fan-out | Default `agent_budget` 128 (1–1,024). Live children cap 32 by default; larger panels queue |
-| Per-step `agent().model` | `grok-4.6` only. Do not offer `grok-4.5`. Custom ids from `grok models` are Grok-CLI shell-outs |
+| Per-step `agent().model` | `grok-4.7` only, and only for worker nodes under usage-credit pressure (`credit_pressure: true`); never offer Grok 4.6. Custom ids from `grok models` are Grok-CLI shell-outs |
 | Structured output | `opts.output_schema` (JSON Schema map) — supported, same job as Claude `schema` |
 | Named agents | `opts.agent_type` is a roster `subagent_type`. Verified: `research:researcher` and `bopen-tools:researcher` both spawn |
 | Isolation | `opts.isolation_worktree` — private worktree, no automatic merge; preserve the caller's worktree cwd and clean up only after approved merge |
@@ -152,15 +166,25 @@ The main passes its known host as `BOPEN_HOST_HARNESS=opencode`. Inherited
 Discover rather than assume; invoke `scripts/detect-harness.sh` with the
 main-known `BOPEN_HOST_HARNESS` value.
 
-- **Claude**: `opus`, `sonnet`, `haiku`, `fable`, `inherit`, or full ids like
-  `claude-opus-5`. Effort `low|medium|high|xhigh|max`.
+- **Claude**: default advisor `claude-opus-5-5`; native aliases include
+  `opus`, `sonnet`, `haiku`, and `inherit`.
+  Effort `low|medium|high|xhigh|max`. The detector lists these whenever the
+  `claude` CLI exists and reports `lane_access.claude: "unverified"`: there is
+  no offline account check, so a failed Opus dispatch reports the lane
+  unavailable. The detector reports `lane_access` for every lane (Codex from
+  `codex login status`, Grok from a signed-in listing, OpenCode from a provider
+  listing); the graph treats a missing or unknown value as unverified.
 - **Codex**: whatever `model =` says in `~/.codex/config.toml`, plus
   `model_reasoning_effort`. There is no enumeration command; the config is the
   truth. The in-app picker has lagged behind what `-m` accepts.
-- **Grok**: whatever `grok models` prints for the authenticated account, plus
-  any custom `[model.<alias>]` the user registered.
+- **Grok**: exactly what `grok models` prints under the auth lane the wrapper
+  will use — signed-in grok.com first, then `XAI_API_KEY` — reported as
+  `grok_auth` with the `(default)` entry as `models.grok_default`. Registered
+  `[model."<id>"]` entries count only once that listing shows them; ids that
+  exist only in `config.toml` are not offered, because the wrapper's preflight
+  would reject them.
 - **OpenCode**: whatever `opencode models <provider>` prints for the configured
-  providers, referenced as `provider/model`. Custom Muse Spark / Luna lanes are
+  providers, referenced as `provider/model`. Custom Muse Spark lanes are
   `provider:{}` blocks in `opencode.json` — never assume the id without listing it.
 
 ## Shell-out invocations for cross-provider nodes
@@ -169,18 +193,29 @@ The only mechanism that works from every harness. Capture output to a file —
 piping through `tail` truncates the worker's final report irrecoverably.
 
 ```bash
-codex exec --sandbox workspace-write --cd <repo> "<one-line task>" \
+# Codex write — pinned the same way as coordinator/references/workers/cli-dispatch.md
+codex --ask-for-approval never exec --sandbox workspace-write --cd <repo> \
+  --model gpt-6-astra -c model_reasoning_effort="high" "<one-line task>" \
   > /tmp/dispatch-<id>.log 2>&1 &
 
-grok --prompt-file <file> -m "<verified model id>" \
-  --permission-mode acceptEdits --sandbox workspace --cwd <repo>
+# Claude Opus worker from a non-Claude host
+cd <worktree> && claude --print --permission-mode acceptEdits \
+  --model claude-opus-5-5 --effort medium < <file> > <file>.log 2>&1 &
 
-# read-only review — do not add acceptEdits
-grok --prompt-file <file> -m gpt-5.6-sol \
-  --permission-mode plan --sandbox workspace --output-format plain --verbatim
+# Grok lane — always through the orchestra wrapper, which enforces the
+# grok-4.7 pin, the usage-credit gate (BOPEN_USAGE_CREDIT_PRESSURE=1), and the
+# GPT-5.6 ban when the command runs. Never emit a raw `grok -m` dispatch.
+# Custom ids need a quoted [model."<id>"] entry that `grok models` lists.
+bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model claude-opus-5-5 --effort medium \
+  --mode write --cwd <worktree> --branch <branch> --base-ref <ref> \
+  --ownership '<owned paths>' --prompt-file <file> --log <file>.log
+
+# read-only review — the wrapper uses plan permissions in read mode
+bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model gpt-6-sol --effort xhigh \
+  --mode read --cwd <repo> --prompt-file <file> --log <file>.log
 
 claude --print --safe-mode --append-system-prompt-file "$HOME/.claude/communication.md" \
-  --model "${BOPEN_ADVISOR_MODEL:-fable}" \
+  --model "${BOPEN_ADVISOR_MODEL:-claude-opus-5-5}" \
   --permission-mode plan --tools "Read,Grep,Glob" --no-session-persistence
 
 # opencode worker — no `opencode exec` exists; `opencode run` is the entrypoint.
@@ -195,6 +230,13 @@ opencode run --model "<provider>/<model>" --dir <repo> "@general <bounded task>"
 # Require dispatch evidence: a child marker such as `General Agent` — a
 # primary `build` line alone does not prove delegation. A subagent without
 # its own `model` inherits the parent model.
+
+# opencode read-only review — always through the orchestra wrapper, which
+# ignores the worktree's OpenCode config, pins the primary `bopen-review`
+# agent inline, and runs only after `opencode debug agent` inside the worktree
+# proves every enabled tool is read-only (exit 3 otherwise).
+bash "<opencode_reviewer path from detect-harness.sh>" --model openai/gpt-6-sol \
+  --dir <worktree> --variant xhigh -- "<review brief>" > /tmp/review-<id>.log 2>&1 &
 ```
 
 Two caveats worth putting in front of the user:

@@ -77,28 +77,30 @@ sign-in and an API key exist, an interactive scan asks which to use — pass
 
 ```bash
 # Whole repository, report-only, with a spend ceiling
-npx @openai/codex-security scan . --max-cost 5
+npx @openai/codex-security scan . --model gpt-6-sol --effort xhigh --max-cost 5
 
 # Scope to the code that matters — cheaper and sharper than a full sweep
-npx @openai/codex-security scan . --path src/auth --path src/api --max-cost 3
+npx @openai/codex-security scan . --model gpt-6-sol --effort xhigh --path src/auth --path src/api --max-cost 3
 
 # Review a change rather than a codebase
-npx @openai/codex-security scan . --diff origin/main --max-cost 3
-npx @openai/codex-security scan . --working-tree --max-cost 2
+npx @openai/codex-security scan . --model gpt-6-sol --effort xhigh --diff origin/main --max-cost 3
+npx @openai/codex-security scan . --model gpt-6-sol --effort xhigh --working-tree --max-cost 2
 
 # Feed it the context a reviewer would have
-npx @openai/codex-security scan . --knowledge-base docs/threat-model.md
+npx @openai/codex-security scan . --model gpt-6-sol --effort xhigh --knowledge-base docs/threat-model.md
 
 # Exhaustive multi-pass discovery — reduces variance, costs proportionally more
-npx @openai/codex-security scan . --mode deep --max-cost 20
+npx @openai/codex-security scan . --model gpt-6-sol --effort xhigh --mode deep --max-cost 20
 
 # See the plan, the model, and the effort without spending anything
-npx @openai/codex-security scan . --dry-run
+npx @openai/codex-security scan . --model gpt-6-sol --effort xhigh --dry-run
 ```
 
-Scans default to `gpt-5.6-sol` at `xhigh` reasoning effort. `--model` and
-`--effort minimal|low|medium|high|xhigh` change that; drop the effort before you
-drop the model when trimming cost.
+Every example pins the model explicitly, like the code-auditor Sol recipe:
+`scan` defaults to the out-of-policy `gpt-5.6-sol`, so pass `--model gpt-6-sol`;
+`validate` has no `--model` flag, so pass `--codex 'model="gpt-6-sol"'`.
+Security review stays on `gpt-6-sol` at `xhigh`; never lower the effort or
+swap the model to trim cost.
 
 Results land in `--output-dir` (required to be outside the repo). If that
 directory already holds a prior scan, add `--archive-existing` rather than
@@ -151,13 +153,13 @@ closure, so run the loop rather than handing the user a list:
 
 ```bash
 # 1. Is it real? Re-check one finding on its own before spending effort on it.
-npx @openai/codex-security validate FINDINGS_JSON "Missing authz in src/routes.ts:18"
+npx @openai/codex-security validate FINDINGS_JSON "Missing authz in src/routes.ts:18" --codex 'model="gpt-6-sol"' --effort xhigh
 
 # 2. Minimal repository-native fix that closes the boundary.
-npx @openai/codex-security patch FINDINGS_JSON "Missing authz in src/routes.ts:18"
+npx @openai/codex-security patch FINDINGS_JSON "Missing authz in src/routes.ts:18" --codex 'model="gpt-6-sol"' --effort xhigh
 
 # 3. Prove it closed — re-scan the same scope, then compare by root cause.
-npx @openai/codex-security scan . --path src/routes.ts --max-cost 2
+npx @openai/codex-security scan . --path src/routes.ts --model gpt-6-sol --effort xhigh --max-cost 2
 npx @openai/codex-security scans compare "$BEFORE_ID" "$AFTER_ID"
 
 # Not a bug? Record it, so the dismissal survives the next scan.

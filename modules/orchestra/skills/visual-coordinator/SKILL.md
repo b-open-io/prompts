@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.10
+version: 0.1.17
 ---
 
 # Visual Coordinator
@@ -27,11 +27,11 @@ when the user has asked to see or change the plan first.
 ## The rule that governs every control
 
 **No host `agent().model` slug is a foreign vendor.** Claude workflow
-models stay Claude. Codex stays OpenAI-family. Grok 1.0.13 accepts only
-`grok-4.6` (use it) and `grok-4.5` (do not offer it) as `agent().model`.
-A quoted `[model."gpt-5.6-sol"]` makes `grok --single -m gpt-5.6-sol`
-work; that is a Grok-CLI shell-out node, not a native slug. Never render
-a dropdown that implies otherwise.
+models stay Claude. Codex stays OpenAI-family. The approved native Grok model
+is `grok-4.7`; never offer Grok 4.6. A quoted `[model."gpt-6-sol"]` makes
+`gpt-6-sol` a cross-provider Grok-CLI shell-out node, dispatched through
+`run-grok-worker.sh`, not a native slug. Never render a dropdown that implies otherwise. Grok is a
+usage-credit-pressure fallback, not the default coding lane.
 
 Never render a dropdown implying otherwise. A control offering an impossible
 combination is worse than no control, because the user configures around it and
@@ -55,7 +55,16 @@ It reports the host harness, which other CLIs are reachable as shell-out lanes,
 the models each lane actually offers, and the installed agent roster with
 display names. Grok's model list is account-scoped. Codex has no enumeration
 command, so the detector reads its account-scoped local model cache and keeps
-the configured model as a fallback.
+the configured model as a fallback. Add `BOPEN_USAGE_CREDIT_PRESSURE=1` only
+when the user has declared usage-credit pressure; it is the only signal that
+permits Grok worker nodes. Build and new steps default to `claude-opus-5-5`
+and Review to `gpt-6-sol` at `xhigh`, regardless of which model the host lists
+first, preferring a lane whose model was actually detected. The detector also reports each lane's configured main model
+(`models.<lane>_default`) for the Coordinate card; a catalog entry is never
+treated as the main, so without a reported default (or Claude's `inherit`) the
+card stays empty and fails validation. It also reports the absolute
+`grok_worker` wrapper path and `grok_auth` lane that Grok-lane exports use; set
+`BOPEN_GROK_WORKER` only to point at a different installed wrapper.
 
 The host harness is a **fact, not a choice** — it is decided by how the session
 was invoked. Render it as a fixed banner. Everything else is configurable.
@@ -109,8 +118,9 @@ Required on the page:
   provider/model, command), and exact CLI for each shell-out node. Every
   shell-out includes native controller identity, actual provider/model,
   disclosure state, and exact context shared. Copy is disabled while unresolved
-  validation/refusal items remain. A Grok native node whose model is not
-  `grok-4.6` emits as a shell-out.
+  validation/refusal items remain. Every native Grok-lane node except the
+  observed main session (a coordinator on `models.grok_default`) emits as a
+  wrapper shell-out.
 
 ### 3b. Deliver the page
 
@@ -147,7 +157,7 @@ disabled; it never shrinks the infinite canvas into an unreadable editor.
 
 On receiving a pasted spec, translate it for the host — Claude Code maps onto a
 JavaScript workflow script; Grok maps onto a Rhai workflow (bundled
-`/create-workflow`, native `agent_type` + `model`, Sol/Claude nodes as
+`/create-workflow`, native `agent_type` + `model`, Claude Opus/Sol nodes as
 Grok-CLI or Claude-CLI shell-outs);
 Codex becomes an ordered series of `codex exec` dispatches the caller sequences.
 OpenCode becomes an ordered series of caller-sequenced `opencode run`
