@@ -42,6 +42,7 @@ Full installed agent roster with `subagent_type` identifiers and the skills to m
 | **marketer** | `product-skills:marketer` | sonnet | CRO, SEO, copy, launch strategy |
 | **social-media-manager** | `brand-rep:social-media-manager` | sonnet | Owned-account posts, calendars, mention replies, humanize pass |
 | **account-manager** | `brand-rep:account-manager` | sonnet | Public pre-sales, visitor chat, booking |
+| **customer-support** | `core:customer-support` | sonnet | Slack customer support: channel watch, triage, draft replies, escalate bugs/billing/legal |
 | **legal** | `product-skills:legal` | opus | Privacy, compliance, ToS, data protection |
 | **audio-specialist** | `creative:audio-specialist` | sonnet | Audio, xAI/Grok generation, ElevenLabs |
 | **prompt-engineer** | `plugin-kit:prompt-engineer` | sonnet | Slash commands, skills, hooks, YAML frontmatter |

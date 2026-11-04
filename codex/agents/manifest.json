@@ -114,6 +114,17 @@
       "default_install": false
     },
     {
+      "source_name": "customer-support",
+      "source_path": "agents/customer-support.md",
+      "source_version": "1.0.0",
+      "source_hash": "sha256:ee06e855ed842f940987c7e129326188cea75378376cc3be15b46668915be2a4",
+      "generated_file": "bopen-customer-support.toml",
+      "generated_hash": "sha256:ed9d1e52fedd72f39dce8a42e161349744831c2feaa3f3afd21ae6bf6cad4cf5",
+      "agent_name": "bopen_customer_support",
+      "curated": false,
+      "default_install": false
+    },
+    {
       "source_name": "data",
       "source_path": "modules/dev-ops/agents/data.md",
       "source_version": "1.1.17",
@@ -182,10 +193,10 @@
     {
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
-      "source_version": "1.1.15",
-      "source_hash": "sha256:0c6000cec4c575cce113d7c6b0760e082ccf4d50b732f5cf667d22ac881e59a4",
+      "source_version": "1.1.16",
+      "source_hash": "sha256:d8854a69f94612db6e00b316e103caeccb29e8a5a395e7ee0cee7a3d47e3fa02",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:6465743f040d3caae91788fc616a023fab5fe3696a45e22a63a87a55a84a8609",
+      "generated_hash": "sha256:b5fb2eee69ac01b5a8eb133b6bda7805bd029bde1e8e449389c382a7070d4e11",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true

@@ -114,6 +114,9 @@ agents:
   - slug: community-manager
     role: Community Manager
     reportsTo: front-desk
+  - slug: customer-support
+    role: Customer Support
+    reportsTo: front-desk
 skills:
   - charting
   - linear-planning
