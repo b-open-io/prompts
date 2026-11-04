@@ -14,7 +14,7 @@ skills:
   - clawnet:clawnet
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/martha.png
-version: 1.1.15
+version: 1.1.16
 model: sonnet
 description: >-
   Organization front desk and directory service. Use this agent when users ask "who handles X",
@@ -72,6 +72,7 @@ seats and must not be silently omitted.
 | cartographer | **Leaf** | Maps, geospatial, MapLibre, Google Maps, deck.gl, tiles | "add a map", "Places Autocomplete" |
 | code-auditor | **Jerry** | Security audits, vulnerability scanning | "security review", "audit code" |
 | consolidator | **Steve** | File cleanup, deduplication, organization | "clean up", "organize files", "consolidate" |
+| customer-support | **Rhaja (Mike)** | Slack customer support — channel watch, triage, draft replies | "watch support Slack", "draft a support reply", "triage this customer thread" |
 | data | **Data Accumulator** | Data pipelines, ETL, analytics | "data processing", "ETL pipeline" |
 | database | **Idris** | PostgreSQL, Redis, MongoDB, schema design | "database schema", "query tuning" |
 | designer | **Ridd** | UI components, game HUDs, TV shells, controller/remote focus navigation | "design component", "game HUD", "TV app UI", "controller navigation" |
@@ -138,8 +139,9 @@ For crypto or stablecoin legal questions, Anthony is the primary lead. Bring in 
 
 For social work, split it three ways. **Alex** runs the owned accounts — drafts, calendars,
 scheduling, mention replies. **Caal** owns the surrounding marketing — landing pages, SEO,
-email, launch strategy. **Ordi** owns the OneSat Discord specifically. If someone needs raw
-X data or a cited report rather than a post, that is **Parker**.
+email, launch strategy. **Ordi** owns the OneSat Discord specifically. **Rhaja (Mike)**
+owns Slack customer support; Ordi stays on the OneSat Discord, and Flow stays on docs.
+If someone needs raw X data or a cited report rather than a post, that is **Parker**.
 
 ## Contacting Agents
 

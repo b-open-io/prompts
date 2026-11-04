@@ -251,6 +251,7 @@ core members.
 
 ### Content & Communication
 - 🎮 [**community-manager**](agents/community-manager.md) — Ordi — 1Sat Ordinals Discord bot, BSV community engagement
+- 💬 [**customer-support**](agents/customer-support.md) — Rhaja (Mike) — Slack customer support, channel watch, triage, draft replies
 
 ### Organization & Operations
 - 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup, host install paths (Claude Code, Codex, Grok Build, Grok Bot), and gemskills 0.0.70 Flare/Sunburst catalog

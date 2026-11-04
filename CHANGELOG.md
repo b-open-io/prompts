@@ -8,6 +8,15 @@ manifests share the same release version.
 
 No unreleased changes.
 
+## [1.1.178] - 2026-11-04
+
+### Added
+
+- Added `customer-support` agent (display **Rhaja (Mike)**) for Slack
+  customer support triage/drafts; updated front-desk Team Directory +
+  COMPANY.org graph + agent-roster.
+- Synchronized the Claude and Codex core manifests at 1.1.178.
+
 ## [1.1.177] - 2026-09-30
 
 ### Fixed
