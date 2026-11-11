@@ -27,13 +27,14 @@ planning and advisory tier.
   and earlier), GPT-5.5/5.6, and Grok 4.6 stay out of policy; the bare `fable`
   alias is refused wherever a full id can be written. Grok 4.7 stays a last
   resort. `claude-fable-5-2` is not dispatched as a coding worker.
-- The Visual Coordinator now staffs workers from the tier map: "New step",
-  the seeded Build step, restaffed workers, and seeded steps without an effort
-  start at `high` (was `medium`), and reviewers at `xhigh`. Changing a step's
-  lane keeps that tier effort instead of taking the lane's first listed
-  effort (which could be `low`); a lane that does not list it gets the
-  closest listed effort. The canvas guides' Opus shell-out examples pass
-  `--effort high`.
+- The Visual Coordinator now staffs steps from the tier map: "New step", the
+  seeded Build step, restaffed workers, and seeded steps without an effort
+  start at `high` (was `medium`); reviewers stay at `xhigh`. Changing a step's
+  lane now sets the step to its tier effort instead of the lane's first listed
+  effort (which could be `low`). For a new step or a lane change, a lane that
+  does not list the tier effort gets its highest listed effort below it, or
+  its lowest listed effort if none is below. The canvas guides' Opus
+  shell-out examples pass `--effort high`.
 - Review default moves from `gpt-6-sol` to `gpt-6.1-sol` across Coordinator,
   wave-coordinator, software-factory, the Visual Coordinator canvas,
   `run-opencode-review.sh`, Codex Security, code-auditor, security-ops, and
@@ -83,7 +84,9 @@ planning and advisory tier.
 - Synchronized the Claude and Codex core manifests at 1.1.179.
 - The shell policy and the canvas applied the Fable 5.2 exception to the whole
   id, so `claude-fable-5-1/claude-fable-5-2` passed both. Every path segment
-  that names Fable must now be exactly `claude-fable-5-2`.
+  that names Fable must now be exactly `claude-fable-5-2`. The shell policy
+  splits segments with parameter expansion, so the check needs no temporary
+  file on Bash 3.2.
 - Both policies matched GPT-5.5, GPT-5.6, and Grok 4.6 only before `-` or the
   end of the id, so `gpt-5.5:free` and `openrouter/openai/gpt-5.6:free`
   passed. Any non-alphanumeric delimiter now counts.
@@ -101,12 +104,13 @@ planning and advisory tier.
   else the tier default (Haiku low, Sonnet medium, others high). The effort is
   part of the cache key and the report, and preflight requires the CLI flag.
 - A `--skill` benchmark run merged into `benchmarks/latest.json` kept other
-  skills' results but labeled the aggregate with the latest run's model and
-  effort. The aggregate `model` or `effort` is now `mixed` when the merged
-  skills were measured under different ones; each skill keeps its own.
-- `model-policy.sh` split ids with a here-string, which Bash 3.2 backs with a
-  temporary file; if that failed, the id read as in policy. It now splits
-  with parameter expansion, and an id it cannot normalize is refused.
+  skills' results but labeled the aggregate with the latest run's model. The
+  aggregate `model` and `effort` are now each `mixed` unless every merged
+  skill records the run's value; per-skill entries are unchanged. Results
+  published before this release record no effort, so the aggregate effort
+  reads `mixed` until those skills are rerun.
+- `model-policy.sh` read an id it could not lowercase as in policy. It now
+  refuses it.
 
 ## [1.1.178] - 2026-11-04
 

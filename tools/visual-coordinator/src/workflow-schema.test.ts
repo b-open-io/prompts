@@ -1099,9 +1099,15 @@ describe("tier effort for new and re-laned steps", () => {
     expect(tierEffort("external", ["xhigh", "high", "low"])).toBe("high");
   });
 
-  it("falls back to the closest listed effort, preferring the highest one below the tier", () => {
+  it("falls back to the highest listed effort below the tier, else the lowest listed", () => {
     expect(tierEffort("reviewer", ["low", "medium", "high"])).toBe("high");
     expect(tierEffort("builder", ["low", "medium"])).toBe("medium");
     expect(tierEffort("builder", ["max", "xhigh"])).toBe("xhigh");
+  });
+
+  it("prefers a lower listed effort over a closer higher one, so the fallback never escalates cost", () => {
+    expect(tierEffort("builder", ["none", "xhigh"])).toBe("none");
+    expect(tierEffort("builder", ["xhigh", "low"])).toBe("low");
+    expect(tierEffort("reviewer", ["max", "minimal"])).toBe("minimal");
   });
 });

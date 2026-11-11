@@ -66,3 +66,42 @@ test("a --skill merge that keeps skills from another model or effort labels the 
     expect(report.skills.find((skill: {skill_id: string}) => skill.skill_id === "other").effort).toBe("medium");
   } finally { rmSync(root, {recursive:true,force:true}); }
 }, 15_000);
+
+const skillIds = (report: {skills: {skill_id: string}[]}) => report.skills.map((skill) => skill.skill_id).sort();
+
+test("a --skill merge that keeps a skill from another model at the same effort labels only the model mixed", async () => {
+  const root = mkdtempSync(join(tmpdir(), "benchmark-cli-fixture-"));
+  try {
+    const kept = {skill_id: "other", skill_name: "other", model: "claude-sonnet-5-5", effort: "low", eval_count: 1, pass_rate: 1, baseline_pass_rate: 0, evals: []};
+    const {report} = await runFailingFixture(root, {model: "claude-sonnet-5-5", effort: "low", skills: [kept]});
+    expect(skillIds(report)).toEqual(["fixture-plugin:fixture", "other"]);
+    expect(report.model).toBe("mixed");
+    expect(report.effort).toBe("low");
+    expect(report.skills.find((skill: {skill_id: string}) => skill.skill_id === "other").model).toBe("claude-sonnet-5-5");
+  } finally { rmSync(root, {recursive:true,force:true}); }
+}, 15_000);
+
+test("a --skill merge whose kept skills all match the run's model and effort keeps a single label", async () => {
+  const root = mkdtempSync(join(tmpdir(), "benchmark-cli-fixture-"));
+  try {
+    const kept = {skill_id: "other", skill_name: "other", model: "claude-haiku-5-5", effort: "low", eval_count: 1, pass_rate: 1, baseline_pass_rate: 0, evals: []};
+    const {report} = await runFailingFixture(root, {model: "claude-haiku-5-5", effort: "low", skills: [kept]});
+    expect(skillIds(report)).toEqual(["fixture-plugin:fixture", "other"]);
+    expect(report.model).toBe("claude-haiku-5-5");
+    expect(report.effort).toBe("low");
+  } finally { rmSync(root, {recursive:true,force:true}); }
+}, 15_000);
+
+test("rerunning the only mismatched skill turns a mixed aggregate back into a single label", async () => {
+  const root = mkdtempSync(join(tmpdir(), "benchmark-cli-fixture-"));
+  try {
+    // The stale fixture entry is replaced by this run; the kept skill already matches it.
+    const stale = {skill_id: "fixture-plugin:fixture", skill_name: "fixture", model: "claude-sonnet-5-5", effort: "medium", eval_count: 1, pass_rate: 1, baseline_pass_rate: 0, evals: []};
+    const kept = {skill_id: "other", skill_name: "other", model: "claude-haiku-5-5", effort: "low", eval_count: 1, pass_rate: 1, baseline_pass_rate: 0, evals: []};
+    const {report} = await runFailingFixture(root, {model: "mixed", effort: "mixed", skills: [stale, kept]});
+    expect(skillIds(report)).toEqual(["fixture-plugin:fixture", "other"]);
+    expect(report.skills.find((skill: {skill_id: string}) => skill.skill_id === "fixture-plugin:fixture").model).toBe("claude-haiku-5-5");
+    expect(report.model).toBe("claude-haiku-5-5");
+    expect(report.effort).toBe("low");
+  } finally { rmSync(root, {recursive:true,force:true}); }
+}, 15_000);

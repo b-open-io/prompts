@@ -508,7 +508,9 @@ export const reapprove = (environment: WorkflowEnvironment, node: WorkflowNode, 
 
 /**
  * The tier map's effort for a role: reviewers at xhigh, every other step at high. A lane that lists
- * efforts without that one gets its closest listed effort, preferring the highest one below it.
+ * efforts without that one gets its highest listed effort below it, else its lowest listed effort.
+ * This is deliberately not "closest": a nearer higher effort is skipped so the fallback never
+ * silently escalates cost (a builder on ["low", "xhigh"] gets "low").
  */
 export const tierEffort = (role: NodeRole, laneEfforts: readonly WorkflowEffort[] = []): WorkflowEffort => {
   const wanted: WorkflowEffort = role === "reviewer" ? "xhigh" : "high";
