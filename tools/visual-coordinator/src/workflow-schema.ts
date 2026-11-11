@@ -42,6 +42,8 @@ export type WorkflowEnvironment = {
   opencodeReadOnlyProblem: string | null;
   /** Host each OpenCode provider override really reaches; `*` means a config did not parse. */
   opencodeProviderHosts: Record<string, string>;
+  /** API id an OpenCode `models.<key>.id` sends instead of the key, by `provider/key`; absent when unchanged. */
+  opencodeModelIds: Record<string, string>;
   caps: { liveChildren: number | null; agentBudgetDefault: number };
   lanes: Record<string, DetectedLane>;
   roster: unknown[];
@@ -215,6 +217,10 @@ export const parseEnvironment = (value: unknown): WorkflowEnvironment => {
       ? Object.fromEntries(Object.entries(raw.opencode_provider_hosts as Record<string, unknown>)
         .filter((entry): entry is [string, string] => typeof entry[1] === "string"))
       : {}),
+    opencodeModelIds: ownOnly(raw.opencode_model_ids && typeof raw.opencode_model_ids === "object"
+      ? Object.fromEntries(Object.entries(raw.opencode_model_ids as Record<string, unknown>)
+        .filter((entry): entry is [string, string] => typeof entry[1] === "string"))
+      : {}),
     caps: {
       liveChildren: safeNumber(rawCaps.live_children ?? rawCaps.liveChildren, null),
       agentBudgetDefault: safeNumber(rawCaps.agent_budget_default ?? rawCaps.agentBudgetDefault, 0) ?? 0,
@@ -257,7 +263,8 @@ export const SOL = "gpt-6.1-sol";
 /** The previous reviewer id, still accepted where a lane does not list SOL; never a default. */
 export const SOL_LEGACY = "gpt-6-sol";
 const named = (id: string) => (model: string) => model === id || model.endsWith(`/${id}`);
-const solIds = [SOL, SOL_LEGACY];
+/** Every pinned id: an alias or override that names one must run exactly that one. */
+const pinnedIds = [SOL, SOL_LEGACY, FABLE, OPUS, SONNET, HAIKU];
 /** The provider that serves each pinned model, and the routers approved to carry it. */
 const owners: Record<string, string> = { [SOL]: "openai", [SOL_LEGACY]: "openai", [FABLE]: "anthropic", [OPUS]: "anthropic", [SONNET]: "anthropic", [HAIKU]: "anthropic" };
 const routers = ["openrouter"];
@@ -272,6 +279,14 @@ const ownHost = (environment: WorkflowEnvironment, model: string): boolean => {
   const base = own(hosts, provider);
   return base !== undefined && (host === base || host.endsWith(`.${base}`));
 };
+/**
+ * The API id OpenCode really sends for a provider-qualified model: a config's `models.<key>.id`
+ * replaces the key, so `openai/gpt-6.1-sol` can be pointed at gpt-5.5 or the legacy gpt-6-sol.
+ */
+const opencodeTarget = (environment: WorkflowEnvironment, model: string): string => {
+  const id = own(environment.opencodeModelIds, model);
+  return id === undefined ? model : `${model.split("/", 1)[0]}/${id}`;
+};
 /** A provider-qualified id names the model's own provider, optionally behind an approved router. */
 const qualified = (id: string, model: string): boolean =>
   model === `${owners[id]}/${id}` || routers.some((router) => model === `${router}/${owners[id]}/${id}`);
@@ -283,7 +298,7 @@ const qualified = (id: string, model: string): boolean =>
  * qualified id.
  */
 const runsModel = (id: string) => (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): boolean => {
-  if (lane === "opencode") return qualified(id, model) && ownHost(environment, model);
+  if (lane === "opencode") return qualified(id, model) && ownHost(environment, model) && opencodeTarget(environment, model) === model;
   if (lane !== "grok") return model === id;
   if (isGrokFamily(model)) return false;
   const provider = own(environment.grokModelProviders, model);
@@ -306,16 +321,20 @@ const runsBuilder = runsAny(OPUS, SONNET, HAIKU);
 // Out of policy even by explicit choice, main session included: the gpt-5.5 and gpt-5.6 families,
 // grok-4.6 in any form, and every Fable id except claude-fable-5-2 (Fable 5.1 and earlier, and
 // the bare `fable` alias, which does not pin a version).
-const isFable = (model: string) => /(?:^|\/)(?:claude-)?fable(?:$|[-_.])/i.test(model) && !/(?:^|\/)claude-fable-5-2$/i.test(model);
-function isSuperseded(model: string) { return /(?:^|\/)(?:gpt-5\.[56]|grok-4\.6)(?:$|-)/i.test(model) || isFable(model); }
+// The Fable exception applies per path segment: every segment that names Fable must be exactly
+// claude-fable-5-2, so `claude-fable-5-1/claude-fable-5-2` stays refused. Any non-alphanumeric
+// delimiter after a version (`-mini`, `:free`, `@date`) still names that version.
+const isFable = (model: string) => model.split("/").some((segment) => /^(?:claude-)?fable(?:$|[^a-z0-9])/i.test(segment) && segment.toLowerCase() !== FABLE);
+function isSuperseded(model: string) { return /(?:^|\/)(?:gpt-5\.[56]|grok-4\.6)(?:$|[^a-z0-9])/i.test(model) || isFable(model); }
 // Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
 // Provider-qualified xAI ids (xai/…, openrouter/x-ai/…) are Grok whatever the model name says.
 export const isGrokFamily = (model: string) => /(?:^|\/)(?:grok-|x-?ai\/)/i.test(model);
 const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
 const offPolicy = `GPT-5.5, GPT-5.6, Grok 4.6, and Fable ids other than ${FABLE} are out of policy (plan on ${FABLE}, build on ${OPUS}, review on ${SOL}).`;
-/** The model a lane really runs for an id: a Grok CLI id runs its config.toml target. */
+/** The model a lane really runs for an id: a Grok CLI id runs its config.toml target, an OpenCode id its API id. */
 const resolve = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): string =>
-  lane === "grok" ? own(environment.grokModelTargets, model) ?? model : model;
+  lane === "grok" ? own(environment.grokModelTargets, model) ?? model
+    : lane === "opencode" ? opencodeTarget(environment, model) : model;
 /** Display form of a model: the resolved model, with the alias it was reached through. */
 export const resolvedModel = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): string => {
   const target = resolve(environment, lane, model);
@@ -462,7 +481,7 @@ export const defaultWorkflow = (environment: WorkflowEnvironment = defaultEnviro
     title: "Visual Coordinator plan",
     nodes: [
       { id: "coordinate", role: "coordinator", title: "Coordinate", task: "Resolve the plan and assign bounded work.", ownedPaths: ["tools/visual-coordinator"], lane: host, provider: defaultProvider(environment, host, main, "coordinator"), model: main, effort: "high", execution: "write", position: { x: 72, y: 74 }, worktree: worktree("coordinate", "coordinator") },
-      { id: "build", role: "builder", title: "Build", task: "Implement the visual coordinator surface.", ownedPaths: ["tools/visual-coordinator/src"], lane: build.lane, provider: defaultProvider(environment, build.lane, build.model, "builder"), model: build.model, effort: "medium", execution: "write", position: { x: 390, y: 212 }, worktree: worktree("build", "builder") },
+      { id: "build", role: "builder", title: "Build", task: "Implement the visual coordinator surface.", ownedPaths: ["tools/visual-coordinator/src"], lane: build.lane, provider: defaultProvider(environment, build.lane, build.model, "builder"), model: build.model, effort: "high", execution: "write", position: { x: 390, y: 212 }, worktree: worktree("build", "builder") },
       { id: "review", role: "reviewer", title: "Review", task: "Check executable state and export readiness.", ownedPaths: ["tools/visual-coordinator/src/**/*.test.ts"], lane: review.lane, provider: defaultProvider(environment, review.lane, review.model, "reviewer"), model: review.model, effort: "xhigh", execution: "read-only-review", position: { x: 716, y: 74 }, worktree: worktree("review", "reviewer") },
     ],
     edges: [
@@ -501,7 +520,7 @@ export const restaff = (node: WorkflowNode, role: NodeRole, environment: Workflo
     lane: target.lane,
     model: target.model,
     provider: defaultProvider(environment, target.lane, target.model, role),
-    effort: reviewing ? "xhigh" : "medium",
+    effort: reviewing ? "xhigh" : "high",
     execution: reviewing ? "read-only-review" : "write",
     // An approval covers one provider and role, so a restaffed step must be approved again.
     disclosure: undefined,
@@ -553,7 +572,7 @@ export const parseSeed = (value: unknown, environment: WorkflowEnvironment = def
         lane,
         provider,
         model,
-        effort: member(node.effort, efforts, role === "reviewer" ? "xhigh" : "medium"),
+        effort: member(node.effort, efforts, role === "reviewer" ? "xhigh" : "high"),
         execution: member(node.execution, executions, role === "reviewer" ? "read-only-review" : "write"),
         position: {
           x: typeof node.position?.x === "number" && Number.isFinite(node.position.x) ? node.position.x : 120,
@@ -644,9 +663,13 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     const builtinGrok = /^grok-/i.test(model);
     if (node.lane === "grok" && model !== "" && !builtinGrok && (aliasTarget === undefined || aliasProvider === undefined)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses custom id ${model}, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.` });
     if (node.lane === "grok" && isGrokFamily(model) && aliasProvider !== undefined && aliasProvider !== "xai" && !routers.includes(aliasProvider)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry sends content to ${aliasProvider}, not xAI or an approved router.` });
-    // An alias named for one Sol id must run that id: gpt-6-sol aimed at gpt-6.1-sol (or back) is a substitution.
-    const namedSol = solIds.find((id) => named(id)(model));
-    if (node.lane === "grok" && namedSol && aliasTarget !== undefined && !named(namedSol)(aliasTarget)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry runs ${aliasTarget}, not ${namedSol}.` });
+    // An alias named for a pinned id must run that id: gpt-6-sol aimed at gpt-6.1-sol (or back), or
+    // claude-fable-5-2 aimed at Opus, is a substitution that would export work under the wrong label.
+    const namedPin = pinnedIds.find((id) => named(id)(model));
+    if (node.lane === "grok" && namedPin && aliasTarget !== undefined && !named(namedPin)(aliasTarget)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry runs ${aliasTarget}, not ${namedPin}.` });
+    // The same holds for an OpenCode `models.<key>.id` that sends another API id than the one named.
+    const sentId = node.lane === "opencode" ? own(environment.opencodeModelIds, model) : undefined;
+    if (sentId !== undefined) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but the OpenCode config sends ${sentId === "unverified" ? "an unreadable API id" : `API id ${sentId}`}; remove that models.id override.` });
     if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
     // Grok needs usage-credit pressure, observed main included.
     if (grokBacked && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${node.role === "reviewer" ? SOL : OPUS}.` });

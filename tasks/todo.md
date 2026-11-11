@@ -22,10 +22,26 @@
   Haiku; Fable `temperature` rejection; an Opus 5.5 main with a Fable 5.2
   advisor; `model: claude-fable-5-2` plus `effort: high` loading in a fresh
   Claude Code session.
-- Follow-ups: ownership-line and effort A/B evals, Opus worker effort
-  (`medium` on the canvas versus `high` in `cli-dispatch.md`), removing
-  `gpt-6-sol` acceptance, `claudex` and `capture-codex-context.py` examples,
+- Follow-ups: ownership-line and effort A/B evals, removing `gpt-6-sol`
+  acceptance, `claudex` and `capture-codex-context.py` examples,
   `benchmark-skills` `temperature=0` advice, and bopen-ai model drift.
+
+## Review follow-up (Fable 5.2 wording review, GPT-6.1 Sol code review)
+
+- [x] Wording: Fable ban that does not dead-end alias-only subagent tools,
+  read-only Fable `claude -p` form, advisor Opus downgrade and Codex opt-in,
+  agent-builder scope line, `inherit` explicitly allowed beside the
+  Auto/Composer ban, Fable not a coding worker.
+- [x] Canvas Opus builders default to `high` effort (code, guides, tests).
+- [x] Per-segment Fable exception and `:free`-style delimiter holes in both
+  policies, with negative tests.
+- [x] Grok aliases named for any pinned id must run that id.
+- [x] OpenCode `models.<key>.id` overrides refused by the review wrapper and
+  reported by the detector (`opencode_model_ids`) for the canvas.
+- [x] Benchmark arms and the judge fallback pin `--effort`.
+- Not live-checked: whether a Fable 5.2 main rejects another native advisor
+  model (docs now say "may be rejected"); OpenCode's handling of
+  `models.<key>.id` was taken from its config schema, not a live run.
 
 # 2026-09-23 — Model routing defaults
 

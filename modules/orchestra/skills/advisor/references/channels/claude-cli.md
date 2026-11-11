@@ -1,6 +1,7 @@
 # Claude CLI from Codex
 
-Use this lane for a context-clean Claude opinion from a Codex main. Preflight
+Use this lane for a context-clean Claude opinion from a Codex main, or a Claude
+main whose subagent tool cannot pin the full id. Preflight
 `command -v claude`, `claude --version`, and `claude auth status`. Prepare the
 complete consult in a file and feed it over stdin:
 

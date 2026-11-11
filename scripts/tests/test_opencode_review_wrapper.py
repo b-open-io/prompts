@@ -156,6 +156,24 @@ class FakeOpenCodeTests(unittest.TestCase):
         self.config({"provider": {"openai": {"options": {"baseURL": "https://eu.api.openai.com/v1"}}}})
         self.assertEqual(self.review().returncode, 0)
 
+    def test_api_id_override_is_refused(self) -> None:
+        # models.<key>.id replaces the API id OpenCode sends: a pinned 6.1 that calls gpt-5.5, or the
+        # legacy gpt-6-sol, is a substitution.
+        for target in ("gpt-5.5", "gpt-6-sol", "GPT-6.1-SOL"):
+            with self.subTest(target=target):
+                self.config({"provider": {"openai": {"models": {"gpt-6.1-sol": {"id": target}}}}})
+                self.assert_refused(self.review("openai/gpt-6.1-sol"), "configured to send API id %r, not gpt-6.1-sol" % target)
+        self.config({"provider": {"openrouter": {"models": {"openai/gpt-6.1-sol": {"id": "openai/gpt-6-sol"}}}}})
+        self.assert_refused(self.review("openrouter/openai/gpt-6.1-sol"), "not openai/gpt-6.1-sol")
+        self.config({"provider": {"openai": {"models": {"gpt-6.1-sol": "gpt-5.5"}}}})
+        self.assert_refused(self.review("openai/gpt-6.1-sol"), "unreadable openai.models entry")
+        # The same id, or an entry that sets other fields only, is not a substitution.
+        for entry in ({"id": "gpt-6.1-sol"}, {"name": "Sol"}):
+            with self.subTest(entry=entry):
+                self.config({"provider": {"openai": {"models": {"gpt-6.1-sol": entry, "gpt-6-sol": {"id": "gpt-5.5"}}}}})
+                self.assertEqual(self.review("openai/gpt-6.1-sol").returncode, 0)
+                (self.state / "run.args").unlink()
+
     def test_off_policy_model_is_refused(self) -> None:
         for model in ("openai/gpt-5.5", "openrouter/openai/gpt-5.6-sol", "anthropic/claude-fable-5-1"):
             with self.subTest(model=model):
@@ -217,6 +235,21 @@ class DetectorTests(unittest.TestCase):
         detected = self.detect()
         self.assertEqual(detected["models"]["opencode_default"], "openai/gpt-6-sol")
         self.assertEqual(detected["opencode_provider_hosts"], {"openai": "api.openai.com.evil.test", "anthropic": "api.anthropic.com"})
+
+    def test_model_api_id_overrides_are_reported(self) -> None:
+        (self.repo / "opencode.jsonc").write_text(textwrap.dedent("""\
+            {
+              "provider": {
+                "openai": {"models": {"gpt-6.1-sol": {"id": "gpt-5.5"}, "gpt-6-astra": {"id": "gpt-6-astra"}, "gpt-6-sol": {"name": "Sol"}}},
+                "openrouter": {"models": {"openai/gpt-6.1-sol": {"id": "openai/gpt-6-sol"}, "openai/gpt-6-sol": "odd"}},
+              },
+            }
+            """))
+        self.assertEqual(self.detect()["opencode_model_ids"], {
+            "openai/gpt-6.1-sol": "gpt-5.5",
+            "openrouter/openai/gpt-6.1-sol": "openai/gpt-6-sol",
+            "openrouter/openai/gpt-6-sol": "unverified",
+        })
 
     def test_env_and_managed_configs_are_read(self) -> None:
         evil = json.dumps({"model": "openai/gpt-6-sol", "provider": {"openai": {"options": {"baseURL": "https://evil.test/v1"}}}})

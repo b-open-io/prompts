@@ -29,7 +29,7 @@ cleanup policy (after-approved-merge)
 
 ## Nodes
 - **Work** — SHELL-OUT to claude
-  controller: grok · provider/model: anthropic/claude-opus-5-5 · effort: medium
+  controller: grok · provider/model: anthropic/claude-opus-5-5 · effort: high
   disclosure: approved · context: brief, owned paths, test contract
   command: claude --print ...
 - **Review** — SHELL-OUT to codex (read-only)
@@ -62,7 +62,7 @@ cleanup policy (after-approved-merge)
       "label": "Work",
       "lane": "claude",
       "model": "claude-opus-5-5",
-      "effort": "medium",
+      "effort": "high",
       "actor": "maker",
       "execution": "external-provider",
       "agentType": null,
@@ -239,13 +239,20 @@ detector keeps these ids whole. Only a bare `grok-*` id is a Grok CLI
 built-in; a qualified one is a `config.toml` alias and must resolve like any
 custom id, to `grok-4.7` served by xAI or OpenRouter. A Grok CLI id counts as
 Sol only when its entry resolves to `gpt-6.1-sol` (or the legacy `gpt-6-sol`)
-behind OpenAI (or `openai/<id>` behind OpenRouter), and an alias named for one
-Sol id that targets the other is flagged as a substitution. It counts as the
-Build model only when it resolves to `claude-opus-5-5` behind Anthropic (or
-`anthropic/claude-opus-5-5` behind OpenRouter); anything else is not staffed
-as Sol or Opus. Claude and Codex lanes accept only the bare ids, and OpenCode
-only `openai/gpt-6.1-sol`, `openai/gpt-6-sol`, `anthropic/claude-opus-5-5`, or
-those behind `openrouter/`, so `x/gpt-6.1-sol` is not Sol on any lane. Every
+behind OpenAI (or `openai/<id>` behind OpenRouter). It counts as a Claude tier
+only when it resolves to that tier's id (`claude-fable-5-2`,
+`claude-opus-5-5`, `claude-sonnet-5-5`, or `claude-haiku-5-5`) behind
+Anthropic (or `anthropic/<id>` behind OpenRouter); anything else is not
+staffed as that model. An alias named for any pinned id that targets another
+model (`gpt-6-sol` aimed at `gpt-6.1-sol`, or `claude-fable-5-2` aimed at
+Opus) is flagged as a substitution. Claude and Codex lanes accept only the
+bare ids, and OpenCode only `openai/gpt-6.1-sol`, `openai/gpt-6-sol`,
+`anthropic/claude-fable-5-2`, `anthropic/claude-opus-5-5`,
+`anthropic/claude-sonnet-5-5`, `anthropic/claude-haiku-5-5`, or those behind
+`openrouter/`, so `x/gpt-6.1-sol` is not Sol on any lane. An OpenCode
+`provider.<id>.models.<key>.id` that differs from its key changes the API id
+OpenCode sends; the detector reports it in `opencode_model_ids`, and the canvas
+and the review wrapper refuse that model. Every
 coordinator other than the observed main session is a dispatch and runs
 `claude-fable-5-2` or `claude-opus-5-5`. Builders run `claude-opus-5-5`, or
 `claude-sonnet-5-5` / `claude-haiku-5-5` by explicit step-down; a Fable
@@ -275,7 +282,8 @@ denied, read/grep/glob/list allowed), and runs `opencode debug agent
 bopen-review` inside the worktree. It starts the review only when OpenCode
 resolves a primary agent whose enabled tools are all read-only and whose edit,
 bash, task, and unknown (MCP or custom) tools are denied, and when the model's
-provider still reaches its own endpoint. Anything it cannot verify exits 3.
+provider still reaches its own endpoint and no `models.<key>.id` override
+sends another API id. Anything it cannot verify exits 3.
 When the detector's own check fails it reports `opencode_read_only_problem`,
 and the reviewer is omitted with that reason; reviews are then staffed on
 another lane.

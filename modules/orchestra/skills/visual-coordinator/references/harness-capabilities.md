@@ -206,13 +206,13 @@ codex --ask-for-approval never exec --sandbox workspace-write --cd <repo> \
 
 # Claude Opus worker from a non-Claude host
 cd <worktree> && claude --print --permission-mode acceptEdits \
-  --model claude-opus-5-5 --effort medium < <file> > <file>.log 2>&1 &
+  --model claude-opus-5-5 --effort high < <file> > <file>.log 2>&1 &
 
 # Grok lane — always through the orchestra wrapper, which enforces the
 # grok-4.7 pin, the usage-credit gate (BOPEN_USAGE_CREDIT_PRESSURE=1), and the
 # GPT-5.6 ban when the command runs. Never emit a raw `grok -m` dispatch.
 # Custom ids need a quoted [model."<id>"] entry that `grok models` lists.
-bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model claude-opus-5-5 --effort medium \
+bash "<grok_worker path from detect-harness.sh>" --auth grok.com --model claude-opus-5-5 --effort high \
   --mode write --cwd <worktree> --branch <branch> --base-ref <ref> \
   --ownership '<owned paths>' --prompt-file <file> --log <file>.log
 

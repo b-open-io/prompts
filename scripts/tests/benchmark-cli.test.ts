@@ -18,13 +18,14 @@ test("CLI retains failed arms and exits nonzero without calling a judge", async 
     writeFileSync(join(skill, "evals/evals.json"), JSON.stringify({skill_name:"fixture",evals:[{id:1,prompt:"Fixture",expected_output:"Answer",files:[],assertions:[{id:"answer",text:"Contains answer",type:"qualitative"}]}]}));
     writeFileSync(join(bin, "claude"), `#!/bin/sh
 if [ "$1" = "--help" ]; then
-  echo '--bare --append-system-prompt --disable-slash-commands --strict-mcp-config --mcp-config --tools --output-format --json-schema --no-session-persistence'
+  echo '--bare --append-system-prompt --disable-slash-commands --strict-mcp-config --mcp-config --tools --output-format --json-schema --no-session-persistence --effort'
 else
+  printf '%s\n' "$*" >> "$BENCHMARK_ARGS_LOG"
   echo '{"is_error":true,"result":"Fixture provider failure"}'
 fi
 `, {mode:0o755});
     const child = Bun.spawn([process.execPath, join(scripts, "benchmark.tsx"), "--skill", "fixture", "--concurrency", "1"], {
-      cwd:root, env:{...process.env, PATH:`${bin}:${process.env.PATH}`, ANTHROPIC_API_KEY:"fixture-not-a-real-key"}, stdout:"pipe", stderr:"pipe",
+      cwd:root, env:{...process.env, PATH:`${bin}:${process.env.PATH}`, ANTHROPIC_API_KEY:"fixture-not-a-real-key", BENCHMARK_ARGS_LOG:join(root, "claude-args.log")}, stdout:"pipe", stderr:"pipe",
     });
     const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]);
     expect(code).toBe(1);
@@ -35,5 +36,10 @@ fi
     expect(report.skills[0].evals[0].baseline.run_error).toContain("Fixture provider failure");
     expect(report.skills[0].avg_tokens_with_skill).toBeNull();
     expect(report.skills[0].pass_rate).toBe(0);
+    // The default model is Haiku 5.5, so both arms pin the tier's low effort.
+    expect(report.effort).toBe("low");
+    const calls = readFileSync(join(root, "claude-args.log"), "utf8").trim().split("\n").filter((line) => line.includes("--model"));
+    expect(calls.length).toBeGreaterThanOrEqual(2);
+    for (const call of calls) expect(call).toContain("--effort low");
   } finally { rmSync(root, {recursive:true,force:true}); }
 }, 15_000);

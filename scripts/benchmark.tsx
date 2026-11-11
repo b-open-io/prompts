@@ -17,6 +17,7 @@
  *   bun run scripts/benchmark.tsx --skill geo-optimizer
  *   bun run scripts/benchmark.tsx --skill collections --skill-root /path/to/1sat-sdk
  *   bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"
+ *   bun run scripts/benchmark.tsx --model claude-opus-5-5 --effort high
  *   bun run scripts/benchmark.tsx --concurrency 4
  */
 
@@ -37,12 +38,15 @@ import {
 import {
   createBenchmarkWorkingDirectory,
   buildClaudeArgs,
+  type ClaudeEffort,
+  defaultEffortFor,
   discoverSkills,
   normalizeTokenCount,
   preflightClaude,
   runClaude,
   usageTokens,
   validateConcurrency,
+  validateEffort,
   validateTextAblationEvalFile,
 } from "./benchmark-runner.ts";
 import {
@@ -103,6 +107,7 @@ interface EvalRunResult {
 interface SkillBenchmark {
   generated_at: string;
   model: string;
+  effort: ClaudeEffort;
   runner: string;
   script_url: string;
   skill_name: string;
@@ -122,6 +127,7 @@ interface SkillBenchmark {
 interface BenchmarkReport {
   generated_at: string;
   model: string;
+  effort: ClaudeEffort;
   runner: string;
   script_url: string;
   evaluation_mode: "text-body-ablation";
@@ -467,22 +473,25 @@ function getRunner(): string {
   }
 }
 
-function parseArgs(): { skill?: string; skillRoot?: string; model: string; concurrency: number } {
+function parseArgs(): { skill?: string; skillRoot?: string; model: string; effort: ClaudeEffort; concurrency: number } {
   const args = process.argv.slice(2);
   let skill: string | undefined;
   let skillRoot: string | undefined;
   // Use haiku by default — cheap and fast. Pass --model to override.
   let model = process.env.BENCHMARK_MODEL ?? DEFAULT_JUDGE_MODEL;
+  // Every claude -p dispatch pins its effort; without --effort it follows the model's tier.
+  let effort: string | undefined = process.env.BENCHMARK_EFFORT || undefined;
   let concurrency = 2;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--skill" && args[i + 1]) skill = args[++i];
     else if (args[i] === "--skill-root" && args[i + 1]) skillRoot = resolve(args[++i]);
     else if (args[i] === "--model" && args[i + 1]) model = args[++i];
+    else if (args[i] === "--effort") effort = args[++i];
     else if (args[i] === "--concurrency") concurrency = validateConcurrency(args[++i]);
   }
 
-  return { skill, skillRoot, model, concurrency };
+  return { skill, skillRoot, model, effort: effort === undefined ? defaultEffortFor(model) : validateEffort(effort), concurrency };
 }
 
 // ---------------------------------------------------------------------------
@@ -530,8 +539,9 @@ async function runJudgeMessages(
 async function runJudgeClaude(
   prompt: string,
   model: string,
+  effort: ClaudeEffort,
 ): Promise<{ output: string; tokens: number | null; duration_ms: number }> {
-  const args = buildClaudeArgs(prompt, { model, jsonSchema: GRADE_SCHEMA });
+  const args = buildClaudeArgs(prompt, { model, effort, jsonSchema: GRADE_SCHEMA });
 
   const start = performance.now();
   const env = { ...process.env };
@@ -560,10 +570,11 @@ async function runJudgeClaude(
 async function runJudge(
   prompt: string,
   model: string,
+  effort: ClaudeEffort,
 ): Promise<{ output: string; tokens: number | null; duration_ms: number }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (apiKey) return runJudgeMessages(prompt, model, apiKey);
-  return runJudgeClaude(prompt, model);
+  return runJudgeClaude(prompt, model, effort);
 }
 
 async function gradeAssertions(
@@ -571,8 +582,9 @@ async function gradeAssertions(
   expectedOutput: string,
   assertions: Assertion[],
   model: string,
+  effort: ClaudeEffort,
 ): Promise<AssertionResult[]> {
-  const result = await runJudge(judgePrompt(output, expectedOutput, assertions), model);
+  const result = await runJudge(judgePrompt(output, expectedOutput, assertions), model, effort);
   try {
     return parseJudgeGrades(result.output, assertions);
   } catch (err) {
@@ -615,7 +627,7 @@ async function main() {
     console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
   }
-  const { skill: filterSkill, skillRoot = repoRoot, model, concurrency } = parsedArgs;
+  const { skill: filterSkill, skillRoot = repoRoot, model, effort, concurrency } = parsedArgs;
   const cacheDir = join(repoRoot, "benchmarks", "cache");
 
   // Pre-flight
@@ -712,7 +724,7 @@ async function main() {
         const skillContent = job.variant === "with-skill"
           ? readFileSync(join(job.skillPath, "SKILL.md"), "utf-8")
           : "";
-        const ck = benchmarkCacheKey(model, job.skill, job.evalCase, job.variant, skillContent);
+        const ck = benchmarkCacheKey(model, job.skill, job.evalCase, job.variant, skillContent, effort);
         const cached = readCache(cacheDir, ck);
 
         if (cached) {
@@ -729,6 +741,7 @@ async function main() {
           try {
             const result = await runClaude(job.evalCase.prompt, {
               model,
+              effort,
               skillPath: job.variant === "with-skill" ? job.skillPath : undefined,
               cwd: workingDirectory,
             });
@@ -768,7 +781,7 @@ async function main() {
         const key = `${job.skill}:${job.evalId}:${job.variant}`;
 
         try {
-          const grades = await gradeAssertions(job.output, job.expectedOutput, job.assertions, model);
+          const grades = await gradeAssertions(job.output, job.expectedOutput, job.assertions, model, effort);
           const passRate = grades.length > 0
             ? grades.filter(a => a.passed).length / grades.length
             : 0;
@@ -785,7 +798,7 @@ async function main() {
               const skillContent = job.variant === "with-skill"
                 ? readFileSync(join(skillPath, "SKILL.md"), "utf-8")
                 : "";
-              const ckCorrect = benchmarkCacheKey(model, job.skill, evalCase, job.variant, skillContent);
+              const ckCorrect = benchmarkCacheKey(model, job.skill, evalCase, job.variant, skillContent, effort);
               writeCache(cacheDir, ckCorrect, {
                 output: runResult.output,
                 tokens: runResult.tokens,
@@ -865,6 +878,7 @@ async function main() {
     const skillBenchmark: SkillBenchmark = {
       generated_at: generatedAt,
       model,
+      effort,
       runner,
       script_url: scriptUrl,
       skill_name: skill.name,
@@ -898,6 +912,7 @@ async function main() {
   const report: BenchmarkReport = {
     generated_at: new Date().toISOString(),
     model,
+    effort,
     runner: getRunner(),
     script_url: "https://github.com/b-open-io/prompts/blob/master/scripts/benchmark.tsx",
     evaluation_mode: "text-body-ablation",

@@ -11,14 +11,17 @@ Full installed agent roster with `subagent_type` identifiers and the skills to m
 > `claude-fable-5-2` at `high`; implement on `claude-opus-5-5` at `high`; step
 > down to `claude-sonnet-5-5` (`medium`) or `claude-haiku-5-5` (`low`) only for
 > units that fit those tiers; run code review on `gpt-6.1-sol` (or
-> `gpt-6-astra`) at `xhigh`, not at default reasoning. Grok is a
+> `gpt-6-astra`; `gpt-6-sol` only where 6.1 is not listed) at `xhigh`, not at
+> default reasoning. Grok is a
 > usage-credit-pressure fallback only, pinned to `grok-4.7`. CloudAgent is only
 > one coding lane: if its catalog omits Claude Opus 5.5, run `claude-opus-5-5`
 > through the Claude Code CLI on an agent computer or Luke's Claude Code
 > desktop harness. Do not treat that gap as unavailability or substitute Sol,
 > GPT-5.6, or Grok as the coding worker. Out of policy even by explicit choice:
-> Fable 5.1 and earlier, the bare `fable` alias, the `gpt-5.5` and `gpt-5.6`
-> families, and Grok 4.6.
+> any Fable id other than `claude-fable-5-2` (Fable 5.1 and earlier), the
+> `gpt-5.5` and `gpt-5.6` families, and Grok 4.6. Write the full id wherever a
+> flag, env var, config value, or agent frontmatter takes one; the bare `fable`
+> alias is refused there.
 
 ## Roster
 

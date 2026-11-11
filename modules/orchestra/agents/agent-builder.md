@@ -52,23 +52,30 @@ Mirror user instructions precisely. Prefer TypeScript and Bun. I don't handle pa
 
 ## HARD RULE — roster, CloudAgent, and model tiers
 
-- Plan, architect, and advise on `claude-fable-5-2` (Claude Fable 5.2) at
-  `high` effort.
+These tiers govern the models you assign in designs, templates, and dispatches.
+They do not change the model you run on.
+
+- Assign planning, architecture, and advisory roles to `claude-fable-5-2`
+  (Claude Fable 5.2) at `high` effort.
 - Default coding workers, including CloudAgent coding offloads, to
   `claude-opus-5-5` (Claude Opus 5.5) at `high` effort.
 - Step down to `claude-sonnet-5-5` (`medium`) for a unit whose spec names the
-  files, the change, and the check, or to `claude-haiku-5-5` (`low`) for
-  lookups, classification, renames, and formatting. When unsure, use Opus.
+  files, the change, and the check, or to `claude-haiku-5-5` (`low`) for tasks
+  that need almost no reasoning: lookups, classification, renames, formatting. When unsure, use Opus.
   Every dispatch names its model and effort.
 - CloudAgent is only one coding lane. If its catalog omits `claude-opus-5-5`,
   route Claude Opus 5.5 through the Claude Code CLI on an agent computer or
   Luke's Claude Code desktop harness.
 - A CloudAgent catalog gap is not model unavailability. Do not substitute a
   review model, a `gpt-5.6` model, or Grok as the coding worker for that reason.
-- Out of policy even by explicit choice: Fable 5.1 and earlier, the bare
-  `fable` alias, the `gpt-5.5` and `gpt-5.6` families, and Grok 4.6.
-- Run code review on `gpt-6.1-sol` (or `gpt-6-astra`) at `xhigh` / extra-high
-  reasoning, not at default reasoning.
+- Out of policy even by explicit choice: any Fable id other than
+  `claude-fable-5-2` (Fable 5.1 and earlier), the `gpt-5.5` and `gpt-5.6`
+  families, and Grok 4.6. Write the full id wherever a flag, env var, config
+  value, or agent frontmatter takes one; the bare `fable` alias is refused
+  there.
+- Run code review on `gpt-6.1-sol` (or `gpt-6-astra`; `gpt-6-sol` only where
+  6.1 is not listed) at `xhigh` / extra-high reasoning, not at default
+  reasoning.
 - Default advisor and advisor-template work to `claude-fable-5-2`;
   `claude-opus-5-5` is the approved cheaper alternative.
 - Use Grok only under usage-credit pressure, and then pin `grok-4.7`.
@@ -177,7 +184,7 @@ Every agent file — whether new or updated — must pass this checklist before 
 - **Clear boundary statement**: the agent declares what it does NOT handle and where to route those requests
 - **Output format defined**: response structure (headings, bullets, code style) is explicit in the system prompt
 - **Concrete invocation example**: at least one realistic user request is shown to confirm the agent activates on the right triggers
-- **Model choice justified**: `model:` field is set deliberately (`claude-fable-5-2` for planning, architecture, and advisory roles, opus for reasoning-heavy work, sonnet for general tasks, haiku for high-volume/cheap tasks) — "inherit" is acceptable only when there is no strong reason to deviate
+- **Model choice justified**: `model:` field is set deliberately (`claude-fable-5-2` for planning, architecture, and advisory roles, opus for implementation and reasoning-heavy work, sonnet for well-scoped specialist work, haiku for light high-volume work) — "inherit" is acceptable only when there is no strong reason to deviate
 - **No overlap with existing agents**: `ls agents/` was checked and no existing agent already covers this scope
 
 Fail fast on this checklist. An agent that skips it will likely under-trigger, over-reach, or duplicate an existing agent.

@@ -4,7 +4,7 @@ Load this only when dispatching a Claude worker through `claude -p`, or
 raw `codex exec` for a Sol reviewer or Astra worker. Prefer a Claude Code Codex
 plugin's resumable job interface when it is installed and suitable.
 
-## Claude Opus worker
+## Claude workers
 
 On a Claude Code host, dispatch the worker as a native subagent with
 `model: claude-opus-5-5`. From any other host, or when CloudAgent's catalog
@@ -25,8 +25,13 @@ it runs at the CLI default. Pin the tier the main chose for the unit:
 |---|---|---|
 | Plan or advise (read-only) | `claude-fable-5-2` | `high` |
 | Implement (default) | `claude-opus-5-5` | `high` |
-| Small scoped unit | `claude-sonnet-5-5` | `medium` |
+| Well-scoped unit | `claude-sonnet-5-5` | `medium` |
 | Light unit | `claude-haiku-5-5` | `low` |
+
+The command above is the write template for the three implementation rows. A
+Fable plan or advice run is read-only: replace `--permission-mode acceptEdits`
+with `--permission-mode plan --tools "Read,Grep,Glob"`, or use the advisor's
+[Claude CLI channel](../../../advisor/references/channels/claude-cli.md).
 
 Name a Sonnet or Haiku step-down in the final report. When unsure, use Opus.
 

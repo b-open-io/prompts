@@ -1,7 +1,7 @@
 ---
 name: coordinator
 version: 0.0.26
-description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Opus, Sol, Astra, Muse, Grok, OpenCode, or native workflows.
+description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Fable, Opus, Sonnet, Haiku, Sol, Astra, Muse, Grok, OpenCode, or native workflows.
 ---
 
 # Coordinator
@@ -70,8 +70,8 @@ API or file-ownership boundaries, not into tiny tasks merely to create a graph.
 |---|---|---|---|
 | Plan and advise | `claude-fable-5-2` | `high` | Plans, architecture, specs, read-only advice |
 | Implement | `claude-opus-5-5` | `high` | Default coding worker |
-| Small scoped work | `claude-sonnet-5-5` | `medium` | Units whose spec names the files, the change and the check |
-| Light work | `claude-haiku-5-5` | `low` | Lookups, classification, renames, formatting |
+| Well-scoped work | `claude-sonnet-5-5` | `medium` | Units whose spec names the files, the change and the check |
+| Light work | `claude-haiku-5-5` | `low` | Tasks that need almost no reasoning: lookups, classification, renames, formatting, worker-controller relays |
 | Independent review | `gpt-6.1-sol` | `xhigh` | Read-only code-review verdict |
 
 Default implementation to `claude-opus-5-5`. Step down to Sonnet 5.5 or Haiku
@@ -79,20 +79,32 @@ Default implementation to `claude-opus-5-5`. Step down to Sonnet 5.5 or Haiku
 choice the main makes per unit and names in the final report. It is not a
 fallback for an unavailable lane.
 
+`claude-fable-5-2` is not dispatched as a coding worker, and the canvas rejects
+it as a builder. A Fable main still makes the edits the ownership table gives
+the main.
+
 When the main session is not Fable 5.2 and the plan carries real design risk,
 check the plan through `advisor` before dispatch.
 
-Every dispatch names its model and its effort. `claude -p` without `--effort`
-runs at the CLI default, so always pass it.
+Every worker, planner, advisor, and review dispatch names its model and its
+effort; roster specialists run on their declared `model`. `claude -p` without
+`--effort` runs at the CLI default, so always pass it.
 
-Out of policy, even by explicit choice: Fable 5.1 and earlier, the bare `fable`
-alias, the `gpt-5.5` and `gpt-5.6` families, and Grok 4.6. Grok 4.7 is a last
-resort under usage-credit pressure. Do not take a model from a host's Auto or
-default picker, and do not use Composer or another Cursor flagship model.
-`gpt-6-sol` is still accepted where a CLI or account does not list
-`gpt-6.1-sol`; say so in the report.
+Out of policy, even by explicit choice: any Fable id other than
+`claude-fable-5-2` (Fable 5.1 and earlier), the `gpt-5.5` and `gpt-5.6`
+families, and Grok 4.6. Write the full id wherever a flag, env var, config
+value, or agent frontmatter takes one; the bare `fable` alias is refused there.
+A subagent tool that offers only aliases cannot pin it, so run the Fable tier
+through `claude -p --model claude-fable-5-2` or a roster agent that pins the
+full id. Grok 4.7 is a last resort under usage-credit pressure.
 
-Use the authorized, preflighted Opus lane for implementation.
+Every model is chosen by name. Do not dispatch on a model a host's Auto mode or
+default picker selects for you, and do not use Composer or another Cursor
+flagship model. Claude's `inherit` is not that: it runs the main session's own,
+explicitly chosen model. `gpt-6-sol` is still accepted where a CLI or account
+does not list `gpt-6.1-sol`; say so in the report.
+
+Preflight and authorize whichever lane you select.
 Preserve an explicit user-selected alternative lane. A user may attach an
 expiry or another stop condition
 to that preference. Record it, honor the override while it is active, then run

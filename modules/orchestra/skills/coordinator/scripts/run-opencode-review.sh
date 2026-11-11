@@ -157,6 +157,16 @@ if model:
                 refuse("provider %s is overridden to %s, not %s" % (provider, host or repr(url), HOSTS[provider]))
         if entry.get("npm") not in (None, PACKAGES[provider]):
             refuse("provider %s is served by package %r, not %s" % (provider, entry.get("npm"), PACKAGES[provider]))
+    # A provider's `models.<key>.id` replaces the API id OpenCode sends, so openai/gpt-6.1-sol can be
+    # configured to call gpt-5.5, or the legacy gpt-6-sol. Only the pinned id itself may be sent.
+    key = model.split("/", 1)[1]
+    models = entry.get("models") if isinstance(entry, dict) else None
+    override = models.get(key) if isinstance(models, dict) else None
+    if override is not None:
+        if not isinstance(override, dict):
+            refuse("model %s has an unreadable %s.models entry" % (model, provider))
+        if "id" in override and override["id"] != key:
+            refuse("model %s is configured to send API id %r, not %s" % (model, override["id"], key))
 PY_VERIFY
 
 if ((check)); then

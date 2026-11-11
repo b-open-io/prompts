@@ -291,7 +291,7 @@ describe("workflow schema", () => {
       edges: [{ id: "build-review", source: "build", target: "review", kind: "forward" }],
     }, environment);
 
-    expect(workflow.nodes[0]).toMatchObject({ lane: "claude", provider: "external", model: "claude-opus-5-5", effort: "medium" });
+    expect(workflow.nodes[0]).toMatchObject({ lane: "claude", provider: "external", model: "claude-opus-5-5", effort: "high" });
     expect(workflow.nodes[1]).toMatchObject({ lane: "codex", provider: "external", model: "gpt-6-sol", effort: "xhigh", execution: "read-only-review" });
     expect(validateWorkflow(workflow, environment)).toEqual([]);
   });
@@ -308,7 +308,7 @@ describe("workflow schema", () => {
       const environment = claudeHost("available");
       const workflow = parseSeed(bareSeed, environment);
 
-      expect(workflow.nodes[0]).toMatchObject({ lane: "claude", provider: "native", model: "claude-opus-5-5", effort: "medium" });
+      expect(workflow.nodes[0]).toMatchObject({ lane: "claude", provider: "native", model: "claude-opus-5-5", effort: "high" });
       expect(workflow.nodes[1]).toMatchObject({ lane: "codex", provider: "external", model: "gpt-6-sol", effort: "xhigh", execution: "read-only-review" });
       expect(workflow.nodes.some((node) => /sonnet|haiku/.test(node.model))).toBe(false);
 
@@ -621,11 +621,47 @@ describe("workflow schema", () => {
           expect(messages).toContain(`Coordinate is the main session on ${model}, which is not claude-fable-5-2, claude-opus-5-5, or gpt-6.1-sol from its own provider.`);
         });
 
+        it("refuses an OpenCode models.id override that sends another API id", () => {
+          // openai/gpt-6.1-sol configured to call gpt-5.5, or the legacy gpt-6-sol, is a substitution.
+          const env = (ids: Record<string, string>) => parseEnvironment({
+            harness: "opencode", lanes: { opencode: "available" }, opencode_reviewer: "/plugin/run-opencode-review.sh",
+            models: { opencode: ["openai/gpt-6.1-sol", "anthropic/claude-opus-5-5"], opencode_default: "anthropic/claude-opus-5-5", opencode_effort: ["medium", "high", "xhigh"] },
+            opencode_model_ids: ids,
+          });
+          for (const [sent, expected] of [["gpt-5.5", "API id gpt-5.5"], ["gpt-6-sol", "API id gpt-6-sol"], ["unverified", "an unreadable API id"]]) {
+            const environment = env({ "openai/gpt-6.1-sol": sent });
+            expect(runsSol(environment, "opencode", "openai/gpt-6.1-sol")).toBe(false);
+            const workflow = defaultWorkflow(environment);
+            workflow.nodes[2] = { ...workflow.nodes[2], lane: "opencode", provider: "native", model: "openai/gpt-6.1-sol" };
+            const messages = validateWorkflow(workflow, environment).filter((issue) => issue.id === "review").map((issue) => issue.message);
+            expect(messages).toContain(`Review uses openai/gpt-6.1-sol, but the OpenCode config sends ${expected}; remove that models.id override.`);
+            expect(messages).toContain("Review must review on gpt-6.1-sol at xhigh.");
+          }
+          expect(resolvedModel(env({ "openai/gpt-6.1-sol": "gpt-5.5" }), "opencode", "openai/gpt-6.1-sol")).toBe("openai/gpt-5.5 (via openai/gpt-6.1-sol)");
+          // A builder pointed at another API id is refused too, and an untouched id still runs.
+          expect(runsOpus(env({ "anthropic/claude-opus-5-5": "claude-sonnet-5-5" }), "opencode", "anthropic/claude-opus-5-5")).toBe(false);
+          expect(runsSol(env({ "openai/gpt-6-sol": "gpt-5.5" }), "opencode", "openai/gpt-6.1-sol")).toBe(true);
+        });
+
         it("will not staff an OpenCode worker on an overridden provider", () => {
           const environment = parseEnvironment({ ...opencode("anthropic/claude-opus-5-5", { anthropic: "evil.test" }), models: { opencode: ["anthropic/claude-opus-5-5"] } });
           expect(runsOpus(environment, "opencode", "anthropic/claude-opus-5-5")).toBe(false);
           expect(runsOpus(parseEnvironment(opencode("anthropic/claude-opus-5-5")), "opencode", "anthropic/claude-opus-5-5")).toBe(true);
         });
+      });
+
+      it("applies the Fable 5.2 exception per path segment and closes delimiter holes", () => {
+        const environment = parseEnvironment({ harness: "claude-code", lanes: { claude: "available" }, models: { claude: ["claude-opus-5-5"], claude_default: "claude-opus-5-5" } });
+        for (const model of ["claude-fable-5-1/claude-fable-5-2", "fable/claude-fable-5-2", "claude-fable-5-2/claude-fable-5-1", "claude-fable-5-2:free",
+          "gpt-5.5:free", "openrouter/openai/gpt-5.6:free", "openai/gpt-5.5@2026-01-01", "x-ai/grok-4.6:beta"]) {
+          const workflow = defaultWorkflow(environment);
+          workflow.nodes[1] = { ...workflow.nodes[1], model };
+          expect(validateWorkflow(workflow, environment).map((issue) => issue.message)).toContain(
+            `${workflow.nodes[1].title} uses ${model}; GPT-5.5, GPT-5.6, Grok 4.6, and Fable ids other than claude-fable-5-2 are out of policy (plan on claude-fable-5-2, build on claude-opus-5-5, review on gpt-6.1-sol).`,
+          );
+        }
+        const opencode = parseEnvironment({ harness: "opencode", lanes: { opencode: "available" }, models: { opencode: ["openrouter/anthropic/claude-fable-5-2", "anthropic/claude-fable-5-1/claude-fable-5-2", "openrouter/openai/gpt-5.6:free"] } });
+        expect(opencode.lanes.opencode.models).toEqual(["openrouter/anthropic/claude-fable-5-2"]);
       });
 
       it("flags an explicit outdated Fable choice on any node", () => {
@@ -835,7 +871,7 @@ describe("workflow schema", () => {
     expect(review).toMatchObject({ role: "reviewer", lane: "codex", provider: "native", model: "gpt-6-sol", effort: "xhigh", execution: "read-only-review" });
 
     const rebuilt = restaff(review, "builder", environment);
-    expect(rebuilt).toMatchObject({ role: "builder", lane: "claude", provider: "external", model: "claude-opus-5-5", effort: "medium", execution: "write" });
+    expect(rebuilt).toMatchObject({ role: "builder", lane: "claude", provider: "external", model: "claude-opus-5-5", effort: "high", execution: "write" });
     expect(restaff(rebuilt, "builder", environment)).toBe(rebuilt);
     expect(validateWorkflow({ title: "t", nodes: [review], edges: [] }, environment)).toEqual([]);
   });
@@ -847,7 +883,7 @@ describe("workflow schema", () => {
     const external = restaff(review, "external", environment);
     expect(external).toMatchObject({ role: "external", lane: "codex", model: "gpt-6-sol", effort: "xhigh", execution: "read-only-review", disclosure: undefined });
     expect(validateWorkflow({ title: "t", nodes: [external], edges: [] }, environment)).toEqual([]);
-    expect(restaff(review, "builder", environment)).toMatchObject({ lane: "claude", model: "claude-opus-5-5", effort: "medium", execution: "write", disclosure: undefined });
+    expect(restaff(review, "builder", environment)).toMatchObject({ lane: "claude", model: "claude-opus-5-5", effort: "high", execution: "write", disclosure: undefined });
   });
 
   it("holds every review-executing node to Sol at xhigh, whatever its role", () => {
@@ -855,7 +891,7 @@ describe("workflow schema", () => {
     const build = defaultWorkflow(environment).nodes[1];
     const reviewer = { ...build, id: "ext", title: "External review", role: "external" as const, execution: "read-only-review" as const, disclosure: "Approved Claude" };
 
-    expect(reviewer).toMatchObject({ model: "claude-opus-5-5", effort: "medium" });
+    expect(reviewer).toMatchObject({ model: "claude-opus-5-5", effort: "high" });
     expect(validateWorkflow({ title: "t", nodes: [reviewer], edges: [] }, environment).map((issue) => issue.message)).toContain("External review must review on gpt-6.1-sol at xhigh.");
     const solMedium = { ...reviewer, lane: "codex", provider: "native" as const, model: "gpt-6-sol" };
     expect(validateWorkflow({ title: "t", nodes: [solMedium], edges: [] }, environment).map((issue) => issue.message)).toEqual(["External review must review on gpt-6.1-sol at xhigh."]);
@@ -987,6 +1023,35 @@ describe("pinned model matching", () => {
     expect(runsSol(environment, "grok", "elsewhere")).toBe(false);
     expect(runsOpus(environment, "grok", "opus")).toBe(true);
     expect(runsSol(environment, "grok", "unlisted")).toBe(false);
+  });
+});
+
+describe("Grok aliases named for a pinned model", () => {
+  const environment = (name: string, target: string, provider = "anthropic") => parseEnvironment({
+    harness: "claude-code",
+    lanes: { claude: "available", grok: "available", codex: "available" },
+    models: { claude: ["claude-opus-5-5"], claude_default: "claude-opus-5-5", grok: ["grok-4.7", name], codex: ["gpt-6.1-sol"], codex_effort: ["medium", "high", "xhigh"] },
+    grok_model_providers: { [name]: provider },
+    grok_model_targets: { [name]: target },
+  });
+  const messages = (env: WorkflowEnvironment, role: "coordinator" | "builder", model: string) => {
+    const workflow = defaultWorkflow(env);
+    workflow.nodes.push({ ...workflow.nodes[1], id: "dispatch", title: "Dispatch", role, lane: "grok", provider: "external", model, disclosure: "Approved" });
+    return validateWorkflow(workflow, env).filter((issue) => issue.id === "dispatch").map((issue) => issue.message);
+  };
+
+  it.each([
+    ["claude-fable-5-2", "claude-opus-5-5", "coordinator"],
+    ["claude-opus-5-5", "claude-sonnet-5-5", "builder"],
+    ["claude-sonnet-5-5", "claude-haiku-5-5", "builder"],
+    ["claude-haiku-5-5", "anthropic/claude-opus-5-5", "builder"],
+  ] as const)("refuses %s aimed at %s", (name, target, role) => {
+    expect(messages(environment(name, target), role, name)).toContain(`Dispatch uses ${name}, but its Grok CLI entry runs ${target}, not ${name}.`);
+  });
+
+  it("accepts an alias that runs the model it is named for", () => {
+    expect(messages(environment("claude-fable-5-2", "claude-fable-5-2"), "coordinator", "claude-fable-5-2")).toEqual([]);
+    expect(messages(environment("claude-opus-5-5", "anthropic/claude-opus-5-5", "openrouter"), "builder", "claude-opus-5-5")).toEqual([]);
   });
 });
 

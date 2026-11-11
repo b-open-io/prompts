@@ -114,8 +114,9 @@ codex exec --sandbox read-only --cd <repo> -m gpt-6.1-sol \
   < /tmp/hsr-<stage>-brief.md > /tmp/hsr-<stage>.log 2>&1
 ```
 
-`-m gpt-6-astra` is the only alternative model; `-m gpt-6-sol` stands in only
-where the account does not list `gpt-6.1-sol`. Never lower the effort or move
+`-m gpt-6-astra` is the only alternative reviewer; `-m gpt-6-sol` is the same
+reviewer's earlier id, used only where the account does not list
+`gpt-6.1-sol`. Never lower the effort or move
 a stage to another model, Grok included; under usage-credit pressure, narrow
 the scope or queue the review. If `codex` is unavailable, report the review
 lane unavailable.

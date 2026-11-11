@@ -5,7 +5,7 @@ description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
   the advisor", "get a second opinion", "ask Fable", "ask claude-fable-5-2",
-  "ask codex", "ask opencode", or "ask a bigger model". The
+  "ask Opus", "ask codex", "ask opencode", or "ask a bigger model". The
   advisor returns guidance; the main session keeps execution and decision ownership.
 ---
 
@@ -78,8 +78,11 @@ tests, and every git operation.
 
 ## Stop conditions
 
-- Authentication, model availability, or the read-only boundary cannot be
-  verified: stop and offer setup.
+- `claude-fable-5-2` is unavailable or rejected on the selected channel: run
+  the consult on `claude-opus-5-5`, the approved alternative, and name the
+  downgrade in the report.
+- Authentication, the read-only boundary, or both approved models cannot be
+  verified: report that and offer setup.
 - The external advisor returns no verdict: retry once with the advice contract,
   then report a transport failure.
 - The advisor asks to implement: route that work through Coordinator with a
