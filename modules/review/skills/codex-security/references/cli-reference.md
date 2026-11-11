@@ -73,7 +73,7 @@ npx @openai/codex-security scan <path> [flags]
 | `--diff REF` | Scan committed changes against a ref (e.g. `origin/main`) |
 | `--working-tree` | Scan staged and unstaged changes |
 | `--mode standard\|deep` | Deep repeats discovery to reduce variance; supports repository and path targets, not diffs |
-| `--model MODEL` | Default `gpt-5.6-sol` (codex-security 0.1.31), which is out of policy here: always pass `--model gpt-6-sol` |
+| `--model MODEL` | Default `gpt-5.6-sol` (codex-security 0.1.31), which is out of policy here: always pass `--model gpt-6.1-sol` |
 | `--effort minimal\|low\|medium\|high\|xhigh\|max` | Default `xhigh`; pass `--effort xhigh` explicitly anyway |
 | `--knowledge-base PATH` (repeatable) | Architecture docs, threat models, policies. Directories are searched recursively for Markdown, text, PDF, and `.docx` |
 | `--output-dir DIR` | Artifact directory; must be outside the scanned directory and any enclosing Git worktree |
@@ -141,7 +141,7 @@ sandbox = "unelevated"
 
 ```bash
 npx @openai/codex-security scan . \
-  --model gpt-6-sol --effort xhigh \
+  --model gpt-6.1-sol --effort xhigh \
   --codex features.multi_agent_v2.max_concurrent_threads_per_session=4
 ```
 
@@ -211,11 +211,11 @@ state and results outside the scanned repository.
 npx @openai/codex-security findings false-positive OCCURRENCE_ID \
   --reason "The route already checks permissions"
 
-npx @openai/codex-security validate FINDINGS_JSON "Possible SQL injection in src/query.ts:42" --codex 'model="gpt-6-sol"' --effort xhigh
-npx @openai/codex-security validate "Possible SQL injection" --codex 'model="gpt-6-sol"' --effort xhigh
+npx @openai/codex-security validate FINDINGS_JSON "Possible SQL injection in src/query.ts:42" --codex 'model="gpt-6.1-sol"' --effort xhigh
+npx @openai/codex-security validate "Possible SQL injection" --codex 'model="gpt-6.1-sol"' --effort xhigh
 
-npx @openai/codex-security patch FINDINGS_JSON "Missing authorization check in src/routes.ts:18" --codex 'model="gpt-6-sol"' --effort xhigh
-npx @openai/codex-security patch "Missing authorization check" --codex 'model="gpt-6-sol"' --effort xhigh
+npx @openai/codex-security patch FINDINGS_JSON "Missing authorization check in src/routes.ts:18" --codex 'model="gpt-6.1-sol"' --effort xhigh
+npx @openai/codex-security patch "Missing authorization check" --codex 'model="gpt-6.1-sol"' --effort xhigh
 ```
 
 `validate` re-checks whether a finding is real. `patch` produces a minimal
@@ -241,8 +241,8 @@ reviewers.
 ## 9. `bulk-scan`
 
 ```bash
-npx @openai/codex-security bulk-scan --model gpt-6-sol --effort xhigh
-npx @openai/codex-security bulk-scan repositories.csv --model gpt-6-sol --effort xhigh \
+npx @openai/codex-security bulk-scan --model gpt-6.1-sol --effort xhigh
+npx @openai/codex-security bulk-scan repositories.csv --model gpt-6.1-sol --effort xhigh \
   --output-dir /path/outside/repos/security-scans --workers 4 --max-attempts 2
 ```
 
@@ -274,7 +274,7 @@ Installs a pre-commit hook that scans staged and unstaged changes. It respects
 findings or failed scans by default. It takes no `--model` or `--effort`, so
 the hook it writes runs the `gpt-5.6-sol` default. Never leave it that way: use
 the install, pin, and verify recipe in `sdk-and-automation.md` (section 3),
-which pins the hook to `gpt-6-sol` at `xhigh`.
+which pins the hook to `gpt-6.1-sol` at `xhigh`.
 
 ## 11. Environment variables
 

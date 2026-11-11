@@ -13,13 +13,13 @@ const evalCase: BenchmarkEvalCase = {
 
 describe("benchmarkCacheKey", () => {
   test("invalidates with-skill runs when SKILL.md changes", () => {
-    expect(benchmarkCacheKey("model", "skill", evalCase, "with-skill", "before"))
-      .not.toBe(benchmarkCacheKey("model", "skill", evalCase, "with-skill", "after"));
+    expect(benchmarkCacheKey("model", "skill", evalCase, "with-skill", "before", "high"))
+      .not.toBe(benchmarkCacheKey("model", "skill", evalCase, "with-skill", "after", "high"));
   });
 
   test("does not invalidate baselines when SKILL.md changes", () => {
-    expect(benchmarkCacheKey("model", "skill", evalCase, "baseline", "before"))
-      .toBe(benchmarkCacheKey("model", "skill", evalCase, "baseline", "after"));
+    expect(benchmarkCacheKey("model", "skill", evalCase, "baseline", "before", "high"))
+      .toBe(benchmarkCacheKey("model", "skill", evalCase, "baseline", "after", "high"));
   });
 
   test("invalidates runs when the grading contract changes", () => {
@@ -30,18 +30,23 @@ describe("benchmarkCacheKey", () => {
         { id: "second", text: "Includes the implementation boundary.", type: "qualitative" },
       ],
     };
-    expect(benchmarkCacheKey("model", "skill", evalCase, "baseline", ""))
-      .not.toBe(benchmarkCacheKey("model", "skill", changed, "baseline", ""));
+    expect(benchmarkCacheKey("model", "skill", evalCase, "baseline", "", "high"))
+      .not.toBe(benchmarkCacheKey("model", "skill", changed, "baseline", "", "high"));
   });
 
   test("keeps equal bare skill names isolated by qualified identity", () => {
-    expect(benchmarkCacheKey("model", "review:skill", evalCase, "baseline", ""))
-      .not.toBe(benchmarkCacheKey("model", "other:skill", evalCase, "baseline", ""));
+    expect(benchmarkCacheKey("model", "review:skill", evalCase, "baseline", "", "high"))
+      .not.toBe(benchmarkCacheKey("model", "other:skill", evalCase, "baseline", "", "high"));
+  });
+
+  test("keeps runs at different efforts apart", () => {
+    expect(benchmarkCacheKey("model", "skill", evalCase, "baseline", "", "low"))
+      .not.toBe(benchmarkCacheKey("model", "skill", evalCase, "baseline", "", "high"));
   });
 
   test("invalidates when the eval file contract changes", () => {
     const changed = { ...evalCase, files: ["fixtures/example.ts"] };
-    expect(benchmarkCacheKey("model", "skill", evalCase, "baseline", ""))
-      .not.toBe(benchmarkCacheKey("model", "skill", changed, "baseline", ""));
+    expect(benchmarkCacheKey("model", "skill", evalCase, "baseline", "", "high"))
+      .not.toBe(benchmarkCacheKey("model", "skill", changed, "baseline", "", "high"));
   });
 });

@@ -150,7 +150,11 @@ import re, sys
 default = sys.argv[1]
 preferred = {
     "claude-opus-5-5": 1,
+    "claude-fable-5-2": 1,
+    "gpt-6.1-sol": 1,
     "gpt-6-sol": 1,
+    "claude-sonnet-5-5": 2,
+    "claude-haiku-5-5": 2,
     "muse-spark-1.3-contributor-free": 2,
     "grok-4.7": 3,
 }
@@ -174,7 +178,8 @@ for _, _, model in sorted(models)[:80]:
 # that overrides its endpoint (`options.baseURL`, `api`) or its SDK package (`npm`) is reported with
 # the host it really reaches, so the canvas can refuse an openai/… or anthropic/… id served
 # somewhere else. A config that does not parse is reported as the `*` provider, which makes every
-# host unverified.
+# host unverified. A `models.<key>.id` that differs from its key changes the API id OpenCode sends
+# (openai/gpt-6.1-sol calling gpt-5.5 or gpt-6-sol), so each one is reported as `provider/key` → id.
 opencode_config_info() {
   python3 - "$@" <<'PY_OPENCODE_CONFIG'
 import json, os, re, sys
@@ -224,6 +229,7 @@ def official(provider, host):
 
 
 hosts = {}
+ids = {}
 for path in sys.argv[1:]:
     inline = path == "OPENCODE_CONFIG_CONTENT"
     if inline and not os.environ.get(path) or not inline and not os.path.isfile(path):
@@ -263,11 +269,22 @@ for path in sys.argv[1:]:
             host = host if re.fullmatch(r"[A-Za-z0-9.:@/_-]+", host or "") else "unverified"
             if provider not in hosts or official(provider, hosts[provider]):
                 hosts[provider] = host
+        models = entry.get("models")
+        for key, value in (models.items() if isinstance(models, dict) else ()):
+            if not isinstance(key, str) or not re.fullmatch(r"[A-Za-z0-9._:@/-]+", key):
+                continue
+            target = value.get("id", key) if isinstance(value, dict) else None
+            if target != key:
+                target = target if isinstance(target, str) and re.fullmatch(r"[A-Za-z0-9._:@/-]+", target) else "unverified"
+                ids.setdefault(provider + "/" + key, target)
 for provider, host in hosts.items():
     print("host\t%s\t%s" % (provider, host))
+for model, target in ids.items():
+    print("modelid\t%s\t%s" % (model, target))
 PY_OPENCODE_CONFIG
 }
 opencode_hosts=""
+opencode_ids=""
 _oc_global="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
 case "$(uname -s)" in
   Darwin) _oc_managed="/Library/Application Support/opencode" ;;
@@ -280,20 +297,25 @@ while IFS=$'\t' read -r _kind _value _extra; do
     model) [[ -n "$opencode_model" ]] && continue; opencode_model="$_value" ;;
     provider) opencode_providers=$(printf '%s\n%s' "$opencode_providers" "$_value") ;;
     host) opencode_hosts=$(printf '%s\n%s\t%s' "$opencode_hosts" "$_value" "$_extra") ;;
+    modelid) opencode_ids=$(printf '%s\n%s\t%s' "$opencode_ids" "$_value" "$_extra") ;;
   esac
 done < <(opencode_config_info "$_oc_managed/opencode.jsonc" "$_oc_managed/opencode.json" OPENCODE_CONFIG_CONTENT \
   "$PWD/opencode.jsonc" "$PWD/opencode.json" "$PWD/.opencode/opencode.jsonc" "$PWD/.opencode/opencode.json" \
   "$_oc_dir/opencode.jsonc" "$_oc_dir/opencode.json" "${OPENCODE_CONFIG:-/nonexistent}" \
   "$_oc_global/opencode.jsonc" "$_oc_global/opencode.json" "$_oc_global/config.json")
 unset _oc_global _oc_managed _oc_dir _extra
-opencode_hosts_json=$(printf '%s\n' "$opencode_hosts" | python3 -c '
+tab_pairs_json() {
+  python3 -c '
 import json, sys
 out = {}
 for line in sys.stdin:
     parts = line.rstrip("\n").split("\t")
     if len(parts) == 2 and parts[0] not in out:
         out[parts[0]] = parts[1]
-print(json.dumps(out))')
+print(json.dumps(out))'
+}
+opencode_hosts_json=$(printf '%s\n' "$opencode_hosts" | tab_pairs_json)
+opencode_ids_json=$(printf '%s\n' "$opencode_ids" | tab_pairs_json)
 if [[ "$opencode_model" == */* ]]; then
   opencode_providers=$(printf '%s\n%s' "$opencode_providers" "${opencode_model%%/*}")
 fi
@@ -546,6 +568,7 @@ cat <<JSON
   "grok_model_targets": $grok_model_targets_json,
   "opencode_reviewer": $opencode_reviewer_json,
   "opencode_provider_hosts": $opencode_hosts_json,
+  "opencode_model_ids": $opencode_ids_json,
   "opencode_read_only_problem": $opencode_read_only_problem_json,
   "caps": {
     "live_children": $live_children,
@@ -564,7 +587,7 @@ cat <<JSON
     "opencode": "$opencode_bin"
   },
   "models": {
-    "claude": ["claude-opus-5-5", "opus", "sonnet", "haiku", "inherit"],
+    "claude": ["claude-opus-5-5", "claude-fable-5-2", "claude-sonnet-5-5", "claude-haiku-5-5", "opus", "sonnet", "haiku", "inherit"],
     "claude_effort": ["low", "medium", "high", "xhigh", "max"],
     "grok": [${grok_models_json}],
     "grok_effort": ["none", "minimal", "low", "medium", "high", "xhigh"],

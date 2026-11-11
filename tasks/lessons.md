@@ -1,5 +1,22 @@
 # Lessons
 
+## An allow-exception must match per token, and so must the ban (2026-11-11)
+
+Admitting one id inside a deny regex (`fable` except `claude-fable-5-2`) is a
+whole-string check unless you split it: `claude-fable-5-1/claude-fable-5-2`
+passed because the exception matched the last segment. Apply the exception to
+each segment the ban matches, end every version match at any non-alphanumeric
+delimiter (`:free`, `@date`), and write the negative tests before relaxing a
+ban. When a label is trusted (an alias name, an OpenCode model key), check what
+it resolves to for every pinned id, not only the one you were changing.
+
+## Grep before claiming "every surface" (2026-11-11)
+
+A CHANGELOG or summary that says a value is mirrored everywhere must be backed
+by a search for the old value across code literals, tests, and guides. The
+canvas still created Opus builders at `medium` while the entry said every
+dispatch surface used `high`.
+
 ## Test the adversarial ordering, not the happy one (2026-09-23)
 
 A policy test that seeds the preferred model first proves nothing about a

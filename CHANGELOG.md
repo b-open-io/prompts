@@ -8,6 +8,110 @@ manifests share the same release version.
 
 No unreleased changes.
 
+## [1.1.179] - 2026-11-11
+
+Core 1.1.179, orchestra 0.1.37, review 0.1.27. This release reverses the
+Fable ban from #101 on the owner's instruction: Claude Fable 5.2 is now the
+planning and advisory tier.
+
+### Changed
+
+- Model tier map, stated once in `coordinator` ("Select a lane") and mirrored
+  in agent-builder, the agent roster, `cli-dispatch.md`, software-factory, the
+  Visual Coordinator canvas, and the README: `claude-fable-5-2` (high) plans and advises,
+  `claude-opus-5-5` (high) is the default implementation worker,
+  `claude-sonnet-5-5` (medium) and `claude-haiku-5-5` (low) are explicit
+  per-unit step-downs, and `gpt-6.1-sol` (xhigh) gives the read-only review
+  verdict. Every dispatch names its model and effort; `claude -p` examples
+  now pass `--effort`. Any Fable id other than `claude-fable-5-2` (Fable 5.1
+  and earlier), GPT-5.5/5.6, and Grok 4.6 stay out of policy; the bare `fable`
+  alias is refused wherever a full id can be written. Grok 4.7 stays a last
+  resort. `claude-fable-5-2` is not dispatched as a coding worker.
+- The Visual Coordinator now staffs steps from the tier map: "New step", the
+  seeded Build step, restaffed workers, and seeded steps without an effort
+  start at `high` (was `medium`); reviewers stay at `xhigh`. Changing a step's
+  lane now sets the step to its tier effort instead of the lane's first listed
+  effort (which could be `low`). For a new step or a lane change, a lane that
+  does not list the tier effort gets its highest listed effort below it, or
+  its lowest listed effort if none is below. The canvas guides' Opus
+  shell-out examples pass `--effort high`.
+- Review default moves from `gpt-6-sol` to `gpt-6.1-sol` across Coordinator,
+  wave-coordinator, software-factory, the Visual Coordinator canvas,
+  `run-opencode-review.sh`, Codex Security, code-auditor, security-ops, and
+  hunter-skeptic-referee. `gpt-6-sol` is still accepted where a lane or
+  account does not list 6.1 yet, and the canvas prefers 6.1 regardless of
+  list order.
+- Advisor default is `claude-fable-5-2` at high effort (`BOPEN_ADVISOR_MODEL`
+  in `settings.json`, the Claude CLI channel, native advisor, and the canvas
+  guide); `claude-opus-5-5` is the approved cheaper alternative. The Codex
+  advisor channel accepts `gpt-6.1-sol` or `gpt-6-sol`.
+- The shared shell policy (`model-policy.sh`) and the Visual Coordinator
+  admit exactly `claude-fable-5-2`. The canvas accepts it as the main session
+  or a dispatched coordinator, rejects it as a builder with a "plans and
+  advises" message, and accepts explicit Sonnet 5.5 or Haiku 5.5 builders
+  without ever defaulting to them. A Grok alias named for one Sol id that runs
+  the other is flagged as a substitution.
+- `review:architecture-reviewer` runs on `claude-fable-5-2` at `effort: high`
+  and reads small areas directly instead of always delegating. It is the
+  Skeptic stage of `/bug-hunt` and hunter-skeptic-referee, so that stage now
+  runs on Fable 5.2 instead of Opus, which changes its cost; Sol still gives
+  the review verdict.
+- Advisor: when `claude-fable-5-2` is unavailable or rejected, the consult
+  runs on `claude-opus-5-5` and the report names the downgrade. A Claude main
+  whose subagent tool accepts only aliases uses the Claude CLI channel, which
+  pins the full id. The Codex channel is offered for a different model's view
+  and runs only after the user selects it.
+- `cli-dispatch.md` gives the read-only form of a Fable plan or advice run
+  (`--permission-mode plan --tools "Read,Grep,Glob"`); its only `claude -p`
+  template is the write form for implementation units.
+- Coordinator states that every model is chosen by name: no host Auto or
+  default-picker model and no Composer or other Cursor flagship model, while
+  Claude's `inherit` (the main session's own chosen model) stays allowed.
+- agent-builder and the agent roster restate the hard model rule as the tier
+  list; the roster lists architecture-reviewer on Fable 5.2.
+
+### Fixed
+
+- HammerTime's verifier defaulted to the retired `claude-haiku-4-5-20251001`.
+  It now uses `claude-haiku-5-5` at low effort with room for a thinking block,
+  and reads the first text block instead of `content[0]`, which failed open
+  whenever a reply led with thinking.
+- The skill benchmark judge defaulted to the retired Haiku 4.5 and sent
+  `temperature: 0`, which current Claude models reject. It now defaults to
+  `claude-haiku-5-5` and sends no sampling, thinking, or forced tool params.
+- A drift test ties the advisor fallbacks in the Claude CLI channel and the
+  canvas guide to the `settings.json` default.
+- Synchronized the Claude and Codex core manifests at 1.1.179.
+- The shell policy and the canvas applied the Fable 5.2 exception to the whole
+  id, so `claude-fable-5-1/claude-fable-5-2` passed both. Every path segment
+  that names Fable must now be exactly `claude-fable-5-2`. The shell policy
+  splits segments with parameter expansion, so the check needs no temporary
+  file on Bash 3.2.
+- Both policies matched GPT-5.5, GPT-5.6, and Grok 4.6 only before `-` or the
+  end of the id, so `gpt-5.5:free` and `openrouter/openai/gpt-5.6:free`
+  passed. Any non-alphanumeric delimiter now counts.
+- An OpenCode `provider.<id>.models.<key>.id` override could make
+  `openai/gpt-6.1-sol` call `gpt-5.5` or the legacy `gpt-6-sol` while
+  `run-opencode-review.sh` and the canvas accepted it. The wrapper now refuses
+  any override that sends a different API id; the detector reports overrides
+  as `opencode_model_ids`, and the canvas refuses those models.
+- The canvas checked only Sol-named Grok aliases for substitution, so a Grok
+  alias named `claude-fable-5-2` that ran Opus exported work labeled Fable.
+  An alias named for any pinned id (Fable, Opus, Sonnet, Haiku, either Sol
+  id) must now run that id.
+- Skill benchmark arms and the `claude -p` judge fallback ran without
+  `--effort`. Every dispatch now pins one: `--effort` or `BENCHMARK_EFFORT`,
+  else the tier default (Haiku low, Sonnet medium, others high). The effort is
+  part of the cache key and the report, and preflight requires the CLI flag.
+- A `--skill` benchmark run merged into `benchmarks/latest.json` kept other
+  skills' results but labeled the aggregate with the latest run's model. The
+  aggregate `model` and `effort` are now each `mixed` unless every merged
+  skill records the run's value; per-skill entries are unchanged. Results
+  published before this release record no effort, so the aggregate effort
+  reads `mixed` until those skills are rerun.
+- `model-policy.sh` read an id it could not lowercase as in policy. It now
+  refuses it.
+
 ## [1.1.178] - 2026-11-04
 
 ### Added

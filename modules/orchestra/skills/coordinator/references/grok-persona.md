@@ -46,14 +46,14 @@ bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
 ```
 
 Review lane (read-only). Review never inherits `$WORKER_MODEL` or the runtime
-default effort: it runs on a quoted `gpt-6-sol` entry with `--effort xhigh`.
+default effort: it runs on a quoted `gpt-6.1-sol` entry with `--effort xhigh`.
 Usage-credit pressure never moves a review to Grok; narrow its scope or queue it.
 
 ```bash
 PROMPT_FILE=$(mktemp -t grok-prompt.XXXXXX)
 bash scripts/grok-persona.sh code-auditor "$(cat REVIEW-x.md)" > "$PROMPT_FILE"
 bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
-  --auth grok.com --model gpt-6-sol --effort xhigh --mode read \
+  --auth grok.com --model gpt-6.1-sol --effort xhigh --mode read \
   --cwd "$(pwd)" --prompt-file "$PROMPT_FILE" --log "$PROMPT_FILE.log"
 ```
 

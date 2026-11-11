@@ -1,4 +1,4 @@
-"""The codex-security pre-commit recipe pins the generated hook to gpt-6-sol at xhigh."""
+"""The codex-security pre-commit recipe pins the generated hook to gpt-6.1-sol at xhigh."""
 
 from __future__ import annotations
 
@@ -57,7 +57,7 @@ class HookPinTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         lines = self.hook.read_text().splitlines()
         self.assertEqual(lines[:2], ["#!/bin/sh", "set -eu"])
-        self.assertTrue(lines[2].endswith("scan . --working-tree --fail-on-severity high --model gpt-6-sol --effort xhigh"))
+        self.assertTrue(lines[2].endswith("scan . --working-tree --fail-on-severity high --model gpt-6.1-sol --effort xhigh"))
         self.assertEqual(list(self.hook.parent.glob("*.orig")), [])
         self.assertTrue(os.access(self.hook, os.X_OK))
 

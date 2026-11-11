@@ -422,6 +422,35 @@ def count_pending_agents(transcript_path):
     return len(pending)
 
 
+VERIFIER_MODEL = "claude-haiku-5-5"
+
+
+def verifier_request_body(prompt):
+    """Messages API body for the yes/no verifier.
+
+    Current models think adaptively and reject sampling parameters, so the body sends none. Low
+    effort keeps a one-word classification cheap, and the token cap leaves room for a short
+    thinking block before the answer.
+    """
+    return {
+        "model": os.environ.get("HAMMERTIME_VERIFIER_MODEL") or VERIFIER_MODEL,
+        "max_tokens": 256,
+        "output_config": {"effort": "low"},
+        "messages": [{"role": "user", "content": prompt}],
+    }
+
+
+def verifier_answer(result):
+    """Lowercased text of the first text block, or "" when the reply has none.
+
+    A reply can lead with a thinking block, so content[0] is not always the answer.
+    """
+    for block in result.get("content") or []:
+        if isinstance(block, dict) and block.get("type") == "text":
+            return str(block.get("text", "")).strip().lower()
+    return ""
+
+
 def phase2_haiku_evaluate(text, rule, pending_agents=0):
     """Optional Anthropic Haiku verifier for ambiguous scores.
 
@@ -464,13 +493,7 @@ def phase2_haiku_evaluate(text, rule, pending_agents=0):
         "Answer ONLY 'yes' or 'no'."
     )
 
-    body = json.dumps({
-        "model": os.environ.get(
-            "HAMMERTIME_VERIFIER_MODEL", "claude-haiku-4-5-20251001"
-        ),
-        "max_tokens": 8,
-        "messages": [{"role": "user", "content": prompt}],
-    }).encode()
+    body = json.dumps(verifier_request_body(prompt)).encode()
 
     req = urllib.request.Request(
         "https://api.anthropic.com/v1/messages",
@@ -485,8 +508,7 @@ def phase2_haiku_evaluate(text, rule, pending_agents=0):
 
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
-            result = json.loads(resp.read())
-            answer = result.get("content", [{}])[0].get("text", "").strip().lower()
+            answer = verifier_answer(json.loads(resp.read()))
             violated = answer.startswith("yes")
             debug_log(f"PHASE2: Haiku answer={answer!r} violated={violated}")
             return violated

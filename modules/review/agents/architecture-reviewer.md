@@ -15,8 +15,9 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/kayle.png
-version: 1.1.18
-model: opus
+version: 1.1.19
+model: claude-fable-5-2
+effort: high
 color: gray
 description: >-
   System architecture and large-scale refactoring agent. Use this agent when the user asks to
@@ -42,7 +43,7 @@ When starting any task, immediately announce:
 
 For multi-part analysis or review tasks:
 1. **Plan first** — use TaskCreate/TaskUpdate to track each area of investigation.
-2. **Independent analysis areas?** Invoke `Skill(superpowers:dispatching-parallel-agents)` to dispatch one subagent per independent domain (e.g., separate modules, independent subsystems, unrelated findings).
+2. **Independent analysis areas?** When an area is too large to read yourself, invoke `Skill(superpowers:dispatching-parallel-agents)` to dispatch one subagent per independent domain (e.g., separate modules, independent subsystems, unrelated findings); otherwise read it directly.
 
 ## Pre-Task Contract
 

@@ -2,13 +2,16 @@ import { describe, expect, test } from "bun:test";
 import {
   BenchmarkInfrastructureError,
   ClaudeRunError,
+  buildClaudeArgs,
   buildClaudeInvocation,
+  defaultEffortFor,
   discoverSkills,
   parseClaudeOutput,
   preflightClaude,
   normalizeTokenCount,
   runClaude,
   validateConcurrency,
+  validateEffort,
   validateTextAblationEvalFile,
   usageTokens,
 } from "../benchmark-runner";
@@ -91,9 +94,10 @@ describe("discoverSkills", () => {
 describe("Claude invocation", () => {
   test("keeps baseline and with-skill argv/cwd/env parity except for the body", () => {
     const env = { CLAUDECODE: "nested", PROVIDER: "test" };
-    const baseline = buildClaudeInvocation("same prompt", { model: "claude-test", cwd: "/tmp/empty", env });
+    const baseline = buildClaudeInvocation("same prompt", { model: "claude-test", effort: "high", cwd: "/tmp/empty", env });
     const withSkill = buildClaudeInvocation("same prompt", {
       model: "claude-test",
+      effort: "high",
       cwd: "/tmp/empty",
       env,
       skillContent: "the exact skill body",
@@ -109,12 +113,30 @@ describe("Claude invocation", () => {
     expect(baseline.args).toContain("--mcp-config");
     expect(baseline.args).toContain("--tools");
     expect(baseline.args).not.toContain("--dangerously-skip-permissions");
+    expect(baseline.args.slice(baseline.args.indexOf("--effort"), baseline.args.indexOf("--effort") + 2)).toEqual(["--effort", "high"]);
+  });
+
+  test("pins an explicit effort on every dispatch, judge fallback included", () => {
+    const judge = buildClaudeArgs("grade", { model: "claude-haiku-5-5", effort: "low", jsonSchema: { type: "object" } });
+    expect(judge.slice(judge.indexOf("--effort"), judge.indexOf("--effort") + 2)).toEqual(["--effort", "low"]);
+    expect(() => buildClaudeArgs("grade", { model: "claude-haiku-5-5", effort: undefined as never })).toThrow(/--effort must be one of/);
+    expect(() => validateEffort("turbo")).toThrow(/--effort must be one of/);
+    expect(validateEffort("xhigh")).toBe("xhigh");
+  });
+
+  test("defaults effort from the tier map", () => {
+    expect(defaultEffortFor("claude-haiku-5-5")).toBe("low");
+    expect(defaultEffortFor("claude-sonnet-5-5")).toBe("medium");
+    expect(defaultEffortFor("claude-opus-5-5")).toBe("high");
+    expect(defaultEffortFor("claude-fable-5-2")).toBe("high");
+    expect(defaultEffortFor("haiku")).toBe("low");
   });
 
   test("runs a mocked CLI and parses only a valid result envelope", async () => {
     const calls: string[] = [];
     const result = await runClaude("prompt", {
       model: "claude-test",
+      effort: "high",
       cwd: "/tmp/empty",
       processRunner: async invocation => {
         calls.push(JSON.stringify(invocation));
@@ -184,7 +206,7 @@ describe("Claude output and preflight", () => {
     } })).rejects.toThrow(/provider authentication/);
     expect(calls).toHaveLength(0);
 
-    const help = ["--bare", "--append-system-prompt", "--disable-slash-commands", "--strict-mcp-config", "--mcp-config", "--tools", "--output-format", "--json-schema", "--no-session-persistence"].join(" ");
+    const help = ["--bare", "--append-system-prompt", "--disable-slash-commands", "--strict-mcp-config", "--mcp-config", "--tools", "--output-format", "--json-schema", "--no-session-persistence", "--effort"].join(" ");
     await preflightClaude({ env: { ANTHROPIC_API_KEY: "test" }, run: async args => {
       calls.push(args);
       return { stdout: args[0] === "which" ? "/usr/bin/claude" : help, stderr: "", exitCode: 0 };
@@ -196,6 +218,7 @@ describe("Claude output and preflight", () => {
   test("retains a timeout failure from a mocked process", async () => {
     await expect(runClaude("prompt", {
       model: "claude-test",
+      effort: "high",
       timeoutMs: 5,
       processRunner: async () => new Promise(() => undefined),
     })).rejects.toMatchObject({ timedOut: true });
