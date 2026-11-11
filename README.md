@@ -646,6 +646,7 @@ prompts/
 │   ├── prompts-factory-worker.sh # LoopTop worker that keeps the dev → master PR current
 │   ├── test-isolated-plugin-install.sh # Disposable-runner plugin install gate
 │   ├── check-plugin-extraction.py # Per-plugin git-subdir extraction gate
+│   ├── check-model-drift.py # Retired model id gate (baseline in model-drift-baseline.json)
 │   ├── benchmark.tsx       # Skill output-quality benchmark CLI
 │   ├── plugin-weight.py    # Static catalog/context inventory
 │   ├── capture-*-context.py # Exact Claude/Codex host snapshots

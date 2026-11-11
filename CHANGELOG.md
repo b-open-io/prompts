@@ -8,6 +8,49 @@ manifests share the same release version.
 
 No unreleased changes.
 
+## [1.1.180] - 2026-11-11
+
+Core 1.1.180, orchestra 0.1.38, plugin-kit 0.1.11, research 0.1.6, creative
+0.1.17, web-dev 0.1.8. This release removes retired model ids from active
+files and adds a CI guard so new drift fails the build.
+
+### Changed
+
+- The Martha and account-manager bots call `anthropic/claude-sonnet-5.5` and
+  `anthropic/claude-haiku-5.5` through the AI Gateway (were Sonnet 4.6 and
+  Haiku 4.5).
+- Claudex, the README, and `docs/plugin-context-harness.md` use
+  `gpt-6.1-sol`. The claudex setup uses `gpt-6-sol` only when the proxy lists
+  no 6.1, and tells the user.
+- gemskills references move to 0.0.72: `gpt-image-2.6-sunburst` is the
+  default for finals and `gpt-image-2.6-flare` is for drafts. This changes the
+  front desk, designer, audio-specialist, promo-video-pipeline, the setup pack
+  catalog, and the README.
+- The benchmark-skills skill and `benchmarks/NOTES.md` stop advising
+  `temperature=0`, because current Claude models reject sampling parameters.
+  They name `claude-haiku-5-5` as the default model. The humanize sales
+  reference says its sampling settings apply only to models that accept them.
+- x-research no longer names `grok-4.5`. Its pin example is `grok-4.7`.
+
+### Fixed
+
+- The `tierEffort` JSDoc now states that the fallback picks a lower effort
+  only when the lane lists one.
+- The `mainNodeId` JSDoc said a legacy `grok-4.6` main session skips the
+  credit gate. The code applies the gate to every Grok main.
+
+### Added
+
+- `scripts/check-model-drift.py` runs in CI. Claude ids must match the tier
+  map, and GPT, Grok, GPT Image, and Gemini ids below the current versions
+  fail. Deliberate mentions (bans, legacy acceptance, upstream defaults) are
+  pinned per file in `scripts/model-drift-baseline.json`.
+
+### Not checked live
+
+- No live request ran against the new gateway slugs or a CLIProxyAPI account
+  that lists `gpt-6.1-sol`. The slugs match the AI Gateway catalog.
+
 ## [1.1.179] - 2026-11-11
 
 Core 1.1.179, orchestra 0.1.37, review 0.1.27. This release reverses the
