@@ -17,7 +17,7 @@ bun run scripts/benchmark.tsx                                    # All skills
 bun run scripts/benchmark.tsx --skill geo-optimizer              # Single skill
 bun run scripts/benchmark.tsx --skill collections --skill-root /path/to/1sat-sdk # Skill from another plugin repo
 export BENCHMARK_MODEL_ID="provider-model-id-from-your-account"
-bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"       # Override model (default: haiku)
+bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"       # Override model (default: `claude-haiku-5-5`)
 bun run scripts/benchmark.tsx --concurrency 4                    # Parallel workers
 BENCHMARK_MODEL="$BENCHMARK_MODEL_ID" bun run scripts/benchmark.tsx # Env var override
 ```
@@ -99,10 +99,10 @@ Refusals / empty / max_tokens misses throw `GradeParseError` (fail-loud).
 
 Still useful:
 
-1. **Temperature = 0** for the judge model (Messages API path sets this)
+1. **No sampling parameters** — the judge request sends no `temperature`, `top_p`, `top_k`, thinking budget, or forced `tool_choice`; current Claude models reject them (see `judgeRequestBody` in `scripts/benchmark-grade.ts`)
 2. **Chain-of-thought before verdict** — require the judge to reason before scoring
 3. **Concrete examples** — give the judge 2-3 examples of pass and fail for each assertion
-4. **Different model family as judge** — if outputs are from Claude, judge with GPT-4o or vice versa (avoids self-enhancement bias where a model rates its own outputs higher)
+4. **Different model family as judge** — if outputs are from Claude, judge with a GPT model (`gpt-6.1-sol`) or vice versa (avoids self-enhancement bias where a model rates its own outputs higher)
 
 Judge prompt structure:
 ```
@@ -118,7 +118,7 @@ Then output JSON: {"grades":[{"id":"...","passed":true/false,"reasoning":"one se
 
 ### Pass@3 for Stochastic Assertions
 
-For behavioral assertions where outputs vary between runs, run each test case 3 times at temperature > 0 and require 2/3 to pass. This gives a reliability signal: pass@3 = 3/3 is stronger than 2/3, even if both "pass."
+For behavioral assertions where outputs vary between runs, run each test case 3 times and require 2/3 to pass. This gives a reliability signal: pass@3 = 3/3 is stronger than 2/3, even if both "pass."
 
 ### Assertion Discovery (VibeCheck Method)
 
@@ -166,7 +166,7 @@ Key papers and resources that informed this methodology:
 | Position bias | >10% accuracy shift from swapping order | Run pairwise twice with swapped order, average |
 | Verbosity bias | Judges prefer longer outputs >90% of the time | Rubric instruction: "length does not indicate quality" |
 | Self-enhancement | GPT-4 gives itself 10% win rate boost | Use different model family as judge |
-| Inconsistency | Same input scores differently across runs | temperature=0, run 3x majority vote |
+| Inconsistency | Same input scores differently across runs | Schema-constrained output, run 3x majority vote |
 
 ---
 

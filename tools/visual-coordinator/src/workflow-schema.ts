@@ -326,7 +326,7 @@ const runsBuilder = runsAny(OPUS, SONNET, HAIKU);
 // delimiter after a version (`-mini`, `:free`, `@date`) still names that version.
 const isFable = (model: string) => model.split("/").some((segment) => /^(?:claude-)?fable(?:$|[^a-z0-9])/i.test(segment) && segment.toLowerCase() !== FABLE);
 function isSuperseded(model: string) { return /(?:^|\/)(?:gpt-5\.[56]|grok-4\.6)(?:$|[^a-z0-9])/i.test(model) || isFable(model); }
-// Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
+// Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-5.5`), so match any path segment.
 // Provider-qualified xAI ids (xai/…, openrouter/x-ai/…) are Grok whatever the model name says.
 export const isGrokFamily = (model: string) => /(?:^|\/)(?:grok-|x-?ai\/)/i.test(model);
 const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
@@ -508,9 +508,9 @@ export const reapprove = (environment: WorkflowEnvironment, node: WorkflowNode, 
 
 /**
  * The tier map's effort for a role: reviewers at xhigh, every other step at high. A lane that lists
- * efforts without that one gets its highest listed effort below it, else its lowest listed effort.
- * This is deliberately not "closest": a nearer higher effort is skipped so the fallback never
- * silently escalates cost (a builder on ["low", "xhigh"] gets "low").
+ * efforts without that one gets its highest listed effort below it, so a builder on ["low", "xhigh"]
+ * gets "low": when a lower effort exists, the fallback skips a nearer higher one and never escalates
+ * cost. Only a lane with no lower effort gets its lowest listed one (["max", "xhigh"] gives "xhigh").
  */
 export const tierEffort = (role: NodeRole, laneEfforts: readonly WorkflowEffort[] = []): WorkflowEffort => {
   const wanted: WorkflowEffort = role === "reviewer" ? "xhigh" : "high";

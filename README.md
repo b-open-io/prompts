@@ -701,7 +701,7 @@ routing:
 python3 scripts/plugin-weight.py --format markdown
 
 # Host snapshots (exact Codex omission counts need a runtime JSONL event file)
-python3 scripts/capture-codex-context.py --model gpt-6-sol
+python3 scripts/capture-codex-context.py --model gpt-6.1-sol
 python3 scripts/capture-claude-context.py --source-root .
 
 # Source versus installed Claude/Codex inventories

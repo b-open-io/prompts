@@ -266,7 +266,8 @@ own length budget. Model discovery as six jobs gathered across turns, not a
 checklist dump: problem, pain size, cost of inaction, current workaround,
 stakeholders, timing.
 
-Generation: temperature about 0.4–0.6 for outreach, frequency and presence
+Generation, on a model that accepts sampling parameters (current Claude models
+reject them): temperature about 0.4–0.6 for outreach, frequency and presence
 penalty so stock CTAs do not repeat, a hard max token so it cannot monologue.
 
 Keep human: pricing, multi-threaded politics, live-call emotion, final

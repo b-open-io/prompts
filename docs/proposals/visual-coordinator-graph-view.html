@@ -8,7 +8,7 @@
   ARCHIVAL PROPOSAL: superseded by tools/visual-coordinator and
   modules/orchestra/skills/visual-coordinator/examples/graph-builder.html.
   Model defaults below follow current policy: workers claude-opus-5-5, review
-  gpt-6-sol at xhigh, advisor claude-opus-5-5, Grok only under usage-credit
+  gpt-6.1-sol at xhigh, advisor claude-fable-5-2, Grok only under usage-credit
   pressure and only grok-4.7.
   Copy this file into the artifact. Replace window.VC_SEED with the graph
   for THIS job (nodes + edges). Do not leave the untitled Start/Work/Gate
@@ -146,7 +146,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
   var MODELS = ENV.models || {
     grok:["grok-4.7"], grok_effort:["none","minimal","low","medium","high","xhigh"],
     claude:["claude-opus-5-5","sonnet","inherit"], claude_effort:["low","medium","high","xhigh","max"],
-    codex:["gpt-6-sol"], codex_effort:["minimal","low","medium","high","xhigh"]
+    codex:["gpt-6.1-sol"], codex_effort:["minimal","low","medium","high","xhigh"]
   };
   var LANES = ENV.lanes || { grok:"available", claude:"available", codex:"available" };
   var ROSTER = ENV.roster || ["","orchestra:coordinator","orchestra:agent-builder","review:tester"];
@@ -223,7 +223,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
     S.nodes = [
       node({id:"n1", kind:"source", x:36, y:188, label:"Start", detail:"brief in"}),
       node({id:"n2", kind:"process", x:280, y:178, label:"Work", detail:"do the job", lane:opusLane, model:"claude-opus-5-5", effort:"medium"}),
-      node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:solLane, model:"gpt-6-sol", effort:"xhigh", gateCmd:"bun test"}),
+      node({id:"n3", kind:"gate", x:530, y:178, label:"Gate", detail:"prove it", lane:solLane, model:"gpt-6.1-sol", effort:"xhigh", gateCmd:"bun test"}),
       node({id:"n4", kind:"process", x:780, y:178, label:"Done", detail:"ship or complete", lane:native, model:nativeModel, effort:"low"})
     ];
     nid=5;
@@ -246,7 +246,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       node({id:"n3", kind:"process", x:508, y:36, label:"Implement A", detail:"tests", lane:"claude", model:"claude-opus-5-5", effort:"medium"}),
       node({id:"n4", kind:"process", x:508, y:178, label:"Implement B", detail:"pages", lane:"claude", model:"claude-opus-5-5", effort:"medium"}),
       node({id:"n5", kind:"process", x:508, y:320, label:"Implement C", detail:"API", lane:"claude", model:"claude-opus-5-5", effort:"medium"}),
-      node({id:"n6", kind:"gate", x:748, y:178, label:"Verify", detail:"checker + bun test", lane:"codex", model:"gpt-6-sol", effort:"xhigh", gateCmd:"bun test"}),
+      node({id:"n6", kind:"gate", x:748, y:178, label:"Verify", detail:"checker + bun test", lane:"codex", model:"gpt-6.1-sol", effort:"xhigh", gateCmd:"bun test"}),
       node({id:"n7", kind:"process", x:988, y:178, label:"Ship", detail:"git stays here", lane:"grok", model:"grok-4.7", effort:"medium", agentType:"orchestra:coordinator"}),
       node({id:"n8", kind:"artifact", x:988, y:36, label:"Diff", detail:"what workers wrote"}),
       node({id:"n9", kind:"artifact", x:988, y:320, label:"Gate log", detail:"pass or findings"}),
@@ -495,7 +495,7 @@ window.VC_SEED = window.VC_SEED || { name: "", nodes: [], edges: [] };
       label: kind==="gate"?"Gate": kind==="source"?"Source": kind==="artifact"?"Artifact": kind==="memory"?"Memory":"Step",
       detail: kind==="gate"?"prove the work":"",
       lane: kind==="gate" ? (laneAvailable("codex")?"codex":hostLane()) : (laneAvailable("claude")?"claude":hostLane()),
-      model: kind==="gate" ? "gpt-6-sol" : "claude-opus-5-5",
+      model: kind==="gate" ? "gpt-6.1-sol" : "claude-opus-5-5",
       effort: kind==="gate"?"xhigh":"medium",
       gateCmd: kind==="gate"?"bun test":"" });
     S.nodes.push(n);

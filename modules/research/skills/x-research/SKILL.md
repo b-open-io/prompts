@@ -1,6 +1,6 @@
 ---
 name: x-research
-version: 1.1.5
+version: 1.1.6
 description: This skill should be used for AI-powered X/Twitter research via xAI Grok when the user asks "what's trending", "social sentiment", "summarize X discussion about", "analyze X conversation about", or "research topic on X". Returns AI summaries with analysis, not raw tweets. For raw tweet data, use x-user-timeline, x-tweet-search, or x-tweet-fetch. Requires XAI_API_KEY.
 allowed-tools: Bash(curl:*), Bash(jq:*), Bash(${CLAUDE_PLUGIN_ROOT}:*)
 ---
@@ -72,11 +72,11 @@ JSON
 
 Leave `XAI_RESEARCH_MODEL` unset, or set it to `auto`, `latest`, or
 `grok-latest`/`grok-4-latest`, to select the newest canonical general-purpose Grok model
-available to the current API key. The selector currently resolves that policy
-to `grok-4.5`; it advances automatically when xAI publishes a newer canonical
-model. Do not trust an alias merely because its name contains `latest`—the live
-catalog can retain a lagging alias. Set a versioned ID such as `grok-4.5`, or a
-versioned alias such as `grok-4.5-latest`, only to request a deliberate pin.
+available to the current API key. The selector reads the live catalog, so the
+result advances when xAI publishes a newer canonical model. Do not trust an
+alias merely because its name contains `latest`—the live catalog can retain a
+lagging alias. Set a versioned ID such as `grok-4.7` only to request a
+deliberate pin.
 The selector verifies explicit pins and always emits the canonical model ID.
 The wrapper selects and calls the model in one process, so model choice cannot
 disappear between separate shell tool calls. It accepts a request JSON object
@@ -247,7 +247,7 @@ The response contains:
 }
 ```
 
-**Extracting content**: `jq -r '[.output[] | select(.type=="message")][-1].content[0].text'` — select the last MESSAGE element explicitly; on grok-4.5 the final `output[]` element is a reasoning block, and reasoning summaries can contain raw control characters that break strict JSON parsing of the whole payload. The `tr` strip in every example removes raw control characters grok-4.5 reasoning summaries can emit, which otherwise break strict JSON parsing of the whole payload before jq ever selects.
+**Extracting content**: `jq -r '[.output[] | select(.type=="message")][-1].content[0].text'` — select the last MESSAGE element explicitly; the final `output[]` element can be a reasoning block, and reasoning summaries can contain raw control characters that break strict JSON parsing of the whole payload. The `tr` strip in every example removes raw control characters reasoning summaries can emit, which otherwise break strict JSON parsing of the whole payload before jq ever selects.
 
 **Extracting citations**: `jq -r '.citations[]'`
 
