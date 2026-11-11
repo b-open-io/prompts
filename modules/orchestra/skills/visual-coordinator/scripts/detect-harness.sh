@@ -35,7 +35,7 @@ opencode_bin=$(lane_status opencode)
 
 # --- Models actually offered, not models we assume ---------------------------
 # grok enumerates per authenticated account plus registered quoted [model."id"]
-# blocks. Lines look like "  * grok-4.7 (default)" and "  - gpt-6-sol".
+# blocks. Lines look like "  * grok-4.7 (default)" and "  - gpt-6.1-sol".
 # The listing is taken under the same auth lane run-grok-worker.sh will use
 # (signed-in grok.com first, then XAI_API_KEY), and config.toml is never merged
 # in: the wrapper's preflight accepts only ids this listing shows.
@@ -59,7 +59,7 @@ if [[ "$grok_bin" == "available" ]]; then
     | sed -n 's/^[[:space:]]*[*+-][[:space:]]*\([A-Za-z0-9._/:@-]*\).*(default).*/\1/p' \
     | head -1)
 fi
-# A custom Grok id (for example gpt-6-sol) is served from its [model."id"] base_url, not
+# A custom Grok id (for example gpt-6.1-sol) is served from its [model."id"] base_url, not
 # necessarily by xAI. Map each listed custom id to the provider behind that URL so exports
 # report where content goes; ids without a recognizable base_url stay unresolved. Each id's
 # explicit `model = "..."` is reported too, so an xAI-backed alias is held to the grok-4.7 pin;

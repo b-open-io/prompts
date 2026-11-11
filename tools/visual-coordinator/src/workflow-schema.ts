@@ -406,7 +406,7 @@ const targetForRole = (environment: WorkflowEnvironment, role: NodeRole) =>
  * The single node that stands for the current main session: the first native coordinator on the host
  * lane whose model is the observed host main: the detector's configured default for that lane when
  * it reports one; a Grok host has no main without one. An edited model is a dispatch, never the main
- * session. A Grok main still needs credit pressure unless it is the legacy grok-4.6 session.
+ * session. A Grok main still needs usage-credit pressure.
  */
 export const mainNodeId = (workflow: Workflow, environment: WorkflowEnvironment): string | null => {
   const host = environment.hostLane;

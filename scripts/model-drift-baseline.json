@@ -1,0 +1,123 @@
+{
+  "README.md": {
+    "claude-prose": 1,
+    "gpt": 3,
+    "grok": 1
+  },
+  "benchmarks/NOTES.md": {
+    "claude-prose": 8,
+    "gpt": 2
+  },
+  "docs/plugin-context-harness.md": {
+    "gpt": 1
+  },
+  "docs/proposals/visual-coordinator-graph-view.html": {
+    "gpt": 1
+  },
+  "docs/settings-declarations.md": {
+    "gpt": 1
+  },
+  "modules/orchestra/agents/agent-builder.md": {
+    "claude-prose": 1,
+    "gpt": 4,
+    "grok": 1
+  },
+  "modules/orchestra/skills/advisor/SKILL.md": {
+    "claude-prose": 1
+  },
+  "modules/orchestra/skills/advisor/references/channels/codex-cli.md": {
+    "gpt": 3
+  },
+  "modules/orchestra/skills/claudex/references/setup.md": {
+    "gpt": 2
+  },
+  "modules/orchestra/skills/coordinator/SKILL.md": {
+    "claude-prose": 1,
+    "gpt": 4,
+    "grok": 1
+  },
+  "modules/orchestra/skills/coordinator/references/hosts/grok.md": {
+    "grok": 1
+  },
+  "modules/orchestra/skills/coordinator/references/workers/codex.md": {
+    "gpt": 1
+  },
+  "modules/orchestra/skills/coordinator/references/workers/grok.md": {
+    "gpt": 2
+  },
+  "modules/orchestra/skills/coordinator/references/workers/opencode.md": {
+    "gpt": 2
+  },
+  "modules/orchestra/skills/coordinator/scripts/model-policy.sh": {
+    "claude-prose": 1,
+    "gpt": 4,
+    "grok": 2
+  },
+  "modules/orchestra/skills/coordinator/scripts/run-grok-worker.sh": {
+    "gpt": 1,
+    "grok": 1
+  },
+  "modules/orchestra/skills/coordinator/scripts/run-opencode-review.sh": {
+    "gpt": 5
+  },
+  "modules/orchestra/skills/deploy-agent-team/references/agent-roster.md": {
+    "claude-prose": 1,
+    "gpt": 4,
+    "grok": 1
+  },
+  "modules/orchestra/skills/software-factory/SKILL.md": {
+    "grok": 1
+  },
+  "modules/orchestra/skills/visual-coordinator/SKILL.md": {
+    "gpt": 1,
+    "grok": 1
+  },
+  "modules/orchestra/skills/visual-coordinator/references/emitted-spec-format.md": {
+    "gpt": 7,
+    "grok": 3
+  },
+  "modules/orchestra/skills/visual-coordinator/references/harness-capabilities.md": {
+    "gpt": 5,
+    "grok": 3
+  },
+  "modules/orchestra/skills/visual-coordinator/scripts/detect-harness.sh": {
+    "gpt": 3,
+    "grok": 2
+  },
+  "modules/orchestra/skills/wave-coordinator/SKILL.md": {
+    "grok": 1
+  },
+  "modules/research/skills/x-research/SKILL.md": {
+    "grok": 2
+  },
+  "modules/research/skills/x-research/scripts/select-model.sh": {
+    "grok": 1
+  },
+  "modules/review/agents/code-auditor.md": {
+    "gpt": 1
+  },
+  "modules/review/skills/codex-security/SKILL.md": {
+    "gpt": 2
+  },
+  "modules/review/skills/codex-security/references/cli-reference.md": {
+    "gpt": 3
+  },
+  "modules/review/skills/codex-security/references/sdk-and-automation.md": {
+    "gpt": 1
+  },
+  "modules/review/skills/hunter-skeptic-referee/SKILL.md": {
+    "gpt": 1
+  },
+  "skills/setup/playground/src/lib/pack-catalog.ts": {
+    "image": 1
+  },
+  "tools/visual-coordinator/src/command.ts": {
+    "gpt": 2
+  },
+  "tools/visual-coordinator/src/workflow-schema.ts": {
+    "claude-id": 1,
+    "claude-prose": 1,
+    "gpt": 13,
+    "grok": 4
+  }
+}
