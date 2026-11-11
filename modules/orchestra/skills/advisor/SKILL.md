@@ -1,11 +1,11 @@
 ---
 name: advisor
-version: 0.0.13
+version: 0.0.14
 description: >-
   Get an independent read-only second opinion at a commitment boundary, before substantive work
   on a hard task, when stuck or changing approach, or at a final review gate. Use for "consult
-  the advisor", "get a second opinion", "ask Claude Opus", "ask claude-opus-5-5",
-  "ask codex", "ask opencode", or "ask a bigger model". The
+  the advisor", "get a second opinion", "ask Fable", "ask claude-fable-5-2",
+  "ask Opus", "ask codex", "ask opencode", or "ask a bigger model". The
   advisor returns guidance; the main session keeps execution and decision ownership.
 ---
 
@@ -16,10 +16,11 @@ commits, ships, or makes the final decision. Use Coordinator for implementation
 workers; it also composes native specialists and this advisor into one
 workflow when a task needs all three.
 
-The default advisor is Claude Opus 5.5 (`claude-opus-5-5`). Use Claude's native
-advisor or the clean Claude CLI channel according to the current host. Honor an
-explicit model or channel preference within policy; Fable is out of policy and
-is never an advisor, even on request. See [channels/README.md](references/channels/README.md) for channel
+The default advisor is Claude Fable 5.2 (`claude-fable-5-2`) at `high` effort.
+Use Claude's native advisor or the clean Claude CLI channel according to the
+current host. Honor an explicit model or channel preference within policy:
+`claude-opus-5-5` is the approved cheaper Claude alternative, and Fable 5.1 or
+earlier is out of policy even on request. See [channels/README.md](references/channels/README.md) for channel
 selection and preflight.
 
 If the user wants another advisor model to build rather than advise, route
@@ -77,8 +78,11 @@ tests, and every git operation.
 
 ## Stop conditions
 
-- Authentication, model availability, or the read-only boundary cannot be
-  verified: stop and offer setup.
+- `claude-fable-5-2` is unavailable or rejected on the selected channel: run
+  the consult on `claude-opus-5-5`, the approved alternative, and name the
+  downgrade in the report.
+- Authentication, the read-only boundary, or both approved models cannot be
+  verified: report that and offer setup.
 - The external advisor returns no verdict: retry once with the advice contract,
   then report a transport failure.
 - The advisor asks to implement: route that work through Coordinator with a

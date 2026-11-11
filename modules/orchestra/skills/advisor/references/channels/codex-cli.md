@@ -1,7 +1,7 @@
 # Codex CLI as an optional advisor
 
 Use this channel only when the user explicitly selects a Codex advisor model
-instead of the default `claude-opus-5-5`. It provides a context-clean second
+instead of the default `claude-fable-5-2`. It provides a context-clean second
 opinion on difficult decisions and repository reviews from Claude Code, Codex,
 Grok Build, OpenCode, or any other framework that can run a shell command.
 A Codex main can launch a separate Codex CLI consult; it need not switch to
@@ -27,8 +27,8 @@ absolute paths with the prepared consult, repository, and output locations:
 set -o pipefail
 : "${BOPEN_CODEX_ADVISOR_MODEL:?Set the explicitly selected Codex advisor model}"
 CODEX_ADVISOR_MODEL="$BOPEN_CODEX_ADVISOR_MODEL"
-[[ $CODEX_ADVISOR_MODEL == gpt-6-sol ]] \
-  || { echo "advisor: $CODEX_ADVISOR_MODEL is not approved; Codex review consults use gpt-6-sol" >&2; exit 2; }
+[[ $CODEX_ADVISOR_MODEL == gpt-6.1-sol || $CODEX_ADVISOR_MODEL == gpt-6-sol ]] \
+  || { echo "advisor: $CODEX_ADVISOR_MODEL is not approved; Codex review consults use gpt-6.1-sol (or gpt-6-sol)" >&2; exit 2; }
 PROMPT_FILE="/absolute/path/to/prepared-advisor-consult.md"
 REPO_DIR="/absolute/path/to/repo-or-worktree"
 LOG_FILE="/absolute/path/to/advisor.log"
@@ -44,9 +44,10 @@ codex exec \
 ```
 
 `BOPEN_ADVISOR_MODEL` remains the general advisor default and resolves to
-`claude-opus-5-5`; this optional channel uses its separate explicit
-`BOPEN_CODEX_ADVISOR_MODEL` selection, which must be `gpt-6-sol`; any other
-value stops the consult with exit 2. Reasoning effort is pinned to `xhigh` with
+`claude-fable-5-2`; this optional channel uses its separate explicit
+`BOPEN_CODEX_ADVISOR_MODEL` selection, which must be `gpt-6.1-sol` (or
+`gpt-6-sol` where the account does not list 6.1); any other value stops the
+consult with exit 2. Reasoning effort is pinned to `xhigh` with
 `-c model_reasoning_effort="xhigh"` so a user's config cannot lower it.
 
 Keep `--sandbox read-only` explicit so a user's write-capable configuration

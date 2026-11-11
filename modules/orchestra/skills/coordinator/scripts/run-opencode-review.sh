@@ -7,7 +7,7 @@
 # that denies every tool by default and, after that deny, allows or asks for nothing but read, grep,
 # glob, and list (MCP and custom tools never show up in `debug agent`, so wildcard grants are refused
 # by rule, not by probing tool names). Only an approved review model at xhigh runs. Anything it
-# cannot verify refuses the run.
+# cannot verify refuses the run. The default review model is openai/gpt-6.1-sol.
 set -euo pipefail
 umask 077
 
@@ -45,8 +45,9 @@ if [[ -n "$model" ]]; then
   if why=$(bopen_off_policy "$model"); then
     echo "model $model is not allowed; $why" >&2; exit 3
   fi
-  [[ "$model" =~ ^(openai|openrouter/openai)/gpt-6-(sol|astra)$ ]] \
-    || { echo "model $model is not an approved review model; use openai/gpt-6-sol or openai/gpt-6-astra (or their openrouter/openai/ ids)" >&2; exit 3; }
+  # gpt-6.1-sol is the review default; gpt-6-sol stays accepted where a lane does not list 6.1 yet.
+  [[ "$model" =~ ^(openai|openrouter/openai)/(gpt-6\.1-sol|gpt-6-sol|gpt-6-astra)$ ]] \
+    || { echo "model $model is not an approved review model; use openai/gpt-6.1-sol, openai/gpt-6-sol, or openai/gpt-6-astra (or their openrouter/openai/ ids)" >&2; exit 3; }
 fi
 ((check)) || [[ "$variant" == xhigh ]] || { echo "code review runs at --variant xhigh, not ${variant:-the default}" >&2; exit 3; }
 command -v opencode >/dev/null 2>&1 || { echo "opencode is not installed" >&2; exit 3; }
@@ -156,6 +157,16 @@ if model:
                 refuse("provider %s is overridden to %s, not %s" % (provider, host or repr(url), HOSTS[provider]))
         if entry.get("npm") not in (None, PACKAGES[provider]):
             refuse("provider %s is served by package %r, not %s" % (provider, entry.get("npm"), PACKAGES[provider]))
+    # A provider's `models.<key>.id` replaces the API id OpenCode sends, so openai/gpt-6.1-sol can be
+    # configured to call gpt-5.5, or the legacy gpt-6-sol. Only the pinned id itself may be sent.
+    key = model.split("/", 1)[1]
+    models = entry.get("models") if isinstance(entry, dict) else None
+    override = models.get(key) if isinstance(models, dict) else None
+    if override is not None:
+        if not isinstance(override, dict):
+            refuse("model %s has an unreadable %s.models entry" % (model, provider))
+        if "id" in override and override["id"] != key:
+            refuse("model %s is configured to send API id %r, not %s" % (model, override["id"], key))
 PY_VERIFY
 
 if ((check)); then

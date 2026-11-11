@@ -24,12 +24,14 @@ export function benchmarkCacheKey(
   evalCase: BenchmarkEvalCase,
   variant: "with-skill" | "baseline",
   skillContent: string,
+  effort: string,
 ): string {
   return createHash("sha1")
     .update(JSON.stringify({
       namespace: BENCHMARK_CACHE_NAMESPACE,
       version: BENCHMARK_CACHE_VERSION,
       model,
+      effort,
       skillIdentity: skill,
       evalId: evalCase.id,
       variant,

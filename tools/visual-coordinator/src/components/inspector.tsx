@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { groupModels, laneStatus, modelFor, own, reapprove, resolvedModel, restaff, runsNatively, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
+import { groupModels, laneStatus, modelFor, own, reapprove, resolvedModel, restaff, runsNatively, tierEffort, type DetectedLane, type EdgeKind, type WorkflowEdge, type WorkflowEnvironment, type WorkflowEffort, type WorkflowNode } from "@/workflow-schema";
 
 type Props = {
   node?: WorkflowNode;
@@ -68,12 +68,11 @@ export function Inspector({ node, edge, onNodeChange, onEdgeChange, onDeleteEdge
   const onLaneChange = (nextLane: string) => {
     const next = own(environment.lanes, nextLane) ?? missingLane(nextLane);
     const model = modelFor(environment, nextLane, node.role);
-    const reviewEffort = node.role === "reviewer" && next.efforts.includes("xhigh") ? "xhigh" : undefined;
     onNodeChange({
       ...node,
       lane: nextLane,
       model,
-      effort: reviewEffort ?? next.efforts[0] ?? "medium",
+      effort: tierEffort(node.role, next.efforts),
       provider: runsNatively(environment, nextLane, model, node.role) ? "native" : "external",
       disclosure: undefined,
     });

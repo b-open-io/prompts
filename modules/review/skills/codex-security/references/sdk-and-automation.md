@@ -23,7 +23,7 @@ import { CodexSecurity } from "@openai/codex-security";
 
 // The SDK takes no model option; pin it through the isolated Codex config.
 const security = new CodexSecurity({
-  codexOverrides: { model: "gpt-6-sol", model_reasoning_effort: "xhigh" },
+  codexOverrides: { model: "gpt-6.1-sol", model_reasoning_effort: "xhigh" },
 });
 
 try {
@@ -91,7 +91,7 @@ export OPENAI_API_KEY="$CODEX_SECURITY_KEY"
 
 npx @openai/codex-security scan . \
   --diff "origin/${GITHUB_BASE_REF:-main}" \
-  --model gpt-6-sol --effort xhigh \
+  --model gpt-6.1-sol --effort xhigh \
   --output-dir "$RUNNER_TEMP/security-results" \
   --fail-on-severity high \
   --max-cost 5 \
@@ -129,7 +129,7 @@ Notes for pipelines:
 `install-hook` has no `--model` or `--effort` option, so the hook it writes
 scans with the package default (`gpt-5.6-sol`), which is out of policy for
 review here. The recipe below installs the hook, pins its `scan` line to
-`gpt-6-sol` at `xhigh`, and verifies the result. It stops without a pinned hook
+`gpt-6.1-sol` at `xhigh`, and verifies the result. It stops without a pinned hook
 if any step fails. Run the globally installed CLI from outside the repository,
 as the package README recommends:
 
@@ -141,16 +141,16 @@ HOOK=$(git -C "$REPO" rev-parse --path-format=absolute --git-path hooks/pre-comm
 PINNED=0
 # Any exit before the pin is verified, including a failed install-hook or sed
 # under set -e, removes whatever hook this recipe wrote.
-trap '[ "$PINNED" = 1 ] || { rm -f "$HOOK" "$HOOK.orig"; echo "could not pin $HOOK to gpt-6-sol at xhigh; hook removed" >&2; }' EXIT
+trap '[ "$PINNED" = 1 ] || { rm -f "$HOOK" "$HOOK.orig"; echo "could not pin $HOOK to gpt-6.1-sol at xhigh; hook removed" >&2; }' EXIT
 codex-security install-hook "$REPO" --fail-on-severity high
 # The generated hook is three lines ending in:
 #   exec '<node>' '<cli.js>' scan . --working-tree --fail-on-severity high
-sed -i.orig -E 's/^(exec .* scan \. --working-tree --fail-on-severity [a-z]+)$/\1 --model gpt-6-sol --effort xhigh/' "$HOOK"
+sed -i.orig -E 's/^(exec .* scan \. --working-tree --fail-on-severity [a-z]+)$/\1 --model gpt-6.1-sol --effort xhigh/' "$HOOK"
 rm -f "$HOOK.orig"
 # Verify: exactly one exec line, pinned, and nothing else changed.
 [ "$(wc -l < "$HOOK" | tr -d ' ')" = 3 ]
 [ "$(grep -c '^exec ' "$HOOK")" = 1 ]
-grep -Eq '^exec .* scan \. --working-tree --fail-on-severity [a-z]+ --model gpt-6-sol --effort xhigh$' "$HOOK"
+grep -Eq '^exec .* scan \. --working-tree --fail-on-severity [a-z]+ --model gpt-6\.1-sol --effort xhigh$' "$HOOK"
 PINNED=1
 ```
 
@@ -191,7 +191,7 @@ wallet,https://github.com/acme/wallet.git,89abcdef0123456789abcdef0123456789abcd
 ```
 
 ```bash
-npx @openai/codex-security bulk-scan repositories.csv --model gpt-6-sol --effort xhigh \
+npx @openai/codex-security bulk-scan repositories.csv --model gpt-6.1-sol --effort xhigh \
   --output-dir /path/outside/repos/security-scans \
   --workers 4 --max-attempts 2
 ```
@@ -228,7 +228,7 @@ Ordered by how much they save per unit of lost signal:
    biggest lever.
 2. `--max-cost` on every invocation. Partial results are preserved, so a
    ceiling costs coverage, never the whole run.
-3. Keep `--model gpt-6-sol --effort xhigh`; never lower review effort or switch the review to
+3. Keep `--model gpt-6.1-sol --effort xhigh`; never lower review effort or switch the review to
    another model to save cost. Cut cost by narrowing scope instead: fewer
    files, a focused diff, fewer passes. Under usage-credit pressure, narrow
    further or queue the review.

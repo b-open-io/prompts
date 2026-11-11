@@ -1,7 +1,7 @@
 ---
 name: coordinator
-version: 0.0.25
-description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Opus, Sol, Astra, Muse, Grok, OpenCode, or native workflows.
+version: 0.0.26
+description: Route bounded implementation from a capable main session to coding workers while keeping planning, review, verification, and git in the main seat. Use for worker dispatch, model arbitrage, parallel implementation, Fable, Opus, Sonnet, Haiku, Sol, Astra, Muse, Grok, OpenCode, or native workflows.
 ---
 
 # Coordinator
@@ -42,7 +42,7 @@ Do not read every harness guide. Load only the resources needed for this run:
    [Grok CLI](references/workers/grok.md),
    [Muse Code](references/workers/muse.md), or
    [OpenCode CLI](references/workers/opencode.md).
-   When dispatching the Claude Opus worker or raw Codex CLI, also load
+   When dispatching a Claude worker (`claude -p`) or raw Codex CLI, also load
    [references/workers/cli-dispatch.md](references/workers/cli-dispatch.md).
 
 Example: a Claude main dispatching an OpenCode worker reads this file, the
@@ -66,7 +66,45 @@ API or file-ownership boundaries, not into tiny tasks merely to create a graph.
 
 ## Select a lane
 
-Default implementation to the authorized, preflighted `claude-opus-5-5` lane.
+| Tier | Model id | Effort | Use |
+|---|---|---|---|
+| Plan and advise | `claude-fable-5-2` | `high` | Plans, architecture, specs, read-only advice |
+| Implement | `claude-opus-5-5` | `high` | Default coding worker |
+| Well-scoped work | `claude-sonnet-5-5` | `medium` | Units whose spec names the files, the change and the check |
+| Light work | `claude-haiku-5-5` | `low` | Tasks that need almost no reasoning: lookups, classification, renames, formatting, worker-controller relays |
+| Independent review | `gpt-6.1-sol` | `xhigh` | Read-only code-review verdict |
+
+Default implementation to `claude-opus-5-5`. Step down to Sonnet 5.5 or Haiku
+5.5 only when the unit fits that row; when unsure, use Opus. A step-down is a
+choice the main makes per unit and names in the final report. It is not a
+fallback for an unavailable lane.
+
+`claude-fable-5-2` is not dispatched as a coding worker, and the canvas rejects
+it as a builder. A Fable main still makes the edits the ownership table gives
+the main.
+
+When the main session is not Fable 5.2 and the plan carries real design risk,
+check the plan through `advisor` before dispatch.
+
+Every worker, planner, advisor, and review dispatch names its model and its
+effort; roster specialists run on their declared `model`. `claude -p` without
+`--effort` runs at the CLI default, so always pass it.
+
+Out of policy, even by explicit choice: any Fable id other than
+`claude-fable-5-2` (Fable 5.1 and earlier), the `gpt-5.5` and `gpt-5.6`
+families, and Grok 4.6. Write the full id wherever a flag, env var, config
+value, or agent frontmatter takes one; the bare `fable` alias is refused there.
+A subagent tool that offers only aliases cannot pin it, so run the Fable tier
+through `claude -p --model claude-fable-5-2` or a roster agent that pins the
+full id. Grok 4.7 is a last resort under usage-credit pressure.
+
+Every model is chosen by name. Do not dispatch on a model a host's Auto mode or
+default picker selects for you, and do not use Composer or another Cursor
+flagship model. Claude's `inherit` is not that: it runs the main session's own,
+explicitly chosen model. `gpt-6-sol` is still accepted where a CLI or account
+does not list `gpt-6.1-sol`; say so in the report.
+
+Preflight and authorize whichever lane you select.
 Preserve an explicit user-selected alternative lane. A user may attach an
 expiry or another stop condition
 to that preference. Record it, honor the override while it is active, then run
@@ -81,27 +119,24 @@ when no roster specialist fits. This native-first rule does not apply to routine
 implementation volume. Specialists may gather review evidence, but plugin agent
 `model` fields accept only Claude models (`review:code-auditor` declares
 `opus`), so the review verdict itself comes from an explicit read-only
-`codex exec -m gpt-6-sol -c model_reasoning_effort="xhigh"` (or `gpt-6-astra`)
-pass, never from the specialist's declared model.
+`codex exec -m gpt-6.1-sol -c model_reasoning_effort="xhigh"` (or `gpt-6-astra`)
+pass, not from the specialist's declared model.
 
-The preferred coding worker is Claude Opus 5.5 (`claude-opus-5-5`). Independent
-code review runs on GPT-6 Sol (`gpt-6-sol`) or GPT-6 Astra (`gpt-6-astra`) at
-`xhigh` reasoning, never at default effort. GPT-6 Astra also remains a
-special-purpose 3D / animation / gamification / creative implementation lane;
-Muse Spark 1.3 remains an explicit alternative lane. Never dispatch a `gpt-5.6`
-model (Sol, Luna, Terra), not as a default, a CloudAgent fallback, or an
-explicit choice. OpenCode is
-a portable lane whose provider and model must be pinned. Grok is not a normal
-worker lane: use it only under usage-credit pressure, pin `grok-4.7`, and never
-use Grok 4.6. Never infer or replace the user's current main model. If the
+Independent code review runs on GPT-6.1 Sol (`gpt-6.1-sol`) or GPT-6 Astra
+(`gpt-6-astra`) at `xhigh` reasoning, not at default effort. GPT-6 Astra also
+remains a special-purpose 3D / animation / gamification / creative
+implementation lane; Muse Spark 1.3 remains an explicit alternative lane.
+OpenCode is a portable lane whose provider and model must be pinned. Grok is
+not a normal worker lane: pin `grok-4.7` and use it only under usage-credit
+pressure. Do not infer or replace the user's current main model. If the
 required default is unavailable, report that boundary instead of silently
 substituting a superseded model.
 
 CloudAgent is only one coding lane. Its catalog omitting `claude-opus-5-5` does
 not make the model unavailable: use the Claude Code CLI lane
-(`claude -p --model claude-opus-5-5`) on an agent computer or Luke's Claude
-Code desktop harness instead. Do not fall back to `gpt-6-sol`, a `gpt-5.6`
-model, or Grok solely because CloudAgent lacks the model.
+(`claude -p --model claude-opus-5-5 --effort high`) on an agent computer or
+Luke's Claude Code desktop harness instead. Do not fall back to a review model,
+a `gpt-5.6` model, or Grok solely because CloudAgent lacks the model.
 
 If the work has deterministic stages, loops, or voting, use a native workflow
 only when the current host guide says the primitive exists and the user opted

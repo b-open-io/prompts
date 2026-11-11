@@ -1,6 +1,6 @@
 ---
 name: wave-coordinator
-version: 1.0.11
+version: 1.0.12
 description: >-
   Dispatch many subagents in coordinated waves with per-wave review. Use for "fan out agents",
   "wave dispatch", "batch agents", "generate N variations", or any fan-out beyond about five
@@ -148,9 +148,9 @@ also resolve when that plugin is installed. Confirm the current model name
 and budget defaults in the live configuration before dispatching. Grok is a
 usage-credit-pressure fallback only; pin native Grok work to `grok-4.7` and
 never dispatch Grok 4.6. The preferred coding lane is Claude Opus 5.5: a
-supervisor that calls `claude -p --model claude-opus-5-5` (see the
-coordinator's CLI dispatch guide). Reviews use GPT-6 Sol at `xhigh` through
-`run-grok-worker.sh --model gpt-6-sol` or `codex exec`. Never a raw `grok` CLI
+supervisor that calls `claude -p --model claude-opus-5-5 --effort high` (see
+the coordinator's CLI dispatch guide). Reviews use GPT-6.1 Sol at `xhigh` through
+`run-grok-worker.sh --model gpt-6.1-sol` or `codex exec`. Never a raw `grok` CLI
 dispatch.
 Prefer the native `workflow` tool over hand waves when the fan-out has
 shape and the host guide confirms the primitive exists. Live children default

@@ -68,5 +68,32 @@ class RuleAppliesToProjectTests(unittest.TestCase):
         self.assertIn("expected a string or an array of strings", warning)
 
 
+class VerifierRequestTests(unittest.TestCase):
+    def test_defaults_to_haiku_5_5_without_sampling_or_thinking_params(self):
+        with patch.dict(os.environ, {}, clear=True):
+            body = hammertime.verifier_request_body("rule check")
+        self.assertEqual("claude-haiku-5-5", body["model"])
+        self.assertEqual({"effort": "low"}, body["output_config"])
+        for key in ("temperature", "top_p", "top_k", "thinking", "tool_choice"):
+            self.assertNotIn(key, body)
+
+    def test_env_override_wins_and_empty_override_falls_back(self):
+        with patch.dict(os.environ, {"HAMMERTIME_VERIFIER_MODEL": "claude-opus-5-5"}, clear=True):
+            self.assertEqual("claude-opus-5-5", hammertime.verifier_request_body("x")["model"])
+        with patch.dict(os.environ, {"HAMMERTIME_VERIFIER_MODEL": ""}, clear=True):
+            self.assertEqual("claude-haiku-5-5", hammertime.verifier_request_body("x")["model"])
+
+
+class VerifierAnswerTests(unittest.TestCase):
+    def test_reads_the_first_text_block_after_a_thinking_block(self):
+        result = {"content": [{"type": "thinking", "thinking": ""}, {"type": "text", "text": " Yes. "}]}
+        self.assertEqual("yes.", hammertime.verifier_answer(result))
+
+    def test_no_text_block_is_an_empty_answer(self):
+        self.assertEqual("", hammertime.verifier_answer({"content": [{"type": "thinking", "thinking": ""}]}))
+        self.assertEqual("", hammertime.verifier_answer({"content": []}))
+        self.assertEqual("", hammertime.verifier_answer({}))
+
+
 if __name__ == "__main__":
     unittest.main()

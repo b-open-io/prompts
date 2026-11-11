@@ -22,10 +22,11 @@ This repository provides:
 - **Agent Master setup UI** for auditing the local harness, viewing purchased
   packs, opening advertised skill interfaces, and building runtime-specific
   setup plans without silently installing anything
-- **Orchestration patterns** that keep a strong main model on judgment, wrap
-  Claude Opus 5.5 implementation workers in visible native controllers, review
-  on GPT-6 Sol at xhigh, support a read-only Claude Opus 5.5 advisor, and let
-  humans edit the plan on an AI Elements workflow canvas before execution
+- **Orchestration patterns** that plan and advise on Claude Fable 5.2, wrap
+  Claude Opus 5.5 implementation workers in visible native controllers, step
+  down to Sonnet 5.5 or Haiku 5.5 for well-scoped or light units, review on
+  GPT-6.1 Sol at xhigh, and let humans edit the plan on an AI Elements
+  workflow canvas before execution
 - **Slash commands** for common workflows, including native OpenCode command registration
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes and the reconstructed
@@ -803,12 +804,19 @@ bun run scripts/benchmark.tsx --skill collections --skill-root /path/to/1sat-sdk
 
 # Custom model or concurrency (use an ID available to your account)
 bun run scripts/benchmark.tsx --model "${BENCHMARK_MODEL_ID:?set BENCHMARK_MODEL_ID}" --concurrency 5
+
+# Explicit effort (or BENCHMARK_EFFORT); without it the run uses the model's
+# tier default: Haiku low, Sonnet medium, everything else high
+bun run scripts/benchmark.tsx --model claude-opus-5-5 --effort high
 ```
+
+Every `claude -p` call the benchmark makes, judge fallback included, passes
+`--effort`.
 
 Results are written to `benchmarks/latest.json`. Commit reviewed results to publish them to bopen.ai.
 
 **Resume support:** Each eval result is cached by content hash
-(`benchmarks/cache/`). The hash includes the model, full eval contract, and
+(`benchmarks/cache/`). The hash includes the model, effort, full eval contract, and
 injected skill content, qualified plugin identity, and isolation version. Interrupted runs resume without reusing a score after
 the skill or assertions change.
 
@@ -899,25 +907,33 @@ divide responsibilities:
   shared dispatch contract, the current host guide, and only the selected
   worker guide. Non-trivial writes use isolated worktrees, all makers stop at
   a barrier before an independent read-only review, and review plus tests share
-  one corrective pass. The main runs the final checks and owns git. Bounded
-  implementation defaults to `claude-opus-5-5`; independent code review uses
-  `gpt-6-sol` or `gpt-6-astra` at `xhigh`, never default reasoning. Grok is
-  used only under usage-credit pressure and is pinned to `grok-4.7`, never
-  Grok 4.6. Native specialists stay focused on
+  one corrective pass. The main runs the final checks and owns git. The tier
+  map: `claude-fable-5-2` (high) plans and advises, `claude-opus-5-5` (high)
+  is the default implementation worker, `claude-sonnet-5-5` (medium) and
+  `claude-haiku-5-5` (low) are explicit step-downs for well-scoped and light
+  units, and independent code review uses `gpt-6.1-sol` or `gpt-6-astra` at
+  `xhigh`, never default reasoning (`gpt-6-sol` stays accepted where a lane
+  does not list 6.1 yet). Every dispatch names its model and effort. Any Fable
+  id other than `claude-fable-5-2` (Fable 5.1 and earlier), GPT-5.5/5.6, and
+  Grok 4.6 are out of policy; write the full id wherever a flag, env var,
+  config value, or agent frontmatter takes one, since the bare `fable` alias is
+  refused there. Grok is used only under usage-credit pressure and is pinned to
+  `grok-4.7`. Native specialists stay focused on
   evidence, review, testing, and domain judgment.
   Advisor and Wave Coordinator are composed in place, only at a real decision
   boundary or a fan-out that exceeds available host slots — Coordinator does
   not duplicate their manuals.
 - `advisor` packages a narrow, read-only consult and defaults to
-  `claude-opus-5-5`. From a Codex main it can use the Claude CLI in read-only
-  mode; `BOPEN_ADVISOR_MODEL` may name only an approved Claude advisor model
-  (`claude-opus-5-5`), and any Fable ID is rejected. Claude CLI `--safe-mode` appends
+  `claude-fable-5-2` at high effort. From a Codex main it can use the Claude
+  CLI in read-only mode; `BOPEN_ADVISOR_MODEL` may name only an approved Claude
+  advisor model (`claude-fable-5-2` or the cheaper `claude-opus-5-5`), and any
+  other ID, older Fable IDs included, is rejected. Claude CLI `--safe-mode` appends
   `~/.claude/communication.md` into the system prompt. Missing file is a fail.
   The skill loads only the selected channel guide and records the provider,
   model, authentication path, context sent, and proof that the intended
   advisor ran. OpenCode consults use a permission-constrained child. Optional
   Codex-model consults require an explicit `BOPEN_CODEX_ADVISOR_MODEL`, which
-  must be `gpt-6-sol`, and run at `xhigh`.
+  must be `gpt-6.1-sol` (or the legacy `gpt-6-sol`), and run at `xhigh`.
 - `visual-coordinator` draws an editable graph of the job (nodes, labeled
   edges, reject-back gates) before it runs. Staffing, isolation,
   concurrency, refusals, and the paste-back spec live on that canvas.

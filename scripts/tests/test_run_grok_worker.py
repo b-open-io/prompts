@@ -29,6 +29,10 @@ base_url = "https://api.openai.com/v1"
 [model."story"]
 model = "claude-fable-5-1"
 base_url = "https://api.anthropic.com/v1"
+
+[model."planner"]
+model = "claude-fable-5-2"
+base_url = "https://api.anthropic.com/v1"
 """
 
 
@@ -99,16 +103,25 @@ class GrokWrapperBindingTest(unittest.TestCase):
         cases = [
             ("gpt-5.5", "GPT-5.5 models are out of policy"),
             ("openrouter/openai/gpt-5.5-mini", "GPT-5.5 models are out of policy"),
-            ("claude-fable-5-1", "Fable models are never used"),
-            ("anthropic/Fable-2", "Fable models are never used"),
+            ("claude-fable-5-1", "Fable models other than claude-fable-5-2 are out of policy"),
+            ("anthropic/Fable-2", "Fable models other than claude-fable-5-2 are out of policy"),
+            ("fable", "Fable models other than claude-fable-5-2 are out of policy"),
+            ("claude-fable-5-2-preview", "Fable models other than claude-fable-5-2 are out of policy"),
             ("old-gpt", "an alias for gpt-5.5; GPT-5.5 models are out of policy"),
-            ("story", "an alias for claude-fable-5-1; Fable models are never used"),
+            ("story", "an alias for claude-fable-5-1; Fable models other than claude-fable-5-2 are out of policy"),
         ]
         for model, message in cases:
             with self.subTest(model=model):
                 result = self.run_wrapper(model)
                 self.assertEqual(result.returncode, 2, result.stderr)
                 self.assertIn(message, result.stderr)
+
+    def test_shared_policy_admits_fable_5_2(self) -> None:
+        # An alias for claude-fable-5-2 is in policy: the binding passes and the run stops only
+        # because no grok binary is installed.
+        result = self.run_wrapper("planner", "--provider", "anthropic", "--target", "claude-fable-5-2")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("grok is not installed", result.stderr)
 
 
 if __name__ == "__main__":

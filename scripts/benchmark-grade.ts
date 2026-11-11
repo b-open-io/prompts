@@ -38,6 +38,26 @@ export const GRADE_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+/** Default judge model: cheap and fast. `--model` or BENCHMARK_MODEL overrides it. */
+export const DEFAULT_JUDGE_MODEL = "claude-haiku-5-5";
+
+/**
+ * Messages API body for the schema-locked judge. Current Claude models reject sampling
+ * parameters (Fable 5.2 and Opus 5.5 return a 400 for any value; Haiku 5.5 and Sonnet 5.5 for a
+ * non-default one), and Fable also rejects thinking budgets, disabled thinking, and forced
+ * tool_choice, so the body sends none of them. The JSON schema already constrains the output.
+ */
+export function judgeRequestBody(prompt: string, model: string) {
+  return {
+    model,
+    max_tokens: 2048,
+    messages: [{ role: "user", content: prompt }],
+    output_config: {
+      format: { type: "json_schema", schema: GRADE_SCHEMA },
+    },
+  };
+}
+
 export class GradeParseError extends Error {
   readonly raw: string;
   constructor(message: string, raw: string, options?: ErrorOptions) {

@@ -63,6 +63,7 @@ export type ClaudeProcessRunner = (
 
 export interface RunClaudeOptions {
   model: string;
+  effort: ClaudeEffort;
   skillPath?: string;
   skillContent?: string;
   cwd?: string;
@@ -106,7 +107,27 @@ const REQUIRED_CLAUDE_FLAGS = [
   "--output-format",
   "--json-schema",
   "--no-session-persistence",
+  "--effort",
 ] as const;
+
+export const CLAUDE_EFFORTS = ["low", "medium", "high", "xhigh", "max"] as const;
+export type ClaudeEffort = (typeof CLAUDE_EFFORTS)[number];
+
+/**
+ * Effort for a benchmark dispatch when none is given, from the tier map: Haiku 5.5 low, Sonnet 5.5
+ * medium, everything else (Opus 5.5, Fable 5.2) high. `claude -p` without `--effort` runs at the
+ * CLI's default, so every dispatch passes one explicitly.
+ */
+export function defaultEffortFor(model: string): ClaudeEffort {
+  if (/(?:^|[/-])haiku(?:$|[-_.])/i.test(model)) return "low";
+  if (/(?:^|[/-])sonnet(?:$|[-_.])/i.test(model)) return "medium";
+  return "high";
+}
+
+export function validateEffort(value: unknown): ClaudeEffort {
+  if (typeof value === "string" && (CLAUDE_EFFORTS as readonly string[]).includes(value)) return value as ClaudeEffort;
+  throw new BenchmarkInfrastructureError(`--effort must be one of ${CLAUDE_EFFORTS.join(", ")}; got ${String(value)}`);
+}
 
 export const EMPTY_MCP_CONFIG = JSON.stringify({ mcpServers: {} });
 export const BENCHMARK_WORKING_DIRECTORY_PREFIX = "benchmark-text-ablation-";
@@ -250,6 +271,7 @@ export function buildClaudeEnvironment(
 
 export interface ClaudeArgsOptions {
   model: string;
+  effort: ClaudeEffort;
   skillContent?: string;
   jsonSchema?: unknown;
 }
@@ -262,6 +284,8 @@ export function buildClaudeArgs(prompt: string, options: ClaudeArgsOptions): str
     prompt,
     "--model",
     options.model,
+    "--effort",
+    validateEffort(options.effort),
     "--output-format",
     "json",
     "--bare",
@@ -298,6 +322,7 @@ export function buildClaudeInvocation(
   return {
     args: buildClaudeArgs(prompt, {
       model: options.model,
+      effort: options.effort,
       skillContent,
       jsonSchema: options.jsonSchema,
     }),
