@@ -506,6 +506,18 @@ export const reapprove = (environment: WorkflowEnvironment, node: WorkflowNode, 
     && destination(environment, next.lane, next.model) === destination(environment, node.lane, node.model)
     ? next : { ...next, disclosure: undefined };
 
+/**
+ * The tier map's effort for a role: reviewers at xhigh, every other step at high. A lane that lists
+ * efforts without that one gets its closest listed effort, preferring the highest one below it.
+ */
+export const tierEffort = (role: NodeRole, laneEfforts: readonly WorkflowEffort[] = []): WorkflowEffort => {
+  const wanted: WorkflowEffort = role === "reviewer" ? "xhigh" : "high";
+  if (laneEfforts.length === 0 || laneEfforts.includes(wanted)) return wanted;
+  const rank = efforts.indexOf(wanted);
+  const listed = [...laneEfforts].sort((a, b) => efforts.indexOf(a) - efforts.indexOf(b));
+  return listed.filter((effort) => efforts.indexOf(effort) < rank).at(-1) ?? listed[0];
+};
+
 /** Re-staff a step whose role changed, the same way a lane-less seed node is staffed. */
 export const restaff = (node: WorkflowNode, role: NodeRole, environment: WorkflowEnvironment): WorkflowNode => {
   if (role === node.role) return node;

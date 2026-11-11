@@ -27,9 +27,13 @@ planning and advisory tier.
   and earlier), GPT-5.5/5.6, and Grok 4.6 stay out of policy; the bare `fable`
   alias is refused wherever a full id can be written. Grok 4.7 stays a last
   resort. `claude-fable-5-2` is not dispatched as a coding worker.
-- The Visual Coordinator now creates Opus builders, restaffed workers, and
-  seeded steps without an effort at `high` (was `medium`), matching the tier
-  map; the canvas guides' Opus shell-out examples pass `--effort high`.
+- The Visual Coordinator now staffs workers from the tier map: "New step",
+  the seeded Build step, restaffed workers, and seeded steps without an effort
+  start at `high` (was `medium`), and reviewers at `xhigh`. Changing a step's
+  lane keeps that tier effort instead of taking the lane's first listed
+  effort (which could be `low`); a lane that does not list it gets the
+  closest listed effort. The canvas guides' Opus shell-out examples pass
+  `--effort high`.
 - Review default moves from `gpt-6-sol` to `gpt-6.1-sol` across Coordinator,
   wave-coordinator, software-factory, the Visual Coordinator canvas,
   `run-opencode-review.sh`, Codex Security, code-auditor, security-ops, and
@@ -96,6 +100,13 @@ planning and advisory tier.
   `--effort`. Every dispatch now pins one: `--effort` or `BENCHMARK_EFFORT`,
   else the tier default (Haiku low, Sonnet medium, others high). The effort is
   part of the cache key and the report, and preflight requires the CLI flag.
+- A `--skill` benchmark run merged into `benchmarks/latest.json` kept other
+  skills' results but labeled the aggregate with the latest run's model and
+  effort. The aggregate `model` or `effort` is now `mixed` when the merged
+  skills were measured under different ones; each skill keeps its own.
+- `model-policy.sh` split ids with a here-string, which Bash 3.2 backs with a
+  temporary file; if that failed, the id read as in policy. It now splits
+  with parameter expansion, and an id it cannot normalize is refused.
 
 ## [1.1.178] - 2026-11-04
 

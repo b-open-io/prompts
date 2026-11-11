@@ -2,19 +2,26 @@
 # `bopen_off_policy ID`: it prints why ID is out of policy and returns 0, or returns 1.
 # Matches the visual coordinator's isSuperseded: every path segment, any casing, and any
 # non-alphanumeric delimiter after the version (`-mini`, `:free`, `@date`, `.1`).
+# The check fails closed: if the id cannot be normalized, it is reported as out of policy.
 bopen_off_policy() {
-  local id segment
-  local -a segments
-  id=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
+  local id rest segment
+  if ! id=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]'); then
+    echo "Could not normalize model id; refusing it as out of policy"
+    return 0
+  fi
   # claude-fable-5-2 is the planning and advisory tier. The exception applies per segment, so a
   # path that also names Fable 5.1 or earlier, the unversioned `fable` alias, or any other Fable
-  # id in another segment stays refused.
-  IFS=/ read -r -a segments <<< "$id"
-  for segment in ${segments[@]+"${segments[@]}"}; do
+  # id in another segment stays refused. Segments are split with parameter expansion: Bash 3.2
+  # backs a here-string with a temporary file, and a failed split must not read as "allowed".
+  rest=$id
+  while :; do
+    segment=${rest%%/*}
     if [[ "$segment" =~ ^(claude-)?fable($|[^a-z0-9]) && "$segment" != claude-fable-5-2 ]]; then
       echo "Fable models other than claude-fable-5-2 are out of policy"
       return 0
     fi
+    [[ "$rest" == */* ]] || break
+    rest=${rest#*/}
   done
   if [[ "$id" =~ (^|/)gpt-5\.5($|[^a-z0-9]) ]]; then
     echo "GPT-5.5 models are out of policy"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type Workflow, type WorkflowEnvironment, defaultWorkflow, destination, groupModels, laneStatus, nextNodeId, parseEnvironment, parseSeed, reapprove, resolvedModel, restaff, runsNatively, runsOpus, runsSol, toPlan, validateWorkflow } from "./workflow-schema";
+import { type Workflow, type WorkflowEnvironment, defaultWorkflow, destination, groupModels, laneStatus, nextNodeId, parseEnvironment, parseSeed, reapprove, resolvedModel, restaff, runsNatively, runsOpus, runsSol, tierEffort, toPlan, validateWorkflow } from "./workflow-schema";
 
 const liveCodexEnvironment = () => parseEnvironment({
   harness: "codex",
@@ -1084,5 +1084,24 @@ describe("qualified Grok ids on the Grok lane", () => {
       "build uses grok-4.7, but its Grok CLI entry sends content to example.com, not xAI or an approved router.",
     );
     expect(messages(grokEnv({}, {}), "grok-4.7").join("\n")).not.toMatch(/custom id|not xAI/);
+  });
+});
+
+describe("tier effort for new and re-laned steps", () => {
+  it("staffs workers at high and reviewers at xhigh", () => {
+    expect(tierEffort("builder")).toBe("high");
+    expect(tierEffort("coordinator", ["low", "medium", "high", "xhigh"])).toBe("high");
+    expect(tierEffort("reviewer", ["low", "medium", "high", "xhigh"])).toBe("xhigh");
+  });
+
+  it("never drops to the lane's first listed effort when the tier effort is listed later", () => {
+    expect(tierEffort("builder", ["low", "medium", "high"])).toBe("high");
+    expect(tierEffort("external", ["xhigh", "high", "low"])).toBe("high");
+  });
+
+  it("falls back to the closest listed effort, preferring the highest one below the tier", () => {
+    expect(tierEffort("reviewer", ["low", "medium", "high"])).toBe("high");
+    expect(tierEffort("builder", ["low", "medium"])).toBe("medium");
+    expect(tierEffort("builder", ["max", "xhigh"])).toBe("xhigh");
   });
 });

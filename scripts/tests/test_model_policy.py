@@ -57,6 +57,24 @@ class ModelPolicyTests(unittest.TestCase):
             with self.subTest(model=model):
                 self.assertIsNone(off_policy(model))
 
+    def test_policy_needs_no_temporary_file(self) -> None:
+        # Bash 3.2 backs a here-string with a temporary file; the split must not depend on one.
+        self.assertNotIn("<<<", POLICY.read_text())
+        result = subprocess.run(
+            ["bash", "-c", 'source "$1"; bopen_off_policy "$2"', "policy", str(POLICY), "anthropic/claude-fable-5-1"],
+            capture_output=True, text=True, check=False, env={"PATH": "/usr/bin:/bin", "TMPDIR": "/nonexistent"},
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Fable models other than claude-fable-5-2", result.stdout)
+
+    def test_normalization_failure_fails_closed(self) -> None:
+        result = subprocess.run(
+            ["bash", "-c", 'source "$1"; tr() { return 1; }; bopen_off_policy "$2"', "policy", str(POLICY), "claude-opus-5-5"],
+            capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("out of policy", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

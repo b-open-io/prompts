@@ -35,7 +35,7 @@ per-skill `evals/benchmark.json` is written beside the source skill.
 
 - Only publish skills with **positive delta** (skill > baseline)
 - Zero or negative delta means the skill needs refinement, not publishing
-- The `latest.json` merges per-skill results when `--skill` is used — won't clobber other skills
+- The `latest.json` merges per-skill results when `--skill` is used — won't clobber other skills; the top-level `model`/`effort` read `mixed` when the merged skills were measured under different ones
 
 ## No CI
 

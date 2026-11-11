@@ -126,8 +126,9 @@ interface SkillBenchmark {
 
 interface BenchmarkReport {
   generated_at: string;
+  /** The run's model and effort, or "mixed" when a --skill merge keeps skills measured under others. */
   model: string;
-  effort: ClaudeEffort;
+  effort: ClaudeEffort | "mixed";
   runner: string;
   script_url: string;
   evaluation_mode: "text-body-ablation";
@@ -945,6 +946,9 @@ async function main() {
       report.total_evals = mergedTotalEvals;
       report.overall_pass_rate = Math.round(mergedAvg(mergedSkills.map(s => s.pass_rate)) * 1000) / 1000;
       report.overall_baseline_pass_rate = Math.round(mergedAvg(mergedSkills.map(s => s.baseline_pass_rate)) * 1000) / 1000;
+      // The aggregate names one model and effort only when every merged skill was measured under them.
+      if (mergedSkills.some(s => s.model !== model)) report.model = "mixed";
+      if (mergedSkills.some(s => s.effort !== effort)) report.effort = "mixed";
     } catch {
       // If existing file is corrupt, just overwrite
     }
