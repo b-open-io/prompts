@@ -774,7 +774,22 @@ class ModelDefaultTests(unittest.TestCase):
         data = json.loads((self.ROOT / "settings.json").read_text(encoding="utf-8"))
         settings = {entry["key"]: entry["default"] for entry in data["settings"]}
         self.assertEqual(settings["BOPEN_WORKER_MODEL"], "claude-opus-5-5")
-        self.assertEqual(settings["BOPEN_ADVISOR_MODEL"], "claude-opus-5-5")
+        self.assertEqual(settings["BOPEN_ADVISOR_MODEL"], "claude-fable-5-2")
+
+    def test_advisor_default_matches_settings_in_dispatch_guides(self) -> None:
+        # The Claude CLI advisor channel and the canvas guide expand BOPEN_ADVISOR_MODEL with a
+        # fallback; that fallback must be the settings.json default, or the two drift silently.
+        data = json.loads((self.ROOT / "settings.json").read_text(encoding="utf-8"))
+        default = {entry["key"]: entry["default"] for entry in data["settings"]}["BOPEN_ADVISOR_MODEL"]
+        guides = [
+            "modules/orchestra/skills/advisor/references/channels/claude-cli.md",
+            "modules/orchestra/skills/visual-coordinator/references/harness-capabilities.md",
+        ]
+        for guide in guides:
+            with self.subTest(guide=guide):
+                text = (self.ROOT / guide).read_text(encoding="utf-8")
+                fallbacks = set(re.findall(r"\$\{BOPEN_ADVISOR_MODEL:-([^}]+)\}", text))
+                self.assertEqual(fallbacks, {default})
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 ---
 name: visual-coordinator
 description: This skill should be used when the user asks to "design the workflow visually", "show me the workflow before running it", "let me configure the agents first", "visual workflow builder", "which models for which steps", "let me pick the models", "plan this fan-out", "diagram the orchestration", or wants to review and adjust a multi-agent job — models, agents, phases, isolation — before it runs. Renders an editable graph (nodes, labeled edges, reject-back gates) the user can rewire; staffing is on the selected card. Emits a paste-back spec from the live graph. Builds on the coordinator skill; use coordinator alone when no visual review is wanted.
-version: 0.1.17
+version: 0.1.18
 ---
 
 # Visual Coordinator
@@ -28,8 +28,8 @@ when the user has asked to see or change the plan first.
 
 **No host `agent().model` slug is a foreign vendor.** Claude workflow
 models stay Claude. Codex stays OpenAI-family. The approved native Grok model
-is `grok-4.7`; never offer Grok 4.6. A quoted `[model."gpt-6-sol"]` makes
-`gpt-6-sol` a cross-provider Grok-CLI shell-out node, dispatched through
+is `grok-4.7`; never offer Grok 4.6. A quoted `[model."gpt-6.1-sol"]` makes
+`gpt-6.1-sol` a cross-provider Grok-CLI shell-out node, dispatched through
 `run-grok-worker.sh`, not a native slug. Never render a dropdown that implies otherwise. Grok is a
 usage-credit-pressure fallback, not the default coding lane.
 
@@ -58,8 +58,12 @@ command, so the detector reads its account-scoped local model cache and keeps
 the configured model as a fallback. Add `BOPEN_USAGE_CREDIT_PRESSURE=1` only
 when the user has declared usage-credit pressure; it is the only signal that
 permits Grok worker nodes. Build and new steps default to `claude-opus-5-5`
-and Review to `gpt-6-sol` at `xhigh`, regardless of which model the host lists
-first, preferring a lane whose model was actually detected. The detector also reports each lane's configured main model
+and Review to `gpt-6.1-sol` at `xhigh` (the legacy `gpt-6-sol` only when no lane
+lists 6.1), regardless of which model the host lists first, preferring a lane
+whose model was actually detected. A builder may be stepped down to
+`claude-sonnet-5-5` or `claude-haiku-5-5` by explicit choice; nothing defaults
+to them. `claude-fable-5-2` plans and advises (main or dispatched coordinator),
+not builds. The detector also reports each lane's configured main model
 (`models.<lane>_default`) for the Coordinate card; a catalog entry is never
 treated as the main, so without a reported default (or Claude's `inherit`) the
 card stays empty and fails validation. It also reports the absolute

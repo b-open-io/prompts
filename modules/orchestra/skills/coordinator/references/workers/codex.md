@@ -7,7 +7,7 @@ Codex process when it is the chosen coding or isolated implementation lane.
 
 ## Choose the model
 
-- **Sol** (`gpt-6-sol`, reasoning `xhigh`) — independent code reviewer, never
+- **Sol** (`gpt-6.1-sol`, reasoning `xhigh`) — independent code reviewer, never
   at default effort. It is not the coding worker; Claude Opus 5.5
   (`claude-opus-5-5`) is.
 - **Astra** (`gpt-6-astra`, recommended `high`) — 3D / animation / gamification /
@@ -15,7 +15,7 @@ Codex process when it is the chosen coding or isolated implementation lane.
   the first `high` run fails. Also an allowed code reviewer at `xhigh`.
 
 Read-only second opinions stay in Advisor; implementation stays here. The
-default advisor is Claude Opus 5.5 (`claude-opus-5-5`), not a Codex worker.
+default advisor is Claude Fable 5.2 (`claude-fable-5-2`), not a Codex worker.
 
 Do not dispatch any `gpt-5.6` model (Sol, Luna, Terra), even when a user or
 catalog offers it.

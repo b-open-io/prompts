@@ -93,8 +93,8 @@ const laneLabels: Record<string, string> = {
   opencode: "OpenCode",
 };
 const fallbackModels: Record<string, string[]> = {
-  claude: ["claude-opus-5-5", "opus", "sonnet", "haiku", "inherit"],
-  codex: ["gpt-6-sol"],
+  claude: ["claude-opus-5-5", "claude-fable-5-2", "claude-sonnet-5-5", "claude-haiku-5-5", "opus", "sonnet", "haiku", "inherit"],
+  codex: ["gpt-6.1-sol"],
   grok: ["grok-4.7"],
   opencode: [],
 };
@@ -245,14 +245,21 @@ export const groupModels = (lane: DetectedLane): [string, string[]][] => [...lan
   return groups.set(provider, [...(groups.get(provider) ?? []), model]);
 }, new Map<string, string[]>())];
 
+/** The planner and advisor: coordinates, never builds. */
+export const FABLE = "claude-fable-5-2";
 /** The coding worker. */
 export const OPUS = "claude-opus-5-5";
+/** Explicit step-downs for well-scoped and very light units; never chosen by default. */
+export const SONNET = "claude-sonnet-5-5";
+export const HAIKU = "claude-haiku-5-5";
 /** The code reviewer, always at xhigh. */
-export const SOL = "gpt-6-sol";
+export const SOL = "gpt-6.1-sol";
+/** The previous reviewer id, still accepted where a lane does not list SOL; never a default. */
+export const SOL_LEGACY = "gpt-6-sol";
 const named = (id: string) => (model: string) => model === id || model.endsWith(`/${id}`);
-const isSol = named(SOL);
+const solIds = [SOL, SOL_LEGACY];
 /** The provider that serves each pinned model, and the routers approved to carry it. */
-const owners: Record<string, string> = { [SOL]: "openai", [OPUS]: "anthropic" };
+const owners: Record<string, string> = { [SOL]: "openai", [SOL_LEGACY]: "openai", [FABLE]: "anthropic", [OPUS]: "anthropic", [SONNET]: "anthropic", [HAIKU]: "anthropic" };
 const routers = ["openrouter"];
 /** The endpoint each provider must reach when an OpenCode config overrides it. */
 const hosts: Record<string, string> = { openai: "openai.com", anthropic: "anthropic.com", openrouter: "openrouter.ai" };
@@ -285,17 +292,27 @@ const runsModel = (id: string) => (environment: WorkflowEnvironment, lane: Workf
   return provider === owners[id] ? target === id || target === `${owners[id]}/${id}`
     : routers.includes(provider) && target === `${owners[id]}/${id}`;
 };
-export const runsSol = runsModel(SOL);
+const runsAny = (...ids: string[]) => {
+  const checks = ids.map(runsModel);
+  return (environment: WorkflowEnvironment, lane: WorkflowLane, model: string) => checks.some((runs) => runs(environment, lane, model));
+};
+const runsSolCurrent = runsModel(SOL);
+/** Either reviewer id: gpt-6.1-sol, or the legacy gpt-6-sol a lane may still list. */
+export const runsSol = runsAny(SOL, SOL_LEGACY);
 export const runsOpus = runsModel(OPUS);
+export const runsFable = runsModel(FABLE);
+/** A coding worker: Opus 5.5 by default, or an explicitly chosen Sonnet 5.5 or Haiku 5.5 step-down. */
+const runsBuilder = runsAny(OPUS, SONNET, HAIKU);
 // Out of policy even by explicit choice, main session included: the gpt-5.5 and gpt-5.6 families,
-// grok-4.6 in any form, and every Fable id.
-const isFable = (model: string) => /(?:^|\/)(?:claude-)?fable(?:$|[-_.])/i.test(model);
+// grok-4.6 in any form, and every Fable id except claude-fable-5-2 (Fable 5.1 and earlier, and
+// the bare `fable` alias, which does not pin a version).
+const isFable = (model: string) => /(?:^|\/)(?:claude-)?fable(?:$|[-_.])/i.test(model) && !/(?:^|\/)claude-fable-5-2$/i.test(model);
 function isSuperseded(model: string) { return /(?:^|\/)(?:gpt-5\.[56]|grok-4\.6)(?:$|-)/i.test(model) || isFable(model); }
 // Provider catalogs nest ids (`openrouter/anthropic/claude-sonnet-4.5`), so match any path segment.
 // Provider-qualified xAI ids (xai/…, openrouter/x-ai/…) are Grok whatever the model name says.
 export const isGrokFamily = (model: string) => /(?:^|\/)(?:grok-|x-?ai\/)/i.test(model);
 const isApprovedGrok = (model: string) => /(?:^|\/)grok-4\.7$/i.test(model);
-const offPolicy = `GPT-5.5, GPT-5.6, Grok 4.6, and Fable models are out of policy (build on ${OPUS}, review on ${SOL}).`;
+const offPolicy = `GPT-5.5, GPT-5.6, Grok 4.6, and Fable ids other than ${FABLE} are out of policy (plan on ${FABLE}, build on ${OPUS}, review on ${SOL}).`;
 /** The model a lane really runs for an id: a Grok CLI id runs its config.toml target. */
 const resolve = (environment: WorkflowEnvironment, lane: WorkflowLane, model: string): string =>
   lane === "grok" ? own(environment.grokModelTargets, model) ?? model : model;
@@ -330,30 +347,37 @@ const findOn = (environment: WorkflowEnvironment, lane: WorkflowLane, runs: Runs
  * Pick the first lane that runs the model, independent of which model the host lists first. A lane
  * whose model was actually detected on an available CLI wins over a lane with only the fallback list.
  */
-const targetFor = (environment: WorkflowEnvironment, runs: Runs, lanes: WorkflowLane[], fallback: { lane: WorkflowLane; model: string }, usable: (lane: WorkflowLane) => boolean = () => true) => {
+const targetFor = (environment: WorkflowEnvironment, preference: Runs[], lanes: WorkflowLane[], fallback: { lane: WorkflowLane; model: string }, usable: (lane: WorkflowLane) => boolean = () => true) => {
   const order = [...new Set([environment.hostLane, ...lanes].filter((lane): lane is string => Boolean(lane) && usable(lane as string)))];
-  for (const lane of order) {
-    const detected = own(environment.lanes, lane);
-    const model = detected?.detected && detected.availability === "available" ? findOn(environment, lane, runs) : null;
-    if (model) return { lane, model };
+  // Each model in `preference` is tried across every lane before the next one, so a preferred model
+  // wins regardless of which lane or list position carries it.
+  for (const runs of preference) {
+    for (const lane of order) {
+      const detected = own(environment.lanes, lane);
+      const model = detected?.detected && detected.availability === "available" ? findOn(environment, lane, runs) : null;
+      if (model) return { lane, model };
+    }
   }
-  for (const lane of order) {
-    const model = findOn(environment, lane, runs);
-    if (model) return { lane, model };
+  for (const runs of preference) {
+    for (const lane of order) {
+      const model = findOn(environment, lane, runs);
+      if (model) return { lane, model };
+    }
   }
   return fallback;
 };
 
 /** Lane and model for build and other coding-worker steps: Claude Opus 5.5. */
 export const codingTarget = (environment: WorkflowEnvironment): { lane: WorkflowLane; model: string } =>
-  targetFor(environment, runsOpus, ["claude", "opencode", "grok"], { lane: "claude", model: OPUS });
+  targetFor(environment, [runsOpus], ["claude", "opencode", "grok"], { lane: "claude", model: OPUS });
 
 /**
- * Lane and model for review steps: GPT-6 Sol. OpenCode has no read-only CLI flag, so it staffs a
+ * Lane and model for review steps: GPT-6.1 Sol, then the legacy gpt-6-sol only when no lane offers
+ * 6.1 (detected lanes first, as for every target). OpenCode has no read-only CLI flag, so it staffs a
  * review only when the detector reported a read-only agent the export can pass with `--agent`.
  */
 export const reviewTarget = (environment: WorkflowEnvironment): { lane: WorkflowLane; model: string } =>
-  targetFor(environment, runsSol, ["codex", "opencode", "grok"], { lane: "codex", model: SOL },
+  targetFor(environment, [runsSolCurrent, runsModel(SOL_LEGACY)], ["codex", "opencode", "grok"], { lane: "codex", model: SOL },
     (lane) => lane !== "opencode" || environment.opencodeReviewer !== null);
 
 const targetForRole = (environment: WorkflowEnvironment, role: NodeRole) =>
@@ -377,16 +401,19 @@ export const mainNodeId = (workflow: Workflow, environment: WorkflowEnvironment)
 };
 
 /**
- * Default model for a node placed on a lane. Reviewers get GPT-6 Sol; workers get Claude Opus 5.5,
+ * Default model for a node placed on a lane. Reviewers get GPT-6.1 Sol (the legacy gpt-6-sol only when
+ * the lane lists no 6.1); workers get Claude Opus 5.5,
  * or grok-4.7 only for a builder pinned to the Grok lane under usage-credit pressure; otherwise the
  * model stays empty so validation fails closed.
  */
 export const modelFor = (environment: WorkflowEnvironment, lane: WorkflowLane, role: NodeRole): string => {
   if (role === "coordinator") return mainModel(environment, lane);
   const models = laneModels(environment, lane);
-  const runs = role === "reviewer" ? runsSol : runsOpus;
-  const pick = models.find((model) => runs(environment, lane, model));
-  if (pick) return pick;
+  const preference = role === "reviewer" ? [runsSolCurrent, runsModel(SOL_LEGACY)] : [runsOpus];
+  for (const runs of preference) {
+    const pick = models.find((model) => runs(environment, lane, model));
+    if (pick) return pick;
+  }
   if (lane === "grok" && role !== "reviewer" && environment.creditPressure) return models.find(isApprovedGrok) ?? "";
   return "";
 };
@@ -593,7 +620,6 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
         : `${node.title} needs a model.`
       : `${node.title} needs a model: ${node.lane || "this lane"} does not offer ${node.role === "reviewer" ? SOL : OPUS}; choose a lane that does or set a model explicitly.` });
     if (isSuperseded(model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}; ${offPolicy}` });
-    if (isFable(model) || isFable(resolve(environment, node.lane, model))) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${resolvedModel(environment, node.lane, model)}; Fable is never used to coordinate, build, review, or advise.` });
     // The observed native main is the model the detector saw the host running. It is held to the same
     // policy as a dispatch; it is only exempt from the inventory and native-pairing checks.
     const observedMainModel = node.id === mainId && model !== "" && model === own(environment.mainModels, node.lane);
@@ -618,22 +644,30 @@ export const validateWorkflow = (workflow: Workflow, environment: WorkflowEnviro
     const builtinGrok = /^grok-/i.test(model);
     if (node.lane === "grok" && model !== "" && !builtinGrok && (aliasTarget === undefined || aliasProvider === undefined)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses custom id ${model}, but detect-harness.sh could not resolve its config.toml model and base_url; re-run it before planning.` });
     if (node.lane === "grok" && isGrokFamily(model) && aliasProvider !== undefined && aliasProvider !== "xai" && !routers.includes(aliasProvider)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry sends content to ${aliasProvider}, not xAI or an approved router.` });
-    if (node.lane === "grok" && isSol(model) && aliasTarget !== undefined && !isSol(aliasTarget)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry runs ${aliasTarget}, not ${SOL}.` });
+    // An alias named for one Sol id must run that id: gpt-6-sol aimed at gpt-6.1-sol (or back) is a substitution.
+    const namedSol = solIds.find((id) => named(id)(model));
+    if (node.lane === "grok" && namedSol && aliasTarget !== undefined && !named(namedSol)(aliasTarget)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, but its Grok CLI entry runs ${aliasTarget}, not ${namedSol}.` });
     if (isGrokFamily(model) && node.lane !== "grok") issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model} on the ${node.lane || "unset"} lane; Grok runs only on the Grok lane.` });
     // Grok needs usage-credit pressure, observed main included.
     if (grokBacked && !environment.creditPressure) issues.push({ scope: "node", id: node.id, message: `${node.title} uses Grok without usage-credit pressure; route it to ${node.role === "reviewer" ? SOL : OPUS}.` });
     // Any node that executes a review is a reviewer for model policy, whatever its role.
     const reviewing = node.role === "reviewer" || node.execution === "read-only-review";
-    // Only the observed main session keeps its own model; any other coordinator is a dispatch and
-    // is held to the coding-worker pin like a builder.
-    if (node.role !== "coordinator" || node.id !== mainId) {
-      if (!reviewing && model !== "" && !grokBacked && !isSuperseded(effectiveModel) && !runsOpus(environment, node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, which is not the coding worker; build on ${OPUS}.` });
+    // Only the observed main session keeps its own model. Any other coordinator is a dispatch that
+    // plans on Fable 5.2 or Opus 5.5; a builder or external writer builds on Opus 5.5, or on an
+    // explicitly chosen Sonnet 5.5 or Haiku 5.5 step-down. Fable plans and advises but never builds.
+    const checkedWorker = !reviewing && model !== "" && !grokBacked && !isSuperseded(effectiveModel);
+    if (node.role === "coordinator" && node.id !== mainId) {
+      if (checkedWorker && !runsOpus(environment, node.lane, model) && !runsFable(environment, node.lane, model)) issues.push({ scope: "node", id: node.id, message: `${node.title} uses ${model}, which is not the coding worker; build on ${OPUS}.` });
+    } else if (node.role !== "coordinator") {
+      if (checkedWorker && !runsBuilder(environment, node.lane, model)) issues.push({ scope: "node", id: node.id, message: runsFable(environment, node.lane, model)
+        ? `${node.title} uses ${model}, which is not the coding worker; ${FABLE} plans and advises, build on ${OPUS}.`
+        : `${node.title} uses ${model}, which is not the coding worker; build on ${OPUS}.` });
     } else if (!reviewing && !grokBacked && !isSuperseded(effectiveModel) && !(node.lane === "claude" && model === "inherit")
-      && !runsOpus(environment, node.lane, model) && !runsSol(environment, node.lane, model)) {
-      // The main session runs Opus or Sol from its own provider (or an approved router); an alias that
-      // reaches either through another host is not the pinned model.
+      && !runsFable(environment, node.lane, model) && !runsOpus(environment, node.lane, model) && !runsSol(environment, node.lane, model)) {
+      // The main session runs Fable, Opus, or Sol from its own provider (or an approved router); an
+      // alias that reaches one through another host is not the pinned model.
       const via = node.lane === "grok" ? own(environment.grokModelProviders, model) : undefined;
-      issues.push({ scope: "node", id: node.id, message: `${node.title} is the main session on ${resolvedModel(environment, node.lane, model)}${via ? ` served by ${via}` : ""}, which is not ${OPUS} or ${SOL} from its own provider.` });
+      issues.push({ scope: "node", id: node.id, message: `${node.title} is the main session on ${resolvedModel(environment, node.lane, model)}${via ? ` served by ${via}` : ""}, which is not ${FABLE}, ${OPUS}, or ${SOL} from its own provider.` });
     }
     if (reviewing && (!runsSol(environment, node.lane, model) || node.effort !== "xhigh")) issues.push({ scope: "node", id: node.id, message: `${node.title} must review on ${SOL} at xhigh.` });
     const lane = own(environment.lanes, node.lane);

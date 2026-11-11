@@ -1,6 +1,6 @@
 # CLI dispatch
 
-Load this only when dispatching the Claude Opus worker through `claude -p`, or
+Load this only when dispatching a Claude worker through `claude -p`, or
 raw `codex exec` for a Sol reviewer or Astra worker. Prefer a Claude Code Codex
 plugin's resumable job interface when it is installed and suitable.
 
@@ -17,6 +17,18 @@ omits the model, run the Claude Code CLI:
 
 The prompt, spec, and selected repository content go to Anthropic. Verify the
 model that ran from the stream's `init` event, not the worker's self-report.
+
+Every `claude -p` dispatch passes `--model` and `--effort`; without `--effort`
+it runs at the CLI default. Pin the tier the main chose for the unit:
+
+| Tier | `--model` | `--effort` |
+|---|---|---|
+| Plan or advise (read-only) | `claude-fable-5-2` | `high` |
+| Implement (default) | `claude-opus-5-5` | `high` |
+| Small scoped unit | `claude-sonnet-5-5` | `medium` |
+| Light unit | `claude-haiku-5-5` | `low` |
+
+Name a Sonnet or Haiku step-down in the final report. When unsure, use Opus.
 
 ## Codex capture and resume
 
@@ -45,7 +57,7 @@ possible.
 
 Code review (Sol, or `-m gpt-6-astra`; always at `xhigh`, never default effort):
 
-    codex exec --sandbox read-only --cd <repo> -m gpt-6-sol \
+    codex exec --sandbox read-only --cd <repo> -m gpt-6.1-sol \
       -c model_reasoning_effort="xhigh" \
       --json --output-last-message /tmp/review-<id>-last.md \
       "<review brief; details in SPEC file>" \

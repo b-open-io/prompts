@@ -150,7 +150,11 @@ import re, sys
 default = sys.argv[1]
 preferred = {
     "claude-opus-5-5": 1,
+    "claude-fable-5-2": 1,
+    "gpt-6.1-sol": 1,
     "gpt-6-sol": 1,
+    "claude-sonnet-5-5": 2,
+    "claude-haiku-5-5": 2,
     "muse-spark-1.3-contributor-free": 2,
     "grok-4.7": 3,
 }
@@ -564,7 +568,7 @@ cat <<JSON
     "opencode": "$opencode_bin"
   },
   "models": {
-    "claude": ["claude-opus-5-5", "opus", "sonnet", "haiku", "inherit"],
+    "claude": ["claude-opus-5-5", "claude-fable-5-2", "claude-sonnet-5-5", "claude-haiku-5-5", "opus", "sonnet", "haiku", "inherit"],
     "claude_effort": ["low", "medium", "high", "xhigh", "max"],
     "grok": [${grok_models_json}],
     "grok_effort": ["none", "minimal", "low", "medium", "high", "xhigh"],

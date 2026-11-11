@@ -10,7 +10,7 @@ subagent type from the installed roster. Use a generic agent only when no
 specialist fits. This applies to specialist judgment, not routine bounded
 implementation, which follows Coordinator's preferred `claude-opus-5-5` worker
 default: dispatch it as a native subagent with that model. Independent code
-review uses `gpt-6-sol` at `xhigh` through the Codex CLI.
+review uses `gpt-6.1-sol` at `xhigh` through the Codex CLI.
 
 Claude's native Workflow tool is appropriate for deterministic staged fan-outs,
 loop-until-dry discovery, verification panels, or jobs large enough that manual

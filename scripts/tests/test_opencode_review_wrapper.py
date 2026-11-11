@@ -80,7 +80,7 @@ class FakeOpenCodeTests(unittest.TestCase):
         env["OPENCODE_CONFIG"] = str(self.temp / "hostile.json")
         return subprocess.run(["bash", str(WRAPPER), *args], env=env, capture_output=True, text=True)
 
-    def review(self, model: str = "openai/gpt-6-sol") -> subprocess.CompletedProcess[str]:
+    def review(self, model: str = "openai/gpt-6.1-sol") -> subprocess.CompletedProcess[str]:
         return self.run_wrapper("--model", model, "--dir", str(self.worktree), "--variant", "xhigh", "--", "review it")
 
     def assert_refused(self, result: subprocess.CompletedProcess[str], reason: str) -> None:
@@ -92,7 +92,7 @@ class FakeOpenCodeTests(unittest.TestCase):
         result = self.review()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual((self.state / "run.args").read_text().split("\n")[:-1], [
-            "run", "--pure", "--agent", "bopen-review", "--model", "openai/gpt-6-sol", "--dir", str(self.worktree), "--variant", "xhigh", "review it",
+            "run", "--pure", "--agent", "bopen-review", "--model", "openai/gpt-6.1-sol", "--dir", str(self.worktree), "--variant", "xhigh", "review it",
         ])
         self.assertEqual((self.state / "run.env").read_text().strip(), "1|1")
         debug = (self.state / "debug.log").read_text().strip().split("|")
@@ -162,13 +162,16 @@ class FakeOpenCodeTests(unittest.TestCase):
                 self.assert_refused(self.review(model), "is not allowed")
 
     def test_only_an_approved_model_at_xhigh_reviews(self) -> None:
-        for model in ("anthropic/claude-opus-5-5", "xai/grok-4.7", "openai/gpt-6-terra", "custom/gpt-6-sol"):
+        # claude-fable-5-2 is in policy but plans and advises; it is not a reviewer.
+        for model in ("anthropic/claude-opus-5-5", "anthropic/claude-fable-5-2", "xai/grok-4.7", "openai/gpt-6-terra",
+                      "custom/gpt-6-sol", "openai/gpt-6x1-sol", "openai/gpt-6.1-terra", "custom/gpt-6.1-sol"):
             with self.subTest(model=model):
                 self.assert_refused(self.review(model), "not an approved review model")
         for variant in ((), ("--variant", "high")):
             with self.subTest(variant=variant):
                 self.assert_refused(self.run_wrapper("--model", "openai/gpt-6-sol", "--dir", str(self.worktree), *variant, "--", "x"), "--variant xhigh")
-        for model in ("openai/gpt-6-astra", "openrouter/openai/gpt-6-sol"):
+        # gpt-6.1-sol is the default; gpt-6-sol stays accepted where a lane does not list 6.1 yet.
+        for model in ("openrouter/openai/gpt-6.1-sol", "openai/gpt-6-sol", "openai/gpt-6-astra", "openrouter/openai/gpt-6-sol"):
             with self.subTest(model=model):
                 self.assertEqual(self.review(model).returncode, 0)
                 (self.state / "run.args").unlink()

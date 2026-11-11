@@ -46,10 +46,12 @@ import {
   validateTextAblationEvalFile,
 } from "./benchmark-runner.ts";
 import {
+  DEFAULT_JUDGE_MODEL,
   GRADE_SCHEMA,
   GradeParseError,
   judgeCliExitError,
   judgePrompt,
+  judgeRequestBody,
   parseJudgeGrades,
 } from "./benchmark-grade.ts";
 
@@ -470,7 +472,7 @@ function parseArgs(): { skill?: string; skillRoot?: string; model: string; concu
   let skill: string | undefined;
   let skillRoot: string | undefined;
   // Use haiku by default — cheap and fast. Pass --model to override.
-  let model = process.env.BENCHMARK_MODEL ?? "claude-haiku-4-5-20251001";
+  let model = process.env.BENCHMARK_MODEL ?? DEFAULT_JUDGE_MODEL;
   let concurrency = 2;
 
   for (let i = 0; i < args.length; i++) {
@@ -501,15 +503,7 @@ async function runJudgeMessages(
       "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: 2048,
-      temperature: 0,
-      messages: [{ role: "user", content: prompt }],
-      output_config: {
-        format: { type: "json_schema", schema: GRADE_SCHEMA },
-      },
-    }),
+    body: JSON.stringify(judgeRequestBody(prompt, model)),
   });
   const duration_ms = Math.round(performance.now() - start);
   const body = await res.text();

@@ -28,10 +28,10 @@
     {
       "source_name": "agent-builder",
       "source_path": "modules/orchestra/agents/agent-builder.md",
-      "source_version": "1.7.20",
-      "source_hash": "sha256:ff627215f941fb032fe60cff759f6cc3fd1058152abd9373512164f0f39fb622",
+      "source_version": "1.7.21",
+      "source_hash": "sha256:f8668257a576936dffbfd0de45b67ff3508177b4ce01a3aaa9121f3701c42423",
       "generated_file": "bopen-agent-builder.toml",
-      "generated_hash": "sha256:e71d520298aa71fa8286a0de92356d3459b0d5f4667fd8f3d79e368efefe99c9",
+      "generated_hash": "sha256:122daab47391178224295d6fd04c472298f8170e1ee4934cec60dc6ddfecc756",
       "agent_name": "bopen_agent_builder",
       "curated": true,
       "default_install": true
@@ -39,10 +39,10 @@
     {
       "source_name": "architecture-reviewer",
       "source_path": "modules/review/agents/architecture-reviewer.md",
-      "source_version": "1.1.18",
-      "source_hash": "sha256:cb4a1cfee95b5744e77d8fed397b508e0d9e22c621267e5aa3e6cffcb3bd77a4",
+      "source_version": "1.1.19",
+      "source_hash": "sha256:012ef4530d2c94f35fc222328472b4ff122609790330cbaf519999c0f70978f4",
       "generated_file": "bopen-architecture-reviewer.toml",
-      "generated_hash": "sha256:56cb6e83c82610768211cb2b8d88e4459078c54d2e21c489d24b8aff72770d9d",
+      "generated_hash": "sha256:79fb33ddb2de91b3acc82962a343882678d26f641725143597aa79a806264d00",
       "agent_name": "bopen_architecture_reviewer",
       "curated": true,
       "default_install": true
@@ -72,10 +72,10 @@
     {
       "source_name": "code-auditor",
       "source_path": "modules/review/agents/code-auditor.md",
-      "source_version": "1.4.26",
-      "source_hash": "sha256:581002a8b5eba151fbbb0cdb2b348a0cc161286072130c2f04b3e4becbc81953",
+      "source_version": "1.4.27",
+      "source_hash": "sha256:88666ba84cfb28dac5edee9d88bb7ec26745b5a739dfa8f671f66d9a8255ae95",
       "generated_file": "bopen-code-auditor.toml",
-      "generated_hash": "sha256:0cdc1852cae24383630b5980d3a3b15754c832ba5ecf3e8ab3a9aab5bd1794a3",
+      "generated_hash": "sha256:efb2f6484740e5a201eace74553e83d85427f0dcfccbd99a4c770eb195d52fc7",
       "agent_name": "bopen_code_auditor",
       "curated": true,
       "default_install": true
@@ -314,10 +314,10 @@
     {
       "source_name": "security-ops",
       "source_path": "modules/review/agents/security-ops.md",
-      "source_version": "1.0.13",
-      "source_hash": "sha256:14e4133dae7969aca5bdd48bc085375dfdd31484646ebe60d1de6881ea19f1da",
+      "source_version": "1.0.14",
+      "source_hash": "sha256:bb090c8dba074ce1eb00fb489522e13324a296417955923e7aa5d121674c9522",
       "generated_file": "bopen-security-ops.toml",
-      "generated_hash": "sha256:de1ece04c5f262ea72462b9517166187d86e17a737b497876d4bfb64f028d1c5",
+      "generated_hash": "sha256:b788a5c29d63a75911a551359164e631d3f36f308ce9dd95a80342109b6dd69c",
       "agent_name": "bopen_security_ops",
       "curated": false,
       "default_install": false

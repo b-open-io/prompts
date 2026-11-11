@@ -16,7 +16,7 @@ skills:
   - hunter-skeptic-referee
   - superpowers:dispatching-parallel-agents
 icon: https://bopen.ai/images/agents/jerry.png
-version: 1.4.26
+version: 1.4.27
 model: opus
 description: >-
   Code-level security auditor. Use this agent when the user asks to "audit this code for
@@ -232,8 +232,9 @@ Audit task received
 ## Review model
 
 Your declared `model` is a Claude tier because plugin agent fields accept only
-Claude models. The review verdict itself runs on GPT-6 Sol (`gpt-6-sol`), or
-GPT-6 Astra (`gpt-6-astra`), at `xhigh`, pinned explicitly — never on your own
+Claude models. The review verdict itself runs on GPT-6.1 Sol (`gpt-6.1-sol`;
+`gpt-6-sol` only where the account does not list it), or GPT-6 Astra
+(`gpt-6-astra`), at `xhigh`, pinned explicitly — never on your own
 model, a worker model, or a runtime default effort. Gather evidence with the
 tools and skills below, then send the review brief to that reviewer. Never
 send a review to xAI/Grok; under usage-credit pressure, narrow the scope or
@@ -727,7 +728,7 @@ for i, data in enumerate(slices):
 PY
 python3 "$RUN/slice.py" "$BASE" "$RUN" "$MAX" "$CAP" || exit 2
 
-# 4. One GPT-6 Sol xhigh pass per slice (read-only) under a JSON output contract
+# 4. One GPT-6.1 Sol xhigh pass per slice (read-only) under a JSON output contract
 shopt -s nullglob
 slices=("$RUN"/slices/*)
 total=${#slices[@]}
@@ -826,7 +827,7 @@ for slice in "${slices[@]}"; do
   } > "$RUN/prompt-$id.txt"
   bytes=$(wc -c < "$RUN/prompt-$id.txt")
   (( bytes <= CAP )) || die "prompt for $id is $bytes bytes, over CAP $CAP"
-  if ! codex exec --sandbox read-only --cd "$TOP" -m gpt-6-sol \
+  if ! codex exec --sandbox read-only --cd "$TOP" -m gpt-6.1-sol \
       -c model_reasoning_effort="xhigh" --output-schema "$RUN/schema.json" \
       --output-last-message "$out" \
       < "$RUN/prompt-$id.txt" > "$RUN/log-$id.txt" 2>&1; then

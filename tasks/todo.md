@@ -1,3 +1,32 @@
+# 2026-11-11 — Model tier map for Fable 5.2
+
+- [x] Lift the #101 Fable ban for exactly `claude-fable-5-2` (planner and
+  advisor tier) in the shell policy, the Visual Coordinator, and the advisor.
+- [x] Make `gpt-6.1-sol` the xhigh review default; keep `gpt-6-sol` accepted.
+- [x] State the tier map in Coordinator and mirror it in agent-builder, the
+  roster, wave-coordinator, software-factory, and the canvas guides; pin
+  effort on every `claude -p` dispatch.
+- [x] Move `review:architecture-reviewer` to Fable 5.2 at high effort.
+- [x] Replace the retired Haiku 4.5 defaults in HammerTime and the benchmark
+  judge; drop `temperature: 0` from the judge request.
+- [x] Regenerate Codex agents and the canvas artifact; bump core, orchestra,
+  and review; update CHANGELOG and README.
+
+## Review
+
+- Core 1.1.179, orchestra 0.1.37, and review 0.1.27 are committed on
+  `feat/model-tiers-fable52` for a PR to `dev`; they are not released until
+  the standing `dev` promotion merges.
+- Not checked live: `gpt-6.1-sol` on Codex CLI, OpenRouter and
+  `codex-security`; Haiku 5.5 from HammerTime; `claude -p --effort low` on
+  Haiku; Fable `temperature` rejection; an Opus 5.5 main with a Fable 5.2
+  advisor; `model: claude-fable-5-2` plus `effort: high` loading in a fresh
+  Claude Code session.
+- Follow-ups: ownership-line and effort A/B evals, Opus worker effort
+  (`medium` on the canvas versus `high` in `cli-dispatch.md`), removing
+  `gpt-6-sol` acceptance, `claudex` and `capture-codex-context.py` examples,
+  `benchmark-skills` `temperature=0` advice, and bopen-ai model drift.
+
 # 2026-09-23 — Model routing defaults
 
 - [x] Audit active settings, roster, advisor, worker, review, and generated

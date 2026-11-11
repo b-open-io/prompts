@@ -2,9 +2,11 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "fs";
 import { join } from "path";
 import {
+  DEFAULT_JUDGE_MODEL,
   GRADE_SCHEMA,
   GradeParseError,
   judgeCliExitError,
+  judgeRequestBody,
   parseJudgeGrades,
 } from "../benchmark-grade.ts";
 
@@ -139,4 +141,21 @@ describe("judgeCliExitError", () => {
     expect(err.raw).toBe(stderr);
     expect(err.message).toBe(`claude judge exited 2: ${stderr.slice(0, 400)}`);
   });
+});
+
+describe("judgeRequestBody", () => {
+  test("defaults the judge to Haiku 5.5", () => {
+    expect(DEFAULT_JUDGE_MODEL).toBe("claude-haiku-5-5");
+  });
+
+  for (const model of ["claude-fable-5-2", "claude-opus-5-5", "claude-haiku-5-5"]) {
+    test(`sends no sampling, thinking, or forced tool params for ${model}`, () => {
+      const body = judgeRequestBody("grade this", model) as Record<string, unknown>;
+      expect(body.model).toBe(model);
+      for (const key of ["temperature", "top_p", "top_k", "thinking", "tool_choice"]) {
+        expect(body).not.toHaveProperty(key);
+      }
+      expect(body.output_config).toEqual({ format: { type: "json_schema", schema: GRADE_SCHEMA } });
+    });
+  }
 });

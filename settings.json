@@ -18,7 +18,7 @@
       "source": "env",
       "key": "BOPEN_ADVISOR_MODEL",
       "type": "string",
-      "default": "claude-opus-5-5",
+      "default": "claude-fable-5-2",
       "tier": "model",
       "label": "Advisor model",
       "description": "Default read-only advisor model family.",

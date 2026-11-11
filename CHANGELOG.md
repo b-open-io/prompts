@@ -8,6 +8,56 @@ manifests share the same release version.
 
 No unreleased changes.
 
+## [1.1.179] - 2026-11-11
+
+Core 1.1.179, orchestra 0.1.37, review 0.1.27. This release reverses the
+Fable ban from #101 on the owner's instruction: Claude Fable 5.2 is now the
+planning and advisory tier.
+
+### Changed
+
+- Model tier map, stated once in `coordinator` ("Select a lane") and mirrored
+  in every dispatch surface: `claude-fable-5-2` (high) plans and advises,
+  `claude-opus-5-5` (high) is the default implementation worker,
+  `claude-sonnet-5-5` (medium) and `claude-haiku-5-5` (low) are explicit
+  per-unit step-downs, and `gpt-6.1-sol` (xhigh) gives the read-only review
+  verdict. Every dispatch names its model and effort; `claude -p` examples
+  now pass `--effort`. Fable 5.1 and earlier, the bare `fable` alias,
+  GPT-5.5/5.6, and Grok 4.6 stay out of policy; Grok 4.7 stays a last resort.
+- Review default moves from `gpt-6-sol` to `gpt-6.1-sol` across Coordinator,
+  wave-coordinator, software-factory, the Visual Coordinator canvas,
+  `run-opencode-review.sh`, Codex Security, code-auditor, security-ops, and
+  hunter-skeptic-referee. `gpt-6-sol` is still accepted where a lane or
+  account does not list 6.1 yet, and the canvas prefers 6.1 regardless of
+  list order.
+- Advisor default is `claude-fable-5-2` at high effort (`BOPEN_ADVISOR_MODEL`
+  in `settings.json`, the Claude CLI channel, native advisor, and the canvas
+  guide); `claude-opus-5-5` is the approved cheaper alternative. The Codex
+  advisor channel accepts `gpt-6.1-sol` or `gpt-6-sol`.
+- The shared shell policy (`model-policy.sh`) and the Visual Coordinator
+  admit exactly `claude-fable-5-2`. The canvas accepts it as the main session
+  or a dispatched coordinator, rejects it as a builder with a "plans and
+  advises" message, and accepts explicit Sonnet 5.5 or Haiku 5.5 builders
+  without ever defaulting to them. A Grok alias named for one Sol id that runs
+  the other is flagged as a substitution.
+- `review:architecture-reviewer` runs on `claude-fable-5-2` at `effort: high`
+  and reads small areas directly instead of always delegating.
+- agent-builder and the agent roster restate the hard model rule as the tier
+  list; the roster lists architecture-reviewer on Fable 5.2.
+
+### Fixed
+
+- HammerTime's verifier defaulted to the retired `claude-haiku-4-5-20251001`.
+  It now uses `claude-haiku-5-5` at low effort with room for a thinking block,
+  and reads the first text block instead of `content[0]`, which failed open
+  whenever a reply led with thinking.
+- The skill benchmark judge defaulted to the retired Haiku 4.5 and sent
+  `temperature: 0`, which current Claude models reject. It now defaults to
+  `claude-haiku-5-5` and sends no sampling, thinking, or forced tool params.
+- A drift test ties the advisor fallbacks in the Claude CLI channel and the
+  canvas guide to the `settings.json` default.
+- Synchronized the Claude and Codex core manifests at 1.1.179.
+
 ## [1.1.178] - 2026-11-04
 
 ### Added

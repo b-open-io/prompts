@@ -7,7 +7,7 @@
 # that denies every tool by default and, after that deny, allows or asks for nothing but read, grep,
 # glob, and list (MCP and custom tools never show up in `debug agent`, so wildcard grants are refused
 # by rule, not by probing tool names). Only an approved review model at xhigh runs. Anything it
-# cannot verify refuses the run.
+# cannot verify refuses the run. The default review model is openai/gpt-6.1-sol.
 set -euo pipefail
 umask 077
 
@@ -45,8 +45,9 @@ if [[ -n "$model" ]]; then
   if why=$(bopen_off_policy "$model"); then
     echo "model $model is not allowed; $why" >&2; exit 3
   fi
-  [[ "$model" =~ ^(openai|openrouter/openai)/gpt-6-(sol|astra)$ ]] \
-    || { echo "model $model is not an approved review model; use openai/gpt-6-sol or openai/gpt-6-astra (or their openrouter/openai/ ids)" >&2; exit 3; }
+  # gpt-6.1-sol is the review default; gpt-6-sol stays accepted where a lane does not list 6.1 yet.
+  [[ "$model" =~ ^(openai|openrouter/openai)/(gpt-6\.1-sol|gpt-6-sol|gpt-6-astra)$ ]] \
+    || { echo "model $model is not an approved review model; use openai/gpt-6.1-sol, openai/gpt-6-sol, or openai/gpt-6-astra (or their openrouter/openai/ ids)" >&2; exit 3; }
 fi
 ((check)) || [[ "$variant" == xhigh ]] || { echo "code review runs at --variant xhigh, not ${variant:-the default}" >&2; exit 3; }
 command -v opencode >/dev/null 2>&1 || { echo "opencode is not installed" >&2; exit 3; }

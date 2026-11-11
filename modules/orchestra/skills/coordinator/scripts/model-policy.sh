@@ -4,8 +4,10 @@
 bopen_off_policy() {
   local id
   id=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
-  if [[ "$id" =~ (^|/)(claude-)?fable($|[-_.]) ]]; then
-    echo "Fable models are never used to coordinate, build, review, or advise"
+  # claude-fable-5-2 is the planning and advisory tier; every other Fable id (5.1 and earlier, the
+  # unversioned `fable` alias, and anything that is not exactly that id) stays refused.
+  if [[ "$id" =~ (^|/)(claude-)?fable($|[-_.]) && ! "$id" =~ (^|/)claude-fable-5-2$ ]]; then
+    echo "Fable models other than claude-fable-5-2 are out of policy"
   elif [[ "$id" =~ (^|/)gpt-5\.5($|-) ]]; then
     echo "GPT-5.5 models are out of policy"
   elif [[ "$id" =~ (^|/)gpt-5\.6($|-) ]]; then

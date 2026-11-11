@@ -5,13 +5,12 @@ Use this lane for a context-clean Claude opinion from a Codex main. Preflight
 complete consult in a file and feed it over stdin:
 
 ```bash
-ADVISOR_MODEL="${BOPEN_ADVISOR_MODEL:-claude-opus-5-5}"
+ADVISOR_MODEL="${BOPEN_ADVISOR_MODEL:-claude-fable-5-2}"
 PROMPT_FILE="/absolute/path/to/prepared-advisor-consult.md"
 COMM_FILE="${HOME}/.claude/communication.md"
 
 case "$ADVISOR_MODEL" in
-  *[Ff][Aa][Bb][Ll][Ee]*) echo "advisor: Fable ($ADVISOR_MODEL) is never an advisor" >&2; exit 2 ;;
-  claude-opus-5-5) ;;
+  claude-fable-5-2|claude-opus-5-5) ;;
   *) echo "advisor: $ADVISOR_MODEL is not an approved Claude advisor model" >&2; exit 2 ;;
 esac
 test -f "$COMM_FILE" || exit 1
@@ -28,10 +27,14 @@ env -u ANTHROPIC_API_KEY claude \
 ```
 
 `BOPEN_ADVISOR_MODEL` is checked against an allowlist before it reaches
-`--model`: only `claude-opus-5-5` is approved, any Fable ID is rejected by
-name, and any other value (an alias such as `opus`, another Claude ID, or a
-typo) stops the consult with exit 2 instead of reaching the CLI. Add an ID to
-the `case` only after it is approved for advisor use.
+`--model`: only `claude-fable-5-2` (the default) and `claude-opus-5-5` (the
+cheaper alternative) are approved. Any other value (an older Fable ID, an alias
+such as `opus` or `fable`, another Claude ID, or a typo) stops the consult with
+exit 2 instead of reaching the CLI. Add an ID to the `case` only after it is
+approved for advisor use.
+
+`--effort high` is deliberate: `xhigh` and `max` cost far more tokens and are
+for when the user asks.
 
 `--safe-mode` excludes personal plugins, hooks, memory, and project prompt
 customization. The communication file is required so the clean session keeps

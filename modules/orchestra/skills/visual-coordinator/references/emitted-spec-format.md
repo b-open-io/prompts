@@ -33,7 +33,7 @@ cleanup policy (after-approved-merge)
   disclosure: approved · context: brief, owned paths, test contract
   command: claude --print ...
 - **Review** — SHELL-OUT to codex (read-only)
-  controller: grok · provider/model: openai/gpt-6-sol · effort: xhigh
+  controller: grok · provider/model: openai/gpt-6.1-sol · effort: xhigh
   disclosure: approved · context: diff, worker report, claims
   command: codex exec --sandbox read-only ...
 
@@ -79,7 +79,7 @@ cleanup policy (after-approved-merge)
       "kind": "process",
       "label": "Review",
       "lane": "codex",
-      "model": "gpt-6-sol",
+      "model": "gpt-6.1-sol",
       "effort": "xhigh",
       "actor": "reviewer",
       "execution": "read-only-review",
@@ -169,7 +169,7 @@ DAG, pipeline, or workflow-engine construct for OpenCode.
 **Grok**: emit a Rhai workflow. Follow the bundled `/create-workflow`
 skill. Native `agent().model` is pinned to `grok-4.7` and allowed for worker
 nodes only under usage-credit pressure; Grok 4.6 is forbidden. Worker nodes
-default to `claude-opus-5-5` shell-outs and review nodes to `gpt-6-sol`
+default to `claude-opus-5-5` shell-outs and review nodes to `gpt-6.1-sol`
 shell-outs at `xhigh`.
 A non-Grok lane is a
 Grok-CLI or Claude-CLI shell-out. `parallel(jobs)` is the barrier.
@@ -205,7 +205,7 @@ never emit a raw `grok -m` dispatch, and without both they are not executable.
 The wrapper checks `BOPEN_USAGE_CREDIT_PRESSURE` when the command runs rather
 than baking the credit decision into the export. A node's `provider` is where
 its content goes, not which CLI carries it: a Grok-lane shell-out is `xai` only
-for a Grok model; a custom id such as `gpt-6-sol` reports the provider behind
+for a Grok model; a custom id such as `gpt-6.1-sol` reports the provider behind
 its `config.toml` `base_url` (the detector's `grok_model_providers`) or
 `unknown`, and its disclosure must name the real destination. The main session
 (`actor: "main-controller"`) is the first native coordinator on the host lane
@@ -217,11 +217,12 @@ their first native host-lane coordinator. A Coordinate card edited away from
 the observed default is a dispatch: on the Grok lane it becomes a disclosed
 wrapper shell-out that needs credit pressure. The observed main is held to the
 same model policy as a dispatch. A main whose model is out of policy (the
-`gpt-5.5` and `gpt-5.6` families, `grok-4.6` in any form, any Fable id, or an
-alias that resolves to one) leaves the Coordinate card empty with an issue
-naming the resolved model the host runs. Any other main must run
-`claude-opus-5-5` or `gpt-6-sol` from its own provider (Claude's `inherit`
-aside), or `grok-4.7` from xAI or OpenRouter under credit pressure; there is no
+`gpt-5.5` and `gpt-5.6` families, `grok-4.6` in any form, any Fable id other
+than `claude-fable-5-2`, or an alias that resolves to one) leaves the Coordinate
+card empty with an issue naming the resolved model the host runs. Any other
+main must run `claude-fable-5-2`, `claude-opus-5-5`, or Sol (`gpt-6.1-sol` or
+the legacy `gpt-6-sol`) from its own provider (Claude's `inherit` aside), or
+`grok-4.7` from xAI or OpenRouter under credit pressure; there is no
 legacy Grok exemption. Cards and model pickers show the resolved model, with
 the alias it was reached through (`grok-4.6 (via xai/grok-4.7)`). Every other native Grok-lane node
 converts to a shell-out whether or not its model is listed, and a Grok dispatch
@@ -237,15 +238,18 @@ only on the Grok lane, under credit pressure, pinned to `grok-4.7`. The
 detector keeps these ids whole. Only a bare `grok-*` id is a Grok CLI
 built-in; a qualified one is a `config.toml` alias and must resolve like any
 custom id, to `grok-4.7` served by xAI or OpenRouter. A Grok CLI id counts as
-Sol only when its entry resolves to `gpt-6-sol` behind OpenAI (or
-`openai/gpt-6-sol` behind OpenRouter), and as the Build model only when it
-resolves to `claude-opus-5-5` behind Anthropic (or `anthropic/claude-opus-5-5`
-behind OpenRouter); anything else is never staffed as Sol or Opus. Claude and
-Codex lanes accept only the bare ids, and OpenCode only
-`openai/gpt-6-sol`, `anthropic/claude-opus-5-5`, or those behind
-`openrouter/`, so `x/gpt-6-sol` is not Sol on any lane. Every coordinator
-other than the observed main session is a dispatch and is held to the same
-coding-worker pin as a builder. The canvas's
+Sol only when its entry resolves to `gpt-6.1-sol` (or the legacy `gpt-6-sol`)
+behind OpenAI (or `openai/<id>` behind OpenRouter), and an alias named for one
+Sol id that targets the other is flagged as a substitution. It counts as the
+Build model only when it resolves to `claude-opus-5-5` behind Anthropic (or
+`anthropic/claude-opus-5-5` behind OpenRouter); anything else is not staffed
+as Sol or Opus. Claude and Codex lanes accept only the bare ids, and OpenCode
+only `openai/gpt-6.1-sol`, `openai/gpt-6-sol`, `anthropic/claude-opus-5-5`, or
+those behind `openrouter/`, so `x/gpt-6.1-sol` is not Sol on any lane. Every
+coordinator other than the observed main session is a dispatch and runs
+`claude-fable-5-2` or `claude-opus-5-5`. Builders run `claude-opus-5-5`, or
+`claude-sonnet-5-5` / `claude-haiku-5-5` by explicit step-down; a Fable
+builder is rejected. The canvas's
 Ready/Copy gate uses the same per-node dispatch plan as the serializer, so it
 never reports Ready while the export would drop a node.
 

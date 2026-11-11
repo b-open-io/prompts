@@ -40,7 +40,7 @@ Capture the complete preflight output, then pin `BOPEN_WORKER_MODEL` to an
 exact listed id; never ride a changing CLI default. Its default,
 `claude-opus-5-5`, runs on this lane only through a quoted custom Grok model
 entry; when none is listed, dispatch it through the Claude Code CLI instead.
-Reviews use a quoted `gpt-6-sol` entry at `--effort xhigh`. Use `grok-4.7` only under
+Reviews use a quoted `gpt-6.1-sol` entry at `--effort xhigh`. Use `grok-4.7` only under
 usage-credit pressure and only through the wrapper below; any other Grok id is
 out of policy. If authentication, model
 availability, or network access cannot be verified, report the lane as
@@ -107,7 +107,7 @@ Add `--clean-home` only for the task-specific cases described above. Use
 controller may run this script in the background and monitor its complete log.
 
 Every Grok-CLI dispatch runs through that wrapper — Grok models and non-Grok
-custom ids such as `gpt-6-sol` alike. The wrapper is the only place the
+custom ids such as `gpt-6.1-sol` alike. The wrapper is the only place the
 GPT-5.6 ban, the `grok-4.7` pin, the credit gate, and their case-insensitive
 matching live, so there is no raw `grok` dispatch recipe to keep in sync. If the
 wrapper is unavailable, the Grok lane is unavailable for that run; do not
@@ -121,10 +121,10 @@ Use a unique prompt file and log for every parallel run. Research
       --cwd <repo> --prompt-file <spec> --log /tmp/dispatch-<id>.log
 
 Code review (read-only) never inherits the worker model or default effort. It
-runs on a quoted `gpt-6-sol` entry at `xhigh`:
+runs on a quoted `gpt-6.1-sol` entry at `xhigh`:
 
     bash /absolute/path/to/coordinator/scripts/run-grok-worker.sh \
-      --auth grok.com --model gpt-6-sol --effort xhigh --mode read \
+      --auth grok.com --model gpt-6.1-sol --effort xhigh --mode read \
       --cwd <repo> --prompt-file <review-brief> --log /tmp/review-<id>.log
 
 Implementation in an explicitly isolated worktree. The wrapper verifies the

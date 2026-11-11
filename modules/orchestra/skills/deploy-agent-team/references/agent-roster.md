@@ -7,15 +7,18 @@ Full installed agent roster with `subagent_type` identifiers and the skills to m
 > **Some of these skills are external.** `semgrep`, `codeql`, `differential-review`, and `secure-workflow-guide` come from the `trailofbits/skills` marketplace (plugins `static-analysis`, `differential-review`, `building-secure-contracts`). They resolve by bare name when installed and are simply absent when not — no error. Naming an uninstalled skill in a spawn prompt is worse than omitting it, because the agent reports against a pass it never ran. Add one line to any prompt naming them: *"If a skill isn't available, say which one and what you did instead."*
 
 > **HARD RULE — dispatch models.** Roster `Model` values below are native
-> persona tiers, not coding-worker defaults. Use `claude-opus-5-5` for coding
-> workers and `gpt-6-sol` (or `gpt-6-astra`) at `xhigh` for code review, never
-> at default reasoning. Use `claude-opus-5-5` for the advisor. Grok is a
-> usage-credit-pressure fallback only, pinned to `grok-4.7`; never use Grok
-> 4.6. CloudAgent is only one coding lane: if its catalog omits Claude Opus
-> 5.5, run `claude-opus-5-5` through the Claude Code CLI on an agent computer
-> or Luke's Claude Code desktop harness. Do not treat that gap as
-> unavailability or substitute Sol, GPT-5.6, or Grok as the coding worker. No
-> `gpt-5.6` model (Sol, Luna, Terra) is used, even by explicit choice.
+> persona tiers, not coding-worker defaults. Plan and advise on
+> `claude-fable-5-2` at `high`; implement on `claude-opus-5-5` at `high`; step
+> down to `claude-sonnet-5-5` (`medium`) or `claude-haiku-5-5` (`low`) only for
+> units that fit those tiers; run code review on `gpt-6.1-sol` (or
+> `gpt-6-astra`) at `xhigh`, not at default reasoning. Grok is a
+> usage-credit-pressure fallback only, pinned to `grok-4.7`. CloudAgent is only
+> one coding lane: if its catalog omits Claude Opus 5.5, run `claude-opus-5-5`
+> through the Claude Code CLI on an agent computer or Luke's Claude Code
+> desktop harness. Do not treat that gap as unavailability or substitute Sol,
+> GPT-5.6, or Grok as the coding worker. Out of policy even by explicit choice:
+> Fable 5.1 and earlier, the bare `fable` alias, the `gpt-5.5` and `gpt-5.6`
+> families, and Grok 4.6.
 
 ## Roster
 
@@ -34,7 +37,7 @@ Full installed agent roster with `subagent_type` identifiers and the skills to m
 | **documentation-writer** | `research:documentation-writer` | sonnet | READMEs, API docs, PRDs, guides |
 | **devops** | `dev-ops:devops` | sonnet | Vercel+Railway+Bun deployments, CI/CD, monitoring |
 | **optimizer** | `web-dev:optimizer` | opus | Bundle analysis, Lighthouse, runtime perf, Core Web Vitals |
-| **architecture-reviewer** | `review:architecture-reviewer` | opus | System design review, refactoring strategy, tech debt |
+| **architecture-reviewer** | `review:architecture-reviewer` | claude-fable-5-2 | System design review, refactoring strategy, tech debt |
 | **mobile** | `web-dev:mobile` | sonnet | Expo-first React Native, Swift, Kotlin, Flutter |
 | **data** | `dev-ops:data` | sonnet | ETL pipelines, analytics, data visualization |
 | **payments** | `dev-ops:payments` | sonnet | Stripe, billing, financial transactions |
