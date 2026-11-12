@@ -44,7 +44,10 @@ files and adds a CI guard so new drift fails the build.
 - `scripts/check-model-drift.py` runs in CI. Claude ids must match the tier
   map, and GPT, Grok, GPT Image, and Gemini ids below the current versions
   fail. Deliberate mentions (bans, legacy acceptance, upstream defaults) are
-  pinned per file in `scripts/model-drift-baseline.json`.
+  pinned in `scripts/model-drift-baseline.json` by id and a hash of the whole
+  line. Rewriting a ban into an instruction fails even when the number of
+  mentions stays the same. The GPT Image, Grok, and Gemini patterns also catch
+  an id that ends a sentence (`grok-4.6.`).
 
 ### Not checked live
 

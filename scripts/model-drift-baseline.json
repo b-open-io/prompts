@@ -1,123 +1,192 @@
 {
-  "README.md": {
-    "claude-prose": 1,
-    "gpt": 3,
-    "grok": 1
-  },
-  "benchmarks/NOTES.md": {
-    "claude-prose": 8,
-    "gpt": 2
-  },
-  "docs/plugin-context-harness.md": {
-    "gpt": 1
-  },
-  "docs/proposals/visual-coordinator-graph-view.html": {
-    "gpt": 1
-  },
-  "docs/settings-declarations.md": {
-    "gpt": 1
-  },
-  "modules/orchestra/agents/agent-builder.md": {
-    "claude-prose": 1,
-    "gpt": 4,
-    "grok": 1
-  },
-  "modules/orchestra/skills/advisor/SKILL.md": {
-    "claude-prose": 1
-  },
-  "modules/orchestra/skills/advisor/references/channels/codex-cli.md": {
-    "gpt": 3
-  },
-  "modules/orchestra/skills/claudex/references/setup.md": {
-    "gpt": 2
-  },
-  "modules/orchestra/skills/coordinator/SKILL.md": {
-    "claude-prose": 1,
-    "gpt": 4,
-    "grok": 1
-  },
-  "modules/orchestra/skills/coordinator/references/hosts/grok.md": {
-    "grok": 1
-  },
-  "modules/orchestra/skills/coordinator/references/workers/codex.md": {
-    "gpt": 1
-  },
-  "modules/orchestra/skills/coordinator/references/workers/grok.md": {
-    "gpt": 2
-  },
-  "modules/orchestra/skills/coordinator/references/workers/opencode.md": {
-    "gpt": 2
-  },
-  "modules/orchestra/skills/coordinator/scripts/model-policy.sh": {
-    "claude-prose": 1,
-    "gpt": 4,
-    "grok": 2
-  },
-  "modules/orchestra/skills/coordinator/scripts/run-grok-worker.sh": {
-    "gpt": 1,
-    "grok": 1
-  },
-  "modules/orchestra/skills/coordinator/scripts/run-opencode-review.sh": {
-    "gpt": 5
-  },
-  "modules/orchestra/skills/deploy-agent-team/references/agent-roster.md": {
-    "claude-prose": 1,
-    "gpt": 4,
-    "grok": 1
-  },
-  "modules/orchestra/skills/software-factory/SKILL.md": {
-    "grok": 1
-  },
-  "modules/orchestra/skills/visual-coordinator/SKILL.md": {
-    "gpt": 1,
-    "grok": 1
-  },
-  "modules/orchestra/skills/visual-coordinator/references/emitted-spec-format.md": {
-    "gpt": 7,
-    "grok": 3
-  },
-  "modules/orchestra/skills/visual-coordinator/references/harness-capabilities.md": {
-    "gpt": 5,
-    "grok": 3
-  },
-  "modules/orchestra/skills/visual-coordinator/scripts/detect-harness.sh": {
-    "gpt": 3,
-    "grok": 2
-  },
-  "modules/orchestra/skills/wave-coordinator/SKILL.md": {
-    "grok": 1
-  },
-  "modules/research/skills/x-research/SKILL.md": {
-    "grok": 2
-  },
-  "modules/research/skills/x-research/scripts/select-model.sh": {
-    "grok": 1
-  },
-  "modules/review/agents/code-auditor.md": {
-    "gpt": 1
-  },
-  "modules/review/skills/codex-security/SKILL.md": {
-    "gpt": 2
-  },
-  "modules/review/skills/codex-security/references/cli-reference.md": {
-    "gpt": 3
-  },
-  "modules/review/skills/codex-security/references/sdk-and-automation.md": {
-    "gpt": 1
-  },
-  "modules/review/skills/hunter-skeptic-referee/SKILL.md": {
-    "gpt": 1
-  },
-  "skills/setup/playground/src/lib/pack-catalog.ts": {
-    "image": 1
-  },
-  "tools/visual-coordinator/src/command.ts": {
-    "gpt": 2
-  },
-  "tools/visual-coordinator/src/workflow-schema.ts": {
-    "claude-id": 1,
-    "claude-prose": 1,
-    "gpt": 13,
-    "grok": 4
-  }
+  "README.md": [
+    "claude-prose: Fable 5.1 @ 4fe87e4bf048",
+    "gpt: GPT-5.5 @ 4fe87e4bf048",
+    "gpt: gpt-6-sol @ 4ba72f0dd2c5",
+    "gpt: gpt-6-sol @ 8a465aeb9ec4",
+    "grok: Grok 4.6 @ 22822cfae9d6"
+  ],
+  "benchmarks/NOTES.md": [
+    "claude-prose: Sonnet 4.6 @ 052071f6b88c",
+    "claude-prose: Sonnet 4.6 @ 220c315e3a71",
+    "claude-prose: Sonnet 4.6 @ 755d83ddf82c",
+    "claude-prose: Sonnet 4.6 @ 8b900fc466dd",
+    "claude-prose: Sonnet 4.6 @ 96e7d04df936",
+    "claude-prose: Sonnet 4.6 @ 9a1f435f9eb2",
+    "claude-prose: Sonnet 4.6 @ c70404b1445d",
+    "claude-prose: Sonnet 4.6 @ d8965088ac05",
+    "gpt: GPT-4 @ 9f0dca1fbe43",
+    "gpt: GPT-4 @ c8bd129bc95f"
+  ],
+  "docs/plugin-context-harness.md": [
+    "gpt: gpt-5.6-sol @ 26ac9d41c3f8"
+  ],
+  "docs/proposals/visual-coordinator-graph-view.html": [
+    "gpt: gpt-5 @ 36a3c6632c0a"
+  ],
+  "docs/settings-declarations.md": [
+    "gpt: gpt-6-sol @ 3ece9d6accb8"
+  ],
+  "modules/orchestra/agents/agent-builder.md": [
+    "claude-prose: Fable 5.1 @ c9dc71c150c9",
+    "gpt: gpt-5.5 @ c9dc71c150c9",
+    "gpt: gpt-5.6 @ 36bbaaa7680f",
+    "gpt: gpt-5.6 @ c9dc71c150c9",
+    "gpt: gpt-6-sol @ 6c6f849425a1",
+    "grok: Grok 4.6 @ a81d84005f35"
+  ],
+  "modules/orchestra/skills/advisor/SKILL.md": [
+    "claude-prose: Fable 5.1 @ f6649b19e3cd"
+  ],
+  "modules/orchestra/skills/advisor/references/channels/codex-cli.md": [
+    "gpt: gpt-6-sol @ 2f8df382a1bc",
+    "gpt: gpt-6-sol @ c39d3060e76c",
+    "gpt: gpt-6-sol @ d21287340ba0"
+  ],
+  "modules/orchestra/skills/claudex/references/setup.md": [
+    "gpt: gpt-6-sol @ 39b3303a3a75",
+    "gpt: gpt-6-sol @ 5e5533011f72"
+  ],
+  "modules/orchestra/skills/coordinator/SKILL.md": [
+    "claude-prose: Fable 5.1 @ c9dc71c150c9",
+    "gpt: gpt-5.5 @ c9dc71c150c9",
+    "gpt: gpt-5.6 @ c9dc71c150c9",
+    "gpt: gpt-5.6 @ f825d4e29f11",
+    "gpt: gpt-6-sol @ 8fad03679c07",
+    "grok: Grok 4.6 @ a81d84005f35"
+  ],
+  "modules/orchestra/skills/coordinator/references/hosts/grok.md": [
+    "grok: Grok 4.6 @ 339500b577d0"
+  ],
+  "modules/orchestra/skills/coordinator/references/workers/codex.md": [
+    "gpt: gpt-5.6 @ 24c79ecae698"
+  ],
+  "modules/orchestra/skills/coordinator/references/workers/grok.md": [
+    "gpt: GPT-5.6 @ 3cfac19428f0",
+    "gpt: gpt-5.6 @ 3bc8f56b53ea"
+  ],
+  "modules/orchestra/skills/coordinator/references/workers/opencode.md": [
+    "gpt: gpt-5.6 @ b1e5ee2f83ae",
+    "gpt: gpt-6-sol @ db1b56eb1fe0"
+  ],
+  "modules/orchestra/skills/coordinator/scripts/model-policy.sh": [
+    "claude-prose: Fable 5.1 @ 75eb59ca6e1d",
+    "gpt: GPT-5.5 @ bfc795be19e9",
+    "gpt: GPT-5.6 @ b6b34c6e4048",
+    "gpt: gpt-5 @ 52072f084fe1",
+    "gpt: gpt-5 @ 78ada04ce62f",
+    "grok: Grok 4.6 @ 985ac0129317",
+    "grok: grok-4 @ e3646a43ae8c"
+  ],
+  "modules/orchestra/skills/coordinator/scripts/run-grok-worker.sh": [
+    "gpt: gpt-5.6-luna @ 86c2e0af755c",
+    "grok: grok-4.6 @ 86c2e0af755c"
+  ],
+  "modules/orchestra/skills/coordinator/scripts/run-opencode-review.sh": [
+    "gpt: gpt-5.5 @ 8ca4e8918dbe",
+    "gpt: gpt-6-sol @ 181fc7100821",
+    "gpt: gpt-6-sol @ 279d318b421e",
+    "gpt: gpt-6-sol @ 8ca4e8918dbe",
+    "gpt: gpt-6-sol @ f14b38d737d1"
+  ],
+  "modules/orchestra/skills/deploy-agent-team/references/agent-roster.md": [
+    "claude-prose: Fable 5.1 @ f47a1e6e85f5",
+    "gpt: GPT-5.6 @ b530da0e7f4b",
+    "gpt: gpt-5.5 @ 5ba366c8aa61",
+    "gpt: gpt-5.6 @ 5ba366c8aa61",
+    "gpt: gpt-6-sol @ f4a30b2b7d88",
+    "grok: Grok 4.6 @ 5ba366c8aa61"
+  ],
+  "modules/orchestra/skills/software-factory/SKILL.md": [
+    "grok: Grok 4.6 @ 3006dcb0875e"
+  ],
+  "modules/orchestra/skills/visual-coordinator/SKILL.md": [
+    "gpt: gpt-6-sol @ 80478b0375d0",
+    "grok: Grok 4.6 @ 892aa401e2e0"
+  ],
+  "modules/orchestra/skills/visual-coordinator/references/emitted-spec-format.md": [
+    "gpt: gpt-5.5 @ 1631e736a643",
+    "gpt: gpt-5.6 @ 1631e736a643",
+    "gpt: gpt-5.6 @ 9faa445cd3e8",
+    "gpt: gpt-6-sol @ 0006c6cec9bf",
+    "gpt: gpt-6-sol @ 2949e5aa1753",
+    "gpt: gpt-6-sol @ 90b951b7b916",
+    "gpt: gpt-6-sol @ 96cf7046f21a",
+    "grok: Grok 4.6 @ 166a48e15216",
+    "grok: grok-4.6 @ 1631e736a643",
+    "grok: grok-4.6 @ c060e2e692d7"
+  ],
+  "modules/orchestra/skills/visual-coordinator/references/harness-capabilities.md": [
+    "gpt: GPT-5.5 @ 932666eae8fd",
+    "gpt: GPT-5.6 @ 27e802174bff",
+    "gpt: GPT-5.6 @ 621fbf19fc18",
+    "gpt: GPT-5.6 @ 932666eae8fd",
+    "gpt: gpt-6-sol @ 6394b87f3bd1",
+    "grok: Grok 4.6 @ 30d607a8a682",
+    "grok: Grok 4.6 @ 5a0a2ec06cc5",
+    "grok: Grok 4.6 @ 932666eae8fd"
+  ],
+  "modules/orchestra/skills/visual-coordinator/scripts/detect-harness.sh": [
+    "gpt: gpt-5.5 @ 144220a4032c",
+    "gpt: gpt-6-sol @ 144220a4032c",
+    "gpt: gpt-6-sol @ 4bb6641b5d51",
+    "grok: grok-4 @ 3754ee93dede",
+    "grok: grok-4.6 @ a16579e055b5"
+  ],
+  "modules/orchestra/skills/wave-coordinator/SKILL.md": [
+    "grok: Grok 4.6 @ 431e4ffead8a"
+  ],
+  "modules/research/skills/x-research/SKILL.md": [
+    "grok: grok-4-latest @ 13368557bf93",
+    "grok: grok-4-latest @ 323be51452af"
+  ],
+  "modules/research/skills/x-research/scripts/select-model.sh": [
+    "grok: grok-4-latest @ 97d7b10836bd"
+  ],
+  "modules/review/agents/code-auditor.md": [
+    "gpt: gpt-6-sol @ 8d759eeb1bb0"
+  ],
+  "modules/review/skills/codex-security/SKILL.md": [
+    "gpt: gpt-5.6-sol @ c6f121542056",
+    "gpt: gpt-6-sol @ 4b19e8e3281c"
+  ],
+  "modules/review/skills/codex-security/references/cli-reference.md": [
+    "gpt: gpt-5.6-sol @ 4a6ae27db1d1",
+    "gpt: gpt-5.6-sol @ 4ce3250ba493",
+    "gpt: gpt-5.6-sol @ 60912476c59e"
+  ],
+  "modules/review/skills/codex-security/references/sdk-and-automation.md": [
+    "gpt: gpt-5.6-sol @ aa74c93f0d82"
+  ],
+  "modules/review/skills/hunter-skeptic-referee/SKILL.md": [
+    "gpt: gpt-6-sol @ 9d15a2278227"
+  ],
+  "skills/setup/playground/src/lib/pack-catalog.ts": [
+    "image: gpt-image-2 @ 3e6164be6209"
+  ],
+  "tools/visual-coordinator/src/command.ts": [
+    "gpt: gpt-6-sol @ 23234de7a697",
+    "gpt: gpt-6-sol @ b1d16fe21006"
+  ],
+  "tools/visual-coordinator/src/workflow-schema.ts": [
+    "claude-id: claude-fable-5-1 @ 2fb3217c0e27",
+    "claude-prose: Fable 5.1 @ 46ebc6b15cdd",
+    "gpt: GPT-5.5 @ 56e7db961d46",
+    "gpt: GPT-5.6 @ 56e7db961d46",
+    "gpt: GPT-5.6 @ 9a953e320fbe",
+    "gpt: gpt-5 @ 406a2c76079b",
+    "gpt: gpt-5.5 @ b08a341d020a",
+    "gpt: gpt-5.5 @ bb72c4e7d2fe",
+    "gpt: gpt-5.6 @ b08a341d020a",
+    "gpt: gpt-6-sol @ 0110206795a3",
+    "gpt: gpt-6-sol @ 1a4eadb57994",
+    "gpt: gpt-6-sol @ 1c814bc241ca",
+    "gpt: gpt-6-sol @ 784c11de5232",
+    "gpt: gpt-6-sol @ bb72c4e7d2fe",
+    "gpt: gpt-6-sol @ ea08457d890b",
+    "grok: Grok 4.6 @ 56e7db961d46",
+    "grok: grok-4 @ 406a2c76079b",
+    "grok: grok-4 @ 6ae3c902b6c9",
+    "grok: grok-4.6 @ 46ebc6b15cdd"
+  ]
 }

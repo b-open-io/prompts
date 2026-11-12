@@ -21,9 +21,11 @@ Model ids: `scripts/check-model-drift.py` (run in CI) holds the approved Claude
 ids and the retired-version floors for GPT, Grok, GPT Image, and Gemini. When a
 model ships or retires, change `CURRENT_CLAUDE` or the floors there first, run
 the script, and fix each reported line, including `model-policy.sh`,
-`workflow-schema.ts`, and the Coordinator tier map. A deliberate mention (a ban
-or legacy acceptance) is pinned per file in `scripts/model-drift-baseline.json`;
-review it, then run the script with `--update-baseline`.
+`workflow-schema.ts`, and the
+Coordinator tier map. A deliberate mention (a ban or legacy acceptance) is
+pinned by a hash of its whole line in `scripts/model-drift-baseline.json`, so
+rewording that line needs review again; review it, then run the script with
+`--update-baseline`.
 
 After ANY commit that bumps either `.claude-plugin/plugin.json` or
 `.codex-plugin/plugin.json`, push in the same breath —

@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""Fail when a tracked file gains or loses a mention of a retired model id.
+"""Fail when a tracked file gains, loses, or rewrites a mention of a retired model id.
 
 Claude ids must be one of CURRENT_CLAUDE, so a tier change flags every stale line. The other
 families use a retired-version floor. A file that names a retired id on purpose (a ban
-statement, legacy acceptance, an upstream default) has its count pinned in
-model-drift-baseline.json. Any change to a count fails until a person reviews the hits and
-runs --update-baseline.
+statement, legacy acceptance, an upstream default) has each mention pinned in
+model-drift-baseline.json as "label: token @ digest", where digest is a hash of the whole
+line. Editing a pinned line, even one that keeps the same id, fails until a person reviews
+it and runs --update-baseline. Moving a line does not, because line numbers are not pinned.
 """
 
 from __future__ import annotations
 
 import argparse
 import fnmatch
+import hashlib
 import json
 import re
 import subprocess
@@ -40,12 +42,12 @@ CLAUDE_NAME = re.compile(r"\b(opus|sonnet|haiku|fable)\s(\d+(?:\.\d+)?)\b", re.I
 RETIRED = {
     # Below GPT 6, plus gpt-6-sol: accepted only where a lane lacks the current gpt-6.1-sol.
     "gpt": re.compile(r"gpt-[0-5](?!\d)[\w.-]*|gpt-6[- ]sol", re.I),
-    # Below grok-4.7, the pinned Grok worker.
-    "grok": re.compile(r"grok-(?:[0-3](?:\.\d+)?|4(?:\.[0-6])?)(?![.\d])[\w-]*|grok 4\.[0-6](?!\d)", re.I),
+    # Below grok-4.7, the pinned Grok worker. (?!\.?\d) still matches an id that ends a sentence.
+    "grok": re.compile(r"grok-(?:[0-3](?:\.\d+)?|4(?:\.[0-6])?)(?!\.?\d)[\w-]*|grok 4\.[0-6](?!\d)", re.I),
     # Below GPT Image 2.6, the gemskills 0.0.72 Sunburst and Flare models.
-    "image": re.compile(r"gpt-image-(?:1(?:\.\d+)?|2(?:\.[0-5])?)(?![.\d])[\w-]*", re.I),
+    "image": re.compile(r"gpt-image-(?:1(?:\.\d+)?|2(?:\.[0-5])?)(?!\.?\d)[\w-]*", re.I),
     # Below Gemini 3.
-    "gemini": re.compile(r"gemini[- ][12](?:\.\d)?(?![.\d])[\w-]*", re.I),
+    "gemini": re.compile(r"gemini[- ][12](?:\.\d)?(?!\.?\d)[\w-]*", re.I),
 }
 
 # Dated records, test fixtures that must name retired ids, generated copies checked by their
@@ -60,18 +62,21 @@ HISTORY = (
 )
 
 
-def find_hits(text: str) -> list[tuple[str, int, str]]:
+Hit = tuple[str, int, str, str]  # label, line number, token, line text
+
+
+def find_hits(text: str) -> list[Hit]:
     hits = []
     for number, line in enumerate(text.splitlines(), start=1):
         for match in CLAUDE_ID.finditer(line):
             token = match.group().rstrip(".-")
             if token.lower() not in CLAUDE_IDS:
-                hits.append(("claude-id", number, token))
+                hits.append(("claude-id", number, token, line))
         for match in CLAUDE_NAME.finditer(line):
             if (match.group(1).lower(), match.group(2)) not in CLAUDE_PROSE:
-                hits.append(("claude-prose", number, match.group()))
+                hits.append(("claude-prose", number, match.group(), line))
         for label, pattern in RETIRED.items():
-            hits.extend((label, number, match.group()) for match in pattern.finditer(line))
+            hits.extend((label, number, match.group(), line) for match in pattern.finditer(line))
     return hits
 
 
@@ -79,7 +84,7 @@ def is_history(path: str) -> bool:
     return any(fnmatch.fnmatch(path, pattern) for pattern in HISTORY)
 
 
-def scan(root: Path) -> dict[str, list[tuple[str, int, str]]]:
+def scan(root: Path) -> dict[str, list[Hit]]:
     listed = subprocess.run(["git", "ls-files", "-z"], cwd=root, capture_output=True, text=True, check=True)
     found = {}
     for path in filter(None, listed.stdout.split("\0")):
@@ -95,30 +100,48 @@ def scan(root: Path) -> dict[str, list[tuple[str, int, str]]]:
     return found
 
 
-def counts(found: dict[str, list[tuple[str, int, str]]]) -> dict[str, dict[str, int]]:
-    return {path: dict(sorted(Counter(label for label, _, _ in hits).items())) for path, hits in sorted(found.items())}
+def fingerprint(hit: Hit) -> str:
+    label, _, token, line = hit
+    digest = hashlib.sha256(line.strip().encode("utf-8")).hexdigest()[:12]
+    return f"{label}: {token} @ {digest}"
+
+
+def fingerprints(found: dict[str, list[Hit]]) -> dict[str, list[str]]:
+    return {path: sorted(map(fingerprint, hits)) for path, hits in sorted(found.items())}
 
 
 def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--update-baseline", action="store_true", help="write the current counts as the baseline")
+    parser.add_argument("--update-baseline", action="store_true", help="pin every current mention as reviewed")
     args = parser.parse_args(argv)
     found = scan(root)
-    actual = counts(found)
+    actual = fingerprints(found)
     if args.update_baseline:
         (root / BASELINE).write_text(json.dumps(actual, indent=2) + "\n", encoding="utf-8")
-        print(f"wrote {BASELINE}: {len(actual)} files")
+        print(f"wrote {BASELINE}: {sum(map(len, actual.values()))} mentions in {len(actual)} files")
         return 0
     baseline_path = root / BASELINE
     if not baseline_path.is_file():
         print(f"error: {BASELINE} is missing; run with --update-baseline and review it", file=sys.stderr)
         return 2
     expected = json.loads(baseline_path.read_text(encoding="utf-8"))
-    changed = sorted(path for path in actual.keys() | expected.keys() if actual.get(path, {}) != expected.get(path, {}))
-    for path in changed:
-        print(f"{path}: baseline {expected.get(path, {})}, found {actual.get(path, {})}", file=sys.stderr)
-        for label, number, token in found.get(path, []):
-            print(f"  {path}:{number}: {label} {token}", file=sys.stderr)
+    if not all(isinstance(entries, list) for entries in expected.values()):
+        print(f"error: {BASELINE} uses an old format; run with --update-baseline and review it", file=sys.stderr)
+        return 2
+    changed = False
+    for path in sorted(actual.keys() | expected.keys()):
+        unreviewed = Counter(actual.get(path, [])) - Counter(expected.get(path, []))
+        removed = Counter(expected.get(path, [])) - Counter(actual.get(path, []))
+        if not unreviewed and not removed:
+            continue
+        changed = True
+        for hit in found.get(path, []):
+            if unreviewed[fingerprint(hit)] > 0:
+                unreviewed[fingerprint(hit)] -= 1
+                label, number, token, line = hit
+                print(f"{path}:{number}: unreviewed {label} {token}: {line.strip()}", file=sys.stderr)
+        for entry in sorted(removed.elements()):
+            print(f"{path}: baseline entry no longer present: {entry}", file=sys.stderr)
     if changed:
         print(
             "Replace each retired model id with a current one. If a mention is deliberate (a ban or legacy"
