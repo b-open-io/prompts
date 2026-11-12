@@ -58,13 +58,50 @@ run_scan() {
   set -e
 }
 
-# 1. A fresh cache is returned during a catalog outage, without any network call.
-mkdir -p "$TMP_DIR/fresh/persona"
-echo '{"cached":true}' >"$TMP_DIR/fresh/persona/last-scan.json"
-run_scan fresh fail XAI_RESEARCH_MODEL=grok-4.7
-[ "$status" -eq 0 ] || fail "fresh cache with catalog outage exited $status: $(cat "$TMP_DIR/fresh/err")"
-[ "$(cat "$TMP_DIR/fresh/out")" = '{"cached":true}' ] || fail "fresh cache was not returned: $(cat "$TMP_DIR/fresh/out")"
-[ ! -s "$TMP_DIR/fresh/calls" ] || fail "fresh cache still called curl: $(cat "$TMP_DIR/fresh/calls")"
+# stat stubs for the dialect this host does not have. GNU `stat -f` prints filesystem details
+# to stdout and then fails; BSD `stat -c` fails without output. Both report a fresh mtime.
+mkdir -p "$TMP_DIR/gnu-stat" "$TMP_DIR/bsd-stat" "$TMP_DIR/junk-stat"
+cat >"$TMP_DIR/gnu-stat/stat" <<'STUB'
+#!/usr/bin/env bash
+case "$1" in
+  -c) date +%s ;;
+  -f) printf '  File: "%s"\n    ID: 0 Namelen: 255     Type: ext2/ext3\n' "$3"; exit 1 ;;
+  *) exit 1 ;;
+esac
+STUB
+cat >"$TMP_DIR/bsd-stat/stat" <<'STUB'
+#!/usr/bin/env bash
+case "$1" in
+  -f) date +%s ;;
+  *) echo "stat: illegal option -- ${1#-}" >&2; exit 1 ;;
+esac
+STUB
+cat >"$TMP_DIR/junk-stat/stat" <<'STUB'
+#!/usr/bin/env bash
+echo "not-a-number"
+STUB
+chmod +x "$TMP_DIR/gnu-stat/stat" "$TMP_DIR/bsd-stat/stat" "$TMP_DIR/junk-stat/stat"
+
+# 1. A fresh cache is returned during a catalog outage, without any network call, whichever
+#    stat dialect the host has.
+for dialect in native gnu bsd; do
+  mkdir -p "$TMP_DIR/fresh-$dialect/persona"
+  echo '{"cached":true}' >"$TMP_DIR/fresh-$dialect/persona/last-scan.json"
+  stat_path=$PATH
+  [ "$dialect" = native ] || stat_path="$TMP_DIR/$dialect-stat:$PATH"
+  run_scan "fresh-$dialect" fail XAI_RESEARCH_MODEL=grok-4.7 PATH="$TMP_DIR/bin:$stat_path"
+  [ "$status" -eq 0 ] || fail "$dialect stat: fresh cache with catalog outage exited $status: $(cat "$TMP_DIR/fresh-$dialect/err")"
+  [ "$(cat "$TMP_DIR/fresh-$dialect/out")" = '{"cached":true}' ] || fail "$dialect stat: fresh cache was not returned: $(cat "$TMP_DIR/fresh-$dialect/out")"
+  [ ! -s "$TMP_DIR/fresh-$dialect/calls" ] || fail "$dialect stat: fresh cache still called curl: $(cat "$TMP_DIR/fresh-$dialect/calls")"
+done
+
+# 1b. Unparseable stat output counts as a stale cache instead of breaking the age arithmetic.
+mkdir -p "$TMP_DIR/junk/persona"
+echo '{"cached":true}' >"$TMP_DIR/junk/persona/last-scan.json"
+run_scan junk fail XAI_RESEARCH_MODEL=grok-4.7 PATH="$TMP_DIR/bin:$TMP_DIR/junk-stat:$PATH"
+[ "$status" -ne 0 ] || fail "junk stat output should not return the cache"
+grep -q "catalog\|error" "$TMP_DIR/junk/err" || fail "junk stat: unexpected error: $(cat "$TMP_DIR/junk/err")"
+if grep -q "line [0-9]*:" "$TMP_DIR/junk/err"; then fail "junk stat broke the script: $(cat "$TMP_DIR/junk/err")"; fi
 
 # 2. With no usable cache, a catalog outage fails before any research request.
 run_scan outage fail

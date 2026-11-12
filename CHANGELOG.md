@@ -45,6 +45,10 @@ files and adds a CI guard so new drift fails the build.
   the same selector, which also picks the newest model when the variable is
   unset. Selection runs after the four-hour cache check, so a catalog outage
   still returns a fresh cached scan.
+- On Linux the persona scan never used its cache: GNU `stat -f` printed
+  filesystem details before failing, and that text broke the cache-age
+  arithmetic. The scan now tries the GNU and BSD `stat` forms separately and
+  treats unreadable output as a stale cache.
 
 ### Added
 

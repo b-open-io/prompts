@@ -38,7 +38,14 @@ mkdir -p "$PERSONA_DIR"
 
 # Check cache (< 4 hours old)
 if [ "$REFRESH" = false ] && [ -f "$CACHE_FILE" ]; then
-    file_epoch=$(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null || echo "0")
+    # Try each stat dialect on its own and keep only a successful, numeric result: GNU
+    # `stat -f` prints filesystem details before it fails, so chaining the two with ||
+    # concatenates that output with the epoch.
+    if file_epoch=$(stat -c %Y "$CACHE_FILE" 2>/dev/null); then :     # GNU coreutils
+    elif file_epoch=$(stat -f %m "$CACHE_FILE" 2>/dev/null); then :   # BSD / macOS
+    else file_epoch=0
+    fi
+    case "$file_epoch" in ''|*[!0-9]*) file_epoch=0 ;; esac
     now_epoch=$(date "+%s")
     age_hours=$(( (now_epoch - file_epoch) / 3600 ))
     if [ "$age_hours" -lt 4 ]; then
