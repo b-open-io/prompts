@@ -78,6 +78,9 @@ alias merely because its name contains `latest`—the live catalog can retain a
 lagging alias. Set a versioned ID such as `grok-4.7` only to request a
 deliberate pin.
 The selector verifies explicit pins and always emits the canonical model ID.
+`grok-4.7` is the floor: automatic selection skips older models even when the
+catalog dates them newer, and a pin or alias that resolves below `grok-4.7`
+(Grok 4.6 included) fails instead of reaching the API.
 The wrapper selects and calls the model in one process, so model choice cannot
 disappear between separate shell tool calls. It accepts a request JSON object
 on stdin, overwrites any embedded `model`, and returns the raw Responses API

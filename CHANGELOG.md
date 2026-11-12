@@ -38,6 +38,12 @@ files and adds a CI guard so new drift fails the build.
   only when the lane lists one.
 - The `mainNodeId` JSDoc said a legacy `grok-4.6` main session skips the
   credit gate. The code applies the gate to every Grok main.
+- x-research could still send Grok 4.6: automatic selection took the newest
+  dated catalog entry, and a pin took any available id. The selector now has a
+  `grok-4.7` floor on both paths and fails instead of sending an older model.
+  The persona scan passed `XAI_RESEARCH_MODEL` to xAI unchecked; it now uses
+  the same selector, which also picks the newest model when the variable is
+  unset.
 
 ### Added
 
@@ -48,6 +54,7 @@ files and adds a CI guard so new drift fails the build.
   line. Rewriting a ban into an instruction fails even when the number of
   mentions stays the same. The GPT Image, Grok, and Gemini patterns also catch
   an id that ends a sentence (`grok-4.6.`).
+- CI runs the x-research selector test, including its Grok 4.6 rejection cases.
 
 ### Not checked live
 

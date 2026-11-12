@@ -137,10 +137,12 @@
     "grok: Grok 4.6 @ 431e4ffead8a"
   ],
   "modules/research/skills/x-research/SKILL.md": [
+    "grok: Grok 4.6 @ 04d0d2cac2dd",
     "grok: grok-4-latest @ 13368557bf93",
     "grok: grok-4-latest @ 323be51452af"
   ],
   "modules/research/skills/x-research/scripts/select-model.sh": [
+    "grok: Grok 4.6 @ 44254b253d4b",
     "grok: grok-4-latest @ 97d7b10836bd"
   ],
   "modules/review/agents/code-auditor.md": [

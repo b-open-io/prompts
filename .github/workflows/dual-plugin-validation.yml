@@ -52,6 +52,9 @@ jobs:
       - name: Check for retired model ids
         run: python3 scripts/check-model-drift.py
 
+      - name: Test the x-research Grok model selector
+        run: bash modules/research/skills/x-research/tests/test_select_model.sh
+
       - name: Check generated Codex agents
         run: python3 scripts/codex-agents/generate.py --check
 

@@ -280,7 +280,9 @@ Skills are context-triggered capabilities. They activate automatically or can be
 task and selects the newest canonical general-purpose Grok model. Generic
 `latest` aliases are treated as automatic selection because provider aliases
 can lag; set a versioned `XAI_RESEARCH_MODEL` only when a reproducible pin is
-intentional.
+intentional. The selector never returns a model below `grok-4.7`: automatic
+selection skips older ids, and a pin or alias that resolves to one fails before
+any request. The persona scan uses the same selector.
 
 ### Content & Media
 | Skill | Description |

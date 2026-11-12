@@ -25,11 +25,6 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if [ -z "$XAI_RESEARCH_MODEL" ]; then
-    echo "Error: set XAI_RESEARCH_MODEL to an ID verified with GET https://api.x.ai/v1/models"
-    exit 1
-fi
-
 if [ -z "$XAI_API_KEY" ]; then
     echo "Error: XAI_API_KEY is not set"
     echo ""
@@ -38,6 +33,10 @@ if [ -z "$XAI_API_KEY" ]; then
     echo "3. Run this script again"
     exit 1
 fi
+
+# The x-research selector verifies XAI_RESEARCH_MODEL against the live catalog (or picks the
+# newest when it is unset) and refuses models below the retired-version floor.
+XAI_RESEARCH_MODEL=$(XAI_RESEARCH_MODEL="$XAI_RESEARCH_MODEL" "$SCRIPT_DIR/../../x-research/scripts/select-model.sh")
 
 mkdir -p "$PERSONA_DIR"
 
