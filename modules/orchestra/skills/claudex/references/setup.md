@@ -95,7 +95,9 @@ curl -s http://127.0.0.1:8317/v1/models \
 
 `gpt-6.1-sol` should appear in the list. An empty `data: []` means step 04 did
 not complete. If the list has `gpt-6-sol` but not `gpt-6.1-sol`, use
-`gpt-6-sol` in step 06 and tell the user which model the alias runs.
+`gpt-6-sol` in step 06 and tell the user which model the alias runs. Rerun
+this check later and switch all four model values to `gpt-6.1-sol` once it is
+listed.
 
 ## 06 · Add the alias
 

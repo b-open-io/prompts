@@ -45,7 +45,7 @@
   ],
   "modules/orchestra/skills/claudex/references/setup.md": [
     "gpt: gpt-6-sol @ 39b3303a3a75",
-    "gpt: gpt-6-sol @ 5e5533011f72"
+    "gpt: gpt-6-sol @ 4b82fa1507dc"
   ],
   "modules/orchestra/skills/coordinator/SKILL.md": [
     "claude-prose: Fable 5.1 @ c9dc71c150c9",

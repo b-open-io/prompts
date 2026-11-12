@@ -21,7 +21,7 @@ files and adds a CI guard so new drift fails the build.
   Haiku 4.5).
 - Claudex, the README, and `docs/plugin-context-harness.md` use
   `gpt-6.1-sol`. The claudex setup uses `gpt-6-sol` only when the proxy lists
-  no 6.1, and tells the user.
+  no 6.1, tells the user, and switches the alias once 6.1 is listed.
 - gemskills references move to 0.0.72: `gpt-image-2.6-sunburst` is the
   default for finals and `gpt-image-2.6-flare` is for drafts. This changes the
   front desk, designer, audio-specialist, promo-video-pipeline, the setup pack
