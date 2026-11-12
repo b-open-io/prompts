@@ -34,10 +34,6 @@ if [ -z "$XAI_API_KEY" ]; then
     exit 1
 fi
 
-# The x-research selector verifies XAI_RESEARCH_MODEL against the live catalog (or picks the
-# newest when it is unset) and refuses models below the retired-version floor.
-XAI_RESEARCH_MODEL=$(XAI_RESEARCH_MODEL="$XAI_RESEARCH_MODEL" "$SCRIPT_DIR/../../x-research/scripts/select-model.sh")
-
 mkdir -p "$PERSONA_DIR"
 
 # Check cache (< 4 hours old)
@@ -108,6 +104,11 @@ EARLY SIGNALS
 3-5 new tools, projects, or narratives just starting to gain traction — emerging discussions before they go mainstream.${POOL_SECTION}
 
 Be concise and actionable. Include post links and engagement numbers where available."
+
+# The x-research selector verifies XAI_RESEARCH_MODEL against the live catalog (or picks the
+# newest when it is unset) and refuses models below the retired-version floor. It runs after
+# the cache check so a catalog outage cannot hide a fresh cached scan.
+XAI_RESEARCH_MODEL=$(XAI_RESEARCH_MODEL="$XAI_RESEARCH_MODEL" "$SCRIPT_DIR/../../x-research/scripts/select-model.sh")
 
 # Call xAI Grok
 RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \

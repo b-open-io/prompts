@@ -43,7 +43,8 @@ files and adds a CI guard so new drift fails the build.
   `grok-4.7` floor on both paths and fails instead of sending an older model.
   The persona scan passed `XAI_RESEARCH_MODEL` to xAI unchecked; it now uses
   the same selector, which also picks the newest model when the variable is
-  unset.
+  unset. Selection runs after the four-hour cache check, so a catalog outage
+  still returns a fresh cached scan.
 
 ### Added
 
@@ -54,7 +55,8 @@ files and adds a CI guard so new drift fails the build.
   line. Rewriting a ban into an instruction fails even when the number of
   mentions stays the same. The GPT Image, Grok, and Gemini patterns also catch
   an id that ends a sentence (`grok-4.6.`).
-- CI runs the x-research selector test, including its Grok 4.6 rejection cases.
+- CI runs the x-research selector and persona scan tests, including their Grok
+  4.6 rejection cases.
 
 ### Not checked live
 

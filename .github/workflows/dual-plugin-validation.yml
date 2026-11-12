@@ -55,6 +55,9 @@ jobs:
       - name: Test the x-research Grok model selector
         run: bash modules/research/skills/x-research/tests/test_select_model.sh
 
+      - name: Test persona scan model selection
+        run: bash modules/research/skills/persona/tests/test_scan.sh
+
       - name: Check generated Codex agents
         run: python3 scripts/codex-agents/generate.py --check
 
