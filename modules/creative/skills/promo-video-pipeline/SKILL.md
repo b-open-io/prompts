@@ -1,10 +1,10 @@
 ---
 name: promo-video-pipeline
-version: 0.0.9
+version: 0.0.10
 description: >-
   Use this when making a motion-graphics promo or showreel, a short social cut or a
   longer commercial cut, from the user's prompt plus optional music. Covers
-  gpt-image-2.5-flare inspiration keyframes, an approval gate before video spend, a
+  gpt-image-2.6-flare inspiration keyframes, an approval gate before video spend, a
   budget-capped headless Claude Opus 5.5 edit through the Higgsfield REST API, Suno
   scoring, beat alignment, -14 LUFS loudness, and H.264 exports that play cleanly in
   QuickTime and Discord.
@@ -66,7 +66,7 @@ The gate sums the ledger. Auth is the header `Authorization: Key ID:SECRET`. The
 ### 1. Inspiration keyframes (approval gate)
 
 1. Collect inputs: real product captures, brand references (logo, palette, type), and the user's idea prompts.
-2. Generate ~10–12 keyframes with `gemskills:generate-image` on gpt-image-2.5-flare (`--model flare`, `--aspect 16:9` or `9:16`, captures and brand refs passed with `--input`). Go through the gemskills skill, never raw curl.
+2. Generate ~10–12 keyframes with `gemskills:generate-image` on gpt-image-2.6-flare (`--model flare`, `--aspect 16:9` or `9:16`, captures and brand refs passed with `--input`). Go through the gemskills skill, never raw curl.
 3. The keyframes propose NEW scenes and screens. Plain screenshots are not a storyboard.
 4. Any real product UI in the final video must be a real capture. Never ship AI-generated interface.
 5. Show the user the actual images, a contact sheet plus full-size files, and get approval before any video spend:

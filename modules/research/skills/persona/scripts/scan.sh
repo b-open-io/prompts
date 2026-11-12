@@ -25,11 +25,6 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if [ -z "$XAI_RESEARCH_MODEL" ]; then
-    echo "Error: set XAI_RESEARCH_MODEL to an ID verified with GET https://api.x.ai/v1/models"
-    exit 1
-fi
-
 if [ -z "$XAI_API_KEY" ]; then
     echo "Error: XAI_API_KEY is not set"
     echo ""
@@ -43,7 +38,14 @@ mkdir -p "$PERSONA_DIR"
 
 # Check cache (< 4 hours old)
 if [ "$REFRESH" = false ] && [ -f "$CACHE_FILE" ]; then
-    file_epoch=$(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null || echo "0")
+    # Try each stat dialect on its own and keep only a successful, numeric result: GNU
+    # `stat -f` prints filesystem details before it fails, so chaining the two with ||
+    # concatenates that output with the epoch.
+    if file_epoch=$(stat -c %Y "$CACHE_FILE" 2>/dev/null); then :     # GNU coreutils
+    elif file_epoch=$(stat -f %m "$CACHE_FILE" 2>/dev/null); then :   # BSD / macOS
+    else file_epoch=0
+    fi
+    case "$file_epoch" in ''|*[!0-9]*) file_epoch=0 ;; esac
     now_epoch=$(date "+%s")
     age_hours=$(( (now_epoch - file_epoch) / 3600 ))
     if [ "$age_hours" -lt 4 ]; then
@@ -109,6 +111,11 @@ EARLY SIGNALS
 3-5 new tools, projects, or narratives just starting to gain traction — emerging discussions before they go mainstream.${POOL_SECTION}
 
 Be concise and actionable. Include post links and engagement numbers where available."
+
+# The x-research selector verifies XAI_RESEARCH_MODEL against the live catalog (or picks the
+# newest when it is unset) and refuses models below the retired-version floor. It runs after
+# the cache check so a catalog outage cannot hide a fresh cached scan.
+XAI_RESEARCH_MODEL=$(XAI_RESEARCH_MODEL="$XAI_RESEARCH_MODEL" "$SCRIPT_DIR/../../x-research/scripts/select-model.sh")
 
 # Call xAI Grok
 RESPONSE=$(curl -s "https://api.x.ai/v1/responses" \

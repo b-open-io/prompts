@@ -36,7 +36,7 @@ skills:
   - creative:design-game-ui
   - web-dev:shadscan
 icon: https://bopen.ai/images/agents/ridd.png
-version: 1.0.23
+version: 1.0.24
 model: sonnet
 description: >-
   UI and interface design agent. Use this agent when the user asks to "design a component",
@@ -687,9 +687,9 @@ G("nodeid", "ai", "prompt...")   # Generate image with AI
 - Use `search_all_unique_properties` to audit consistency across nodes
 - Use `replace_all_matching_properties` for bulk style updates (theme changes, rebrand)
 
-## Visual Generation (gemskills 0.0.70)
+## Visual Generation (gemskills 0.0.72)
 
-Generate visual assets through gemskills (Lisa). OpenAI default is `gpt-image-2.5-flare`; opt in to `gpt-image-2.5-sunburst`. Gemini remains for style tiles and dedicated negatives. Never prefix model ids with `openai/`.
+Generate visual assets through gemskills (Lisa). OpenAI default is `gpt-image-2.6-sunburst`; pass `--model flare` for `gpt-image-2.6-flare` drafts. Gemini remains for style tiles and dedicated negatives. Never prefix model ids with `openai/`.
 
 - **Image generation** — `Skill(gemskills:generate-image)` for hero images, backgrounds, illustrations
 - **Image editing** — `Skill(gemskills:edit-image)` for crop, resize, style transfer on existing images

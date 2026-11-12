@@ -50,19 +50,28 @@ if ! jq -e '.data | type == "array"' >/dev/null 2>&1 <<<"$models_json"; then
   exit 1
 fi
 
+# Retired-version floor: Grok 4.6 and older are never dispatched, by automatic selection or by
+# pin. scripts/check-model-drift.py flags this line when the floor moves; raise it there first.
+min_model=grok-4.7
+# [major, minor] of a versioned Grok id, or null for ids such as grok-imagine-*.
+version_def='def version: (capture("^grok-(?<major>[0-9]+)(?:[.](?<minor>[0-9]+))?(?![.0-9])") // null)
+  | if . == null then null else [(.major | tonumber), ((.minor // "0") | tonumber)] end;'
+
 requested=${XAI_RESEARCH_MODEL:-auto}
 case "$requested" in
   ""|auto|latest|grok-latest|grok-4-latest)
-    selected=$(jq -r '
-      [.data[]
+    selected=$(jq -r --arg min "$min_model" "$version_def"'
+      ($min | version) as $floor
+      | [.data[]
         | select(.id | type == "string")
-        | select(.id | test("^grok-[0-9]+([.][0-9]+)*$"))]
+        | select(.id | test("^grok-[0-9]+([.][0-9]+)*$"))
+        | select((.id | version) >= $floor)]
       | sort_by([(.created // 0), .id])
       | last
       | .id // empty
     ' <<<"$models_json")
     if [ -z "$selected" ]; then
-      echo "ERROR: no canonical general-purpose Grok model was found; set XAI_RESEARCH_MODEL to a verified model ID" >&2
+      echo "ERROR: no canonical general-purpose Grok model at or above $min_model was found; set XAI_RESEARCH_MODEL to a verified model ID" >&2
       exit 1
     fi
     ;;
@@ -78,6 +87,11 @@ case "$requested" in
     ' <<<"$models_json")
     if [ -z "$selected" ]; then
       echo "ERROR: XAI_RESEARCH_MODEL '$requested' is not available to this API key" >&2
+      exit 1
+    fi
+    if ! jq -en --arg id "$selected" --arg min "$min_model" "$version_def"'
+      ($id | version) as $v | $v != null and $v >= ($min | version)' >/dev/null; then
+      echo "ERROR: XAI_RESEARCH_MODEL '$requested' resolves to $selected, which is not a versioned Grok model at or above $min_model" >&2
       exit 1
     fi
     ;;

@@ -50,10 +50,10 @@
     {
       "source_name": "audio-specialist",
       "source_path": "modules/creative/agents/audio-specialist.md",
-      "source_version": "1.0.11",
-      "source_hash": "sha256:8bd7811c2c8f3545018634c8c5e5d751a18530d56011d008927f7b1ecd2f8f2b",
+      "source_version": "1.0.12",
+      "source_hash": "sha256:05f837e6e6274f5deab5e9d0067b75255fc251428af8f3f75692ad8f70b9003f",
       "generated_file": "bopen-audio-specialist.toml",
-      "generated_hash": "sha256:58a007e6273739b92e011d5e641c72853bfb6aa9a497bf55c934f5e704a4f528",
+      "generated_hash": "sha256:c4de503786ca904530344bed99025958a811443461078670a203f4c0a188166f",
       "agent_name": "bopen_audio_specialist",
       "curated": false,
       "default_install": false
@@ -149,10 +149,10 @@
     {
       "source_name": "designer",
       "source_path": "modules/web-dev/agents/designer.md",
-      "source_version": "1.0.23",
-      "source_hash": "sha256:62f984e39e2e2e292cc1ba55a4d1f2f3858ab0c9414a2f02dccd1f5cce99bdbd",
+      "source_version": "1.0.24",
+      "source_hash": "sha256:7ac197cfc92196739cc13e21cda2b92220542dd8a40586f51d8c96a53721d6ba",
       "generated_file": "bopen-designer.toml",
-      "generated_hash": "sha256:42753201b4d3ceca27e5aca9b051514dfedde4bdbd71f18df9922dede9c5e879",
+      "generated_hash": "sha256:e9f06cd96653b945632e7669cdb7604df4604c3d060492d8587a3c760d75baf9",
       "agent_name": "bopen_designer",
       "curated": false,
       "default_install": false
@@ -193,10 +193,10 @@
     {
       "source_name": "front-desk",
       "source_path": "agents/front-desk.md",
-      "source_version": "1.1.16",
-      "source_hash": "sha256:d8854a69f94612db6e00b316e103caeccb29e8a5a395e7ee0cee7a3d47e3fa02",
+      "source_version": "1.1.17",
+      "source_hash": "sha256:dcb752d6634836eb411a0760f4f6c67958d0970591caddfcf22101f5c2ae6fa3",
       "generated_file": "bopen-front-desk.toml",
-      "generated_hash": "sha256:b5fb2eee69ac01b5a8eb133b6bda7805bd029bde1e8e449389c382a7070d4e11",
+      "generated_hash": "sha256:9a68604572b15680621ea03a6851302c00e87aa8e3d21da5214554ed05166d6b",
       "agent_name": "bopen_front_desk",
       "curated": true,
       "default_install": true

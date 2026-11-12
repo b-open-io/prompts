@@ -255,7 +255,7 @@ core members.
 - 💬 [**customer-support**](agents/customer-support.md) — Rhaja (Mike) — Slack customer support, channel watch, triage, draft replies
 
 ### Organization & Operations
-- 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup, host install paths (Claude Code, Codex, Grok Build, Grok Bot), and gemskills 0.0.70 Flare/Sunburst catalog
+- 🏢 [**front-desk**](agents/front-desk.md) — Martha — Team directory, routing, service provider lookup, host install paths (Claude Code, Codex, Grok Build, Grok Bot), and gemskills 0.0.72 Sunburst/Flare catalog
 - Third-party: `vercel-labs/is-agentic@is-agentic` — score a public site’s agent readiness. Install: `npx skills add vercel-labs/is-agentic`.
 
 **Usage:** In Claude Code, request the plugin agent by name (for example,
@@ -280,7 +280,9 @@ Skills are context-triggered capabilities. They activate automatically or can be
 task and selects the newest canonical general-purpose Grok model. Generic
 `latest` aliases are treated as automatic selection because provider aliases
 can lag; set a versioned `XAI_RESEARCH_MODEL` only when a reproducible pin is
-intentional.
+intentional. The selector never returns a model below `grok-4.7`: automatic
+selection skips older ids, and a pin or alias that resolves to one fails before
+any request. The persona scan uses the same selector.
 
 ### Content & Media
 | Skill | Description |
@@ -360,7 +362,7 @@ intentional.
 ### Organization
 | Skill | Description |
 |-------|-------------|
-| `front-desk` | Team directory, agent routing, service provider lookup, and gemskills 0.0.70 Flare/Sunburst catalog |
+| `front-desk` | Team directory, agent routing, service provider lookup, and gemskills 0.0.72 Sunburst/Flare catalog |
 
 ## Slash Commands
 
@@ -646,6 +648,7 @@ prompts/
 │   ├── prompts-factory-worker.sh # LoopTop worker that keeps the dev → master PR current
 │   ├── test-isolated-plugin-install.sh # Disposable-runner plugin install gate
 │   ├── check-plugin-extraction.py # Per-plugin git-subdir extraction gate
+│   ├── check-model-drift.py # Retired model id gate (baseline in model-drift-baseline.json)
 │   ├── benchmark.tsx       # Skill output-quality benchmark CLI
 │   ├── plugin-weight.py    # Static catalog/context inventory
 │   ├── capture-*-context.py # Exact Claude/Codex host snapshots
@@ -701,7 +704,7 @@ routing:
 python3 scripts/plugin-weight.py --format markdown
 
 # Host snapshots (exact Codex omission counts need a runtime JSONL event file)
-python3 scripts/capture-codex-context.py --model gpt-6-sol
+python3 scripts/capture-codex-context.py --model gpt-6.1-sol
 python3 scripts/capture-claude-context.py --source-root .
 
 # Source versus installed Claude/Codex inventories

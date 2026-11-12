@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 1.0.15
+version: 1.0.16
 description: >-
   This skill should be used for human-facing prose — emails, docs, reports, posts, release notes,
   and commit messages — when the user asks to "humanize", "make this sound less AI", "de-AI

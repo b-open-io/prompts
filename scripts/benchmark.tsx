@@ -478,7 +478,7 @@ function parseArgs(): { skill?: string; skillRoot?: string; model: string; effor
   const args = process.argv.slice(2);
   let skill: string | undefined;
   let skillRoot: string | undefined;
-  // Use haiku by default — cheap and fast. Pass --model to override.
+  // Default to DEFAULT_JUDGE_MODEL (Haiku 5.5): cheap and fast. Pass --model to override.
   let model = process.env.BENCHMARK_MODEL ?? DEFAULT_JUDGE_MODEL;
   // Every claude -p dispatch pins its effort; without --effort it follows the model's tier.
   let effort: string | undefined = process.env.BENCHMARK_EFFORT || undefined;
