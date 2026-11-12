@@ -1,6 +1,6 @@
 ---
 name: benchmark-skills
-version: 2.0.2
+version: 2.0.3
 description: >-
   Run skill benchmarks and write evals that score a skill against a no-skill baseline. Use for
   "benchmark this skill", "run the skill evals", "write an eval for this skill", or "did this
@@ -139,7 +139,7 @@ used to report its result.
 bun run scripts/benchmark.tsx                                    # All skills with evals
 bun run scripts/benchmark.tsx --skill geo-optimizer              # Single skill
 bun run scripts/benchmark.tsx --skill collections --skill-root /path/to/1sat-sdk # Skill from another plugin repo
-bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"       # Override model (default: haiku)
+bun run scripts/benchmark.tsx --model "$BENCHMARK_MODEL_ID"       # Override model (default: `claude-haiku-5-5`)
 bun run scripts/benchmark.tsx --concurrency 4                    # Parallel workers
 ```
 
@@ -202,7 +202,7 @@ The LLM-as-judge has known failure modes. When results seem wrong:
 | Symptom | Likely cause | Fix |
 |---------|-------------|-----|
 | Everything passes | Assertions too vague | Make assertions more specific and binary |
-| Inconsistent across runs | Judge non-deterministic | Use temperature=0, schema-constrained output, and repeated held-out samples |
+| Inconsistent across runs | Judge non-deterministic | Use schema-constrained output and repeated held-out samples. Do not set `temperature`: current Claude models reject sampling parameters, and the judge sends none |
 | Skill and baseline score the same | The task may be easy, the effect may be small, or the mode may be wrong | Inspect held-out cases, uncertainty, and whether routing or integration evidence is needed |
 | Skill scores lower than baseline | Skill constraining model too much | Check if skill instructions conflict with prompt |
 

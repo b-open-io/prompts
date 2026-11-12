@@ -49,10 +49,10 @@ const state: HarnessState = {
 }
 
 describe("gemskills catalog pin", () => {
-	test("published gemskills is 0.0.70 Flare default / Sunburst opt-in", () => {
-		expect(GEMSKILLS_CATALOG.version).toBe("0.0.70")
-		expect(GEMSKILLS_CATALOG.openaiDefault).toBe("gpt-image-2.5-flare")
-		expect(GEMSKILLS_CATALOG.openaiOptIn).toBe("gpt-image-2.5-sunburst")
+	test("published gemskills is 0.0.72 Sunburst default / Flare drafts", () => {
+		expect(GEMSKILLS_CATALOG.version).toBe("0.0.72")
+		expect(GEMSKILLS_CATALOG.openaiDefault).toBe("gpt-image-2.6-sunburst")
+		expect(GEMSKILLS_CATALOG.openaiOptIn).toBe("gpt-image-2.6-flare")
 		expect(GEMSKILLS_CATALOG.blurb).toContain("Flare")
 		expect(GEMSKILLS_CATALOG.blurb).toContain("Sunburst")
 		expect(GEMSKILLS_CATALOG.openaiDefault.startsWith("openai/")).toBe(false)

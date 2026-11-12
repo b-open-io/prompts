@@ -149,7 +149,7 @@ app.post("/api/chat", async (c) => {
 			tools: agentTools,
 		});
 		const result = streamText({
-			model: gateway("anthropic/claude-sonnet-4.6"),
+			model: gateway("anthropic/claude-sonnet-5.5"),
 			system: systemPrompt,
 			tools: agentTools,
 			messages: modelMessages,
@@ -338,7 +338,7 @@ app.post("/api/messages", async (c) => {
 			SOUL +
 			"\n\nYou are receiving a P2P message from another bot. Respond briefly and helpfully.";
 		const result = await generateText({
-			model: gateway("anthropic/claude-haiku-4.5"),
+			model: gateway("anthropic/claude-haiku-5.5"),
 			system: systemPrompt,
 			prompt: `[From ${request.from.botName}]: ${request.message}`,
 			maxTokens: 300,

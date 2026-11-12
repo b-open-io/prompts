@@ -1,3 +1,28 @@
+# 2026-11-11 — Model drift cleanup (OPL-6593)
+
+- [x] Move the Martha and account-manager bots to `anthropic/claude-sonnet-5.5`
+  and `anthropic/claude-haiku-5.5`.
+- [x] Change `gpt-6-sol` examples to `gpt-6.1-sol` in claudex, the README, and
+  the context-harness doc and proposal; keep legacy acceptance in code.
+- [x] Remove the `temperature=0` advice from benchmark-skills and
+  `benchmarks/NOTES.md`; name `claude-haiku-5-5` as the default.
+- [x] Sync gemskills references to 0.0.72 (Sunburst default, Flare drafts).
+- [x] Add `scripts/check-model-drift.py`, its baseline and tests, and the CI
+  step.
+- [x] Bump core, orchestra, plugin-kit, research, creative, and web-dev;
+  regenerate Codex agents; update CHANGELOG.
+
+## Review
+
+- Core 1.1.180 and the module bumps are committed on
+  `chore/model-drift-cleanup` for a PR to `dev`. They are not released until
+  the standing `dev` promotion merges.
+- Kept: dated records, benchmark results on Sonnet 4.6 and Haiku 4.5, ban
+  statements, legacy `gpt-6-sol` acceptance, and the codex-security upstream
+  default. The guard baseline pins each of them.
+- Not checked live: the new gateway slugs and a CLIProxyAPI account that
+  lists `gpt-6.1-sol`.
+
 # 2026-11-11 — Model tier map for Fable 5.2
 
 - [x] Lift the #101 Fable ban for exactly `claude-fable-5-2` (planner and
