@@ -87,7 +87,7 @@ is_exception() {
 # whole line contains the substring; only rm's own arguments count.
 extract_rm_targets() {
   local cmd="$1"
-  local seg trimmed word found
+  local seg trimmed word found base
   while IFS= read -r seg; do
     trimmed="$(printf '%s' "$seg" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
     [[ -z "$trimmed" ]] && continue
@@ -96,7 +96,12 @@ extract_rm_targets() {
       if [[ "$found" == "true" ]]; then
         [[ "$word" == -* ]] && continue
         printf '%s\n' "$word"
-      elif [[ "$word" == "rm" || "$word" == "unlink" || "$word" == "rmdir" ]]; then
+        continue
+      fi
+      # /bin/rm, /usr/bin/unlink and alias-escaped \rm run the same deleter.
+      base="${word#\\}"
+      base="${base##*/}"
+      if [[ "$base" == "rm" || "$base" == "unlink" || "$base" == "rmdir" ]]; then
         found=true
       fi
     done

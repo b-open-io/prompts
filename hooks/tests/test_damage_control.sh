@@ -104,3 +104,16 @@ assert_contains "damage-control rm file under protected dir deny" '"permissionDe
 input=$(jq -n '{tool_name:"Bash", tool_input:{command:"rm /tmp/scratch.txt"}}')
 run_hook "damage-control.sh" "claude" "$input"
 assert_not_contains "damage-control rm unrelated target allow" "permissionDecision" "$HOOK_STDOUT$HOOK_STDERR"
+
+# A path-qualified or backslash-escaped deleter is the same rm, so its
+# targets must still be checked against noDeletePaths.
+for deleter_cmd in '/bin/rm -rf ~/.claude' '/usr/bin/rm -rf .git/' '\rm -rf ~/.claude' '/bin/rm README.md' '/usr/bin/unlink README.md'; do
+  input=$(jq -n --arg c "$deleter_cmd" '{tool_name:"Bash", tool_input:{command:$c}}')
+  run_hook "damage-control.sh" "claude" "$input"
+  assert_contains "damage-control path-qualified deleter deny ($deleter_cmd)" '"permissionDecision":"deny"' "$HOOK_STDOUT"
+done
+
+# A path-qualified rm on an unrelated target stays allowed.
+input=$(jq -n '{tool_name:"Bash", tool_input:{command:"/bin/rm /tmp/scratch.txt"}}')
+run_hook "damage-control.sh" "claude" "$input"
+assert_not_contains "damage-control path-qualified rm unrelated target allow" "permissionDecision" "$HOOK_STDOUT$HOOK_STDERR"
