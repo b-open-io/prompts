@@ -6,7 +6,12 @@ manifests share the same release version.
 
 ## Unreleased
 
-No unreleased changes.
+### Fixed
+
+- chrome-cdp `click` works with selectors that contain a single quote, such
+  as `input[name='email']`. The selector was pasted raw into a single-quoted
+  string in the page script, so the script failed to parse and nothing was
+  clicked, even when the element existed.
 
 ## [1.1.180] - 2026-11-11
 
