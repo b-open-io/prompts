@@ -433,12 +433,7 @@ async function runDaemon(targetId: string) {
 			case "click": {
 				const [selector] = args as [string];
 				const result = await tabSend("Runtime.evaluate", {
-					expression: `(() => {
-            const el = document.querySelector(${JSON.stringify(selector)});
-            if (!el) return 'Element not found: ${selector}';
-            el.click();
-            return 'Clicked: ' + (el.textContent || '').trim().slice(0, 50);
-          })()`,
+					expression: clickExpression(selector),
 					returnByValue: true,
 					awaitPromise: true,
 				});
@@ -576,6 +571,17 @@ function formatAccessibilityTree(nodes: any[]): string {
 	return result;
 }
 
+/** Page-side JS for `click`: clicks the first element matching `selector`. */
+export function clickExpression(selector: string): string {
+	return `(() => {
+            const sel = ${JSON.stringify(selector)};
+            const el = document.querySelector(sel);
+            if (!el) return 'Element not found: ' + sel;
+            el.click();
+            return 'Clicked: ' + (el.textContent || '').trim().slice(0, 50);
+          })()`;
+}
+
 // --- CLI Entry Point ---
 
 async function main() {
@@ -705,7 +711,9 @@ Commands:
 	}
 }
 
-main().catch((err) => {
-	console.error(err.message ?? err);
-	process.exit(1);
-});
+if (import.meta.main) {
+	main().catch((err) => {
+		console.error(err.message ?? err);
+		process.exit(1);
+	});
+}
