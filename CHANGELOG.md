@@ -28,6 +28,8 @@ lays out organic multi-image posts as of 2026-11-25 (OPL-6848).
 - `social-media-manager` (Alex) 1.0.8 carries the same carousel rules and
   the bopen.ai 4-image cap. The Codex adapter is regenerated.
 
+## [1.1.180] - 2026-11-11
+
 Core 1.1.180, orchestra 0.1.38, plugin-kit 0.1.11, research 0.1.6, creative
 0.1.17, web-dev 0.1.8. This release removes retired model ids from active
 files and adds a CI guard so new drift fails the build.
