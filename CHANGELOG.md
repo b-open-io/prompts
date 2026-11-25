@@ -6,7 +6,12 @@ manifests share the same release version.
 
 ## Unreleased
 
-No unreleased changes.
+### Fixed
+
+- damage-control checks the targets of a path-qualified or escaped deleter
+  (`/bin/rm`, `/usr/bin/unlink`, `\rm`) against `noDeletePaths`. It only
+  recognized a bare `rm`, `unlink` or `rmdir` word, so `/bin/rm -rf ~/.claude`
+  and `\rm -rf .git/` were allowed.
 
 ## [1.1.181] - 2026-11-25
 
