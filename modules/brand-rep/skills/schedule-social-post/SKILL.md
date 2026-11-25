@@ -1,6 +1,6 @@
 ---
 name: schedule-social-post
-version: 1.0.0
+version: 1.0.1
 description: >-
   This skill should be used when the user asks to "schedule a post", "queue this
   on X", "draft a thread for bopen", "put this on the social calendar", "preview
@@ -73,13 +73,16 @@ Images are optional. When the post wants visuals, brief Lisa
 (`gemskills:content`) with exact pixel sizes and file names. Constraints the
 API enforces:
 
-- PNG, JPEG, GIF, or WebP; at most 10 MB per file; at most 4 per item.
+- PNG, JPEG, GIF, or WebP; at most 10 MB per file.
+- At most 4 images per item on bopen.ai (`media_count`). X itself allows up
+  to 20 per post since 2026-11-12; bopen.ai has not raised its cap yet.
 - All images on one item must share identical pixel dimensions
   (`media_dimensions` error otherwise). This is also what makes the split
   carousel work.
 
 For a carousel, follow `references/x-carousel.md`: one master scene cut into
-two equal portrait tiles or three 1024×2048 slices, uploaded left to right.
+equal 1024×2048 slices, uploaded left to right. Two or three slices are
+proven; preview anything longer before committing.
 
 ### 4. Log in once
 
@@ -132,11 +135,12 @@ tell the user to reconnect X on bopen.ai before you plan against it.
 ```
 
 The review page renders the thread as X will show it: avatar, handle,
-connector line, media grid, embedded quotes, and the **Post preview** dialog.
+connector line, media, embedded quotes, and the **Post preview** dialog.
 Portrait images with matching dimensions render as a side-by-side pair or a
-swipe carousel, the same way X presents them. Give the user the URL in every
-harness; in a harness with a browser tool, open it for them. The URL is
-unguessable and private to the token; treat it like a secret.
+swipe strip. X now shows every post with 2 or more images as a swipe strip;
+the preview's grid for landscape or mixed sets is out of date. Give the user
+the URL in every harness; in a harness with a browser tool, open it for them.
+The URL is unguessable and private to the token; treat it like a secret.
 
 ### 7. Hand off
 
