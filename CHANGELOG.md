@@ -8,7 +8,25 @@ manifests share the same release version.
 
 No unreleased changes.
 
-## [1.1.180] - 2026-11-11
+## [1.1.181] - 2026-11-25
+
+Core 1.1.181, brand-rep 0.1.11. The X carousel guidance now matches how X
+lays out organic multi-image posts as of 2026-11-25 (OPL-6848).
+
+### Changed
+
+- `brand-rep:schedule-social-post` 1.0.1: `references/x-carousel.md` states
+  that organic posts allow up to 20 photos or videos since 2026-11-12, and
+  that any post with 2 or more images renders as a horizontal swipe strip
+  since August 2026, with source links. It drops the 3-slice ceiling, the 2×2
+  quad, the tall-left triple, and "two formats are verified". 1024×2048 stays
+  the proven size for 2–3 slices; 4 or more tall slices are unverified, so the
+  reference says to preview first and notes that web may crop past 4:5. It
+  separates X Ads Carousels (2–6 cards, one aspect ratio, 5 MB images) from
+  split panoramas. `SKILL.md` and `references/bopen-social-api.md` say that
+  bopen.ai still rejects more than 4 images per item even though X allows 20.
+- `social-media-manager` (Alex) 1.0.8 carries the same carousel rules and
+  the bopen.ai 4-image cap. The Codex adapter is regenerated.
 
 Core 1.1.180, orchestra 0.1.38, plugin-kit 0.1.11, research 0.1.6, creative
 0.1.17, web-dev 0.1.8. This release removes retired model ids from active

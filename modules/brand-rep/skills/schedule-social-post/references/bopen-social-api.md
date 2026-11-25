@@ -70,8 +70,9 @@ Create body:
   as a reply to the previous item's tweet id.
 - `status` for agents: `draft` or `planned`. Anything else → `403`.
 - `planAt`: `"next-free"`, an ISO instant with `Z` or an offset, or `null`.
-- Media ids come from `POST /api/social/media`. Up to 4 per item; all must
-  share pixel dimensions.
+- Media ids come from `POST /api/social/media`. bopen.ai accepts up to 4 per
+  item (`media_count` above that), though X allows 20 per post; all must
+  share pixel dimensions (`media_dimensions`).
 
 Browser-session-only (the agent cannot call these; the user does them on the
 review page): `POST /api/social/posts/{id}/confirm` (`{publishAt}` or
