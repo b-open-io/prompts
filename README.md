@@ -97,7 +97,9 @@ the install command when a skill is missing. They do not wrap those products.
 Alex's first-party scheduler is bopen.ai's social calendar. Inside bopen.ai chat
 the native draft tools apply; from any other harness `brand-rep:schedule-social-post`
 reaches the same scheduler through the auth.md API. Both ship here and need no
-extra install.
+extra install. The skill's X carousel reference covers split panoramas on X's
+swipe strip; X allows up to 20 images per post, but bopen.ai currently accepts
+4 per item.
 | `core:front-desk` / `dev-ops:integration-expert` | Resend email | `npx skills add resend/resend-skills` |
 | `plugin-kit:prompt-engineer` (Zack) | `marketing-skills:copywriting`, `:copy-editing` | `claude plugin install marketing-skills@coreyhaines31` |
 | `creative:cartographer` (Leaf) | Google Maps Platform | `npx skills add googlemaps/agent-skills` |
